@@ -69,8 +69,15 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     bool first = true;
+    const char *item_separator = ", ";
+    const char *key_separator = ": ";
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
+    } else {
+        #if MICROPY_PY_UJSON_SEPARATORS
+        item_separator = MP_PRINT_GET_EXT(print)->item_separator;
+        key_separator = MP_PRINT_GET_EXT(print)->key_separator;
+        #endif
     }
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict && kind != PRINT_JSON) {
         mp_printf(print, "%q(", self->base.type->name);
@@ -80,7 +87,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
         if (!first) {
-            mp_print_str(print, ", ");
+            mp_print_str(print, item_separator);
         }
         first = false;
         bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
@@ -91,7 +98,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
         if (add_quote) {
             mp_print_str(print, "\"");
         }
-        mp_print_str(print, ": ");
+        mp_print_str(print, key_separator);
         mp_obj_print_helper(print, next->value, kind);
     }
     mp_print_str(print, "}");

@@ -1380,6 +1380,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_UJSON (0)
 #endif
 
+// Whether to support the "separators" argument to dump, dumps
+#ifndef MICROPY_PY_UJSON_SEPARATORS
+#define MICROPY_PY_UJSON_SEPARATORS (1)
+#endif
+
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
 #endif
