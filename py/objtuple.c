@@ -45,9 +45,10 @@ void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
         mp_print_str(print, "(");
         kind = PRINT_REPR;
     }
+    const char *item_separator = (kind == PRINT_JSON) ? ujson_item_separator : ", ";
     for (size_t i = 0; i < o->len; i++) {
         if (i > 0) {
-            mp_print_str(print, ", ");
+            mp_print_str(print, item_separator);
         }
         mp_obj_print_helper(print, o->items[i], kind);
     }

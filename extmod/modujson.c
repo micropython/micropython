@@ -35,6 +35,9 @@
 
 #if MICROPY_PY_UJSON
 
+const char *ujson_item_separator = ", ";
+const char *ujson_key_separator = ": ";
+
 STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_indent, ARG_separators};
     const mp_arg_t allowed_args[] = {

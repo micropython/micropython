@@ -490,6 +490,10 @@ typedef enum {
     PRINT_EXC_SUBCLASS = 0x80, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 
+// separators for ujson
+extern const char *ujson_item_separator;
+extern const char *ujson_key_separator;
+
 typedef struct _mp_obj_iter_buf_t {
     mp_obj_base_t base;
     mp_obj_t buf[3];
