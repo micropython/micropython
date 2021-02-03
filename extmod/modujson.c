@@ -31,25 +31,42 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/nlr.h"
 
 #if MICROPY_PY_UJSON
 
-STATIC mp_obj_t mod_ujson_dump(mp_obj_t obj, mp_obj_t stream) {
-    mp_get_stream_raise(stream, MP_STREAM_OP_WRITE);
-    mp_print_t print = {MP_OBJ_TO_PTR(stream), mp_stream_write_adaptor};
-    mp_obj_print_helper(&print, obj, PRINT_JSON);
+STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_separators};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_separators, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_get_stream_raise(pos_args[1], MP_STREAM_OP_WRITE);
+    mp_print_t print = {MP_OBJ_TO_PTR(pos_args[1]), mp_stream_write_adaptor};
+    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ujson_dump_obj, mod_ujson_dump);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dump_obj, 2, mod_ujson_dump);
 
-STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
+STATIC mp_obj_t mod_ujson_dumps(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_separators};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_separators, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
-    mp_obj_print_helper(&print, obj, PRINT_JSON);
+    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dumps_obj, 1, mod_ujson_dumps);
 
 // The function below implements a simple non-recursive JSON parser.
 //
