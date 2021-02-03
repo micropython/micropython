@@ -50,8 +50,16 @@ STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     }
 
     mp_get_stream_raise(pos_args[1], MP_STREAM_OP_WRITE);
-    mp_print_t print = {MP_OBJ_TO_PTR(pos_args[1]), mp_stream_write_adaptor};
-    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_print_t print = {MP_OBJ_TO_PTR(pos_args[1]), mp_stream_write_adaptor};
+        mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+        nlr_pop();
+    } else {
+        // Re-raise the exception
+        nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dump_obj, 2, mod_ujson_dump);
@@ -73,7 +81,15 @@ STATIC mp_obj_t mod_ujson_dumps(size_t n_args, const mp_obj_t *pos_args, mp_map_
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
-    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+        nlr_pop();
+    } else {
+        // Re-raise the exception
+        nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dumps_obj, 1, mod_ujson_dumps);
