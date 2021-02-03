@@ -603,7 +603,7 @@ void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
     self->attached_to_repl = attached;
 }
 
-uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
+uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
     uint32_t uart_clk = 0;
 
     #if defined(STM32F0)
@@ -672,10 +672,20 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     }
     #endif
 
-    // This formula assumes UART_OVERSAMPLING_16
-    uint32_t baudrate = uart_clk / self->uartx->BRR;
+    return uart_clk;
+}
 
-    return baudrate;
+uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
+    // This formula assumes UART_OVERSAMPLING_16
+    return uart_get_source_freq(self) / self->uartx->BRR;
+}
+
+void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate) {
+    LL_USART_SetBaudRate(self->uartx, uart_get_source_freq(self),
+        #if defined(STM32H7) || defined(STM32WB)
+        LL_USART_PRESCALER_DIV1,
+        #endif
+        LL_USART_OVERSAMPLING_16, baudrate);
 }
 
 mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
