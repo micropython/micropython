@@ -93,13 +93,13 @@ void usb_background(void) {
     }
 }
 
-static background_callback_t usb_callback;
-static void usb_background_do(void* unused) {
+/*static*/ background_callback_t usb_callback;
+/*static*/ void usb_background_do(void* unused) {
     usb_background();
 }
 
 void usb_irq_handler(void) {
-    tud_int_handler(0);
+    tud_int_handler(0); \
     background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
