@@ -280,7 +280,7 @@ def translate(translation_file, i18ns):
 
 class TextSplitter:
     def __init__(self, words):
-        words.sort(key=lambda x: len(x), reverse=True)
+        words = sorted(words, key=lambda x: len(x), reverse=True)
         self.words = set(words)
         if words:
             pat = "|".join(re.escape(w) for w in words) + "|."
