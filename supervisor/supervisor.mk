@@ -124,8 +124,10 @@ ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
 endif
 
+# In the following URL, don't include the https:// prefix.
+# It gets added automatically.
 ifndef USB_WEBUSB_URL
-USB_WEBUSB_URL = "www.circuitpython.org"
+USB_WEBUSB_URL = "circuitpython.org"
 endif
 
 USB_DEVICES_COMPUTED := CDC,MSC
