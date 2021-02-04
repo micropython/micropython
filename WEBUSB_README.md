@@ -21,6 +21,11 @@ this WebUSB serial console at any time.
 
 You can type into either console, and CircuitPython output is sent to all active consoles.
 
+One example of a web page you can use to test drive this feature can be found at:
+
+https://adafruit.github.io/Adafruit_TinyUSB_Arduino/examples/webusb-serial/index.html
+
+
 ## How to enable
 
 Update your platform's mpconfigboard.mk file to enable and disable specific types of USB interfaces.
@@ -44,7 +49,7 @@ CIRCUITPY_USB_HID = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_USB_VENDOR = 1
 
-Notice that to enable VENDOR, we had to give up HID. There may be platforms that can have both.
+Notice that to enable VENDOR on ESP32-S2, we had to give up HID. There may be platforms that can have both, or even all three.
 
 ## Implementation Notes
 
@@ -73,7 +78,7 @@ genhdr/autogen_usb_descriptor.h.
 
 Also worth pointing out - the re-use of the CDC connect/disconnect mechanism is not actually part
 of the WebUSB standard, it's more of "common idiom". We make use of it here because we need to know
-when we should be paying attention to the WebUSB serial interface,and when we should ignore it..
+when we should be paying attention to the WebUSB serial interface, and when we should ignore it..
 
 ## Possible future work areas
 
