@@ -126,7 +126,7 @@
 // Number of bytes in memory allocation/GC block. Any size allocated will be
 // rounded up to be multiples of this.
 #ifndef MICROPY_BYTES_PER_GC_BLOCK
-#define MICROPY_BYTES_PER_GC_BLOCK (4 * BYTES_PER_WORD)
+#define MICROPY_BYTES_PER_GC_BLOCK (4 * MP_BYTES_PER_OBJ_WORD)
 #endif
 
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
@@ -1530,9 +1530,9 @@ typedef double mp_float_t;
 #define STATIC static
 #endif
 
-// Number of bytes in a word
-#ifndef BYTES_PER_WORD
-#define BYTES_PER_WORD (sizeof(mp_uint_t))
+// Number of bytes in an object word: mp_obj_t, mp_uint_t, mp_uint_t
+#ifndef MP_BYTES_PER_OBJ_WORD
+#define MP_BYTES_PER_OBJ_WORD (sizeof(mp_uint_t))
 #endif
 
 // Number of bits in a byte
@@ -1540,7 +1540,7 @@ typedef double mp_float_t;
 #define MP_BITS_PER_BYTE (8)
 #endif
 // mp_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
+#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (MP_BYTES_PER_OBJ_WORD * MP_BITS_PER_BYTE - 1))
 
 // Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
 // defined and that they are the opposite of each other.

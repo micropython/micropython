@@ -387,7 +387,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                         goto invalid_arg;
                     }
                     if (word_adjust) {
-                        heap_size = heap_size * BYTES_PER_WORD / 4;
+                        heap_size = heap_size * MP_BYTES_PER_OBJ_WORD / 4;
                     }
                     // If requested size too small, we'll crash anyway
                     if (heap_size < 700) {
@@ -446,7 +446,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
     pre_process_options(argc, argv);
 
