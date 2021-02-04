@@ -105,9 +105,6 @@ void background_callback_end_critical_section() {
     CALLBACK_CRITICAL_END;
 }
 
-extern background_callback_t usb_callback;
-extern void usb_background_do(void* unused);
-
 void background_callback_reset() {
     CALLBACK_CRITICAL_BEGIN;
     background_callback_t *cb = (background_callback_t*)callback_head;
@@ -120,8 +117,6 @@ void background_callback_reset() {
     callback_tail = NULL;
     in_background_callback = false;
     CALLBACK_CRITICAL_END;
-
-    background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
 void background_callback_gc_collect(void) {

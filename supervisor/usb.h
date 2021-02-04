@@ -35,6 +35,9 @@
 // it may be necessary to call it directly.
 void usb_background(void);
 
+// Schedule usb background
+void usb_background_schedule(void);
+
 // Ports must call this from their particular USB IRQ handler
 void usb_irq_handler(void);
 
