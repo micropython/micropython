@@ -45,7 +45,11 @@ static const uint16_t parallel_program[] = {
 
 void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
     const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
-    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
+    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset, uint32_t frequency) {
+
+    // If we did not set frequency guess at 60Mhz
+    if (frequency == 0)
+        frequency = 60000000;
 
     uint8_t data_pin = data0->number;
     for (uint8_t i = 0; i < 8; i++) {
@@ -100,7 +104,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
     bool ok = rp2pio_statemachine_construct(&self->state_machine,
         parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
-        60000000, //48000000, //125000000, // freq 24Mhz
+        frequency, // frequency
         NULL, 0, // init
         data0, 8, // first out pin, # out pins
         NULL, 0, // first in pin, # in pins
