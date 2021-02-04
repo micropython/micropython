@@ -48,6 +48,7 @@ set(SOURCE_DRIVERS
 )
 
 set(SOURCE_PORT
+    fatfs_port.c
     machine_adc.c
     machine_i2c.c
     machine_pin.c
