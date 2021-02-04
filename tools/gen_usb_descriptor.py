@@ -739,7 +739,7 @@ const tusb_desc_webusb_url_t desc_webusb_url =
   .url             = URL
 }};
 
-// These next two hardcoded descriptor were pulled from the usb_descriptor.c file
+// These next two hardcoded descriptors were pulled from the usb_descriptor.c file
 // of the tinyusb webusb_serial demo. TODO - this is probably something else to
 // integrate into the adafruit_usb_descriptors project...
 
