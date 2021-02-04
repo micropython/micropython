@@ -36,8 +36,8 @@ typedef struct {
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
-    digitalio_digitalinout_obj_t write;
     digitalio_digitalinout_obj_t read;
+    uint8_t write;
     uint8_t data0_pin;
     rp2pio_statemachine_obj_t state_machine;
 } displayio_parallelbus_obj_t;

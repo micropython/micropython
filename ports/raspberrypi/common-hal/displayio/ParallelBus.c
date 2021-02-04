@@ -36,24 +36,18 @@
 #include "common-hal/rp2pio/StateMachine.h"
 
 static const uint16_t parallel_program[] = {
+// .side_set 1
 // .wrap_target
-//   out pins, 8
-//  set pins 0
-    //0x6008,
-    //0xe001
+    0x6008, // out pins, 8 side 0
+    0xB042  // nop         side 1
 // .wrap
-    0x6008,
-    0xB042
 };
 
 void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
     const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
-    // TODO: Implement with PIO and DMA.
-
     uint8_t data_pin = data0->number;
-    mp_printf(&mp_plat_print, "data pin %d\n", data_pin);
     for (uint8_t i = 0; i < 8; i++) {
         if (!pin_number_is_free(data_pin + i)) {
             mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
@@ -61,11 +55,9 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     }
 
     uint8_t write_pin = write->number;
-    mp_printf(&mp_plat_print, "write pin %d\n", write_pin);
     if (!pin_number_is_free(write_pin)) {
         mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), write_pin);
     }
-
 
     self->command.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&self->command, command);
@@ -75,15 +67,12 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
-    //self->write.base.type = &digitalio_digitalinout_type;
-    //common_hal_digitalio_digitalinout_construct(&self->write, write);
-    //common_hal_digitalio_digitalinout_switch_to_output(&self->write, true, DRIVE_MODE_PUSH_PULL);
-
     self->read.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&self->read, read);
     common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
 
     self->data0_pin = data_pin;
+    self->write = write_pin;
 
     self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
@@ -96,23 +85,22 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
-    never_reset_pin_number(write->number);
+    never_reset_pin_number(write_pin);
     never_reset_pin_number(read->number);
     for (uint8_t i = 0; i < 8; i++) {
         never_reset_pin_number(data_pin + i);
     }
 
+    // Calculate pin usage all data pins + write pin
     uint32_t pin_usage = 0;
-    for (int pin_number = 2; pin_number < 10; pin_number ++) {
+    for (uint8_t pin_number = data_pin; pin_number < data_pin+8; pin_number++) {
         pin_usage += (1 << pin_number);
     }
     pin_usage += (1 << write_pin);
-    mp_printf(&mp_plat_print, "pin usage %x\n", pin_usage);
 
-    //uint8_t pin_number = digitalinout->pin->number;
     bool ok = rp2pio_statemachine_construct(&self->state_machine,
         parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
-        48000000, //125000000, // freq 24Mhz
+        60000000, //48000000, //125000000, // freq 24Mhz
         NULL, 0, // init
         data0, 8, // first out pin, # out pins
         NULL, 0, // first in pin, # in pins
@@ -128,9 +116,6 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
         // Do nothing. Maybe bitbang?
         return;
     }
-    mp_printf(&mp_plat_print, "ok %d\n", ok);
-    mp_printf(&mp_plat_print, "smvalues: %d %d %d\n", self->state_machine.state_machine, self->state_machine.pins, self->state_machine.actual_frequency);
-
 }
 
 void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
@@ -140,7 +125,7 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) 
 
     reset_pin_number(self->command.pin->number);
     reset_pin_number(self->chip_select.pin->number);
-    reset_pin_number(self->write.pin->number);
+    reset_pin_number(self->write);
     reset_pin_number(self->read.pin->number);
     reset_pin_number(self->reset.pin->number);
 }
@@ -172,34 +157,8 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
 
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
 
-    /*mp_printf(&mp_plat_print, "send bt %d cs %d dl %d data: ", byte_type, chip_select, data_length);
-    int max = 8;
-    if (data_length < max)
-        max = data_length;
-    for (int i = 0; i < max; i++) {
-        mp_printf(&mp_plat_print, "%x ", data[i]);
-    }*/
-
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-    //mp_printf(&mp_plat_print, ".");
-
-    //for (int i = 0; i < data_length; i++) {
-        //common_hal_digitalio_digitalinout_set_value(&self->write, 0);
-        //pio_sm_put_blocking(self->state_machine.pio, self->state_machine.state_machine, *data);
-        //common_hal_digitalio_digitalinout_set_value(&self->write, 1);
-        //mp_printf(&mp_plat_print, "%x", *data);
-        //data++;
-    //}
-    //pio_sm_put_blocking(self->state_machine.pio, self->state_machine.state_machine, 255);
-    //bool success = common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length);
-    //common_hal_mcu_delay_us(50000);
-    //pio_sm_put_blocking(self->state_machine.pio, self->state_machine.state_machine, 0);
-    //common_hal_mcu_delay_us(50000);
-
-    bool success = common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length);
-
-    //mp_printf(&mp_plat_print, "%d", success);
-    //mp_printf(&mp_plat_print, ",");
+    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length);
 }
 
 void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
