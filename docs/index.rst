@@ -46,6 +46,7 @@ Full Table of Contents
    ../BUILDING
    ../CODE_OF_CONDUCT
    ../license.rst
+   ../WEBUSB_README
 
 Indices and tables
 ==================
