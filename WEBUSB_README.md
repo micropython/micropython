@@ -92,4 +92,3 @@ not they are actually enabled. This increases the size of a generated string tab
 new vendor-interface-related code not do this (because some of the ARM platforms would no longer
 build), but I did not go back and do this for the other interface types (CDC, MIDI, HID, etc.)
 Some FLASH savings are probably possible if this is done.
-
