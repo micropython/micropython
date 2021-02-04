@@ -558,7 +558,6 @@ for idx, descriptor in enumerate(string_descriptors):
 
     b = bytes(descriptor)
     notes = descriptor.notes()
-    notes = fix_notes(notes) # for comparision of files beteen runs
     i = 0
 
     # This prints each subdescriptor on a separate line.
