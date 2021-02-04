@@ -2,21 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-def fix_note(note):
-    index = note.rfind(" object at")
-    if index >= 0:
-        note = note[:index] + ">"
-    return note
-
-def fix_notes(notes):
-    count = len(notes)
-    index = 0
-    while index < count:
-        notes[index] = fix_note(notes[index])
-        index += 1
-
-    return notes
-
 import argparse
 
 import os
@@ -389,8 +374,7 @@ audio_control_interface = standard.InterfaceDescriptor(
 # Audio streaming interfaces must occur before MIDI ones.
 audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
 
-# TODO New code goes here to create vendor objects
-# Starting out with a clone-and-modify of the HID descriptors
+# Vendor-specific interface, for example WebUSB
 vendor_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="VENDOR in",
     bEndpointAddress=args.vendor_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
@@ -407,9 +391,9 @@ vendor_endpoint_out_descriptor = standard.EndpointDescriptor(
 if 'VENDOR' in args.devices:
     vendor_interface = standard.InterfaceDescriptor(
         description="VENDOR",
-        bInterfaceClass=0xff, # vendor.VENDOR_CLASS,
-        bInterfaceSubClass=0x00, #vendor.VENDOR_SUBCLASS_???,,
-        bInterfaceProtocol=0x00, #vendor.VENDOR_PROTOCOL_NONE,
+        bInterfaceClass=0xff, # Vendor-specific
+        bInterfaceSubClass=0x00,
+        bInterfaceProtocol=0x00,
         iInterface=StringIndex.index("{} VENDOR".format(args.interface_name)),
         subdescriptors=[
             vendor_endpoint_in_descriptor,
@@ -546,7 +530,6 @@ for descriptor in descriptor_list:
 
     b = bytes(descriptor)
     notes = descriptor.notes()
-    notes = fix_notes(notes) # for comparision of files beteen runs
     i = 0
 
     # This prints each subdescriptor on a separate line.
