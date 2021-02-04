@@ -22,7 +22,8 @@ ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
 # Digitizer works on Linux but conflicts with mouse, so omit it.
 DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
 
-DEFAULT_WEBUSB_URL = 'www.circuitpython.org' # In the future, this may become a specific landing page
+# In the following URL, don't include the https:// because that prefix gets added automatically
+DEFAULT_WEBUSB_URL = 'circuitpython.org' # In the future, this may become a specific landing page
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--highspeed', default=False, action='store_true',
