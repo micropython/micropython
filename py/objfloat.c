@@ -77,7 +77,7 @@ mp_int_t mp_float_hash(mp_float_t src) {
             // number may have a fraction; xor the integer part with the fractional part
             val = (frc >> (MP_FLOAT_FRAC_BITS - adj_exp))
                 ^ (frc & (((mp_float_uint_t)1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
-        } else if ((unsigned int)adj_exp < BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
+        } else if ((unsigned int)adj_exp < MP_BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
             // the number is a (big) whole integer and will fit in val's signed-width
             val = (mp_int_t)frc << (adj_exp - MP_FLOAT_FRAC_BITS);
         } else {

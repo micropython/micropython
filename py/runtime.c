@@ -387,7 +387,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     if (rhs_val < 0) {
                         // negative shift not allowed
                         mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
-                    } else if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * BITS_PER_BYTE)
+                    } else if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)
                                || lhs_val > (MP_SMALL_INT_MAX >> rhs_val)
                                || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
                         // left-shift will overflow, so use higher precision integer
@@ -406,10 +406,10 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
                     } else {
                         // standard precision is enough for right-shift
-                        if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * BITS_PER_BYTE)) {
+                        if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)) {
                             // Shifting to big amounts is underfined behavior
                             // in C and is CPU-dependent; propagate sign bit.
-                            rhs_val = sizeof(lhs_val) * BITS_PER_BYTE - 1;
+                            rhs_val = sizeof(lhs_val) * MP_BITS_PER_BYTE - 1;
                         }
                         lhs_val >>= rhs_val;
                     }
