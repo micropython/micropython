@@ -49,7 +49,18 @@ void can_deinit_all(void) {
 
 #if !MICROPY_HW_ENABLE_FDCAN
 
-bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
+// Declaring static functions used by the CAN hardware to mitigate definition ordering requirements.
+STATIC void can_rx_irq_hw_fifo_handler(pyb_can_obj_t *self, uint fifo_id);
+STATIC void can_rx_irq_sw_fifo_handler(pyb_can_obj_t *self, uint fifo_id);
+STATIC int can_receive_from_hw_fifo(pyb_can_obj_t *self, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
+STATIC int can_receive_from_sw_fifo(pyb_can_obj_t *self, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
+STATIC bool can_any_hardware(pyb_can_obj_t *self, int fifo);
+STATIC bool can_any_software(pyb_can_obj_t *self, int fifo);
+STATIC bool is_sw_fifo_empty(const byte *rx_state, const sw_fifo_t *sw_fifo);
+STATIC void sw_fifo_reset(sw_fifo_t *sw_fifo, byte *rx_state);
+
+bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart,
+    bool receive_fifo_locked_mode, bool transmit_fifo_priority, int sw_fifo_0_size, int sw_fifo_1_size) {
     CAN_InitTypeDef *init = &can_obj->can.Init;
     init->Mode = mode << 4; // shift-left so modes fit in a small-int
     init->Prescaler = prescaler;
@@ -60,12 +71,13 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     init->ABOM = auto_restart ? ENABLE : DISABLE;
     init->AWUM = DISABLE;
     init->NART = DISABLE;
-    init->RFLM = DISABLE;
-    init->TXFP = DISABLE;
+    init->RFLM = receive_fifo_locked_mode ? ENABLE : DISABLE;
+    init->TXFP = transmit_fifo_priority ? ENABLE : DISABLE;
 
     CAN_TypeDef *CANx = NULL;
     uint32_t sce_irq = 0;
     const pin_obj_t *pins[2];
+    uint32_t sw_fifo_irq_0 = 0, sw_fifo_irq_1 = 0;
 
     switch (can_obj->can_id) {
         #if defined(MICROPY_HW_CAN1_TX)
@@ -74,6 +86,8 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             sce_irq = CAN1_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN1_TX;
             pins[1] = MICROPY_HW_CAN1_RX;
+            sw_fifo_irq_0 = CAN1_RX0_IRQn;
+            sw_fifo_irq_1 = CAN1_RX1_IRQn;
             __HAL_RCC_CAN1_CLK_ENABLE();
             break;
         #endif
@@ -84,6 +98,8 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             sce_irq = CAN2_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN2_TX;
             pins[1] = MICROPY_HW_CAN2_RX;
+            sw_fifo_irq_0 = CAN2_RX0_IRQn;
+            sw_fifo_irq_1 = CAN2_RX1_IRQn;
             __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
             __HAL_RCC_CAN2_CLK_ENABLE();
             break;
@@ -95,6 +111,8 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             sce_irq = CAN3_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN3_TX;
             pins[1] = MICROPY_HW_CAN3_RX;
+            sw_fifo_irq_0 = CAN3_RX0_IRQn;
+            sw_fifo_irq_1 = CAN3_RX1_IRQn;
             __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is a "master" and doesn't need CAN1 enabled as well
             break;
         #endif
@@ -120,6 +138,37 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     can_obj->num_error_warning = 0;
     can_obj->num_error_passive = 0;
     can_obj->num_bus_off = 0;
+
+    // Only either hardware fifo or software fifos is supported for both fifo 0 and fifo 1
+    if (sw_fifo_0_size <= 0 || sw_fifo_1_size <= 0) {
+        can_obj->is_sw_fifo_enabled = false;
+
+        can_obj->can_recv_handler = &can_receive_from_hw_fifo;
+        can_obj->can_rx_isr_handler = &can_rx_irq_hw_fifo_handler;
+        can_obj->can_any_handler = &can_any_hardware;
+    } else {
+        can_obj->is_sw_fifo_enabled = true;
+
+        can_obj->can_recv_handler = &can_receive_from_sw_fifo;
+        can_obj->can_rx_isr_handler = &can_rx_irq_sw_fifo_handler;
+        can_obj->can_any_handler = &can_any_software;
+        // Init SW FIFO
+        sw_fifo_reset(&can_obj->sw_fifo[0], &can_obj->rx_state0);
+        sw_fifo_reset(&can_obj->sw_fifo[1], &can_obj->rx_state1);
+
+        can_obj->sw_fifo[0].size = sw_fifo_0_size;
+        can_obj->sw_fifo[0].fifo = m_new(CanRxMsgTypeDef, sw_fifo_0_size);
+        can_obj->sw_fifo[1].size = sw_fifo_1_size;
+        can_obj->sw_fifo[1].fifo = m_new(CanRxMsgTypeDef, sw_fifo_1_size);
+
+        // Enable Pending interrupt for both fifo 0 and fifo 1 to be able to fill in sw fifo
+        NVIC_SetPriority(sw_fifo_irq_0, IRQ_PRI_CAN);
+        NVIC_SetPriority(sw_fifo_irq_1, IRQ_PRI_CAN);
+        HAL_NVIC_EnableIRQ(sw_fifo_irq_0);
+        HAL_NVIC_EnableIRQ(sw_fifo_irq_1);
+        __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_FMP0);
+        __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_FMP1);
+    }
 
     __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
 
@@ -158,6 +207,9 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN3_CLK_DISABLE();
     #endif
     }
+    // Free the memory of software fifo
+    m_del(CanRxMsgTypeDef, self->sw_fifo[0].fifo, self->sw_fifo[0].size);
+    m_del(CanRxMsgTypeDef, self->sw_fifo[1].fifo, self->sw_fifo[1].size);
 }
 
 void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
@@ -313,45 +365,110 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
 }
 
 STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
-    mp_obj_t callback;
     pyb_can_obj_t *self;
-    mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
-    byte *state;
 
     self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    self->can_rx_isr_handler(self, fifo_id);
+}
+
+STATIC void can_rx_irq_hw_fifo_handler(pyb_can_obj_t *self, uint fifo_id) {
+    mp_obj_t callback;
+    mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
+    byte *rx_state;
 
     if (fifo_id == CAN_FIFO0) {
         callback = self->rxcallback0;
-        state = &self->rx_state0;
+        rx_state = &self->rx_state0;
     } else {
         callback = self->rxcallback1;
-        state = &self->rx_state1;
+        rx_state = &self->rx_state1;
     }
 
-    switch (*state) {
+    switch (*rx_state) {
         case RX_STATE_FIFO_EMPTY:
             __HAL_CAN_DISABLE_IT(&self->can,  (fifo_id == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(0);
-            *state = RX_STATE_MESSAGE_PENDING;
+            *rx_state = RX_STATE_MESSAGE_PENDING;
             break;
         case RX_STATE_MESSAGE_PENDING:
             __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FF0 : CAN_IT_FF1);
             __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FF0 : CAN_FLAG_FF1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(1);
-            *state = RX_STATE_FIFO_FULL;
+            *rx_state = RX_STATE_FIFO_FULL;
             break;
         case RX_STATE_FIFO_FULL:
             __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
             __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FOV0 : CAN_FLAG_FOV1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(2);
-            *state = RX_STATE_FIFO_OVERFLOW;
+            *rx_state = RX_STATE_FIFO_OVERFLOW;
             break;
         case RX_STATE_FIFO_OVERFLOW:
-            // This should never happen
+            // The FIFO getting full disables the interrupt, so this state
+            // should not occur.  This state is exited by
+            // can_receive_from_sw_fifo, where the interrupt is reenabled.
             break;
     }
 
     pyb_can_handle_callback(self, fifo_id, callback, irq_reason);
+}
+
+STATIC void can_rx_irq_sw_fifo_handler(pyb_can_obj_t *self, uint fifo_id) {
+    mp_obj_t callback;
+    mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
+    byte *rx_state;
+
+    sw_fifo_t *sw_fifo = &self->sw_fifo[fifo_id];
+
+    if (fifo_id == CAN_FIFO0) {
+        callback = self->rxcallback0;
+        rx_state = &self->rx_state0;
+    } else {
+        callback = self->rxcallback1;
+        rx_state = &self->rx_state1;
+    }
+
+    do {
+        switch (*rx_state) {
+            case RX_STATE_FIFO_EMPTY:
+                irq_reason = MP_OBJ_NEW_SMALL_INT(0);
+                *rx_state = RX_STATE_MESSAGE_PENDING;
+                break;
+            case RX_STATE_MESSAGE_PENDING:
+                if (available_space_sw_fifo(*rx_state, sw_fifo) != 1) {
+                    irq_reason = MP_OBJ_NEW_SMALL_INT(0);
+                } else {               // It means only one room in sw fifo
+                    irq_reason = MP_OBJ_NEW_SMALL_INT(1);
+                    *rx_state = RX_STATE_FIFO_FULL;
+                }
+                break;
+            case RX_STATE_FIFO_FULL:
+                irq_reason = MP_OBJ_NEW_SMALL_INT(2);
+                *rx_state = RX_STATE_FIFO_OVERFLOW;
+                __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+                break;
+            case RX_STATE_FIFO_OVERFLOW:
+                // This should never happen
+                break;
+        }
+
+        if (*rx_state != RX_STATE_FIFO_OVERFLOW) {
+            // CAN_RECV_TIMEOUT_MS is short sanity-check timeout because
+            // we should always have data from the CAN interrupt that triggered this function.
+            int r = can_receive(&self->can, fifo_id, &sw_fifo->fifo[sw_fifo->write_pos],
+                sw_fifo->fifo[sw_fifo->write_pos].Data,CAN_RECV_TIMEOUT_MS);
+            if (r < 0) {
+                break; // This should never happen; leave loop
+            }
+            sw_fifo->write_pos = (sw_fifo->write_pos + 1) % sw_fifo->size;
+        }
+
+        if (callback != mp_const_none && *rx_state != sw_fifo->previous_rx_state) {
+            pyb_can_handle_callback(self, fifo_id, callback, irq_reason);
+        }
+
+        sw_fifo->previous_rx_state = *rx_state;
+
+    } while (__HAL_CAN_MSG_PENDING(&self->can, CAN_FIFO0) && *rx_state != RX_STATE_FIFO_OVERFLOW);
 }
 
 STATIC void can_sce_irq_handler(uint can_id) {
@@ -367,6 +484,121 @@ STATIC void can_sce_irq_handler(uint can_id) {
             ++self->num_error_warning;
         }
     }
+}
+
+STATIC int can_receive_from_hw_fifo(pyb_can_obj_t *self, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {
+    int ret = can_receive(&self->can, fifo, msg, data, timeout_ms);
+
+    // Manage the rx state machine
+    if ((fifo == CAN_FIFO0 && self->rxcallback0 != mp_const_none) ||
+        (fifo == CAN_FIFO1 && self->rxcallback1 != mp_const_none)) {
+        byte *rx_state = (fifo == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
+
+        switch (*rx_state) {
+            case RX_STATE_FIFO_EMPTY:
+                break;
+            case RX_STATE_MESSAGE_PENDING:
+                if (__HAL_CAN_MSG_PENDING(&self->can, fifo) == 0) {
+                    // Fifo is empty
+                    __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+                    *rx_state = RX_STATE_FIFO_EMPTY;
+                }
+                break;
+            case RX_STATE_FIFO_FULL:
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FF0 : CAN_IT_FF1);
+                *rx_state = RX_STATE_MESSAGE_PENDING;
+                break;
+            case RX_STATE_FIFO_OVERFLOW:
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FF0 : CAN_IT_FF1);
+                *rx_state = RX_STATE_MESSAGE_PENDING;
+                break;
+        }
+    }
+
+    return ret;
+}
+
+STATIC int can_receive_from_sw_fifo(pyb_can_obj_t *self, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {
+    byte *rx_state = (fifo == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
+    sw_fifo_t *sw_fifo = &self->sw_fifo[fifo];
+
+    // Wait for a message to become available, with timeout
+    uint32_t start = HAL_GetTick();
+    while (is_sw_fifo_empty(rx_state,sw_fifo)) {
+        MICROPY_EVENT_POLL_HOOK
+        if (HAL_GetTick() - start >= timeout_ms) {
+            return -MP_ETIMEDOUT;
+        }
+    }
+
+    // Receive from software fifo copy to msg and data
+    memcpy(msg, &sw_fifo->fifo[sw_fifo->read_pos], sizeof(CanRxMsgTypeDef));
+    memcpy(data, &sw_fifo->fifo[sw_fifo->read_pos].Data, CAN_DATA_SIZE);
+    sw_fifo->read_pos = (sw_fifo->read_pos + 1) % sw_fifo->size;
+
+    // It is important to keep this order to avoid losing messages
+    if (sw_fifo->write_pos == sw_fifo->read_pos) {
+        *rx_state = RX_STATE_FIFO_EMPTY;
+        sw_fifo->previous_rx_state = *rx_state;
+    }
+
+    if (*rx_state == RX_STATE_FIFO_FULL) {
+        *rx_state = RX_STATE_MESSAGE_PENDING;
+        sw_fifo->previous_rx_state = *rx_state;
+    }
+
+    if (*rx_state == RX_STATE_FIFO_OVERFLOW) {
+        *rx_state = RX_STATE_MESSAGE_PENDING;
+        sw_fifo->previous_rx_state = *rx_state;
+        __HAL_CAN_ENABLE_IT(&self->can,  (fifo == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+    }
+
+    return 0;
+}
+
+STATIC bool can_any_hardware(pyb_can_obj_t *self, int fifo) {
+    uint32_t fifo_id = (fifo == 0) ? CAN_FIFO0 : CAN_FIFO1;
+    return __HAL_CAN_MSG_PENDING(&self->can, fifo_id) != 0;
+}
+
+STATIC bool can_any_software(pyb_can_obj_t *self, int fifo) {
+    byte *rx_state = (fifo == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
+
+    sw_fifo_t *sw_fifo = &self->sw_fifo[fifo];
+
+    if (!is_sw_fifo_empty(rx_state, sw_fifo)) {
+        return true;
+    }
+    return false;
+}
+
+// Return true when SW fifo is empty
+STATIC bool is_sw_fifo_empty(const byte *rx_state, const sw_fifo_t *sw_fifo) {
+    return (*rx_state == RX_STATE_FIFO_EMPTY) && (sw_fifo->write_pos == sw_fifo->read_pos);
+}
+
+STATIC void sw_fifo_reset(sw_fifo_t *sw_fifo, byte *rx_state) {
+    sw_fifo->read_pos = 0;
+    sw_fifo->write_pos = 0;
+    *rx_state = RX_STATE_FIFO_EMPTY;
+    sw_fifo->previous_rx_state = RX_STATE_FIFO_EMPTY;
+}
+
+uint16_t available_space_sw_fifo(byte rx_state, const sw_fifo_t *sw_fifo) {
+    uint16_t available_space = sw_fifo->size;
+
+    if (rx_state != RX_STATE_FIFO_EMPTY) {
+        if (sw_fifo->write_pos > sw_fifo->read_pos) {
+            available_space = sw_fifo->size - (sw_fifo->write_pos - sw_fifo->read_pos);
+        } else if (sw_fifo->write_pos == sw_fifo->read_pos) {
+            available_space = 0;
+        } else {
+            available_space = sw_fifo->read_pos - sw_fifo->write_pos;
+        }
+    }
+
+    return available_space;
 }
 
 #if defined(MICROPY_HW_CAN1_TX)
