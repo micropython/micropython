@@ -11,7 +11,7 @@ To date, this has only been tested on one port (esp32s2), on one board (espressi
 ## What it does
 
 If you have ever used CircuitPython on a platform with a graphical LCD display, you have probably
-already seen multiple "consoles" in use (although the LCD console is "output only"). 
+already seen multiple "consoles" in use (although the LCD console is "output only").
 
 New compile-time option CIRCUITPY_USB_VENDOR enables an additional "console" that can be used in
 parallel with the original (CDC) serial console.
@@ -24,7 +24,6 @@ You can type into either console, and CircuitPython output is sent to all active
 One example of a web page you can use to test drive this feature can be found at:
 
 https://adafruit.github.io/Adafruit_TinyUSB_Arduino/examples/webusb-serial/index.html
-
 
 ## How to enable
 
