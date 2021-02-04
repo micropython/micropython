@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-07 18:01+0000\n"
+"PO-Revision-Date: 2021-02-05 15:41+0000\n"
 "Last-Translator: Dennis Schweer <dennis.schweer@ruhr-uni-bochum.de>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -235,7 +235,7 @@ msgstr "'await' außerhalb einer Funktion"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' oder 'async with' außerhalb einer async Funktion"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -267,7 +267,7 @@ msgstr "'return' außerhalb einer Funktion"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' innerhalb einer async Funktion"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -313,7 +313,7 @@ msgstr "Adresstyp außerhalb des zulässigen Bereichs"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Alle CAN Schnittstellen sind in Benutzung"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -329,7 +329,7 @@ msgstr "Alle PCNT Einheiten sind in Benutzung"
 #: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Alle RX FIFOs sind in Benutzung"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -695,7 +695,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "CircuitPython war es nicht möglich heap-Speicher zu allozieren.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -773,7 +773,7 @@ msgstr "PWM konnte nicht neu gestartet werden"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr ""
+msgstr "Clock konnte nicht ermittelt werden"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -811,7 +811,7 @@ msgstr "Absturz in den HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
-msgstr "DAC Kanal Intialisierungs Fehler"
+msgstr "DAC Kanal Initialisierungsfehler"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
@@ -977,7 +977,7 @@ msgstr "Zuweisung des Wifi Speichers ist fehlgeschlagen"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
-msgstr ""
+msgstr "Zuweisung des Wifi Scan Speichers ist fehlgeschlagen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -1016,7 +1016,7 @@ msgstr "Filter zu komplex"
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
-msgstr ""
+msgstr "Firmware Image ist ungültig"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
