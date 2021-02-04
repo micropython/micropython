@@ -20,8 +20,8 @@ def print_stacktrace(frame, level=0):
             "  ",
             frame.f_globals["__name__"],
             frame.f_code.co_name,
-            # reduce full path to some pseudo-relative
-            "misc" + "".join(frame.f_code.co_filename.split("tests/misc")[-1:]),
+            # Keep just the filename.
+            "sys_settrace_" + frame.f_code.co_filename.split("sys_settrace_")[-1],
             frame.f_lineno,
         )
     )
@@ -60,7 +60,9 @@ def trace_tick_handler_bob(frame, event, arg):
 
 def trace_tick_handler(frame, event, arg):
     # Ignore CPython specific helpers.
-    if frame.f_globals["__name__"].find("importlib") != -1:
+    to_ignore = ["importlib", "zipimport", "encodings"]
+    frame_name = frame.f_globals["__name__"]
+    if any(name in frame_name for name in to_ignore):
         return
 
     print("### trace_handler::main event:", event)
@@ -94,9 +96,9 @@ def do_tests():
     print("Who loves the sun?")
     print("Not every-", factorial(3))
 
-    from sys_settrace_subdir import trace_generic
+    from sys_settrace_subdir import sys_settrace_generic
 
-    trace_generic.run_tests()
+    sys_settrace_generic.run_tests()
     return
 
 

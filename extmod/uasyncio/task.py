@@ -130,13 +130,16 @@ class Task:
         self.ph_rightmost_parent = None  # Paring heap
 
     def __iter__(self):
-        if not hasattr(self, "waiting"):
+        if self.coro is self:
+            # Signal that the completed-task has been await'ed on.
+            self.waiting = None
+        elif not hasattr(self, "waiting"):
             # Lazily allocated head of linked list of Tasks waiting on completion of this task.
             self.waiting = TaskQueue()
         return self
 
     def __next__(self):
-        if not self.coro:
+        if self.coro is self:
             # Task finished, raise return value to caller so it can continue.
             raise self.data
         else:
@@ -145,9 +148,12 @@ class Task:
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
+    def done(self):
+        return self.coro is self
+
     def cancel(self):
         # Check if task is already finished.
-        if self.coro is None:
+        if self.coro is self:
             return False
         # Can't cancel self (not supported yet).
         if self is core.cur_task:
@@ -166,3 +172,13 @@ class Task:
             core._task_queue.push_head(self)
         self.data = core.CancelledError
         return True
+
+    def throw(self, value):
+        # This task raised an exception which was uncaught; handle that now.
+        # Set the data because it was cleared by the main scheduling loop.
+        self.data = value
+        if not hasattr(self, "waiting"):
+            # Nothing await'ed on the task so call the exception handler.
+            core._exc_context["exception"] = value
+            core._exc_context["future"] = self
+            core.Loop.call_exception_handler(core._exc_context)

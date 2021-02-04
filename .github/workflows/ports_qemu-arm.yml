@@ -1,0 +1,27 @@
+name: qemu-arm port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/qemu-arm/**'
+      - 'tests/**'
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_qemu_arm_setup
+    - name: Build and run test suite
+      run: source tools/ci.sh && ci_qemu_arm_build
+    - name: Print failures
+      if: failure()
+      run: grep --text "FAIL" ports/qemu-arm/build/console.out

@@ -93,6 +93,28 @@
 
 extern void NORETURN __fatal_error(const char *msg);
 
+typedef struct _pyb_uart_irq_map_t {
+    uint16_t irq_en;
+    uint16_t flag;
+} pyb_uart_irq_map_t;
+
+STATIC const pyb_uart_irq_map_t mp_uart_irq_map[] = {
+    { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
+    { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
+    { USART_CR1_TXEIE,  UART_FLAG_TXE},  // TX register empty
+    { USART_CR1_TCIE,   UART_FLAG_TC},   // TX complete
+    { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
+    #if 0
+    // For now only IRQs selected by CR1 are supported
+    #if defined(STM32F4)
+    { USART_CR2_LBDIE,  UART_FLAG_LBD},  // LIN break detection
+    #else
+    { USART_CR2_LBDIE,  UART_FLAG_LBDF}, // LIN break detection
+    #endif
+    { USART_CR3_CTSIE,  UART_FLAG_CTS},  // CTS
+    #endif
+};
+
 void uart_init0(void) {
     #if defined(STM32H7)
     RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit = {0};
@@ -442,6 +464,23 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     uart_obj->mp_irq_obj = NULL;
 
     return true;
+}
+
+void uart_irq_config(pyb_uart_obj_t *self, bool enable) {
+    if (self->mp_irq_trigger) {
+        for (size_t entry = 0; entry < MP_ARRAY_SIZE(mp_uart_irq_map); ++entry) {
+            if (mp_uart_irq_map[entry].flag & MP_UART_RESERVED_FLAGS) {
+                continue;
+            }
+            if (mp_uart_irq_map[entry].flag & self->mp_irq_trigger) {
+                if (enable) {
+                    self->uartx->CR1 |= mp_uart_irq_map[entry].irq_en;
+                } else {
+                    self->uartx->CR1 &= ~mp_uart_irq_map[entry].irq_en;
+                }
+            }
+        }
+    }
 }
 
 void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
@@ -864,3 +903,26 @@ void uart_irq_handler(mp_uint_t uart_id) {
         mp_irq_handler(self->mp_irq_obj);
     }
 }
+
+STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uart_irq_config(self, false);
+    self->mp_irq_trigger = new_trigger;
+    uart_irq_config(self, true);
+    return 0;
+}
+
+STATIC mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};

@@ -24,13 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
-#define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
+#ifndef MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NIMBLE_NPL_OS_H
+#define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NIMBLE_NPL_OS_H
+
+// This is included by nimble/nimble_npl.h -- include that rather than this file directly.
 
 #include <stdint.h>
+#include <limits.h>
 
-#define BLE_NPL_OS_ALIGNMENT (4)
+// --- Configuration of NimBLE data structures --------------------------------
+
+// This is used at runtime to align allocations correctly.
+#define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
+
+// This is used at compile time to force struct member alignment. See
+// os_mempool.h for where this is used (none of these three macros are defined
+// by default).
+#define OS_CFG_ALIGN_4 (4)
+#define OS_CFG_ALIGN_8 (8)
+#if (ULONG_MAX == 0xffffffffffffffff)
+#define OS_CFG_ALIGNMENT (OS_CFG_ALIGN_8)
+#else
+#define OS_CFG_ALIGNMENT (OS_CFG_ALIGN_4)
+#endif
 
 typedef uint32_t ble_npl_time_t;
 typedef int32_t ble_npl_stime_t;
@@ -38,6 +55,7 @@ typedef int32_t ble_npl_stime_t;
 struct ble_npl_event {
     ble_npl_event_fn *fn;
     void *arg;
+    bool pending;
     struct ble_npl_event *prev;
     struct ble_npl_event *next;
 };
@@ -62,5 +80,14 @@ struct ble_npl_mutex {
 struct ble_npl_sem {
     volatile uint16_t count;
 };
+
+// --- Called by the MicroPython port -----------------------------------------
+
+void mp_bluetooth_nimble_os_eventq_run_all(void);
+void mp_bluetooth_nimble_os_callout_process(void);
+
+// --- Must be provided by the MicroPython port -------------------------------
+
+void mp_bluetooth_nimble_hci_uart_wfi(void);
 
 #endif // MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H

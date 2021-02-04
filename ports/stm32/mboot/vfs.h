@@ -65,7 +65,7 @@ typedef struct _vfs_lfs1_context_t {
 
 extern const stream_methods_t vfs_lfs1_stream_methods;
 
-int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size);
 
 #endif
 
@@ -89,7 +89,7 @@ typedef struct _vfs_lfs2_context_t {
 
 extern const stream_methods_t vfs_lfs2_stream_methods;
 
-int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size);
 
 #endif
 

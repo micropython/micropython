@@ -216,6 +216,21 @@ mp_uint_t mp_hal_ticks_us(void) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    time_t now = time(NULL);
-    return (uint64_t)now * 1000000000ULL;
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    #ifdef MICROPY_EVENT_POLL_HOOK
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
+        MICROPY_EVENT_POLL_HOOK
+    }
+    #else
+    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
+    // "The useconds argument shall be less than one million."
+    usleep(ms * 1000);
+    #endif
 }

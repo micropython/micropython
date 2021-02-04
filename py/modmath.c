@@ -98,7 +98,19 @@ mp_float_t MICROPY_FLOAT_C_FUN(log2)(mp_float_t x) {
 // sqrt(x): returns the square root of x
 MATH_FUN_1(sqrt, sqrt)
 // pow(x, y): returns x to the power of y
+#if MICROPY_PY_MATH_POW_FIX_NAN
+mp_float_t pow_func(mp_float_t x, mp_float_t y) {
+    // pow(base, 0) returns 1 for any base, even when base is NaN
+    // pow(+1, exponent) returns 1 for any exponent, even when exponent is NaN
+    if (x == MICROPY_FLOAT_CONST(1.0) || y == MICROPY_FLOAT_CONST(0.0)) {
+        return MICROPY_FLOAT_CONST(1.0);
+    }
+    return MICROPY_FLOAT_C_FUN(pow)(x, y);
+}
+MATH_FUN_2(pow, pow_func)
+#else
 MATH_FUN_2(pow, pow)
+#endif
 // exp(x)
 MATH_FUN_1(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
@@ -192,17 +204,15 @@ MATH_FUN_1(lgamma, lgamma)
 
 #if MICROPY_PY_MATH_ISCLOSE
 STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
+    enum { ARG_rel_tol, ARG_abs_tol };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         {MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    const mp_float_t a = mp_obj_get_float(args[ARG_a].u_obj);
-    const mp_float_t b = mp_obj_get_float(args[ARG_b].u_obj);
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const mp_float_t a = mp_obj_get_float(pos_args[0]);
+    const mp_float_t b = mp_obj_get_float(pos_args[1]);
     const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL
         ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
     const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj);

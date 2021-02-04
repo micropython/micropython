@@ -46,6 +46,8 @@
 #include "stm32l0xx_hal_uart.h"
 #include "stm32l0xx_hal_usart.h"
 #include "stm32l0xx_hal_wwdg.h"
+#include "stm32l0xx_ll_adc.h"
+#include "stm32l0xx_ll_rtc.h"
 
 // Enable various HAL modules
 #define HAL_MODULE_ENABLED

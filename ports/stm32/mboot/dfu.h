@@ -39,6 +39,14 @@
 #define MBOOT_ERROR_STR_INVALID_ADDRESS_IDX 0x11
 #define MBOOT_ERROR_STR_INVALID_ADDRESS "Address out of range"
 
+#if MBOOT_ENABLE_PACKING
+#define MBOOT_ERROR_STR_INVALID_SIG_IDX 0x12
+#define MBOOT_ERROR_STR_INVALID_SIG "Invalid signature in file"
+
+#define MBOOT_ERROR_STR_INVALID_READ_IDX 0x13
+#define MBOOT_ERROR_STR_INVALID_READ "Read support disabled on encrypted bootloader"
+#endif
+
 // DFU class requests
 enum {
     DFU_DETACH = 0,
@@ -104,6 +112,6 @@ typedef struct _dfu_state_t {
     uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
 } dfu_context_t;
 
-static dfu_context_t dfu_context SECTION_NOZERO_BSS;
+extern dfu_context_t dfu_context;
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_DFU_H

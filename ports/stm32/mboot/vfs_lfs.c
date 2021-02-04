@@ -37,15 +37,14 @@
 #error Unsupported
 #endif
 
+#define MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED MBOOT_ERRNO_VFS_LFS1_MOUNT_FAILED
+#define MBOOT_ERRNO_VFS_LFS_OPEN_FAILED MBOOT_ERRNO_VFS_LFS1_OPEN_FAILED
+
 #define LFSx_MACRO(s) LFS1##s
 #define LFSx_API(x) lfs1_ ## x
 #define VFS_LFSx_CONTEXT_T vfs_lfs1_context_t
 #define VFS_LFSx_MOUNT vfs_lfs1_mount
 #define VFS_LFSx_STREAM_METHODS vfs_lfs1_stream_methods
-
-#define SUPERBLOCK_MAGIC_OFFSET (40)
-#define SUPERBLOCK_BLOCK_SIZE_OFFSET (28)
-#define SUPERBLOCK_BLOCK_COUNT_OFFSET (32)
 
 static uint8_t lfs_read_buffer[LFS_READ_SIZE];
 static uint8_t lfs_prog_buffer[LFS_PROG_SIZE];
@@ -53,15 +52,14 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE / 8];
 
 #else
 
+#define MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED MBOOT_ERRNO_VFS_LFS2_MOUNT_FAILED
+#define MBOOT_ERRNO_VFS_LFS_OPEN_FAILED MBOOT_ERRNO_VFS_LFS2_OPEN_FAILED
+
 #define LFSx_MACRO(s) LFS2##s
 #define LFSx_API(x) lfs2_ ## x
 #define VFS_LFSx_CONTEXT_T vfs_lfs2_context_t
 #define VFS_LFSx_MOUNT vfs_lfs2_mount
 #define VFS_LFSx_STREAM_METHODS vfs_lfs2_stream_methods
-
-#define SUPERBLOCK_MAGIC_OFFSET (8)
-#define SUPERBLOCK_BLOCK_SIZE_OFFSET (24)
-#define SUPERBLOCK_BLOCK_COUNT_OFFSET (28)
 
 static uint8_t lfs_read_buffer[LFS_CACHE_SIZE];
 static uint8_t lfs_prog_buffer[LFS_CACHE_SIZE];
@@ -72,7 +70,7 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE];
 static int dev_read(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     VFS_LFSx_CONTEXT_T *ctx = c->context;
     if (0 <= block && block < ctx->config.block_count) {
-        do_read(ctx->bdev_base_addr + block * ctx->config.block_size + off, size, buffer);
+        hw_read(ctx->bdev_base_addr + block * ctx->config.block_size + off, size, buffer);
         return LFSx_MACRO(_ERR_OK);
     }
     return LFSx_MACRO(_ERR_IO);
@@ -90,23 +88,7 @@ static int dev_sync(const struct LFSx_API (config) * c) {
     return LFSx_MACRO(_ERR_OK);
 }
 
-int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len) {
-    // Read start of superblock.
-    uint8_t buf[48];
-    do_read(base_addr, sizeof(buf), buf);
-
-    // Verify littlefs and detect block size.
-    if (memcmp(&buf[SUPERBLOCK_MAGIC_OFFSET], "littlefs", 8) != 0) {
-        return -1;
-    }
-    uint32_t block_size = get_le32(&buf[SUPERBLOCK_BLOCK_SIZE_OFFSET]);
-    uint32_t block_count = get_le32(&buf[SUPERBLOCK_BLOCK_COUNT_OFFSET]);
-
-    // Verify size of volume.
-    if (block_size * block_count != byte_len) {
-        return -1;
-    }
-
+int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size) {
     ctx->bdev_base_addr = base_addr;
 
     struct LFSx_API (config) *config = &ctx->config;
@@ -140,7 +122,7 @@ int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_le
 
     int ret = LFSx_API(mount)(&ctx->lfs, &ctx->config);
     if (ret < 0) {
-        return -1;
+        return -MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED;
     }
     return 0;
 }
@@ -150,7 +132,10 @@ static int vfs_lfs_stream_open(void *stream_in, const char *fname) {
     memset(&ctx->file, 0, sizeof(ctx->file));
     memset(&ctx->filecfg, 0, sizeof(ctx->filecfg));
     ctx->filecfg.buffer = &ctx->filebuf[0];
-    LFSx_API(file_opencfg)(&ctx->lfs, &ctx->file, fname, LFSx_MACRO(_O_RDONLY), &ctx->filecfg);
+    int ret = LFSx_API(file_opencfg)(&ctx->lfs, &ctx->file, fname, LFSx_MACRO(_O_RDONLY), &ctx->filecfg);
+    if (ret < 0) {
+        return -MBOOT_ERRNO_VFS_LFS_OPEN_FAILED;
+    }
     return 0;
 }
 

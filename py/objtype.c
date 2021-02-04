@@ -1014,13 +1014,16 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (attr == MP_QSTR___dict__) {
             // Returns a read-only dict of the class attributes.
             // If the internal locals is not fixed, a copy will be created.
-            mp_obj_dict_t *dict = self->locals_dict;
+            const mp_obj_dict_t *dict = self->locals_dict;
+            if (!dict) {
+                dict = &mp_const_empty_dict_obj;
+            }
             if (dict->map.is_fixed) {
                 dest[0] = MP_OBJ_FROM_PTR(dict);
             } else {
                 dest[0] = mp_obj_dict_copy(MP_OBJ_FROM_PTR(dict));
-                dict = MP_OBJ_TO_PTR(dest[0]);
-                dict->map.is_fixed = 1;
+                mp_obj_dict_t *dict_copy = MP_OBJ_TO_PTR(dest[0]);
+                dict_copy->map.is_fixed = 1;
             }
             return;
         }

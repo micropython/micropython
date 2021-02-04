@@ -4,7 +4,7 @@
 123
 123
 1ABCDEF
-ab abc
+ab abc ' abc' ' True' 'Tru'
 
 false true
 (null)
@@ -144,6 +144,9 @@ OSError
 0
 None
 None
+cpp None
+5
+(3, 'hellocpp')
 frzstr1
 frzstr1.py
 frzmpy1

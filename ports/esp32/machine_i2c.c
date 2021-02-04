@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
+#include "modmachine.h"
 
 #include "driver/i2c.h"
 
@@ -45,7 +46,6 @@ typedef struct _machine_hw_i2c_obj_t {
     gpio_num_t sda : 8;
 } machine_hw_i2c_obj_t;
 
-STATIC const mp_obj_type_t machine_hw_i2c_type;
 STATIC machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
 
 STATIC void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us, bool first_init) {
@@ -115,6 +115,8 @@ STATIC void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+
     // Parse args
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
@@ -169,11 +171,11 @@ STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {
     .transfer = machine_hw_i2c_transfer,
 };
 
-STATIC const mp_obj_type_t machine_hw_i2c_type = {
+const mp_obj_type_t machine_hw_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hw_i2c_print,
     .make_new = machine_hw_i2c_make_new,
     .protocol = &machine_hw_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
 };

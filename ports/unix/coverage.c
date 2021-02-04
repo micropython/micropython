@@ -186,7 +186,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
         mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
         mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
-        mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
+        mp_printf(&mp_plat_print, "%.2s %.3s '%4.4s' '%5.5q' '%.3q'\n", "abc", "abc", "abc", MP_QSTR_True, MP_QSTR_True); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
         #ifndef NDEBUG

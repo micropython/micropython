@@ -1,7 +1,7 @@
 # test VFS functionality with a user-defined filesystem
 # also tests parts of uio.IOBase implementation
 
-import sys
+import usys
 
 try:
     import uio
@@ -76,9 +76,9 @@ f = open("/userfs/data.txt")
 print(f.read())
 
 # import files from the user filesystem
-sys.path.append("/userfs")
+usys.path.append("/userfs")
 import usermod1
 
 # unmount and undo path addition
 uos.umount("/userfs")
-sys.path.pop()
+usys.path.pop()

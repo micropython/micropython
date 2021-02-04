@@ -102,8 +102,8 @@ STATIC const uint8_t usbd_fifo_size_cdc1[USBD_PMA_NUM_FIFO] = {
 #if MICROPY_HW_USB_CDC_NUM >= 2
 STATIC const uint8_t usbd_fifo_size_cdc2[USBD_PMA_NUM_FIFO] = {
     8, 8, 16, 16,           // EP0(out), EP0(in), MSC/HID(out), MSC/HID(in)
-    0, 8, 12, 12,           // unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
-    0, 8, 12, 12,           // unused, CDC2_CMD(in), CDC2_DATA(out), CDC2_DATA(in)
+    0, 8, 16, 8,            // unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
+    0, 8, 16, 8,            // unused, CDC2_CMD(in), CDC2_DATA(out), CDC2_DATA(in)
     0, 0, 0, 0,             // 4x unused
 };
 
@@ -221,7 +221,9 @@ void pyb_usb_init0(void) {
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
         usb_device.usbd_cdc_itf[i].attached_to_repl = false;
     }
+    #if MICROPY_HW_USB_HID
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
+    #endif
 
     pyb_usb_vcp_init0();
 }

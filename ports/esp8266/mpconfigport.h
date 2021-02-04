@@ -26,6 +26,7 @@
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
@@ -69,6 +70,7 @@
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (*WDEV_HWRNG)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
@@ -80,7 +82,6 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
-#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hspi_make_new
 #define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
@@ -197,5 +198,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
 #define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) MP_FASTCODE(f)
 #define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) MP_FASTCODE(f)
+
+#define WDEV_HWRNG ((volatile uint32_t *)0x3ff20e44)
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))

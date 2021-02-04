@@ -53,9 +53,9 @@
 #include "stm32f7xx_hal_uart.h"
 #include "stm32f7xx_hal_usart.h"
 #include "stm32f7xx_hal_wwdg.h"
-#include "stm32f7xx_hal_ltdc.h"
-#include "stm32f7xx_hal_ltdc_ex.h"
-#include "stm32f7xx_hal_dma2d.h"
+#include "stm32f7xx_ll_adc.h"
+#include "stm32f7xx_ll_pwr.h"
+#include "stm32f7xx_ll_rtc.h"
 
 // Enable various HAL modules
 #define HAL_ADC_MODULE_ENABLED
@@ -84,8 +84,6 @@
 #define HAL_UART_MODULE_ENABLED
 #define HAL_USART_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
-#define HAL_LTDC_MODULE_ENABLED
-#define HAL_DMA2D_MODULE_ENABLED
 
 // Oscillator values in Hz
 #define HSI_VALUE (16000000)

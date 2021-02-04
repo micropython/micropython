@@ -12,6 +12,12 @@ BOARD_DIR ?= $(abspath ../boards/$(BOARD))
 # that can be built with or without mboot.
 USE_MBOOT ?= 1
 
+# Set MBOOT_ENABLE_PACKING to 1 to enable DFU packing with encryption and signing.
+# Ensure the MBOOT_PACK_xxx values match stm32/Makefile, to build matching application firmware.
+MBOOT_ENABLE_PACKING ?= 0
+MBOOT_PACK_CHUNKSIZE ?= 16384
+MBOOT_PACK_KEYS_FILE ?= $(BOARD_DIR)/mboot_keys.h
+
 # Sanity check that the board configuration directory exists
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
@@ -71,8 +77,9 @@ CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
 CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
 CFLAGS += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
-CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_READONLY
 CFLAGS += -DBUILDING_MBOOT=1
+CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
 LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
@@ -85,7 +92,7 @@ LDFLAGS += --gc-sections
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
-COPT = -O0
+COPT = -Og
 else
 COPT += -Os -DNDEBUG
 endif
@@ -109,6 +116,7 @@ SRC_C = \
 	elem.c \
 	fsload.c \
 	gzstream.c \
+	pack.c \
 	vfs_fat.c \
 	vfs_lfs.c \
 	drivers/bus/softspi.c \
@@ -127,6 +135,15 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE) \
 	ports/stm32/resethandler.o \
+
+ifeq ($(MBOOT_ENABLE_PACKING), 1)
+
+SRC_C += lib/libhydrogen/hydrogen.c
+
+CFLAGS += -DMBOOT_ENABLE_PACKING=1 -DPARTICLE -DPLATFORM_ID=3
+CFLAGS += -DMBOOT_PACK_CHUNKSIZE=$(MBOOT_PACK_CHUNKSIZE)
+CFLAGS += -DMBOOT_PACK_KEYS_FILE=\"$(MBOOT_PACK_KEYS_FILE)\"
+endif
 
 $(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\

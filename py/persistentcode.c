@@ -825,10 +825,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     save_raw_code(print, rc, &qw);
 }
 
-// here we define mp_raw_code_save_file depending on the port
-// TODO abstract this away properly
-
-#if defined(__i386__) || defined(__x86_64__) || defined(_WIN32) || defined(__unix__)
+#if MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -853,8 +850,6 @@ void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
     MP_THREAD_GIL_ENTER();
 }
 
-#else
-#error mp_raw_code_save_file not implemented for this platform
-#endif
+#endif // MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #endif // MICROPY_PERSISTENT_CODE_SAVE

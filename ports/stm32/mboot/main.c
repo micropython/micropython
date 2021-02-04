@@ -37,6 +37,7 @@
 #include "mboot.h"
 #include "powerctrl.h"
 #include "dfu.h"
+#include "pack.h"
 
 // This option selects whether to use explicit polling or IRQs for USB events.
 // In some test cases polling mode can run slightly faster, but it uses more power.
@@ -56,11 +57,17 @@
 // Configure PLL to give the desired CPU freq
 #undef MICROPY_HW_FLASH_LATENCY
 #if defined(STM32F4) || defined(STM32F7)
-#define CORE_PLL_FREQ (48000000)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+  #if MBOOT_ENABLE_PACKING
+    // With encryption/signing/compression, a faster CPU makes processing much faster.
+    #define CORE_PLL_FREQ (96000000)
+    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_3
+  #else
+    #define CORE_PLL_FREQ (48000000)
+    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+  #endif
 #elif defined(STM32H7)
-#define CORE_PLL_FREQ (96000000)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
+  #define CORE_PLL_FREQ (96000000)
+  #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
 #endif
 #undef MICROPY_HW_CLK_PLLM
 #undef MICROPY_HW_CLK_PLLN
@@ -87,7 +94,8 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
-#define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+// Global dfu state
+dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
 static void do_reset(void);
 
@@ -140,7 +148,7 @@ void HAL_Delay(uint32_t ms) {
     mp_hal_delay_ms(ms);
 }
 
-static void __fatal_error(const char *msg) {
+NORETURN static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
@@ -481,7 +489,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED;
     }
 
     *next_addr = sector_start + sector_size;
@@ -495,7 +503,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
         if (((volatile uint32_t*)sector_start)[i] != 0xffffffff) {
-            return -2;
+            return -MBOOT_ERRNO_FLASH_ERASE_FAILED;
         }
     }
 
@@ -509,7 +517,7 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_WRITE_DISALLOWED;
     }
 
     const uint32_t *src = (const uint32_t*)src8;
@@ -547,7 +555,7 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 }
 #endif
 
-int do_page_erase(uint32_t addr, uint32_t *next_addr) {
+int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
     int ret = -1;
     led0_state(LED0_STATE_ON);
 
@@ -573,7 +581,7 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     return ret;
 }
 
-void do_read(uint32_t addr, int len, uint8_t *buf) {
+void hw_read(uint32_t addr, int len, uint8_t *buf) {
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -592,7 +600,7 @@ void do_read(uint32_t addr, int len, uint8_t *buf) {
     led0_state(LED0_STATE_SLOW_FLASH);
 }
 
-int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
     int ret = -1;
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
@@ -614,6 +622,34 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
 
     led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
     return ret;
+}
+
+int do_page_erase(uint32_t addr, uint32_t *next_addr) {
+    #if MBOOT_ENABLE_PACKING
+    // Erase handled automatically for packed mode.
+    return 0;
+    #else
+    return hw_page_erase(addr, next_addr);
+    #endif
+}
+
+void do_read(uint32_t addr, int len, uint8_t *buf) {
+    #if MBOOT_ENABLE_PACKING
+    // Read disabled on packed (encrypted) mode.
+    dfu_context.status = DFU_STATUS_ERROR_FILE;
+    dfu_context.error = MBOOT_ERROR_STR_INVALID_READ_IDX;
+    led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
+    #else
+    hw_read(addr, len, buf);
+    #endif
+}
+
+int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    #if MBOOT_ENABLE_PACKING
+    return mboot_pack_write(addr, src8, len);
+    #else
+    return hw_write(addr, src8, len);
+    #endif
 }
 
 /******************************************************************************/
@@ -1068,6 +1104,16 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_ADDRESS, str_desc, length);
             return str_desc;
 
+        #if MBOOT_ENABLE_PACKING
+        case MBOOT_ERROR_STR_INVALID_SIG_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_SIG, str_desc, length);
+            return str_desc;
+
+        case MBOOT_ERROR_STR_INVALID_READ_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
+            return str_desc;
+        #endif
+
         default:
             return NULL;
     }
@@ -1388,12 +1434,23 @@ enter_bootloader:
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
     #endif
 
+    #if MBOOT_ENABLE_PACKING
+    mboot_pack_init();
+    #endif
+
     #if MBOOT_FSLOAD
     if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            fsload_process();
+            int ret = fsload_process();
+            // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
+            const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
+            if (elem_status != NULL && elem_status[-1] == 4) {
+                uint32_t *status_ptr = (uint32_t *)get_le32(&elem_status[0]);
+                LL_PWR_EnableBkUpAccess(); // In case status_ptr points to backup registers
+                *status_ptr = ret;
+            }
         }
         // Always reset because the application is expecting to resume
         led_state_all(0);

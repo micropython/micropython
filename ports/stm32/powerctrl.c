@@ -32,8 +32,18 @@
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
+#if defined(STM32H743xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
+#elif defined(STM32H747xx)
+#define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
+#endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
+// This macro returns the actual voltage scaling level factoring in the power overdrive bit.
+// If the current voltage scale is VOLTAGE_SCALE1 and PWER_ODEN bit is set return VOLTAGE_SCALE0
+// otherwise the current voltage scaling (level VOS1 to VOS3) set in PWER_CSR is returned instead.
+#define POWERCTRL_GET_VOLTAGE_SCALING()     \
+    (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ? \
+    PWR_REGULATOR_VOLTAGE_SCALE0 : (PWR->CSR1 & PWR_CSR1_ACTVOS))
 #else
 #define RCC_SR          CSR
 #define RCC_SR_SFTRSTF  RCC_CSR_SFTRSTF
@@ -492,6 +502,13 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
+    #if defined(STM32H7)
+    // Disable SysTick Interrupt
+    // Note: This seems to be required at least on the H7 REV Y,
+    // otherwise the MCU will leave stop mode immediately on entry.
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+    #endif
+
     #if defined(MICROPY_BOARD_ENTER_STOP)
     MICROPY_BOARD_ENTER_STOP
     #endif
@@ -504,6 +521,22 @@ void powerctrl_enter_stop_mode(void) {
     #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
+    #endif
+
+    #if defined(STM32H7)
+    // Save RCC CR to re-enable OSCs and PLLs after wake up from low power mode.
+    uint32_t rcc_cr = RCC->CR;
+
+    // Save the current voltage scaling level to restore after exiting low power mode.
+    uint32_t vscaling = POWERCTRL_GET_VOLTAGE_SCALING();
+
+    // If the current voltage scaling level is 0, switch to level 1 before entering low power mode.
+    if (vscaling == PWR_REGULATOR_VOLTAGE_SCALE0) {
+        __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+        // Wait for PWR_FLAG_VOSRDY
+        while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+        }
+    }
     #endif
 
     #if defined(STM32F7)
@@ -527,6 +560,17 @@ void powerctrl_enter_stop_mode(void) {
     }
 
     #else
+
+    #if defined(STM32H7)
+    // When exiting from Stop or Standby modes, the Run mode voltage scaling is reset to
+    // the default VOS3 value. Restore the voltage scaling to the previous voltage scale.
+    if (vscaling != POWERCTRL_GET_VOLTAGE_SCALING()) {
+        __HAL_PWR_VOLTAGESCALING_CONFIG(vscaling);
+        // Wait for PWR_FLAG_VOSRDY
+        while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+        }
+    }
+    #endif
 
     #if !defined(STM32L4)
     // enable clock
@@ -573,9 +617,39 @@ void powerctrl_enter_stop_mode(void) {
     #endif
 
     #if defined(STM32H7)
-    // Enable PLL3 for USB
-    RCC->CR |= RCC_CR_PLL3ON;
-    while (!(RCC->CR & RCC_CR_PLL3RDY)) {
+    // Enable HSI
+    if (rcc_cr & RCC_CR_HSION) {
+        RCC->CR |= RCC_CR_HSION;
+        while (!(RCC->CR & RCC_CR_HSIRDY)) {
+        }
+    }
+
+    // Enable CSI
+    if (rcc_cr & RCC_CR_CSION) {
+        RCC->CR |= RCC_CR_CSION;
+        while (!(RCC->CR & RCC_CR_CSIRDY)) {
+        }
+    }
+
+    // Enable HSI48
+    if (rcc_cr & RCC_CR_HSI48ON) {
+        RCC->CR |= RCC_CR_HSI48ON;
+        while (!(RCC->CR & RCC_CR_HSI48RDY)) {
+        }
+    }
+
+    // Enable PLL2
+    if (rcc_cr & RCC_CR_PLL2ON) {
+        RCC->CR |= RCC_CR_PLL2ON;
+        while (!(RCC->CR & RCC_CR_PLL2RDY)) {
+        }
+    }
+
+    // Enable PLL3
+    if (rcc_cr & RCC_CR_PLL3ON) {
+        RCC->CR |= RCC_CR_PLL3ON;
+        while (!(RCC->CR & RCC_CR_PLL3RDY)) {
+        }
     }
     #endif
 
@@ -590,6 +664,11 @@ void powerctrl_enter_stop_mode(void) {
 
     #if defined(MICROPY_BOARD_LEAVE_STOP)
     MICROPY_BOARD_LEAVE_STOP
+    #endif
+
+    #if defined(STM32H7)
+    // Enable SysTick Interrupt
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     #endif
 
     // Enable IRQs now that all clocks are reconfigured
@@ -622,6 +701,10 @@ void powerctrl_enter_standby_mode(void) {
     // save RTC interrupts
     uint32_t save_irq_bits = RTC->CR & CR_BITS;
 
+    // disable register write protection
+    RTC->WPR = 0xca;
+    RTC->WPR = 0x53;
+
     // disable RTC interrupts
     RTC->CR &= ~CR_BITS;
 
@@ -634,7 +717,8 @@ void powerctrl_enter_standby_mode(void) {
     // clear global wake-up flag
     PWR->CR2 |= PWR_CR2_CWUPF6 | PWR_CR2_CWUPF5 | PWR_CR2_CWUPF4 | PWR_CR2_CWUPF3 | PWR_CR2_CWUPF2 | PWR_CR2_CWUPF1;
     #elif defined(STM32H7)
-    // TODO
+    EXTI_D1->PR1 = 0x3fffff;
+    PWR->WKUPCR |= PWR_WAKEUP_FLAG1 | PWR_WAKEUP_FLAG2 | PWR_WAKEUP_FLAG3 | PWR_WAKEUP_FLAG4 | PWR_WAKEUP_FLAG5 | PWR_WAKEUP_FLAG6;
     #elif defined(STM32L4) || defined(STM32WB)
     // clear all wake-up flags
     PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
@@ -646,6 +730,9 @@ void powerctrl_enter_standby_mode(void) {
 
     // enable previously-enabled RTC interrupts
     RTC->CR |= save_irq_bits;
+
+    // enable register write protection
+    RTC->WPR = 0xff;
 
     #if defined(STM32F7)
     // Enable the internal (eg RTC) wakeup sources

@@ -39,7 +39,7 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized -Wdouble-promotion -Wsign-compare -Wfloat-conversion
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
@@ -48,9 +48,11 @@ CFLAGS += -g3
 COPT ?= -O0
 else
 COPT ?= -Os
-COPT += -fdata-sections -ffunction-sections
 COPT += -DNDEBUG
 endif
+
+# Remove unused sections.
+COPT += -fdata-sections -ffunction-sections
 
 # Always enable symbols -- They're occasionally useful, and don't make it into the
 # final .bin/.hex/.dfu so the extra size doesn't matter.
@@ -133,26 +135,59 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
-# If the variant enables it and we have libusb, enable BTStack support for USB adaptors.
+# If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 
 HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
-ifeq ($(HAVE_LIBUSB),1)
+
+# Only one stack can be enabled.
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Cannot enable both NimBLE and BTstack at the same time)
+endif
+endif
+
+# Default to btstack, but a variant (or make command line) can set NimBLE
+# explicitly (which is always via H4 UART).
+ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+endif
+endif
 
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
-
-MICROPY_BLUETOOTH_BTSTACK ?= 1
-MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+
+# Figure out which BTstack transport to use.
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+$(error Cannot enable BTstack support for USB and H4 UART at the same time)
+endif
+else
+ifeq ($(HAVE_LIBUSB),1)
+# Default to btstack-over-usb.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+else
+# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+endif
+endif
+
+# BTstack is enabled.
 GIT_SUBMODULES += lib/btstack
-
 include $(TOP)/extmod/btstack/btstack.mk
-endif
+
+else
+
+# NimBLE is enabled.
+GIT_SUBMODULES += lib/mynewt-nimble
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
+include $(TOP)/extmod/nimble/nimble.mk
 
 endif
+
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -185,7 +220,7 @@ SRC_MOD += modjni.c
 endif
 
 # source files
-SRC_C = \
+SRC_C += \
 	main.c \
 	gccollect.c \
 	unix_mphal.c \
@@ -197,9 +232,12 @@ SRC_C = \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
-	coverage.c \
 	fatfs_port.c \
-	btstack_usb.c \
+	mpbthciport.c \
+	mpbtstackport_common.c \
+	mpbtstackport_h4.c \
+	mpbtstackport_usb.c \
+	mpnimbleport.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
@@ -218,13 +256,17 @@ LIB_SRC_C += $(addprefix lib/,\
 	)
 endif
 
+SRC_CXX += \
+	$(SRC_MOD_CXX)
+
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -241,6 +283,14 @@ endif
 ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
+
+HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
+ifeq ($(HASCPP17), 1)
+	CXXFLAGS += -std=c++17
+else
+	CXXFLAGS += -std=c++11
+endif
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'

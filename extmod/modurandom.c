@@ -31,14 +31,28 @@
 
 #if MICROPY_PY_URANDOM
 
+// Work out if the seed will be set on import or not.
+#if MICROPY_MODULE_BUILTIN_INIT && defined(MICROPY_PY_URANDOM_SEED_INIT_FUNC)
+#define SEED_ON_IMPORT (1)
+#else
+#define SEED_ON_IMPORT (0)
+#endif
+
 // Yasmarang random number generator
 // by Ilya Levin
 // http://www.literatecode.com/yasmarang
 // Public Domain
 
 #if !MICROPY_ENABLE_DYNRUNTIME
+#if SEED_ON_IMPORT
+// If the state is seeded on import then keep these variables in the BSS.
+STATIC uint32_t yasmarang_pad, yasmarang_n, yasmarang_d;
+STATIC uint8_t yasmarang_dat;
+#else
+// Without seed-on-import these variables must be initialised via the data section.
 STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
+#endif
 #endif
 
 STATIC uint32_t yasmarang(void) {
@@ -83,15 +97,24 @@ STATIC mp_obj_t mod_urandom_getrandbits(mp_obj_t num_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_getrandbits_obj, mod_urandom_getrandbits);
 
-STATIC mp_obj_t mod_urandom_seed(mp_obj_t seed_in) {
-    mp_uint_t seed = mp_obj_get_int_truncated(seed_in);
+STATIC mp_obj_t mod_urandom_seed(size_t n_args, const mp_obj_t *args) {
+    mp_uint_t seed;
+    if (n_args == 0 || args[0] == mp_const_none) {
+        #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+        seed = MICROPY_PY_URANDOM_SEED_INIT_FUNC;
+        #else
+        mp_raise_ValueError(MP_ERROR_TEXT("no default seed"));
+        #endif
+    } else {
+        seed = mp_obj_get_int_truncated(args[0]);
+    }
     yasmarang_pad = seed;
     yasmarang_n = 69;
     yasmarang_d = 233;
     yasmarang_dat = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_seed_obj, mod_urandom_seed);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_urandom_seed_obj, 0, 1, mod_urandom_seed);
 
 #if MICROPY_PY_URANDOM_EXTRA_FUNCS
 
@@ -189,9 +212,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_urandom_uniform_obj, mod_urandom_uniform);
 
 #endif // MICROPY_PY_URANDOM_EXTRA_FUNCS
 
-#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+#if SEED_ON_IMPORT
 STATIC mp_obj_t mod_urandom___init__() {
-    mod_urandom_seed(MP_OBJ_NEW_SMALL_INT(MICROPY_PY_URANDOM_SEED_INIT_FUNC));
+    // This module may be imported by more than one name so need to ensure
+    // that it's only ever seeded once.
+    static bool seeded = false;
+    if (!seeded) {
+        seeded = true;
+        mod_urandom_seed(0, NULL);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__);
@@ -200,7 +229,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__)
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_urandom_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_urandom) },
-    #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+    #if SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&mod_urandom___init___obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_getrandbits), MP_ROM_PTR(&mod_urandom_getrandbits_obj) },

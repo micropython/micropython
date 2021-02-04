@@ -188,7 +188,7 @@ Few notes:
 1. Step 5 in the sequence above assumes that the distribution package
    is available from PyPI. If that is not the case, you would need
    to copy Python source files manually to ``modules/`` subdirectory
-   of the port port directory. (Note that upip does not support
+   of the port directory. (Note that upip does not support
    installing from e.g. version control repositories).
 2. The firmware for baremetal devices usually has size restrictions,
    so adding too many frozen modules may overflow it. Usually, you

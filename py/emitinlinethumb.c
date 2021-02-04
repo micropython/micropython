@@ -108,7 +108,7 @@ STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
-        if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
+        if (!(strlen(p) == 2 && p[0] == 'r' && (mp_uint_t)p[1] == '0' + i)) {
             emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence r0 to r3"));
             return 0;
         }
@@ -573,7 +573,11 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, op_len == 5 && op_str[4] == 'w')) {
+            bool wide = op_len == 5 && op_str[4] == 'w';
+            if (wide && !ARMV7M) {
+                goto unknown_op;
+            }
+            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, wide)) {
                 goto branch_not_in_range;
             }
         } else if (ARMV7M && op_str[0] == 'i' && op_str[1] == 't') {
@@ -701,23 +705,24 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (op == MP_QSTR_sub) {
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
-            } else if (ARMV7M && op == MP_QSTR_movw) {
+            #if ARMV7M
+            } else if (op == MP_QSTR_movw) {
                 op_code = ASM_THUMB_OP_MOVW;
                 mp_uint_t reg_dest;
             op_movw_movt:
                 reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, op_code, reg_dest, i_src);
-            } else if (ARMV7M && op == MP_QSTR_movt) {
+            } else if (op == MP_QSTR_movt) {
                 op_code = ASM_THUMB_OP_MOVT;
                 goto op_movw_movt;
-            } else if (ARMV7M && op == MP_QSTR_movwt) {
+            } else if (op == MP_QSTR_movwt) {
                 // this is a convenience instruction
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 uint32_t i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src & 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0xffff);
-            } else if (ARMV7M && op == MP_QSTR_ldrex) {
+            } else if (op == MP_QSTR_ldrex) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;
                 if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
@@ -725,6 +730,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                     asm_thumb_op32(&emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
+            #endif
             } else {
                 // search table for ldr/str instructions
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_9_10_op_table); i++) {

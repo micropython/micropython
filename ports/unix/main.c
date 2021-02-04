@@ -133,7 +133,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         // allow to print the parse tree in the coverage build
         if (mp_verbose_flag >= 3) {
             printf("----------------\n");
-            mp_parse_node_print(parse_tree.root, 0);
+            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
             printf("----------------\n");
         }
         #endif
@@ -531,7 +531,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if defined(MICROPY_UNIX_COVERAGE)
     {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
-        mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
+        mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
     #endif
 
@@ -544,9 +546,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // test_obj.attr = 42
     //
     // mp_obj_t test_class_type, test_class_instance;
-    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    // test_class_type = mp_obj_new_type(qstr_from_str("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(qstr_from_str("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, qstr_from_str("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");

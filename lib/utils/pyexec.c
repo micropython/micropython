@@ -56,6 +56,7 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_RAW_CODE (8)
 #define EXEC_FLAG_SOURCE_IS_VSTR (16)
 #define EXEC_FLAG_SOURCE_IS_FILENAME (32)
+#define EXEC_FLAG_SOURCE_IS_READER (64)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -68,10 +69,15 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     uint32_t start = 0;
     #endif
 
+    #ifdef MICROPY_BOARD_BEFORE_PYTHON_EXEC
+    MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
+    #endif
+
     // by default a SystemExit exception returns 0
     pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
+    nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
@@ -86,6 +92,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
                 const vstr_t *vstr = source;
                 lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
+            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+                lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
             } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
                 lex = mp_lexer_new_from_file(source);
             } else {
@@ -117,6 +125,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         // uncaught exception
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
+
+        if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+            const mp_reader_t *reader = source;
+            reader->close(reader->data);
+        }
+
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
@@ -157,10 +171,107 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         mp_hal_stdout_tx_strn("\x04", 1);
     }
 
+    #ifdef MICROPY_BOARD_AFTER_PYTHON_EXEC
+    MICROPY_BOARD_AFTER_PYTHON_EXEC(input_kind, exec_flags, nlr.ret_val, &ret);
+    #endif
+
     return ret;
 }
 
 #if MICROPY_ENABLE_COMPILER
+
+// This can be configured by a port (and even configured to a function to be
+// computed dynamically) to indicate the maximum number of bytes that can be
+// held in the stdin buffer.
+#ifndef MICROPY_REPL_STDIN_BUFFER_MAX
+#define MICROPY_REPL_STDIN_BUFFER_MAX (256)
+#endif
+
+typedef struct _mp_reader_stdin_t {
+    bool eof;
+    uint16_t window_max;
+    uint16_t window_remain;
+} mp_reader_stdin_t;
+
+STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
+    mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
+
+    if (reader->eof) {
+        return MP_READER_EOF;
+    }
+
+    int c = mp_hal_stdin_rx_chr();
+
+    if (c == CHAR_CTRL_C || c == CHAR_CTRL_D) {
+        reader->eof = true;
+        mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
+        if (c == CHAR_CTRL_C) {
+            #if MICROPY_KBD_EXCEPTION
+            MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+            nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+            #else
+            mp_raise_type(&mp_type_KeyboardInterrupt);
+            #endif
+        } else {
+            return MP_READER_EOF;
+        }
+    }
+
+    if (--reader->window_remain == 0) {
+        mp_hal_stdout_tx_strn("\x01", 1); // indicate window available to host
+        reader->window_remain = reader->window_max;
+    }
+
+    return c;
+}
+
+STATIC void mp_reader_stdin_close(void *data) {
+    mp_reader_stdin_t *reader = (mp_reader_stdin_t *)data;
+    if (!reader->eof) {
+        reader->eof = true;
+        mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
+        for (;;) {
+            int c = mp_hal_stdin_rx_chr();
+            if (c == CHAR_CTRL_C || c == CHAR_CTRL_D) {
+                break;
+            }
+        }
+    }
+}
+
+STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_stdin, uint16_t buf_max) {
+    // Make flow-control window half the buffer size, and indicate to the host that 2x windows are
+    // free (sending the window size implicitly indicates that a window is free, and then the 0x01
+    // indicates that another window is free).
+    size_t window = buf_max / 2;
+    char reply[3] = { window & 0xff, window >> 8, 0x01 };
+    mp_hal_stdout_tx_strn(reply, sizeof(reply));
+
+    reader_stdin->eof = false;
+    reader_stdin->window_max = window;
+    reader_stdin->window_remain = window;
+    reader->data = reader_stdin;
+    reader->readbyte = mp_reader_stdin_readbyte;
+    reader->close = mp_reader_stdin_close;
+}
+
+STATIC int do_reader_stdin(int c) {
+    if (c != 'A') {
+        // Unsupported command.
+        mp_hal_stdout_tx_strn("R\x00", 2);
+        return 0;
+    }
+
+    // Indicate reception of command.
+    mp_hal_stdout_tx_strn("R\x01", 2);
+
+    mp_reader_t reader;
+    mp_reader_stdin_t reader_stdin;
+    mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
+    int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+    return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
+}
+
 #if MICROPY_REPL_EVENT_DRIVEN
 
 typedef struct _repl_t {
@@ -194,6 +305,13 @@ void pyexec_event_repl_init(void) {
 STATIC int pyexec_raw_repl_process_char(int c) {
     if (c == CHAR_CTRL_A) {
         // reset raw REPL
+        if (vstr_len(MP_STATE_VM(repl_line)) == 2 && vstr_str(MP_STATE_VM(repl_line))[0] == CHAR_CTRL_E) {
+            int ret = do_reader_stdin(vstr_str(MP_STATE_VM(repl_line))[1]);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
+            goto reset;
+        }
         mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
         goto reset;
     } else if (c == CHAR_CTRL_B) {
@@ -379,6 +497,15 @@ raw_repl_reset:
             int c = mp_hal_stdin_rx_chr();
             if (c == CHAR_CTRL_A) {
                 // reset raw REPL
+                if (vstr_len(&line) == 2 && vstr_str(&line)[0] == CHAR_CTRL_E) {
+                    int ret = do_reader_stdin(vstr_str(&line)[1]);
+                    if (ret & PYEXEC_FORCED_EXIT) {
+                        return ret;
+                    }
+                    vstr_reset(&line);
+                    mp_hal_stdout_tx_str(">");
+                    continue;
+                }
                 goto raw_repl_reset;
             } else if (c == CHAR_CTRL_B) {
                 // change to friendly REPL
@@ -418,12 +545,6 @@ raw_repl_reset:
 int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
-
-    #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
-    // in host mode, we enable the LCD for the repl
-    mp_obj_t lcd_o = mp_call_function_0(mp_load_name(qstr_from_str("LCD")));
-    mp_call_function_1(mp_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
-    #endif
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");

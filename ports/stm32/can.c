@@ -226,8 +226,8 @@ int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t 
 HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
     uint32_t transmitmailbox;
     uint32_t tickstart;
-    uint32_t rqcpflag;
-    uint32_t txokflag;
+    uint32_t rqcpflag = 0;
+    uint32_t txokflag = 0;
 
     // Check the parameters
     assert_param(IS_CAN_IDTYPE(hcan->pTxMsg->IDE));

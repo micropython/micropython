@@ -253,6 +253,7 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(self, device, baudrate=115200, user="micro", password="python", wait=0):
+        self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
@@ -359,6 +360,41 @@ class Pyboard:
         # return normal and error output
         return data, data_err
 
+    def raw_paste_write(self, command_bytes):
+        # Read initial header, with window size.
+        data = self.serial.read(2)
+        window_size = data[0] | data[1] << 8
+        window_remain = window_size
+
+        # Write out the command_bytes data.
+        i = 0
+        while i < len(command_bytes):
+            while window_remain == 0 or self.serial.inWaiting():
+                data = self.serial.read(1)
+                if data == b"\x01":
+                    # Device indicated that a new window of data can be sent.
+                    window_remain += window_size
+                elif data == b"\x04":
+                    # Device indicated abrupt end.  Acknowledge it and finish.
+                    self.serial.write(b"\x04")
+                    return
+                else:
+                    # Unexpected data from device.
+                    raise PyboardError("unexpected read during raw paste: {}".format(data))
+            # Send out as much data as possible that fits within the allowed window.
+            b = command_bytes[i : min(i + window_remain, len(command_bytes))]
+            self.serial.write(b)
+            window_remain -= len(b)
+            i += len(b)
+
+        # Indicate end of data.
+        self.serial.write(b"\x04")
+
+        # Wait for device to acknowledge end of data.
+        data = self.read_until(1, b"\x04")
+        if not data.endswith(b"\x04"):
+            raise PyboardError("could not complete raw paste: {}".format(data))
+
     def exec_raw_no_follow(self, command):
         if isinstance(command, bytes):
             command_bytes = command
@@ -370,7 +406,26 @@ class Pyboard:
         if not data.endswith(b">"):
             raise PyboardError("could not enter raw repl")
 
-        # write command
+        if self.use_raw_paste:
+            # Try to enter raw-paste mode.
+            self.serial.write(b"\x05A\x01")
+            data = self.serial.read(2)
+            if data == b"R\x00":
+                # Device understood raw-paste command but doesn't support it.
+                pass
+            elif data == b"R\x01":
+                # Device supports raw-paste mode, write out the command using this mode.
+                return self.raw_paste_write(command_bytes)
+            else:
+                # Device doesn't support raw-paste, fall back to normal raw REPL.
+                data = self.read_until(1, b"w REPL; CTRL-B to exit\r\n>")
+                if not data.endswith(b"w REPL; CTRL-B to exit\r\n>"):
+                    print(data)
+                    raise PyboardError("could not enter raw repl")
+            # Don't try to use raw-paste mode again for this connection.
+            self.use_raw_paste = False
+
+        # Write command using standard raw REPL, 256 bytes every 10ms.
         for i in range(0, len(command_bytes), 256):
             self.serial.write(command_bytes[i : min(i + 256, len(command_bytes))])
             time.sleep(0.01)

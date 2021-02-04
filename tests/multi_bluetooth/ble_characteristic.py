@@ -31,60 +31,55 @@ SERVICE = (
 )
 SERVICES = (SERVICE,)
 
-waiting_event = None
-waiting_data = None
-value_handle = 0
+waiting_events = {}
 
 
 def irq(event, data):
-    global waiting_event, waiting_data, value_handle
     if event == _IRQ_CENTRAL_CONNECT:
         print("_IRQ_CENTRAL_CONNECT")
+        waiting_events[event] = data[0]
     elif event == _IRQ_CENTRAL_DISCONNECT:
         print("_IRQ_CENTRAL_DISCONNECT")
     elif event == _IRQ_GATTS_WRITE:
         print("_IRQ_GATTS_WRITE", ble.gatts_read(data[-1]))
     elif event == _IRQ_PERIPHERAL_CONNECT:
         print("_IRQ_PERIPHERAL_CONNECT")
+        waiting_events[event] = data[0]
     elif event == _IRQ_PERIPHERAL_DISCONNECT:
         print("_IRQ_PERIPHERAL_DISCONNECT")
     elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
         # conn_handle, def_handle, value_handle, properties, uuid = data
         if data[-1] == CHAR_UUID:
             print("_IRQ_GATTC_CHARACTERISTIC_RESULT", data[-1])
-            value_handle = data[2]
+            waiting_events[event] = data[2]
+        else:
+            return
+    elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
+        print("_IRQ_GATTC_CHARACTERISTIC_DONE")
     elif event == _IRQ_GATTC_READ_RESULT:
-        print("_IRQ_GATTC_READ_RESULT", data[-1])
+        print("_IRQ_GATTC_READ_RESULT", bytes(data[-1]))
     elif event == _IRQ_GATTC_READ_DONE:
         print("_IRQ_GATTC_READ_DONE", data[-1])
     elif event == _IRQ_GATTC_WRITE_DONE:
         print("_IRQ_GATTC_WRITE_DONE", data[-1])
     elif event == _IRQ_GATTC_NOTIFY:
-        print("_IRQ_GATTC_NOTIFY", data[-1])
+        print("_IRQ_GATTC_NOTIFY", bytes(data[-1]))
     elif event == _IRQ_GATTC_INDICATE:
-        print("_IRQ_GATTC_INDICATE", data[-1])
+        print("_IRQ_GATTC_INDICATE", bytes(data[-1]))
     elif event == _IRQ_GATTS_INDICATE_DONE:
         print("_IRQ_GATTS_INDICATE_DONE", data[-1])
 
-    if waiting_event is not None:
-        if (isinstance(waiting_event, int) and event == waiting_event) or (
-            not isinstance(waiting_event, int) and waiting_event(event, data)
-        ):
-            waiting_event = None
-            waiting_data = data
+    if event not in waiting_events:
+        waiting_events[event] = None
 
 
 def wait_for_event(event, timeout_ms):
-    global waiting_event, waiting_data
-    waiting_event = event
-    waiting_data = None
-
     t0 = time.ticks_ms()
     while time.ticks_diff(time.ticks_ms(), t0) < timeout_ms:
-        if waiting_data:
-            return True
+        if event in waiting_events:
+            return waiting_events.pop(event)
         machine.idle()
-    return False
+    raise ValueError("Timeout waiting for {}".format(event))
 
 
 # Acting in peripheral role.
@@ -99,39 +94,35 @@ def instance0():
         ble.gatts_write(char_handle, "periph0")
 
         # Wait for central to connect to us.
-        if not wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS):
-            return
-        conn_handle, _, _ = waiting_data
+        conn_handle = wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
 
-        # Wait for a write to the characteristic from the central.
+        # A
+
+        # Wait for a write to the characteristic from the central,
+        # then reply with a notification.
         wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
-
-        # Wait a bit, then write the characteristic and notify it.
-        time.sleep_ms(1000)
         print("gatts_write")
         ble.gatts_write(char_handle, "periph1")
         print("gatts_notify")
         ble.gatts_notify(conn_handle, char_handle)
 
-        # Wait for a write to the characteristic from the central.
-        wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
+        # B
 
-        # Wait a bit, then notify a new value on the characteristic.
-        time.sleep_ms(1000)
+        # Wait for a write to the characteristic from the central,
+        # then reply with value-included notification.
+        wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
         print("gatts_notify")
         ble.gatts_notify(conn_handle, char_handle, "periph2")
 
-        # Wait for a write to the characteristic from the central.
-        wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
+        # C
 
-        # Wait a bit, then notify a new value on the characteristic.
-        time.sleep_ms(1000)
+        # Wait for a write to the characteristic from the central,
+        # then reply with an indication.
+        wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
         print("gatts_write")
         ble.gatts_write(char_handle, "periph3")
         print("gatts_indicate")
         ble.gatts_indicate(conn_handle, char_handle)
-
-        # Wait for the indicate ack.
         wait_for_event(_IRQ_GATTS_INDICATE_DONE, TIMEOUT_MS)
 
         # Wait for the central to disconnect.
@@ -146,50 +137,46 @@ def instance1():
     try:
         # Connect to peripheral and then disconnect.
         print("gap_connect")
-        ble.gap_connect(0, BDADDR)
-        if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
-            return
-        conn_handle, _, _ = waiting_data
+        ble.gap_connect(*BDADDR)
+        conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
 
         # Discover characteristics.
         ble.gattc_discover_characteristics(conn_handle, 1, 65535)
-        wait_for_event(lambda event, data: value_handle, TIMEOUT_MS)
+        value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
 
         # Issue read of characteristic, should get initial value.
         print("gattc_read")
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
 
-        # Write to the characteristic, and ask for a response.
+        # Write to the characteristic, which will trigger a notification.
         print("gattc_write")
         ble.gattc_write(conn_handle, value_handle, "central0", 1)
         wait_for_event(_IRQ_GATTC_WRITE_DONE, TIMEOUT_MS)
-
-        # Wait for a notify, then read new value.
+        # A
         wait_for_event(_IRQ_GATTC_NOTIFY, TIMEOUT_MS)
-        print("gattc_read")
+        print("gattc_read")  # Read the new value set immediately before notification.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
 
-        # Write to the characteristic, and ask for a response.
+        # Write to the characteristic, which will trigger a value-included notification.
         print("gattc_write")
         ble.gattc_write(conn_handle, value_handle, "central1", 1)
         wait_for_event(_IRQ_GATTC_WRITE_DONE, TIMEOUT_MS)
-
-        # Wait for a notify (should have new data), then read old value (should be unchanged).
+        # B
         wait_for_event(_IRQ_GATTC_NOTIFY, TIMEOUT_MS)
-        print("gattc_read")
+        print("gattc_read")  # Read value should be unchanged.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
 
-        # Write to the characteristic, and ask for a response.
+        # Write to the characteristic, which will trigger an indication.
         print("gattc_write")
         ble.gattc_write(conn_handle, value_handle, "central2", 1)
         wait_for_event(_IRQ_GATTC_WRITE_DONE, TIMEOUT_MS)
-
-        # Wait for a indicate (should have new data), then read new value.
+        # C
         wait_for_event(_IRQ_GATTC_INDICATE, TIMEOUT_MS)
-        print("gattc_read")
+        print("gattc_read")  # Read the new value set immediately before indication.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
 

@@ -249,16 +249,15 @@ ESP32 specific ADC class method reference:
 Software SPI bus
 ----------------
 
-There are two SPI drivers. One is implemented in software (bit-banging)
-and works on all pins, and is accessed via the :ref:`machine.SPI <machine.SPI>`
-class::
+Software SPI (using bit-banging) works on all pins, and is accessed via the
+:ref:`machine.SoftSPI <machine.SoftSPI>` class::
 
-    from machine import Pin, SPI
+    from machine import Pin, SoftSPI
 
-    # construct an SPI bus on the given pins
+    # construct a SoftSPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -298,38 +297,53 @@ mosi   13           23
 miso   12           19
 =====  ===========  ============
 
-Hardware SPI has the same methods as Software SPI above::
+Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class and
+has the same methods as software SPI above::
 
     from machine import Pin, SPI
 
     hspi = SPI(1, 10000000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
     vspi = SPI(2, baudrate=80000000, polarity=0, phase=0, bits=8, firstbit=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
 
+Software I2C bus
+----------------
 
-I2C bus
--------
+Software I2C (using bit-banging) works on all output-capable pins, and is
+accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
-The I2C driver has both software and hardware implementations, and the two
-hardware peripherals have identifiers 0 and 1.  Any available output-capable
-pins can be used for SCL and SDA.  The driver is accessed via the
-:ref:`machine.I2C <machine.I2C>` class::
+    from machine import Pin, SoftI2C
 
-    from machine import Pin, I2C
+    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100000)
 
-    # construct a software I2C bus
-    i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    i2c.scan()              # scan for devices
 
-    # construct a hardware I2C bus
-    i2c = I2C(0)
-    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
-
-    i2c.scan()              # scan for slave devices
-
-    i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
-    i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a
+    i2c.readfrom(0x3a, 4)   # read 4 bytes from device with address 0x3a
+    i2c.writeto(0x3a, '12') # write '12' to device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+
+Hardware I2C bus
+----------------
+
+There are two hardware I2C peripherals with identifiers 0 and 1.  Any available
+output-capable pins can be used for SCL and SDA but the defaults are given
+below.
+
+=====  ===========  ============
+\      I2C(0)       I2C(1)
+=====  ===========  ============
+scl    18           25
+sda    19           26
+=====  ===========  ============
+
+The driver is accessed via the :ref:`machine.I2C <machine.I2C>` class and
+has the same methods as software I2C above::
+
+    from machine import Pin, I2C
+
+    i2c = I2C(0)
+    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
 
 Real time clock (RTC)
 ---------------------

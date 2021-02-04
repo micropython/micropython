@@ -38,7 +38,15 @@ test_script:
 - ps: |
     cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
     & $env:MICROPY_CPYTHON3 run-tests
+    if ($LASTEXITCODE -ne 0) {
+      & $env:MICROPY_CPYTHON3 run-tests --print-failures
+      throw "Test failure"
+    }
     & $env:MICROPY_CPYTHON3 run-tests --via-mpy -d basics float micropython
+    if ($LASTEXITCODE -ne 0) {
+      & $env:MICROPY_CPYTHON3 run-tests --print-failures
+      throw "Test failure"
+    }
 
 # After the build/test phase for the MSVC build completes,
 # build and test with mingw-w64, release versions only.
@@ -69,9 +77,11 @@ after_test:
     }
     & $env:MICROPY_CPYTHON3 $testArgs
     if ($LASTEXITCODE -ne 0) {
-      throw "$env:MSYSTEM tests exited with code $LASTEXITCODE"
+      & $env:MICROPY_CPYTHON3 run-tests --print-failures
+      throw "Test failure"
     }
     & $env:MICROPY_CPYTHON3 ($testArgs + @('--via-mpy', '-d', 'basics', 'float', 'micropython'))
     if ($LASTEXITCODE -ne 0) {
-      throw "$env:MSYSTEM mpy-cross tests exited with code $LASTEXITCODE"
+      & $env:MICROPY_CPYTHON3 run-tests --print-failures
+      throw "Test failure"
     }

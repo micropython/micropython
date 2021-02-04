@@ -182,7 +182,7 @@ ifeq ($(BTYPE), release)
 CFLAGS += -DNDEBUG
 else
 ifeq ($(BTYPE), debug)
-CFLAGS += -DNDEBUG
+CFLAGS += -DDEBUG
 else
 $(error Invalid BTYPE specified)
 endif

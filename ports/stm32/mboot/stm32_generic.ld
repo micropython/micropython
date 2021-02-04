@@ -6,11 +6,11 @@
 MEMORY
 {
     FLASH_BL (rx)   : ORIGIN = 0x08000000, LENGTH = 32K /* sector 0 (can be 32K) */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 96K
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 120K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 2K;
+_minimum_stack_size = 8K;
 
 /* Define tho top end of the stack.  The stack is full descending so begins just
    above last byte of RAM.  Note that EABI requires the stack to be 8-byte

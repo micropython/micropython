@@ -36,10 +36,45 @@
 #define ELEM_DATA_START (&_estack[0])
 #define ELEM_DATA_MAX (&_estack[ELEM_DATA_SIZE])
 
+#define NORETURN __attribute__((noreturn))
+#define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+enum {
+    MBOOT_ERRNO_FLASH_ERASE_DISALLOWED = 200,
+    MBOOT_ERRNO_FLASH_ERASE_FAILED,
+    MBOOT_ERRNO_FLASH_WRITE_DISALLOWED,
+
+    MBOOT_ERRNO_DFU_INVALID_HEADER = 210,
+    MBOOT_ERRNO_DFU_INVALID_TARGET,
+    MBOOT_ERRNO_DFU_INVALID_SIZE,
+    MBOOT_ERRNO_DFU_TOO_MANY_TARGETS,
+    MBOOT_ERRNO_DFU_READ_ERROR,
+
+    MBOOT_ERRNO_FSLOAD_NO_FSLOAD = 220,
+    MBOOT_ERRNO_FSLOAD_NO_MOUNT,
+    MBOOT_ERRNO_FSLOAD_INVALID_MOUNT,
+
+    MBOOT_ERRNO_PACK_INVALID_ADDR = 230,
+    MBOOT_ERRNO_PACK_INVALID_CHUNK,
+    MBOOT_ERRNO_PACK_INVALID_VERSION,
+    MBOOT_ERRNO_PACK_DECRYPT_FAILED,
+    MBOOT_ERRNO_PACK_SIGN_FAILED,
+
+    MBOOT_ERRNO_VFS_FAT_MOUNT_FAILED = 240,
+    MBOOT_ERRNO_VFS_FAT_OPEN_FAILED,
+    MBOOT_ERRNO_VFS_LFS1_MOUNT_FAILED,
+    MBOOT_ERRNO_VFS_LFS1_OPEN_FAILED,
+    MBOOT_ERRNO_VFS_LFS2_MOUNT_FAILED,
+    MBOOT_ERRNO_VFS_LFS2_OPEN_FAILED,
+
+    MBOOT_ERRNO_GUNZIP_FAILED = 250,
+};
+
 enum {
     ELEM_TYPE_END = 1,
     ELEM_TYPE_MOUNT,
     ELEM_TYPE_FSLOAD,
+    ELEM_TYPE_STATUS,
 };
 
 enum {
@@ -52,6 +87,10 @@ extern uint8_t _estack[ELEM_DATA_SIZE];
 
 uint32_t get_le32(const uint8_t *b);
 void led_state_all(unsigned int mask);
+
+int hw_page_erase(uint32_t addr, uint32_t *next_addr);
+void hw_read(uint32_t addr, int len, uint8_t *buf);
+int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
 void do_read(uint32_t addr, int len, uint8_t *buf);

@@ -63,8 +63,6 @@
 
 #endif
 
-STATIC const mp_obj_type_t machine_hard_i2c_type;
-
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
     nrfx_twi_t    p_twi;  // Driver instance
@@ -96,6 +94,8 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 /* MicroPython bindings for machine API                                       */
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+
     enum { ARG_id, ARG_scl, ARG_sda };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -161,13 +161,13 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer_single = machine_hard_i2c_transfer_single,
 };
 
-STATIC const mp_obj_type_t machine_hard_i2c_type = {
+const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_i2c_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_I2C

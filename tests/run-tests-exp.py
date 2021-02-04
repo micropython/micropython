@@ -5,7 +5,7 @@
 # This script is intended to be run by the same interpreter executable
 # which is to be tested, so should use minimal language functionality.
 #
-import sys
+import usys as sys
 import uos as os
 
 

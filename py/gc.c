@@ -294,11 +294,12 @@ STATIC void gc_sweep(void) {
                 }
                 #endif
                 free_tail = 1;
-                DEBUG_printf("gc_sweep(%p)\n", PTR_FROM_BLOCK(block));
+                DEBUG_printf("gc_sweep(%p)\n", (void *)PTR_FROM_BLOCK(block));
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
-            // fall through to free the head
+                // fall through to free the head
+                MP_FALLTHROUGH
 
             case AT_TAIL:
                 if (free_tail) {

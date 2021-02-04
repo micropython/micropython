@@ -916,6 +916,17 @@ def freeze_mpy(base_qstrs, raw_codes):
         print("    &raw_code_%s," % rc.escaped_name)
     print("};")
 
+    # If a port defines MICROPY_FROZEN_LIST_ITEM then list all modules wrapped in that macro.
+    print("#ifdef MICROPY_FROZEN_LIST_ITEM")
+    for rc in raw_codes:
+        module_name = rc.source_file.str
+        if module_name.endswith("/__init__.py"):
+            short_name = module_name[: -len("/__init__.py")]
+        else:
+            short_name = module_name[: -len(".py")]
+        print('MICROPY_FROZEN_LIST_ITEM("%s", "%s")' % (short_name, module_name))
+    print("#endif")
+
 
 def merge_mpy(raw_codes, output_file):
     assert len(raw_codes) <= 31  # so var-uints all fit in 1 byte
@@ -938,7 +949,7 @@ def merge_mpy(raw_codes, output_file):
         merged_mpy.extend(header)
 
         bytecode = bytearray()
-        bytecode_len = 6 + len(raw_codes) * 4 + 2
+        bytecode_len = 6 + len(raw_codes) * 5 + 2
         bytecode.append(bytecode_len << 2)  # kind and length
         bytecode.append(0b00000000)  # signature prelude
         bytecode.append(0b00001000)  # size prelude
@@ -947,7 +958,7 @@ def merge_mpy(raw_codes, output_file):
         for idx in range(len(raw_codes)):
             bytecode.append(0x32)  # MP_BC_MAKE_FUNCTION
             bytecode.append(idx)  # index raw code
-            bytecode.extend(b"\x34\x00")  # MP_BC_CALL_FUNCTION, 0 args
+            bytecode.extend(b"\x34\x00\x59")  # MP_BC_CALL_FUNCTION, 0 args, MP_BC_POP_TOP
         bytecode.extend(b"\x51\x63")  # MP_BC_LOAD_NONE, MP_BC_RETURN_VALUE
 
         bytecode.append(0)  # n_obj

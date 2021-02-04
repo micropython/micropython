@@ -35,7 +35,7 @@
 
 typedef struct _mp_obj_sensor_t {
     mp_obj_base_t base;
-    struct device *dev;
+    const struct device *dev;
 } mp_obj_sensor_t;
 
 STATIC mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

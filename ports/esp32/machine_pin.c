@@ -150,6 +150,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // reset the pin first if this is a mode-setting init (grab it back from ADC)
+    if (args[ARG_mode].u_obj != mp_const_none) {
+        gpio_reset_pin(self->id);
+    }
+
     // configure the pin for gpio
     gpio_pad_select_gpio(self->id);
 

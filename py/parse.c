@@ -55,9 +55,6 @@
 #define RULE_ARG_RULE           (0x2000)
 #define RULE_ARG_OPT_RULE       (0x3000)
 
-// (un)comment to use rule names; for debugging
-// #define USE_RULE_NAME (1)
-
 // *FORMAT-OFF*
 
 enum {
@@ -192,7 +189,7 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #undef DEF_RULE_NC
 0;
 
-#if USE_RULE_NAME
+#if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
@@ -368,35 +365,35 @@ size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_
 }
 
 #if MICROPY_DEBUG_PRINTERS
-void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
+void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        printf("[% 4d] ", (int)((mp_parse_node_struct_t *)pn)->source_line);
+        mp_printf(print, "[% 4d] ", (int)((mp_parse_node_struct_t *)pn)->source_line);
     } else {
-        printf("       ");
+        mp_printf(print, "       ");
     }
     for (size_t i = 0; i < indent; i++) {
-        printf(" ");
+        mp_printf(print, " ");
     }
     if (MP_PARSE_NODE_IS_NULL(pn)) {
-        printf("NULL\n");
+        mp_printf(print, "NULL\n");
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
-        printf("int(" INT_FMT ")\n", arg);
+        mp_printf(print, "int(" INT_FMT ")\n", arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID:
-                printf("id(%s)\n", qstr_str(arg));
+                mp_printf(print, "id(%s)\n", qstr_str(arg));
                 break;
             case MP_PARSE_NODE_STRING:
-                printf("str(%s)\n", qstr_str(arg));
+                mp_printf(print, "str(%s)\n", qstr_str(arg));
                 break;
             case MP_PARSE_NODE_BYTES:
-                printf("bytes(%s)\n", qstr_str(arg));
+                mp_printf(print, "bytes(%s)\n", qstr_str(arg));
                 break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
-                printf("tok(%u)\n", (uint)arg);
+                mp_printf(print, "tok(%u)\n", (uint)arg);
                 break;
         }
     } else {
@@ -404,19 +401,19 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-            printf("literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+            mp_printf(print, "literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
             #else
-            printf("literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
+            mp_printf(print, "literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            #if USE_RULE_NAME
-            printf("%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
+            #if MICROPY_DEBUG_PARSE_RULE_NAME
+            mp_printf(print, "%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #else
-            printf("rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
+            mp_printf(print, "rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #endif
             for (size_t i = 0; i < n; i++) {
-                mp_parse_node_print(pns->nodes[i], indent + 2);
+                mp_parse_node_print(print, pns->nodes[i], indent + 2);
             }
         }
     }
@@ -424,10 +421,10 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
 #endif // MICROPY_DEBUG_PRINTERS
 
 /*
-STATIC void result_stack_show(parser_t *parser) {
-    printf("result stack, most recent first\n");
+STATIC void result_stack_show(const mp_print_t *print, parser_t *parser) {
+    mp_printf(print, "result stack, most recent first\n");
     for (ssize_t i = parser->result_stack_top - 1; i >= 0; i--) {
-        mp_parse_node_print(parser->result_stack[i], 0);
+        mp_parse_node_print(print, parser->result_stack[i], 0);
     }
 }
 */

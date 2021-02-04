@@ -6,8 +6,9 @@
 
 This module provides an interface to a Bluetooth controller on a board.
 Currently this supports Bluetooth Low Energy (BLE) in Central, Peripheral,
-Broadcaster, and Observer roles, and a device may operate in multiple
-roles concurrently.
+Broadcaster, and Observer roles, as well as GATT Server and Client and L2CAP
+connection-oriented-channels. A device may operate in multiple roles
+concurrently. Pairing (and bonding) is supported on some ports.
 
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
@@ -28,15 +29,15 @@ Constructor
 Configuration
 -------------
 
-.. method:: BLE.active([active])
+.. method:: BLE.active([active], /)
 
     Optionally changes the active state of the BLE radio, and returns the
     current state.
 
     The radio must be made active before using any other methods on this class.
 
-.. method:: BLE.config('param')
-            BLE.config(param=value, ...)
+.. method:: BLE.config('param', /)
+            BLE.config(*, param=value, ...)
 
     Get or set configuration values of the BLE interface.  To get a value the
     parameter name should be quoted as a string, and just one parameter is
@@ -45,12 +46,22 @@ Configuration
 
     Currently supported values are:
 
-    - ``'mac'``: Returns the device MAC address. If a device has a fixed address
-      (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
-      address will be generated when the BLE interface is made active.
+    - ``'mac'``: The current address in use, depending on the current address mode.
+      This returns a tuple of ``(addr_type, addr)``.
 
-      **Note:** on some ports, accessing this value requires that the interface is
-      active (so that the MAC address can be queried from the controller).
+      See :meth:`gatts_write <BLE.gap_scan>` for details about address type.
+
+      This may only be queried while the interface is currently active.
+
+    - ``'addr_mode'``: Sets the address mode. Values can be:
+
+        * 0x00 - PUBLIC - Use the controller's public address.
+        * 0x01 - RANDOM - Use a generated static address.
+        * 0x02 - RPA - Use resolvable private addresses.
+        * 0x03 - NRPA - Use non-resolvable private addresses.
+
+      By default the interface mode will use a PUBLIC address if available, otherwise
+      it will use a RANDOM address.
 
     - ``'gap_name'``: Get/set the GAP device name used by service 0x1800,
       characteristic 0x2a00.  This can be set at any time and changed multiple
@@ -60,24 +71,59 @@ Configuration
       incoming events.  This buffer is global to the entire BLE driver and so
       handles incoming data for all events, including all characteristics.
       Increasing this allows better handling of bursty incoming data (for
-      example scan results) and the ability for a central role to receive
-      larger characteristic values.
+      example scan results) and the ability to receive larger characteristic values.
+
+    - ``'mtu'``: Get/set the MTU that will be used during a ATT MTU exchange. The
+      resulting MTU will be the minimum of this and the remote device's MTU.
+      ATT MTU exchange will not happen automatically (unless the remote device initiates
+      it), and must be manually initiated with
+      :meth:`gattc_exchange_mtu<BLE.gattc_exchange_mtu>`.
+      Use the ``_IRQ_MTU_EXCHANGED`` event to discover the MTU for a given connection.
+
+    - ``'bond'``: Sets whether bonding will be enabled during pairing. When
+      enabled, pairing requests will set the "bond" flag and the keys will be stored
+      by both devices.
+
+    - ``'mitm'``: Sets whether MITM-protection is required for pairing.
+
+    - ``'io'``: Sets the I/O capabilities of this device.
+
+      Available options are::
+
+        _IO_CAPABILITY_DISPLAY_ONLY = const(0)
+        _IO_CAPABILITY_DISPLAY_YESNO = const(1)
+        _IO_CAPABILITY_KEYBOARD_ONLY = const(2)
+        _IO_CAPABILITY_NO_INPUT_OUTPUT = const(3)
+        _IO_CAPABILITY_KEYBOARD_DISPLAY = const(4)
+
+    - ``'le_secure'``: Sets whether "LE Secure" pairing is required. Default is
+      false (i.e. allow "Legacy Pairing").
 
 Event Handling
 --------------
 
-.. method:: BLE.irq(handler)
+.. method:: BLE.irq(handler, /)
 
     Registers a callback for events from the BLE stack. The *handler* takes two
     arguments, ``event`` (which will be one of the codes below) and ``data``
     (which is an event-specific tuple of values).
 
-    **Note:** the ``addr``, ``adv_data``, ``char_data``, ``notify_data``, and
-    ``uuid`` entries in the tuples are references to data managed by the
-    :mod:`ubluetooth` module (i.e. the same instance will be re-used across
-    multiple calls to the event handler). If your program wants to use this
-    data outside of the handler, then it must copy them first, e.g. by using
-    ``bytes(addr)`` or ``bluetooth.UUID(uuid)``.
+    **Note:** As an optimisation to prevent unnecessary allocations, the ``addr``,
+    ``adv_data``, ``char_data``, ``notify_data``, and ``uuid`` entries in the
+    tuples are read-only memoryview instances pointing to ubluetooth's internal
+    ringbuffer, and are only valid during the invocation of the IRQ handler
+    function.  If your program needs to save one of these values to access after
+    the IRQ handler has returned (e.g. by saving it in a class instance or global
+    variable), then it needs to take a copy of the data, either by using ``bytes()``
+    or ``bluetooth.UUID()``, like this::
+
+        connected_addr = bytes(addr)  # equivalently: adv_data, char_data, or notify_data
+        matched_uuid = bluetooth.UUID(uuid)
+
+    For example, the IRQ handler for a scan result might inspect the ``adv_data``
+    to decide if it's the correct device, and only then copy the address data to be
+    used elsewhere in the program.  And to print data from within the IRQ handler,
+    ``print(bytes(addr))`` will be needed.
 
     An event handler showing all possible events::
 
@@ -89,12 +135,12 @@ Event Handling
                 # A central has disconnected from this peripheral.
                 conn_handle, addr_type, addr = data
             elif event == _IRQ_GATTS_WRITE:
-                # A central has written to this characteristic or descriptor.
+                # A client has written to this characteristic or descriptor.
                 conn_handle, attr_handle = data
             elif event == _IRQ_GATTS_READ_REQUEST:
-                # A central has issued a read. Note: this is a hard IRQ.
-                # Return None to deny the read.
-                # Note: This event is not supported on ESP32.
+                # A client has issued a read. Note: this is only supported on STM32.
+                # Return a non-zero integer to deny the read (see below), or zero (or None)
+                # to accept the read.
                 conn_handle, attr_handle = data
             elif event == _IRQ_SCAN_RESULT:
                 # A single scan result.
@@ -143,15 +189,58 @@ Event Handling
                 # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_NOTIFY:
-                # A peripheral has sent a notify request.
+                # A server has sent a notify request.
                 conn_handle, value_handle, notify_data = data
             elif event == _IRQ_GATTC_INDICATE:
-                # A peripheral has sent an indicate request.
+                # A server has sent an indicate request.
                 conn_handle, value_handle, notify_data = data
             elif event == _IRQ_GATTS_INDICATE_DONE:
-                # A central has acknowledged the indication.
+                # A client has acknowledged the indication.
                 # Note: Status will be zero on successful acknowledgment, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
+            elif event == _IRQ_MTU_EXCHANGED:
+                # ATT MTU exchange complete (either initiated by us or the remote device).
+                conn_handle, mtu = data
+            elif event == _IRQ_L2CAP_ACCEPT:
+                # A new channel has been accepted.
+                # Return a non-zero integer to reject the connection, or zero (or None) to accept.
+                conn_handle, cid, psm, our_mtu, peer_mtu = data
+            elif event == _IRQ_L2CAP_CONNECT:
+                # A new channel is now connected (either as a result of connecting or accepting).
+                conn_handle, cid, psm, our_mtu, peer_mtu = data
+            elif event == _IRQ_L2CAP_DISCONNECT:
+                # Existing channel has disconnected (status is zero), or a connection attempt failed (non-zero status).
+                conn_handle, cid, psm, status = data
+            elif event == _IRQ_L2CAP_RECV:
+                # New data is available on the channel. Use l2cap_recvinto to read.
+                conn_handle, cid = data
+            elif event == _IRQ_L2CAP_SEND_READY:
+                # A previous l2cap_send that returned False has now completed and the channel is ready to send again.
+                # If status is non-zero, then the transmit buffer overflowed and the application should re-send the data.
+                conn_handle, cid, status = data
+            elif event == _IRQ_CONNECTION_UPDATE:
+                # The remote device has updated connection parameters.
+                conn_handle, conn_interval, conn_latency, supervision_timeout, status = data
+            elif event == _IRQ_ENCRYPTION_UPDATE:
+                # The encryption state has changed (likely as a result of pairing or bonding).
+                conn_handle, encrypted, authenticated, bonded, key_size = data
+            elif event == _IRQ_GET_SECRET:
+                # Return a stored secret.
+                # If key is None, return the index'th value of this sec_type.
+                # Otherwise return the corresponding value for this sec_type and key.
+                sec_type, index, key = data
+                return value
+            elif event == _IRQ_SET_SECRET:
+                # Save a secret to the store for this sec_type and key.
+                sec_type, key, value = data
+                return True
+            elif event == _IRQ_PASSKEY_ACTION:
+                # Respond to a passkey request during pairing.
+                # See gap_passkey() for details.
+                # action will be an action that is compatible with the configured "io" config.
+                # passkey will be non-zero if action is "numeric comparison".
+                conn_handle, action, passkey = data
+
 
 The event codes are::
 
@@ -176,6 +265,32 @@ The event codes are::
     _IRQ_GATTC_NOTIFY = const(18)
     _IRQ_GATTC_INDICATE = const(19)
     _IRQ_GATTS_INDICATE_DONE = const(20)
+    _IRQ_MTU_EXCHANGED = const(21)
+    _IRQ_L2CAP_ACCEPT = const(22)
+    _IRQ_L2CAP_CONNECT = const(23)
+    _IRQ_L2CAP_DISCONNECT = const(24)
+    _IRQ_L2CAP_RECV = const(25)
+    _IRQ_L2CAP_SEND_READY = const(26)
+    _IRQ_CONNECTION_UPDATE = const(27)
+    _IRQ_ENCRYPTION_UPDATE = const(28)
+    _IRQ_GET_SECRET = const(29)
+    _IRQ_SET_SECRET = const(30)
+
+For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
+
+    _GATTS_NO_ERROR = const(0x00)
+    _GATTS_ERROR_READ_NOT_PERMITTED = const(0x02)
+    _GATTS_ERROR_WRITE_NOT_PERMITTED = const(0x03)
+    _GATTS_ERROR_INSUFFICIENT_AUTHENTICATION = const(0x05)
+    _GATTS_ERROR_INSUFFICIENT_AUTHORIZATION = const(0x08)
+    _GATTS_ERROR_INSUFFICIENT_ENCRYPTION = const(0x0f)
+
+For the ``_IRQ_PASSKEY_ACTION`` event, the available actions are::
+
+    _PASSKEY_ACTION_NONE = const(0)
+    _PASSKEY_ACTION_INPUT = const(2)
+    _PASSKEY_ACTION_DISPLAY = const(3)
+    _PASSKEY_ACTION_NUMERIC_COMPARISON = const(4)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -185,7 +300,7 @@ program.
 Broadcaster Role (Advertiser)
 -----------------------------
 
-.. method:: BLE.gap_advertise(interval_us, adv_data=None, resp_data=None, connectable=True)
+.. method:: BLE.gap_advertise(interval_us, adv_data=None, *, resp_data=None, connectable=True)
 
     Starts advertising at the specified interval (in **micro**\ seconds). This
     interval will be rounded down to the nearest 625us. To stop advertising, set
@@ -204,7 +319,7 @@ Broadcaster Role (Advertiser)
 Observer Role (Scanner)
 -----------------------
 
-.. method:: BLE.gap_scan(duration_ms, [interval_us], [window_us], [active])
+.. method:: BLE.gap_scan(duration_ms, interval_us=1280000, window_us=11250, active=False, /)
 
     Run a scan operation lasting for the specified duration (in **milli**\ seconds).
 
@@ -219,8 +334,13 @@ Observer Role (Scanner)
     (background scanning).
 
     For each scan result the ``_IRQ_SCAN_RESULT`` event will be raised, with event
-    data ``(addr_type, addr, adv_type, rssi, adv_data)``.  ``adv_type`` values correspond
-    to the Bluetooth Specification:
+    data ``(addr_type, addr, adv_type, rssi, adv_data)``.
+
+    ``addr_type`` values indicate public or random addresses:
+        * 0x00 - PUBLIC
+        * 0x01 - RANDOM (either static, RPA, or NRPA, the type is encoded in the address itself)
+
+    ``adv_type`` values correspond to the Bluetooth Specification:
 
         * 0x00 - ADV_IND - connectable and scannable undirected advertising
         * 0x01 - ADV_DIRECT_IND - connectable directed advertising
@@ -229,33 +349,79 @@ Observer Role (Scanner)
         * 0x04 - SCAN_RSP - scan response
 
     ``active`` can be set ``True`` if you want to receive scan responses in the results.
-    
+
     When scanning is stopped (either due to the duration finishing or when
     explicitly stopped), the ``_IRQ_SCAN_DONE`` event will be raised.
 
 
-Peripheral Role (GATT Server)
------------------------------
+Central Role
+------------
 
-A BLE peripheral has a set of registered services. Each service may contain
+A central device can connect to peripherals that it has discovered using the observer role (see :meth:`gap_scan<BLE.gap_scan>`) or with a known address.
+
+.. method:: BLE.gap_connect(addr_type, addr, scan_duration_ms=2000, /)
+
+    Connect to a peripheral.
+
+    See :meth:`gap_scan <BLE.gap_scan>` for details about address types.
+
+    On success, the ``_IRQ_PERIPHERAL_CONNECT`` event will be raised.
+
+
+Peripheral Role
+---------------
+
+A peripheral device is expected to send connectable advertisements (see
+:meth:`gap_advertise<BLE.gap_advertise>`). It will usually be acting as a GATT
+server, having first registered services and characteristics using
+:meth:`gatts_register_services<BLE.gatts_register_services>`.
+
+When a central connects, the ``_IRQ_CENTRAL_CONNECT`` event will be raised.
+
+
+Central & Peripheral Roles
+--------------------------
+
+.. method:: BLE.gap_disconnect(conn_handle, /)
+
+    Disconnect the specified connection handle. This can either be a
+    central that has connected to this device (if acting as a peripheral)
+    or a peripheral that was previously connected to by this device (if acting
+    as a central).
+
+    On success, the ``_IRQ_PERIPHERAL_DISCONNECT`` or ``_IRQ_CENTRAL_DISCONNECT``
+    event will be raised.
+
+    Returns ``False`` if the connection handle wasn't connected, and ``True``
+    otherwise.
+
+
+GATT Server
+-----------
+
+A GATT server has a set of registered services. Each service may contain
 characteristics, which each have a value. Characteristics can also contain
 descriptors, which themselves have values.
 
 These values are stored locally, and are accessed by their "value handle" which
 is generated during service registration. They can also be read from or written
-to by a remote central device. Additionally, a peripheral can "notify" a
-characteristic to a connected central via a connection handle.
+to by a remote client device. Additionally, a server can "notify" a
+characteristic to a connected client via a connection handle.
+
+A device in either central or peripheral roles may function as a GATT server,
+however in most cases it will be more common for a peripheral device to act
+as the server.
 
 Characteristics and descriptors have a default maximum size of 20 bytes.
-Anything written to them by a central will be truncated to this length. However,
+Anything written to them by a client will be truncated to this length. However,
 any local write will increase the maximum size, so if you want to allow larger
-writes from a central to a given characteristic, use
+writes from a client to a given characteristic, use
 :meth:`gatts_write<BLE.gatts_write>` after registration. e.g.
 ``gatts_write(char_handle, bytes(100))``.
 
-.. method:: BLE.gatts_register_services(services_definition)
+.. method:: BLE.gatts_register_services(services_definition, /)
 
-    Configures the peripheral with the specified services, replacing any
+    Configures the server with the specified services, replacing any
     existing services.
 
     *services_definition* is a list of **services**, where each **service** is a
@@ -267,9 +433,9 @@ writes from a central to a given characteristic, use
     Each **descriptor** is a two-element tuple containing a UUID and a **flags**
     value.
 
-    The **flags** are a bitwise-OR combination of the
-    :data:`ubluetooth.FLAG_READ`, :data:`ubluetooth.FLAG_WRITE` and
-    :data:`ubluetooth.FLAG_NOTIFY` values defined below.
+    The **flags** are a bitwise-OR combination of the flags defined below. These
+    set both the behaviour of the characteristic (or descriptor) as well as the
+    security and privacy requirements.
 
     The return value is a list (one element per service) of tuples (each element
     is a value handle). Characteristics and descriptor handles are flattened
@@ -293,28 +459,49 @@ writes from a central to a given characteristic, use
 
     **Note:** Advertising must be stopped before registering services.
 
-.. method:: BLE.gatts_read(value_handle)
+    Available flags for characteristics and descriptors are::
+
+        from micropython import const
+        _FLAG_BROADCAST = const(0x0001)
+        _FLAG_READ = const(0x0002)
+        _FLAG_WRITE_NO_RESPONSE = const(0x0004)
+        _FLAG_WRITE = const(0x0008)
+        _FLAG_NOTIFY = const(0x0010)
+        _FLAG_INDICATE = const(0x0020)
+        _FLAG_AUTHENTICATED_SIGNED_WRITE = const(0x0040)
+
+        _FLAG_AUX_WRITE = const(0x0100)
+        _FLAG_READ_ENCRYPTED = const(0x0200)
+        _FLAG_READ_AUTHENTICATED = const(0x0400)
+        _FLAG_READ_AUTHORIZED = const(0x0800)
+        _FLAG_WRITE_ENCRYPTED = const(0x1000)
+        _FLAG_WRITE_AUTHENTICATED = const(0x2000)
+        _FLAG_WRITE_AUTHORIZED = const(0x4000)
+
+    As for the IRQs above, any required constants should be added to your Python code.
+
+.. method:: BLE.gatts_read(value_handle, /)
 
     Reads the local value for this handle (which has either been written by
-    :meth:`gatts_write <BLE.gatts_write>` or by a remote central).
+    :meth:`gatts_write <BLE.gatts_write>` or by a remote client).
 
-.. method:: BLE.gatts_write(value_handle, data)
+.. method:: BLE.gatts_write(value_handle, data, /)
 
-    Writes the local value for this handle, which can be read by a central.
+    Writes the local value for this handle, which can be read by a client.
 
-.. method:: BLE.gatts_notify(conn_handle, value_handle, [data])
+.. method:: BLE.gatts_notify(conn_handle, value_handle, data=None, /)
 
-    Sends a notification request to a connected central.
+    Sends a notification request to a connected client.
 
-    If *data* is specified, then that value is sent to the central as part of
+    If *data* is not ``None``, then that value is sent to the client as part of
     the notification. The local value will not be modified.
 
-    Otherwise, if *data* is not specified, then the current local value (as
+    Otherwise, if *data* is ``None``, then the current local value (as
     set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
 
-.. method:: BLE.gatts_indicate(conn_handle, value_handle)
+.. method:: BLE.gatts_indicate(conn_handle, value_handle, /)
 
-    Sends an indication request to a connected central.
+    Sends an indication request to a connected client.
 
     **Note:** This does not currently support sending a custom value, it will
     always send the current local value (as set with :meth:`gatts_write
@@ -334,37 +521,28 @@ writes from a central to a given characteristic, use
     be cleared after reading. This feature is useful when implementing something
     like the Nordic UART Service.
 
+GATT Client
+-----------
 
-Central Role (GATT Client)
---------------------------
+A GATT client can discover and read/write characteristics on a remote GATT server.
 
-.. method:: BLE.gap_connect(addr_type, addr, scan_duration_ms=2000, /)
+It is more common for a central role device to act as the GATT client, however
+it's also possible for a peripheral to act as a client in order to discover
+information about the central that has connected to it (e.g. to read the
+device name from the device information service).
 
-    Connect to a peripheral.
+.. method:: BLE.gattc_discover_services(conn_handle, uuid=None, /)
 
-    On success, the ``_IRQ_PERIPHERAL_CONNECT`` event will be raised.
-
-.. method:: BLE.gap_disconnect(conn_handle)
-
-    Disconnect the specified connection handle.
-
-    On success, the ``_IRQ_PERIPHERAL_DISCONNECT`` event will be raised.
-
-    Returns ``False`` if the connection handle wasn't connected, and ``True``
-    otherwise.
-
-.. method:: BLE.gattc_discover_services(conn_handle, [uuid])
-
-    Query a connected peripheral for its services.
+    Query a connected server for its services.
 
     Optionally specify a service *uuid* to query for that service only.
 
     For each service discovered, the ``_IRQ_GATTC_SERVICE_RESULT`` event will
     be raised, followed by ``_IRQ_GATTC_SERVICE_DONE`` on completion.
 
-.. method:: BLE.gattc_discover_characteristics(conn_handle, start_handle, end_handle, [uuid])
+.. method:: BLE.gattc_discover_characteristics(conn_handle, start_handle, end_handle, uuid=None, /)
 
-    Query a connected peripheral for characteristics in the specified range.
+    Query a connected server for characteristics in the specified range.
 
     Optionally specify a characteristic *uuid* to query for that
     characteristic only.
@@ -375,16 +553,16 @@ Central Role (GATT Client)
     For each characteristic discovered, the ``_IRQ_GATTC_CHARACTERISTIC_RESULT``
     event will be raised, followed by ``_IRQ_GATTC_CHARACTERISTIC_DONE`` on completion.
 
-.. method:: BLE.gattc_discover_descriptors(conn_handle, start_handle, end_handle)
+.. method:: BLE.gattc_discover_descriptors(conn_handle, start_handle, end_handle, /)
 
-    Query a connected peripheral for descriptors in the specified range.
+    Query a connected server for descriptors in the specified range.
 
     For each descriptor discovered, the ``_IRQ_GATTC_DESCRIPTOR_RESULT`` event
     will be raised, followed by ``_IRQ_GATTC_DESCRIPTOR_DONE`` on completion.
 
-.. method:: BLE.gattc_read(conn_handle, value_handle)
+.. method:: BLE.gattc_read(conn_handle, value_handle, /)
 
-    Issue a remote read to a connected peripheral for the specified
+    Issue a remote read to a connected server for the specified
     characteristic or descriptor handle.
 
     When a value is available, the ``_IRQ_GATTC_READ_RESULT`` event will be
@@ -392,21 +570,157 @@ Central Role (GATT Client)
 
 .. method:: BLE.gattc_write(conn_handle, value_handle, data, mode=0, /)
 
-    Issue a remote write to a connected peripheral for the specified
+    Issue a remote write to a connected server for the specified
     characteristic or descriptor handle.
 
     The argument *mode* specifies the write behaviour, with the currently
     supported values being:
 
         * ``mode=0`` (default) is a write-without-response: the write will
-          be sent to the remote peripheral but no confirmation will be
+          be sent to the remote server but no confirmation will be
           returned, and no event will be raised.
-        * ``mode=1`` is a write-with-response: the remote peripheral is
+        * ``mode=1`` is a write-with-response: the remote server is
           requested to send a response/acknowledgement that it received the
           data.
 
-    If a response is received from the remote peripheral the
+    If a response is received from the remote server the
     ``_IRQ_GATTC_WRITE_DONE`` event will be raised.
+
+.. method:: BLE.gattc_exchange_mtu(conn_handle, /)
+
+    Initiate MTU exchange with a connected server, using the preferred MTU
+    set using ``BLE.config(mtu=value)``.
+
+    The ``_IRQ_MTU_EXCHANGED`` event will be raised when MTU exchange
+    completes.
+
+    **Note:** MTU exchange is typically initiated by the central. When using
+    the BlueKitchen stack in the central role, it does not support a remote
+    peripheral initiating the MTU exchange. NimBLE works for both roles.
+
+
+L2CAP connection-oriented-channels
+----------------------------------
+
+    This feature allows for socket-like data exchange between two BLE devices.
+    Once the devices are connected via GAP, either device can listen for the
+    other to connect on a numeric PSM (Protocol/Service Multiplexer).
+
+    **Note:** This is currently only supported when using the NimBLE stack on
+    STM32 and Unix (not ESP32). Only one L2CAP channel may be active at a given
+    time (i.e. you cannot connect while listening).
+
+    Active L2CAP channels are identified by the connection handle that they were
+    established on and a CID (channel ID).
+
+    Connection-oriented channels have built-in credit-based flow control. Unlike
+    ATT, where devices negotiate a shared MTU, both the listening and connecting
+    devices each set an independent MTU which limits the maximum amount of
+    outstanding data that the remote device can send before it is fully consumed
+    in :meth:`l2cap_recvinto <BLE.l2cap_recvinto>`.
+
+.. method:: BLE.l2cap_listen(psm, mtu, /)
+
+    Start listening for incoming L2CAP channel requests on the specified *psm*
+    with the local MTU set to *mtu*.
+
+    When a remote device initiates a connection, the ``_IRQ_L2CAP_ACCEPT``
+    event will be raised, which gives the listening server a chance to reject
+    the incoming connection (by returning a non-zero integer).
+
+    Once the connection is accepted, the ``_IRQ_L2CAP_CONNECT`` event will be
+    raised, allowing the server to obtain the channel id (CID) and the local and
+    remote MTU.
+
+    **Note:** It is not currently possible to stop listening.
+
+.. method:: BLE.l2cap_connect(conn_handle, psm, mtu, /)
+
+    Connect to a listening peer on the specified *psm* with local MTU set to *mtu*.
+
+    On successful connection, the the ``_IRQ_L2CAP_CONNECT`` event will be
+    raised, allowing the client to obtain the CID and the local and remote (peer) MTU.
+
+    An unsuccessful connection will raise the ``_IRQ_L2CAP_DISCONNECT`` event
+    with a non-zero status.
+
+.. method:: BLE.l2cap_disconnect(conn_handle, cid, /)
+
+    Disconnect an active L2CAP channel with the specified *conn_handle* and
+    *cid*.
+
+.. method:: BLE.l2cap_send(conn_handle, cid, buf, /)
+
+    Send the specified *buf* (which must support the buffer protocol) on the
+    L2CAP channel identified by *conn_handle* and *cid*.
+
+    The specified buffer cannot be larger than the remote (peer) MTU, and no
+    more than twice the size of the local MTU.
+
+    This will return ``False`` if the channel is now "stalled", which means that
+    :meth:`l2cap_send <BLE.l2cap_send>` must not be called again until the
+    ``_IRQ_L2CAP_SEND_READY`` event is received (which will happen when the
+    remote device grants more credits, typically after it has received and
+    processed the data).
+
+.. method:: BLE.l2cap_recvinto(conn_handle, cid, buf, /)
+
+    Receive data from the specified *conn_handle* and *cid* into the provided
+    *buf* (which must support the buffer protocol, e.g. bytearray or
+    memoryview).
+
+    Returns the number of bytes read from the channel.
+
+    If *buf* is None, then returns the number of bytes available.
+
+    **Note:** After receiving the ``_IRQ_L2CAP_RECV`` event, the application should
+    continue calling :meth:`l2cap_recvinto <BLE.l2cap_recvinto>` until no more
+    bytes are available in the receive buffer (typically up to the size of the
+    remote (peer) MTU).
+
+    Until the receive buffer is empty, the remote device will not be granted
+    more channel credits and will be unable to send any more data.
+
+
+Pairing and bonding
+-------------------
+
+    Pairing allows a connection to be encrypted and authenticated via exchange
+    of secrets (with optional MITM protection via passkey authentication).
+
+    Bonding is the process of storing those secrets into non-volatile storage.
+    When bonded, a device is able to resolve a resolvable private address (RPA)
+    from another device based on the stored identity resolving key (IRK).
+    To support bonding, an application must implement the ``_IRQ_GET_SECRET``
+    and ``_IRQ_SET_SECRET`` events.
+
+    **Note:** This is currently only supported when using the NimBLE stack on
+    STM32 and Unix (not ESP32).
+
+.. method:: BLE.gap_pair(conn_handle, /)
+
+    Initiate pairing with the remote device.
+
+    Before calling this, ensure that the ``io``, ``mitm``, ``le_secure``, and
+    ``bond`` configuration options are set (via :meth:`config<BLE.config>`).
+
+    On successful pairing, the ``_IRQ_ENCRYPTION_UPDATE`` event will be raised.
+
+.. method:: BLE.gap_passkey(conn_handle, action, passkey, /)
+
+    Respond to a ``_IRQ_PASSKEY_ACTION`` event for the specified *conn_handle*
+    and *action*.
+
+    The *passkey* is a numeric value and will depend on on the
+    *action* (which will depend on what I/O capability has been set):
+
+        * When the *action* is ``_PASSKEY_ACTION_INPUT``, then the application should
+          prompt the user to enter the passkey that is shown on the remote device.
+        * When the *action* is ``_PASSKEY_ACTION_DISPLAY``, then the application should
+          generate a random 6-digit passkey and show it to the user.
+        * When the *action* is ``_PASSKEY_ACTION_NUMERIC_COMPARISON``, then the application
+          should show the passkey that was provided in the ``_IRQ_PASSKEY_ACTION`` event
+          and then respond with either ``0`` (cancel pairing), or ``1`` (accept pairing).
 
 
 class UUID
@@ -416,7 +730,7 @@ class UUID
 Constructor
 -----------
 
-.. class:: UUID(value)
+.. class:: UUID(value, /)
 
     Creates a UUID instance with the specified **value**.
 
@@ -424,11 +738,3 @@ Constructor
 
     - A 16-bit integer. e.g. ``0x2908``.
     - A 128-bit UUID string. e.g. ``'6E400001-B5A3-F393-E0A9-E50E24DCCA9E'``.
-
-
-Constants
----------
-
-.. data:: ubluetooth.FLAG_READ
-          ubluetooth.FLAG_WRITE
-          ubluetooth.FLAG_NOTIFY

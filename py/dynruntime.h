@@ -163,9 +163,15 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 /******************************************************************************/
 // General runtime functions
 
-#define mp_load_name(qst)           (mp_fun_table.load_name(qst))
-#define mp_load_global(qst)         (mp_fun_table.load_global(qst))
-#define mp_store_global(qst, obj)   (mp_fun_table.store_global((qst), (obj)))
+#define mp_load_name(qst)                 (mp_fun_table.load_name((qst)))
+#define mp_load_global(qst)               (mp_fun_table.load_global((qst)))
+#define mp_load_attr(base, attr)          (mp_fun_table.load_attr((base), (attr)))
+#define mp_load_method(base, attr, dest)  (mp_fun_table.load_method((base), (attr), (dest)))
+#define mp_load_super_method(attr, dest)  (mp_fun_table.load_super_method((attr), (dest)))
+#define mp_store_name(qst, obj)           (mp_fun_table.store_name((qst), (obj)))
+#define mp_store_global(qst, obj)         (mp_fun_table.store_global((qst), (obj)))
+#define mp_store_attr(base, attr, val)    (mp_fun_table.store_attr((base), (attr), (val)))
+
 #define mp_unary_op(op, obj)        (mp_fun_table.unary_op((op), (obj)))
 #define mp_binary_op(op, lhs, rhs)  (mp_fun_table.binary_op((op), (lhs), (rhs)))
 
@@ -192,6 +198,13 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 
 #define MP_DYNRUNTIME_MAKE_FUNCTION(f) \
     (mp_make_function_from_raw_code((rc.fun_data = (f), &rc), MP_OBJ_NULL, MP_OBJ_NULL))
+
+#define mp_import_name(name, fromlist, level) \
+    (mp_fun_table.import_name((name), (fromlist), (level)))
+#define mp_import_from(module, name) \
+    (mp_fun_table.import_from((module), (name)))
+#define mp_import_all(module) \
+    (mp_fun_table.import_all((module))
 
 /******************************************************************************/
 // Exceptions

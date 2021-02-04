@@ -40,7 +40,7 @@
 
 #if !defined(MICROPY_MACHINE_MEM_GET_READ_ADDR) || !defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
 STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
-    uintptr_t addr = mp_obj_int_get_truncated(addr_o);
+    uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
     }

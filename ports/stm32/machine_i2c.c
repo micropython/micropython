@@ -32,10 +32,9 @@
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
 #include "i2c.h"
+#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_HW_I2C
-
-STATIC const mp_obj_type_t machine_hard_i2c_type;
 
 #define I2C_POLL_DEFAULT_TIMEOUT_US (50000) // 50ms
 
@@ -194,6 +193,8 @@ STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, u
 #endif
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+
     // parse args
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout, ARG_timingr };
     static const mp_arg_t allowed_args[] = {
@@ -209,39 +210,8 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // work out i2c bus
-    int i2c_id = 0;
-    if (mp_obj_is_str(args[ARG_id].u_obj)) {
-        const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
-        if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
-            i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
-            i2c_id = 2;
-        #endif
-        #ifdef MICROPY_HW_I2C3_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
-            i2c_id = 3;
-        #endif
-        #ifdef MICROPY_HW_I2C4_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
-            i2c_id = 4;
-        #endif
-        } else {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%s) doesn't exist"), port);
-        }
-    } else {
-        i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
-        if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
-            || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
-        }
-    }
-
     // get static peripheral object
+    int i2c_id = i2c_find_peripheral(args[ARG_id].u_obj);
     machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)&machine_hard_i2c_obj[i2c_id - 1];
 
     // here we would check the scl/sda pins and configure them, but it's not implemented
@@ -266,13 +236,13 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer = machine_hard_i2c_transfer,
 };
 
-STATIC const mp_obj_type_t machine_hard_i2c_type = {
+const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_i2c_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_HW_I2C
