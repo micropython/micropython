@@ -1540,7 +1540,7 @@ typedef double mp_float_t;
 #define MP_BITS_PER_BYTE (8)
 #endif
 // mp_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (MP_BYTES_PER_OBJ_WORD * MP_BITS_PER_BYTE - 1))
+#define MP_OBJ_WORD_MSBIT_HIGH (((mp_uint_t)1) << (MP_BYTES_PER_OBJ_WORD * MP_BITS_PER_BYTE - 1))
 
 // Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
 // defined and that they are the opposite of each other.

@@ -1573,7 +1573,7 @@ bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mpz_dig_t *d = i->dig + i->len;
 
     while (d-- > i->dig) {
-        if (val > (~(WORD_MSBIT_HIGH) >> DIG_SIZE)) {
+        if (val > (~(MP_OBJ_WORD_MSBIT_HIGH) >> DIG_SIZE)) {
             // will overflow
             return false;
         }
@@ -1598,7 +1598,7 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
     mpz_dig_t *d = i->dig + i->len;
 
     while (d-- > i->dig) {
-        if (val > (~(WORD_MSBIT_HIGH) >> (DIG_SIZE - 1))) {
+        if (val > (~(MP_OBJ_WORD_MSBIT_HIGH) >> (DIG_SIZE - 1))) {
             // will overflow
             return false;
         }
