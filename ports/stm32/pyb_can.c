@@ -106,6 +106,10 @@ STATIC uint8_t can2_start_bank = 14;
 
 #endif
 
+#define SW_FIFO0_SIZE               (0)
+#define SW_FIFO1_SIZE               (0)
+#define SW_FIFO_MIN_SIZE            (4)
+
 STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
@@ -142,20 +146,41 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 // init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart };
+    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_receive_fifo_locked_mode, ARG_transmit_fifo_priority, ARG_sw_fifo_0_size, ARG_sw_fifo_1_size};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
-        { MP_QSTR_extframe,     MP_ARG_BOOL,                    {.u_bool = false} },
-        { MP_QSTR_prescaler,    MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
-        { MP_QSTR_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
-        { MP_QSTR_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
-        { MP_QSTR_bs2,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS2} },
-        { MP_QSTR_auto_restart, MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
+        { MP_QSTR_mode,             MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
+        { MP_QSTR_extframe,         MP_ARG_BOOL,                    {.u_bool = false} },
+        { MP_QSTR_prescaler,        MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
+        { MP_QSTR_sjw,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
+        { MP_QSTR_bs1,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
+        { MP_QSTR_bs2,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS2} },
+        { MP_QSTR_auto_restart,     MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
+        { MP_QSTR_receive_fifo_locked_mode,     MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
+        { MP_QSTR_transmit_fifo_priority,       MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
+        { MP_QSTR_sw_fifo_0_size,   MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = SW_FIFO0_SIZE} },
+        { MP_QSTR_sw_fifo_1_size,   MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = SW_FIFO1_SIZE} },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Check for "mix and match" not supported now
+    if ((args[ARG_sw_fifo_0_size].u_int == 0 && args[ARG_sw_fifo_1_size].u_int != 0) ||
+        (args[ARG_sw_fifo_0_size].u_int != 0 && args[ARG_sw_fifo_1_size].u_int == 0)) {
+
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) Mixing HW and SW fifos not supported yet"), self->can_id);
+    }
+
+    // Check for sw fifo sizes < SW_FIFO_MIN_SIZE, not supported now
+    if (args[ARG_sw_fifo_0_size].u_int != 0 && args[ARG_sw_fifo_0_size].u_int < SW_FIFO_MIN_SIZE) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) sw_fifo_0_size must be 0 or >= %d"), self->can_id, SW_FIFO_MIN_SIZE);
+        return mp_const_none;
+    }
+    if (args[ARG_sw_fifo_1_size].u_int != 0 && args[ARG_sw_fifo_1_size].u_int < SW_FIFO_MIN_SIZE) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) sw_fifo_1_size must be 0 or >= %d"), self->can_id, SW_FIFO_MIN_SIZE);
+        return mp_const_none;
+    }
 
     self->extframe = args[ARG_extframe].u_bool;
 
@@ -164,7 +189,9 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
 
     // init CAN (if it fails, it's because the port doesn't exist)
     if (!can_init(self, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
-        args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
+        args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool, args[ARG_receive_fifo_locked_mode].u_bool,
+        args[ARG_transmit_fifo_priority].u_bool, args[ARG_sw_fifo_0_size].u_int, args[ARG_sw_fifo_1_size].u_int)) {
+
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) doesn't exist"), self->can_id);
     }
 
@@ -336,26 +363,29 @@ STATIC mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
     list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
     int n_tx_pending = 0x01121223 >> ((can->TSR >> CAN_TSR_TME_Pos & 7) << 2) & 0xf;
     list->items[5] = MP_OBJ_NEW_SMALL_INT(n_tx_pending);
-    list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3);
-    list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3);
+    if (!self->is_sw_fifo_enabled) {
+        // HW buffering looks at controller registers
+        list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3);
+        list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3);
+    } else {
+        // SW buffering looks in struct
+        list->items[6] = MP_OBJ_NEW_SMALL_INT(available_space_sw_fifo(self->rx_state0, &self->sw_fifo[0]));
+        list->items[7] = MP_OBJ_NEW_SMALL_INT(available_space_sw_fifo(self->rx_state1, &self->sw_fifo[1]));
+    }
     return MP_OBJ_FROM_PTR(list);
     #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_can_info_obj, 1, 2, pyb_can_info);
 
-// any(fifo) - return `True` if any message waiting on the FIFO, else `False`
+// any(fifo) - return `True` if any message waiting on the hardware FIFO or software FIFO, else `False`
 STATIC mp_obj_t pyb_can_any(mp_obj_t self_in, mp_obj_t fifo_in) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t fifo = mp_obj_get_int(fifo_in);
-    if (fifo == 0) {
-        if (__HAL_CAN_MSG_PENDING(&self->can, CAN_FIFO0) != 0) {
-            return mp_const_true;
-        }
-    } else {
-        if (__HAL_CAN_MSG_PENDING(&self->can, CAN_FIFO1) != 0) {
-            return mp_const_true;
-        }
+
+    if (self->can_any_handler(self, fifo)) {
+        return mp_const_true;
     }
+
     return mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_any_obj, pyb_can_any);
@@ -491,7 +521,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_raise_TypeError(NULL);
     }
 
-    int ret = can_receive(&self->can, fifo, &rx_msg, rx_data, args[ARG_timeout].u_int);
+    int ret = self->can_recv_handler(self, fifo, &rx_msg, rx_data, args[ARG_timeout].u_int);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -501,33 +531,6 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #else
     uint32_t rx_dlc = rx_msg.DLC;
     #endif
-
-    // Manage the rx state machine
-    if ((fifo == CAN_FIFO0 && self->rxcallback0 != mp_const_none) ||
-        (fifo == CAN_FIFO1 && self->rxcallback1 != mp_const_none)) {
-        byte *state = (fifo == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
-
-        switch (*state) {
-            case RX_STATE_FIFO_EMPTY:
-                break;
-            case RX_STATE_MESSAGE_PENDING:
-                if (__HAL_CAN_MSG_PENDING(&self->can, fifo) == 0) {
-                    // Fifo is empty
-                    __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
-                    *state = RX_STATE_FIFO_EMPTY;
-                }
-                break;
-            case RX_STATE_FIFO_FULL:
-                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
-                *state = RX_STATE_MESSAGE_PENDING;
-                break;
-            case RX_STATE_FIFO_OVERFLOW:
-                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
-                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
-                *state = RX_STATE_MESSAGE_PENDING;
-                break;
-        }
-    }
 
     // Create the tuple, or get the list, that will hold the return values
     // Also populate the fourth element, either a new bytes or reuse existing memoryview
@@ -777,7 +780,9 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
 
     callback = (fifo == 0) ? &self->rxcallback0 : &self->rxcallback1;
     if (callback_in == mp_const_none) {
-        __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
+        if (!self->is_sw_fifo_enabled) {
+            __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
+        }
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
         __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_FLAG_FIFO0_FULL : CAN_FLAG_FIFO1_FULL);
@@ -804,8 +809,10 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         NVIC_SetPriority(irq, IRQ_PRI_CAN);
         HAL_NVIC_EnableIRQ(irq);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
-        __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
-        __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
+        if (!self->is_sw_fifo_enabled) {
+            __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
+            __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
+        }
     }
     return mp_const_none;
 }

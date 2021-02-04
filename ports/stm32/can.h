@@ -46,6 +46,10 @@
 #define CanRxMsgTypeDef             FDCAN_RxHeaderTypeDef
 #endif
 
+#define CAN_DATA_SIZE (8)
+// Sanity check timeout for recv ISR in SW FIFO mode; data is always expected
+#define CAN_RECV_TIMEOUT_MS (10)
+
 enum {
     CAN_STATE_STOPPED,
     CAN_STATE_ERROR_ACTIVE,
@@ -61,6 +65,14 @@ typedef enum _rx_state_t {
     RX_STATE_FIFO_OVERFLOW,
 } rx_state_t;
 
+typedef struct _sw_fifo_t {
+    CanRxMsgTypeDef *fifo;
+    uint16_t size;
+    volatile uint16_t read_pos;
+    volatile uint16_t write_pos;
+    byte previous_rx_state;
+} sw_fifo_t;
+
 typedef struct _pyb_can_obj_t {
     mp_obj_base_t base;
     mp_obj_t rxcallback0;
@@ -68,25 +80,32 @@ typedef struct _pyb_can_obj_t {
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
     bool extframe : 1;
+    bool is_sw_fifo_enabled : 1;
     byte rx_state0;
     byte rx_state1;
     uint16_t num_error_warning;
     uint16_t num_error_passive;
     uint16_t num_bus_off;
     CAN_HandleTypeDef can;
+    sw_fifo_t sw_fifo[2];
+    int (*can_recv_handler)(struct _pyb_can_obj_t *self, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
+    void (*can_rx_isr_handler)(struct _pyb_can_obj_t *self, uint fifo_id);
+    bool (*can_any_handler)(struct _pyb_can_obj_t *self, int fifo_id);
 } pyb_can_obj_t;
 
 extern const mp_obj_type_t pyb_can_type;
 
 void can_init0(void);
 void can_deinit_all(void);
-bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart);
+bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart,
+    bool receive_fifo_locked_mode, bool transmit_fifo_priority, int sw_fifo_0_size, int sw_fifo_1_size);
 void can_deinit(pyb_can_obj_t *self);
 
 void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank);
 int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
 HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout);
 void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callback, mp_obj_t irq_reason);
+uint16_t available_space_sw_fifo(byte state, const sw_fifo_t *sw_fifo);
 
 #endif // MICROPY_HW_ENABLE_CAN
 

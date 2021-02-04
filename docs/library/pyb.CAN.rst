@@ -49,7 +49,7 @@ Class Methods
 Methods
 -------
 
-.. method:: CAN.init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8, auto_restart=False)
+.. method:: CAN.init(mode, extframe=False, prescaler=100, *, receive_fifo_locked_mode=True, transmit_fifo_priority=True, sw_fifo_0_size = 0, sw_fifo_1_size = 0, sjw=1, bs1=6, bs2=8, auto_restart=False)
 
    Initialise the CAN bus with the given parameters:
 
@@ -58,6 +58,19 @@ Methods
        (29 bits); otherwise it uses standard 11 bit identifiers
      - *prescaler* is used to set the duration of 1 time quanta; the time quanta
        will be the input clock (PCLK1, see :meth:`pyb.freq()`) divided by the prescaler
+     - *receive_fifo_locked_mode* controls Receive FIFO locked feature in CAN
+       controller, see RFLM bit in section 32.9 of the STM32F407 reference manual.  If
+       it is set to False, once a receive FIFO is full the next incoming message will
+       overwrite the last one. If it is set to True, once a receive FIFO is full, the
+       next incoming message will be discarded.
+     - *transmit_fifo_priority* is used to set Transmit FIFO priority. If it is set
+       to False, priority order is given by the identifier of the message. If it is
+       set the True, priority order is given by the request order (chronologically).
+     - *sw_fifo_0_size* and *sw_fifo_1_size* are used to set the desired size of
+       software FIFOs.  When deciding to use software FIFOs, these parameters need
+       to be set at the same time and both of them should have values >=4, but they
+       don't need to be same.  When deciding not to use software FIFOs, these
+       parameters should not be touched or should both be set to 0.
      - *sjw* is the resynchronisation jump width in units of the time quanta;
        it can be 1, 2, 3, 4
      - *bs1* defines the location of the sample point in units of the time quanta;
@@ -67,6 +80,13 @@ Methods
      - *auto_restart* sets whether the controller will automatically try and restart
        communications after entering the bus-off state; if this is disabled then
        :meth:`~CAN.restart()` can be used to leave the bus-off state
+   
+   When software FIFOs are in use, software FIFOs will be filled by the interrupt 
+   which is triggered by hardware FIFO. This filling operation will continue until 
+   the end of the size of software FIFOs. At the same time, hardware FIFO is still collecting 
+   the data and its behavior will differ according to the *receive_fifo_locked_mode*. 
+   The collected data will be stored into the software FIFOs when there is 
+   available space in it.
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
    prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);
