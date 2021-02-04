@@ -35,11 +35,15 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate.h"
 
 #include "src/rp2040/hardware_structs/include/hardware/structs/sio.h"
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"
+
+#include "hardware/watchdog.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -66,8 +70,11 @@ void common_hal_mcu_enable_interrupts(void) {
     asm volatile ("cpsie i" : : : "memory");
 }
 
+static bool next_reset_to_bootloader = false;
+
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_BOOTLOADER) {
+        next_reset_to_bootloader = true;
     } else {
     }
     if (runmode == RUNMODE_SAFE_MODE) {
@@ -76,6 +83,12 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 }
 
 void common_hal_mcu_reset(void) {
+    filesystem_flush();
+    if (next_reset_to_bootloader) {
+        reset_to_bootloader();
+    } else {
+        reset_cpu();
+    }
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
