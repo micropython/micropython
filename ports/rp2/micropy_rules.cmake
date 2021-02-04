@@ -24,11 +24,10 @@ add_custom_command(
 )
 
 # Generate moduledefs.h
-# This is currently hard-coded to support modarray.c only, because makemoduledefs.py doesn't support absolute paths
 
 add_custom_command(
     OUTPUT ${MPY_MODULEDEFS}
-    COMMAND python3 ${MPY_PY_DIR}/makemoduledefs.py --vpath="." ../../../py/modarray.c > ${MPY_MODULEDEFS}
+    COMMAND python3 ${MPY_PY_DIR}/makemoduledefs.py --vpath="/" ${SOURCE_QSTR} > ${MPY_MODULEDEFS}
     DEPENDS ${MPY_MPVERSION}
         ${SOURCE_QSTR}
 )
