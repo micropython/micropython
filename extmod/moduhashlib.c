@@ -98,7 +98,8 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
-    mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
+    mbedtls_sha256_context tmp_ctx = *(mbedtls_sha256_context *)self->state;
+    mbedtls_sha256_finish_ret(&tmp_ctx, (unsigned char *)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
@@ -129,7 +130,8 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
-    sha256_final((CRYAL_SHA256_CTX *)self->state, (byte *)vstr.buf);
+    CRYAL_SHA256_CTX tmp_ctx = *(CRYAL_SHA256_CTX *)self->state;
+    sha256_final(&tmp_ctx, (byte *)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif
