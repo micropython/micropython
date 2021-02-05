@@ -61,10 +61,15 @@
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------+
 
-#define CFG_TUD_ENDOINT0_SIZE       64
+#define CFG_TUD_ENDPOINT0_SIZE       64
 
 //------------- CLASS -------------//
+
+// Could be 2 if secondary CDC channel requested.
+#ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC                 1
+#endif
+
 #define CFG_TUD_MSC                 1
 #define CFG_TUD_HID                 CIRCUITPY_USB_HID
 #define CFG_TUD_MIDI                CIRCUITPY_USB_MIDI

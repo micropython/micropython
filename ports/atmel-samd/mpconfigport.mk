@@ -18,7 +18,16 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
+INTERNAL_LIBM = 1
+
+USB_SERIAL_NUMBER_LENGTH = 32
+
+# Number of USB endpoint pairs.
+USB_NUM_EP = 8
+
+######################################################################
 # Put samd21-only choices here.
+
 ifeq ($(CHIP_FAMILY),samd21)
 
 # The ?='s allow overriding in mpconfigboard.mk.
@@ -40,7 +49,9 @@ CIRCUITPY_SDCARDIO ?= 0
 CIRCUITPY_FRAMEBUFFERIO ?= 0
 
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
+# Because of that, there aren't enough endpoints for serial2.
 USB_MSC_EP_NUM_OUT = 1
+CIRCUITPY_USB_SERIAL2 = 0
 
 CIRCUITPY_ULAB = 0
 
@@ -55,9 +66,13 @@ CIRCUITPY_TERMINALIO = 0
 endif
 
 endif # samd21
+######################################################################
 
+######################################################################
 # Put samd51-only choices here.
+
 ifeq ($(CHIP_FAMILY),samd51)
+
 # No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
@@ -70,9 +85,4 @@ CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
 
 endif # samd51
-
-INTERNAL_LIBM = 1
-
-USB_SERIAL_NUMBER_LENGTH = 32
-
-USB_NUM_EP = 8
+######################################################################
