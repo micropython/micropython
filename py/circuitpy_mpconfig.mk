@@ -288,6 +288,12 @@ CFLAGS += -DCIRCUITPY_USB_HID=$(CIRCUITPY_USB_HID)
 CIRCUITPY_USB_MIDI ?= 1
 CFLAGS += -DCIRCUITPY_USB_MIDI=$(CIRCUITPY_USB_MIDI)
 
+# Defaulting this to OFF initially because it has only been tested on a
+# limited number of platforms, and the other platforms do not have this
+# setting in their mpconfigport.mk and/or mpconfigboard.mk files yet.
+CIRCUITPY_USB_VENDOR ?= 0
+CFLAGS += -DCIRCUITPY_USB_VENDOR=$(CIRCUITPY_USB_VENDOR)
+
 CIRCUITPY_PEW ?= 0
 CFLAGS += -DCIRCUITPY_PEW=$(CIRCUITPY_PEW)
 

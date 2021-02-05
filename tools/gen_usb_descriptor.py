@@ -13,7 +13,7 @@ from adafruit_usb_descriptor import audio, audio10, cdc, hid, midi, msc, standar
 import hid_report_descriptors
 
 DEFAULT_INTERFACE_NAME = 'CircuitPython'
-ALL_DEVICES='CDC,MSC,AUDIO,HID'
+ALL_DEVICES='CDC,MSC,AUDIO,HID,VENDOR'
 ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
 DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
 
@@ -21,6 +21,9 @@ ALL_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,SYS_CONTROL,GAMEPAD,DIGITIZER,XAC_COMPA
 ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
 # Digitizer works on Linux but conflicts with mouse, so omit it.
 DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
+
+# In the following URL, don't include the https:// because that prefix gets added automatically
+DEFAULT_WEBUSB_URL = 'circuitpython.org' # In the future, this may become a specific landing page
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--highspeed', default=False, action='store_true',
@@ -62,6 +65,13 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
+parser.add_argument('--webusb_url', type=str,
+                    help='The URL to include in the WebUSB URL Descriptor',
+                    default=DEFAULT_WEBUSB_URL)
+parser.add_argument('--vendor_ep_num_out', type=int, default=0,
+                    help='endpoint number of VENDOR OUT')
+parser.add_argument('--vendor_ep_num_in', type=int, default=0,
+                    help='endpoint number of VENDOR IN')
 parser.add_argument('--max_ep', type=int, default=0,
                     help='total number of endpoints available')
 parser.add_argument('--output_c_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
@@ -89,20 +99,26 @@ if not args.renumber_endpoints:
     if 'MSC' in args.devices:
         if args.msc_ep_num_out == 0:
             raise ValueError("MSC endpoint OUT number must not be 0")
-        elif  args.msc_ep_num_in == 0:
+        elif args.msc_ep_num_in == 0:
             raise ValueError("MSC endpoint IN number must not be 0")
 
     if 'HID' in args.devices:
         if args.args.hid_ep_num_out == 0:
             raise ValueError("HID endpoint OUT number must not be 0")
-        elif  args.hid_ep_num_in == 0:
+        elif args.hid_ep_num_in == 0:
             raise ValueError("HID endpoint IN number must not be 0")
 
     if 'AUDIO' in args.devices:
         if args.args.midi_ep_num_out == 0:
             raise ValueError("MIDI endpoint OUT number must not be 0")
-        elif  args.midi_ep_num_in == 0:
+        elif args.midi_ep_num_in == 0:
             raise ValueError("MIDI endpoint IN number must not be 0")
+
+    if 'VENDOR' in args.devices:
+        if args.vendor_ep_num_out == 0:
+            raise ValueError("VENDOR endpoint OUT number must not be 0")
+        elif args.vendor_ep_num_in == 0:
+            raise ValueError("VENDOR endpoint IN number must not be 0")
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -359,6 +375,35 @@ audio_control_interface = standard.InterfaceDescriptor(
 # Audio streaming interfaces must occur before MIDI ones.
 audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
 
+# Vendor-specific interface, for example WebUSB
+vendor_endpoint_in_descriptor = standard.EndpointDescriptor(
+    description="VENDOR in",
+    bEndpointAddress=args.vendor_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
+    bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+    bInterval=16)
+
+vendor_endpoint_out_descriptor = standard.EndpointDescriptor(
+    description="VENDOR out",
+    bEndpointAddress=args.vendor_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
+    bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+    bInterval=16)
+
+# We do the following conditionally to avoid adding unused entries to the StringIndex table
+if 'VENDOR' in args.devices:
+    vendor_interface = standard.InterfaceDescriptor(
+        description="VENDOR",
+        bInterfaceClass=0xff, # Vendor-specific
+        bInterfaceSubClass=0x00,
+        bInterfaceProtocol=0x00,
+        iInterface=StringIndex.index("{} VENDOR".format(args.interface_name)),
+        subdescriptors=[
+            vendor_endpoint_in_descriptor,
+            vendor_endpoint_out_descriptor,
+        ]
+    )
+
+    vendor_interfaces = [vendor_interface]
+
 interfaces_to_join = []
 
 if 'CDC' in args.devices:
@@ -372,6 +417,9 @@ if 'HID' in args.devices:
 
 if 'AUDIO' in args.devices:
     interfaces_to_join.append(audio_interfaces)
+
+if 'VENDOR' in args.devices:
+    interfaces_to_join.append(vendor_interfaces)
 
 # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
@@ -425,6 +473,9 @@ if 'AUDIO' in args.devices:
     # correct ordering.
     descriptor_list.append(audio_control_interface)
 
+if 'VENDOR' in args.devices:
+    descriptor_list.extend(vendor_interfaces)
+
 # Finally, build the composite descriptor.
 
 configuration = standard.ConfigurationDescriptor(
@@ -444,6 +495,7 @@ h_file = args.output_h_file
 c_file.write("""\
 #include <stdint.h>
 
+#include "tusb.h"
 #include "py/objtuple.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "{H_FILE_NAME}"
@@ -550,7 +602,7 @@ c_file.write("\n")
 
 hid_descriptor_length = len(bytes(combined_hid_report_descriptor))
 
-# Now we values we need for the .h file.
+# Now the values we need for the .h file.
 h_file.write("""\
 #ifndef MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
 #define MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
@@ -586,7 +638,27 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
         msc_vendor=args.manufacturer[:8],
         msc_product=args.product[:16]))
 
+if 'VENDOR' in args.devices:
+    h_file.write("""\
+enum
+{
+  VENDOR_REQUEST_WEBUSB = 1,
+  VENDOR_REQUEST_MICROSOFT = 2
+};
+
+extern uint8_t const desc_ms_os_20[];
+
+// Currently getting compile-time errors in files like tusb_fifo.c
+// if we try do define this here (TODO figure this out!)
+//extern const tusb_desc_webusb_url_t desc_webusb_url;
+
+""")
+
+h_file.write("""\
+#endif // MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
+""")
 # Write out the report descriptor and info
+
 c_file.write("""\
 const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
 """.format(HID_DESCRIPTOR_LENGTH=hid_descriptor_length))
@@ -655,6 +727,96 @@ c_file.write("""\
 };
 """)
 
-h_file.write("""\
-#endif // MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
-""")
+if 'VENDOR' in args.devices:
+    # Mimic what the tinyusb webusb demo does in it's main.c file
+    c_file.write("""
+#define URL   "{webusb_url}"
+
+const tusb_desc_webusb_url_t desc_webusb_url =
+{{
+  .bLength         = 3 + sizeof(URL) - 1,
+  .bDescriptorType = 3, // WEBUSB URL type
+  .bScheme         = 1, // 0: http, 1: https, 255: ""
+  .url             = URL
+}};
+
+// These next two hardcoded descriptors were pulled from the usb_descriptor.c file
+// of the tinyusb webusb_serial demo. TODO - this is probably something else to
+// integrate into the adafruit_usb_descriptors project...
+
+//--------------------------------------------------------------------+
+// BOS Descriptor
+//--------------------------------------------------------------------+
+
+/* Microsoft OS 2.0 registry property descriptor
+Per MS requirements https://msdn.microsoft.com/en-us/library/windows/hardware/hh450799(v=vs.85).aspx
+device should create DeviceInterfaceGUIDs. It can be done by driver and
+in case of real PnP solution device should expose MS "Microsoft OS 2.0
+registry property descriptor". Such descriptor can insert any record
+into Windows registry per device/configuration/interface. In our case it
+will insert "DeviceInterfaceGUIDs" multistring property.
+
+GUID is freshly generated and should be OK to use.
+
+https://developers.google.com/web/fundamentals/native-hardware/build-for-webusb/
+(Section Microsoft OS compatibility descriptors)
+*/
+
+#define BOS_TOTAL_LEN      (TUD_BOS_DESC_LEN + TUD_BOS_WEBUSB_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
+
+#define MS_OS_20_DESC_LEN  0xB2
+
+// BOS Descriptor is required for webUSB
+uint8_t const desc_bos[] =
+{{
+  // total length, number of device caps
+  TUD_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 2),
+
+  // Vendor Code, iLandingPage
+  TUD_BOS_WEBUSB_DESCRIPTOR(VENDOR_REQUEST_WEBUSB, 1),
+
+  // Microsoft OS 2.0 descriptor
+  TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN, VENDOR_REQUEST_MICROSOFT)
+}};
+
+uint8_t const * tud_descriptor_bos_cb(void)
+{{
+  return desc_bos;
+}}
+
+
+#define ITF_NUM_VENDOR   {webusb_interface} // used in this next descriptor
+
+uint8_t const desc_ms_os_20[] =
+{{
+  // Set header: length, type, windows version, total length
+  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN),
+
+  // Configuration subset header: length, type, configuration index, reserved, configuration total length
+  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_CONFIGURATION), 0, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A),
+
+  // Function Subset header: length, type, first interface, reserved, subset length
+  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), ITF_NUM_VENDOR, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A-0x08),
+
+  // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
+  U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // sub-compatible
+
+  // MS OS 2.0 Registry property descriptor: length, type
+  U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A-0x08-0x08-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
+  U16_TO_U8S_LE(0x0007), U16_TO_U8S_LE(0x002A), // wPropertyDataType, wPropertyNameLength and PropertyName "DeviceInterfaceGUIDs\0" in UTF-16
+  'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
+  'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00,
+  U16_TO_U8S_LE(0x0050), // wPropertyDataLength
+	//bPropertyData: “{{975F44D9-0D08-43FD-8B3E-127CA8AFFF9D}}”.
+  '{{', 0x00, '9', 0x00, '7', 0x00, '5', 0x00, 'F', 0x00, '4', 0x00, '4', 0x00, 'D', 0x00, '9', 0x00, '-', 0x00,
+  '0', 0x00, 'D', 0x00, '0', 0x00, '8', 0x00, '-', 0x00, '4', 0x00, '3', 0x00, 'F', 0x00, 'D', 0x00, '-', 0x00,
+  '8', 0x00, 'B', 0x00, '3', 0x00, 'E', 0x00, '-', 0x00, '1', 0x00, '2', 0x00, '7', 0x00, 'C', 0x00, 'A', 0x00,
+  '8', 0x00, 'A', 0x00, 'F', 0x00, 'F', 0x00, 'F', 0x00, '9', 0x00, 'D', 0x00, '}}', 0x00, 0x00, 0x00, 0x00, 0x00
+}};
+
+TU_VERIFY_STATIC(sizeof(desc_ms_os_20) == MS_OS_20_DESC_LEN, "Incorrect size");
+
+// End of section about desc_ms_os_20
+
+""".format(webusb_url=args.webusb_url, webusb_interface=vendor_interface.bInterfaceNumber))
