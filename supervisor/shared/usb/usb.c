@@ -111,9 +111,14 @@ static void usb_background_do(void* unused) {
     usb_background();
 }
 
+void usb_background_schedule(void)
+{
+    background_callback_add(&usb_callback, usb_background_do, NULL);
+}
+
 void usb_irq_handler(void) {
     tud_int_handler(0);
-    background_callback_add(&usb_callback, usb_background_do, NULL);
+    usb_background_schedule();
 }
 
 //--------------------------------------------------------------------+
