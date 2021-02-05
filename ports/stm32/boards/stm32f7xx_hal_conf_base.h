@@ -28,6 +28,7 @@
 
 // Include various HAL modules for convenience
 #include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_dma2d.h"
 #include "stm32f7xx_hal_adc.h"
 #include "stm32f7xx_hal_can.h"
 #include "stm32f7xx_hal_cortex.h"
@@ -41,6 +42,7 @@
 #include "stm32f7xx_hal_i2c.h"
 #include "stm32f7xx_hal_i2s.h"
 #include "stm32f7xx_hal_iwdg.h"
+#include "stm32f7xx_hal_ltdc.h"
 #include "stm32f7xx_hal_mmc.h"
 #include "stm32f7xx_hal_pcd.h"
 #include "stm32f7xx_hal_pwr.h"
@@ -65,6 +67,7 @@
 #define HAL_DAC_MODULE_ENABLED
 #define HAL_DCMI_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
+#define HAL_DMA2D_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_HASH_MODULE_ENABLED
@@ -72,6 +75,7 @@
 #define HAL_I2C_MODULE_ENABLED
 #define HAL_I2S_MODULE_ENABLED
 #define HAL_IWDG_MODULE_ENABLED
+#define HAL_LTDC_MODULE_ENABLED
 #define HAL_MMC_MODULE_ENABLED
 #define HAL_PCD_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED

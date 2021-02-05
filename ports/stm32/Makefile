@@ -372,6 +372,7 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_adc_ex.c \
 	hal_cortex.c \
 	hal_dma.c \
+	hal_dma2d.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_gpio.c \
@@ -388,6 +389,7 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	hal_ltdc.c \
 	)
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l0 l4 wb))
