@@ -70,3 +70,63 @@ void audiosample_get_buffer_structure(mp_obj_t sample_obj, bool single_channel,
     proto->get_buffer_structure(MP_OBJ_TO_PTR(sample_obj), single_channel, single_buffer,
         samples_signed, max_buffer_length, spacing);
 }
+
+void audiosample_convert_u8m_s16s(int16_t *buffer_out, const uint8_t *buffer_in, size_t nframes) {
+    for(;nframes--;) {
+        int16_t sample = (*buffer_in++ - 0x80) << 8;
+        *buffer_out++ = sample;
+        *buffer_out++ = sample;
+    }
+}
+
+
+void audiosample_convert_u8s_s16s(int16_t *buffer_out, const uint8_t *buffer_in, size_t nframes) {
+    size_t nsamples = 2*nframes;
+    for(;nsamples--;) {
+        int16_t sample = (*buffer_in++ - 0x80) << 8;
+        *buffer_out++ = sample;
+    }
+}
+
+void audiosample_convert_s8m_s16s(int16_t *buffer_out, const int8_t *buffer_in, size_t nframes) {
+    for(;nframes--;) {
+        int16_t sample = (*buffer_in++) << 8;
+        *buffer_out++ = sample;
+        *buffer_out++ = sample;
+    }
+}
+
+
+void audiosample_convert_s8s_s16s(int16_t *buffer_out, const int8_t *buffer_in, size_t nframes) {
+    size_t nsamples = 2*nframes;
+    for(;nsamples--;) {
+        int16_t sample = (*buffer_in++) << 8;
+        *buffer_out++ = sample;
+    }
+}
+
+
+void audiosample_convert_u16m_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes) {
+    for(;nframes--;) {
+        int16_t sample = *buffer_in++ - 0x8000;
+        *buffer_out++ = sample;
+        *buffer_out++ = sample;
+    }
+}
+
+
+void audiosample_convert_u16s_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes) {
+    size_t nsamples = 2*nframes;
+    for(;nsamples--;) {
+        int16_t sample = *buffer_in++ - 0x8000;
+        *buffer_out++ = sample;
+    }
+}
+
+void audiosample_convert_s16m_s16s(int16_t *buffer_out, const int16_t *buffer_in, size_t nframes) {
+    for(;nframes--;) {
+        int16_t sample = *buffer_in++;
+        *buffer_out++ = sample;
+        *buffer_out++ = sample;
+    }
+}

@@ -59,4 +59,6 @@ typedef struct {
     uint8_t last_disconnect_reason;
 } wifi_radio_obj_t;
 
+extern void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self);
+
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_RADIO_H

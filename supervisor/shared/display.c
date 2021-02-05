@@ -60,38 +60,44 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
-    uint16_t width_in_tiles = (width_px - blinka_bitmap.width) / grid->tile_width;
+    bool tall = height_px > width_px;
+    uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
+    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px ;
+    uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
     // determine scale based on h
     if (width_in_tiles < 80) {
         scale = 1;
     }
 
-    width_in_tiles = (width_px - blinka_bitmap.width * scale) / (grid->tile_width * scale);
+    width_in_tiles = terminal_width_px / (grid->tile_width * scale);
     if (width_in_tiles < 1) {
         width_in_tiles = 1;
     }
-    uint16_t height_in_tiles = height_px / (grid->tile_height * scale);
-    uint16_t remaining_pixels = height_px % (grid->tile_height * scale);
+    uint16_t height_in_tiles = terminal_height_px / (grid->tile_height * scale);
+    uint16_t remaining_pixels = tall ? 0 : terminal_height_px % (grid->tile_height * scale);
     if (height_in_tiles < 1 || remaining_pixels > 0) {
         height_in_tiles += 1;
     }
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
-    // First try to allocate outside the heap. This will fail when the VM is running.
-    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
-    uint8_t* tiles;
-    if (tilegrid_tiles == NULL) {
-        tiles = m_malloc(total_tiles, true);
-        MP_STATE_VM(terminal_tilegrid_tiles) = tiles;
-    } else {
-        tiles = (uint8_t*) tilegrid_tiles->ptr;
+    // Reuse the previous allocation if possible
+    if (tilegrid_tiles) {
+        if (get_allocation_length(tilegrid_tiles) != align32_size(total_tiles)) {
+            free_memory(tilegrid_tiles);
+            tilegrid_tiles = NULL;
+        }
     }
+    if (!tilegrid_tiles) {
+        tilegrid_tiles = allocate_memory(align32_size(total_tiles), false, true);
+        if (!tilegrid_tiles) {
+            return;
+        }
+    }
+    uint8_t* tiles = (uint8_t*) tilegrid_tiles->ptr;
 
-    if (tiles == NULL) {
-        return;
-    }
-    grid->y = 0;
+    grid->y = tall ? blinka_bitmap.height : 0;
+    grid->x = tall ? 0 : blinka_bitmap.width;
     grid->top_left_y = 0;
     if (remaining_pixels > 0) {
         grid->y -= (grid->tile_height - remaining_pixels);
@@ -116,7 +122,6 @@ void supervisor_stop_terminal(void) {
     if (tilegrid_tiles != NULL) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
-        supervisor_terminal_text_grid.inline_tiles = false;
         supervisor_terminal_text_grid.tiles = NULL;
     }
     #endif
@@ -124,20 +129,10 @@ void supervisor_stop_terminal(void) {
 
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
-    displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
-    if (MP_STATE_VM(terminal_tilegrid_tiles) != NULL &&
-        grid->tiles == MP_STATE_VM(terminal_tilegrid_tiles)) {
-        uint16_t total_tiles = grid->width_in_tiles * grid->height_in_tiles;
-
-        tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
-        if (tilegrid_tiles != NULL) {
-            memcpy(tilegrid_tiles->ptr, grid->tiles, total_tiles);
-            grid->tiles = (uint8_t*) tilegrid_tiles->ptr;
-        } else {
-            grid->tiles = NULL;
-            grid->inline_tiles = false;
-        }
-        MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
+    if (tilegrid_tiles != NULL) {
+        supervisor_terminal_text_grid.tiles = (uint8_t*) tilegrid_tiles->ptr;
+    } else {
+        supervisor_terminal_text_grid.tiles = NULL;
     }
     #endif
 

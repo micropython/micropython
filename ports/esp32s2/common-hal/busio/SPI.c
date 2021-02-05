@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
@@ -204,6 +203,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // hal->dummy_bits = 0;
     // hal->addr = 0;
 
+    claim_pin(self->clock_pin);
+    if (self->MOSI_pin != NULL) {
+        claim_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        claim_pin(self->MISO_pin);
+    }
+
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
     common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
@@ -241,12 +248,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     spi_bus_free(self->host_id);
 
     common_hal_reset_pin(self->clock_pin);
-    if (self->MOSI_pin != NULL) {
-        common_hal_reset_pin(self->MOSI_pin);
-    }
-    if (self->MISO_pin != NULL) {
-        common_hal_reset_pin(self->MISO_pin);
-    }
+    common_hal_reset_pin(self->MOSI_pin);
+    common_hal_reset_pin(self->MISO_pin);
     self->clock_pin = NULL;
     self->MISO_pin = NULL;
     self->MOSI_pin = NULL;
@@ -266,7 +269,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->bits = bits;
     self->target_frequency = baudrate;
     self->hal_context.timing_conf = &self->timing_conf;
-    esp_err_t result =  spi_hal_cal_clock_conf(&self->hal_context,
+    esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
                                                self->target_frequency,
                                                128 /* duty_cycle */,
                                                self->connected_through_gpio,
@@ -359,7 +362,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         burst_length = sizeof(hal->hw->data_buf);
         // When switching to non-DMA, we need to make sure DMA is off. Otherwise,
         // the S2 will transmit zeroes instead of our data.
-        spi_ll_txdma_disable(hal->hw);
+        hal->hw->dma_out_link.dma_tx_ena = 0;
+        hal->hw->dma_out_link.stop = 1;
     }
 
     // This rounds up.

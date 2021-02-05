@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include "supervisor/port.h"
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
@@ -251,8 +251,8 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return false;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -276,7 +276,7 @@ uint32_t port_get_saved_word(void) {
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
     common_hal_mcu_disable_interrupts();
     uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
-    uint32_t overflow_count = overflow_tracker.overflowed_ticks;
+    uint64_t overflow_count = overflow_tracker.overflowed_ticks;
     common_hal_mcu_enable_interrupts();
 
     if (subticks != NULL) {
@@ -307,7 +307,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
 #if defined(MICROPY_QSPI_CS)
     qspi_disable();
 #endif

@@ -19,7 +19,7 @@ import black
 IMPORTS_IGNORE = frozenset({'int', 'float', 'bool', 'str', 'bytes', 'tuple', 'list', 'set', 'dict', 'bytearray', 'slice', 'file', 'buffer', 'range', 'array', 'struct_time'})
 IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence', 'NamedTuple', 'Iterable', 'Iterator', 'Callable', 'AnyStr', 'overload', 'Type'})
 IMPORTS_TYPES = frozenset({'TracebackType'})
-CPY_TYPING = frozenset({'ReadableBuffer', 'WriteableBuffer', 'AudioSample', 'FrameBuffer'})
+CPY_TYPING = frozenset({'ReadableBuffer', 'WriteableBuffer', 'AudioSample', 'FrameBuffer', 'Alarm'})
 
 
 def is_typed(node, allow_any=False):

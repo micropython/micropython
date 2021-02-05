@@ -150,6 +150,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr);

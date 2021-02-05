@@ -31,10 +31,12 @@
 
 #include "supervisor/memory.h"
 
-extern supervisor_allocation* stack_alloc;
-
 void stack_init(void);
 void stack_resize(void);
+// Actual stack location and size, may be larger than requested.
+uint32_t* stack_get_bottom(void);
+size_t stack_get_length(void);
+// Next/current requested stack size.
 void set_next_stack_size(uint32_t size);
 uint32_t get_current_stack_size(void);
 bool stack_ok(void);

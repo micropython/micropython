@@ -35,7 +35,7 @@ typedef enum {
     IMAGEFORMAT_RGB565,
 } camera_imageformat_t;
 
-const mp_obj_type_t camera_imageformat_type;
+extern const mp_obj_type_t camera_imageformat_type;
 
 camera_imageformat_t camera_imageformat_obj_to_type(mp_obj_t obj);
 mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t mode);

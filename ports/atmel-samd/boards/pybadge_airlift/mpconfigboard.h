@@ -14,17 +14,12 @@
 #define MICROPY_PORT_C (0)
 #define MICROPY_PORT_D (0)
 
-#define USER_NEOPIXELS_PIN      (&pin_PA15)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA13)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA12)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PA17)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PB23)
 #define DEFAULT_SPI_BUS_MISO (&pin_PB22)
-
-#define DEFAULT_UART_BUS_RX (&pin_PB17)
-#define DEFAULT_UART_BUS_TX (&pin_PB16)
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

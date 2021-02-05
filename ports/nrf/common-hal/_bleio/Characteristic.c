@@ -132,13 +132,6 @@ size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *sel
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
-    if (self->fixed_length && bufinfo->len != self->max_length) {
-        mp_raise_ValueError(translate("Value length != required fixed length"));
-    }
-    if (bufinfo->len > self->max_length) {
-        mp_raise_ValueError(translate("Value length > max_length"));
-    }
-
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
 
@@ -148,6 +141,14 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo,
                                          (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
+            // Validate data length for local characteristics only.
+            if (self->fixed_length && bufinfo->len != self->max_length) {
+                mp_raise_ValueError(translate("Value length != required fixed length"));
+            }
+            if (bufinfo->len > self->max_length) {
+                mp_raise_ValueError(translate("Value length > max_length"));
+            }
+
             // Always write the value locally even if no connections are active.
             // conn_handle is ignored for non-system attributes, so we use BLE_CONN_HANDLE_INVALID.
             common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);

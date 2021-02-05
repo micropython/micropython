@@ -16,3 +16,5 @@ CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_VECTORIO = 0
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
+
+SUPEROPT_GC = 0
