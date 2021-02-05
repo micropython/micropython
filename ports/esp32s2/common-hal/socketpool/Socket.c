@@ -181,7 +181,7 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self,
     opts = opts | O_NONBLOCK;
     lwip_fcntl(self->num, F_SETFL, opts);
 
-    if (result) {
+    if (result >= 0) {
         self->connected = true;
         return true;
     } else {
