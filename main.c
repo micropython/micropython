@@ -184,7 +184,7 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
-    usb_background_schedule();
+    usb_background();
 
     gc_deinit();
 }
