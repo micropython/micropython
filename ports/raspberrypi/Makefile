@@ -99,6 +99,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/pico_platform/include/ \
        -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
        -isystem sdk/src/rp2_common/pico_bootrom/include/ \
+       -isystem sdk/src/rp2_common/pico_unique_id/include/ \
        -Isdk_config \
        -I../../lib/tinyusb/src \
        -I../../supervisor/shared/usb \
@@ -184,6 +185,7 @@ SRC_SDK := \
 	src/rp2_common/pico_printf/printf.c \
 	src/rp2_common/pico_runtime/runtime.c \
 	src/rp2_common/pico_stdio/stdio.c \
+	src/rp2_common/pico_unique_id/unique_id.c \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 
