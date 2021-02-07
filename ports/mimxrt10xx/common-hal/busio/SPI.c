@@ -38,6 +38,8 @@
 
 #define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
 
+#define MAX_SPI_BUSY_RETRIES 100
+
 //arrays use 0 based numbering: SPI1 is stored at index 0
 #define MAX_SPI 4
 STATIC bool reserved_spi[MAX_SPI];
@@ -290,9 +292,10 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     xfer.configFlags = kLPSPI_MasterPcs0;
 
     status_t status;
+    int retries = MAX_SPI_BUSY_RETRIES;
     do {
         status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy);
+    } while (status == kStatus_LPSPI_Busy && --retries > 0);
 
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
@@ -316,9 +319,10 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     xfer.dataSize = len;
 
     status_t status;
+    int retries = MAX_SPI_BUSY_RETRIES;
     do {
         status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy);
+    } while (status == kStatus_LPSPI_Busy && --retries > 0);
 
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
@@ -342,9 +346,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     xfer.dataSize = len;
 
     status_t status;
+    int retries = MAX_SPI_BUSY_RETRIES;
     do {
         status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy);
+    } while (status == kStatus_LPSPI_Busy && --retries > 0);
 
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
