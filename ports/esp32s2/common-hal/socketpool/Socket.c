@@ -181,7 +181,7 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self,
     opts = opts | O_NONBLOCK;
     lwip_fcntl(self->num, F_SETFL, opts);
 
-    if (result) {
+    if (result >= 0) {
         self->connected = true;
         return true;
     } else {
@@ -256,7 +256,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
                 timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
             }
             RUN_BACKGROUND_TASKS;
-            received = lwip_recv(self->num, (void*) buf, len - 1, 0);
+            received = lwip_recv(self->num, (void*) buf, len, 0);
 
             // In non-blocking mode, fail instead of looping
             if (received == -1 && self->timeout_ms == 0) {
