@@ -546,15 +546,23 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         size_t tx_remaining = out_len;
 
         while (rx_remaining || tx_remaining) {
-            if (tx_remaining && !pio_sm_is_tx_fifo_full(self->pio, self->state_machine)) {
-                *tx_destination = *data_out;
-                data_out++;
-                --tx_remaining;
-            }
-            if (rx_remaining && !pio_sm_is_rx_fifo_empty(self->pio, self->state_machine)) {
-                *data_in = (uint8_t) *rx_source;
-                data_in++;
-                --rx_remaining;
+            for (int i=0; i<32; i++) {
+                bool did_transfer = false;
+                if (tx_remaining && !pio_sm_is_tx_fifo_full(self->pio, self->state_machine)) {
+                    *tx_destination = *data_out;
+                    data_out++;
+                    --tx_remaining;
+                    did_transfer = true;
+                }
+                if (rx_remaining && !pio_sm_is_rx_fifo_empty(self->pio, self->state_machine)) {
+                    *data_in = (uint8_t) *rx_source;
+                    data_in++;
+                    --rx_remaining;
+                    did_transfer = true;
+                }
+                if (!did_transfer) {
+                    break;
+                }
             }
             RUN_BACKGROUND_TASKS;
             if (mp_hal_is_interrupted()) {
