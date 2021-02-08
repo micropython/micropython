@@ -63,7 +63,7 @@ bool register_open_socket(socketpool_socket_obj_t* self) {
 }
 
 socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_obj_t* self,
-                                        uint8_t* ip, uint *port) {
+                                        uint8_t* ip, uint32_t *port) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
     int newsoc = -1;
@@ -113,7 +113,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_o
 }
 
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t* self,
-                                        const char* host, size_t hostlen, uint8_t port) {
+                                        const char* host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
     bind_addr.sin_addr.s_addr = inet_addr(host);
     bind_addr.sin_family = AF_INET;
@@ -144,7 +144,7 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
 }
 
 bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self,
-                                            const char* host, mp_uint_t hostlen, mp_int_t port) {
+                                            const char* host, size_t hostlen, uint32_t port) {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_socktype = SOCK_STREAM,
@@ -202,7 +202,7 @@ bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t* self, int back
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,
-    uint8_t* buf, mp_uint_t len, uint8_t* ip, uint *port) {
+    uint8_t* buf, uint32_t len, uint8_t* ip, uint *port) {
 
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
@@ -241,7 +241,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
+mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, uint32_t len) {
     int received = 0;
     bool timed_out = false;
 
@@ -273,7 +273,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
+mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, uint32_t len) {
     int sent = -1;
     if (self->num != -1) {
         // LWIP Socket
@@ -290,7 +290,7 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
 }
 
 mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
-    const char* host, size_t hostlen, uint8_t port, const uint8_t* buf, mp_uint_t len) {
+    const char* host, size_t hostlen, uint32_t port, const uint8_t* buf, uint32_t len) {
 
     // Set parameters
     const struct addrinfo hints = {
@@ -322,6 +322,6 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
     return bytes_sent;
 }
 
-void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms) {
+void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
 }

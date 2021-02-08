@@ -72,7 +72,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4,
 STATIC mp_obj_t socketpool_socket_accept(mp_obj_t self_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t ip[4];
-    uint port;
+    uint32_t port;
 
     socketpool_socket_obj_t * sock = common_hal_socketpool_socket_accept(self, ip, &port);
 
@@ -98,8 +98,11 @@ STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
+    if (port < 0) {
+        mp_raise_ValueError(translate("port must be >= 0"));
+    }
 
-    bool ok = common_hal_socketpool_socket_bind(self, host, hostlen, port);
+    bool ok = common_hal_socketpool_socket_bind(self, host, hostlen, (uint32_t)port);
     if (!ok) {
         mp_raise_ValueError(translate("Error: Failure to bind"));
     }
@@ -133,8 +136,11 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
+    if (port < 0) {
+        mp_raise_ValueError(translate("port must be >= 0"));
+    }
 
-    bool ok = common_hal_socketpool_socket_connect(self, host, hostlen, port);
+    bool ok = common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
     if (!ok) {
         mp_raise_OSError(0);
     }
@@ -278,8 +284,11 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     size_t hostlen;
     const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
+    if (port < 0) {
+        mp_raise_ValueError(translate("port must be >= 0"));
+    }
 
-    mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, port, bufinfo.buf, bufinfo.len);
+    mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, (uint32_t)port, bufinfo.buf, bufinfo.len);
     if (!ret) {
         mp_raise_OSError(0);
     }
