@@ -29,6 +29,7 @@
 #include "bindings/rp2pio/StateMachine.h"
 #include "common-hal/rp2pio/StateMachine.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 
 #include "supervisor/port.h"
 
@@ -89,7 +90,11 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     // Use a private deinit of the state machine that doesn't reset the pin.
     rp2pio_statemachine_deinit(&state_machine, true);
+
+    // Reset the pin and release it from the PIO
     gpio_init(digitalinout->pin->number);
+    common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t*)digitalinout, false, DRIVE_MODE_PUSH_PULL);
+
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 1;
 }
