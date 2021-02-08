@@ -28,10 +28,24 @@
 #include "shared-bindings/supervisor/Runtime.h"
 #include "supervisor/serial.h"
 
-bool common_hal_get_serial_connected(void) {
+bool common_hal_supervisor_runtime_get_serial_connected(void) {
     return (bool) serial_connected();
 }
 
-bool common_hal_get_serial_bytes_available(void) {
+bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
   return (bool) serial_bytes_available();
 }
+
+#if CIRCUITPY_USB_SERIAL2
+mp_obj_t common_hal_supervisor_runtime_get_serial2(void) {
+    return (bool) serial_connected();
+}
+
+bool common_hal_supervisor_runtime_get_serial2_connected(void) {
+    return (bool) serial_connected();
+}
+
+bool common_hal_get_supervisor_runtime_serial2_bytes_available(void) {
+  return (bool) serial_bytes_available();
+}
+#endif
