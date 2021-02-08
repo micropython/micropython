@@ -54,6 +54,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
+    mp_raise_NotImplementedError(translate("UART not yet supported"));
 
 //     Sercom* sercom = NULL;
 //     uint8_t sercom_index = 255; // Unset index

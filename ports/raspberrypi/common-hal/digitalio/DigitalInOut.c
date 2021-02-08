@@ -76,8 +76,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_drive_mode_t drive_mode) {
     const uint8_t pin = self->pin->number;
     gpio_set_dir(pin, GPIO_OUT);
-    // Turn on "strong" pin driving (more current available). See DRVSTR doc in datasheet.
-    // hri_port_set_PINCFG_DRVSTR_bit(PORT, (enum gpio_port)GPIO_PORT(pin), GPIO_PIN(pin));
+    // TODO: Turn on "strong" pin driving (more current available).
 
     self->output = true;
     common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
@@ -140,18 +139,16 @@ void common_hal_digitalio_digitalinout_set_pull(
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t* self) {
-    // uint32_t pin = self->pin->number;
-    // if (self->output) {
-    //     mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
-    //     return PULL_NONE;
-    // } else {
-    //     if (hri_port_get_PINCFG_PULLEN_bit(PORT, GPIO_PORT(pin), GPIO_PIN(pin)) == 0) {
-    //         return PULL_NONE;
-    //     } if (hri_port_get_OUT_reg(PORT, GPIO_PORT(pin), 1U << GPIO_PIN(pin)) > 0) {
-    //         return PULL_UP;
-    //     } else {
-    //         return PULL_DOWN;
-    //     }
-    // }
+    uint32_t pin = self->pin->number;
+    if (self->output) {
+        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        return PULL_NONE;
+    } else {
+        if (gpio_is_pulled_up(pin)) {
+            return PULL_UP;
+        } else if (gpio_is_pulled_down(pin)) {
+            return PULL_DOWN;
+        }
+    }
     return PULL_NONE;
 }

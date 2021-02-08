@@ -14,6 +14,9 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
+# All raspberrypi ports have longints.
+LONGINT_IMPL = MPZ
+
 ifndef CIRCUITPY_RP2PIO
 CIRCUITPY_RP2PIO = 1
 else
@@ -32,13 +35,13 @@ CIRCUITPY_I2CPERIPHERAL = 0
 CIRCUITPY_NVM = 0
 CIRCUITPY_PULSEIO = 0 # Use PIO interally
 CIRCUITPY_ROTARYIO = 0 # Use PIO interally
-CIRCUITPY_RTC = 0
+CIRCUITPY_WATCHDOG = 1
 
 # Things that are unsupported by the hardware.
 CIRCUITPY_AUDIOIO = 0
 
 INTERNAL_LIBM = 1
 
-USB_SERIAL_NUMBER_LENGTH = 32
+USB_SERIAL_NUMBER_LENGTH = 16
 
 USB_NUM_EP = 8

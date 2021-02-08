@@ -604,22 +604,6 @@ STATIC mp_obj_t _jump(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
 
-//|     def LineWidth(self, width: int) -> None:
-//|         """Set the width of rasterized lines
-//|
-//|         :param int width: line width in :math:`1/16` pixel. Range 0-4095. The initial value is 16
-//|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
-//|         ...
-//|
-
-STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
-    uint32_t width  = mp_obj_get_int_truncated(a0);
-    common_hal__eve_LineWidth(EVEHAL(self), width);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
-
 //|     def Macro(self, m: int) -> None:
 //|         """Execute a single command from a macro register
 //|
@@ -661,22 +645,6 @@ STATIC mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(palettesource_obj, _palettesource);
-
-//|     def PointSize(self, size: int) -> None:
-//|         """Set the radius of rasterized points
-//|
-//|         :param int size: point radius in :math:`1/16` pixel. Range 0-8191. The initial value is 16
-//|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
-//|         ...
-//|
-
-STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
-    uint32_t size   = mp_obj_get_int_truncated(a0);
-    common_hal__eve_PointSize(EVEHAL(self), size);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 
 //|     def RestoreContext(self) -> None:
 //|         """Restore the current graphics context from the context stack"""
@@ -836,48 +804,6 @@ STATIC mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tag_obj, _tag);
 
-//|     def VertexTranslateX(self, x: int) -> None:
-//|         """Set the vertex transformation's x translation component
-//|
-//|         :param int x: signed x-coordinate in :math:`1/16` pixel. Range 0-131071. The initial value is 0
-//|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
-//|         ...
-//|
-
-STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
-    uint32_t x      = mp_obj_get_int_truncated(a0);
-    common_hal__eve_VertexTranslateX(EVEHAL(self), x);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
-
-//|     def VertexTranslateY(self, y: int) -> None:
-//|         """Set the vertex transformation's y translation component
-//|
-//|         :param int y: signed y-coordinate in :math:`1/16` pixel. Range 0-131071. The initial value is 0
-//|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
-//|         ...
-//|
-
-
-STATIC mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
-    uint32_t y      = mp_obj_get_int_truncated(a0);
-    common_hal__eve_VertexTranslateY(EVEHAL(self), y);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
-
-//|     def VertexFormat(self, frac: int) -> None:
-//|         """Set the precision of vertex2f coordinates
-//|
-//|         :param int frac: Number of fractional bits in X,Y coordinates, 0-4. Range 0-7. The initial value is 4
-//|
-//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
-//|         ...
-//|
-
 STATIC mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
     uint32_t frac   = mp_obj_get_int_truncated(a0);
     common_hal__eve_VertexFormat(EVEHAL(self), frac);
@@ -974,6 +900,82 @@ STATIC mp_obj_t _vertex2f(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
+
+//|     def LineWidth(self, width: float) -> None:
+//|         """Set the width of rasterized lines
+//|
+//|         :param float width: line width in pixels. Range 0-511. The initial value is 1
+//|
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         ...
+//|
+
+STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
+    mp_float_t width  = mp_obj_get_float(a0);
+    common_hal__eve_LineWidth(EVEHAL(self), width);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
+
+//|     def PointSize(self, size: float) -> None:
+//|         """Set the diameter of rasterized points
+//|
+//|         :param float size: point diameter in pixels. Range 0-1023. The initial value is 1
+//|
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         ...
+//|
+
+STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
+    mp_float_t size   = mp_obj_get_float(a0);
+    common_hal__eve_PointSize(EVEHAL(self), size);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
+
+//|     def VertexTranslateX(self, x: float) -> None:
+//|         """Set the vertex transformation's x translation component
+//|
+//|         :param float x: signed x-coordinate in pixels. Range ±4095. The initial value is 0
+//|
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         ...
+//|
+
+STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
+    mp_float_t x      = mp_obj_get_float(a0);
+    common_hal__eve_VertexTranslateX(EVEHAL(self), x);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
+
+//|     def VertexTranslateY(self, y: float) -> None:
+//|         """Set the vertex transformation's y translation component
+//|
+//|         :param float y: signed y-coordinate in pixels. Range ±4095. The initial value is 0
+//|
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         ...
+//|
+
+
+STATIC mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
+    mp_float_t y      = mp_obj_get_float(a0);
+    common_hal__eve_VertexTranslateY(EVEHAL(self), y);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
+
+//|     def VertexFormat(self, frac: int) -> None:
+//|         """Set the precision of vertex2f coordinates
+//|
+//|         :param int frac: Number of fractional bits in X,Y coordinates, 0-4. Range 0-7. The initial value is 4
+//|
+//|         This value is part of the graphics context and is saved and restored by :meth:`SaveContext` and :meth:`RestoreContext`."""
+//|         ...
+//|
+
+//}
 
 // Append an object x to the FIFO
 #define ADD_X(self, x) \
