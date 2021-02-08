@@ -40,6 +40,7 @@
 
 
 static uint8_t pewpew_tc_index = 0xff;
+static volatile uint16_t pewpew_ticks = 0;
 
 
 void pewpew_interrupt_handler(uint8_t index) {
@@ -52,6 +53,7 @@ void pewpew_interrupt_handler(uint8_t index) {
     }
 
     pew_tick();
+    ++pewpew_ticks;
 
     // Clear the interrupt bit.
     tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
@@ -122,4 +124,8 @@ void pew_reset(void) {
         pewpew_tc_index = 0xff;
     }
     MP_STATE_VM(pew_singleton) = NULL;
+}
+
+uint16_t pew_get_ticks() {
+    return pewpew_ticks;
 }
