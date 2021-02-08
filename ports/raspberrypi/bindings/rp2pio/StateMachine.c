@@ -189,7 +189,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     if (bufinfo.len % 2 != 0) {
         mp_raise_ValueError(translate("Program size invalid"));
     }
-    if (bufinfo.len > 32) {
+    if (bufinfo.len > 64) {
         mp_raise_ValueError(translate("Program too large"));
     }
 
