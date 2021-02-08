@@ -3685,6 +3685,10 @@ msgstr "pop från en tom PulseIn"
 msgid "pop from empty %q"
 msgstr "pop från tom %q"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3: e argument kan inte vara 0"

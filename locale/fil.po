@@ -3671,6 +3671,10 @@ msgstr "pop mula sa walang laman na PulseIn"
 msgid "pop from empty %q"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3rd argument ay hindi maaring 0"
