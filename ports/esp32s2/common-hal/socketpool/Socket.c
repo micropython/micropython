@@ -99,6 +99,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->base.type = &socketpool_socket_type;
         sock->num = newsoc;
         sock->pool = self->pool;
+        sock->connected = true;
 
         if (!register_open_socket(sock)) {
             mp_raise_OSError(MP_EBADF);
