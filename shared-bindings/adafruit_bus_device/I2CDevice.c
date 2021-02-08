@@ -234,23 +234,24 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
 
     mp_obj_t dest[13];
     uint8_t num_kws = 2;
+    uint8_t index = 2;
 
     mp_load_method(self->i2c, MP_QSTR_writeto_then_readfrom, dest);
-    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
-    dest[3] = args[ARG_out_buffer].u_obj;
-    dest[4] = args[ARG_in_buffer].u_obj;
-    dest[5] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
-    dest[6] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_start].u_int);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(self->device_address);
+    dest[index++] = args[ARG_out_buffer].u_obj;
+    dest[index++] = args[ARG_in_buffer].u_obj;
+    dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_start].u_int);
     if (args[ARG_out_end].u_int != INT_MAX) {
-        dest[7] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
-        dest[8] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_end].u_int);
+        dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
+        dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_end].u_int);
         num_kws++;
     }
-    dest[9] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
-    dest[10] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_start].u_int);
+    dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_start].u_int);
     if (args[ARG_in_end].u_int != INT_MAX) {
-        dest[11] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
-        dest[12] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_end].u_int);
+        dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
+        dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_end].u_int);
         num_kws++;
     }
 
