@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-07 21:50+0000\n"
+"PO-Revision-Date: 2021-02-09 14:03+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -3680,7 +3680,7 @@ msgstr "cóng kōng %q dànchū"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
-msgstr ""
+msgstr "duān kǒu bì xū wéi >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
