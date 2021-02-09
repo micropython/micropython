@@ -107,7 +107,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         if (variable_frequency) {
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
-        // If the other user wants to change frequency then we can't share either.
+        // If the other user wants a variable frequency then we can't share either.
         if ((slice_fixed_frequency & (1 << slice)) != 0) {
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
@@ -119,7 +119,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     self->slice = slice;
     self->channel = channel;
     channel_use |= channel_use_mask;
-    if (!variable_frequency) {
+    if (variable_frequency) {
         slice_fixed_frequency |= 1 << slice;
     }
 
