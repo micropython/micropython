@@ -3679,6 +3679,10 @@ msgstr "pop sun un PulseIn vuoto"
 msgid "pop from empty %q"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "il terzo argomento di pow() non può essere 0"
