@@ -1075,15 +1075,16 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         case UART_CLOCKSOURCE_PLL3:
         #endif
         case UART_CLOCKSOURCE_UNDEFINED: break;
-=======
+    }
+    #endif
+
     // If RXNE is clear but ORE set then clear the ORE flag (it's tied to RXNE IRQ)
     #if defined(STM32F4)
-    else if (self->uartx->SR & USART_SR_ORE) {
+    if (self->uartx->SR & USART_SR_ORE) {
         (void)self->uartx->DR;
->>>>>>> upstream/master
     }
     #else
-    else if (self->uartx->ISR & USART_ISR_ORE) {
+    if (self->uartx->ISR & USART_ISR_ORE) {
         self->uartx->ICR = USART_ICR_ORECF;
     }
     #endif
