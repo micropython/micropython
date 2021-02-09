@@ -54,6 +54,8 @@ typedef struct _machine_uart_obj_t {
     uint8_t stop;
     uint8_t tx;
     uint8_t rx;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } machine_uart_obj_t;
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
@@ -68,13 +70,13 @@ STATIC const char *_parity_name[] = {"None", "0", "1"};
 
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, timeout=%u, timeout_char=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx);
+        self->stop, self->tx, self->rx, self->timeout, self->timeout_char);
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx };
+    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
@@ -83,6 +85,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // Parse args.
@@ -139,6 +143,16 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         }
         self->rx = rx;
     }
+    // set timeout
+    self->timeout = args[ARG_timeout].u_int;
+
+    // set timeout_char
+    // make sure it is at least as long as a whole character (13 bits to be safe)
+    self->timeout_char = args[ARG_timeout_char].u_int;
+    uint32_t min_timeout_char = 13000 / self->baudrate + 1;
+    if (self->timeout_char < min_timeout_char) {
+        self->timeout_char = min_timeout_char;
+    }
 
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 1 || n_kw > 0 || self->baudrate == 0) {
@@ -184,26 +198,50 @@ STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_t
 
 STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO support timeout
+    uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
+    uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
     uint8_t *dest = buf_in;
-    for (size_t i = 0; i < size; ++i) {
+
+    for (size_t i = 0; i < size; i++) {
+        // Wait for the first/next character
         while (!uart_is_readable(self->uart)) {
+            if (time_us_64() > t) {  // timed out
+                if (i <= 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
             MICROPY_EVENT_POLL_HOOK
         }
         *dest++ = uart_get_hw(self->uart)->dr;
+        t = time_us_64() + timeout_char_us;
     }
     return size;
 }
 
 STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO support timeout
+    uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
+    uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
     const uint8_t *src = buf_in;
-    for (size_t i = 0; i < size; ++i) {
+
+    for (size_t i = 0; i < size; i++) {
+        // wait for the first/next character
         while (!uart_is_writable(self->uart)) {
+            if (time_us_64() > t) {  // timed out
+                if (i <= 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
             MICROPY_EVENT_POLL_HOOK
         }
         uart_get_hw(self->uart)->dr = *src++;
+        t = time_us_64() + timeout_char_us;
     }
     return size;
 }

@@ -62,6 +62,7 @@
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE              (1)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_STREAMS_NON_BLOCK               (1)
 #define MICROPY_MODULE_BUILTIN_INIT             (1)
 #define MICROPY_MODULE_WEAK_LINKS               (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS           (1)
