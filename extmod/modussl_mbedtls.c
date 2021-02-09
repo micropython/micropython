@@ -347,6 +347,14 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
         mbedtls_ssl_config_free(&self->conf);
         mbedtls_ctr_drbg_free(&self->ctr_drbg);
         mbedtls_entropy_free(&self->entropy);
+    } else if (request == MP_STREAM_POLL) {
+        /* For POLL_RD, first check if ssl layer has bytes available... */
+        if (arg & MP_STREAM_POLL_RD) {
+            if (mbedtls_ssl_get_bytes_avail(&self->ssl) > 0) {
+                return MP_STREAM_POLL_RD;
+            }
+        }
+        /* ...otherwise fall through to pass request to underlying socket */
     }
     // Pass all requests down to the underlying socket
     return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
