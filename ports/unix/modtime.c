@@ -92,6 +92,24 @@ STATIC mp_obj_t mod_time_clock(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
+    #ifdef MICROPY_EVENT_POLL_HOOK
+
+    mp_float_t val = mp_obj_get_float(arg);
+    mp_uint_t ms = (mp_uint_t)(val * MICROPY_FLOAT_CONST(1000.0));
+    mp_uint_t start = mp_hal_ticks_ms();
+    MP_THREAD_GIL_EXIT();
+    while (mp_hal_ticks_ms() - start < ms) {
+        if (mp_sched_num_pending() != 0) {
+            MP_THREAD_GIL_ENTER();
+            mp_handle_pending(true);
+            MP_THREAD_GIL_EXIT();
+        }
+        mp_hal_delay_us(500);
+    }
+    MP_THREAD_GIL_ENTER();
+
+    #else
+
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
@@ -128,6 +146,9 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
         mp_handle_pending(true);
     }
     #endif
+
+    #endif
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
