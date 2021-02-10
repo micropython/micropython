@@ -1168,11 +1168,18 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
     sm_request_pairing(conn_handle);
     return 0;
 }
+
+int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
+    DEBUG_printf("mp_bluetooth_gap_passkey: conn_handle=%d action=%d passkey=%d\n", conn_handle, action, (int)passkey);
+    return MP_EOPNOTSUPP;
+}
+
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -1340,5 +1347,34 @@ int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
     return 0;
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+int mp_bluetooth_l2cap_listen(uint16_t psm, uint16_t mtu) {
+    DEBUG_printf("mp_bluetooth_l2cap_listen: psm=%d, mtu=%d\n", psm, mtu);
+    return MP_EOPNOTSUPP;
+}
+
+int mp_bluetooth_l2cap_connect(uint16_t conn_handle, uint16_t psm, uint16_t mtu) {
+    DEBUG_printf("mp_bluetooth_l2cap_connect: conn_handle=%d, psm=%d, mtu=%d\n", conn_handle, psm, mtu);
+    return MP_EOPNOTSUPP;
+}
+
+int mp_bluetooth_l2cap_disconnect(uint16_t conn_handle, uint16_t cid) {
+    DEBUG_printf("mp_bluetooth_l2cap_disconnect: conn_handle=%d, cid=%d\n", conn_handle, cid);
+    return MP_EOPNOTSUPP;
+}
+
+int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *buf, size_t len, bool *stalled) {
+    DEBUG_printf("mp_bluetooth_l2cap_send: conn_handle=%d, cid=%d, len=%d\n", conn_handle, cid, (int)len);
+    return MP_EOPNOTSUPP;
+}
+
+int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf, size_t *len) {
+    DEBUG_printf("mp_bluetooth_l2cap_recvinto: conn_handle=%d, cid=%d, len=%d\n", conn_handle, cid, (int)*len);
+    return MP_EOPNOTSUPP;
+}
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
