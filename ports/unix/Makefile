@@ -176,6 +176,7 @@ endif
 
 # BTstack is enabled.
 GIT_SUBMODULES += lib/btstack
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/btstack/btstack.mk
 
 else
