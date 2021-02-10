@@ -44,6 +44,10 @@
 #define IS_VALID_TX(uart, pin)      (((pin) & 3) == 0 && IS_VALID_PERIPH(uart, pin))
 #define IS_VALID_RX(uart, pin)      (((pin) & 3) == 1 && IS_VALID_PERIPH(uart, pin))
 
+#define UART_INVERT_TX (1)
+#define UART_INVERT_RX (2)
+#define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uart_inst_t *const uart;
@@ -56,11 +60,12 @@ typedef struct _machine_uart_obj_t {
     uint8_t rx;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    uint8_t invert;
 } machine_uart_obj_t;
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
-    {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART0_TX, DEFAULT_UART0_RX},
-    {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART1_TX, DEFAULT_UART1_RX},
+    {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART0_TX, DEFAULT_UART0_RX, 0, 0, 0},
+    {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART1_TX, DEFAULT_UART1_RX, 0, 0, 0},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
@@ -76,7 +81,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_timeout, ARG_timeout_char };
+    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_timeout, ARG_timeout_char, ARG_invert };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
@@ -87,6 +92,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+
     };
 
     // Parse args.
@@ -154,6 +161,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->timeout_char = min_timeout_char;
     }
 
+    // set line inversion
+    if (args[ARG_invert].u_int & ~UART_INVERT_MASK) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
+    }
+    self->invert = args[ARG_invert].u_int;
+
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 1 || n_kw > 0 || self->baudrate == 0) {
         if (self->baudrate == 0) {
@@ -164,6 +177,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         uart_set_fifo_enabled(self->uart, true);
         gpio_set_function(self->tx, GPIO_FUNC_UART);
         gpio_set_function(self->rx, GPIO_FUNC_UART);
+        if (self->invert & UART_INVERT_RX) {
+            gpio_set_inover(self->rx, GPIO_OVERRIDE_INVERT);
+        }
+        if (self->invert & UART_INVERT_TX) {
+            gpio_set_outover(self->tx, GPIO_OVERRIDE_INVERT);
+        }
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -193,6 +212,10 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
+
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
