@@ -37,6 +37,19 @@
 
 #include "tusb.h"
 
+#if CIRCUITPY_USB_VENDOR
+#include "genhdr/autogen_usb_descriptor.h"
+
+// The WebUSB support being conditionally added to this file is based on the
+// tinyusb demo examples/device/webusb_serial.
+
+extern const tusb_desc_webusb_url_t desc_webusb_url;
+
+static bool web_serial_connected = false;
+#endif
+
+
+
 // Serial number as hex characters. This writes directly to the USB
 // descriptor.
 extern uint16_t usb_serial_number[1 + COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2];
@@ -98,9 +111,14 @@ static void usb_background_do(void* unused) {
     usb_background();
 }
 
+void usb_background_schedule(void)
+{
+    background_callback_add(&usb_callback, usb_background_do, NULL);
+}
+
 void usb_irq_handler(void) {
     tud_int_handler(0);
-    background_callback_add(&usb_callback, usb_background_do, NULL);
+    usb_background_schedule();
 }
 
 //--------------------------------------------------------------------+
@@ -144,6 +162,62 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
         }
     }
 }
+
+#if CIRCUITPY_USB_VENDOR
+//--------------------------------------------------------------------+
+// WebUSB use vendor class
+//--------------------------------------------------------------------+
+
+bool tud_vendor_connected(void)
+{
+  return web_serial_connected;
+}
+
+// Invoked when a control transfer occurred on an interface of this class
+// Driver response accordingly to the request and the transfer stage (setup/data/ack)
+// return false to stall control endpoint (e.g unsupported request)
+bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request)
+{
+  // nothing to with DATA & ACK stage
+  if (stage != CONTROL_STAGE_SETUP ) return true;
+
+  switch (request->bRequest)
+  {
+    case VENDOR_REQUEST_WEBUSB:
+      // match vendor request in BOS descriptor
+      // Get landing page url
+      return tud_control_xfer(rhport, request, (void*) &desc_webusb_url, desc_webusb_url.bLength);
+
+    case VENDOR_REQUEST_MICROSOFT:
+      if ( request->wIndex == 7 )
+      {
+        // Get Microsoft OS 2.0 compatible descriptor
+        uint16_t total_len;
+        memcpy(&total_len, desc_ms_os_20+8, 2);
+
+        return tud_control_xfer(rhport, request, (void*) desc_ms_os_20, total_len);
+      } else
+      {
+        return false;
+      }
+
+    case 0x22:
+      // Webserial simulate the CDC_REQUEST_SET_CONTROL_LINE_STATE (0x22) to
+      // connect and disconnect.
+      web_serial_connected = (request->wValue != 0);
+
+      // response with status OK
+      return tud_control_status(rhport, request);
+
+    default:
+      // stall unknown request
+      return false;
+  }
+
+  return true;
+}
+#endif CIRCUITPY_USB_VENDOR
+
 
 #if MICROPY_KBD_EXCEPTION
 

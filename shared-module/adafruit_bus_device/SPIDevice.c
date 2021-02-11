@@ -41,7 +41,7 @@ void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_device_spid
     self->chip_select = cs;
 }
 
-void common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self) {
+mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self) {
     bool success = false;
     while (!success) {
         success = common_hal_busio_spi_try_lock(self->spi);
@@ -54,6 +54,7 @@ void common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevic
     if (self->chip_select != MP_OBJ_NULL) {
         common_hal_digitalio_digitalinout_set_value(MP_OBJ_TO_PTR(self->chip_select), false);
     }
+    return self->spi;
 }
 
 void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice_obj_t *self) {

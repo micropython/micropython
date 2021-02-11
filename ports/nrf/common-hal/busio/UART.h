@@ -42,10 +42,13 @@ typedef struct {
     uint32_t timeout_ms;
 
     ringbuf_t ringbuf;
-    uint8_t rx_char; // EasyDMA buf
+    uint8_t rx_char;    // EasyDMA buf
+    bool rx_paused;     // set by irq if no space in rbuf
 
     uint8_t tx_pin_number;
     uint8_t rx_pin_number;
+    uint8_t cts_pin_number;
+    uint8_t rts_pin_number;
 } busio_uart_obj_t;
 
 void uart_reset(void);

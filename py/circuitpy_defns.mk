@@ -292,6 +292,9 @@ endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
 endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+SRC_PATTERNS += usb_vendor/%
+endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
@@ -388,6 +391,7 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/Socket.c \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
+	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \

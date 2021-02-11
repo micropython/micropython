@@ -27,6 +27,8 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
+#include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
+
 #define MICROPY_PY_SYS_PLATFORM                     "RP2040"
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
@@ -41,6 +43,7 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
+    mp_obj_t playing_audio[NUM_DMA_CHANNELS]; \
     CIRCUITPY_COMMON_ROOT_POINTERS;
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

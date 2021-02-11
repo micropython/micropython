@@ -35,6 +35,7 @@
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
+#include "py/smallint.h"
 #include "supervisor/shared/translate.h"
 
 
@@ -132,15 +133,20 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_o
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t dest[8];
+    uint8_t num_kws = 1;
+
     mp_load_method(self->i2c, MP_QSTR_readfrom_into, dest);
-    dest[2] = mp_obj_new_int_from_ull(self->device_address);
+    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
     dest[3] = args[ARG_buffer].u_obj;
     //dest[4] = mp_obj_new_str("start", 5);
     dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
-    dest[5] = mp_obj_new_int(args[ARG_start].u_int);
-    dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
-    dest[7] = mp_obj_new_int(args[ARG_end].u_int);
-    mp_call_method_n_kw(2, 2, dest);
+    dest[5] = MP_OBJ_NEW_SMALL_INT(args[ARG_start].u_int);
+    if (args[ARG_end].u_int != INT_MAX) {
+        dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
+        dest[7] = MP_OBJ_NEW_SMALL_INT(args[ARG_end].u_int);
+        num_kws++;
+    }
+    mp_call_method_n_kw(2, num_kws, dest);
 
     return mp_const_none;
 }
@@ -170,14 +176,20 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t dest[8];
+    uint8_t num_kws = 1;
+
     mp_load_method(self->i2c, MP_QSTR_writeto, dest);
-    dest[2] = mp_obj_new_int_from_ull(self->device_address);
+    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
     dest[3] = args[ARG_buffer].u_obj;
     dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
-    dest[5] = mp_obj_new_int(args[ARG_start].u_int);
-    dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
-    dest[7] = mp_obj_new_int(args[ARG_end].u_int);
-    mp_call_method_n_kw(2, 2, dest);
+    dest[5] = MP_OBJ_NEW_SMALL_INT(args[ARG_start].u_int);
+    if (args[ARG_end].u_int != INT_MAX) {
+        dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
+        dest[7] = MP_OBJ_NEW_SMALL_INT(args[ARG_end].u_int);
+        num_kws++;
+    }
+
+    mp_call_method_n_kw(2, num_kws, dest);
 
     return mp_const_none;
 }
@@ -221,20 +233,29 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t dest[13];
-    mp_load_method(self->i2c, MP_QSTR_writeto_then_readfrom, dest);
-    dest[2] = mp_obj_new_int_from_ull(self->device_address);
-    dest[3] = args[ARG_out_buffer].u_obj;
-    dest[4] = args[ARG_in_buffer].u_obj;
-    dest[5] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
-    dest[6] = mp_obj_new_int(args[ARG_out_start].u_int);
-    dest[7] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
-    dest[8] = mp_obj_new_int(args[ARG_out_end].u_int);
-    dest[9] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
-    dest[10] = mp_obj_new_int(args[ARG_in_start].u_int);
-    dest[11] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
-    dest[12] = mp_obj_new_int(args[ARG_in_end].u_int);
+    uint8_t num_kws = 2;
+    uint8_t index = 2;
 
-    mp_call_method_n_kw(3, 4, dest);
+    mp_load_method(self->i2c, MP_QSTR_writeto_then_readfrom, dest);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(self->device_address);
+    dest[index++] = args[ARG_out_buffer].u_obj;
+    dest[index++] = args[ARG_in_buffer].u_obj;
+    dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_start].u_int);
+    if (args[ARG_out_end].u_int != INT_MAX) {
+        dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
+        dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_end].u_int);
+        num_kws++;
+    }
+    dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
+    dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_start].u_int);
+    if (args[ARG_in_end].u_int != INT_MAX) {
+        dest[index++] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
+        dest[index++] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_end].u_int);
+        num_kws++;
+    }
+
+    mp_call_method_n_kw(3, num_kws, dest);
 
     return mp_const_none;
 }

@@ -71,7 +71,7 @@ void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_devi
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_load_method(self->i2c, MP_QSTR_writeto, dest);
-        dest[2] = mp_obj_new_int_from_ull(self->device_address);
+        dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
         dest[3] = write_buffer;
         mp_call_method_n_kw(2, 0, dest);
         nlr_pop();
