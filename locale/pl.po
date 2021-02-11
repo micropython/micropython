@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-27 01:31+0000\n"
+"PO-Revision-Date: 2021-02-10 21:50+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -4107,7 +4107,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "szerokość musi być większa niż zero"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
@@ -4127,7 +4127,7 @@ msgstr ""
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "nieprawidłowy typ wejścia"
 
 #: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
@@ -4143,7 +4143,7 @@ msgstr "zły typ operandu"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "nieprawidłowy typ wyjścia"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
