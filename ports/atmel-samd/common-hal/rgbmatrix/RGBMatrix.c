@@ -31,7 +31,7 @@
 #include "samd/timers.h"
 #include "timer_handler.h"
 
-void *common_hal_rgbmatrix_timer_allocate() {
+void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
     uint8_t timer_index = find_free_timer();
     if (timer_index == 0xff) {
         return NULL;

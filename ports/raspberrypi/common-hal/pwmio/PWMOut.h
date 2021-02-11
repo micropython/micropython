@@ -45,5 +45,10 @@ typedef struct {
 void pwmout_reset(void);
 // Private API for AudioPWMOut.
 void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top);
+// Private APIs for RGBMatrix
+enum pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency);
+void pwmout_free(uint8_t slice, uint8_t channel);
+void pwmout_never_reset(uint8_t slice, uint8_t channel);
+void pwmout_reset_ok(uint8_t slice, uint8_t channel);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
