@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pwmio/PWMOut.h"
 
-#include "py/obj.h"
+#include "audio_dma.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    uint8_t slice;
-    uint8_t channel;
-    bool variable_frequency;
-    uint16_t duty_cycle;
-    uint32_t actual_frequency;
-    uint32_t top;
-} pwmio_pwmout_obj_t;
+    pwmio_pwmout_obj_t left_pwm;
+    pwmio_pwmout_obj_t right_pwm;
+    audio_dma_t dma;
+    uint16_t quiescent_value;
+    uint8_t pacing_timer;
+} audiopwmio_pwmaudioout_obj_t;
 
-void pwmout_reset(void);
-// Private API for AudioPWMOut.
-void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top);
+void audiopwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+void audiopwmout_background(void);
+
+#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H

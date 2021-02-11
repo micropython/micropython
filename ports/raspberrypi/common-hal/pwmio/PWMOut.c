@@ -39,7 +39,7 @@
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 
 uint32_t target_slice_frequencies[NUM_PWM_SLICES];
-uint32_t slice_fixed_frequency;
+uint32_t slice_variable_frequency;
 
 #define CHANNELS_PER_SLICE 2
 static uint32_t channel_use;
@@ -76,7 +76,7 @@ void pwmout_reset(void) {
         }
         pwm_set_enabled(slice, false);
         target_slice_frequencies[slice] = 0;
-        slice_fixed_frequency &= ~(1 << slice);
+        slice_variable_frequency &= ~(1 << slice);
     }
 }
 
@@ -108,7 +108,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
         // If the other user wants a variable frequency then we can't share either.
-        if ((slice_fixed_frequency & (1 << slice)) != 0) {
+        if ((slice_variable_frequency & (1 << slice)) != 0) {
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
         // If we're both fixed frequency but we don't match target frequencies then we can't share.
@@ -118,9 +118,10 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     }
     self->slice = slice;
     self->channel = channel;
+
     channel_use |= channel_use_mask;
     if (variable_frequency) {
-        slice_fixed_frequency |= 1 << slice;
+        slice_variable_frequency |= 1 << slice;
     }
 
     if (target_slice_frequencies[slice] != frequency) {
@@ -153,7 +154,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (self->slice * CHANNELS_PER_SLICE + self->channel);
     if ((channel_use & slice_mask) == 0) {
         target_slice_frequencies[self->slice] = 0;
-        slice_fixed_frequency &= ~(1 << self->slice);
+        slice_variable_frequency &= ~(1 << self->slice);
         pwm_set_enabled(self->slice, false);
     }
 
@@ -169,6 +170,13 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uin
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return self->duty_cycle;
+}
+
+void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top) {
+    self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
+    self->top = top;
+    pwm_set_clkdiv_int_frac(self->slice, 1, 0);
+    pwm_set_wrap(self->slice, self->top - 1);
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
