@@ -38,6 +38,7 @@
 #include "extmod/mpbthci.h"
 
 #include <pthread.h>
+#include <signal.h>
 #include <unistd.h>
 
 #include <termios.h>
@@ -60,11 +61,22 @@ extern bool mp_bluetooth_hci_poll(void);
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically (every 1ms) by a background thread.
 
+// A signal to use to signal the main thread that a scheduled function is ready.
+// TODO how to choose this signal value?
+#define SCHED_SIG (SIGRTMIN + 4)
+
 // Allows the stack to tell us that we should stop trying to schedule.
 extern bool mp_bluetooth_hci_active(void);
 
 // Prevent double-enqueuing of the scheduled task.
 STATIC volatile bool events_task_is_scheduled = false;
+
+// Parent thread.
+// TODO: what about multithreading?
+STATIC pthread_t parent_pthread;
+
+STATIC void dummy_signal(int signo, siginfo_t *info, void *context) {
+}
 
 STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
     (void)none_in;
@@ -94,6 +106,9 @@ STATIC void *hci_poll_thread(void *arg) {
         MICROPY_PY_BLUETOOTH_ENTER
         if (!events_task_is_scheduled) {
             events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
+            if (events_task_is_scheduled) {
+                pthread_kill(parent_pthread, SCHED_SIG);
+            }
         }
         MICROPY_PY_BLUETOOTH_EXIT
         usleep(UART_POLL_INTERVAL_US);
@@ -190,6 +205,16 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     if (configure_uart()) {
         return -1;
     }
+
+    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+    // Enable a dummy signal handler to interrupt the "main" thread to execute pending events.
+    struct sigaction sa;
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = dummy_signal;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SCHED_SIG, &sa, NULL);
+    parent_pthread = pthread_self();
+    #endif
 
     // Create a thread to run the polling loop.
     pthread_attr_t attr;

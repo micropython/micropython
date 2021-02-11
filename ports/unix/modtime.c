@@ -92,7 +92,7 @@ STATIC mp_obj_t mod_time_clock(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
+    #if 0//def MICROPY_EVENT_POLL_HOOK
 
     mp_float_t val = mp_obj_get_float(arg);
     mp_uint_t ms = (mp_uint_t)(val * MICROPY_FLOAT_CONST(1000.0));
