@@ -60,51 +60,9 @@ STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self){
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
 
-//|     serial2: io.BytesIO
-//|     """Returns the USB secondary serial communication channel.
-//|     Raises `NotImplementedError` if it does not exist.
-//|     """
-//|
-STATIC mp_obj_t supervisor_runtime_get_serial2(mp_obj_t self){
-#if CIRCUITPY_USB_SERIAL2
-    return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial2());
-#else
-    mp_raise_NotImplementedError(translate("serial2 not available"));
-#endif
-}
-MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial2_obj, supervisor_runtime_get_serial2);
-
-const mp_obj_property_t supervisor_runtime_serial2_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial2_connected_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
 const mp_obj_property_t supervisor_runtime_serial_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_connected_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-//|     serial2_connected: bool
-//|     """Returns the USB secondary serial communication status (read-only).
-//|     Raises `NotImplementedError` if there is no secondary serial channel.
-//|     """
-//|
-STATIC mp_obj_t supervisor_runtime_get_serial2_connected(mp_obj_t self){
-#if CIRCUITPY_USB_SERIAL2
-    return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial2_connected());
-#else
-    mp_raise_NotImplementedError(translate("serial2 not available"));
-#endif
-}
-MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial2_connected_obj, supervisor_runtime_get_serial2_connected);
-
-const mp_obj_property_t supervisor_runtime_serial2_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial2_connected_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -126,30 +84,6 @@ const mp_obj_property_t supervisor_runtime_serial_bytes_available_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-
-//|     serial2_bytes_available: int
-//|     """Returns the whether any bytes are available to read
-//|     on the secondary USB serial input (read-only).
-//|     Raises `NotImplementedError` if there is no secondary serial input.
-//|     """
-//|
-STATIC mp_obj_t supervisor_runtime_get_serial2_bytes_available(mp_obj_t self){
-#if CIRCUITPY_USB_SERIAL2
-    return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial2_bytes_available());
-#else
-    mp_raise_NotImplementedError(translate("serial2 not available"));
-#endif
-}
-MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial2_bytes_available_obj, supervisor_runtime_get_serial2_bytes_available);
-
-const mp_obj_property_t supervisor_runtime_serial2_bytes_available_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial2_bytes_available_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-
 //|     run_reason: RunReason
 //|     """Returns why CircuitPython started running this particular time."""
 //|
@@ -165,15 +99,13 @@ const mp_obj_property_t supervisor_runtime_run_reason_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-void supervisor_runtime_set_run_reason(supervisor_runtime_run_reason_t run_reason) {
+void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
     _run_reason = run_reason;
 }
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_runtime_serial_connected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_serial2_connected), MP_ROM_PTR(&supervisor_runtime_serial2_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial_bytes_available_obj) },
-    { MP_ROM_QSTR(MP_QSTR_serial2_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial2_bytes_available_obj) },
     { MP_ROM_QSTR(MP_QSTR_run_reason), MP_ROM_PTR(&supervisor_runtime_run_reason_obj) },
 };
 

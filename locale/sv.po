@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-25 19:32+0000\n"
+"PO-Revision-Date: 2021-02-05 19:47+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -68,6 +68,7 @@ msgstr "%%c kräver int eller char"
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d adresspinnar, %d rgb-stift och %d brickor anger en höjd på %d, inte %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -348,7 +349,7 @@ msgstr "Alla händelsekanaler används"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Alla tillståndsmaskiner används"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -641,6 +642,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Det går inte att återställa till bootloader eftersom bootloader saknas."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "Det går inte att ange socketalternativ"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Kan inte sätta värde när riktning är input."
@@ -825,7 +830,7 @@ msgstr "Datapinne 0 måste vara bytejusterad"
 
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
-msgstr ""
+msgstr "Datapinne 0 måste vara byte-justerad."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -881,7 +886,7 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Fel: Bind misslyckades"
 
@@ -940,7 +945,7 @@ msgstr "FFT är enbart definierade för ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FTT är enbart implementerad för linjära matriser"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Misslyckad SSL-handskakning"
 
@@ -1070,7 +1075,7 @@ msgstr "I2C init-fel"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "I2C-enhet används redan"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1099,7 +1104,7 @@ msgstr "Fel buffertstorlek"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
-msgstr ""
+msgstr "Storlek på init-program ogiltigt"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1116,27 +1121,27 @@ msgstr "Indata-/utdatafel"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d jumps on pin"
-msgstr ""
+msgstr "Instruktion %d hoppar på pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
+msgstr "Instruktion %d skiftar fler bitar än antalet pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
+msgstr "Instruktion %d skiftar fler bitar än antal pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr ""
+msgstr "Instruktion %d använder extra pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d waits on input outside of count"
-msgstr ""
+msgstr "Instruktion %d väntar på inmatning utanför intervallet"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1313,17 +1318,13 @@ msgstr "Ogiltigt säkerhetsläge"
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "Ogiltig socket för TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr "Ogiltig användning av TLS Socket"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1340,10 +1341,6 @@ msgstr "Ogiltig wave-fil"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1410,32 +1407,32 @@ msgstr "MISO- eller MOSI-pinne saknas"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr ""
+msgstr "Saknad first_in_pin. Instruktion %d läser pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
+msgstr "Saknad first_in_pin. Instruktion %d skiftar in från pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "Saknad first_in_pin. Instruktion %d väntar baserat på pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr ""
+msgstr "Saknad first_out_pin. Instruktion %d skiftar ut till pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "Saknad first_out_pin. Instruktion %d skriver till pinnar"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "Saknad first_set_pin. Instruktion %d sätter pinnar"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1556,7 +1553,13 @@ msgstr "Inget nätverk med sådant ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "Inget out i programmet"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr "Ingen pull-up hittades på SDA eller SCL; kontrollera inkopplingen"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1617,7 +1620,7 @@ msgstr "Endast 8 eller 16 bitars mono med "
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
+msgstr "Endast IN/OUT på upp till 8 stöds"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1671,7 +1674,7 @@ msgstr "Åtgärden orsakade timeout"
 msgid "Out of memory"
 msgstr "Slut på minne"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 
@@ -1711,11 +1714,11 @@ msgstr "Åtkomst nekad"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
-msgstr ""
+msgstr "Antalet pinnar måste vara minst 1"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Antal pinnar för stort"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1794,23 +1797,23 @@ msgstr "Fingerar djup sömn tills larm, Ctrl-C eller filskrivning.\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
-msgstr ""
+msgstr "Program gör IN utan att ladda ISR"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does OUT without loading OSR"
-msgstr ""
+msgstr "Program gör OUT utan att läsa in OSR"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program must contain at least one 16-bit instruction."
-msgstr ""
+msgstr "Programmet måste innehålla minst en 16-bitars instruktion."
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
+msgstr "Programstorlek ogiltig"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program too large"
-msgstr ""
+msgstr "Programmet är för stort"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1818,7 +1821,7 @@ msgstr "Pull används inte när riktningen är output."
 
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
-msgstr ""
+msgstr "RAISE-läge är inte implementerat"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1828,6 +1831,10 @@ msgstr "RNG DeInit-fel"
 msgid "RNG Init Error"
 msgstr "RNG Init-fel"
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr "RS485 stöds ännu inte på den här enheten"
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1835,6 +1842,7 @@ msgstr "RS485-inversion specificerad när den inte är i RS485-läge"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "RTC-kalibrering stöds inte av detta kort"
 
@@ -1843,7 +1851,7 @@ msgid "RTC is not supported on this board"
 msgstr "RTC stöds inte av detta kort"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr "RTS/CTS/RS485 Stöds ännu inte på den här enheten"
 
@@ -1900,12 +1908,6 @@ msgstr "Kör i säkert läge! "
 msgid "SD card CSD format not supported"
 msgstr "SD-kort CSD-format stöds inte"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA eller SCL behöver en pullup"
-
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -1926,7 +1928,7 @@ msgstr "SPI reinitialiseringsfel"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
+msgstr "SPI-enhet används redan"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1960,11 +1962,11 @@ msgstr "Serversidans kontext kan inte ha värdnamn"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Set pin count must be between 1 and 5"
-msgstr ""
+msgstr "Inställt antal pinnar måste vara mellan 1 och 5"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
-msgstr ""
+msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
@@ -2142,7 +2144,7 @@ msgstr "UART reinit-fel"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART not yet supported"
-msgstr ""
+msgstr "UART stöds ännu inte"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2207,7 +2209,7 @@ msgstr "Det gick inte att skriva till sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Oväntad nrfx uuid-typ"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
@@ -2514,7 +2516,7 @@ msgstr "buffertsegmenten måste vara lika långa"
 msgid "buffer too small"
 msgstr "buffert för liten"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
 
@@ -3683,6 +3685,10 @@ msgstr "pop från en tom PulseIn"
 msgid "pop from empty %q"
 msgstr "pop från tom %q"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3: e argument kan inte vara 0"
@@ -3719,11 +3725,11 @@ msgstr "trycka båda knapparna vid uppstart.\n"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
-msgstr ""
+msgstr "pull_threshold måste vara mellan 1 och 32"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "push_threshold must be between 1 and 32"
-msgstr ""
+msgstr "push_threshold måste vara mellan 1 och 32"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -3922,7 +3928,7 @@ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "tile must be greater than zero"
-msgstr ""
+msgstr "tile måste vara större än noll"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -4212,6 +4218,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA eller SCL behöver en pullup"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Ogiltig användning av TLS Socket"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-01 17:50+0000\n"
+"PO-Revision-Date: 2021-02-09 14:03+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -654,6 +654,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Não é possível redefinir para o bootloader porque o mesmo não está presente."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "Não foi possível definir as opções do socket"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Não é possível definir o valor quando a direção é inserida."
@@ -894,7 +898,7 @@ msgstr "Canal EXTINT em uso"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Erro: Falha na vinculação"
 
@@ -953,7 +957,7 @@ msgstr "O FFT é definido apenas para ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "O FFT é implementado apenas para matrizes lineares"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Houve uma falha no handshake do SSL"
 
@@ -1327,17 +1331,13 @@ msgstr "O Security_mode é inválido"
 msgid "Invalid size"
 msgstr "Tamanho inválido"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "Soquete inválido para o TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "Estado inválido"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr "Uso inválido do soquete TLS"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1354,10 +1354,6 @@ msgstr "Aqruivo de ondas inválido"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "O comprimento do bit/palavra são inválidos"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr "Problema na configuração do SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1571,6 +1567,14 @@ msgstr "Não há rede com este ssid"
 msgid "No out in program"
 msgstr "Sem saída no programa"
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+"Nenhum pull up foi encontrado no SDA ou no SCL; verifique o fio das suas "
+"conexões"
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Não há pulldown no pino; É recomendável utilizar um resistor de 1M ohm"
@@ -1684,7 +1688,7 @@ msgstr "A operação expirou"
 msgid "Out of memory"
 msgstr "Sem memória"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
 
@@ -1846,6 +1850,10 @@ msgstr "Erro DeInit RNG"
 msgid "RNG Init Error"
 msgstr "Houve um erro na inicialização do RNG"
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr "Ainda não há suporte para o RS485 neste dispositivo"
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1853,6 +1861,7 @@ msgstr "A definição da inversão do RS485 quando não está no modo RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "A calibração RTC não é suportada nesta placa"
 
@@ -1861,7 +1870,7 @@ msgid "RTC is not supported on this board"
 msgstr "O RTC não é suportado nesta placa"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr "RTS/CTS/RS485 Ainda não é compatível neste dispositivo"
 
@@ -1917,12 +1926,6 @@ msgstr "Executando no modo de segurança! "
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr "O formato CSD do Cartão SD não é compatível"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA ou SCL precisa de um pull up"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -2230,7 +2233,7 @@ msgstr "Não foi possível escrever no sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo uuid nrfx inesperado"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erro não tratado do ESP TLS %d %d %x %d"
@@ -2541,7 +2544,7 @@ msgstr "as fatias do buffer devem ter o mesmo comprimento"
 msgid "buffer too small"
 msgstr "o buffer é muito pequeno"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "o buffer é pequeno demais para os bytes requisitados"
 
@@ -3721,6 +3724,10 @@ msgstr "pop a partir de um PulseIn vazio"
 msgid "pop from empty %q"
 msgstr "pop a partir do %q vazio"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "a porta deve ser > = 0"
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "O terceiro argumento pow() não pode ser 0"
@@ -4250,6 +4257,15 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA ou SCL precisa de um pull up"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Uso inválido do soquete TLS"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Problema na configuração do SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

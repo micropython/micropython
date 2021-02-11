@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "background.h"
 
-#include "py/runtime.h"
-#include "supervisor/port.h"
+#include "supervisor/board.h"
 
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
+void board_init(void) {
+}
 
-void port_background_task(void) {
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
 }

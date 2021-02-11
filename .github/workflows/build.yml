@@ -208,6 +208,7 @@ jobs:
         - "datum_imu"
         - "datum_light"
         - "datum_weather"
+        - "dynalora_usb"
         - "dynossat_edu_eps"
         - "dynossat_edu_obc"
         - "electronut_labs_blip"

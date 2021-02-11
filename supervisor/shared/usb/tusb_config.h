@@ -73,6 +73,7 @@
 #define CFG_TUD_MSC                 1
 #define CFG_TUD_HID                 CIRCUITPY_USB_HID
 #define CFG_TUD_MIDI                CIRCUITPY_USB_MIDI
+#define CFG_TUD_VENDOR              CIRCUITPY_USB_VENDOR
 #define CFG_TUD_CUSTOM_CLASS        0
 
 /*------------------------------------------------------------------*/

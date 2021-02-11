@@ -52,6 +52,8 @@
 
 #include "tusb.h"
 
+#include "pico/bootrom.h"
+#include "hardware/watchdog.h"
 
 extern volatile bool mp_msc_enabled;
 
@@ -110,13 +112,17 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    // reset();
+    reset_usb_boot(0, 0);
     while (true) {}
 }
 
 void reset_cpu(void) {
-    // reset();
-    while (true) {}
+    watchdog_reboot(0, SRAM_END, 0);
+    watchdog_start_tick(12);
+
+    while (true) {
+        __wfi();
+    }
 }
 
 bool port_has_fixed_stack(void) {

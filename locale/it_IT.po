@@ -637,6 +637,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Impossibile resettare nel bootloader poiché nessun bootloader è presente."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "non si può impostare un valore quando direzione è input"
@@ -876,7 +880,7 @@ msgstr "Canale EXTINT già in uso"
 msgid "Error in regex"
 msgstr "Errore nella regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -937,7 +941,7 @@ msgstr ""
 msgid "FFT is implemented for linear arrays only"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr ""
 
@@ -1312,16 +1316,12 @@ msgstr ""
 msgid "Invalid size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1339,10 +1339,6 @@ msgstr "File wave non valido"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -1558,6 +1554,12 @@ msgstr ""
 msgid "No out in program"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
@@ -1670,7 +1672,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
 
@@ -1822,6 +1824,10 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1829,6 +1835,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "calibrazione RTC non supportata su questa scheda"
 
@@ -1837,7 +1844,7 @@ msgid "RTC is not supported on this board"
 msgstr "RTC non supportato su questa scheda"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
@@ -1894,12 +1901,6 @@ msgstr ""
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA o SCL necessitano un pull-up"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -2195,7 +2196,7 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr "indentazione inaspettata"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
@@ -2498,7 +2499,7 @@ msgstr "slice del buffer devono essere della stessa lunghezza"
 msgid "buffer too small"
 msgstr "buffer troppo piccolo"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr ""
 
@@ -3678,6 +3679,10 @@ msgstr "pop sun un PulseIn vuoto"
 msgid "pop from empty %q"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "il terzo argomento di pow() non può essere 0"
@@ -4211,6 +4216,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA o SCL necessitano un pull-up"
 
 #~ msgid "tuple index out of range"
 #~ msgstr "indice della tupla fuori intervallo"

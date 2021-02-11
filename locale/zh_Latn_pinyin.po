@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-30 02:32+0000\n"
+"PO-Revision-Date: 2021-02-09 14:03+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -351,7 +351,7 @@ msgstr "Suǒyǒu shǐyòng de shìjiàn píndào"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "suǒ yǒu zhèng zài shǐ yòng de zhuàng tài jī"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -643,6 +643,10 @@ msgstr "USB jīhuó shí wúfǎ chóngxīn bǎng ding '/'."
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Dāng fāngxiàng xiàng nèi shí, bùnéng shèzhì gāi zhí."
@@ -881,7 +885,7 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "cuò wù: bǎng dìng shī bài"
 
@@ -940,7 +944,7 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT jǐn shì yòng yú xiàn xìng zhèn liè"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "SSL wòshǒu shībài"
 
@@ -1070,7 +1074,7 @@ msgstr "I2C chūshǐhuà cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1099,7 +1103,7 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
-msgstr ""
+msgstr "Init chéng xù dà xiǎo wú xiào"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1116,27 +1120,27 @@ msgstr "Shūrù/shūchū cuòwù"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d jumps on pin"
-msgstr ""
+msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
+msgstr "zhǐ lìng %d yí wèi chāo guò yǐn jiǎo jì shù"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
+msgstr "zhǐ lìng %d yí chū de wèi bǐ yǐn jiǎo shù duō"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr ""
+msgstr "zhǐ lìng %d shǐ yòng é wài de yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d waits on input outside of count"
-msgstr ""
+msgstr "zhǐ lìng %d děng dài jì shù zhī wài de shū rù"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1313,17 +1317,13 @@ msgstr "Ānquán móshì wúxiào"
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr "TLS tào jiē zì de wú xiào shǐ yòng"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1340,10 +1340,6 @@ msgstr "Wúxiào de làng làngcháo wénjiàn"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Wúxiào de zì/wèi chángdù"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr "wèn tí shè zhì SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1409,32 +1405,33 @@ msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr ""
+msgstr "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d dú qǔ yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
+msgstr "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d cóng yǐn jiǎo yí wèi"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
 msgstr ""
+"shǒu xiān zài yǐn jiǎo zhōng quē shī. jī yú yǐn jiǎo de zhǐ lìng %d děng dài"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr ""
+msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d yí chū dào yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d xiě rù yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "quē shǎo dì yī zǔ yǐn jiǎo. zhǐ lìng %d shè zhì yǐn jiǎo"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1555,7 +1552,13 @@ msgstr "Méiyǒu wǎngluò yǔ gāi ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "chéng xù zhōng wèi tuì chū"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr "zài SDA huò SCL shàng wèi zhǎo dào shàng lā; jiǎn chá nín de xiàn lù"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1615,7 +1618,7 @@ msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
+msgstr "jǐn zhī chí zuì duō 8 gè IN/OUT"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1670,7 +1673,7 @@ msgstr "cāo zuò yǐ fēn shí"
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
 
@@ -1709,11 +1712,11 @@ msgstr "Quánxiàn bèi jùjué"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
-msgstr ""
+msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "yǐn jiǎo jì shù tài dà"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1789,23 +1792,23 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
-msgstr ""
+msgstr "chéng xù zài bù jiā zǎi ISR de qíng kuàng xià wán chéng"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does OUT without loading OSR"
-msgstr ""
+msgstr "chéng xù zài bù jiā zǎi Osr de qíng kuàng xià zhí xíng OUT"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program must contain at least one 16-bit instruction."
-msgstr ""
+msgstr "chéng xù bì xū zhì shǎo bāo hán yí gè 16 wèi zhǐ lìng ."
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
+msgstr "chéng xù dà xiǎo wú xiào"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program too large"
-msgstr ""
+msgstr "chéng xù tài dà"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1813,7 +1816,7 @@ msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
-msgstr ""
+msgstr "wèi shí xiàn tí shēng mó shì"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1823,6 +1826,10 @@ msgstr "RNG qǔxiāo chūshǐhuà cuòwù"
 msgid "RNG Init Error"
 msgstr "RNG chūshǐhuà cuòwù"
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1830,6 +1837,7 @@ msgstr "Wèi chǔyú RS485 móshì shí zhǐdìngle RS485 fǎn zhuǎn"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
 
@@ -1838,7 +1846,7 @@ msgid "RTC is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr "RTS/CTS/RS485 gāi shèbèi shàng bù zhīchí"
 
@@ -1895,12 +1903,6 @@ msgstr "Zài ānquán móshì xià yùnxíng! "
 msgid "SD card CSD format not supported"
 msgstr "Bù zhīchí SD kǎ CSD géshì"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA huò SCL xūyào lādòng"
-
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -1921,7 +1923,7 @@ msgstr "SPI chóngxīn chūshǐhuà cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
+msgstr "SPI wài shè zhèng zài shǐ yòng zhōng"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1955,11 +1957,11 @@ msgstr "Fúwùqì duān shàngxiàwén bùnéng jùyǒu zhǔjī míng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Set pin count must be between 1 and 5"
-msgstr ""
+msgstr "shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
-msgstr ""
+msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
@@ -2136,7 +2138,7 @@ msgstr "UART chóngxīn chūshǐhuà cuòwù"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART not yet supported"
-msgstr ""
+msgstr "UART shàng wèi shòu zhī chí"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2201,7 +2203,7 @@ msgstr "wú fǎ xiě rù sleep_memory。"
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
@@ -2509,7 +2511,7 @@ msgstr "huǎnchōng qū qiēpiàn bìxū chángdù xiāngděng"
 msgid "buffer too small"
 msgstr "huǎnchōng qū tài xiǎo"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 
@@ -3676,6 +3678,10 @@ msgstr "cóng kōng mài chōng tán chū"
 msgid "pop from empty %q"
 msgstr "cóng kōng %q dànchū"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "duān kǒu bì xū wéi >= 0"
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3 cān shǔ bùnéng wéi 0"
@@ -3712,11 +3718,11 @@ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
-msgstr ""
+msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "push_threshold must be between 1 and 32"
-msgstr ""
+msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -4205,6 +4211,15 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA huò SCL xūyào lādòng"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "TLS tào jiē zì de wú xiào shǐ yòng"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "wèn tí shè zhì SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

@@ -22,7 +22,7 @@ CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
 QSPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM)
 
-SPI_FLASH_FILESYSTEM = 0
+SPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
@@ -94,6 +94,11 @@ else
 			shared-module/usb_midi/PortOut.c
 	endif
 
+	ifeq ($(CIRCUITPY_USB_VENDOR), 1)
+		SRC_SUPERVISOR += \
+			lib/tinyusb/src/class/vendor/vendor_device.c
+	endif
+
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
@@ -117,10 +122,10 @@ CFLAGS += -DUSB_MANUFACTURER=$(USB_MANUFACTURER)
 CFLAGS += -DUSB_PRODUCT=$(USB_PRODUCT)
 endif
 
-USB_DEVICES =
-ifeq ($(CIRCUITPY_USB_HID),1)
-USB_DEVICES += HID
-endif
+# In the following URL, don't include the https:// prefix.
+# It gets added automatically.
+USB_WEBUSB_URL ?= "circuitpython.org"
+
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 USB_DEVICES += AUDIO
 endif
@@ -134,6 +139,9 @@ ifeq ($(CIRCUITPY_USB_SERIAL2),1)
 # Inform TinyUSB there are two CDC devices.
 CFLAGS += -DCFG_TUD_CDC=2
 USB_DEVICES += CDC2
+endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+USB_DEVICES += VENDOR
 endif
 
 USB_HID_DEVICES =
@@ -163,7 +171,7 @@ endif
 ifeq ($(CIRCUITPY_USB_HID_RAW),1)
   ifneq ($(CIRCUITPY_USB_HID_DEVICES,)
     $(error HID RAW must not be combined with other HID devices)
-  endif
+endif
 USB_HID_DEVICES += MOUSE
 endif
 
@@ -201,6 +209,12 @@ USB_DESCRIPTOR_ARGS = \
 	--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
 	--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 	--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+
+ifeq ($(CIRCUITPY_USB_VENDOR), 1)
+USB_DESCRIPTOR_ARGS += \
+        --vendor_ep_num_out 0 --vendor_ep_num_in 0 \
+        --webusb_url $(USB_WEBUSB_URL)
+endif
 
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints

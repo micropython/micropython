@@ -8,27 +8,31 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-12-30 22:25+0000\n"
-"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
+"PO-Revision-Date: 2021-02-08 21:21+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"El código terminó de ejecutar.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"El código fue detenido por el auto-reiniciado.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -50,7 +54,7 @@ msgstr "  Archivo \"%q\", línea %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " es de tipo %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -126,7 +130,7 @@ msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s error 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -292,7 +296,7 @@ msgstr "pow() con 3 argumentos no soportado"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "tipos de 64 bit"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -346,7 +350,7 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Todas las máquinas de estado en uso"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -567,7 +571,7 @@ msgstr "Los bloques CBC deben ser múltiplos de 16 bytes"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC o suma de comprobación inválida"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -641,6 +645,10 @@ msgstr "No se puede volver a montar '/' cuando el USB esta activo."
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "No se puede reiniciar a bootloader porque no hay bootloader presente."
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "No se pueden definir opciones para enchufe"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -882,7 +890,7 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 msgid "Error in regex"
 msgstr "Error en regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -941,7 +949,7 @@ msgstr "FFT se define solo para ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT solo esta implementado para arrays lineales"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Fallo en saludo SSL"
 
@@ -1013,7 +1021,7 @@ msgstr "Filtros muy complejos"
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
-msgstr ""
+msgstr "La imagen de firmware es inválida"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1036,7 +1044,7 @@ msgstr "La función requiere lock"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Generic Failure"
-msgstr ""
+msgstr "Fallo Genérico"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1072,7 +1080,7 @@ msgstr "I2C Error de inicio"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "Dispositivo I2C en uso"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1315,16 +1323,12 @@ msgstr "'security_mode' no válido"
 msgid "Invalid size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1342,10 +1346,6 @@ msgstr "Archivo wave inválido"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Tamaño no válido de palabra/bit"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1559,6 +1559,12 @@ msgstr "No hay una red con ese ssid"
 msgid "No out in program"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "No hay pulldown en el pin; 1Mohm recomendado"
@@ -1673,7 +1679,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Se acabaron los enchufes"
 
@@ -1828,6 +1834,10 @@ msgstr "Error de desinicialización de RNG"
 msgid "RNG Init Error"
 msgstr "Error de inicialización de RNG"
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1835,6 +1845,7 @@ msgstr "Se especifica inversión de RS485 si no está en modo RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "Calibración de RTC no es soportada en esta placa"
 
@@ -1843,7 +1854,7 @@ msgid "RTC is not supported on this board"
 msgstr "RTC no soportado en esta placa"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr "Sin capacidad de RTS/CTS/RS485 para este dispositivo"
 
@@ -1899,12 +1910,6 @@ msgstr "¡Corriendo en modo seguro! "
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr "Sin capacidad para formato CSD para tarjeta SD"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA o SCL necesitan una pull up"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -2211,7 +2216,7 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo de uuid nrfx inesperado"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Error no manejado de ESP TLS %d %d %x %d"
@@ -2521,7 +2526,7 @@ msgstr "Las secciones del buffer necesitan tener longitud igual"
 msgid "buffer too small"
 msgstr "buffer demasiado pequeño"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "búfer muy pequeño para los bytes solicitados"
 
@@ -3694,6 +3699,10 @@ msgstr "pop de un PulseIn vacío"
 msgid "pop from empty %q"
 msgstr "pop desde %q vacía"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "el 3er argumento de pow() no puede ser 0"
@@ -4224,6 +4233,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA o SCL necesitan una pull up"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

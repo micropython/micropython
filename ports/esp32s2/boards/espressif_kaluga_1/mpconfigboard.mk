@@ -14,4 +14,10 @@ CIRCUITPY_ESP_FLASH_MODE=dio
 CIRCUITPY_ESP_FLASH_FREQ=80m
 CIRCUITPY_ESP_FLASH_SIZE=4MB
 
+# We only have enough endpoints available in hardware to
+# enable ONE of these at a time.
+CIRCUITPY_USB_MIDI = 1
+CIRCUITPY_USB_HID = 0
+CIRCUITPY_USB_VENDOR = 0
+
 CIRCUITPY_MODULE=wrover

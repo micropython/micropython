@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "background.h"
 
-#include "py/runtime.h"
-#include "supervisor/port.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
 
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
+#include "py/obj.h"
 
-void port_background_task(void) {
-}
+#include "common-hal/ssl/SSLContext.h"
+#include "common-hal/socketpool/Socket.h"
+
+#include "components/esp-tls/esp_tls.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    socketpool_socket_obj_t * sock;
+    esp_tls_t* tls;
+    ssl_sslcontext_obj_t* ssl_context;
+} ssl_sslsocket_obj_t;
+
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
