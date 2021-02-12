@@ -84,7 +84,3 @@ void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice
 
     common_hal_busio_spi_unlock(self->spi);
 }
-
-mp_obj_t common_hal_adafruit_bus_device_spidevice_get_spi(adafruit_bus_device_spidevice_obj_t *self) {
-    return self->spi;
-}

@@ -27,8 +27,6 @@ CIRCUITPY_FULL_BUILD = 1
 CIRCUITPY_PWMIO = 1
 
 # Things that need to be implemented.
-CIRCUITPY_AUDIOBUSIO = 0  # Use PIO interally for I2S
-CIRCUITPY_AUDIOMP3 = 0
 CIRCUITPY_COUNTIO = 0  # Use PWM interally
 CIRCUITPY_FREQUENCYIO = 0 # Use PWM interally
 CIRCUITPY_I2CPERIPHERAL = 0
@@ -37,8 +35,15 @@ CIRCUITPY_PULSEIO = 0 # Use PIO interally
 CIRCUITPY_ROTARYIO = 0 # Use PIO interally
 CIRCUITPY_WATCHDOG = 1
 
-# Things that are unsupported by the hardware.
+# Audio via PWM
 CIRCUITPY_AUDIOIO = 0
+CIRCUITPY_AUDIOBUSIO ?= 0 # add this later
+CIRCUITPY_AUDIOCORE ?= 1
+CIRCUITPY_AUDIOPWMIO ?= 1
+
+# These libraries require Cortex M4+ for fancy math instructions.
+CIRCUITPY_AUDIOMIXER ?= 0
+CIRCUITPY_AUDIOMP3 ?= 0
 
 INTERNAL_LIBM = 1
 

@@ -196,6 +196,7 @@ SRC_C += \
 	bindings/rp2pio/__init__.c \
 	common-hal/rp2pio/StateMachine.c \
 	common-hal/rp2pio/__init__.c \
+	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
 	fatfs_port.c \

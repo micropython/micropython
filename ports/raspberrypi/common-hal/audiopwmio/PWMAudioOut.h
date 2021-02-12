@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
 
-#include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
+#include "common-hal/pwmio/PWMOut.h"
 
-#define MICROPY_PY_SYS_PLATFORM             "RP2040"
+#include "audio_dma.h"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (4*1024)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR   (0x100FF000)
+typedef struct {
+    mp_obj_base_t base;
+    pwmio_pwmout_obj_t left_pwm;
+    pwmio_pwmout_obj_t right_pwm;
+    audio_dma_t dma;
+    uint16_t quiescent_value;
+    uint8_t pacing_timer;
+} audiopwmio_pwmaudioout_obj_t;
 
-#define CIRCUITPY_DEFAULT_STACK_SIZE        (24*1024)
+void audiopwmout_reset(void);
 
-#define MICROPY_USE_INTERNAL_PRINTF         (1)
+void audiopwmout_background(void);
 
-#define CIRCUITPY_PROCESSOR_COUNT           (2)
-
-// This also includes mpconfigboard.h.
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t playing_audio[NUM_DMA_CHANNELS]; \
-    CIRCUITPY_COMMON_ROOT_POINTERS;
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H

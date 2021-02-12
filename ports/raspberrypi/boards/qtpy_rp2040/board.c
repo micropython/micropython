@@ -24,27 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#include "supervisor/board.h"
 
-#include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-#define MICROPY_PY_SYS_PLATFORM             "RP2040"
+void board_init(void) {
+    common_hal_never_reset_pin(&pin_GPIO11);
+    gpio_init(11);
+    gpio_set_dir(11, GPIO_OUT);
+    gpio_put(11, true);
+}
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (4*1024)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR   (0x100FF000)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define CIRCUITPY_DEFAULT_STACK_SIZE        (24*1024)
-
-#define MICROPY_USE_INTERNAL_PRINTF         (1)
-
-#define CIRCUITPY_PROCESSOR_COUNT           (2)
-
-// This also includes mpconfigboard.h.
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t playing_audio[NUM_DMA_CHANNELS]; \
-    CIRCUITPY_COMMON_ROOT_POINTERS;
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+void reset_board(void) {
+}
