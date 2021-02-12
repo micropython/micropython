@@ -31,6 +31,8 @@
 #include "py/runtime.h"
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 
+extern uint32_t __flash_binary_start;
+
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t* self) {
     return self->len;
 }
@@ -39,12 +41,12 @@ static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
     // Write a whole page to flash, buffering it first and then erasing and rewriting
     // it since we can only clear a whole page at a time.
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
-        flash_range_program(page_addr - 0x10000000, bytes, FLASH_PAGE_SIZE);
+        flash_range_program(page_addr - (uint32_t) &__flash_binary_start, bytes, FLASH_PAGE_SIZE);
     } else {
         uint8_t buffer[FLASH_PAGE_SIZE];
         memcpy(buffer, (uint8_t*) page_addr, FLASH_PAGE_SIZE);
         memcpy(buffer + offset, bytes, len);
-        flash_range_program(page_addr - 0x10000000, buffer, FLASH_PAGE_SIZE);
+        flash_range_program(page_addr - (uint32_t) &__flash_binary_start, buffer, FLASH_PAGE_SIZE);
     }
 }
 
