@@ -651,7 +651,8 @@ def main():
         help="Do not follow the output after running the scripts.",
     )
     cmd_parser.add_argument(
-        "-f", "--filesystem", action="store_true", help="perform a filesystem action"
+        "-f", "--filesystem", action="store_true", help="perform a filesystem action: "
+        "cp local :device | cp :device local | cat path | ls [path] | rm path | mkdir path | rmdir path"
     )
     cmd_parser.add_argument("files", nargs="*", help="input files")
     args = cmd_parser.parse_args()
