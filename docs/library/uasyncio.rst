@@ -40,6 +40,10 @@ Core functions
 
     Returns the corresponding `Task` object.
 
+.. function:: current_task()
+
+    Return the `Task` object associated with the currently running task.
+
 .. function:: run(coro)
 
     Create a new task from the given coroutine and run it until it completes.
