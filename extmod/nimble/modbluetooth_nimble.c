@@ -1281,14 +1281,15 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 }
 
 STATIC int ble_gatt_attr_read_cb(uint16_t conn_handle, const struct ble_gatt_error *error, struct ble_gatt_attr *attr, void *arg) {
-    DEBUG_printf("ble_gatt_attr_read_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, attr ? attr->handle : -1);
+    uint16_t handle = attr ? attr->handle : (error ? error->att_handle : 0xffff);
+    DEBUG_printf("ble_gatt_attr_read_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, handle);
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
     if (error->status == 0) {
         gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, attr->om);
     }
-    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, attr ? attr->handle : -1, error->status);
+    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, handle, error->status);
     return 0;
 }
 
@@ -1302,11 +1303,12 @@ int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle) {
 }
 
 STATIC int ble_gatt_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_error *error, struct ble_gatt_attr *attr, void *arg) {
-    DEBUG_printf("ble_gatt_attr_write_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, attr ? attr->handle : -1);
+    uint16_t handle = attr ? attr->handle : (error ? error->att_handle : 0xffff);
+    DEBUG_printf("ble_gatt_attr_write_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, handle);
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
-    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, attr->handle, error->status);
+    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, handle, error->status);
     return 0;
 }
 
