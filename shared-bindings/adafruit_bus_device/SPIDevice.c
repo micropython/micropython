@@ -34,7 +34,6 @@
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 

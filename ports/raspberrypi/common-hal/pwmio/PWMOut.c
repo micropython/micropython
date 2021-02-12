@@ -164,7 +164,8 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
 
 extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     self->duty_cycle = duty;
-    uint16_t actual_duty = duty * self->top / ((1 << 16) - 1);
+    // Do arithmetic in 32 bits to prevent overflow.
+    uint16_t actual_duty = (uint32_t) duty * self->top / ((1 << 16) - 1);
     pwm_set_chan_level(self->slice, self->channel, actual_duty);
 }
 
@@ -172,11 +173,11 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return self->duty_cycle;
 }
 
-void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top) {
+void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint16_t top) {
     self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
     self->top = top;
     pwm_set_clkdiv_int_frac(self->slice, 1, 0);
-    pwm_set_wrap(self->slice, self->top - 1);
+    pwm_set_wrap(self->slice, self->top);
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
@@ -187,7 +188,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
     target_slice_frequencies[self->slice] = frequency;
 
     // For low frequencies use the divider to give us full resolution duty_cycle.
-    if (frequency < (common_hal_mcu_processor_get_frequency() / (1 << 16))) {
+    if (frequency <= (common_hal_mcu_processor_get_frequency() / (1 << 16))) {
         // Compute the divisor. It's an 8 bit integer and 4 bit fraction. Therefore,
         // we compute everything * 16 for the fractional part.
         // This is 1 << 12 because 4 bits are the * 16.
@@ -202,15 +203,15 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
             div16 = (1 << 12) - 1;
         }
         self->actual_frequency = frequency16 / div16;
-        self->top = 1 << 16;
+        self->top = (1 << 16) - 1;
         pwm_set_clkdiv_int_frac(self->slice, div16 / 16, div16 % 16);
-        pwm_set_wrap(self->slice, self->top - 1);
+        pwm_set_wrap(self->slice, self->top);
     } else {
         uint32_t top = common_hal_mcu_processor_get_frequency() / frequency;
         self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
-        self->top = top;
+        self->top = MIN(UINT16_MAX, top - 1);
         pwm_set_clkdiv_int_frac(self->slice, 1, 0);
-        pwm_set_wrap(self->slice, self->top - 1);
+        pwm_set_wrap(self->slice, self->top);
     }
     common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }

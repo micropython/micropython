@@ -39,11 +39,11 @@ typedef struct {
     bool variable_frequency;
     uint16_t duty_cycle;
     uint32_t actual_frequency;
-    uint32_t top;
+    uint16_t top;
 } pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
 // Private API for AudioPWMOut.
-void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top);
+void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint16_t top);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
