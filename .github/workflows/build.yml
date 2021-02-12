@@ -294,6 +294,7 @@ jobs:
         - "pyportal_titano"
         - "pyruler"
         - "qtpy_m0"
+        - "qtpy_rp2040"
         - "qtpy_m0_haxpress"
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
