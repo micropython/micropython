@@ -1397,7 +1397,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
-    new = sorted(new.values(), key=lambda x: x[0])
+    new = sorted(new.values(), key=lambda x: x[2])
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
@@ -1482,6 +1482,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("    %u, // used entries" % len(new))
     print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
     print("    (qstr_len_t *)mp_qstr_frozen_const_lengths,")
+    print("    true, // entries are sorted")
     print("    {")
     for _, _, qstr, qbytes in new:
         print('        "%s",' % qstrutil.escape_bytes(qstr, qbytes))
