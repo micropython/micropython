@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbertfor Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,34 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Runtime.h"
-#include "supervisor/serial.h"
+#include <stdint.h>
 
-bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
-}
+#include "py/obj.h"
+#include "py/runtime.h"
 
-bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
-  return (bool) serial_bytes_available();
-}
+#include "shared-bindings/usb_cdc/__init__.h"
+#include "shared-bindings/usb_cdc/Serial.h"
+
+#include "py/runtime.h"
+
+//| """USB CDC Serial streams
+//|
+//| The `usb_cdc` module allows access to USB CDC (serial) communications.
+//|
+//| serial: Tuple[Serial, ...]
+//| """Tuple of all CDC streams. Each item is a `Serial`."""
+//|
+
+mp_map_elem_t usb_cdc_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_cdc) },
+    { MP_ROM_QSTR(MP_QSTR_Serial),   MP_OBJ_FROM_PTR(&usb_cdc_serial_type) },
+    { MP_ROM_QSTR(MP_QSTR_serial),   mp_const_empty_tuple },
+};
+
+// This isn't const so we can set the streams dynamically.
+MP_DEFINE_MUTABLE_DICT(usb_cdc_module_globals, usb_cdc_module_globals_table);
+
+const mp_obj_module_t usb_cdc_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&usb_cdc_module_globals,
+};

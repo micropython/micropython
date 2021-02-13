@@ -148,13 +148,3 @@ void serial_write_substring(const char* text, uint32_t length) {
 void serial_write(const char* text) {
     serial_write_substring(text, strlen(text));
 }
-
-#if CIRCUITPY_USB_SERIAL2
-bool serial2_bytes_available(void) {
-    return tud_cdc_n_available(1) > 0;
-}
-
-bool serial2_connected(void) {
-    return tud_cdc_n_connected(1);
-}
-#endif

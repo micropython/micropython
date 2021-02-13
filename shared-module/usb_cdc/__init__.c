@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2018 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,32 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Runtime.h"
-#include "supervisor/serial.h"
+#include "shared-bindings/usb_cdc/__init__.h"
 
-bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
-}
+#include "genhdr/autogen_usb_descriptor.h"
+#include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/objtuple.h"
+#include "shared-bindings/usb_cdc/Serial.h"
+#include "tusb.h"
 
-bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
-  return (bool) serial_bytes_available();
+supervisor_allocation* usb_cdc_allocation;
+
+static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC];
+
+void usb_cdc_init(void) {
+
+    serial_obj_ptrs *usb_cdc_serial_obj_t[CFG_TUD_CDC];
+
+    for (size_t i = 0; i < CFG_TUD_CDC; i++) {
+        serial_objs[i].base.type = &usb_cdc_serial_type;
+        serial_objs[i].idx = i;
+        serial_obj_ptrs[i] = &serial_objs[i];
+    }
+
+    serials_tuple->base.type = mp_obj_new_tuple(CFG_TUD_CDC, serials);
+
+    repl->base.type =
+    repl->idx = 0;    mp_map_lookup(&usb_cdc_module_globals.map, MP_ROM_QSTR(MP_QSTR_serial), MP_MAP_LOOKUP)->value = MP_OBJ_FROM_PTR(serials_tuple);
 }

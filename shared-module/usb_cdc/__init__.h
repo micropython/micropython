@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Runtime.h"
-#include "supervisor/serial.h"
+#ifndef SHARED_MODULE_USB_CDC___INIT___H
+#define SHARED_MODULE_USB_CDC___INIT___H
 
-bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
-}
+void usb_cdc_init(void);
 
-bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
-  return (bool) serial_bytes_available();
-}
+#endif /* SHARED_MODULE_USB_CDC___INIT___H */

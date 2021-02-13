@@ -33,84 +33,100 @@ endif
 # (Right now INTERNAL_FLASH_FILESYSTEM and (Q)SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
 ifdef EXTERNAL_FLASH_DEVICES
-	CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
-				-DEXTERNAL_FLASH_DEVICE_COUNT=$(EXTERNAL_FLASH_DEVICE_COUNT)
+  CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
+	    -DEXTERNAL_FLASH_DEVICE_COUNT=$(EXTERNAL_FLASH_DEVICE_COUNT)
 
-	SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
-	ifeq ($(SPI_FLASH_FILESYSTEM),1)
-		SRC_SUPERVISOR += supervisor/shared/external_flash/spi_flash.c
-	else
-	endif
-	ifeq ($(QSPI_FLASH_FILESYSTEM),1)
-		SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
-	endif
+  SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
+    ifeq ($(SPI_FLASH_FILESYSTEM),1)
+      SRC_SUPERVISOR += supervisor/shared/external_flash/spi_flash.c
+    endif
+    ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+      SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
+    endif
 else
-	ifeq ($(DISABLE_FILESYSTEM),1)
-		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
-	else
-		SRC_SUPERVISOR += supervisor/internal_flash.c
-	endif
+  ifeq ($(DISABLE_FILESYSTEM),1)
+    SRC_SUPERVISOR += supervisor/stub/internal_flash.c
+  else
+    SRC_SUPERVISOR += supervisor/internal_flash.c
+  endif
 endif
 
 ifeq ($(USB),FALSE)
-	ifeq ($(wildcard supervisor/serial.c),)
-		SRC_SUPERVISOR += supervisor/stub/serial.c
-	else
-		SRC_SUPERVISOR += supervisor/serial.c
-	endif
+  ifeq ($(wildcard supervisor/serial.c),)
+    SRC_SUPERVISOR += supervisor/stub/serial.c
+  else
+    SRC_SUPERVISOR += supervisor/serial.c
+  endif
 else
-	SRC_SUPERVISOR += \
-		lib/tinyusb/src/common/tusb_fifo.c \
-		lib/tinyusb/src/device/usbd.c \
-		lib/tinyusb/src/device/usbd_control.c \
-		lib/tinyusb/src/class/msc/msc_device.c \
-		lib/tinyusb/src/class/cdc/cdc_device.c \
-		lib/tinyusb/src/tusb.c \
-		supervisor/shared/serial.c \
-		supervisor/shared/workflow.c \
-		supervisor/usb.c \
-		supervisor/shared/usb/usb_desc.c \
-		supervisor/shared/usb/usb.c \
-		supervisor/shared/usb/usb_msc_flash.c \
-		$(BUILD)/autogen_usb_descriptor.c
+  SRC_SUPERVISOR += \
+    lib/tinyusb/src/class/cdc/cdc_device.c \
+    lib/tinyusb/src/common/tusb_fifo.c \
+    lib/tinyusb/src/device/usbd.c \
+    lib/tinyusb/src/device/usbd_control.c \
+    lib/tinyusb/src/tusb.c \
+    supervisor/shared/serial.c \
+    supervisor/shared/workflow.c \
+    supervisor/usb.c \
+    supervisor/shared/usb/usb_desc.c \
+    supervisor/shared/usb/usb.c \
+    $(BUILD)/autogen_usb_descriptor.c \
 
-	ifeq ($(CIRCUITPY_USB_HID), 1)
-		SRC_SUPERVISOR += \
-			lib/tinyusb/src/class/hid/hid_device.c \
-			shared-bindings/usb_hid/__init__.c \
-			shared-bindings/usb_hid/Device.c \
-			shared-module/usb_hid/__init__.c \
-			shared-module/usb_hid/Device.c
-	endif
+  ifeq ($(CIRCUITPY_USB_CDC), 1)
+    SRC_SUPERVISOR += \
+      shared-bindings/usb_cdc/__init__.c \
+      shared-bindings/usb_cdc/Serial.c \
+      shared-module/usb_cdc/__init__.c \
+      shared-module/usb_cdc/Serial.c \
 
-	ifeq ($(CIRCUITPY_USB_MIDI), 1)
-		SRC_SUPERVISOR += \
-			lib/tinyusb/src/class/midi/midi_device.c \
-			shared-bindings/usb_midi/__init__.c \
-			shared-bindings/usb_midi/PortIn.c \
-			shared-bindings/usb_midi/PortOut.c \
-			shared-module/usb_midi/__init__.c \
-			shared-module/usb_midi/PortIn.c \
-			shared-module/usb_midi/PortOut.c
-	endif
+  endif
 
-	ifeq ($(CIRCUITPY_USB_VENDOR), 1)
-		SRC_SUPERVISOR += \
-			lib/tinyusb/src/class/vendor/vendor_device.c
-	endif
+  ifeq ($(CIRCUITPY_USB_HID), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/hid/hid_device.c \
+      shared-bindings/usb_hid/__init__.c \
+      shared-bindings/usb_hid/Device.c \
+      shared-module/usb_hid/__init__.c \
+      shared-module/usb_hid/Device.c \
 
-	CFLAGS += -DUSB_AVAILABLE
+  endif
+
+  ifeq ($(CIRCUITPY_USB_MIDI), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/midi/midi_device.c \
+      shared-bindings/usb_midi/__init__.c \
+      shared-bindings/usb_midi/PortIn.c \
+      shared-bindings/usb_midi/PortOut.c \
+      shared-module/usb_midi/__init__.c \
+      shared-module/usb_midi/PortIn.c \
+      shared-module/usb_midi/PortOut.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_USB_MSC), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/msc/msc_device.c \
+      supervisor/shared/usb/usb_msc_flash.c \
+
+  endif
+
+  ifeq ($(CIRCUITPY_USB_VENDOR), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/vendor/vendor_device.c \
+
+  endif
+
+  CFLAGS += -DUSB_AVAILABLE
 endif
 
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
 
 ifeq ($(CIRCUITPY_DISPLAYIO), 1)
-	SRC_SUPERVISOR += \
-		supervisor/shared/display.c
+  SRC_SUPERVISOR += \
+    supervisor/shared/display.c
 
-	ifeq ($(CIRCUITPY_TERMINALIO), 1)
-		SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
-	endif
+  ifeq ($(CIRCUITPY_TERMINALIO), 1)
+    SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+  endif
 endif
 
 USB_INTERFACE_NAME ?= "CircuitPython"
@@ -126,16 +142,20 @@ endif
 # It gets added automatically.
 USB_WEBUSB_URL ?= "circuitpython.org"
 
+ifeq ($(CIRCUITPY_REPL_USB),1)
+USB_DEVICES += CDC
+endif
+
+ifeq ($(CIRCUITPY_USB_HID),1)
+USB_DEVICES += HID
+endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 USB_DEVICES += AUDIO
 endif
 ifeq ($(CIRCUITPY_USB_MSC),1)
 USB_DEVICES += MSC
 endif
-ifeq ($(CIRCUITPY_USB_SERIAL),1)
-USB_DEVICES += CDC
-endif
-ifeq ($(CIRCUITPY_USB_SERIAL2),1)
+ifeq ($(CIRCUITPY_USB_CDC),1)
 # Inform TinyUSB there are two CDC devices.
 CFLAGS += -DCFG_TUD_CDC=2
 USB_DEVICES += CDC2

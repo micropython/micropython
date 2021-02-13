@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Runtime.h"
-#include "supervisor/serial.h"
+#include "shared-module/usb_cdc/Serial.h"
+#include "tusb.h"
 
-bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
+size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data, size_t len, int *errcode) {
+    return tud_cdc_n_read(self->idx, data, len);
 }
 
-bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
-  return (bool) serial_bytes_available();
+uint32_t common_hal_usb_cdc_serial_bytes_available(usb_cdc_serial_obj_t *self) {
+    return tud_cdc_n_available(self->idx);
+}
+
+size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    return tud_cdc_n_write(self->idx, data, len);
+}
+
+bool common_hal_usb_cdc_serial_ready_to_tx(usb_cdc_serial_obj_t *self) {
+    return tud_cdc_n_connected(self->idx);
 }

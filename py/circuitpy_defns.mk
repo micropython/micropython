@@ -286,6 +286,9 @@ endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
 endif
+ifeq ($(CIRCUITPY_USB_CDC),1)
+SRC_PATTERNS += usb_cdc/%
+endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif

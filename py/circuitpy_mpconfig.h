@@ -736,6 +736,13 @@ extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE
 #endif
 
+#if CIRCUITPY_USB_CDC
+extern const struct _mp_obj_module_t usb_cdc_module;
+#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
+#else
+#define USB_CDC_MODULE
+#endif
+
 #if CIRCUITPY_USB_HID
 extern const struct _mp_obj_module_t usb_hid_module;
 #define USB_HID_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
@@ -875,6 +882,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     SUPERVISOR_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
+    USB_CDC_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \

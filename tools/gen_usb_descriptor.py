@@ -830,7 +830,6 @@ extern uint16_t const * const string_desc_arr [{string_descriptor_length}];
         rhport0_mode="OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED"
         if args.highspeed
         else "OPT_MODE_DEVICE",
-        hid_num_devices=len(args.hid_devices),
         msc_vendor=args.manufacturer[:8],
         msc_product=args.product[:16],
     )
@@ -844,6 +843,7 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
 #define USB_HID_NUM_DEVICES         {hid_num_devices}
 """.format(
     hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
+    hid_num_devices=len(args.hid_devices),
     )
 )
 

@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Runtime.h"
-#include "supervisor/serial.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC_SERIAL_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC_SERIAL_H
 
-bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
-}
+#include "shared-module/usb_cdc/Serial.h"
 
-bool common_hal_get_supervisor_runtime_serial_bytes_available(void) {
-  return (bool) serial_bytes_available();
-}
+extern const mp_obj_type_t usb_cdc_serial_type;
+
+extern size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data, size_t len, int *errcode);
+extern uint32_t common_hal_usb_cdc_serial_bytes_available(usb_cdc_serial_obj_t *self);
+extern void common_hal_usb_cdc_serial_clear_buffer(usb_cdc_serial_obj_t *self);
+extern size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode);
+extern bool common_hal_usb_cdc_serial_ready_to_tx(usb_cdc_serial_obj_t *self);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC_SERIAL_H
