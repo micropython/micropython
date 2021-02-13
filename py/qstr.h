@@ -38,9 +38,21 @@
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
 enum {
     #ifndef NO_QSTR
-#define QDEF(id, hash, len, str) id,
+
+#define QDEF0(id, hash, len, str) id,
+#define QDEF1(id, hash, len, str)
     #include "genhdr/qstrdefs.generated.h"
-#undef QDEF
+#undef QDEF0
+#undef QDEF1
+
+    MP_QSTRspecial_const_number_of, // no underscore so it can't clash with any of the above
+
+#define QDEF0(id, hash, len, str)
+#define QDEF1(id, hash, len, str) id,
+    #include "genhdr/qstrdefs.generated.h"
+#undef QDEF0
+#undef QDEF1
+
     #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
@@ -71,6 +83,7 @@ typedef struct _qstr_pool_t {
     size_t len;
     qstr_hash_t *hashes;
     qstr_len_t *lengths;
+    bool sorted;
     const char *qstrs[];
 } qstr_pool_t;
 
