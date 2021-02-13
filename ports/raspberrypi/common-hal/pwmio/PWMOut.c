@@ -45,6 +45,18 @@ uint32_t slice_variable_frequency;
 static uint32_t channel_use;
 static uint32_t never_reset_channel;
 
+// Per the RP2040 datasheet:
+//
+// "A CC value of 0 will produce a 0% output, i.e. the output signal
+// is always low. A CC value of TOP + 1 (i.e. equal to the period, in
+// non-phase-correct mode) will produce a 100% output. For example, if
+// TOP is programmed to 254, the counter will have a period of 255
+// cycles, and CC values in the range of 0 to 255 inclusive will
+// produce duty cycles in the range 0% to 100% inclusive."
+//
+// So 65534 should be the maximum top value, and we'll set CC to be TOP+1 as appropriate.
+#define MAX_TOP 65534
+
 static uint32_t _mask(uint8_t slice, uint8_t channel) {
     return 1 << (slice * CHANNELS_PER_SLICE + channel);
 }
@@ -165,8 +177,16 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
 extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     self->duty_cycle = duty;
     // Do arithmetic in 32 bits to prevent overflow.
-    uint16_t actual_duty = (uint32_t) duty * self->top / ((1 << 16) - 1);
-    pwm_set_chan_level(self->slice, self->channel, actual_duty);
+    uint16_t compare_count;
+    if (duty == 65535) {
+        // Ensure that 100% duty cycle is 100% full on and not rounded down,
+        // but do MIN() to keep value in range, just in case.
+        compare_count = MIN(UINT16_MAX, (uint32_t) self->top + 1);
+    } else {
+        compare_count= ((uint32_t) duty * self->top + MAX_TOP / 2) / MAX_TOP;
+    }
+    // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
+    pwm_set_chan_level(self->slice, self->channel, compare_count);
 }
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
@@ -202,15 +222,16 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
         if (div16 >= (1 << 12)) {
             div16 = (1 << 12) - 1;
         }
-        self->actual_frequency = frequency16 / div16;
-        self->top = (1 << 16) - 1;
+        self->actual_frequency = (frequency16 + (div16 / 2)) / div16;
+        self->top = MAX_TOP;
         pwm_set_clkdiv_int_frac(self->slice, div16 / 16, div16 % 16);
         pwm_set_wrap(self->slice, self->top);
     } else {
         uint32_t top = common_hal_mcu_processor_get_frequency() / frequency;
         self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
-        self->top = MIN(UINT16_MAX, top - 1);
+        self->top = MIN(MAX_TOP, top);
         pwm_set_clkdiv_int_frac(self->slice, 1, 0);
+        // Set TOP register. For 100% duty cycle, CC must be set to TOP+1.
         pwm_set_wrap(self->slice, self->top);
     }
     common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
