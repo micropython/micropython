@@ -826,7 +826,7 @@ def freeze_mpy(base_qstrs, raw_codes):
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
-    new = sorted(new.values(), key=lambda x: x[0])
+    new = sorted(new.values(), key=lambda x: x[2])
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
@@ -890,6 +890,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
+    print("    true, // entries are sorted")
     print("    {")
     for _, _, qstr in new:
         print(

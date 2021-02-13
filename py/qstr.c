@@ -100,16 +100,38 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     return hash;
 }
 
-const qstr_pool_t mp_qstr_const_pool = {
-    NULL,               // no previous pool
-    0,                  // no previous pool
+const qstr_pool_t mp_qstr_special_const_pool = {
+    NULL,                        // no previous pool
+    0,                           // no previous pool
     MICROPY_ALLOC_QSTR_ENTRIES_INIT,
-    MP_QSTRnumber_of,   // corresponds to number of strings in array just below
+    MP_QSTRspecial_const_number_of + 1, // corresponds to number of strings in array just below
+    false,                       // special constant qstrs are not sorted
     {
         #ifndef NO_QSTR
-#define QDEF(id, str) str,
+#define QDEF0(id, str) str,
+#define QDEF1(id, str)
         #include "genhdr/qstrdefs.generated.h"
-#undef QDEF
+#undef QDEF0
+#undef QDEF1
+        #endif
+        (const byte *)"",       // spacer for MP_QSTRspecial_const_number_of
+    },
+};
+
+const qstr_pool_t mp_qstr_const_pool = {
+    (qstr_pool_t *)&mp_qstr_special_const_pool,
+    MP_QSTRspecial_const_number_of + 1,
+    MICROPY_ALLOC_QSTR_ENTRIES_INIT,
+    MP_QSTRnumber_of -
+    (MP_QSTRspecial_const_number_of + 1),      // corresponds to number of strings in array just below
+    true,                               // constant qstrs are sorted
+    {
+        #ifndef NO_QSTR
+#define QDEF0(id, str)
+#define QDEF1(id, str) str,
+        #include "genhdr/qstrdefs.generated.h"
+#undef QDEF0
+#undef QDEF1
         #endif
     },
 };
@@ -160,6 +182,7 @@ STATIC qstr qstr_add(const byte *q_ptr) {
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
         pool->alloc = new_alloc;
         pool->len = 0;
+        pool->sorted = false;
         MP_STATE_VM(last_pool) = pool;
         DEBUG_printf("QSTR: allocate new pool of size %d\n", MP_STATE_VM(last_pool)->alloc);
     }
@@ -171,14 +194,48 @@ STATIC qstr qstr_add(const byte *q_ptr) {
     return MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len - 1;
 }
 
+#define MP_QSTR_SEARCH_THRESHOLD 10
+
 qstr qstr_find_strn(const char *str, size_t str_len) {
-    // work out hash of str
     mp_uint_t str_hash = qstr_compute_hash((const byte *)str, str_len);
 
     // search pools for the data
     for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
-        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-            if (Q_GET_HASH(*q) == str_hash && Q_GET_LENGTH(*q) == str_len && memcmp(Q_GET_DATA(*q), str, str_len) == 0) {
+        size_t low = 0;
+        size_t high = pool->len - 1;
+
+        // binary search inside the pool
+        if (pool->sorted) {
+            while (high - low > MP_QSTR_SEARCH_THRESHOLD) {
+                size_t mid = (low + high + 1) / 2;
+                const byte **q = pool->qstrs + mid;
+                size_t len = Q_GET_LENGTH(*q);
+                if (len > str_len) {
+                    len = str_len;
+                }
+                int cmp = memcmp(Q_GET_DATA(*q), str, str_len);
+                if (cmp < 0) {
+                    low = mid;
+                } else if (cmp > 0) {
+                    high = mid;
+                } else {
+                    if (Q_GET_LENGTH(*q) < str_len) {
+                        low = mid;
+                    } else if (Q_GET_LENGTH(*q) > str_len) {
+                        high = mid;
+                    } else {
+                        return pool->total_prev_len + (q - pool->qstrs);
+                    }
+                }
+            }
+        }
+
+        // sequential search for the remaining strings
+        for (const byte **q = pool->qstrs + low; q != pool->qstrs + high + 1; q++) {
+            if (*q &&
+                Q_GET_HASH(*q) == str_hash &&
+                Q_GET_LENGTH(*q) == str_len &&
+                memcmp(Q_GET_DATA(*q), str, str_len) == 0) {
                 return pool->total_prev_len + (q - pool->qstrs);
             }
         }

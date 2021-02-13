@@ -350,14 +350,23 @@ def print_qstr_data(qcfgs, qstrs):
 
     # add NULL qstr with no hash or data
     print(
-        'QDEF(MP_QSTRnull, (const byte*)"%s%s" "")'
+        'QDEF0(MP_QSTRnull, (const byte*)"%s%s" "")'
         % ("\\x00" * cfg_bytes_hash, "\\x00" * cfg_bytes_len)
     )
 
-    # go through each qstr and print it out
-    for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
+    # split qstr values into two pools. static consts first.
+    q0_values = [q for q in qstrs.values() if q[0] < 0]
+    q1_values = [q for q in qstrs.values() if q[0] >= 0]
+
+    # go through each qstr in pool 0 and print it out. pool0 has special sort.
+    for order, ident, qstr in sorted(q0_values, key=lambda x: x[0]):
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
-        print("QDEF(MP_QSTR_%s, %s)" % (ident, qbytes))
+        print("QDEF0(MP_QSTR_%s, %s)" % (ident, qbytes))
+
+    # go through each qstr in pool 1 and print it out. pool1 is regularly sorted.
+    for order, ident, qstr in sorted(q1_values, key=lambda x: x[2]):
+        qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
+        print("QDEF1(MP_QSTR_%s, %s)" % (ident, qbytes))
 
 
 def do_work(infiles):
