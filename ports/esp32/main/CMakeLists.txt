@@ -78,6 +78,7 @@ set(MICROPY_SOURCE_QSTR
 set(IDF_COMPONENTS
     app_update
     bootloader_support
+    bt
     driver
     esp32
     esp_common
