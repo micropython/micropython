@@ -52,7 +52,24 @@
 // Internal constants
 // ------------------
 
+/* 
+ * This should be defined and exported in the Python machine module
+ * but apparently it is not used
+ */
+#define RP2_PWR_MODE_IDLE         (0x01)
+#define RP2_PWR_MODE_SLEEP        (0x02)
+#define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
+
+// From https://pdc.ro.nu/jd-code.html by Robin O'Leary
+STATIC uint32_t gregorian_calendar_to_jd(uint32_t y, uint32_t m, uint32_t d) {
+    y += 8000;
+    if (m<3) { 
+        y--; 
+        m+=12; 
+    }
+    return (y*365) + (y/4) -(y/100) +(y/400) -1200820 + (m*153+3)/5 - 92 + d - 1;
+}
 
 // ----------------------------------------
 // RTC internal state
@@ -64,14 +81,14 @@ typedef struct _machine_rtc_obj_t {
     mp_obj_t callback;
 } machine_rtc_obj_t;
 
-const mp_obj_type_t machine_rtc_type;
+const mp_obj_type_t machine_rtc_type;   // Forward declaration
 
 // singleton RTC object
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
-// ---------------
-// RTC Constructor
-// ----------------
+// ----------------------------------------
+// class machine.RTC(id=0, ...) Constructor
+// ----------------------------------------
 
 mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id };
@@ -94,7 +111,7 @@ mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 }
 
 // -------------------------
-// RTC init(datetime) method
+// RTC.init(datetime) method
 // -------------------------
 
 /* 
@@ -116,22 +133,30 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t datetime) {
             .sec   = mp_obj_get_int(items[5]),
             .dotw  = 0, // 0 is Sunday, so 5 is Frida WHAT DO WE DO HERE ????
     };
-
-    // Start the RTC
+    /*
+     * Note that the Raspberry Pi Pico port starst the RTC hardware at boot time
+     * so we do not start the hardware.
+     */
+#if 0  
     if ( ! rtc_running() ) {
         rtc_init();
     }
+#endif
     rtc_set_datetime(&t);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 // -------------------
-// RTC deinit() method
+// RTC.deinit() method
 // -------------------
 
 /* 
- * Resets the RTC to the time of January 1, 2015 and starts running it again.
+ * As per the MycroPython documantation:
+ * "Resets the RTC to the time of January 1, 2015 and starts running it again."
+ *
+ * Note that the raspberry Pi Pico port starst the RTC hardware at micropython boot
+ * so we do not stop the hardware.
  */
 
 STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
@@ -151,10 +176,8 @@ STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_deinit_obj, machine_rtc_deinit);
 
 // ----------------
-// RTC now() method
+// RTC.now() method
 // ----------------
-
-/* Get get the current datetime tuple.*/
 
 STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
     //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,18 +199,76 @@ STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
 
-// ---------------------------------------
-// Implementation of the __repr__() method
-// ---------------------------------------
+// -------------------------------------------
+// RTC.alarm(id, time, *, repeat=False) method
+// -------------------------------------------
+
+STATIC mp_obj_t machine_rtc_alarm(mp_obj_t self_in) {
+    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("alarm()"));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_obj, machine_rtc_alarm);
+
+// ----------------------------------
+// RTC.alarm_left(alarm_id=0)  method
+// ----------------------------------
+
+STATIC mp_obj_t machine_rtc_alarm_left(mp_obj_t self_in) {
+    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("alarm_left()"));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_left_obj, machine_rtc_alarm_left);
+
+// -----------------------------
+// RTC.cancel(alarm_id=0) method
+// -----------------------------
+
+STATIC mp_obj_t machine_rtc_cancel(mp_obj_t self_in) {
+    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("cancel()"));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_cancel_obj, machine_rtc_cancel);
+
+// -----------------------------------------------------------
+// RTC.irq(*, trigger, handler=None, wake=machine.IDLE) method
+// -----------------------------------------------------------
+
+STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_trigger, ARG_handler, ARG_wake };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = RTC_ALARM0} },
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_wake,    MP_ARG_INT, {.u_int = RP2_PWR_MODE_IDLE} },
+    };
+    
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]); 
+
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("irq()"));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
+
+
+
+
+// -------------------------------
+// RTC __repr__ && __str__ methods
+// -------------------------------
+
 STATIC void machine_rtc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "RTC(running = %s)", rtc_running() ? "true" : "false");
 }
 
-
-// ==================================
-// MODULE ROM TABLES AND ENTRY POINTS
-// ==================================
+// -------------------------------------------------------------------------
+// RTC locals dictionary, mappings names to additional methods and constants
+// -------------------------------------------------------------------------
 
 STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     // Map Python methods
@@ -196,10 +277,19 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&machine_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_now),     MP_ROM_PTR(&machine_rtc_now_obj)    },
 
+    { MP_ROM_QSTR(MP_QSTR_alarm),      MP_ROM_PTR(&machine_rtc_alarm_obj)      },
+    { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&machine_rtc_alarm_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_cancel),     MP_ROM_PTR(&machine_rtc_cancel_obj)     },
+    { MP_ROM_QSTR(MP_QSTR_irq),        MP_ROM_PTR(&machine_rtc_irq_obj)        },
+
     // Map Python Constants
     { MP_ROM_QSTR(MP_QSTR_ALARM0),  MP_ROM_INT(RTC_ALARM0) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
+
+// --------------------
+// RTC Class definition
+// --------------------
 
 const mp_obj_type_t machine_rtc_type = {
     { &mp_type_type },
