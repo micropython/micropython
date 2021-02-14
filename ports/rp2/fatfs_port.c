@@ -31,6 +31,4 @@ MP_WEAK DWORD get_fattime(void) {
     datetime_t t;
     rtc_get_datetime(&t);
     return ((2000 + t.year - 1980) << 25) | ((t.month) << 21) | ((t.day) << 16) | ((t.hour) << 11) | ((t.min) << 5) | (t.sec / 2);
-    // Dummy date: Jan 1st, 2018 at midnight. Not sure what timezone.
-    // return ((2018 - 1980) << 25) | ((1) << 21) | ((1) << 16) | ((0) << 11) | ((0) << 5) | (0 / 2);
 }
