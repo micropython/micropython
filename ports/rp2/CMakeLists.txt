@@ -14,6 +14,9 @@ else()
     set(PICO_SDK_PATH ../../lib/pico-sdk)
 endif()
 
+# Use the local tinyusb instead of the one in pico-sdk
+set(PICO_TINYUSB_PATH ${MPY_DIR}/lib/tinyusb)
+
 # Include component cmake fragments
 include(micropy_py.cmake)
 include(micropy_extmod.cmake)
