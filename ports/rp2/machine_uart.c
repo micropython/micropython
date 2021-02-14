@@ -69,15 +69,16 @@ STATIC machine_uart_obj_t machine_uart_obj[] = {
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
+STATIC const char *_invert_name[] = {"None", "TX", "RX", "RX, TX"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
 
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, timeout=%u, timeout_char=%u, invert=%s)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->timeout, self->timeout_char);
+        self->stop, self->tx, self->rx, self->timeout, self->timeout_char, _invert_name[self->invert]);
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
