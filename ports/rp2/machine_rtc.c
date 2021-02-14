@@ -62,13 +62,43 @@
 
 
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
-STATIC uint32_t gregorian_calendar_to_jd(uint32_t y, uint32_t m, uint32_t d) {
+STATIC uint32_t gregorian_calendar_to_jd(uint32_t y, uint32_t m, uint32_t d) 
+{
     y += 8000;
-    if (m<3) { 
-        y--; 
-        m+=12; 
-    }
+    if (m<3) { y--; m+=12; }
     return (y*365) + (y/4) -(y/100) +(y/400) -1200820 + (m*153+3)/5 - 92 + d - 1;
+}
+
+
+STATIC void jd_to_calendar(uint32_t jd, datetime_t* calendar)
+{
+        int y,m,d;
+        for(y=jd/366-4715; gregorian_calendar_to_jd(y+1,1,1) <= jd; y++);
+        for(m=1; gregorian_calendar_to_jd(y,m+1,1) <= jd; m++);
+        for(d=1; gregorian_calendar_to_jd(y,m,d+1)<=jd; d++);
+        calendar->year  = y; 
+        calendar->month = m; 
+        calendar->day   = d;
+}
+
+
+STATIC uint32_t to_seconds(const datetime_t* t) 
+{
+    uint32_t days;
+    days = gregorian_calendar_to_jd(t->year, t->month, t->day);
+    return (days*24*60*60 + t->hour*3600 + t->min*60 + t->sec);
+}
+
+STATIC void from_seconds(uint32_t seconds, datetime_t* calendar) 
+{
+    uint32_t jd = seconds / 24*60*60;
+
+    seconds %= 24*60*60;
+    calendar->hour = seconds / 60*60;
+    seconds %= 60*60;
+    calendar->min = seconds  / 60;
+    calendar->sec = seconds % 60;
+    jd_to_calendar(jd, calendar);
 }
 
 // ----------------------------------------
@@ -203,12 +233,57 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 // RTC.alarm(id, time, *, repeat=False) method
 // -------------------------------------------
 
-STATIC mp_obj_t machine_rtc_alarm(mp_obj_t self_in) {
-    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("alarm()"));
+STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_id, ARG_time, ARG_repeat};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id,     MP_ARG_INT,                   {.u_int = (0)}}, 
+        { MP_QSTR_time,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_repeat, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}},
+    };
+
+    // get self pointer and parse all other arguments
+    machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // get the time argument, either 
+    // as timestamp or relative duration in milliseconds
+
+    datetime_t now;
+    rtc_get_datetime(&now);
+    uint32_t now_secs = to_seconds(&now);
+    
+    if (mp_obj_is_int(args[ARG_time].u_obj)) {
+        datetime_t later;
+        int duration = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
+        uint32_t later_secs = now_secs + duration;
+        from_seconds(later_secs, &later);
+        rtc_set_alarm(&later, 0);   // AQui falta poner el callback
+        return mp_obj_new_int(1);
+    } else {
+        mp_obj_t *tstamp;
+        mp_obj_get_array_fixed_n(args[ARG_time].u_obj, 8, &tstamp);
+        datetime_t later = {
+            .year  = mp_obj_get_int(tstamp[0]),
+            .month = mp_obj_get_int(tstamp[1]),
+            .day   = mp_obj_get_int(tstamp[2]),  
+            .hour  = mp_obj_get_int(tstamp[3]),
+            .min   = mp_obj_get_int(tstamp[4]),
+            .sec   = mp_obj_get_int(tstamp[5]),
+            .dotw  = -1
+        };
+        uint32_t later_secs = to_seconds(&later);
+        if (later_secs <= now_secs) {
+            mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
+        }
+        rtc_set_alarm(&later, 0);   // Aqui falta poner el callback
+        return mp_obj_new_int(2);
+    }
+    
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.alarm()"));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_obj, machine_rtc_alarm);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
 // ----------------------------------
 // RTC.alarm_left(alarm_id=0)  method
@@ -216,7 +291,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_obj, machine_rtc_alarm);
 
 STATIC mp_obj_t machine_rtc_alarm_left(mp_obj_t self_in) {
     //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("alarm_left()"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.alarm_left()"));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_left_obj, machine_rtc_alarm_left);
@@ -227,7 +302,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_left_obj, machine_rtc_alarm_l
 
 STATIC mp_obj_t machine_rtc_cancel(mp_obj_t self_in) {
     //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("cancel()"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.cancel()"));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_cancel_obj, machine_rtc_cancel);
@@ -244,12 +319,13 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_wake,    MP_ARG_INT, {.u_int = RP2_PWR_MODE_IDLE} },
     };
     
+     // get self pointer and parse all other arguments
+    machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]); 
 
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("irq()"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.irq()"));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
