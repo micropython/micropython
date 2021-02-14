@@ -109,12 +109,13 @@ STATIC void from_seconds(uint32_t seconds, datetime_t* calendar)
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
+    datetime_t alarm;
 } machine_rtc_obj_t;
 
 const mp_obj_type_t machine_rtc_type;   // Forward declaration
 
 // singleton RTC object
-STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
+STATIC const machine_rtc_obj_t machine_rtc_obj = { .base = {&machine_rtc_type}, .callback=0, .alarm = {0,0,0,0,0,0,0}};
 
 // ----------------------------------------
 // class machine.RTC(id=0, ...) Constructor
@@ -252,35 +253,29 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     datetime_t now;
     rtc_get_datetime(&now);
     uint32_t now_secs = to_seconds(&now);
+    datetime_t later;
     
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
-        datetime_t later;
         int duration = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
         uint32_t later_secs = now_secs + duration;
         from_seconds(later_secs, &later);
-        rtc_set_alarm(&later, 0);   // AQui falta poner el callback
-        return mp_obj_new_int(1);
     } else {
         mp_obj_t *tstamp;
         mp_obj_get_array_fixed_n(args[ARG_time].u_obj, 8, &tstamp);
-        datetime_t later = {
-            .year  = mp_obj_get_int(tstamp[0]),
-            .month = mp_obj_get_int(tstamp[1]),
-            .day   = mp_obj_get_int(tstamp[2]),  
-            .hour  = mp_obj_get_int(tstamp[3]),
-            .min   = mp_obj_get_int(tstamp[4]),
-            .sec   = mp_obj_get_int(tstamp[5]),
-            .dotw  = -1
-        };
+        later.year  = mp_obj_get_int(tstamp[0]);
+        later.month = mp_obj_get_int(tstamp[1]);
+        later.day   = mp_obj_get_int(tstamp[2]);  
+        later.hour  = mp_obj_get_int(tstamp[3]);
+        later.min   = mp_obj_get_int(tstamp[4]);
+        later.sec   = mp_obj_get_int(tstamp[5]);
+        later.dotw  = -1;
         uint32_t later_secs = to_seconds(&later);
         if (later_secs <= now_secs) {
             mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
         }
-        rtc_set_alarm(&later, 0);   // Aqui falta poner el callback
-        return mp_obj_new_int(2);
     }
-    
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.alarm()"));
+    self->alarm = later;    // struct copy
+    rtc_set_alarm(&self->alarm, 0);   // AQui falta poner el callback
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
