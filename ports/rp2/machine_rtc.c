@@ -365,12 +365,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_ala
 // RTC.cancel(alarm_id=0) method
 // -----------------------------
 
-STATIC mp_obj_t machine_rtc_cancel(mp_obj_t self_in) {
-    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.cancel()"));
+STATIC mp_obj_t machine_rtc_cancel(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    enum { ARG_alarm_id};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_alarm_id, MP_ARG_INT , {.u_int = (0)}}, 
+
+    };
+
+    // get self pointer and parse all other arguments
+    machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[ARG_alarm_id].u_int != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("alarm_id must be 0"));
+    }
+    self->active = false;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_cancel_obj, machine_rtc_cancel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_cancel_obj, 1, machine_rtc_cancel);
 
 // -----------------------------------------------------------
 // RTC.irq(*, trigger, handler=None, wake=machine.IDLE) method
