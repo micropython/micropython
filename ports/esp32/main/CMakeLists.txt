@@ -108,6 +108,11 @@ if(IDF_VERSION_MINOR GREATER_EQUAL 1)
     list(APPEND IDF_COMPONENTS esp_netif)
 endif()
 
+if(IDF_VERSION_MINOR GREATER_EQUAL 2)
+    list(APPEND IDF_COMPONENTS esp_system)
+    list(APPEND IDF_COMPONENTS esp_timer)
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
@@ -168,6 +173,13 @@ foreach(comp ${IDF_COMPONENTS})
         list(APPEND MICROPY_CPP_DEF_EXTRA ${_def})
     endif()
 endforeach()
+
+if(IDF_VERSION_MINOR GREATER_EQUAL 2)
+    # These paths cannot currently be found by the IDF_COMPONENTS search loop above,
+    # so add them explicitly.
+    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/${IDF_TARGET}/include)
+    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/include)
+endif()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
