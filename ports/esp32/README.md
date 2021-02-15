@@ -28,8 +28,8 @@ manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v4.0.2, although other IDF v4 versions may also
-work.
+Currently MicroPython supports v4.0.2 and v4.1.1,
+although other IDF v4 versions may also work.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/v4.0.2/get-started/index.html#installation-step-by-step).
@@ -50,6 +50,7 @@ To check out a copy of the IDF use git clone:
 $ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
+You can replace `v4.0.2` with `v4.1.1` or any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 

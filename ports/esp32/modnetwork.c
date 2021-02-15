@@ -45,7 +45,6 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 #include "lwip/dns.h"
-#include "tcpip_adapter.h"
 #include "mdns.h"
 
 #if !MICROPY_ESP_IDF_4
@@ -54,6 +53,12 @@
 #endif
 
 #include "modnetwork.h"
+
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
+#define DNS_MAIN TCPIP_ADAPTER_DNS_MAIN
+#else
+#define DNS_MAIN ESP_NETIF_DNS_MAIN
+#endif
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -491,7 +496,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     tcpip_adapter_ip_info_t info;
     tcpip_adapter_dns_info_t dns_info;
     tcpip_adapter_get_ip_info(self->if_id, &info);
-    tcpip_adapter_get_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info);
+    tcpip_adapter_get_dns_info(self->if_id, DNS_MAIN, &dns_info);
     if (n_args == 1) {
         // get
         mp_obj_t tuple[4] = {
@@ -526,14 +531,14 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
                     _esp_exceptions(e);
                 }
                 ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
-                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
+                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, DNS_MAIN, &dns_info));
             } else if (self->if_id == WIFI_IF_AP) {
                 esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
                 if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) {
                     _esp_exceptions(e);
                 }
                 ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
-                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
+                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, DNS_MAIN, &dns_info));
                 ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
             }
         } else {

@@ -104,6 +104,10 @@ set(IDF_COMPONENTS
     xtensa
 )
 
+if(IDF_VERSION_MINOR GREATER_EQUAL 1)
+    list(APPEND IDF_COMPONENTS esp_netif)
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
