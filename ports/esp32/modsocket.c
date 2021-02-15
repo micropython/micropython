@@ -55,18 +55,6 @@
 #include "lwip/igmp.h"
 #include "esp_log.h"
 
-#if !MICROPY_ESP_IDF_4
-#define lwip_bind lwip_bind_r
-#define lwip_listen lwip_listen_r
-#define lwip_accept lwip_accept_r
-#define lwip_setsockopt lwip_setsockopt_r
-#define lwip_fnctl lwip_fnctl_r
-#define lwip_recvfrom lwip_recvfrom_r
-#define lwip_write lwip_write_r
-#define lwip_sendto lwip_sendto_r
-#define lwip_close lwip_close_r
-#endif
-
 #define SOCKET_POLL_US (100000)
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
