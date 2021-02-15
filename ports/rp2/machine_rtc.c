@@ -62,7 +62,7 @@
 
 
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
-STATIC uint32_t gregorian_calendar_to_jd(uint32_t y, uint32_t m, uint32_t d) 
+STATIC mp_uint_t gregorian_calendar_to_jd(mp_uint_t y, mp_uint_t m, mp_uint_t d) 
 {
     y += 8000;
     if (m<3) { y--; m+=12; }
@@ -70,7 +70,7 @@ STATIC uint32_t gregorian_calendar_to_jd(uint32_t y, uint32_t m, uint32_t d)
 }
 
 
-STATIC void jd_to_calendar(uint32_t jd, datetime_t* calendar)
+STATIC void jd_to_calendar(mp_uint_t jd, datetime_t* calendar)
 {
         int y,m,d;
         for(y=jd/366-4715; gregorian_calendar_to_jd(y+1,1,1) <= jd; y++);
@@ -82,16 +82,16 @@ STATIC void jd_to_calendar(uint32_t jd, datetime_t* calendar)
 }
 
 
-STATIC uint32_t to_seconds(const datetime_t* t) 
+STATIC mp_uint_t to_seconds(const datetime_t* t) 
 {
-    uint32_t days;
+    mp_uint_t days;
     days = gregorian_calendar_to_jd(t->year, t->month, t->day);
     return (days*24*60*60 + t->hour*3600 + t->min*60 + t->sec);
 }
 
-STATIC void from_seconds(uint32_t seconds, datetime_t* calendar) 
+STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar) 
 {
-    uint32_t jd = seconds / 24*60*60;
+    mp_uint_t jd = seconds / 24*60*60;
 
     seconds %= 24*60*60;
     calendar->hour = seconds / 60*60;
@@ -108,14 +108,22 @@ STATIC void from_seconds(uint32_t seconds, datetime_t* calendar)
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
-    mp_obj_t callback;
-    datetime_t alarm;
+    mp_obj_t      callback;
+    bool          active;   // active alarm flag
+    mp_uint_t     period;   // in seconds. 0 => no periodic
+    datetime_t    alarm;
 } machine_rtc_obj_t;
 
 const mp_obj_type_t machine_rtc_type;   // Forward declaration
 
 // singleton RTC object
-STATIC const machine_rtc_obj_t machine_rtc_obj = { .base = {&machine_rtc_type}, .callback=0, .alarm = {0,0,0,0,0,0,0}};
+STATIC const machine_rtc_obj_t machine_rtc_obj = { 
+    .base     = {&machine_rtc_type}, 
+    .callback = 0,
+    .active   = false,
+    .period   = 0,
+    .alarm    = {0,0,0,0,0,0,0}
+};
 
 // ----------------------------------------
 // class machine.RTC(id=0, ...) Constructor
@@ -237,9 +245,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_id, ARG_time, ARG_repeat};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,     MP_ARG_INT,                   {.u_int = (0)}}, 
-        { MP_QSTR_time,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
-        { MP_QSTR_repeat, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}},
+        { MP_QSTR_id,     MP_ARG_INT,                    {.u_int = (0)}}, 
+        { MP_QSTR_time,   MP_ARG_OBJ  | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_repeat, MP_ARG_BOOL | MP_ARG_KW_ONLY , {.u_bool = false}},
     };
 
     // get self pointer and parse all other arguments
@@ -247,17 +255,24 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    if (args[ARG_id].u_int != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("id must be 0"));
+    }
+
     // get the time argument, either 
     // as timestamp or relative duration in milliseconds
 
     datetime_t now;
     rtc_get_datetime(&now);
-    uint32_t now_secs = to_seconds(&now);
+    mp_uint_t now_secs = to_seconds(&now);
     datetime_t later;
-    
+
+    self->active = false;
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
-        int duration = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
-        uint32_t later_secs = now_secs + duration;
+        bool periodic = args[ARG_repeat].u_bool;
+        int duration  = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
+        self->period = periodic ? duration : 0;
+        mp_uint_t later_secs = now_secs + duration;
         from_seconds(later_secs, &later);
     } else {
         mp_obj_t *tstamp;
@@ -269,14 +284,14 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         later.min   = mp_obj_get_int(tstamp[4]);
         later.sec   = mp_obj_get_int(tstamp[5]);
         later.dotw  = -1;
-        uint32_t later_secs = to_seconds(&later);
+        mp_uint_t later_secs = to_seconds(&later);
         if (later_secs <= now_secs) {
             mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
         }
     }
     self->alarm = later;    // struct copy
-    rtc_set_alarm(&self->alarm, 0);   // AQui falta poner el callback
-    return mp_const_none;
+    self->active = true;
+    return mp_obj_new_int(0);   // always return alarm_id = 0
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
@@ -284,12 +299,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 // RTC.alarm_left(alarm_id=0)  method
 // ----------------------------------
 
-STATIC mp_obj_t machine_rtc_alarm_left(mp_obj_t self_in) {
-    //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.alarm_left()"));
-    return mp_const_none;
+STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_alarm_id};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_alarm_id, MP_ARG_INT , {.u_int = (0)}}, 
+
+    };
+
+    // get self pointer and parse all other arguments
+    machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (args[ARG_alarm_id].u_int != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("alarm_id must be 0"));
+    }
+
+    datetime_t t;
+    rtc_get_datetime(&t);
+    mp_uint_t current = to_seconds(&t);
+    mp_uint_t limit   = to_seconds(&self->alarm);
+    mp_uint_t left    = current >= limit ? 0 : limit - current;
+    return mp_obj_new_int_from_uint(left*1000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_alarm_left_obj, machine_rtc_alarm_left);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_alarm_left);
 
 // -----------------------------
 // RTC.cancel(alarm_id=0) method
