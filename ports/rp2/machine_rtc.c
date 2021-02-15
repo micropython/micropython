@@ -27,6 +27,9 @@
  * THE SOFTWARE.
  */
 
+
+#include <string.h>
+
 // --------------------
 // MicroPython includes
 // --------------------
@@ -60,6 +63,7 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
+#define MJD_BASE 2457024 // Modified JD base corresponding tp Jan, 1st, 2015, the MicroPython reference datetime
 
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
 STATIC mp_uint_t gregorian_calendar_to_jd(mp_uint_t y, mp_uint_t m, mp_uint_t d) 
@@ -85,17 +89,18 @@ STATIC void jd_to_calendar(mp_uint_t jd, datetime_t* calendar)
 STATIC mp_uint_t to_seconds(const datetime_t* t) 
 {
     mp_uint_t days;
-    days = gregorian_calendar_to_jd(t->year, t->month, t->day);
+    days = gregorian_calendar_to_jd(t->year, t->month, t->day) - MJD_BASE;
     return (days*24*60*60 + t->hour*3600 + t->min*60 + t->sec);
 }
 
 STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar) 
 {
-    mp_uint_t jd = seconds / 24*60*60;
+    mp_uint_t jd = (seconds / (24*60*60)) + MJD_BASE;
+    jd_to_calendar(jd, calendar);
 
-    seconds %= 24*60*60;
-    calendar->hour = seconds / 60*60;
-    seconds %= 60*60;
+    seconds %= (24*60*60);
+    calendar->hour = seconds / (60*60);
+    seconds %= (60*60);
     calendar->min = seconds  / 60;
     calendar->sec = seconds % 60;
     jd_to_calendar(jd, calendar);
@@ -117,13 +122,22 @@ typedef struct _machine_rtc_obj_t {
 const mp_obj_type_t machine_rtc_type;   // Forward declaration
 
 // singleton RTC object
-STATIC const machine_rtc_obj_t machine_rtc_obj = { 
+STATIC machine_rtc_obj_t machine_rtc_obj = { 
     .base     = {&machine_rtc_type}, 
     .callback = 0,
     .active   = false,
     .period   = 0,
     .alarm    = {0,0,0,0,0,0,0}
 };
+
+#if 0
+STATIC void machine_rtc_debug(machine_rtc_obj_t* self) {
+    mp_printf(MP_PYTHON_PRINTER, "self->alarm: year=%u, month=%u, day=%u, hour=%u, min=%u, sec=%u\n", self->alarm.year, self->alarm.month, self->alarm.day, self->alarm.hour, self->alarm.min, self->alarm.sec);
+    mp_printf(MP_PYTHON_PRINTER, "self->active: %u \n",self->active);
+    mp_printf(MP_PYTHON_PRINTER, "self->period: %u \n",self->period);
+    mp_printf(MP_PYTHON_PRINTER, "self->callback: %u \n",self->period);
+}
+#endif
 
 // ----------------------------------------
 // class machine.RTC(id=0, ...) Constructor
@@ -291,6 +305,7 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     self->alarm = later;    // struct copy
     self->active = true;
+    //machine_rtc_debug(self);
     return mp_obj_new_int(0);   // always return alarm_id = 0
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
@@ -314,12 +329,12 @@ STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, 
     if (args[ARG_alarm_id].u_int != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("alarm_id must be 0"));
     }
-
     datetime_t t;
     rtc_get_datetime(&t);
     mp_uint_t current = to_seconds(&t);
     mp_uint_t limit   = to_seconds(&self->alarm);
     mp_uint_t left    = current >= limit ? 0 : limit - current;
+    
     return mp_obj_new_int_from_uint(left*1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_alarm_left);
