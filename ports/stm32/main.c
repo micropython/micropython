@@ -531,7 +531,7 @@ soft_reset:
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
     #if MICROPY_HW_FLASH_MOUNT_AT_BOOT
-    mounted_flash = init_flash_fs(reset_mode);
+    mounted_flash = init_flash_fs(state.reset_mode);
     #endif
 
     bool mounted_sdcard = false;
