@@ -134,7 +134,7 @@ bool pin_number_is_free(gpio_num_t pin_number) {
 
     uint8_t offset = pin_number / 32;
     uint32_t mask = 1 << (pin_number % 32);
-    return (never_reset_pins[offset] & mask) == 0 && (in_use[offset] & mask) == 0;
+    return (in_use[offset] & mask) == 0;
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
