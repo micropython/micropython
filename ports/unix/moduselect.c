@@ -29,6 +29,10 @@
 
 #if MICROPY_PY_USELECT_POSIX
 
+#if MICROPY_PY_USELECT
+#error "Can't have both MICROPY_PY_USELECT and MICROPY_PY_USELECT_POSIX."
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <poll.h>
