@@ -273,6 +273,10 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_ValueError(MP_ERROR_TEXT("id must be 0"));
     }
 
+    if (self->active) {
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("RTC(alarm_id=0) already active"));
+    }
+
     // get the time argument, either 
     // as timestamp or relative duration in milliseconds
 
@@ -281,7 +285,6 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_uint_t now_secs = to_seconds(&now);
     datetime_t later;
 
-    self->active = false;
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
         bool periodic = args[ARG_repeat].u_bool;
         int duration  = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
@@ -329,12 +332,31 @@ STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, 
     if (args[ARG_alarm_id].u_int != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("alarm_id must be 0"));
     }
+
+    if ( ! self->active) {
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("RTC(alarm_id=0) not active"));
+    }
+
+
     datetime_t t;
     rtc_get_datetime(&t);
     mp_uint_t current = to_seconds(&t);
     mp_uint_t limit   = to_seconds(&self->alarm);
     mp_uint_t left    = current >= limit ? 0 : limit - current;
-    
+
+    // reload here if periodic, not interrupt-driven and alarm expired
+    if ((self->callback == 0) && ! left) {
+        if (self->period != 0) { 
+            datetime_t later;
+            mp_uint_t later_secs = current + self->period;
+            from_seconds(later_secs, &later);
+            left = self->period;
+            self->alarm = later;    // struct copy
+            self->active = true;
+        } else  {
+            self->active = false;   // One shot mode
+        }
+    }
     return mp_obj_new_int_from_uint(left*1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_alarm_left);
