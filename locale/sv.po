@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-05 19:47+0000\n"
+"PO-Revision-Date: 2021-02-15 00:33+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1473,7 +1473,7 @@ msgstr "Ingen DMA-kanal hittades"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA pacing timer found"
-msgstr ""
+msgstr "Ingen DMA pacing timer hittades"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1762,7 +1762,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
-msgstr ""
+msgstr "Pinnar måste dela PWM-segment"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2011,11 +2011,11 @@ msgstr "Stackstorleken måste vara minst 256"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
-msgstr ""
+msgstr "Vänster stereokanal måste använda PWM kanal A"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
-msgstr ""
+msgstr "Höger stereokanal måste använda PWM kanal B"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -3706,7 +3706,7 @@ msgstr "pop från tom %q"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
-msgstr ""
+msgstr "port måste vara >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
