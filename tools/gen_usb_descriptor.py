@@ -77,10 +77,25 @@ parser.add_argument(
     help="endpoint number of CDC NOTIFICATION",
 )
 parser.add_argument(
+    "--cdc2_ep_num_notification",
+    type=int,
+    default=0,
+    help="endpoint number of CDC2 NOTIFICATION",
+)
+parser.add_argument(
     "--cdc_ep_num_data_out", type=int, default=0, help="endpoint number of CDC DATA OUT"
 )
 parser.add_argument(
     "--cdc_ep_num_data_in", type=int, default=0, help="endpoint number of CDC DATA IN"
+)
+parser.add_argument(
+    "--cdc2_ep_num_data_out",
+    type=int,
+    default=0,
+    help="endpoint number of CDC2 DATA OUT",
+)
+parser.add_argument(
+    "--cdc2_ep_num_data_in", type=int, default=0, help="endpoint number of CDC2 DATA IN"
 )
 parser.add_argument(
     "--msc_ep_num_out", type=int, default=0, help="endpoint number of MSC OUT"
@@ -146,36 +161,41 @@ if not args.renumber_endpoints:
     if include_cdc:
         if args.cdc_ep_num_notification == 0:
             raise ValueError("CDC notification endpoint number must not be 0")
-        elif args.cdc_ep_num_data_out == 0:
+        if args.cdc_ep_num_data_out == 0:
             raise ValueError("CDC data OUT endpoint number must not be 0")
-        elif args.cdc_ep_num_data_in == 0:
+        if args.cdc_ep_num_data_in == 0:
             raise ValueError("CDC data IN endpoint number must not be 0")
 
     if include_cdc2:
-        raise ValueError("Second CDC not supported without renumbering endpoints")
+        if args.cdc2_ep_num_notification == 0:
+            raise ValueError("CDC2 notification endpoint number must not be 0")
+        if args.cdc2_ep_num_data_out == 0:
+            raise ValueError("CDC2 data OUT endpoint number must not be 0")
+        if args.cdc2_ep_num_data_in == 0:
+            raise ValueError("CDC2 data IN endpoint number must not be 0")
 
     if include_msc:
         if args.msc_ep_num_out == 0:
             raise ValueError("MSC endpoint OUT number must not be 0")
-        elif args.msc_ep_num_in == 0:
+        if args.msc_ep_num_in == 0:
             raise ValueError("MSC endpoint IN number must not be 0")
 
     if include_hid:
         if args.args.hid_ep_num_out == 0:
             raise ValueError("HID endpoint OUT number must not be 0")
-        elif args.hid_ep_num_in == 0:
+        if args.hid_ep_num_in == 0:
             raise ValueError("HID endpoint IN number must not be 0")
 
     if include_audio:
         if args.args.midi_ep_num_out == 0:
             raise ValueError("MIDI endpoint OUT number must not be 0")
-        elif args.midi_ep_num_in == 0:
+        if args.midi_ep_num_in == 0:
             raise ValueError("MIDI endpoint IN number must not be 0")
 
     if include_vendor:
         if args.vendor_ep_num_out == 0:
             raise ValueError("VENDOR endpoint OUT number must not be 0")
-        elif args.vendor_ep_num_in == 0:
+        if args.vendor_ep_num_in == 0:
             raise ValueError("VENDOR endpoint IN number must not be 0")
 
 
@@ -228,18 +248,22 @@ device = standard.DeviceDescriptor(
 def make_cdc_union(name):
     return cdc.Union(
         description="{} comm".format(name),
-        bMasterInterface=0x00,  # Adjust this after interfaces are renumbered.
+        # Set bMasterInterface and bSlaveInterface_list to proper values after interfaces are renumbered.
+        bMasterInterface=0x00,
         bSlaveInterface_list=[0x01],
-    )  # Adjust this after interfaces are renumbered.
+    )
 
 
 def make_cdc_call_management(name):
+    # Set bDataInterface to proper value after interfaces are renumbered.
     return cdc.CallManagement(
         description="{} comm".format(name), bmCapabilities=0x01, bDataInterface=0x01
-    )  # Adjust this after interfaces are renumbered.
+    )
 
 
-def make_cdc_comm_interface(name, cdc_union):
+def make_cdc_comm_interface(
+    name, cdc_union, cdc_call_management, cdc_ep_num_notification
+):
     return standard.InterfaceDescriptor(
         description="{} comm".format(name),
         bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
@@ -255,7 +279,7 @@ def make_cdc_comm_interface(name, cdc_union):
             cdc_union,
             standard.EndpointDescriptor(
                 description="{} comm in".format(name),
-                bEndpointAddress=args.cdc_ep_num_notification
+                bEndpointAddress=cdc_ep_num_notification
                 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
                 wMaxPacketSize=0x0040,
@@ -265,7 +289,7 @@ def make_cdc_comm_interface(name, cdc_union):
     )
 
 
-def make_cdc_data_interface(name):
+def make_cdc_data_interface(name, cdc_ep_num_data_in, cdc_ep_num_data_out):
     return standard.InterfaceDescriptor(
         description="{} data".format(name),
         bInterfaceClass=cdc.CDC_CLASS_DATA,
@@ -273,7 +297,7 @@ def make_cdc_data_interface(name):
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="{} data out".format(name),
-                bEndpointAddress=args.cdc_ep_num_data_out
+                bEndpointAddress=cdc_ep_num_data_out
                 | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
@@ -281,7 +305,7 @@ def make_cdc_data_interface(name):
             ),
             standard.EndpointDescriptor(
                 description="{} data in".format(name),
-                bEndpointAddress=args.cdc_ep_num_data_in
+                bEndpointAddress=cdc_ep_num_data_in
                 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
@@ -294,16 +318,24 @@ def make_cdc_data_interface(name):
 if include_cdc:
     cdc_union = make_cdc_union("CDC")
     cdc_call_management = make_cdc_call_management("CDC")
-    cdc_comm_interface = make_cdc_comm_interface("CDC", cdc_union)
-    cdc_data_interface = make_cdc_data_interface("CDC")
+    cdc_comm_interface = make_cdc_comm_interface(
+        "CDC", cdc_union, cdc_call_management, args.cdc_ep_num_notification
+    )
+    cdc_data_interface = make_cdc_data_interface(
+        "CDC", args.cdc_ep_num_data_in, args.cdc_ep_num_data_out
+    )
 
-cdc_interfaces = [cdc_comm_interface, cdc_data_interface]
+    cdc_interfaces = [cdc_comm_interface, cdc_data_interface]
 
 if include_cdc2:
     cdc2_union = make_cdc_union("CDC2")
     cdc2_call_management = make_cdc_call_management("CDC2")
-    cdc2_comm_interface = make_cdc_comm_interface("CDC2", cdc2_union)
-    cdc2_data_interface = make_cdc_data_interface("CDC2")
+    cdc2_comm_interface = make_cdc_comm_interface(
+        "CDC2", cdc2_union, cdc2_call_management, args.cdc2_ep_num_notification
+    )
+    cdc2_data_interface = make_cdc_data_interface(
+        "CDC2", args.cdc2_ep_num_data_in, args.cdc2_ep_num_data_out
+    )
 
     cdc2_interfaces = [cdc2_comm_interface, cdc2_data_interface]
 
@@ -842,10 +874,10 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
 
 #define USB_HID_NUM_DEVICES         {hid_num_devices}
 """.format(
-    hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
-    hid_num_devices=len(args.hid_devices),
+            hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
+            hid_num_devices=len(args.hid_devices),
+        )
     )
-)
 
 if include_vendor:
     h_file.write(
@@ -876,7 +908,10 @@ if include_hid:
     c_file.write(
         """\
 const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
-""".format(HID_DESCRIPTOR_LENGTH=hid_descriptor_length))
+""".format(
+            HID_DESCRIPTOR_LENGTH=hid_descriptor_length
+        )
+    )
 
     for b in bytes(combined_hid_report_descriptor):
         c_file.write("0x{:02x}, ".format(b))
@@ -895,7 +930,9 @@ const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
 static uint8_t {name}_report_buffer[{report_length}];
 """.format(
                 name=name.lower(),
-                report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length,
+                report_length=hid_report_descriptors.HID_DEVICE_DATA[
+                    name
+                ].report_length,
             )
         )
 

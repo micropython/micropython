@@ -32,9 +32,16 @@
 extern const mp_obj_type_t usb_cdc_serial_type;
 
 extern size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data, size_t len, int *errcode);
-extern uint32_t common_hal_usb_cdc_serial_bytes_available(usb_cdc_serial_obj_t *self);
-extern void common_hal_usb_cdc_serial_clear_buffer(usb_cdc_serial_obj_t *self);
 extern size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode);
-extern bool common_hal_usb_cdc_serial_ready_to_tx(usb_cdc_serial_obj_t *self);
+
+extern uint32_t common_hal_usb_cdc_serial_get_in_waiting(usb_cdc_serial_obj_t *self);
+extern uint32_t common_hal_usb_cdc_serial_get_out_waiting(usb_cdc_serial_obj_t *self);
+
+extern void common_hal_usb_cdc_serial_reset_input_buffer(usb_cdc_serial_obj_t *self);
+extern uint32_t common_hal_usb_cdc_serial_reset_output_buffer(usb_cdc_serial_obj_t *self);
+
+extern uint32_t common_hal_usb_cdc_serial_flush(usb_cdc_serial_obj_t *self);
+
+extern bool common_hal_usb_cdc_serial_get_connected(usb_cdc_serial_obj_t *self);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC_SERIAL_H

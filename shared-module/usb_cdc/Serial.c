@@ -31,14 +31,33 @@ size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data,
     return tud_cdc_n_read(self->idx, data, len);
 }
 
-uint32_t common_hal_usb_cdc_serial_bytes_available(usb_cdc_serial_obj_t *self) {
+size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    uint32_t num_written = tud_cdc_n_write(self->idx, data, len);
+    tud_cdc_n_write_flush(self->idx);
+    return num_written;
+}
+
+uint32_t common_hal_usb_cdc_serial_get_in_waiting(usb_cdc_serial_obj_t *self) {
     return tud_cdc_n_available(self->idx);
 }
 
-size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    return tud_cdc_n_write(self->idx, data, len);
+uint32_t common_hal_usb_cdc_serial_get_out_waiting(usb_cdc_serial_obj_t *self) {
+    // Return number of FIFO bytes currently occupied.
+    return CFG_TUD_CDC_TX_BUFSIZE - tud_cdc_n_write_available(self->idx);
 }
 
-bool common_hal_usb_cdc_serial_ready_to_tx(usb_cdc_serial_obj_t *self) {
+void common_hal_usb_cdc_serial_reset_input_buffer(usb_cdc_serial_obj_t *self) {
+    tud_cdc_n_read_flush(self->idx);
+}
+
+uint32_t common_hal_usb_cdc_serial_reset_output_buffer(usb_cdc_serial_obj_t *self) {
+    return tud_cdc_n_write_clear(self->idx);
+}
+
+uint32_t common_hal_usb_cdc_serial_flush(usb_cdc_serial_obj_t *self) {
+    return tud_cdc_n_write_flush(self->idx);
+}
+
+bool common_hal_usb_cdc_serial_get_connected(usb_cdc_serial_obj_t *self) {
     return tud_cdc_n_connected(self->idx);
 }

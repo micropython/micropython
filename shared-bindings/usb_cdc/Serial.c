@@ -67,10 +67,14 @@
 //|         ...
 //|
 //|     def write(self, buf: ReadableBuffer) -> Optional[int]:
-//|         """Write the buffer of bytes to the bus.
+//|         """Write as many bytes as possible from the buffer of bytes.
 //|
 //|         :return: the number of bytes written
 //|         :rtype: int or None"""
+//|         ...
+//|
+//|     def flush(self) -> None:
+//|         """Force out any unwritten bytes, waiting until they are written."""
 //|         ...
 //|
 
@@ -97,27 +101,121 @@ STATIC mp_uint_t usb_cdc_serial_write(mp_obj_t self_in, const void *buf_in, mp_u
 STATIC mp_uint_t usb_cdc_serial_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
-        mp_uint_t flags = arg;
-        ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && common_hal_usb_cdc_serial_bytes_available(self) > 0) {
-            ret |= MP_IOCTL_POLL_RD;
+    switch (request) {
+        case MP_IOCTL_POLL: {
+            mp_uint_t flags = arg;
+            ret = 0;
+            if ((flags & MP_IOCTL_POLL_RD) && common_hal_usb_cdc_serial_get_in_waiting(self) > 0) {
+                ret |= MP_IOCTL_POLL_RD;
+            }
+            if ((flags & MP_IOCTL_POLL_WR) && common_hal_usb_cdc_serial_get_out_waiting(self) == 0) {
+                ret |= MP_IOCTL_POLL_WR;
+            }
+            break;
         }
-        if ((flags & MP_IOCTL_POLL_WR) && common_hal_usb_cdc_serial_ready_to_tx(self)) {
-            ret |= MP_IOCTL_POLL_WR;
-        }
-    } else {
-        *errcode = MP_EINVAL;
-        ret = MP_STREAM_ERROR;
+
+        case MP_STREAM_FLUSH:
+            common_hal_usb_cdc_serial_flush(self);
+            break;
+
+        default:
+            *errcode = MP_EINVAL;
+            ret = MP_STREAM_ERROR;
     }
     return ret;
 }
 
+//|     connected: bool
+//|     """True if this Serial is connected to a host. (read-only)"""
+//|
+STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_usb_cdc_serial_get_connected(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_connected_obj, usb_cdc_serial_get_connected);
+
+const mp_obj_property_t usb_cdc_serial__connected_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_cdc_serial_get_connected_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|     in_waiting: int
+//|     """Returns the number of bytes waiting to be read on the USB serial input. (read-only)"""
+//|
+STATIC mp_obj_t usb_cdc_serial_get_in_waiting(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_usb_cdc_serial_get_in_waiting(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_in_waiting_obj, usb_cdc_serial_get_in_waiting);
+
+const mp_obj_property_t usb_cdc_serial_in_waiting_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_cdc_serial_get_in_waiting_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|     out_waiting: int
+//|     """Returns the number of bytes waiting to be written on the USB serial output. (read-only)"""
+//|
+STATIC mp_obj_t usb_cdc_serial_get_out_waiting(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_usb_cdc_serial_get_out_waiting(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_out_waiting_obj, usb_cdc_serial_get_out_waiting);
+
+const mp_obj_property_t usb_cdc_serial_out_waiting_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_cdc_serial_get_out_waiting_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|     def reset_input_buffer(self) -> None:
+//|         """Clears any unread bytes."""
+//|         ...
+//|
+STATIC mp_obj_t usb_cdc_serial_reset_input_buffer(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_usb_cdc_serial_reset_input_buffer(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_reset_input_buffer_obj, usb_cdc_serial_reset_input_buffer);
+
+//|     def reset_output_buffer(self) -> None:
+//|         """Clears any unwritten bytes."""
+//|         ...
+//|
+STATIC mp_obj_t usb_cdc_serial_reset_output_buffer(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_usb_cdc_serial_reset_output_buffer(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_reset_output_buffer_obj, usb_cdc_serial_reset_output_buffer);
+
+
 STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
     // Standard stream methods.
+    { MP_ROM_QSTR(MP_QSTR_flush),        MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),     MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline),     MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    { MP_ROM_QSTR(MP_QSTR_readlines),    MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
+
+    // Other pyserial-inspired attributes.
+    { MP_OBJ_NEW_QSTR(MP_QSTR_in_waiting),          MP_ROM_PTR(&usb_cdc_serial_in_waiting_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_out_waiting),         MP_ROM_PTR(&usb_cdc_serial_out_waiting_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_input_buffer),  MP_ROM_PTR(&usb_cdc_serial_reset_input_buffer_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_output_buffer), MP_ROM_PTR(&usb_cdc_serial_reset_output_buffer_obj) },
+
+    // Not in pyserial protocol.
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connected),     MP_ROM_PTR(&usb_cdc_serial_get_connected_obj) },
+
+
+
 };
 STATIC MP_DEFINE_CONST_DICT(usb_cdc_serial_locals_dict, usb_cdc_serial_locals_dict_table);
 

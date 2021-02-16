@@ -36,10 +36,13 @@
 
 //| """USB CDC Serial streams
 //|
-//| The `usb_cdc` module allows access to USB CDC (serial) communications.
+//| The `usb_cdc` module allows access to USB CDC (serial) communications."""
 //|
 //| serials: Tuple[Serial, ...]
-//| """Tuple of all CDC streams. Each item is a `Serial`."""
+//| """Tuple of all CDC streams. Each item is a `Serial`.
+//| ``serials[0]`` is the USB REPL connection.
+//| ``serials[1]`` is a second USB serial connection, unconnected to the REPL.
+//| """
 //|
 
 static const mp_map_elem_t usb_cdc_module_globals_table[] = {
