@@ -455,14 +455,14 @@ function ci_windows_build {
 # ports/zephyr
 
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:v0.11.8
+    docker pull zephyrprojectrtos/ci:v0.11.13
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
-      -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.11.3 \
+      -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.12.2 \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:v0.11.8
+      zephyrprojectrtos/ci:v0.11.13
     docker ps -a
 }
 
