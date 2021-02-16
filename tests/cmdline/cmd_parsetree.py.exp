@@ -29,7 +29,7 @@
            id(g)
            int(123)
 ----------------
-File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63

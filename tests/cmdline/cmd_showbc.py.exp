@@ -1,4 +1,4 @@
-File cmdline/cmd_showbc.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -34,7 +34,7 @@ arg names:
 \\d\+ IMPORT_STAR
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+rg names:
@@ -312,7 +312,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ RETURN_VALUE
 \\d\+ LOAD_CONST_SMALL_INT 1
 \\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+rg names:
@@ -367,7 +367,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 48 POP_TOP
 49 LOAD_CONST_NONE
 50 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -385,7 +385,7 @@ arg names: a
 \\d\+ STORE_FAST 1
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -409,7 +409,7 @@ arg names:
 10 POP_TOP
 11 LOAD_CONST_NONE
 12 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'Class' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'Class' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -425,7 +425,7 @@ arg names:
 10 STORE_NAME __qualname__
 13 LOAD_CONST_NONE
 14 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -442,7 +442,7 @@ arg names: self
 \\d\+ POP_TOP
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -466,7 +466,7 @@ arg names: * * *
 17 JUMP 4
 20 LOAD_CONST_NONE
 21 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -487,7 +487,7 @@ arg names: * * *
 15 STORE_COMP 20
 17 JUMP 4
 20 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -508,7 +508,7 @@ arg names: * * *
 17 STORE_COMP 25
 19 JUMP 4
 22 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
@@ -527,7 +527,7 @@ arg names: *
 08 DELETE_DEREF 0
 10 LOAD_CONST_NONE
 11 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+File \.\*cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+63
