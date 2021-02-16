@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,34 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/usb_cdc/__init__.h"
-
 #include "genhdr/autogen_usb_descriptor.h"
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+#include "shared-bindings/usb_cdc/__init__.h"
 #include "shared-bindings/usb_cdc/Serial.h"
 #include "tusb.h"
 
-supervisor_allocation* usb_cdc_allocation;
+#if CFG_TUD_CDC != 2
+#error CFG_TUD_CDC must be exactly 2
+#endif
 
-static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC];
-
-void usb_cdc_init(void) {
-
-    serial_obj_ptrs *usb_cdc_serial_obj_t[CFG_TUD_CDC];
-
-    for (size_t i = 0; i < CFG_TUD_CDC; i++) {
-        serial_objs[i].base.type = &usb_cdc_serial_type;
-        serial_objs[i].idx = i;
-        serial_obj_ptrs[i] = &serial_objs[i];
+static const usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
+    {   .base.type = &usb_cdc_serial_type,
+        .idx = 0,
+    }, {
+        .base.type = &usb_cdc_serial_type,
+        .idx = 1,
     }
+};
 
-    serials_tuple->base.type = mp_obj_new_tuple(CFG_TUD_CDC, serials);
-
-    repl->base.type =
-    repl->idx = 0;    mp_map_lookup(&usb_cdc_module_globals.map, MP_ROM_QSTR(MP_QSTR_serial), MP_MAP_LOOKUP)->value = MP_OBJ_FROM_PTR(serials_tuple);
-}
+const mp_rom_obj_tuple_t usb_cdc_serials_tuple = {
+    .base.type = &mp_type_tuple,
+    .len = CFG_TUD_CDC,
+    .items = {
+        &serial_objs[0],
+        &serial_objs[1],
+    },
+};

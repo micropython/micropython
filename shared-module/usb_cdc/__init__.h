@@ -27,6 +27,8 @@
 #ifndef SHARED_MODULE_USB_CDC___INIT___H
 #define SHARED_MODULE_USB_CDC___INIT___H
 
-void usb_cdc_init(void);
+#include "py/objtuple.h"
+
+extern const mp_rom_obj_tuple_t usb_cdc_serials_tuple;
 
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

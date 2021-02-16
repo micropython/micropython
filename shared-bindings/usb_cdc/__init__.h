@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC___INIT___H
 
-#include "py/obj.h"
-
-extern mp_obj_dict_t usb_cdc_module_globals;
+#include "shared-module/usb_cdc/__init__.h"
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC___INIT___H

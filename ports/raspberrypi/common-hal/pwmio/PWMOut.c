@@ -165,7 +165,6 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
 extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     self->duty_cycle = duty;
     uint16_t actual_duty = duty * self->top / ((1 << 16) - 1);
-    mp_printf(&mp_plat_print, "actual_duty: %d, self->top: %d\n", actual_duty, top); /// ***
     pwm_set_chan_level(self->slice, self->channel, actual_duty);
 }
 
@@ -209,7 +208,6 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
     } else {
         uint32_t top = common_hal_mcu_processor_get_frequency() / frequency;
         self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
-        mp_printf(&mp_plat_print, "high speed self->top: %d\n", top); /// ***
         self->top = top;
         pwm_set_clkdiv_int_frac(self->slice, 1, 0);
         pwm_set_wrap(self->slice, self->top - 1);

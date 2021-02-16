@@ -38,18 +38,17 @@
 //|
 //| The `usb_cdc` module allows access to USB CDC (serial) communications.
 //|
-//| serial: Tuple[Serial, ...]
+//| serials: Tuple[Serial, ...]
 //| """Tuple of all CDC streams. Each item is a `Serial`."""
 //|
 
-mp_map_elem_t usb_cdc_module_globals_table[] = {
+static const mp_map_elem_t usb_cdc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_cdc) },
     { MP_ROM_QSTR(MP_QSTR_Serial),   MP_OBJ_FROM_PTR(&usb_cdc_serial_type) },
-    { MP_ROM_QSTR(MP_QSTR_serial),   mp_const_empty_tuple },
+    { MP_ROM_QSTR(MP_QSTR_serials),  MP_OBJ_FROM_PTR(&usb_cdc_serials_tuple) },
 };
 
-// This isn't const so we can set the streams dynamically.
-MP_DEFINE_MUTABLE_DICT(usb_cdc_module_globals, usb_cdc_module_globals_table);
+static MP_DEFINE_CONST_DICT(usb_cdc_module_globals, usb_cdc_module_globals_table);
 
 const mp_obj_module_t usb_cdc_module = {
     .base = { &mp_type_module },

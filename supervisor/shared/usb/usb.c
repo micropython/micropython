@@ -26,7 +26,6 @@
 
 #include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "shared-module/usb_midi/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
@@ -34,6 +33,10 @@
 #include "supervisor/shared/workflow.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+
+#if CIRCUITPY_USB_MIDI
+#include "shared-module/usb_midi/__init__.h"
+#endif
 
 #include "tusb.h"
 
