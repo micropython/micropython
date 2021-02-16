@@ -313,6 +313,8 @@ The real value may vary depending on the variations in voltage and temperature.*
 #endif /* HAL_WWDG_MODULE_ENABLED */
 #include "stm32g4xx_ll_adc.h"
 #include "stm32g4xx_ll_rtc.h"
+#include "stm32g4xx_ll_usart.h"
+#include "stm32g4xx_ll_lpuart.h"
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)

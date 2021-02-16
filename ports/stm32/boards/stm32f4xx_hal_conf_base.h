@@ -58,6 +58,7 @@
 #include "stm32f4xx_ll_pwr.h"
 #include "stm32f4xx_ll_rtc.h"
 #include "stm32f4xx_ll_usart.h"
+#include "stm32f4xx_ll_lpuart.h"
 
 // Enable various HAL modules
 #define HAL_ADC_MODULE_ENABLED
