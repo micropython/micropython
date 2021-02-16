@@ -368,6 +368,7 @@ msgstr "このピン用の全てのタイマが使用中"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "全てのタイマーが使用中"
@@ -1459,8 +1460,13 @@ msgstr "チップにDACがありません"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "DMAチャネルが見つかりません"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr ""
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1740,6 +1746,10 @@ msgid ""
 "constructor"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr ""
@@ -1979,6 +1989,14 @@ msgstr ""
 msgid "Stack size must be at least 256"
 msgstr "スタックサイズは少なくとも256以上でなければなりません"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "ストリームにreadinto()またはwrite()メソッドがありません"
@@ -2149,6 +2167,7 @@ msgstr "UUIDの値がstr, int, bufferのいずれでもありません"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 

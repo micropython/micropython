@@ -374,6 +374,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Todos los timers en uso"
@@ -1470,8 +1471,13 @@ msgstr "El chip no tiene DAC"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "No se encontró el canal DMA"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr ""
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1759,6 +1765,10 @@ msgstr ""
 "ideales. Si esto no se puede evitar, pase allow_inefficient=True al "
 "constructor"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Además de cualquier módulo en el sistema de archivos\n"
@@ -2002,6 +2012,14 @@ msgstr "Dividiendo con sub-capturas"
 msgid "Stack size must be at least 256"
 msgstr "El tamaño de la pila debe ser de al menos 256"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "A Stream le falta el método readinto() o write()."
@@ -2179,6 +2197,7 @@ msgstr "UUID valor no es un str, int o byte buffer"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
