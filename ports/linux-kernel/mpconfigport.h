@@ -91,6 +91,8 @@ typedef long mp_int_t;
 #define UINT_FMT "%lu"
 typedef unsigned long mp_uint_t;
 
+#define UINT8_MAX (255U)
+
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
