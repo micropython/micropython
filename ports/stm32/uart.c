@@ -201,6 +201,11 @@ bool uart_exists(int uart_id) {
             return true;
         #endif
 
+        #if defined(MICROPY_HW_LPUART1_TX) && defined(MICROPY_HW_LPUART1_RX)
+        case PYB_LPUART_1:
+            return true;
+        #endif
+
         default:
             return false;
     }
@@ -406,6 +411,27 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             break;
         #endif
 
+        #if defined(MICROPY_HW_LPUART1_TX) && defined(MICROPY_HW_LPUART1_RX)
+        case PYB_LPUART_1:
+            uart_unit = PYB_LPUART_1;
+            UARTx = LPUART1;
+            irqn = LPUART1_IRQn;
+            pins[0] = MICROPY_HW_LPUART1_TX;
+            pins[1] = MICROPY_HW_LPUART1_RX;
+            #if defined(MICROPY_HW_LPUART1_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_LPUART1_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_LPUART1_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_LPUART1_CTS;
+            }
+            #endif
+            __HAL_RCC_LPUART1_CLK_ENABLE();
+            break;
+        #endif
+
         default:
             // UART does not exist or is not configured for this board
             return false;
@@ -596,6 +622,13 @@ void uart_deinit(pyb_uart_obj_t *self) {
         __HAL_RCC_UART10_RELEASE_RESET();
         __HAL_RCC_UART10_CLK_DISABLE();
     #endif
+    #if defined(LPUART1)
+    } else if (self->uart_id == PYB_LPUART_1) {
+        HAL_NVIC_DisableIRQ(LPUART1_IRQn);
+        __HAL_RCC_LPUART1_FORCE_RESET();
+        __HAL_RCC_LPUART1_RELEASE_RESET();
+        __HAL_RCC_LPUART1_CLK_DISABLE();
+    #endif
     }
 }
 
@@ -677,9 +710,16 @@ uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
 
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     // This formula assumes UART_OVERSAMPLING_16
-    return uart_get_source_freq(self) / self->uartx->BRR;
-}
 
+    #if defined(LPUART1)
+    if (self->uart_id == PYB_LPUART_1) {
+        return uart_get_source_freq(self) / (self->uartx->BRR >> 8);
+    } else
+    #endif
+    {
+        return uart_get_source_freq(self) / self->uartx->BRR;
+    }
+}
 void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate) {
     LL_USART_SetBaudRate(self->uartx, uart_get_source_freq(self),
         #if defined(STM32H7) || defined(STM32WB)

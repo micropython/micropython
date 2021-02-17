@@ -223,6 +223,7 @@
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32L0 series
 #elif defined(STM32L0)
@@ -232,6 +233,7 @@
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (22)
 #define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
@@ -240,7 +242,8 @@
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32WB series
 #elif defined(STM32WB)
@@ -250,13 +253,22 @@
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (1)
+#define MICROPY_HW_MAX_LPUART (1)
 
-#ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
-#define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
+#ifndef MICROPY_HW_MAX_LPUART
+#define MICROPY_HW_MAX_LPUART (0)
 #endif
 
 #else
 #error Unsupported MCU series
+#endif
+
+#ifndef MICROPY_HW_MAX_LPUART
+#define MICROPY_HW_MAX_LPUART (0)
+#endif
+
+#ifndef MICROPY_HW_RTC_USE_BYPASS
+#define MICROPY_HW_RTC_USE_BYPASS (0)
 #endif
 
 #if MICROPY_HW_CLK_USE_HSI

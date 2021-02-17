@@ -152,6 +152,11 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, u
 }
 
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {
+    #if defined(LPUART1)
+    if (fn == AF_FN_UART && unit == PYB_LPUART_1) {
+        unit = 1;
+    }
+    #endif
     const pin_af_obj_t *af = pin_find_af(pin, fn, unit);
     if (af == NULL) {
         return false;
