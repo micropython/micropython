@@ -24,6 +24,7 @@ CIRCUITPY_NEOPIXEL_WRITE = 0
 endif
 
 CIRCUITPY_FULL_BUILD = 1
+CIRCUITPY_BIT_TRANSPOSE = 1
 CIRCUITPY_PWMIO = 1
 
 # Things that need to be implemented.

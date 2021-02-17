@@ -132,6 +132,10 @@ endif
 ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_PATTERNS += audiomp3/%
 endif
+ifeq ($(CIRCUITPY_BIT_TRANSPOSE),1)
+$(info BIT_TRANSPOSE enabled)
+SRC_PATTERNS += _bit_transpose/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -440,6 +444,7 @@ SRC_BINDINGS_ENUMS += \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \
+	_bit_transpose/__init__.c \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \

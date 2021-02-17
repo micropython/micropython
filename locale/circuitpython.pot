@@ -1092,6 +1092,10 @@ msgstr ""
 msgid "Initialization failed due to lack of memory"
 msgstr ""
 
+#: shared-bindings/_bit_transpose/__init__.c
+msgid "Input buffer must be a multiple of 8 bytes"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr ""
@@ -1657,6 +1661,10 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
+msgstr ""
+
+#: shared-bindings/_bit_transpose/__init__.c
+msgid "Output buffer must be at least as big as input buffer"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
