@@ -46,6 +46,5 @@ extern void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_devi
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t extra_clocks);
 extern mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self);
 extern void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice_obj_t *self);
-extern mp_obj_t common_hal_adafruit_bus_device_spidevice_get_spi(adafruit_bus_device_spidevice_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_SPIDEVICE_H

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-05 19:47+0000\n"
+"PO-Revision-Date: 2021-02-15 00:33+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -371,6 +371,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alla timers används"
@@ -1466,8 +1467,13 @@ msgstr "Ingen DAC på chipet"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Ingen DMA-kanal hittades"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr "Ingen DMA pacing timer hittades"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1754,6 +1760,10 @@ msgstr ""
 "%d byte.  Om detta inte kan undvikas, skicka allow_inefficient=True till "
 "konstruktorn"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr "Pinnar måste dela PWM-segment"
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Plus eventuella moduler i filsystemet\n"
@@ -1999,6 +2009,14 @@ msgstr "Splitting med sub-captures"
 msgid "Stack size must be at least 256"
 msgstr "Stackstorleken måste vara minst 256"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr "Vänster stereokanal måste använda PWM kanal A"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr "Höger stereokanal måste använda PWM kanal B"
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream saknar readinto() eller write() metod."
@@ -2172,6 +2190,7 @@ msgstr "UUID-värdet är inte str, int eller byte-buffert"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Det går inte att allokera buffert för signerad konvertering"
 
@@ -3687,7 +3706,7 @@ msgstr "pop från tom %q"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
-msgstr ""
+msgstr "port måste vara >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"

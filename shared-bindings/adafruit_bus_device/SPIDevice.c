@@ -34,7 +34,6 @@
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -123,29 +122,9 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_obj___exit__(size_t n_args, const 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_spidevice___exit___obj, 4, 4, adafruit_bus_device_spidevice_obj___exit__);
 
-//|     spi: busio.SPI
-//|     """The underlying SPI bus. Useful for weird uses like clocking an SD card without chip select.
-//|
-//|        You shouldn't normally need this."""
-//|
-STATIC mp_obj_t adafruit_bus_device_spidevice_obj_get_spi(mp_obj_t self_in) {
-    adafruit_bus_device_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_adafruit_bus_device_spidevice_get_spi(self);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_spidevice_get_spi_obj, adafruit_bus_device_spidevice_obj_get_spi);
-
-const mp_obj_property_t adafruit_bus_device_spidevice_spi_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&adafruit_bus_device_spidevice_get_spi_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
 STATIC const mp_rom_map_elem_t adafruit_bus_device_spidevice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&adafruit_bus_device_spidevice___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&adafruit_bus_device_spidevice___exit___obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_spi), MP_ROM_PTR(&adafruit_bus_device_spidevice_spi_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_spidevice_locals_dict, adafruit_bus_device_spidevice_locals_dict_table);

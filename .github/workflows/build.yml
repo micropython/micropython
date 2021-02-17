@@ -296,6 +296,7 @@ jobs:
         - "pyruler"
         - "qtpy_m0"
         - "qtpy_m0_haxpress"
+        - "qtpy_rp2040"
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
