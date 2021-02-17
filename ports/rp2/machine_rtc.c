@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "lib/utils/mpirq.h"
 
 // ----------------------
 // Pico specific includes
@@ -64,6 +65,11 @@
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
 #define MJD_BASE 2457024 // Modified JD base corresponding tp Jan, 1st, 2015, the MicroPython reference datetime
+
+
+// ############################################################################
+//                          UTILITY FUNCTIONS
+// ############################################################################
 
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
 STATIC mp_uint_t gregorian_calendar_to_jd(mp_uint_t y, mp_uint_t m, mp_uint_t d) 
@@ -105,6 +111,22 @@ STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar)
     calendar->sec = seconds % 60;
     jd_to_calendar(jd, calendar);
 }
+
+// ############################################################################
+//                          IRQ CLASS IMPLEMENTATION
+// ############################################################################
+
+typedef struct _machine_rtc_irq_obj_t {
+    mp_irq_obj_t base;
+    uint32_t flags;
+    uint32_t trigger;
+} machine_pin_irq_obj_t;
+
+STATIC const mp_irq_methods_t machine_rtc_irq_methods;
+
+// ############################################################################
+//                          RTC CLASS IMPLEMENTATION
+// ############################################################################
 
 // ----------------------------------------
 // RTC internal state
