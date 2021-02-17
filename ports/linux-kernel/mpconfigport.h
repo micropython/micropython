@@ -114,3 +114,5 @@ typedef long mp_off_t;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[512];
+
+#undef fallthrough
