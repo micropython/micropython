@@ -144,6 +144,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 
 STATIC void _idle_until_alarm(void) {
     int ct = 40;
+    reset_reason_saved = 0;
     // Poll for alarms.
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
