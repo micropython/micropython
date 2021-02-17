@@ -26,4 +26,8 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
+static inline uint64_t mp_hal_time_ns(void) {
+    return ktime_get_real_ns();
+}
+
 void mp_hal_set_interrupt_char(int c);
