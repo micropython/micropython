@@ -67,16 +67,16 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
-// Modified JD base corresponding to Jan, Thursday, 1st, 2015, 
-// (MicroPython reference datetime)
 
 enum dotw {
     Sunda=0, Monday, Tuesday, Wednesday, 
     Thursday, Friday, Saturday
 };
 
-#define MJD_BASE 2457024
-#define MJD_DOW_BASE Thursday
+// Modified JD base corresponding to Jan, Thursday, 1st, 2015,
+// (MicroPython reference datetime)
+#define MJD_BASE 736012
+#define MJD_DOTW_BASE Thursday
 
 
 // ############################################################################
@@ -90,10 +90,8 @@ enum dotw {
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
-    mp_obj_t      callback;
     bool          active;   // active alarm flag
     mp_uint_t     period;   // in seconds. 0 => no periodic
-    datetime_t    alarm;
     mp_uint_t     alarm;    // alarm time in seconds since 2015,1st, Jan
 } machine_rtc_obj_t;
 
@@ -118,47 +116,47 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 // ############################################################################
 
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
-STATIC mp_uint_t gregorian_calendar_to_jd(mp_uint_t year, mp_uint_t month, mp_uint_t day) 
+// Adapted for minimal computation
+// we don't really need a full blown Julian Date computation
+STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day)
 {
-    year += 8000;
-    if (month<3) { year--; month += 12; }
-    return (year*365) + (year/4) -(year/100) +(year/400) -1200820 + (month*153+3)/5 - 92 + day - 1;
+    if (month < 3) {
+        year--;
+        month += 12; 
+    }
+    return (year * 365) + (year / 4) + (month * 153 + 3) / 5 + day;
 }
 
 
-STATIC void jd_to_calendar(mp_uint_t jd, datetime_t* calendar)
+STATIC void mjd_to_calendar(mp_uint_t mjd, datetime_t* calendar)
 {
     int year, month ,day;
-    for (year=jd/366-4715; gregorian_calendar_to_jd(year+1, 1, 1) <= jd; year++);
-    for (month=1; gregorian_calendar_to_jd(year, month+1, 1) <= jd; month++);
-    for (day=1;   gregorian_calendar_to_jd(year, month, day+1)<=jd; day++);
+    for (year=mjd/366; calendar_to_mjd(year+1, 1, 1) <= mjd; year++);
+    for (month=1; calendar_to_mjd(year, month+1, 1)  <= mjd; month++);
+    for (day=1;   calendar_to_mjd(year, month, day+1)<= mjd; day++);
     calendar->year  = year; 
     calendar->month = month; 
     calendar->day   = day;
+    calendar->dotw  = ((mjd - MJD_BASE) % 7) + MJD_DOTW_BASE;
 }
 
 
 STATIC mp_uint_t to_seconds(const datetime_t* t) 
 {
     mp_uint_t days;
-    days = gregorian_calendar_to_jd(t->year, t->month, t->day) - MJD_BASE;
+    days = calendar_to_mjd(t->year, t->month, t->day) - MJD_BASE;
     return (days*24*60*60 + t->hour*3600 + t->min*60 + t->sec);
 }
 
 STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar) 
 {
-    mp_uint_t jd = (seconds / (24*60*60)) ;
-    enum dotw today = (jd % 7) + MJD_DOW_BASE;
-    jd += MJD_BASE;
-    jd_to_calendar(jd, calendar);
-
+    mp_uint_t mjd = (seconds / (24 * 60 * 60)) + MJD_BASE;
+    mjd_to_calendar(mjd, calendar);
     seconds %= (24*60*60);
     calendar->hour = seconds / (60*60);
     seconds %= (60*60);
     calendar->min = seconds  / 60;
     calendar->sec = seconds % 60;
-    calendar->dotw = today;
-    jd_to_calendar(jd, calendar);
 }
 
 // Copied from Pico SDK hardware/rtc.c as they do not export this function
@@ -245,7 +243,7 @@ STATIC machine_rtc_obj_t machine_rtc_obj = {
     .callback = 0,
     .active   = false,
     .period   = 0,
-    .alarm    = {0,0,0,0,0,0,0}
+    .alarm    = 0,
 };
 
 #if 0
@@ -404,15 +402,15 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     datetime_t now;
     rtc_get_datetime(&now);
     mp_uint_t now_secs = to_seconds(&now);
-    datetime_t later;
+    mp_uint_t later_secs;
 
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
         bool periodic = args[ARG_repeat].u_bool;
         int duration  = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
         self->period = periodic ? duration : 0;
-        mp_uint_t later_secs = now_secs + duration;
-        from_seconds(later_secs, &later);
+        later_secs = now_secs + duration;
     } else {
+        datetime_t later;
         mp_obj_t *tstamp;
         mp_obj_get_array_fixed_n(args[ARG_time].u_obj, 8, &tstamp);
         later.year  = mp_obj_get_int(tstamp[0]);
@@ -421,13 +419,12 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         later.hour  = mp_obj_get_int(tstamp[3]);
         later.min   = mp_obj_get_int(tstamp[4]);
         later.sec   = mp_obj_get_int(tstamp[5]);
-        later.dotw  = -1;
         mp_uint_t later_secs = to_seconds(&later);
         if (later_secs <= now_secs) {
             mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
         }
     }
-    self->alarm = later;    // struct copy
+    self->alarm = later_secs;
     self->active = true;
     //machine_rtc_debug(self);
     return mp_obj_new_int(0);   // always return alarm_id = 0
@@ -460,17 +457,14 @@ STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, 
     datetime_t t;
     rtc_get_datetime(&t);
     mp_uint_t current = to_seconds(&t);
-    mp_uint_t limit   = to_seconds(&self->alarm);
+    mp_uint_t limit   = self->alarm;
     mp_uint_t left    = current >= limit ? 0 : limit - current;
 
-    // reload here if periodic, not interrupt-driven and alarm expired
-    if ((self->callback == 0) && ! left) {
-        if (self->period != 0) { 
-            datetime_t later;
-            mp_uint_t later_secs = current + self->period;
-            from_seconds(later_secs, &later);
+    // reload here if periodic and alarm expired
+    if ( ! left) {
+        if (self->period != 0) {
             left = self->period;
-            self->alarm = later;    // struct copy
+            self->alarm = current + self->period;
             self->active = true;
         } else  {
             self->active = false;   // One shot mode
