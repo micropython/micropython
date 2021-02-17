@@ -129,7 +129,7 @@ mp_state_thread_t *mp_thread_get_state(void) {
     return get_thread_for_current()->ts;
 }
 
-void mp_thread_set_state(void *state) {
+void mp_thread_set_state(struct _mp_state_thread_t *state) {
     get_thread_for_current()->ts = state;
 }
 
