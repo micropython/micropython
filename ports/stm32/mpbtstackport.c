@@ -58,7 +58,7 @@ uint32_t hal_time_ms(void) {
 STATIC const hci_transport_config_uart_t hci_transport_config_uart = {
     HCI_TRANSPORT_CONFIG_UART,
     MICROPY_HW_BLE_UART_BAUDRATE,
-    3000000,
+    MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY,
     0,
     NULL,
 };
@@ -90,9 +90,9 @@ void mp_bluetooth_btstack_port_init(void) {
     const hci_transport_t *transport = hci_transport_h4_instance(&mp_bluetooth_btstack_hci_uart_block);
     hci_init(transport, &hci_transport_config_uart);
 
-    // TODO: Probably not necessary for BCM (we have our own firmware loader in the cyw43 driver),
-    // but might be worth investigating for other controllers in the future.
-    // hci_set_chipset(btstack_chipset_bcm_instance());
+    #ifdef MICROPY_HW_BLE_BTSTACK_CHIPSET_INSTANCE
+    hci_set_chipset(MICROPY_HW_BLE_BTSTACK_CHIPSET_INSTANCE);
+    #endif
 }
 
 void mp_bluetooth_btstack_port_deinit(void) {
