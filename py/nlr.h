@@ -39,6 +39,7 @@
 #define MICROPY_NLR_NUM_REGS_X64_WIN        (10)
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB      (10)
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP   (10 + 6)
+#define MICROPY_NLR_NUM_REGS_AARCH64        (13)
 #define MICROPY_NLR_NUM_REGS_XTENSA         (10)
 #define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
 
@@ -72,6 +73,9 @@
         // so only save/restore those as an optimisation.
         #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_ARM_THUMB_FP)
     #endif
+#elif defined(__aarch64__)
+    #define MICROPY_NLR_AARCH64 (1)
+    #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_AARCH64)
 #elif defined(__xtensa__)
     #define MICROPY_NLR_XTENSA (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_XTENSA)
