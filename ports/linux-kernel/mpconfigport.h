@@ -104,8 +104,10 @@ typedef long mp_off_t;
 
 #define MICROPY_HW_BOARD_NAME "Linux version " UTS_RELEASE
 
-#ifdef __amd64__
+#if defined(CONFIG_X86_64)
 #define MICROPY_HW_MCU_NAME "x86_64"
+#elif defined(CONFIG_ARM64)
+#define MICROPY_HW_MCU_NAME "arm64"
 #else
 #error "unknown arch!"
 #endif

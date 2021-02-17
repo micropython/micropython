@@ -197,7 +197,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 // not inlined - to get a more accurate "reading".
 long get_current_stack_limit(void) {
+#if defined(CONFIG_X86_64)
     register unsigned long sp asm("rsp");
+#elif defined(CONFIG_ARM64)
+    register unsigned long sp asm("sp");
+#else
+#error "unknown arch!"
+#endif
 
     unsigned long end = (unsigned long)end_of_stack(current);
 

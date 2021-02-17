@@ -28,6 +28,15 @@ You can pass the ``KDIR`` variable to ``make`` to build against a specific kerne
 
     $ make -C ports/linux-kernel KDIR=/path/to/some/other/kernel
 
+Supported kernels
+^^^^^^^^^^^^^^^^^
+
+It was tested on various versions from 3.10 to 5.4.
+
+Architectures:
+* x86_64
+* Aarch64 (not all features were tested)
+
 
 Using it
 --------

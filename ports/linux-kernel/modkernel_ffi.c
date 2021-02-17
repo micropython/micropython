@@ -44,6 +44,18 @@
 
 #include "internal.h"
 
+// pt_regs definitions
+#if defined(CONFIG_X86_64)
+#define pc_reg ip
+#define sp_reg sp
+#define ret_reg ax
+#elif defined(CONFIG_ARM64)
+#define pc_reg pc
+#define sp_reg sp
+#define ret_reg regs[0]
+#else
+#error "unknown arch!"
+#endif
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 STATIC mp_obj_t symbol_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -317,6 +329,7 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError("value overflow");
         }
 
+#ifdef CONFIG_X86_64
         // temporarily disable WP bit, to allow writing to unwritable areas.
         // (most likely a "const" variable)
         // disable interrupts in this short while, to prevent the CPU from jumping
@@ -333,10 +346,13 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
         // TODO: use paravirt ops when appropriate...
 
         asm volatile("mov %0,%%cr0": : "r" (cr0_no_wp));
+#endif
         *ptr = (u64)value;
+#ifdef CONFIG_X86_64
         asm volatile("mov %0,%%cr0": : "r" (cr0));
 
         local_irq_restore(flags);
+#endif
 
         return mp_const_none;
     } else {
@@ -547,9 +563,41 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
 
 STATIC void kprobe_empty_post_handler(struct kprobe *p, struct pt_regs *regs, unsigned long flags) { }
 
-STATIC unsigned long get_stack_arg(unsigned long sp, int i) {
-    assert(i >= 7);
-    return ((unsigned long*)sp)[i - 6];
+STATIC unsigned long get_stack_arg(struct pt_regs *regs, int i) {
+    return ((unsigned long*)regs->sp_reg)[i];
+}
+
+STATIC unsigned long get_arg(struct pt_regs *regs, unsigned int n) {
+    switch (n) {
+#if defined(CONFIG_X86_64)
+    case 0: return regs->di;
+    case 1: return regs->si;
+    case 2: return regs->dx;
+    case 3: return regs->cx;
+    case 4: return regs->r8;
+    case 5: return regs->r9;
+    case 6: return get_stack_arg(regs, 0);
+    case 7: return get_stack_arg(regs, 1);
+    case 8: return get_stack_arg(regs, 2);
+    case 9: return get_stack_arg(regs, 3);
+#elif defined(CONFIG_ARM64)
+    case 0: return regs->regs[0];
+    case 1: return regs->regs[1];
+    case 2: return regs->regs[2];
+    case 3: return regs->regs[3];
+    case 4: return regs->regs[4];
+    case 5: return regs->regs[5];
+    case 6: return regs->regs[6];
+    case 7: return regs->regs[7];
+    case 8: return get_stack_arg(regs, 0);
+    case 9: return get_stack_arg(regs, 1);
+#else
+#error "unknown arch!"
+#endif
+    default:
+        assert(false);
+        return 0;
+    }
 }
 
 STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
@@ -564,10 +612,9 @@ STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
     switch (kp_obj->type) {
     case KP_ARGS_MODIFY:
     case KP_ARGS_WATCH:
-        ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, kp_obj->call_sym,
-            regs->di, regs->si, regs->dx, regs->cx, regs->r8, regs->r9,
-            get_stack_arg(regs->sp, 7), get_stack_arg(regs->sp, 8), get_stack_arg(regs->sp, 9),
-            get_stack_arg(regs->sp, 10));
+        ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, kp_obj->call_sym, get_arg(regs, 0),
+            get_arg(regs, 1), get_arg(regs, 2), get_arg(regs, 3), get_arg(regs, 4), get_arg(regs, 5),
+            get_arg(regs, 6), get_arg(regs, 7), get_arg(regs, 8), get_arg(regs, 9));
         break;
 
     case KP_REGS_MODIFY:
@@ -589,9 +636,10 @@ STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
 
     switch (kp_obj->type) {
     case KP_ARGS_MODIFY:
-        regs->ax = ret;
-        regs->ip = ((unsigned long*)regs->sp)[0];
-        regs->sp += 8;
+        regs->ret_reg = ret;
+        // TODO fix for arm
+        regs->pc_reg = ((unsigned long*)regs->sp_reg)[0];
+        regs->sp_reg += 8;
         /* fall through */
     case KP_REGS_MODIFY:
         return 1; // don't continue
@@ -736,11 +784,13 @@ STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
     cb_obj->func = func;
     cb_obj->nargs = nargs;
 
+    // x86_64 docs, other archs have some differences ofc.
     // this trampoline does the python equivalent of "partial(callback_handler, cb_obj)".
     // instead of a full wrapper that prepends the cb_obj argument, a hacky trick
     // is employed: rax is a volatile register but not used to pass any arguments.
     // a small trampoline that sets rax to the cb_obj then jumps to callback_handler
     // is created, and used as the callback pointer.
+#if defined(CONFIG_X86_64)
     struct {
         u8 movabs_rax_handler_addr[10];
         u8 push_rax[1];
@@ -763,13 +813,40 @@ STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
     };
 
     memcpy(trampoline, trampoline_base, sizeof(trampoline_base));
+    void **handler_ptr = (void**)&trampoline->movabs_rax_handler_addr[2];
+    void **cb_obj_ptr = (void**)&trampoline->movabs_rax_parameter[2];
+#elif defined(CONFIG_ARM64)
+    static const u8 trampoline_base[] = {
+        // ldr x10, =(current pc + 16)
+        0x8a, 0x00, 0x00, 0x58,
+        // ldr x9, =(current pc + 20)
+        0xa9, 0x00, 0x00, 0x58,
+        // br x10
+        0x40, 0x01, 0x1f, 0xd6,
+        // padding
+        0x00, 0x00, 0x00, 0x00,
+        // callback_handler
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        // param
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    u8 *trampoline = __vmalloc(PAGE_SIZE, GFP_KERNEL, PAGE_KERNEL_EXEC);
+    if (NULL == trampoline) {
+        mp_raise_OSError(0);
+    }
+
+    memcpy(trampoline, trampoline_base, sizeof(trampoline_base));
+    void **handler_ptr = (void**)&trampoline[16];
+    void **cb_obj_ptr = (void**)&trampoline[24];
+#else
+#error "unknown arch!"
+#endif
 
     // write the target pointer
-    void **p = (void**)&trampoline->movabs_rax_handler_addr[2];
-    *p = (void*)callback_handler;
+    *handler_ptr = (void*)callback_handler;
     // write the parameter (callback object)
-    p = (void**)&trampoline->movabs_rax_parameter[2];
-    *p = cb_obj;
+    *cb_obj_ptr = (void*)cb_obj;
 
     cb_obj->trampoline = trampoline;
 
@@ -839,8 +916,8 @@ static void notrace ftrace_trampoline(unsigned long ip, unsigned long parent_ip,
     ftrace_obj_t *ft_obj = container_of(ops, ftrace_obj_t, ops);
 
     if (!ft_obj->disabled) {
-        regs->ip = (unsigned long)callback_handler;
-        regs->ax = (unsigned long)ft_obj;
+        regs->pc_reg = (unsigned long)callback_handler;
+        regs->ret_reg = (unsigned long)ft_obj;
     }
 }
 
@@ -888,7 +965,13 @@ STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, un
     unsigned long arg5, unsigned long arg6, unsigned long arg7,
     unsigned long arg8, unsigned long arg9, unsigned long arg10) {
 
+#ifdef CONFIG_X86_64
     register mp_obj_base_t *base asm("rax");
+#elif defined(CONFIG_ARM64)
+    register mp_obj_base_t *base asm("x9");
+#else
+#error "unknown arch!"
+#endif
 
     mp_obj_t func;
     size_t nargs;
