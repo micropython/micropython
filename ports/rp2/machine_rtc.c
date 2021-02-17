@@ -67,7 +67,17 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
-#define MJD_BASE 2457024 // Modified JD base corresponding tp Jan, 1st, 2015, the MicroPython reference datetime
+// Modified JD base corresponding to Jan, Thursday, 1st, 2015, 
+// (MicroPython reference datetime)
+
+enum dotw {
+    Sunda=0, Monday, Tuesday, Wednesday, 
+    Thursday, Friday, Saturday
+};
+
+#define MJD_BASE 2457024
+#define MJD_DOW_BASE Thursday
+
 
 // ############################################################################
 //                          MODULE DATA TYPES
@@ -136,7 +146,9 @@ STATIC mp_uint_t to_seconds(const datetime_t* t)
 
 STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar) 
 {
-    mp_uint_t jd = (seconds / (24*60*60)) + MJD_BASE;
+    mp_uint_t jd = (seconds / (24*60*60)) ;
+    enum dotw today = (jd % 7) + MJD_DOW_BASE;
+    jd += MJD_BASE;
     jd_to_calendar(jd, calendar);
 
     seconds %= (24*60*60);
@@ -144,6 +156,7 @@ STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar)
     seconds %= (60*60);
     calendar->min = seconds  / 60;
     calendar->sec = seconds % 60;
+    calendar->dotw = today;
     jd_to_calendar(jd, calendar);
 }
 
@@ -522,14 +535,6 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // Configure IRQ.
     if (n_args > 1 || kw_args->used != 0) {
-
-        // Configure hardware for interrupts
-        rtc_disable_alarm();
-        irq_set_exclusive_handler(RTC_IRQ, machine_rtc_irq_handler);
-        rtc_hw->inte = RTC_INTE_RTC_BITS; // Enable the IRQ at the peri
-        irq_set_enabled(RTC_IRQ, true);   // Enable the IRQ at the proc
-        rtc_enable_alarm();
-
         // Update IRQ data.
         irq->base.handler = args[ARG_handler].u_obj;
         irq->trigger      = args[ARG_trigger].u_int;
