@@ -94,6 +94,7 @@ typedef struct _machine_rtc_obj_t {
     bool          active;   // active alarm flag
     mp_uint_t     period;   // in seconds. 0 => no periodic
     datetime_t    alarm;
+    mp_uint_t     alarm;    // alarm time in seconds since 2015,1st, Jan
 } machine_rtc_obj_t;
 
 // ---------------------------------------------------------
