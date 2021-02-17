@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "py/obj.h"
 
-#include "py/mpconfig.h"
+// not implemented yet
+#define SLEEP_MEMORY_LENGTH (4)
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+typedef struct {
+    mp_obj_base_t base;
+} alarm_sleep_memory_obj_t;
 
-extern FIL* boot_output_file;
-#endif
+extern void alarm_sleep_memory_reset(void);
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
-
-int dbg_printf(const char *fmt, ...)__attribute__((format (printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H

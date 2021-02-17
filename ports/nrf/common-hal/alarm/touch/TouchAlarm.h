@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#ifndef MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
+#define MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "py/mpconfig.h"
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+} alarm_touch_touchalarm_obj_t;
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+// Find the alarm object that caused us to wake up or create an equivalent one.
+mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms);
+// Check for the wake up alarm from pretend deep sleep.
+void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
+void alarm_touch_touchalarm_prepare_for_deep_sleep(void);
+bool alarm_touch_touchalarm_woke_us_up(void);
+void alarm_touch_touchalarm_reset(void);
 
-extern FIL* boot_output_file;
-#endif
-
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
-
-int dbg_printf(const char *fmt, ...)__attribute__((format (printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#endif  // MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H

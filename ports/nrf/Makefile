@@ -87,11 +87,19 @@ INC += -I../../supervisor/shared/usb
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3
+  CFLAGS += -DNDEBUG
   OPTIMIZATION_FLAGS = -Og
 else
   OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
   CFLAGS += -DNDEBUG -ggdb3
   CFLAGS += -flto -flto-partition=none
+endif
+
+ifeq ($(MY_DBG), 1)
+  CFLAGS += -DMY_DBG
+endif
+ifeq ($(MY_DEBUGUART), 1)
+  CFLAGS += -DMY_DEBUGUART=1
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk

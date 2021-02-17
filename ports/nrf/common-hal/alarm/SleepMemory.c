@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +25,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#include <string.h>
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "py/runtime.h"
+#include "common-hal/alarm/SleepMemory.h"
 
-#include "py/mpconfig.h"
+//static RTC_DATA_ATTR uint8_t _sleep_mem[SLEEP_MEMORY_LENGTH];
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+void alarm_sleep_memory_reset(void) {
+}
 
-extern FIL* boot_output_file;
-#endif
+uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
+  return 0;
+}
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t* values, uint32_t len) {
+  return false;
+}
 
-int dbg_printf(const char *fmt, ...)__attribute__((format (printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t* values, uint32_t len) {
+  return;
+}

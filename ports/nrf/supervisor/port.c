@@ -27,6 +27,10 @@
 #include <stdint.h>
 #include "supervisor/port.h"
 #include "supervisor/board.h"
+#ifdef MY_DEBUGUART
+#include "supervisor/serial.h" // dbg_printf()
+extern void _debug_uart_init(void);
+#endif
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
@@ -90,6 +94,9 @@ static volatile struct {
     uint32_t suffix;
 } overflow_tracker __attribute__((section(".uninitialized")));
 
+uint32_t reset_reason_saved = 0;
+volatile int rtc_woke_up_counter = 0;
+
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
@@ -100,7 +107,23 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
         supervisor_tick();
     } else if (int_type == NRFX_RTC_INT_COMPARE0) {
         nrfx_rtc_cc_set(&rtc_instance, 0, 0, false);
+    } else if (int_type == NRFX_RTC_INT_COMPARE1) {
+        // used in light sleep
+        ++rtc_woke_up_counter;
+        nrfx_rtc_cc_set(&rtc_instance, 1, 0, false);
     }
+}
+
+void _xxx_dumpRTC(void) {
+  dbg_printf("\r\nRTC2\r\n");
+  NRF_RTC_Type  *r = rtc_instance.p_reg;
+  dbg_printf("PRESCALER=%08X, ", (int)r->PRESCALER);
+  dbg_printf("COUNTER=%08X  ", (int)r->COUNTER);
+  dbg_printf("INTENSET=%08X ", (int)r->INTENSET);
+  dbg_printf("EVTENSET=%08X\r\n", (int)r->EVTENSET);
+  dbg_printf("EVENTS_COMPARE[0..3]=%X,%X,%X,%X ", (int)r->EVENTS_COMPARE[0], (int)r->EVENTS_COMPARE[1], (int)r->EVENTS_COMPARE[2], (int)r->EVENTS_COMPARE[3]);
+  dbg_printf("CC[0..3]=%08X,%08X,%08X,%08X\r\n", (int)r->CC[0], (int)r->CC[1], (int)r->CC[2], (int)r->CC[3]);
+  dbg_printf("woke_up=%d\r\n", rtc_woke_up_counter);
 }
 
 void tick_init(void) {
@@ -123,6 +146,7 @@ void tick_init(void) {
         overflow_tracker.overflowed_ticks = 0;
     }
 }
+
 
 safe_mode_t port_init(void) {
     nrf_peripherals_clocks_init();
@@ -153,6 +177,8 @@ safe_mode_t port_init(void) {
     analogin_init();
 #endif
 
+    reset_reason_saved = NRF_POWER->RESETREAS;
+
     // If the board was reset by the WatchDogTimer, we may
     // need to boot into safe mode. Reset the RESETREAS bit
     // for the WatchDogTimer so we don't encounter this the
@@ -170,6 +196,7 @@ safe_mode_t port_init(void) {
 
     return NO_SAFE_MODE;
 }
+
 
 void reset_port(void) {
 #ifdef CIRCUITPY_GAMEPAD_TICKS
@@ -219,6 +246,10 @@ void reset_port(void) {
 #endif
 
     reset_all_pins();
+
+#ifdef MY_DEBUGUART
+    _debug_uart_init();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -295,7 +326,7 @@ void port_disable_tick(void) {
     nrfx_rtc_tick_disable(&rtc_instance);
 }
 
-void port_interrupt_after_ticks(uint32_t ticks) {
+void port_interrupt_after_ticks_ch(uint32_t channel, uint32_t ticks) {
     uint32_t current_ticks = nrfx_rtc_counter_get(&rtc_instance);
     uint32_t diff = 3;
     if (ticks > diff) {
@@ -304,7 +335,15 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     if (diff > 0xffffff) {
         diff = 0xffffff;
     }
-    nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
+    nrfx_rtc_cc_set(&rtc_instance, channel, current_ticks + diff, true);
+}
+
+void port_disable_interrupt_after_ticks_ch(uint32_t channel) {
+    nrfx_rtc_cc_disable(&rtc_instance, channel);
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    port_interrupt_after_ticks_ch(0, ticks);
 }
 
 void port_idle_until_interrupt(void) {
