@@ -232,7 +232,7 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     int errcode;
     uart_tx_data(&mp_bluetooth_hci_uart_obj, (void *)buf, len, &errcode);
     if (errcode != 0) {
-        printf("\nmp_bluetooth_hci_uart_write: failed to write to UART %d\n", errcode);
+        mp_printf(&mp_plat_print, "\nmp_bluetooth_hci_uart_write: failed to write to UART %d\n", errcode);
     }
     return 0;
 }
