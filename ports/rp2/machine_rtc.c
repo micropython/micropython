@@ -38,7 +38,7 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
-enum day_of_the_week {Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday};
+enum DAY_OF_THE_WEEK {Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday};
 
 // MicroPython ref datetime: Jan, Thursday, 1st, 2015
 #define MJD_BASE      736012
