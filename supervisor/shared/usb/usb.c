@@ -219,7 +219,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
   return true;
 }
-#endif CIRCUITPY_USB_VENDOR
+#endif // CIRCUITPY_USB_VENDOR
 
 
 #if MICROPY_KBD_EXCEPTION
