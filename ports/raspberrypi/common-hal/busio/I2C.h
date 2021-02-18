@@ -36,6 +36,10 @@
 typedef struct {
     mp_obj_base_t base;
     i2c_inst_t * peripheral;
+    const mcu_pin_obj_t *scl;
+    const mcu_pin_obj_t *sda;
+    uint32_t frequency;
+    uint32_t timeout;
     bool has_lock;
     uint baudrate;
     uint8_t scl_pin;

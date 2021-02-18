@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "shared-bindings/busio/I2C.h"
-#include "py/mperrno.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "shared-bindings/bitbangio/I2C.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
@@ -99,6 +99,12 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     self->baudrate = i2c_init(self->peripheral, frequency);
 
+    // Remember these in case we need to use bitbangio to do short writes.
+    self->sda = sda;
+    self->scl = scl;
+    self->frequency = frequency;
+    self->timeout = timeout;
+
     self->sda_pin = sda->number;
     self->scl_pin = scl->number;
     claim_pin(sda);
@@ -124,8 +130,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    uint8_t fake_read = 0;
-    return i2c_read_blocking(self->peripheral, addr, &fake_read, 1, false) != PICO_ERROR_GENERIC;
+    return common_hal_busio_i2c_write(self, addr, NULL, 0, false) == 0;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -147,6 +152,27 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    if (len <= 2) {
+        // Give up pin ownership temporarily and use a bitbangio.I2C to do the write.
+
+        reset_pin_number(self->sda_pin);
+        reset_pin_number(self->scl_pin);
+        bitbangio_i2c_obj_t bitbangio_i2c;
+        shared_module_bitbangio_i2c_construct(&bitbangio_i2c, self->sda, self->scl,
+                                              self->frequency, self->timeout);
+        uint8_t status = shared_module_bitbangio_i2c_write(&bitbangio_i2c, addr, data, len, transmit_stop_bit);
+        shared_module_bitbangio_i2c_deinit(&bitbangio_i2c);
+
+        // Take back the pins and restore them to hardware I2C functionality.
+        claim_pin(self->sda);
+        claim_pin(self->scl);
+
+        gpio_set_function(self->sda_pin, GPIO_FUNC_I2C);
+        gpio_set_function(self->scl_pin, GPIO_FUNC_I2C);
+
+        return status;
+    }
+
     int result = i2c_write_blocking(self->peripheral, addr, data, len, !transmit_stop_bit);
     if (result == len) {
         return 0;
