@@ -33,7 +33,7 @@
 //|
 //|
 
-//| def bit_transpose(input: _typing.ReadableBuffer, *, width:int = 8, output: Optional[_typing.WriteableBuffer]=None) -> WriteableBuffer:
+//| def bit_transpose(input: _typing.ReadableBuffer, output: _typing.WriteableBuffer, width:int = 8) -> WriteableBuffer:
 //|     """"Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
 //|
 //|     This can be useful to convert a sequence of pixel values into a single
@@ -59,7 +59,7 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_input, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_output, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 8 } },
+        { MP_QSTR_width, MP_ARG_INT, { .u_int = 8 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
