@@ -113,6 +113,12 @@ if(IDF_VERSION_MINOR GREATER_EQUAL 2)
     list(APPEND IDF_COMPONENTS esp_timer)
 endif()
 
+if(IDF_VERSION_MINOR GREATER_EQUAL 3)
+    list(APPEND IDF_COMPONENTS esp_hw_support)
+    list(APPEND IDF_COMPONENTS esp_pm)
+    list(APPEND IDF_COMPONENTS hal)
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
