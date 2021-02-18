@@ -61,27 +61,25 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
-enum dotw { Sunday = 0, Monday, Tuesday, Wednesday,
-    Thursday, Friday, Saturday
-};
+enum dotw {Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday};
 
 // MicroPython reference datetime is Jan, Thursday, 1st, 2015
 #define MJD_DOTW_BASE Thursday
 #define MJD_BASE      736012
 
-    // ############################################################################
-    //                          MODULE DATA TYPES
-    // ############################################################################
+// ############################################################################
+//                          MODULE DATA TYPES
+// ############################################################################
 
-    // ----------------------------------------
-    // RTC internal state
-    // will become part of the Python RTC class
-    // ----------------------------------------
+// ----------------------------------------
+// RTC internal state
+// will become part of the Python RTC class
+// ----------------------------------------
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
-    bool          active;   // active alarm flag
-    mp_uint_t     period;   // in seconds. 0 => no periodic
-    mp_uint_t     alarm;    // alarm time in seconds since 2015,1st, Jan
+    bool active;        // active alarm flag
+    mp_uint_t period;   // in seconds. 0 => no periodic
+    mp_uint_t alarm;    // alarm time in seconds since 2015,1st, Jan
 } machine_rtc_obj_t;
 
 // ############################################################################
