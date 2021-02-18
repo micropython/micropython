@@ -133,7 +133,6 @@ ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_PATTERNS += audiomp3/%
 endif
 ifeq ($(CIRCUITPY_BITOPS),1)
-$(info BITOPS enabled)
 SRC_PATTERNS += bitops/%
 endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
