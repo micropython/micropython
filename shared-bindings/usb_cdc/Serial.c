@@ -41,36 +41,34 @@
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `usb_cdc.Serial`.
 //|
-//|         Serial objects are constructed for every corresponding entry in the USB
+//|         Serial objects are pre-constructed for each CDC device in the USB
 //|         descriptor and added to the ``usb_cdc.ports`` tuple."""
 //|         ...
 //|
 
-// These are standard stream methods. Code is in py/stream.c.
-//
-//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
-//|         """Read characters.  If ``nbytes`` is specified then read at most that many
-//|         bytes. Otherwise, read everything that arrives until the connection
-//|         times out. Providing the number of bytes expected is highly recommended
-//|         because it will be faster.
+//|     def read(self, size: int = 1) -> bytes:
+//|         """Read at most ``size`` bytes. If ``size`` exceeds the internal buffer size
+//|         only the bytes in the buffer will be read. If `timeout` is > 0 or ``None``,
+//|         and fewer than ``size`` bytes are available, keep waiting until the timeout
+//|         expires or ``size`` bytes are available.
 //|
 //|         :return: Data read
-//|         :rtype: bytes or None"""
+//|         :rtype: bytes"""
 //|         ...
 //|
-//|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
+//|     def readinto(self, buf: WriteableBuffer) -> bytes:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-//|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
+//|         that many bytes, subject to `timeout`.  Otherwise, read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
-//|         :rtype: bytes or None"""
+//|         :rtype: bytes"""
 //|         ...
 //|
-//|     def write(self, buf: ReadableBuffer) -> Optional[int]:
+//|     def write(self, buf: ReadableBuffer) -> int:
 //|         """Write as many bytes as possible from the buffer of bytes.
 //|
 //|         :return: the number of bytes written
-//|         :rtype: int or None"""
+//|         :rtype: int"""
 //|         ...
 //|
 //|     def flush(self) -> None:
@@ -79,7 +77,7 @@
 //|
 
 // These three methods are used by the shared stream methods.
-STATIC mp_uint_t usb_cdc_serial_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t usb_cdc_serial_read_stream(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     byte *buf = buf_in;
 
@@ -91,16 +89,16 @@ STATIC mp_uint_t usb_cdc_serial_read(mp_obj_t self_in, void *buf_in, mp_uint_t s
     return common_hal_usb_cdc_serial_read(self, buf, size, errcode);
 }
 
-STATIC mp_uint_t usb_cdc_serial_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t usb_cdc_serial_write_stream(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
     return common_hal_usb_cdc_serial_write(self, buf, size, errcode);
 }
 
-STATIC mp_uint_t usb_cdc_serial_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t ret;
+    mp_uint_t ret = 0;
     switch (request) {
         case MP_IOCTL_POLL: {
             mp_uint_t flags = arg;
@@ -134,7 +132,7 @@ STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_connected_obj, usb_cdc_serial_get_connected);
 
-const mp_obj_property_t usb_cdc_serial__connected_obj = {
+const mp_obj_property_t usb_cdc_serial_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_connected_obj,
               (mp_obj_t)&mp_const_none_obj,
@@ -195,6 +193,32 @@ STATIC mp_obj_t usb_cdc_serial_reset_output_buffer(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_reset_output_buffer_obj, usb_cdc_serial_reset_output_buffer);
 
+//|     timeout: Optional[float]
+//|     """The initial value of `timeout` is ``None``. If ``None``, wait indefinitely to satisfy
+//|     the conditions of a read operation. If 0, do not wait. If > 0, wait only ``timeout`` seconds."""
+//|
+STATIC mp_obj_t usb_cdc_serial_get_timeout(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_float_t timeout = common_hal_usb_cdc_serial_get_timeout(self);
+    return (timeout < 0.0f) ? mp_const_none : mp_obj_new_float(self->timeout);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_timeout_obj, usb_cdc_serial_get_timeout);
+
+STATIC mp_obj_t usb_cdc_serial_set_timeout(mp_obj_t self_in, mp_obj_t timeout_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_usb_cdc_serial_set_timeout(self,
+        timeout_in == mp_const_none ? -1.0f : mp_obj_get_float(timeout_in));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_timeout_obj, usb_cdc_serial_set_timeout);
+
+const mp_obj_property_t usb_cdc_serial_timeout_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_cdc_serial_get_timeout_obj,
+              (mp_obj_t)&usb_cdc_serial_set_timeout_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 
 STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
     // Standard stream methods.
@@ -210,9 +234,10 @@ STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_out_waiting),         MP_ROM_PTR(&usb_cdc_serial_out_waiting_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_input_buffer),  MP_ROM_PTR(&usb_cdc_serial_reset_input_buffer_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_output_buffer), MP_ROM_PTR(&usb_cdc_serial_reset_output_buffer_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),             MP_ROM_PTR(&usb_cdc_serial_timeout_obj) },
 
     // Not in pyserial protocol.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connected),     MP_ROM_PTR(&usb_cdc_serial_get_connected_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connected),     MP_ROM_PTR(&usb_cdc_serial_connected_obj) },
 
 
 
@@ -221,10 +246,13 @@ STATIC MP_DEFINE_CONST_DICT(usb_cdc_serial_locals_dict, usb_cdc_serial_locals_di
 
 STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
-    .read = usb_cdc_serial_read,
-    .write = usb_cdc_serial_write,
-    .ioctl = usb_cdc_serial_ioctl,
+    .read = usb_cdc_serial_read_stream,
+    .write = usb_cdc_serial_write_stream,
+    .ioctl = usb_cdc_serial_ioctl_stream,
     .is_text = false,
+    .pyserial_read_compatibility = true,
+    .pyserial_readinto_compatibility = true,
+    .pyserial_dont_return_none_compatibility = true,
 };
 
 const mp_obj_type_t usb_cdc_serial_type = {

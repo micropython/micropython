@@ -24,10 +24,32 @@
  * THE SOFTWARE.
  */
 
+#include "lib/utils/interrupt_char.h"
 #include "shared-module/usb_cdc/Serial.h"
+#include "supervisor/shared/tick.h"
+
 #include "tusb.h"
 
 size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data, size_t len, int *errcode) {
+    if (self->timeout < 0.0f) {
+        while (tud_cdc_n_available(self->idx) < len) {
+            RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                return 0;
+            }
+        }
+    } else if (self->timeout > 0.0f) {
+        uint64_t timeout_ms = self->timeout * 1000;
+        uint64_t start_ticks = supervisor_ticks_ms64();
+        while (tud_cdc_n_available(self->idx) < len &&
+               supervisor_ticks_ms64() - start_ticks <= timeout_ms) {
+            RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                return 0;
+            }
+        }
+    }
+    // Timeout of 0.0f falls through to here with no waiting or unnecessary calculation.
     return tud_cdc_n_read(self->idx, data, len);
 }
 
@@ -60,4 +82,12 @@ uint32_t common_hal_usb_cdc_serial_flush(usb_cdc_serial_obj_t *self) {
 
 bool common_hal_usb_cdc_serial_get_connected(usb_cdc_serial_obj_t *self) {
     return tud_cdc_n_connected(self->idx);
+}
+
+mp_float_t common_hal_usb_cdc_serial_get_timeout(usb_cdc_serial_obj_t *self) {
+    return self->timeout;
+}
+
+void common_hal_usb_cdc_serial_set_timeout(usb_cdc_serial_obj_t *self, mp_float_t timeout) {
+    self->timeout = timeout;
 }

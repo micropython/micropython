@@ -38,11 +38,13 @@
 #error CFG_TUD_CDC must be exactly 2
 #endif
 
-static const usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
+static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
     {   .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
         .idx = 0,
     }, {
         .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
         .idx = 1,
     }
 };

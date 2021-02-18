@@ -415,8 +415,8 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,
     .is_text = false,
-    // Match PySerial when possible, such as disallowing optional length argument for .readinto()
-    .pyserial_compatibility = true,
+    // Disallow optional length argument for .readinto()
+    .pyserial_readinto_compatibility = true,
 };
 
 const mp_obj_type_t busio_uart_type = {
