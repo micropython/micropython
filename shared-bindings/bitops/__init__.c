@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2021 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 //|
 //|
 
-//| def bit_transpose(input: _typing.ReadableBuffer, output: _typing.WriteableBuffer, width:int = 8) -> WriteableBuffer:
+//| def bit_transpose(input: ReadableBuffer, output: WriteableBuffer, width:int = 8) -> WriteableBuffer:
 //|     """"Transpose" a buffer by assembling each output byte with bits taken from each of ``width`` different input bytes.
 //|
 //|     This can be useful to convert a sequence of pixel values into a single
