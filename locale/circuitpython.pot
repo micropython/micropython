@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "Initialization failed due to lack of memory"
 msgstr ""
 
-#: shared-bindings/_bit_transpose/__init__.c
+#: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
@@ -1664,7 +1664,7 @@ msgstr ""
 msgid "Out of sockets"
 msgstr ""
 
-#: shared-bindings/_bit_transpose/__init__.c
+#: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
 msgstr ""
@@ -3475,10 +3475,6 @@ msgstr ""
 msgid "not enough arguments for format string"
 msgstr ""
 
-#: shared-bindings/_bit_transpose/__init__.c
-msgid "num_strands must be from 2 to 8 (inclusive)"
-msgstr ""
-
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr ""
@@ -4113,6 +4109,10 @@ msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+msgid "width must be from 2 to 8 (inclusive)"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c

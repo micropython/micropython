@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/_bit_transpose/__init__.h"
+#include "shared-bindings/bitops/__init__.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -142,7 +142,7 @@ static void bit_transpose_var(uint32_t *result, const uint8_t *src, size_t src_s
     }
 }
 
-void common_hal_bit_transpose_bit_transpose(uint8_t *result, const uint8_t *src, size_t inlen, size_t num_strands) {
+void common_hal_bitops_bit_transpose(uint8_t *result, const uint8_t *src, size_t inlen, size_t num_strands) {
     if(num_strands == 8) {
         bit_transpose_8((uint32_t*)(void*)result, src, inlen/8, inlen/8);
     } else  {

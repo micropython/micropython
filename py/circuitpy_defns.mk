@@ -132,9 +132,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_PATTERNS += audiomp3/%
 endif
-ifeq ($(CIRCUITPY_BIT_TRANSPOSE),1)
-$(info BIT_TRANSPOSE enabled)
-SRC_PATTERNS += _bit_transpose/%
+ifeq ($(CIRCUITPY_BITOPS),1)
+$(info BITOPS enabled)
+SRC_PATTERNS += bitops/%
 endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
@@ -444,7 +444,6 @@ SRC_BINDINGS_ENUMS += \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \
-	_bit_transpose/__init__.c \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
@@ -471,6 +470,7 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
+	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/I2CDevice.c \
