@@ -27,9 +27,6 @@
  * THE SOFTWARE.
  */
 
-
-#include <string.h>
-
 // --------------------
 // MicroPython includes
 // --------------------
@@ -43,10 +40,7 @@
 // Pico specific includes
 // ----------------------
 
-#include "hardware/regs/intctrl.h"
-#include "hardware/irq.h"
 #include "hardware/rtc.h"
-
 #include "pico/util/datetime.h"
 
 // ------------------
@@ -67,49 +61,28 @@
 #define RP2_PWR_MODE_SLEEP        (0x02)
 #define RP2_PWR_MODE_DEEPSLEEP    (0x04)
 
-
-enum dotw {
-    Sunda=0, Monday, Tuesday, Wednesday, 
+enum dotw { Sunday = 0, Monday, Tuesday, Wednesday,
     Thursday, Friday, Saturday
 };
 
-// Modified JD base corresponding to Jan, Thursday, 1st, 2015,
-// (MicroPython reference datetime)
-#define MJD_BASE 736012
+// MicroPython reference datetime is Jan, Thursday, 1st, 2015
 #define MJD_DOTW_BASE Thursday
+#define MJD_BASE      736012
 
+    // ############################################################################
+    //                          MODULE DATA TYPES
+    // ############################################################################
 
-// ############################################################################
-//                          MODULE DATA TYPES
-// ############################################################################
-
-// ----------------------------------------
-// RTC internal state
-// will become part of the Python RTC class
-// ----------------------------------------
-
+    // ----------------------------------------
+    // RTC internal state
+    // will become part of the Python RTC class
+    // ----------------------------------------
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     bool          active;   // active alarm flag
     mp_uint_t     period;   // in seconds. 0 => no periodic
     mp_uint_t     alarm;    // alarm time in seconds since 2015,1st, Jan
 } machine_rtc_obj_t;
-
-// ---------------------------------------------------------
-// IRQ Internal state for IRQ objects created with RTC.irq()
-// ---------------------------------------------------------
-
-typedef struct _machine_rtc_irq_obj_t {
-    mp_irq_obj_t base;
-    uint32_t flags;
-    uint32_t trigger;
-} machine_rtc_irq_obj_t;
-
-// some forward declarations
-STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-STATIC const mp_irq_methods_t machine_rtc_irq_methods;
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 
 // ############################################################################
 //                          UTILITY FUNCTIONS
@@ -118,8 +91,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 // From https://pdc.ro.nu/jd-code.html by Robin O'Leary
 // Adapted for minimal computation
 // we don't really need a full blown Julian Date computation
-STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day)
-{
+STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day) {
     if (month < 3) {
         year--;
         month += 12; 
@@ -127,108 +99,34 @@ STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day)
     return (year * 365) + (year / 4) + (month * 153 + 3) / 5 + day;
 }
 
-
-STATIC void mjd_to_calendar(mp_uint_t mjd, datetime_t* calendar)
-{
-    int year, month ,day;
-    for (year=mjd/366; calendar_to_mjd(year+1, 1, 1) <= mjd; year++);
-    for (month=1; calendar_to_mjd(year, month+1, 1)  <= mjd; month++);
-    for (day=1;   calendar_to_mjd(year, month, day+1)<= mjd; day++);
-    calendar->year  = year; 
-    calendar->month = month; 
-    calendar->day   = day;
-    calendar->dotw  = ((mjd - MJD_BASE) % 7) + MJD_DOTW_BASE;
-}
-
-
-STATIC mp_uint_t to_seconds(const datetime_t* t) 
-{
+STATIC mp_uint_t to_seconds(const datetime_t *t) {
     mp_uint_t days;
     days = calendar_to_mjd(t->year, t->month, t->day) - MJD_BASE;
-    return (days*24*60*60 + t->hour*3600 + t->min*60 + t->sec);
+    return (days * 24 * 60 * 60 + t->hour * 3600 + t->min * 60 + t->sec);
 }
 
-STATIC void from_seconds(mp_uint_t seconds, datetime_t* calendar) 
-{
+#if 0 // I don't need this for the time being but lest's keep it here just in case
+STATIC void mjd_to_calendar(mp_uint_t mjd, datetime_t *calendar) {
+    int year, month, day;
+    for (year = mjd / 366; calendar_to_mjd(year + 1, 1, 1) <= mjd; year++);
+    for (month = 1; calendar_to_mjd(year, month + 1, 1) <= mjd; month++);
+    for (day = 1; calendar_to_mjd(year, month, day + 1) <= mjd; day++);
+    calendar->year = year;
+    calendar->month = month;
+    calendar->day = day;
+    calendar->dotw = ((mjd - MJD_BASE) % 7) + MJD_DOTW_BASE;
+}
+
+STATIC void from_seconds(mp_uint_t seconds, datetime_t *calendar) {
     mp_uint_t mjd = (seconds / (24 * 60 * 60)) + MJD_BASE;
     mjd_to_calendar(mjd, calendar);
-    seconds %= (24*60*60);
-    calendar->hour = seconds / (60*60);
-    seconds %= (60*60);
-    calendar->min = seconds  / 60;
+    seconds %= (24 * 60 * 60);
+    calendar->hour = seconds / (60 * 60);
+    seconds %= (60 * 60);
+    calendar->min = seconds / 60;
     calendar->sec = seconds % 60;
 }
-
-// Copied from Pico SDK hardware/rtc.c as they do not export this function
-static void rtc_enable_alarm(void) {
-    // Set matching and wait for it to be enabled
-    hw_set_bits(&rtc_hw->irq_setup_0, RTC_IRQ_SETUP_0_MATCH_ENA_BITS);
-    while(!(rtc_hw->irq_setup_0 & RTC_IRQ_SETUP_0_MATCH_ACTIVE_BITS)) {
-        tight_loop_contents();
-    }
-}
-
-// ############################################################################
-//                          IRQ CLASS IMPLEMENTATION
-// ############################################################################
-
-
-STATIC mp_uint_t machine_rtc_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
-    machine_rtc_obj_t    *self = MP_OBJ_TO_PTR(self_in);
-#if 0
-    machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_obj);
-    // Disable interrupts in this section
-    irq->flags = 0;
-    irq->trigger = new_trigger;
-    // --
-    mp_printf(MP_PYTHON_PRINTER, "new irq->trigger: %u \n",self->trigger);
-#endif
-   
-    return 0;
-}
-
-STATIC mp_uint_t machine_rtc_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
-    machine_rtc_obj_t     *self = MP_OBJ_TO_PTR(self_in);
-#if 0
-    machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_obj);
-    if (info_type == MP_IRQ_INFO_FLAGS) {
-        mp_printf(MP_PYTHON_PRINTER, "current irq->flags: %u \n",self->flags);
-        return irq->flags;
-    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
-        mp_printf(MP_PYTHON_PRINTER, "current irq->trigger: %u \n",self->trigger);
-        return irq->trigger;
-    }
-#endif
-    return 0;
-}
-
-
-STATIC const mp_irq_methods_t machine_pin_irq_methods = {
-    .trigger = machine_rtc_irq_trigger,
-    .info    = machine_rtc_irq_info,
-};
-
-// ----------------------------------
-// The real Interrupt Service Routine
-// ----------------------------------
-
-STATIC void machine_rtc_irq_handler(void) {
-    // Always disable the alarm to clear the current IRQ.
-    // Even if it is a repeatable alarm, we don't want it to keep firing.
-    // If it matches on a second it can keep firing for that second.
-    rtc_disable_alarm();
-
-    // Call the callback function
-    // TODO: usage of flags & trigger.
-    machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_obj);
-    if (irq != 0 ) {
-        irq->flags = irq->trigger;
-        mp_irq_handler(&irq->base);
-    }
-}
-
-   
-
+#endif 
 
 // ############################################################################
 //                          RTC CLASS IMPLEMENTATION
@@ -240,7 +138,6 @@ const mp_obj_type_t machine_rtc_type;   // Forward declaration
 // singleton RTC object
 STATIC machine_rtc_obj_t machine_rtc_obj = { 
     .base     = {&machine_rtc_type}, 
-    .callback = 0,
     .active   = false,
     .period   = 0,
     .alarm    = 0,
@@ -339,9 +236,8 @@ STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
             .hour  = 0,
             .min   = 0,
             .sec   = 0,
-            .dotw  = 4, // 0 is Sunday, so 4 is Thursday 
+            .dotw  = Thursday,
     };
-    irq_remove_handler(RTC_IRQ, machine_rtc_irq_handler);
     rtc_set_datetime(&t);
     return mp_const_none;
 }
@@ -402,13 +298,13 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     datetime_t now;
     rtc_get_datetime(&now);
     mp_uint_t now_secs = to_seconds(&now);
-    mp_uint_t later_secs;
-
+    mp_uint_t duration, later_secs;
+    
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
         bool periodic = args[ARG_repeat].u_bool;
-        int duration  = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
-        self->period = periodic ? duration : 0;
-        later_secs = now_secs + duration;
+        duration      = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
+        self->period  = periodic ? duration : 0;
+        later_secs    = now_secs + duration;
     } else {
         datetime_t later;
         mp_obj_t *tstamp;
@@ -419,15 +315,16 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
         later.hour  = mp_obj_get_int(tstamp[3]);
         later.min   = mp_obj_get_int(tstamp[4]);
         later.sec   = mp_obj_get_int(tstamp[5]);
-        mp_uint_t later_secs = to_seconds(&later);
+        later_secs  = to_seconds(&later);
         if (later_secs <= now_secs) {
             mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
         }
+        duration = later_secs - now_secs;
     }
     self->alarm = later_secs;
     self->active = true;
     //machine_rtc_debug(self);
-    return mp_obj_new_int(0);   // always return alarm_id = 0
+    return mp_obj_new_int_from_uint(duration*1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
@@ -514,49 +411,18 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get the IRQ object.
-    machine_rtc_irq_obj_t *irq = MP_STATE_PORT(machine_rtc_irq_obj);
-
-    // Allocate the IRQ object if it doesn't already exist.
-    if (irq == NULL) {
-        irq = m_new_obj(machine_rtc_irq_obj_t);
-        irq->base.base.type = &mp_irq_type;
-        irq->base.methods = (mp_irq_methods_t *)&machine_rtc_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(self);
-        irq->base.handler = mp_const_none;
-        irq->base.ishard = true;
-        MP_STATE_PORT(machine_rtc_irq_obj) = irq;
-    }
-
-    // Configure IRQ.
-    if (n_args > 1 || kw_args->used != 0) {
-        // Update IRQ data.
-        irq->base.handler = args[ARG_handler].u_obj;
-        irq->trigger      = args[ARG_trigger].u_int;
-        irq->flags        = 0;
-        // Enable IRQ if a handler is given.
-        if (args[ARG_handler].u_obj != mp_const_none) {
-            rtc_disable_alarm();
-            irq_set_exclusive_handler(RTC_IRQ, machine_rtc_irq_handler);
-            rtc_hw->inte = RTC_INTE_RTC_BITS; // Enable the IRQ at the peri
-            irq_set_enabled(RTC_IRQ, true);   // Enable the IRQ at the proc
-            rtc_enable_alarm();
-        }
-    }
-    return MP_OBJ_FROM_PTR(irq);
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("RTC.irq() not implemented"));
 }
-//STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 
 
-
-
-// -------------------------------
-// RTC __repr__ && __str__ methods
-// -------------------------------
+// ---------------------------------------
+// RTC.__repr__() && RTC.__str__() methods
+// ---------------------------------------
 
 STATIC void machine_rtc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     //machine_rtc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "RTC(running = %s)", rtc_running() ? "true" : "false");
+    mp_printf(print, "RTC(id=0, running=%s)", rtc_running() ? "true" : "false");
 }
 
 // -------------------------------------------------------------------------
