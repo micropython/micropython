@@ -148,7 +148,6 @@ STATIC void machine_rtc_debug(machine_rtc_obj_t* self) {
     mp_printf(MP_PYTHON_PRINTER, "self->alarm: year=%u, month=%u, day=%u, hour=%u, min=%u, sec=%u\n", self->alarm.year, self->alarm.month, self->alarm.day, self->alarm.hour, self->alarm.min, self->alarm.sec);
     mp_printf(MP_PYTHON_PRINTER, "self->active: %u \n",self->active);
     mp_printf(MP_PYTHON_PRINTER, "self->period: %u \n",self->period);
-    mp_printf(MP_PYTHON_PRINTER, "self->callback: %u \n",self->period);
 }
 #endif
 
@@ -190,26 +189,27 @@ mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t datetime) {
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(datetime, 8, &items);
+    mp_int_t year  = mp_obj_get_int(items[0]);
+    mp_int_t month = mp_obj_get_int(items[1]);
+    mp_int_t day   = mp_obj_get_int(items[2]);
     datetime_t t = {
-            .year  = mp_obj_get_int(items[0]),
-            .month = mp_obj_get_int(items[1]),
-            .day   = mp_obj_get_int(items[2]),  
-            .hour  = mp_obj_get_int(items[3]),
-            .min   = mp_obj_get_int(items[4]),
-            .sec   = mp_obj_get_int(items[5]),
-            .dotw  = 0, // 0 is Sunday, so 5 is Frida WHAT DO WE DO HERE ????
+        .year  = year,  // 16 bits
+        .month = month, // 8 bits
+        .day   = day,   // 8 bits
+        .dotw  = ((calendar_to_mjd(year, month, day) -  MJD_BASE) % 7) + MJD_DOTW_BASE, // 8 bits
+        .hour  = mp_obj_get_int(items[3]), // 8 bits
+        .min   = mp_obj_get_int(items[4]), // 8 bits
+        .sec   = mp_obj_get_int(items[5]), // 8 bits
     };
     /*
-     * Note that the Raspberry Pi Pico port starst the RTC hardware at boot time
-     * so we do not start the hardware.
+     * Note that the Raspberry Pi Pico port (main.c) starts the RTC hardware 
+     * at boot time so we do not start the hardware here.
      */
 #if 0  
     if ( ! rtc_running() ) {
         rtc_init();
     }
 #endif
-    // We enable the IRQ configuration here but do not rtc_enable_alarm() yet
-   
     rtc_set_datetime(&t);
     return mp_const_none;
 }
