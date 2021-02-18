@@ -1,7 +1,6 @@
 # MicroPython on ESP32, ESP IDF configuration
 # The following options override the defaults
 
-CONFIG_IDF_TARGET="esp32"
 CONFIG_IDF_FIRMWARE_CHIP_ID=0x0000
 
 # Compiler options: use -Os to reduce size, but keep full assertions

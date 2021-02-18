@@ -307,10 +307,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
             self->rx = 9;
             self->tx = 10;
             break;
+        #if SOC_UART_NUM > 2
         case UART_NUM_2:
             self->rx = 16;
             self->tx = 17;
             break;
+        #endif
     }
 
     // Remove any existing configuration

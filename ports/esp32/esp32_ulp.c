@@ -26,6 +26,8 @@
 
 #include "py/runtime.h"
 
+#if CONFIG_IDF_TARGET_ESP32
+
 #include "esp32/ulp.h"
 #include "esp_err.h"
 
@@ -95,3 +97,5 @@ const mp_obj_type_t esp32_ulp_type = {
     .make_new = esp32_ulp_make_new,
     .locals_dict = (mp_obj_t)&esp32_ulp_locals_dict,
 };
+
+#endif // CONFIG_IDF_TARGET_ESP32

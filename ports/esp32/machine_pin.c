@@ -77,10 +77,17 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, GPIO_NUM_19},
     {{NULL}, -1},
     {{&machine_pin_type}, GPIO_NUM_21},
+    #if CONFIG_IDF_TARGET_ESP32
     {{&machine_pin_type}, GPIO_NUM_22},
     {{&machine_pin_type}, GPIO_NUM_23},
     {{NULL}, -1},
     {{&machine_pin_type}, GPIO_NUM_25},
+    #else
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    #endif
     {{&machine_pin_type}, GPIO_NUM_26},
     {{&machine_pin_type}, GPIO_NUM_27},
     {{NULL}, -1},
@@ -411,10 +418,17 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{&machine_pin_irq_type}, GPIO_NUM_19},
     {{NULL}, -1},
     {{&machine_pin_irq_type}, GPIO_NUM_21},
+    #if CONFIG_IDF_TARGET_ESP32
     {{&machine_pin_irq_type}, GPIO_NUM_22},
     {{&machine_pin_irq_type}, GPIO_NUM_23},
     {{NULL}, -1},
     {{&machine_pin_irq_type}, GPIO_NUM_25},
+    #else
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    #endif
     {{&machine_pin_irq_type}, GPIO_NUM_26},
     {{&machine_pin_irq_type}, GPIO_NUM_27},
     {{NULL}, -1},
