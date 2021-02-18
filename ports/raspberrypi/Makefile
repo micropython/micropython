@@ -199,6 +199,7 @@ SRC_C += \
 	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
+	extmod/crypto-algorithms/sha256.c \
 	fatfs_port.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
