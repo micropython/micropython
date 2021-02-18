@@ -43,9 +43,10 @@
 //|     ...
 //|
 STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_input, ARG_output };
+    enum { ARG_input, ARG_num_strands, ARG_output };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_input, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
+        { MP_QSTR_num_strands, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 8 } },
         { MP_QSTR_output, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -55,21 +56,28 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_buffer_info_t output_bufinfo;
 
     mp_get_buffer_raise(args[ARG_input].u_obj, &input_bufinfo, MP_BUFFER_READ);
-    int n = input_bufinfo.len;
-    if (n % 8 != 0) {
-        mp_raise_ValueError(translate("Input buffer must be a multiple of 8 bytes"));
+    int num_strands = args[ARG_num_strands].u_int;
+
+    if (num_strands < 2 || num_strands > 8) {
+        mp_raise_ValueError(translate("num_strands must be from 2 to 8 (inclusive)"));
+    }
+
+    int inlen = input_bufinfo.len;
+    if (inlen % num_strands != 0) {
+        mp_raise_ValueError_varg(translate("Input buffer length (%d) must be a multiple of the strand count (%d)"), inlen, num_strands);
     }
     mp_obj_t output = args[ARG_output].u_obj;
 
+    int outlen = 8 * (inlen / num_strands);
     if (!output || output == mp_const_none) {
-        output = mp_obj_new_bytearray_of_zeros(n);
+        output = mp_obj_new_bytearray_of_zeros(outlen);
     }
     mp_get_buffer_raise(output, &output_bufinfo, MP_BUFFER_WRITE);
-    int m = output_bufinfo.len;
-    if (m < n) {
-        mp_raise_ValueError(translate("Output buffer must be at least as big as input buffer"));
+    int avail = output_bufinfo.len;
+    if (avail < outlen) {
+        mp_raise_ValueError_varg(translate("Output buffer must be at least %d bytes"), outlen);
     }
-    common_hal_bit_transpose_bit_transpose(output_bufinfo.buf, input_bufinfo.buf, input_bufinfo.len);
+    common_hal_bit_transpose_bit_transpose(output_bufinfo.buf, input_bufinfo.buf, inlen, num_strands);
     return output;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bit_transpose_bit_transpose_obj, 1, bit_transpose);

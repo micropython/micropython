@@ -29,4 +29,4 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void common_hal_bit_transpose_bit_transpose(uint8_t *result, const uint8_t *src, size_t n);
+void common_hal_bit_transpose_bit_transpose(uint8_t *result, const uint8_t *src, size_t inlen, size_t num_strands);

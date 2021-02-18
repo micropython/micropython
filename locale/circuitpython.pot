@@ -1093,7 +1093,8 @@ msgid "Initialization failed due to lack of memory"
 msgstr ""
 
 #: shared-bindings/_bit_transpose/__init__.c
-msgid "Input buffer must be a multiple of 8 bytes"
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1664,7 +1665,8 @@ msgid "Out of sockets"
 msgstr ""
 
 #: shared-bindings/_bit_transpose/__init__.c
-msgid "Output buffer must be at least as big as input buffer"
+#, c-format
+msgid "Output buffer must be at least %d bytes"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -3471,6 +3473,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
+msgstr ""
+
+#: shared-bindings/_bit_transpose/__init__.c
+msgid "num_strands must be from 2 to 8 (inclusive)"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
