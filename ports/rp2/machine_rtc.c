@@ -56,7 +56,7 @@ typedef struct _machine_rtc_obj_t {
 STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day) {
     if (month < 3) {
         year--;
-        month += 12; 
+        month += 12;
     }
     return (year * 365) + (year / 4) + (month * 153 + 3) / 5 + day;
 }
@@ -64,18 +64,18 @@ STATIC mp_uint_t calendar_to_mjd(mp_uint_t year, mp_uint_t month, mp_uint_t day)
 STATIC mp_uint_t to_seconds(const datetime_t *t) {
     mp_uint_t days;
     days = calendar_to_mjd(t->year, t->month, t->day) - MJD_BASE;
-    return (days * 24 * 60 * 60 + t->hour * 3600 + t->min * 60 + t->sec);
+    return days * 24 * 60 * 60 + t->hour * 3600 + t->min * 60 + t->sec;
 }
 
 
 const mp_obj_type_t machine_rtc_type;
 
 // singleton RTC object
-STATIC machine_rtc_obj_t machine_rtc_obj = { 
-    .base     = {&machine_rtc_type}, 
-    .active   = false,
-    .period   = 0,
-    .alarm    = 0,
+STATIC machine_rtc_obj_t machine_rtc_obj = {
+    .base = {&machine_rtc_type},
+    .active = false,
+    .period = 0,
+    .alarm = 0,
 };
 
 
@@ -101,17 +101,17 @@ mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t datetime) {
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(datetime, 8, &items);
-    mp_int_t year  = mp_obj_get_int(items[0]);
+    mp_int_t year = mp_obj_get_int(items[0]);
     mp_int_t month = mp_obj_get_int(items[1]);
-    mp_int_t day   = mp_obj_get_int(items[2]);
+    mp_int_t day = mp_obj_get_int(items[2]);
     datetime_t t = {
-        .year  = year,  // 16 bits
+        .year = year,   // 16 bits
         .month = month, // 8 bits
-        .day   = day,   // 8 bits
-        .dotw  = ((calendar_to_mjd(year, month, day) -  MJD_BASE) % 7) + MJD_DOTW_BASE, // 8 bits
-        .hour  = mp_obj_get_int(items[3]), // 8 bits
-        .min   = mp_obj_get_int(items[4]), // 8 bits
-        .sec   = mp_obj_get_int(items[5]), // 8 bits
+        .day = day,     // 8 bits
+        .dotw = ((calendar_to_mjd(year, month, day) - MJD_BASE) % 7) + MJD_DOTW_BASE,   // 8 bits
+        .hour = mp_obj_get_int(items[3]),  // 8 bits
+        .min = mp_obj_get_int(items[4]),   // 8 bits
+        .sec = mp_obj_get_int(items[5]),   // 8 bits
     };
     // ports/rp2/main.c already calls rtc_init(), so we do no init RTC here
     rtc_set_datetime(&t);
@@ -124,13 +124,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 // sets the date iome as per the MicroPython official documentation
 STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
     datetime_t t = {
-            .year  = 2015,
-            .month = 1,
-            .day   = 1,  
-            .hour  = 0,
-            .min   = 0,
-            .sec   = 0,
-            .dotw  = Thursday,
+        .year = 2015,
+        .month = 1,
+        .day = 1,
+        .hour = 0,
+        .min = 0,
+        .sec = 0,
+        .dotw = Thursday,
     };
     rtc_set_datetime(&t);
     return mp_const_none;
@@ -150,7 +150,7 @@ STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
         mp_obj_new_int(t.min),
         mp_obj_new_int(t.sec),
         mp_obj_new_int(0),  // usecs
-        mp_const_none       //tzinfo
+        mp_const_none       // tzinfo
     };
     return mp_obj_new_tuple(8, tuple);
 }
@@ -161,9 +161,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_id, ARG_time, ARG_repeat};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,     MP_ARG_INT,                    {.u_int = (0)}}, 
-        { MP_QSTR_time,   MP_ARG_OBJ  | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE}},
-        { MP_QSTR_repeat, MP_ARG_BOOL | MP_ARG_KW_ONLY , {.u_bool = false}},
+        { MP_QSTR_id,     MP_ARG_INT,                    {.u_int = (0)}},
+        { MP_QSTR_time,   MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_repeat, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false}},
     };
     machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -181,20 +181,20 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     // handle datetime as duration or absulute timestamp
     if (mp_obj_is_int(args[ARG_time].u_obj)) {
         bool periodic = args[ARG_repeat].u_bool;
-        duration      = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
-        self->period  = periodic ? duration : 0;
-        later_secs    = now_secs + duration;
+        duration = mp_obj_get_int(args[ARG_time].u_obj) / 1000;
+        self->period = periodic ? duration : 0;
+        later_secs = now_secs + duration;
     } else {
         datetime_t later;
         mp_obj_t *tstamp;
         mp_obj_get_array_fixed_n(args[ARG_time].u_obj, 8, &tstamp);
-        later.year  = mp_obj_get_int(tstamp[0]);
+        later.year = mp_obj_get_int(tstamp[0]);
         later.month = mp_obj_get_int(tstamp[1]);
-        later.day   = mp_obj_get_int(tstamp[2]);  
-        later.hour  = mp_obj_get_int(tstamp[3]);
-        later.min   = mp_obj_get_int(tstamp[4]);
-        later.sec   = mp_obj_get_int(tstamp[5]);
-        later_secs  = to_seconds(&later);
+        later.day = mp_obj_get_int(tstamp[2]);
+        later.hour = mp_obj_get_int(tstamp[3]);
+        later.min = mp_obj_get_int(tstamp[4]);
+        later.sec = mp_obj_get_int(tstamp[5]);
+        later_secs = to_seconds(&later);
         if (later_secs <= now_secs) {
             mp_raise_ValueError(MP_ERROR_TEXT("time already passed"));
         }
@@ -202,7 +202,7 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     self->alarm = later_secs;
     self->active = true;
-    return mp_obj_new_int_from_uint(duration*1000);
+    return mp_obj_new_int_from_uint(duration * 1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
@@ -211,7 +211,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_alarm_id};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_alarm_id, MP_ARG_INT , {.u_int = (0)}}, 
+        { MP_QSTR_alarm_id, MP_ARG_INT, {.u_int = (0)}},
 
     };
     machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -220,24 +220,24 @@ STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *pos_args, 
     if (args[ARG_alarm_id].u_int != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("alarm_id must be 0"));
     }
-    if ( ! self->active) {
+    if (!self->active) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("RTC(alarm_id=0) not active"));
     }
     datetime_t t;
     rtc_get_datetime(&t);
     mp_uint_t current = to_seconds(&t);
-    mp_uint_t limit   = self->alarm;
-    mp_uint_t left    = current >= limit ? 0 : limit - current;
-    if ( ! left) { // reload  if periodic and alarm expired
+    mp_uint_t limit = self->alarm;
+    mp_uint_t left = current >= limit ? 0 : limit - current;
+    if (!left) {   // reload  if periodic and alarm expired
         if (self->period != 0) {
             left = self->period;
             self->alarm = current + self->period;
             self->active = true;
-        } else  {
+        } else {
             self->active = false;   // One shot mode
         }
     }
-    return mp_obj_new_int_from_uint(left*1000);
+    return mp_obj_new_int_from_uint(left * 1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_alarm_left);
 
@@ -246,7 +246,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_left_obj, 1, machine_rtc_ala
 STATIC mp_obj_t machine_rtc_cancel(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_alarm_id};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_alarm_id, MP_ARG_INT , {.u_int = (0)}}, 
+        { MP_QSTR_alarm_id, MP_ARG_INT, {.u_int = (0)}},
 
     };
     machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
