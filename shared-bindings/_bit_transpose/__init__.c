@@ -36,8 +36,13 @@
 //| routine for performing the transformation."""
 //|
 
-//| def bit_transpose(input: _typing.ReadableBuffer, *, output: Optional[_typing.WritableBuffer]=None):
-//|     """Convert a sequence of 8*N pixel values into a single stream of bytes suitable for sending via a parallel conversion method (PioPixl8)
+//| def bit_transpose(input: _typing.ReadableBuffer, *, num_strands:int = 8, output: Optional[_typing.WriteableBuffer]=None) -> WriteableBuffer:
+//|     """Convert a sequence of pixel values into a single stream of bytes suitable for sending via a parallel conversion method (PioPixl8)
+//|
+//|     The number of bytes in the input buffer must be a multiple of the number of strands.
+//|
+//|     If specified output buffer must be big enough for the output, ``len(input) * 8  // num_strands``.  To get a properly sized buffer,
+//|     you can also pass in ``output=None`` once, then re-use the return value in future calls.
 //|
 //|     Returns the output buffer if specified (which must be big enough to hold the result), otherwise a freshly allocated buffer."""
 //|     ...
