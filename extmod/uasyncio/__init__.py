@@ -10,6 +10,7 @@ _attrs = {
     "wait_for_ms": "funcs",
     "gather": "funcs",
     "Event": "event",
+    "ThreadSafeFlag": "event",
     "Lock": "lock",
     "open_connection": "stream",
     "start_server": "stream",

@@ -37,6 +37,11 @@
 #define MICROPY_PY_STM (1)
 #endif
 
+// Whether to include the pyb module
+#ifndef MICROPY_PY_PYB
+#define MICROPY_PY_PYB (1)
+#endif
+
 // Whether to include legacy functions and classes in the pyb module
 #ifndef MICROPY_PY_PYB_LEGACY
 #define MICROPY_PY_PYB_LEGACY (1)

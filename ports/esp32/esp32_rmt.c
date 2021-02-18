@@ -209,7 +209,7 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, 
     mp_obj_t pulses = args[1].u_obj;
     mp_uint_t start = args[2].u_int;
 
-    if (start < 0 || start > 1) {
+    if (start > 1) {
         mp_raise_ValueError(MP_ERROR_TEXT("start must be 0 or 1"));
     }
 

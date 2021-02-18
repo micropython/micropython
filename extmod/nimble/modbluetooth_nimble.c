@@ -48,6 +48,11 @@
 #include "nimble/host/src/ble_l2cap_priv.h"
 #endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD || MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
+// For ble_hs_hci_cmd_tx
+#include "nimble/host/src/ble_hs_hci_priv.h"
+#endif
+
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
 #endif
@@ -178,6 +183,14 @@ STATIC void set_random_address(bool nrpa) {
         addr = create_nimble_addr(BLE_ADDR_RANDOM, hal_mac_addr);
         // Mark it as STATIC (not RPA or NRPA).
         addr.val[5] |= 0xc0;
+    } else
+    #elif MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
+    if (!nrpa) {
+        DEBUG_printf("set_random_address: Generating static address from Zephyr controller\n");
+        uint8_t buf[23];
+        rc = ble_hs_hci_cmd_tx(BLE_HCI_OP(BLE_HCI_OGF_VENDOR, 0x09), NULL, 0, buf, sizeof(buf));
+        assert(rc == 0);
+        memcpy(addr.val, buf + 1, 6);
     } else
     #endif
     {
@@ -1281,14 +1294,15 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 }
 
 STATIC int ble_gatt_attr_read_cb(uint16_t conn_handle, const struct ble_gatt_error *error, struct ble_gatt_attr *attr, void *arg) {
-    DEBUG_printf("ble_gatt_attr_read_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, attr ? attr->handle : -1);
+    uint16_t handle = attr ? attr->handle : (error ? error->att_handle : 0xffff);
+    DEBUG_printf("ble_gatt_attr_read_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, handle);
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
     if (error->status == 0) {
         gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, attr->om);
     }
-    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, attr ? attr->handle : -1, error->status);
+    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, handle, error->status);
     return 0;
 }
 
@@ -1302,11 +1316,12 @@ int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle) {
 }
 
 STATIC int ble_gatt_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_error *error, struct ble_gatt_attr *attr, void *arg) {
-    DEBUG_printf("ble_gatt_attr_write_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, attr ? attr->handle : -1);
+    uint16_t handle = attr ? attr->handle : (error ? error->att_handle : 0xffff);
+    DEBUG_printf("ble_gatt_attr_write_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, handle);
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
-    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, attr->handle, error->status);
+    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, handle, error->status);
     return 0;
 }
 
@@ -1685,9 +1700,6 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
-
-// For ble_hs_hci_cmd_tx
-#include "nimble/host/src/ble_hs_hci_priv.h"
 
 int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t req_len, uint8_t *resp, size_t resp_len, uint8_t *status) {
     int rc = ble_hs_hci_cmd_tx(BLE_HCI_OP(ogf, ocf), req, req_len, resp, resp_len);

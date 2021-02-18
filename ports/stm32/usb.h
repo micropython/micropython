@@ -30,6 +30,7 @@
 
 #define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
 
+#ifndef USBD_VID
 // Windows needs a different PID to distinguish different device configurations
 #define USBD_VID         (0xf055)
 #define USBD_PID_CDC_MSC (0x9800)
@@ -43,6 +44,7 @@
 #define USBD_PID_CDC_MSC_HID (0x9808)
 #define USBD_PID_CDC2_MSC_HID (0x9809)
 #define USBD_PID_CDC3_MSC_HID (0x980a)
+#endif
 
 typedef enum {
     PYB_USB_STORAGE_MEDIUM_NONE = 0,

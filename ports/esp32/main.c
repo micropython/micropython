@@ -37,11 +37,7 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
-#if MICROPY_ESP_IDF_4
 #include "esp32/spiram.h"
-#else
-#include "esp_spiram.h"
-#endif
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
