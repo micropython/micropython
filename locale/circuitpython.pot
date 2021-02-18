@@ -4112,7 +4112,8 @@ msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
 #: shared-bindings/bitops/__init__.c
-msgid "width must be from 2 to 8 (inclusive)"
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
