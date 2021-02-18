@@ -55,7 +55,7 @@
 //|     ...
 
 STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_input, ARG_width, ARG_output };
+    enum { ARG_input, ARG_output, ARG_width };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_input, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_output, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -66,7 +66,7 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     int width = args[ARG_width].u_int;
     if (width < 2 || width > 8) {
-        mp_raise_ValueError(translate("width must be from 2 to 8 (inclusive)"));
+        mp_raise_ValueError_varg(translate("width must be from 2 to 8 (inclusive), not %d"), width);
     }
 
     mp_buffer_info_t input_bufinfo;
