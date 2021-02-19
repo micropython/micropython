@@ -139,8 +139,8 @@ enum {
 typedef struct _asm_pio_config_t {
     int8_t base;
     uint8_t count;
-    uint8_t pindirs;
-    uint8_t pinvals;
+    uint32_t pindirs;
+    uint32_t pinvals;
 } asm_pio_config_t;
 
 STATIC void asm_pio_override_shiftctrl(mp_obj_t arg, uint32_t bits, uint32_t lsb, pio_sm_config *config) {
