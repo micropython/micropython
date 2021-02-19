@@ -31,32 +31,78 @@
 #include "tusb.h"
 
 size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    if (self->timeout < 0.0f) {
-        while (tud_cdc_n_available(self->idx) < len) {
-            RUN_BACKGROUND_TASKS;
-            if (mp_hal_is_interrupted()) {
-                return 0;
-            }
-        }
-    } else if (self->timeout > 0.0f) {
-        uint64_t timeout_ms = self->timeout * 1000;
+
+    const bool wait_forever = self->timeout < 0.0f;
+    const bool wait_for_timeout = self->timeout > 0.0f;
+
+    // Read up to len bytes immediately.
+    // The number of bytes read will not be larger than what is already in the TinyUSB FIFO.
+    uint32_t total_num_read = tud_cdc_n_read(self->idx, data, len);
+
+    if (wait_forever || wait_for_timeout) {
+        // Read more if we have time.
+        uint64_t timeout_ms = self->timeout * 1000;  // Junk value if timeout < 0.
         uint64_t start_ticks = supervisor_ticks_ms64();
-        while (tud_cdc_n_available(self->idx) < len &&
-               supervisor_ticks_ms64() - start_ticks <= timeout_ms) {
+
+        uint32_t num_read = 0;
+        while (total_num_read < len &&
+               (wait_forever || supervisor_ticks_ms64() - start_ticks <= timeout_ms)) {
+
+            // Wait for a bit, and check for ctrl-C.
             RUN_BACKGROUND_TASKS;
             if (mp_hal_is_interrupted()) {
                 return 0;
             }
+
+            // Advance buffer pointer and reduce number of bytes that need to be read.
+            len -= num_read;
+            data += num_read;
+
+            // Try to read another batch of bytes.
+            num_read = tud_cdc_n_read(self->idx, data, len);
+            total_num_read += num_read;
         }
     }
-    // Timeout of 0.0f falls through to here with no waiting or unnecessary calculation.
-    return tud_cdc_n_read(self->idx, data, len);
+
+    return total_num_read;
 }
 
 size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    uint32_t num_written = tud_cdc_n_write(self->idx, data, len);
+    const bool wait_forever = self->write_timeout < 0.0f;
+    const bool wait_for_timeout = self->write_timeout > 0.0f;
+
+    // Write as many bytes as possible immediately.
+    // The number of bytes written at once will not be larger than what can fit in the TinyUSB FIFO.
+    uint32_t total_num_written = tud_cdc_n_write(self->idx, data, len);
     tud_cdc_n_write_flush(self->idx);
-    return num_written;
+
+    if (wait_forever || wait_for_timeout) {
+        // Write more if we have time.
+        uint64_t timeout_ms = self->write_timeout * 1000;  // Junk value if write_timeout < 0.
+        uint64_t start_ticks = supervisor_ticks_ms64();
+
+        uint32_t num_written = 0;
+        while (total_num_written < len &&
+               (wait_forever || supervisor_ticks_ms64() - start_ticks <= timeout_ms)) {
+
+            // Wait for a bit, and check for ctrl-C.
+            RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                return 0;
+            }
+
+            // Advance buffer pointer and reduce number of bytes that need to be written.
+            len -= num_written;
+            data += num_written;
+
+            // Try to write another batch of bytes.
+            num_written = tud_cdc_n_write(self->idx, data, len);
+            tud_cdc_n_write_flush(self->idx);
+            total_num_written += num_written;
+        }
+    }
+
+    return total_num_written;
 }
 
 uint32_t common_hal_usb_cdc_serial_get_in_waiting(usb_cdc_serial_obj_t *self) {
@@ -90,4 +136,12 @@ mp_float_t common_hal_usb_cdc_serial_get_timeout(usb_cdc_serial_obj_t *self) {
 
 void common_hal_usb_cdc_serial_set_timeout(usb_cdc_serial_obj_t *self, mp_float_t timeout) {
     self->timeout = timeout;
+}
+
+mp_float_t common_hal_usb_cdc_serial_get_write_timeout(usb_cdc_serial_obj_t *self) {
+    return self->write_timeout;
+}
+
+void common_hal_usb_cdc_serial_set_write_timeout(usb_cdc_serial_obj_t *self, mp_float_t write_timeout) {
+    self->write_timeout = write_timeout;
 }

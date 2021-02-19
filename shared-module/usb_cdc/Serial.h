@@ -31,8 +31,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    mp_float_t timeout;    // if negative, wait forever.
-    uint8_t idx;           // which CDC device?
+    mp_float_t timeout;       // if negative, wait forever.
+    mp_float_t write_timeout; // if negative, wait forever.
+    uint8_t idx;              // which CDC device?
 } usb_cdc_serial_obj_t;
 
 #endif // SHARED_MODULE_USB_CDC_SERIAL_H

@@ -56,7 +56,7 @@
 //|         :rtype: bytes"""
 //|         ...
 //|
-//|     def readinto(self, buf: WriteableBuffer) -> bytes:
+//|     def readinto(self, buf: WriteableBuffer) -> int:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes, subject to `timeout`.  Otherwise, read at most ``len(buf)`` bytes.
 //|
@@ -219,6 +219,33 @@ const mp_obj_property_t usb_cdc_serial_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     write_timeout: Optional[float]
+//|     """The initial value of `write_timeout` is ``None``. If ``None``, wait indefinitely to finish
+//|     writing all the bytes passed to ``write()``.If 0, do not wait.
+//|     If > 0, wait only ``write_timeout`` seconds."""
+//|
+STATIC mp_obj_t usb_cdc_serial_get_write_timeout(mp_obj_t self_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_float_t write_timeout = common_hal_usb_cdc_serial_get_write_timeout(self);
+    return (write_timeout < 0.0f) ? mp_const_none : mp_obj_new_float(self->write_timeout);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_write_timeout_obj, usb_cdc_serial_get_write_timeout);
+
+STATIC mp_obj_t usb_cdc_serial_set_write_timeout(mp_obj_t self_in, mp_obj_t write_timeout_in) {
+    usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_usb_cdc_serial_set_write_timeout(self,
+        write_timeout_in == mp_const_none ? -1.0f : mp_obj_get_float(write_timeout_in));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_write_timeout_obj, usb_cdc_serial_set_write_timeout);
+
+const mp_obj_property_t usb_cdc_serial_write_timeout_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_cdc_serial_get_write_timeout_obj,
+              (mp_obj_t)&usb_cdc_serial_set_write_timeout_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 
 STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
     // Standard stream methods.
@@ -235,6 +262,7 @@ STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_input_buffer),  MP_ROM_PTR(&usb_cdc_serial_reset_input_buffer_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_output_buffer), MP_ROM_PTR(&usb_cdc_serial_reset_output_buffer_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),             MP_ROM_PTR(&usb_cdc_serial_timeout_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write_timeout),       MP_ROM_PTR(&usb_cdc_serial_write_timeout_obj) },
 
     // Not in pyserial protocol.
     { MP_OBJ_NEW_QSTR(MP_QSTR_connected),     MP_ROM_PTR(&usb_cdc_serial_connected_obj) },
