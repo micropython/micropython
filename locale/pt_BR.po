@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-12 03:20+0000\n"
+"PO-Revision-Date: 2021-02-21 01:50+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -1128,6 +1128,8 @@ msgstr "A inicialização falhou devido à falta de memória"
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
+"O comprimento do buffer de entrada (%d) deve ser um múltiplo da contagem dos "
+"fios (%d)"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1706,7 +1708,7 @@ msgstr "Sem soquetes"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
-msgstr ""
+msgstr "O buffer de saída deve ter ao menos %d bytes"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -4218,7 +4220,7 @@ msgstr "o tempo limite do watchdog deve ser maior que 0"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
+msgstr "a largura deve ser entre 2 a 8 (inclusive), não %d"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
