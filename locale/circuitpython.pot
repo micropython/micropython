@@ -335,6 +335,10 @@ msgstr ""
 msgid "All UART peripherals are in use"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "All UART peripherals in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr ""
@@ -1277,6 +1281,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr ""
 
@@ -1824,6 +1829,10 @@ msgstr ""
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "RS485 is not supported on this board"
+msgstr ""
+
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c
@@ -2122,10 +2131,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2455,7 +2460,7 @@ msgid "binary op %q not implemented"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
+msgid "bits must be between 5 and 8"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c

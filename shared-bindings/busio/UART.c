@@ -55,7 +55,7 @@
 //|         :param ~microcontroller.Pin rs485_dir: the output pin for rs485 direction setting, or ``None`` if rs485 not in use.
 //|         :param bool rs485_invert: rs485_dir pin active high when set. Active low otherwise.
 //|         :param int baudrate: the transmit and receive speed.
-//|         :param int bits:  the number of bits per byte, 7, 8 or 9.
+//|         :param int bits:  the number of bits per byte, 5 to 8.
 //|         :param Parity parity:  the parity used for error checking.
 //|         :param int stop:  the number of stop bits, 1 or 2.
 //|         :param float timeout:  the timeout in seconds to wait for the first character and between subsequent characters when reading. Raises ``ValueError`` if timeout >100 seconds.
@@ -110,10 +110,10 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    uint8_t bits = args[ARG_bits].u_int;
-    if (bits < 7 || bits > 9) {
-        mp_raise_ValueError(translate("bits must be 7, 8 or 9"));
+    if (args[ARG_bits].u_int < 5 || args[ARG_bits].u_int > 8) {
+        mp_raise_ValueError(translate("bits must be between 5 and 8"));
     }
+    uint8_t bits = args[ARG_bits].u_int;
 
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
