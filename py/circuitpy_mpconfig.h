@@ -299,6 +299,14 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define BINASCII_MODULE
 #endif
 
+#if CIRCUITPY_BITOPS
+extern const struct _mp_obj_module_t bitops_module;
+#define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
+#else
+#define BITOPS_MODULE
+#endif
+
+
 #if CIRCUITPY_BITBANGIO
 #define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
 extern const struct _mp_obj_module_t bitbangio_module;
@@ -819,6 +827,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
+    BITOPS_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
