@@ -74,7 +74,7 @@ MPY_CROSS_FLAGS += -msmall-int-bits=32 -X heapsize=4m
 MPY_TOOL_FLAGS += -mmpz-dig-size=32
 
 STRUCT_LAYOUT_DIR := $(abspath $(TOP)/../struct_layout/)
-NEEDED_VERSION := 5ea32d29a3b3c045fffd52e49b9292d5e12a57b4
+NEEDED_VERSION := e4c501cac92f9baf8fa08dbab8774d5676bd6531
 
 $(STRUCT_LAYOUT_DIR)/all.py:
 	@if [ ! -d $(STRUCT_LAYOUT_DIR) ]; then echo; echo "struct_layout not fonund at $(STRUCT_LAYOUT_DIR), please follow \
