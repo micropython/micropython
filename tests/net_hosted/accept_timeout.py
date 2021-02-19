@@ -1,9 +1,9 @@
 # test that socket.accept() on a socket with timeout raises ETIMEDOUT
 
 try:
-    import usocket as socket
+    import uerrno as errno, usocket as socket
 except:
-    import socket
+    import errno, socket
 
 try:
     socket.socket.settimeout
@@ -18,5 +18,5 @@ s.listen(1)
 try:
     s.accept()
 except OSError as er:
-    print(er.args[0] in (110, "timed out"))  # 110 is ETIMEDOUT; CPython uses a string
+    print(er.args[0] in (errno.ETIMEDOUT, "timed out"))  # CPython uses a string instead of errno
 s.close()

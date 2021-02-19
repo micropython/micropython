@@ -133,6 +133,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     }
 }
 
+// _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
@@ -171,7 +172,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
-    // Debug level (0-4)
+    // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
     mbedtls_debug_set_threshold(0);
     #endif
 

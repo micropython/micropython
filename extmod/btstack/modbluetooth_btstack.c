@@ -282,7 +282,7 @@ STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t chan
     }
 }
 
-#if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+#if MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
 // During startup, the controller (e.g. Zephyr) might give us a static address that we can use.
 STATIC uint8_t controller_static_addr[6] = {0};
 STATIC bool controller_static_addr_available = false;
@@ -349,13 +349,13 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_printf("  --> hci transport packet sent\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
         DEBUG_printf("  --> hci command complete\n");
-        #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+        #if MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
         if (memcmp(packet, read_static_address_command_complete_prefix, sizeof(read_static_address_command_complete_prefix)) == 0) {
             DEBUG_printf("  --> static address available\n");
             reverse_48(&packet[7], controller_static_addr);
             controller_static_addr_available = true;
         }
-        #endif // MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+        #endif // MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
     } else if (event_type == HCI_EVENT_COMMAND_STATUS) {
         DEBUG_printf("  --> hci command status\n");
     } else if (event_type == HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS) {
@@ -575,12 +575,12 @@ STATIC bool set_public_address(void) {
 }
 
 STATIC void set_random_address(void) {
-    #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    #if MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
     if (controller_static_addr_available) {
         DEBUG_printf("set_random_address: Using static address supplied by controller.\n");
         gap_random_address_set(controller_static_addr);
     } else
-    #endif // MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    #endif // MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
     {
         bd_addr_t static_addr;
 
@@ -635,7 +635,7 @@ int mp_bluetooth_init(void) {
 
     btstack_memory_init();
 
-    #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    #if MICROPY_BLUETOOTH_USE_ZEPHYR_STATIC_ADDRESS
     controller_static_addr_available = false;
     #endif
 

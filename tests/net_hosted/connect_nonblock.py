@@ -2,8 +2,9 @@
 
 try:
     import usocket as socket
+    import uerrno as errno
 except:
-    import socket
+    import socket, errno
 
 
 def test(peer_addr):
@@ -12,7 +13,7 @@ def test(peer_addr):
     try:
         s.connect(peer_addr)
     except OSError as er:
-        print(er.args[0] == 115)  # 115 is EINPROGRESS
+        print(er.args[0] == errno.EINPROGRESS)
     s.close()
 
 

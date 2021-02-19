@@ -269,3 +269,51 @@ Constants
           esp32.WAKEUP_ANY_HIGH
 
    Selects the wake level for pins.
+
+Non-Volatile Storage
+--------------------
+
+This class gives access to the Non-Volatile storage managed by ESP-IDF. The NVS is partitioned
+into namespaces and each namespace contains typed key-value pairs. The keys are strings and the
+values may be various integer types, strings, and binary blobs. The driver currently only
+supports 32-bit signed integers and blobs.
+
+.. warning::
+
+    Changes to NVS need to be committed to flash by calling the commit method. Failure
+    to call commit results in changes being lost at the next reset.
+
+.. class:: NVS(namespace)
+
+    Create an object providing access to a namespace (which is automatically created if not
+    present).
+
+.. method:: NVS.set_i32(key, value)
+
+    Sets a 32-bit signed integer value for the specified key. Remember to call *commit*!
+
+.. method:: NVS.get_i32(key)
+
+    Returns the signed integer value for the specified key. Raises an OSError if the key does not
+    exist or has a different type.
+
+.. method:: NVS.set_blob(key, value)
+
+    Sets a binary blob value for the specified key. The value passed in must support the buffer
+    protocol, e.g. bytes, bytearray, str. (Note that esp-idf distinguishes blobs and strings, this
+    method always writes a blob even if a string is passed in as value.)
+    Remember to call *commit*!
+
+.. method:: NVS.get_blob(key, buffer)
+
+    Reads the value of the blob for the specified key into the buffer, which must be a bytearray.
+    Returns the actual length read. Raises an OSError if the key does not exist, has a different
+    type, or if the buffer is too small.
+
+.. method:: NVS.erase_key(key)
+
+    Erases a key-value pair.
+
+.. method:: NVS.commit()
+
+    Commits changes made by *set_xxx* methods to flash.

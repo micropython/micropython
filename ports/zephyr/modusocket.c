@@ -79,7 +79,8 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
 
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    sockaddr_in->sin_family = net_context_get_family((void *)socket->ctx);
+    void *context = zsock_get_context_object(socket->ctx);
+    sockaddr_in->sin_family = net_context_get_family(context);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
@@ -119,8 +120,8 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
     } else {
-        struct net_context *ctx = (void *)self->ctx;
-        mp_printf(print, "<socket %p type=%d>", ctx, net_context_get_type(ctx));
+        void *context = zsock_get_context_object(self->ctx);
+        mp_printf(print, "<socket %p type=%d>", self->ctx, net_context_get_type(context));
     }
 }
 
