@@ -55,6 +55,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "uart.h"
+#include "usb.h"
 #include "modmachine.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
@@ -77,7 +78,11 @@ void mp_task(void *pvParameter) {
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
+    #if CONFIG_USB_ENABLED
+    usb_init();
+    #else
     uart_init();
+    #endif
     machine_init();
 
     // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.

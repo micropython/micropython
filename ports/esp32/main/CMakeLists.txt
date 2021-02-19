@@ -37,6 +37,7 @@ set(MICROPY_SOURCE_DRIVERS
 set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/main.c
     ${PROJECT_DIR}/uart.c
+    ${PROJECT_DIR}/usb.c
     ${PROJECT_DIR}/gccollect.c
     ${PROJECT_DIR}/mphalport.c
     ${PROJECT_DIR}/fatfs_port.c
@@ -126,6 +127,7 @@ if(IDF_TARGET STREQUAL "esp32")
     list(APPEND IDF_COMPONENTS esp32)
 elseif(IDF_TARGET STREQUAL "esp32s2")
     list(APPEND IDF_COMPONENTS esp32s2)
+    list(APPEND IDF_COMPONENTS tinyusb)
 endif()
 
 # Register the main IDF component.
@@ -185,6 +187,10 @@ if(IDF_VERSION_MINOR GREATER_EQUAL 2)
     # so add them explicitly.
     list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/${IDF_TARGET}/include)
     list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/include)
+    if(IDF_VERSION_MINOR GREATER_EQUAL 3)
+        list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/additions/include)
+        list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/tinyusb/src)
+    endif()
 endif()
 
 # Include the main MicroPython cmake rules.
