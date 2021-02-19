@@ -1113,6 +1113,11 @@ msgstr ""
 msgid "Initialization failed due to lack of memory"
 msgstr "Initialisierung aufgrund von Speichermangel fehlgeschlagen"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr ""
@@ -1686,6 +1691,11 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -4191,6 +4201,11 @@ msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
