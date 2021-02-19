@@ -59,6 +59,7 @@ set(SOURCE_PORT
     machine_timer.c
     machine_uart.c
     machine_wdt.c
+    machine_rtc.c
     main.c
     modmachine.c
     modrp2.c
@@ -85,6 +86,7 @@ set(SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_timer.c
     ${PROJECT_SOURCE_DIR}/machine_uart.c
     ${PROJECT_SOURCE_DIR}/machine_wdt.c
+    ${PROJECT_SOURCE_DIR}/machine_rtc.c
     ${PROJECT_SOURCE_DIR}/modmachine.c
     ${PROJECT_SOURCE_DIR}/modrp2.c
     ${PROJECT_SOURCE_DIR}/moduos.c
