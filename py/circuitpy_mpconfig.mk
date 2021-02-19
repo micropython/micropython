@@ -346,6 +346,9 @@ CFLAGS += -DCIRCUITPY_USB_MIDI=$(CIRCUITPY_USB_MIDI)
 CIRCUITPY_USB_MSC ?= 1
 CFLAGS += -DCIRCUITPY_USB_MSC=$(CIRCUITPY_USB_MSC)
 
+# Defaulting this to OFF initially because it has only been tested on a
+# limited number of platforms, and the other platforms do not have this
+# setting in their mpconfigport.mk and/or mpconfigboard.mk files yet.
 CIRCUITPY_USB_VENDOR ?= 0
 CFLAGS += -DCIRCUITPY_USB_VENDOR=$(CIRCUITPY_USB_VENDOR)
 
