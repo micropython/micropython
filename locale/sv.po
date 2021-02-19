@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-15 00:33+0000\n"
+"PO-Revision-Date: 2021-02-21 01:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -1114,7 +1114,7 @@ msgstr "Initieringen misslyckades på grund av minnesbrist"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
-msgstr ""
+msgstr "indatabuffertlängd (%d) måste vara en multipel av antal strand (%d)"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1692,7 +1692,7 @@ msgstr "Slut på sockets"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
-msgstr ""
+msgstr "Utdatabuffert måste vara minst %d byte"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -4179,7 +4179,7 @@ msgstr "watchdog timeout måste vara större än 0"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
+msgstr "width måste vara mellan 2 och 8, inte %d"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
