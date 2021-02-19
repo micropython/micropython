@@ -73,6 +73,7 @@
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#define MPZ_DIG_SIZE                (32) // accompanies -mmpz-dig-size=32 in the Makefile
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_STACKLESS           (1)
 #define MICROPY_STACKLESS_STRICT    (1)
