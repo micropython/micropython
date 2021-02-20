@@ -86,3 +86,9 @@ TAGS
 ####################
 .venv
 .env
+
+1FILES
+2FILES
+TAG
+ports/nrf/LOG*.txt
+ports/nrf/boards/pg8c

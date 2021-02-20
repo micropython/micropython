@@ -74,22 +74,6 @@ void _debug_uart_init(void) {
     return;
 }
 
-void _debug_printbuf(char* data) {
-  int  siz, l;
-  while((l = strlen(data)) != 0) {
-    if (l <= DBG_PBUF_LEN) {
-      siz = l;
-    }
-    else {
-      siz = DBG_PBUF_LEN;
-    }
-    memcpy(_dbg_pbuf, data, siz);
-    _dbg_pbuf[siz] = 0;
-    nrfx_uarte_tx(&_dbg_uart_inst, (uint8_t const*)_dbg_pbuf, siz);
-    data += siz;
-  }
-}
-
 void _debug_print_substr(const char* text, uint32_t length) {
   char* data = (char*)text;
   int   siz;
@@ -106,10 +90,6 @@ void _debug_print_substr(const char* text, uint32_t length) {
     data += siz;
     length -= siz;
   }
-}
-
-void _debug_print(const char* s) {
-  _debug_printbuf((char*)s);
 }
 
 void _debug_uart_deinit(void) {
@@ -164,7 +144,6 @@ void serial_early_init(void) {
 #ifdef MY_DEBUGUART
      _debug_uart_init();
      _debug_led_init();
-     _debug_print("\r\ndebug_uart start\r\n");
 #endif
 }
 

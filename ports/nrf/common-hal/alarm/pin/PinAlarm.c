@@ -146,30 +146,40 @@ void _setup2(void) {
   };
   for(size_t i = 0; i < 64; ++i) {
     uint64_t mask = 1ull << i;
+#ifdef MY_DEBUGUART
     int pull = 0;
     int sense = 0;
+#endif
     if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
       continue;
     }
     if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
       cfg.sense = NRF_GPIOTE_POLARITY_LOTOHI;
       cfg.pull = ((pull_pins & mask) != 0) ? NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
+#ifdef MY_DEBUGUART
       pull = -1; sense = 1;
+#endif
     }
     else
     if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
       cfg.sense = NRF_GPIOTE_POLARITY_HITOLO;
       cfg.pull = ((pull_pins & mask) != 0) ? NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
+#ifdef MY_DEBUGUART
       pull = 1; sense = -1;
+#endif
     }
     else {
       cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
       cfg.pull = NRF_GPIO_PIN_NOPULL;
+#ifdef MY_DEBUGUART
       sense = 9;
+#endif
     }
     nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg, pinalarm_gpiote_handler);
     nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
-    printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
+#ifdef MY_DEBUGUART
+    dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
+#endif
   }
 }
 
@@ -188,7 +198,9 @@ void _setup_pin1_for_deepsleep(void) {
     for(size_t i = 0; i < 64; ++i) {
       uint64_t mask = 1ull << i;
       int pull = 0;
+#ifdef MY_DEBUGUART
       int sense = 0;
+#endif
       if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
 	continue;
       }
@@ -196,16 +208,22 @@ void _setup_pin1_for_deepsleep(void) {
 	pull = ((pull_pins & mask) != 0) ? NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
 	nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
 	nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
+#ifdef MY_DEBUGUART
 	sense = NRF_GPIO_PIN_SENSE_HIGH;
+#endif
       }
       else
       if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
 	pull = ((pull_pins & mask) != 0) ? NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
 	nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
 	nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_LOW);
+#ifdef MY_DEBUGUART
         sense = NRF_GPIO_PIN_SENSE_LOW;
+#endif
       }
-      printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
+#ifdef MY_DEBUGUART
+      dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
+#endif
     }
 #if 0
     uint32_t pin_number = 2;
@@ -230,7 +248,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
 
         pin_number = alarm->pin->number;
-	dbg_printf("alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
+	//dbg_printf("alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
         if (alarm->value) {
             high_alarms |= 1ull << pin_number;
             high_count++;
@@ -251,7 +269,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
       }
     }
     else {
-      dbg_printf("alarm_pin_pinalarm_set_alarms() no valid pins\r\n");
+      //dbg_printf("alarm_pin_pinalarm_set_alarms() no valid pins\r\n");
     }
 }
 

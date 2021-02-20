@@ -26,23 +26,84 @@
  */
 
 #include <string.h>
+#ifdef MY_DEBUGUART
+#include "supervisor/serial.h"  // dbg_printf()
+#endif
 
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
 
-//static RTC_DATA_ATTR uint8_t _sleep_mem[SLEEP_MEMORY_LENGTH];
+#define RTC_DATA_ATTR __attribute__((section(".uninitialized")))
+static RTC_DATA_ATTR uint8_t _sleep_mem[SLEEP_MEMORY_LENGTH];
+static RTC_DATA_ATTR uint32_t _sleep_mem_magicnum;
+#define SLEEP_MEMORY_DATA_GUARD 0xad0000af
+#define SLEEP_MEMORY_DATA_GUARD_MASK 0xff0000ff
+
+static int is_sleep_memory_valid(void) {
+    if ((_sleep_mem_magicnum & SLEEP_MEMORY_DATA_GUARD_MASK)
+         == SLEEP_MEMORY_DATA_GUARD) {
+      return 1;
+    }
+    return 0;
+}
+
+static void dumpRAMreg(void) {
+#ifdef MY_DEBUGUART
+    int i;
+    for(i = 0; i <= 8; ++i) {
+      dbg_printf(" RAM%d:%08X", i, (int)(NRF_POWER->RAM[i].POWER));
+      if (i==4) dbg_printf("\r\n");
+    }
+    dbg_printf("\r\n");
+#endif
+}
+
+static void initialize_sleep_memory(void) {
+    memset((uint8_t *)_sleep_mem, 0, SLEEP_MEMORY_LENGTH);
+
+    // also, set RAM[n].POWER register for RAM retention
+    // nRF52840 has RAM[0..7].Section[0..1] and RAM[8].Section[0..5]
+    // nRF52833 has RAM[0..7].Section[0..1] and RAM[8].Section[0,1]
+    dumpRAMreg();
+    for(int ram = 0; ram <= 7; ++ram) {
+      NRF_POWER->RAM[ram].POWERSET = 0x00030000; // RETENTION for section 0,1
+    };
+#ifdef NRF52840
+    NRF_POWER->RAM[8].POWERSET = 0x001F0000; // RETENTION for section 0..5
+#endif
+#ifdef NRF52833
+    NRF_POWER->RAM[8].POWERSET = 0x00030000; // RETENTION for section 0,1
+#endif
+    dumpRAMreg();
+
+    _sleep_mem_magicnum = SLEEP_MEMORY_DATA_GUARD;
+}
 
 void alarm_sleep_memory_reset(void) {
+    if (!is_sleep_memory_valid()) {
+        initialize_sleep_memory();
+#ifdef MY_DEBUGUART
+        dbg_printf("_sleep_mem[] initialized\r\n");
+#endif
+    }
 }
 
 uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
-  return 0;
+    return sizeof(_sleep_mem);
 }
 
 bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t* values, uint32_t len) {
-  return false;
+    if (start_index + len > sizeof(_sleep_mem)) {
+        return false;
+    }
+
+    memcpy((uint8_t *) (_sleep_mem + start_index), values, len);
+    return true;
 }
 
 void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t* values, uint32_t len) {
-  return;
+    if (start_index + len > sizeof(_sleep_mem)) {
+        return;
+    }
+    memcpy(values, (uint8_t *) (_sleep_mem + start_index), len);
 }

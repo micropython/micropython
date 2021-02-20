@@ -36,6 +36,7 @@ typedef enum {
   NRF_SLEEP_WAKEUP_TOUCHPAD,
   NRF_SLEEP_WAKEUP_VBUS,
   NRF_SLEEP_WAKEUP_RESETPIN,
+  NRF_SLEEP_WAKEUP_ZZZ
 } nrf_sleep_source_t;
 
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;

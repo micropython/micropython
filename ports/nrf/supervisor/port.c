@@ -114,7 +114,8 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
     }
 }
 
-void _xxx_dumpRTC(void) {
+#ifdef MY_DEBUGUART
+void dbg_dumpRTC(void) {
   dbg_printf("\r\nRTC2\r\n");
   NRF_RTC_Type  *r = rtc_instance.p_reg;
   dbg_printf("PRESCALER=%08X, ", (int)r->PRESCALER);
@@ -125,6 +126,7 @@ void _xxx_dumpRTC(void) {
   dbg_printf("CC[0..3]=%08X,%08X,%08X,%08X\r\n", (int)r->CC[0], (int)r->CC[1], (int)r->CC[2], (int)r->CC[3]);
   dbg_printf("woke_up=%d\r\n", rtc_woke_up_counter);
 }
+#endif
 
 void tick_init(void) {
     if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
@@ -178,12 +180,14 @@ safe_mode_t port_init(void) {
 #endif
 
     reset_reason_saved = NRF_POWER->RESETREAS;
+    // clear all RESET reason bits
+    NRF_POWER->RESETREAS = reset_reason_saved;
 
     // If the board was reset by the WatchDogTimer, we may
     // need to boot into safe mode. Reset the RESETREAS bit
     // for the WatchDogTimer so we don't encounter this the
     // next time we reboot.
-    if (NRF_POWER->RESETREAS & POWER_RESETREAS_DOG_Msk) {
+    if (reset_reason_saved & POWER_RESETREAS_DOG_Msk) {
         NRF_POWER->RESETREAS = POWER_RESETREAS_DOG_Msk;
         uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
 

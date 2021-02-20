@@ -42,14 +42,15 @@
 //#include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/port.h"
+#ifdef MY_DEBUGUART
+#include "supervisor/serial.h" // dbg_printf()
+#endif
 
 #include "nrf.h"
 #include "nrf_power.h"
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
 
-extern void _debug_print(const char* s);
-extern void _xxx_dumpRTC(void);//XXXX
 
 #define DEBUG_LED_PIN (NRF_GPIO_PIN_MAP(1, 11)) // P1_11 = LED
 void _debug_led_init(void) {
@@ -68,14 +69,14 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
 };
 
 void alarm_reset(void) {
-    //alarm_sleep_memory_reset();
+    alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
     //alarm_touch_touchalarm_reset();
 }
 
 extern uint32_t reset_reason_saved;
-STATIC uint32_t _get_wakeup_cause(void) {
+STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
     if (alarm_pin_pinalarm_woke_us_up()) {
         return NRF_SLEEP_WAKEUP_GPIO;
     }
@@ -101,17 +102,30 @@ STATIC uint32_t _get_wakeup_cause(void) {
 }
 
 bool alarm_woken_from_sleep(void) {
-   uint32_t cause = _get_wakeup_cause();
+   nrf_sleep_source_t cause = _get_wakeup_cause();
    return (cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
 	   || cause == NRF_SLEEP_WAKEUP_TOUCHPAD
 	   || cause == NRF_SLEEP_WAKEUP_RESETPIN);
 }
 
+#ifdef MY_DEBUGUART
+static const char* cause_str[] = {
+  "UNDEFINED",
+  "GPIO",
+  "TIMER",
+  "TOUCHPAD",
+  "VBUS",
+  "RESETPIN",
+};
+#endif
+
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    uint32_t cause = _get_wakeup_cause();
-    if (cause & 0x80000000) {
-      printf("wakeup cause = 0x%08X\r\n", (int)cause);
+    nrf_sleep_source_t cause = _get_wakeup_cause();
+#if 0
+    if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
+      printf("wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n", cause_str[(int)cause]);
     }
+#endif
     switch (cause) {
       case NRF_SLEEP_WAKEUP_TIMER: {
 	return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
@@ -122,13 +136,14 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
       case NRF_SLEEP_WAKEUP_GPIO: {
 	return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
       }
+      default:
+	break;
     }
     return mp_const_none;
 }
 
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     mp_obj_t obj = _get_wake_alarm(0, NULL);
-    //_xxx_dumpRTC();//XXX
     return obj;
 }
 
@@ -139,11 +154,12 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 #if 0
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 #endif
-    //_xxx_dumpRTC();
 }
 
 STATIC void _idle_until_alarm(void) {
+#ifdef MY_DEBUGUART
     int ct = 40;
+#endif
     reset_reason_saved = 0;
     // Poll for alarms.
     while (!mp_hal_is_interrupted()) {
@@ -151,26 +167,35 @@ STATIC void _idle_until_alarm(void) {
         // Allow ctrl-C interrupt.
         if (alarm_woken_from_sleep()) {
             alarm_save_wake_alarm();
+#ifdef MY_DEBUGUART
 	    int cause = _get_wakeup_cause();
-	    printf("wakeup(%d)\r\n", cause); //XXX
+	    printf("wakeup(%d)\r\n", cause);
+#endif
             return;
         }
         port_idle_until_interrupt();
+#ifdef MY_DEBUGUART
 	if (ct > 0) {
-	  printf("_");  --ct;
+	    printf("_");
+	    --ct;
 	}
+#endif
     }
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     mp_obj_t r_obj = mp_const_none;
     _setup_sleep_alarms(false, n_alarms, alarms);
-    _debug_print("\r\nsleep...");
+#ifdef MY_DEBUGUART
+    dbg_printf("\r\nsleep...");
+#endif
 
     _idle_until_alarm();
 
     if (mp_hal_is_interrupted()) {
-        _debug_print("mp_hal_is_interrupted\r\n");
+#ifdef MY_DEBUGUART
+        dbg_printf("mp_hal_is_interrupted\r\n");
+#endif
         r_obj = mp_const_none;
     }
     else {
@@ -185,7 +210,9 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void nrf_deep_sleep_start(void) {
-    _debug_print("go system off..\r\n");
+#ifdef MY_DEBUGUART
+    dbg_printf("go system off..\r\n");
+#endif
     sd_power_system_off();
 }
 
