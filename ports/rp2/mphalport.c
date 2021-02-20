@@ -28,6 +28,7 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "lib/timeutils/timeutils.h"
+#include "extmod/misc.h"
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"
@@ -122,6 +123,9 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             i += n2;
         }
     }
+    #endif
+    #if MICROPY_PY_OS_DUPTERM
+    mp_uos_dupterm_tx_strn(str, len);
     #endif
 }
 
