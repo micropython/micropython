@@ -1,0 +1,31 @@
+name: Build lv_micropython esp32 port
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:release-v4.0
+    strategy:
+      matrix:
+        board: [WROVER_SPIRAM]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set ESPIDF path
+      run: echo "ESPIDF=$IDF_PATH" >> $GITHUB_ENV
+    - name: Update submodules
+      run: git submodule update --init --recursive  
+    - name: Build mpy-cross
+      run: make -j $(nproc) -C mpy-cross
+    - name: Build ${{ matrix.board }}
+      run: make -j $(nproc) -C ports/esp32 BOARD=${{ matrix.board }} LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1"
+    - uses: actions/upload-artifact@v2
+      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
+      with:
+        name: ${{ matrix.board }}.hex
+        path: ports/esp32/build-${{ matrix.board }}/firmware.hex
