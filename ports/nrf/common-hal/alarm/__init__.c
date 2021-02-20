@@ -109,6 +109,7 @@ bool alarm_woken_from_sleep(void) {
 }
 
 #ifdef MY_DEBUGUART
+#if 0
 static const char* cause_str[] = {
   "UNDEFINED",
   "GPIO",
@@ -117,6 +118,7 @@ static const char* cause_str[] = {
   "VBUS",
   "RESETPIN",
 };
+#endif
 #endif
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
@@ -209,18 +211,21 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
-void nrf_deep_sleep_start(void) {
-#ifdef MY_DEBUGUART
-    dbg_printf("go system off..\r\n");
-#endif
-    sd_power_system_off();
-}
-
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     //alarm_touch_touchalarm_prepare_for_deep_sleep();
 
-    nrf_deep_sleep_start();
+    uint8_t sd_enabled;
+    sd_softdevice_is_enabled(&sd_enabled);
+#ifdef MY_DEBUGUART
+    dbg_printf("go system off.. %d\r\n", sd_enabled);
+#endif
+    if (sd_enabled) {
+        sd_power_system_off();
+    }
+    else {
+        NRF_POWER->SYSTEMOFF = 1;
+    }
 
     // should not reach here..
     while(1) ;
