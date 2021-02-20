@@ -27,7 +27,9 @@ jobs:
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build ${{ matrix.board }}
-      run: make -j $(nproc) -C ports/esp32 BOARD=${{ matrix.board }} LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1"
+      run: |
+        source esp-idf/export.sh
+        make -j $(nproc) -C ports/esp32 BOARD=${{ matrix.board }} LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1"
     - uses: actions/upload-artifact@v2
       if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
       with:
