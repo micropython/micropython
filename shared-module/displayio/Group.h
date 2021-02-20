@@ -35,7 +35,6 @@
 #include "shared-module/displayio/Palette.h"
 
 typedef struct {
-    mp_obj_t native;
     mp_obj_t original;
 } displayio_group_child_t;
 

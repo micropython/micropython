@@ -272,13 +272,13 @@ displayio_tilegrid_t blinka_sprite = {
 #if CIRCUITPY_TERMINALIO
 #define CHILD_COUNT 2
 displayio_group_child_t splash_children[2] = {
-    {&blinka_sprite, &blinka_sprite},
-    {&supervisor_terminal_text_grid, &supervisor_terminal_text_grid}
+    {&blinka_sprite},
+    {&supervisor_terminal_text_grid},
 };
 #else
 #define CHILD_COUNT 1
 displayio_group_child_t splash_children[1] = {
-    {&blinka_sprite, &blinka_sprite},
+    {&blinka_sprite},
 };
 #endif
 
