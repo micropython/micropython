@@ -29,8 +29,7 @@
 
 #include "py/obj.h"
 
-// not implemented yet
-#define SLEEP_MEMORY_LENGTH (4)
+#define SLEEP_MEMORY_LENGTH (256)
 
 typedef struct {
     mp_obj_base_t base;
