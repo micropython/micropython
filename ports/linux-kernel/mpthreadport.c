@@ -26,14 +26,14 @@
 
 #define pr_fmt(fmt) "MPY: thread: " fmt
 
-#include "py/mpconfig.h"
-
-#if MICROPY_PY_THREAD
-
 #include <linux/list.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/kthread.h>
+
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_THREAD
 
 #include "internal.h"
 

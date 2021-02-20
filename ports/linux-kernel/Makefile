@@ -125,6 +125,7 @@ SRC_C = \
 	mpthreadport.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/interrupt_char.c \
+	lib/utils/gchelper_generic.c \
 	lib/mp-readline/readline.c \
 	lib/utils/pyexec.c \
 	extmod/machine_mem.c \

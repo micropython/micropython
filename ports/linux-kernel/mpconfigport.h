@@ -115,4 +115,7 @@ typedef long mp_off_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[512];
 
+// these are defined by Linux, e.g '#define noinline __attribute__((__noinline__))',
+// and MP uses them as __attribute__((noinline)) so we don't want those definitions.
 #undef fallthrough
+#undef noinline

@@ -53,6 +53,7 @@
 #include "py/stackctrl.h"
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
+#include "lib/utils/gchelper.h"
 #include "lib/mp-readline/readline.h"
 #include "genhdr/mpversion.h"
 
@@ -78,28 +79,6 @@ STATIC struct task_struct *server_thread;
 STATIC bool need_gc;
 STATIC char heap[HEAP_SIZE];
 
-STATIC void get_regs(unsigned long regs[6]) {
-    // generated code for this function is a bit weird. it stores these 6 registers
-    // on the stack and pops them afterwards. however, it does get the correct values in "regs"
-    // so I guess it's okay.
-
-    // those are the callee-saved regs, which may be resident with values *not saved on
-    // the stack* when gc_collect is called.
-    register long rbx asm ("rbx");
-    register long rbp asm ("rbp");
-    register long r12 asm ("r12");
-    register long r13 asm ("r13");
-    register long r14 asm ("r14");
-    register long r15 asm ("r15");
-
-    regs[0] = rbx;
-    regs[1] = rbp;
-    regs[2] = r12;
-    regs[3] = r13;
-    regs[4] = r14;
-    regs[5] = r15;
-}
-
 void gc_collect(void) {
     if (in_atomic()) {
         // 1. sholdn't block for too long
@@ -115,12 +94,7 @@ void gc_collect(void) {
 
     gc_collect_start();
 
-    unsigned long regs[6];
-    get_regs(regs);
-    gc_collect_root((void**)regs, ARRAY_SIZE(regs));
-
-    void *dummy;
-    gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(void *));
+    gc_helper_collect_regs_and_stack();
 
 #if MICROPY_PY_THREAD
     mp_thread_gc_others();
