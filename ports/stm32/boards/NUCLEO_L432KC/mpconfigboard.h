@@ -7,6 +7,7 @@
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
+#define MICROPY_PY_ONEWIRE          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_PY_UHEAPQ           (0)

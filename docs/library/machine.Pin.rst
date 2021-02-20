@@ -33,8 +33,8 @@ Usage Model::
     # read and print the pin value
     print(p2.value())
 
-    # reconfigure pin #0 in input mode
-    p0.mode(p0.IN)
+    # reconfigure pin #0 in input mode with a pull down resistor
+    p0.init(p0.IN, p0.PULL_DOWN)
 
     # configure an irq callback
     p0.irq(lambda p:print(p))
@@ -160,25 +160,6 @@ Methods
 
    Set pin to "0" output level.
 
-.. method:: Pin.mode([mode])
-
-   Get or set the pin mode.
-   See the constructor documentation for details of the ``mode`` argument.
-
-.. method:: Pin.pull([pull])
-
-   Get or set the pin pull state.
-   See the constructor documentation for details of the ``pull`` argument.
-
-.. method:: Pin.drive([drive])
-
-   Get or set the pin drive strength.
-   See the constructor documentation for details of the ``drive`` argument.
-
-   Not all ports implement this method.
-
-   Availability: WiPy.
-
 .. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), *, priority=1, wake=None, hard=False)
 
    Configure an interrupt handler to be called when the trigger source of the
@@ -219,6 +200,41 @@ Methods
        Not all ports support this argument.
 
    This method returns a callback object.
+
+The following methods are not part of the core Pin API and only implemented on certain ports.
+
+.. method:: Pin.low()
+
+   Set pin to "0" output level.
+
+   Availability: nrf, rp2, stm32 ports.
+
+.. method:: Pin.high()
+
+   Set pin to "1" output level.
+
+   Availability: nrf, rp2, stm32 ports.
+
+.. method:: Pin.mode([mode])
+
+   Get or set the pin mode.
+   See the constructor documentation for details of the ``mode`` argument.
+
+   Availability: cc3200, stm32 ports.
+
+.. method:: Pin.pull([pull])
+
+   Get or set the pin pull state.
+   See the constructor documentation for details of the ``pull`` argument.
+
+   Availability: cc3200, stm32 ports.
+
+.. method:: Pin.drive([drive])
+
+   Get or set the pin drive strength.
+   See the constructor documentation for details of the ``drive`` argument.
+
+   Availability: cc3200 port.
 
 Constants
 ---------

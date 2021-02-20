@@ -32,8 +32,6 @@
 #include "pendsv.h"
 #include "lib/utils/mpirq.h"
 
-#include "py/obj.h"
-
 #if MICROPY_PY_BLUETOOTH
 
 #define DEBUG_printf(...) // printf("mpbthciport.c: " __VA_ARGS__)
@@ -197,26 +195,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_bluetooth_hci_uart_obj.timeout_char = 200;
     MP_STATE_PORT(pyb_uart_obj_all)[mp_bluetooth_hci_uart_obj.uart_id - 1] = &mp_bluetooth_hci_uart_obj;
 
-    // This also initialises the UART and adds the RXIDLE IRQ handler.
-    mp_bluetooth_hci_uart_set_baudrate(baudrate);
-
-    return 0;
-}
-
-int mp_bluetooth_hci_uart_deinit(void) {
-    DEBUG_printf("mp_bluetooth_hci_uart_deinit (stm32)\n");
-
-    // TODO: deinit mp_bluetooth_hci_uart_obj
-
-    return 0;
-}
-
-int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
-    DEBUG_printf("mp_bluetooth_hci_uart_set_baudrate(%lu) (stm32)\n", baudrate);
-    if (!baudrate) {
-        return -1;
-    }
-
+    // Initialise the UART.
     uart_init(&mp_bluetooth_hci_uart_obj, baudrate, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, UART_HWCONTROL_RTS | UART_HWCONTROL_CTS);
     uart_set_rxbuf(&mp_bluetooth_hci_uart_obj, sizeof(hci_uart_rxbuf), hci_uart_rxbuf);
 
@@ -232,6 +211,20 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
     return 0;
 }
 
+int mp_bluetooth_hci_uart_deinit(void) {
+    DEBUG_printf("mp_bluetooth_hci_uart_deinit (stm32)\n");
+
+    // TODO: deinit mp_bluetooth_hci_uart_obj
+
+    return 0;
+}
+
+int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
+    DEBUG_printf("mp_bluetooth_hci_uart_set_baudrate(%lu) (stm32)\n", baudrate);
+    uart_set_baudrate(&mp_bluetooth_hci_uart_obj, baudrate);
+    return 0;
+}
+
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     // DEBUG_printf("mp_bluetooth_hci_uart_write (stm32)\n");
 
@@ -239,7 +232,7 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     int errcode;
     uart_tx_data(&mp_bluetooth_hci_uart_obj, (void *)buf, len, &errcode);
     if (errcode != 0) {
-        printf("\nmp_bluetooth_hci_uart_write: failed to write to UART %d\n", errcode);
+        mp_printf(&mp_plat_print, "\nmp_bluetooth_hci_uart_write: failed to write to UART %d\n", errcode);
     }
     return 0;
 }

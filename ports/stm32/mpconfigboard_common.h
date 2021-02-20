@@ -37,6 +37,11 @@
 #define MICROPY_PY_STM (1)
 #endif
 
+// Whether to include the pyb module
+#ifndef MICROPY_PY_PYB
+#define MICROPY_PY_PYB (1)
+#endif
+
 // Whether to include legacy functions and classes in the pyb module
 #ifndef MICROPY_PY_PYB_LEGACY
 #define MICROPY_PY_PYB_LEGACY (1)
@@ -120,6 +125,11 @@
 // Whether to enable the LCD32MK driver, exposed as pyb.LCD
 #ifndef MICROPY_HW_HAS_LCD
 #define MICROPY_HW_HAS_LCD (0)
+#endif
+
+// Whether to automatically mount (and boot from) the flash filesystem
+#ifndef MICROPY_HW_FLASH_MOUNT_AT_BOOT
+#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_STORAGE)
 #endif
 
 // The volume label used when creating the flash filesystem

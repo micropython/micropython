@@ -121,7 +121,7 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
         return MP_FP_CLASS_FIT_SMALLINT;
     }
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-    if (e <= (((sizeof(long long) * BITS_PER_BYTE) + MP_FLOAT_EXP_BIAS - 2) << MP_FLOAT_EXP_SHIFT_I32)) {
+    if (e <= (((sizeof(long long) * MP_BITS_PER_BYTE) + MP_FLOAT_EXP_BIAS - 2) << MP_FLOAT_EXP_SHIFT_I32)) {
         return MP_FP_CLASS_FIT_LONGINT;
     }
     #endif

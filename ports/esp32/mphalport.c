@@ -32,12 +32,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-#if MICROPY_ESP_IDF_4
 #include "esp32/rom/uart.h"
-#else
-#include "rom/uart.h"
-#endif
 
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -52,7 +47,7 @@
 TaskHandle_t mp_main_task_handle;
 
 STATIC uint8_t stdin_ringbuf_array[256];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 void check_esp_err(esp_err_t code) {

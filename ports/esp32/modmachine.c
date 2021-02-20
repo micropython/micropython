@@ -32,15 +32,9 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#if MICROPY_ESP_IDF_4
 #include "esp32/rom/rtc.h"
 #include "esp32/clk.h"
 #include "esp_sleep.h"
-#else
-#include "rom/ets_sys.h"
-#include "rom/rtc.h"
-#include "esp_clk.h"
-#endif
 #include "esp_pm.h"
 #include "driver/touch_pad.h"
 
@@ -64,6 +58,8 @@ typedef enum {
     MP_DEEPSLEEP_RESET,
     MP_SOFT_RESET
 } reset_reason_t;
+
+STATIC bool is_soft_reset = 0;
 
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -146,6 +142,9 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    if (is_soft_reset) {
+        return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
+    }
     switch (esp_reset_reason()) {
         case ESP_RST_POWERON:
         case ESP_RST_BROWNOUT:
@@ -176,6 +175,15 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
+
+void machine_init(void) {
+    is_soft_reset = 0;
+}
+
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    is_soft_reset = 1;
+}
 
 STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());

@@ -36,7 +36,7 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-#define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
+#define BYTES_FOR_INT ((MP_BYTES_PER_OBJ_WORD * 8 + 6) / 7)
 #define DUMMY_DATA_SIZE (BYTES_FOR_INT)
 
 struct _emit_t {

@@ -68,7 +68,7 @@ static const tusb_desc_device_t usbd_desc_device = {
 };
 
 static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
-    TUD_CONFIG_DESCRIPTOR(USBD_ITF_MAX, USBD_STR_0, USBD_DESC_LEN,
+    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_MAX, USBD_STR_0, USBD_DESC_LEN,
         TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, USBD_MAX_POWER_MA),
 
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
@@ -91,7 +91,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     return usbd_desc_cfg;
 }
 
-const uint16_t *tud_descriptor_string_cb(uint8_t index) {
+const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     #define DESC_STR_MAX (20)
     static uint16_t desc_str[DESC_STR_MAX];
 
@@ -118,29 +118,29 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index) {
 #if defined(MCU_SAMD21)
 
 void USB_Handler_wrapper(void) {
-    USB_Handler();
+    tud_int_handler(0);
     tud_task();
 }
 
 #elif defined(MCU_SAMD51)
 
 void USB_0_Handler_wrapper(void) {
-    USB_0_Handler();
+    tud_int_handler(0);
     tud_task();
 }
 
 void USB_1_Handler_wrapper(void) {
-    USB_1_Handler();
+    tud_int_handler(0);
     tud_task();
 }
 
 void USB_2_Handler_wrapper(void) {
-    USB_2_Handler();
+    tud_int_handler(0);
     tud_task();
 }
 
 void USB_3_Handler_wrapper(void) {
-    USB_3_Handler();
+    tud_int_handler(0);
     tud_task();
 }
 

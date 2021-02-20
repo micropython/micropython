@@ -61,10 +61,14 @@ static uint8_t uncompressed_buf[MBOOT_PACK_GZIP_BUFFER_SIZE] __attribute__((alig
 // that a double-word write to flash can only be done once (due to ECC).
 static uint8_t firmware_head[8];
 
+// Flag to indicate that firmware_head contains valid data.
+static bool firmware_head_valid;
+
 void mboot_pack_init(void) {
     erased_base_addr = 0;
     erased_top_addr = 0;
     firmware_chunk_base_addr = 0;
+    firmware_head_valid = false;
 }
 
 // In encrypted mode the erase is automatically managed.
@@ -103,6 +107,7 @@ static int mboot_pack_commit_chunk(uint32_t addr, uint8_t *data, size_t len) {
         addr += sizeof(firmware_head);
         data += sizeof(firmware_head);
         len -= sizeof(firmware_head);
+        firmware_head_valid = true;
     }
 
     // Commit this piece of the firmware.
@@ -112,7 +117,7 @@ static int mboot_pack_commit_chunk(uint32_t addr, uint8_t *data, size_t len) {
 // Handle a chunk with the full firmware signature.
 static int mboot_pack_handle_full_sig(void) {
     if (firmware_chunk_buf.header.length < hydro_sign_BYTES) {
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_CHUNK;
     }
 
     uint8_t *full_sig = &firmware_chunk_buf.data[firmware_chunk_buf.header.length - hydro_sign_BYTES];
@@ -131,14 +136,14 @@ static int mboot_pack_handle_full_sig(void) {
         while (len) {
             uint32_t l = len <= buf_alloc ? len : buf_alloc;
             hw_read(addr, l, buf);
-            if (addr == APPLICATION_ADDR) {
+            if (addr == APPLICATION_ADDR && firmware_head_valid) {
                 // The start of the firmware was not yet written to flash so copy
                 // it out of the temporary buffer to compute the full signature.
                 memcpy(buf, firmware_head, sizeof(firmware_head));
             }
             int ret = hydro_sign_update(&sign_state, buf, l);
             if (ret != 0) {
-                return -1;
+                return -MBOOT_ERRNO_PACK_SIGN_FAILED;
             }
             addr += l;
             len -= l;
@@ -150,12 +155,17 @@ static int mboot_pack_handle_full_sig(void) {
     if (ret != 0) {
         dfu_context.status = DFU_STATUS_ERROR_VERIFY;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
-        return -1;
+        return -MBOOT_ERRNO_PACK_SIGN_FAILED;
     }
 
     // Full firmware passed the signature check.
-    // Write the start of the firmware so it boots.
-    return hw_write(APPLICATION_ADDR, firmware_head, sizeof(firmware_head));
+
+    if (firmware_head_valid) {
+        // Write the start of the firmware so it boots.
+        ret = hw_write(APPLICATION_ADDR, firmware_head, sizeof(firmware_head));
+    }
+
+    return ret;
 }
 
 // Handle a chunk with firmware data.
@@ -167,7 +177,7 @@ static int mboot_pack_handle_firmware(void) {
     if (hydro_secretbox_decrypt(decrypted_buf, fw_data, fw_len, 0, MBOOT_PACK_HYDRO_CONTEXT, mboot_pack_secretbox_key) != 0) {
         dfu_context.status = DFU_STATUS_ERROR_VERIFY;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
-        return -1;
+        return -MBOOT_ERRNO_PACK_DECRYPT_FAILED;
     }
 
     // Use the decrypted message contents going formward.
@@ -182,7 +192,7 @@ static int mboot_pack_handle_firmware(void) {
             if (read == 0) {
                 return 0; // finished decompressing
             } else if (read < 0) {
-                return -1; // error reading
+                return -MBOOT_ERRNO_GUNZIP_FAILED; // error reading
             }
             int ret = mboot_pack_commit_chunk(addr, uncompressed_buf, read);
             if (ret != 0) {
@@ -210,14 +220,14 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
     if (addr < firmware_chunk_base_addr) {
         // Address out of range.
         firmware_chunk_base_addr = 0;
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_ADDR;
     }
 
     size_t offset = addr - firmware_chunk_base_addr;
     if (offset + len > sizeof(firmware_chunk_buf)) {
         // Address/length out of range.
         firmware_chunk_base_addr = 0;
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_ADDR;
     }
 
     // Copy in the new data piece into the chunk buffer.
@@ -232,14 +242,14 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
         // Chunk header has the wrong version.
         dfu_context.status = DFU_STATUS_ERROR_FILE;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_VERSION;
     }
 
     if (firmware_chunk_buf.header.address != firmware_chunk_base_addr) {
         // Chunk address doesn't agree with dfu address, abort.
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_ADDR;
     }
 
     if (offset + len < sizeof(firmware_chunk_buf.header) + firmware_chunk_buf.header.length + sizeof(firmware_chunk_buf.signature)) {
@@ -260,7 +270,7 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
         // Signature failed
         dfu_context.status = DFU_STATUS_ERROR_VERIFY;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
-        return -1;
+        return -MBOOT_ERRNO_PACK_SIGN_FAILED;
     }
 
     // Signature passed, we have valid chunk.
@@ -275,7 +285,7 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len) {
         return mboot_pack_handle_firmware();
     } else {
         // Unsupported contents.
-        return -1;
+        return -MBOOT_ERRNO_PACK_INVALID_CHUNK;
     }
 }
 

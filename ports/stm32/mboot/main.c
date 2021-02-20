@@ -489,7 +489,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED;
     }
 
     *next_addr = sector_start + sector_size;
@@ -503,7 +503,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
         if (((volatile uint32_t*)sector_start)[i] != 0xffffffff) {
-            return -2;
+            return -MBOOT_ERRNO_FLASH_ERASE_FAILED;
         }
     }
 
@@ -517,7 +517,7 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_WRITE_DISALLOWED;
     }
 
     const uint32_t *src = (const uint32_t*)src8;
@@ -1443,7 +1443,14 @@ enter_bootloader:
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            fsload_process();
+            int ret = fsload_process();
+            // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
+            const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
+            if (elem_status != NULL && elem_status[-1] == 4) {
+                uint32_t *status_ptr = (uint32_t *)get_le32(&elem_status[0]);
+                LL_PWR_EnableBkUpAccess(); // In case status_ptr points to backup registers
+                *status_ptr = ret;
+            }
         }
         // Always reset because the application is expecting to resume
         led_state_all(0);

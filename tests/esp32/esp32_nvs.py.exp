@@ -1,0 +1,14 @@
+1234
+-503
+1234
+bytearray(b'testing a string as a blob')
+26 26
+bytearray(b'testing a bytearray')
+19 19
+(-4354, 'ESP_ERR_NVS_NOT_FOUND')
+(-4354, 'ESP_ERR_NVS_NOT_FOUND')
+(-4354, 'ESP_ERR_NVS_NOT_FOUND')
+(-4364, 'ESP_ERR_NVS_INVALID_LENGTH')
+(-4354, 'ESP_ERR_NVS_NOT_FOUND')
+-503
+7654

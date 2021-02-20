@@ -211,9 +211,16 @@ def pack_dfu(keys, args):
 
 
 def verify_pack_dfu(keys, filename):
+    """Verify packed dfu file against keys. Gathers decrypted binary data."""
     full_sig = pyhy.hydro_sign(MBOOT_PACK_HYDRO_CONTEXT)
     _, elems = dfu_read(filename)
+    base_addr = None
+    binary_data = b""
+
     for addr, data in elems:
+        if base_addr is None:
+            base_addr = addr
+
         header = struct.unpack("<BBBBII", data[:12])
         chunk = data[12 : 12 + header[5]]
         sig = data[12 + header[5] :]
@@ -221,6 +228,7 @@ def verify_pack_dfu(keys, filename):
             sig, data[:12] + chunk, MBOOT_PACK_HYDRO_CONTEXT, keys.sign_pk
         )
         assert sig_pass
+
         if header[1] == MBOOT_PACK_CHUNK_FULL_SIG:
             actual_sig = chunk[-64:]
         else:
@@ -231,8 +239,21 @@ def verify_pack_dfu(keys, filename):
             if header[1] == MBOOT_PACK_CHUNK_FW_GZIP:
                 chunk = zlib.decompress(chunk, wbits=-15)
             full_sig.update(chunk)
+            assert addr == base_addr + len(binary_data)
+            binary_data += chunk
+
     full_sig_pass = full_sig.final_verify(actual_sig, keys.sign_pk)
     assert full_sig_pass
+    return [{"address": base_addr, "data": binary_data}]
+
+
+def unpack_dfu(keys, args):
+    # Load previously generated keys.
+    keys.load()
+
+    # Build a DFU file from the decrypted binary data.
+    data = verify_pack_dfu(keys, args.infile[0])
+    dfu.build(args.outfile[0], [data])
 
 
 def main():
@@ -249,6 +270,11 @@ def main():
     parser_ed.add_argument("infile", nargs=1, help="input DFU file")
     parser_ed.add_argument("outfile", nargs=1, help="output DFU file")
     parser_ed.set_defaults(func=pack_dfu)
+
+    parser_dd = subparsers.add_parser("unpack-dfu", help="decrypt a signed/encrypted DFU file")
+    parser_dd.add_argument("infile", nargs=1, help="input packed DFU file")
+    parser_dd.add_argument("outfile", nargs=1, help="output DFU file")
+    parser_dd.set_defaults(func=unpack_dfu)
 
     args = cmd_parser.parse_args()
 

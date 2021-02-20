@@ -80,16 +80,15 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     if (tud_cdc_connected()) {
         for (size_t i = 0; i < len;) {
             uint32_t n = len - i;
-            uint32_t n2 = tud_cdc_write(str + i, n);
-            if (n2 < n) {
-                while (!tud_cdc_write_flush()) {
-                    __WFI();
-                }
+            if (n > CFG_TUD_CDC_EP_BUFSIZE) {
+                n = CFG_TUD_CDC_EP_BUFSIZE;
             }
+            while (n > tud_cdc_write_available()) {
+                __WFI();
+            }
+            uint32_t n2 = tud_cdc_write(str + i, n);
+            tud_cdc_write_flush();
             i += n2;
-        }
-        while (!tud_cdc_write_flush()) {
-            __WFI();
         }
     }
     while (len--) {

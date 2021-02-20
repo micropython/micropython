@@ -546,12 +546,6 @@ int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
 
-    #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
-    // in host mode, we enable the LCD for the repl
-    mp_obj_t lcd_o = mp_call_function_0(mp_load_name(qstr_from_str("LCD")));
-    mp_call_function_1(mp_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
-    #endif
-
 friendly_repl_reset:
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
     #if MICROPY_PY_BUILTINS_HELP

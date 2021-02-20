@@ -38,6 +38,11 @@
 
 #include "mpbtstackport.h"
 
+#define HCI_TRACE (0)
+#define COL_OFF "\033[0m"
+#define COL_GREEN "\033[0;32m"
+#define COL_BLUE "\033[0;34m"
+
 // Implements a btstack btstack_uart_block_t on top of the mphciuart.h
 // interface to an HCI UART provided by the port.
 
@@ -62,8 +67,7 @@ STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
     send_handler = NULL;
 
     // Set up the UART peripheral, attach IRQ and power up the HCI controller.
-    // We haven't been told the baud rate yet, so defer that until btstack_uart_set_baudrate.
-    if (mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, 0)) {
+    if (mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, MICROPY_HW_BLE_UART_BAUDRATE)) {
         init_success = false;
         return -1;
     }
@@ -114,6 +118,14 @@ STATIC void btstack_uart_receive_block(uint8_t *buf, uint16_t len) {
 }
 
 STATIC void btstack_uart_send_block(const uint8_t *buf, uint16_t len) {
+    #if HCI_TRACE
+    printf(COL_GREEN "< [% 8d] %02x", (int)mp_hal_ticks_ms(), buf[0]);
+    for (size_t i = 1; i < len; ++i) {
+        printf(":%02x", buf[i]);
+    }
+    printf(COL_OFF "\n");
+    #endif
+
     mp_bluetooth_hci_uart_write(buf, len);
     send_done = true;
 }
@@ -165,6 +177,13 @@ void mp_bluetooth_btstack_hci_uart_process(void) {
     while (recv_idx < recv_len && (chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
         recv_buf[recv_idx++] = chr;
         if (recv_idx == recv_len) {
+            #if HCI_TRACE
+            printf(COL_BLUE "> [% 8d] %02x", (int)mp_hal_ticks_ms(), recv_buf[0]);
+            for (size_t i = 1; i < recv_len; ++i) {
+                printf(":%02x", recv_buf[i]);
+            }
+            printf(COL_OFF "\n");
+            #endif
             recv_idx = 0;
             recv_len = 0;
             if (recv_handler) {

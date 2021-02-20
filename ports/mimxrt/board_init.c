@@ -90,11 +90,13 @@ void SysTick_Handler(void) {
 }
 
 void USB_OTG1_IRQHandler(void) {
-    tud_isr(0);
+    tud_int_handler(0);
     tud_task();
+    __SEV();
 }
 
 void USB_OTG2_IRQHandler(void) {
-    tud_isr(1);
+    tud_int_handler(1);
     tud_task();
+    __SEV();
 }

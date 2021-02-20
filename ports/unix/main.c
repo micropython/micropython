@@ -387,7 +387,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                         goto invalid_arg;
                     }
                     if (word_adjust) {
-                        heap_size = heap_size * BYTES_PER_WORD / 4;
+                        heap_size = heap_size * MP_BYTES_PER_OBJ_WORD / 4;
                     }
                     // If requested size too small, we'll crash anyway
                     if (heap_size < 700) {
@@ -446,7 +446,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
     pre_process_options(argc, argv);
 
@@ -532,8 +532,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
-        mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
-        mp_store_global(QSTR_FROM_STR_STATIC("extra_cpp_coverage"), MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
+        mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
     #endif
 
@@ -546,9 +546,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // test_obj.attr = 42
     //
     // mp_obj_t test_class_type, test_class_instance;
-    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    // test_class_type = mp_obj_new_type(qstr_from_str("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(qstr_from_str("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, qstr_from_str("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");

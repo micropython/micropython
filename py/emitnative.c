@@ -211,6 +211,7 @@ struct _emit_t {
     int pass;
 
     bool do_viper_types;
+    bool prelude_offset_uses_u16_encoding;
 
     mp_uint_t local_vtype_alloc;
     vtype_kind_t *local_vtype;
@@ -336,6 +337,18 @@ STATIC void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
 #define emit_native_mov_state_imm_via(emit, local_num, imm, reg_temp) \
     do { \
         ASM_MOV_REG_IMM((emit)->as, (reg_temp), (imm)); \
+        emit_native_mov_state_reg((emit), (local_num), (reg_temp)); \
+    } while (false)
+
+#define emit_native_mov_state_imm_fix_u16_via(emit, local_num, imm, reg_temp) \
+    do { \
+        ASM_MOV_REG_IMM_FIX_U16((emit)->as, (reg_temp), (imm)); \
+        emit_native_mov_state_reg((emit), (local_num), (reg_temp)); \
+    } while (false)
+
+#define emit_native_mov_state_imm_fix_word_via(emit, local_num, imm, reg_temp) \
+    do { \
+        ASM_MOV_REG_IMM_FIX_WORD((emit)->as, (reg_temp), (imm)); \
         emit_native_mov_state_reg((emit), (local_num), (reg_temp)); \
     } while (false)
 
@@ -549,16 +562,27 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
 
             // Set code_state.ip (offset from start of this function to prelude info)
+            int code_state_ip_local = emit->code_state_start + OFFSETOF_CODE_STATE_IP;
             #if N_PRELUDE_AS_BYTES_OBJ
             // Prelude is a bytes object in const_table; store ip = prelude->data - fun_bc->bytecode
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, emit->scope->num_pos_args + emit->scope->num_kwonly_args + 1);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, offsetof(mp_obj_str_t, data) / sizeof(uintptr_t));
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_BYTECODE);
             ASM_SUB_REG_REG(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1);
-            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_LOCAL_3);
+            emit_native_mov_state_reg(emit, code_state_ip_local, REG_LOCAL_3);
             #else
-            // TODO this encoding may change size in the final pass, need to make it fixed
-            emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, emit->prelude_offset, REG_PARENT_ARG_1);
+            if (emit->pass == MP_PASS_CODE_SIZE) {
+                // Commit to the encoding size based on the value of prelude_offset in this pass.
+                // By using 32768 as the cut-off it is highly unlikely that prelude_offset will
+                // grow beyond 65535 by the end of thiss pass, and so require the larger encoding.
+                emit->prelude_offset_uses_u16_encoding = emit->prelude_offset < 32768;
+            }
+            if (emit->prelude_offset_uses_u16_encoding) {
+                assert(emit->prelude_offset <= 65535);
+                emit_native_mov_state_imm_fix_u16_via(emit, code_state_ip_local, emit->prelude_offset, REG_PARENT_ARG_1);
+            } else {
+                emit_native_mov_state_imm_fix_word_via(emit, code_state_ip_local, emit->prelude_offset, REG_PARENT_ARG_1);
+            }
             #endif
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
@@ -2430,6 +2454,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_x86_setcc_r8(emit->as, ops[op_idx], REG_RET);
             #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
+            #if MICROPY_EMIT_THUMB_ARMV7M
             static uint16_t ops[6 + 6] = {
                 // unsigned
                 ASM_THUMB_OP_ITE_CC,
@@ -2449,6 +2474,28 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_thumb_op16(emit->as, ops[op_idx]);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
+            #else
+            static uint16_t ops[6 + 6] = {
+                // unsigned
+                ASM_THUMB_CC_CC,
+                ASM_THUMB_CC_HI,
+                ASM_THUMB_CC_EQ,
+                ASM_THUMB_CC_LS,
+                ASM_THUMB_CC_CS,
+                ASM_THUMB_CC_NE,
+                // signed
+                ASM_THUMB_CC_LT,
+                ASM_THUMB_CC_GT,
+                ASM_THUMB_CC_EQ,
+                ASM_THUMB_CC_LE,
+                ASM_THUMB_CC_GE,
+                ASM_THUMB_CC_NE,
+            };
+            asm_thumb_bcc_rel9(emit->as, ops[op_idx], 6);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
+            asm_thumb_b_rel12(emit->as, 4);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
+            #endif
             #elif N_ARM
             asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
             static uint ccs[6 + 6] = {

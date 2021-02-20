@@ -80,7 +80,7 @@ int gz_stream_init_from_stream(void *stream_data, stream_read_t stream_read) {
 
     int st = uzlib_gzip_parse_header(&gz_stream.tinf);
     if (st != TINF_OK) {
-        return -1;
+        return -MBOOT_ERRNO_GUNZIP_FAILED;
     }
 
     uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);

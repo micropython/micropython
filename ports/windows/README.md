@@ -90,6 +90,10 @@ Running the tests
 This is similar for all ports:
 
     cd ../../tests
+    python ./run-tests
+
+Though when running on Cygwin and using Cygwin's Python installation you'll need:
+
     python3 ./run-tests
 
 Depending on the combination of platform and Python version used it might be

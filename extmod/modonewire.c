@@ -44,10 +44,10 @@
 #define TIMING_WRITE3 (10)
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us(TIMING_RESET1);
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_RESET2);
     int status = !mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
@@ -56,11 +56,11 @@ STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
 }
 
 STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_READ1);
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_READ2);
     int value = mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
@@ -70,13 +70,13 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
 
 STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_WRITE1);
     if (value) {
-        mp_hal_pin_write(pin, 1);
+        mp_hal_pin_od_high(pin);
     }
     mp_hal_delay_us_fast(TIMING_WRITE2);
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_WRITE3);
     mp_hal_quiet_timing_exit(i);
 }

@@ -28,7 +28,7 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 13
+#define MICROPY_VERSION_MINOR 14
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
@@ -126,7 +126,7 @@
 // Number of bytes in memory allocation/GC block. Any size allocated will be
 // rounded up to be multiples of this.
 #ifndef MICROPY_BYTES_PER_GC_BLOCK
-#define MICROPY_BYTES_PER_GC_BLOCK (4 * BYTES_PER_WORD)
+#define MICROPY_BYTES_PER_GC_BLOCK (4 * MP_BYTES_PER_OBJ_WORD)
 #endif
 
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
@@ -283,6 +283,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE (0)
 #endif
 
+// Whether to support saving persistent code to a file via mp_raw_code_save_file
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
@@ -302,6 +307,11 @@
 // Whether to emit thumb native code
 #ifndef MICROPY_EMIT_THUMB
 #define MICROPY_EMIT_THUMB (0)
+#endif
+
+// Whether to emit ARMv7-M instruction support in thumb native code
+#ifndef MICROPY_EMIT_THUMB_ARMV7M
+#define MICROPY_EMIT_THUMB_ARMV7M (1)
 #endif
 
 // Whether to enable the thumb inline assembler
@@ -1520,17 +1530,17 @@ typedef double mp_float_t;
 #define STATIC static
 #endif
 
-// Number of bytes in a word
-#ifndef BYTES_PER_WORD
-#define BYTES_PER_WORD (sizeof(mp_uint_t))
+// Number of bytes in an object word: mp_obj_t, mp_uint_t, mp_uint_t
+#ifndef MP_BYTES_PER_OBJ_WORD
+#define MP_BYTES_PER_OBJ_WORD (sizeof(mp_uint_t))
 #endif
 
-#ifndef BITS_PER_BYTE
-#define BITS_PER_BYTE (8)
+// Number of bits in a byte
+#ifndef MP_BITS_PER_BYTE
+#define MP_BITS_PER_BYTE (8)
 #endif
-#define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // mp_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
+#define MP_OBJ_WORD_MSBIT_HIGH (((mp_uint_t)1) << (MP_BYTES_PER_OBJ_WORD * MP_BITS_PER_BYTE - 1))
 
 // Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
 // defined and that they are the opposite of each other.

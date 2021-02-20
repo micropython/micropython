@@ -43,6 +43,7 @@
 #include "stm32wbxx_hal_usart.h"
 #include "stm32wbxx_ll_adc.h"
 #include "stm32wbxx_ll_rtc.h"
+#include "stm32wbxx_ll_usart.h"
 
 // Enable various HAL modules
 #define HAL_MODULE_ENABLED

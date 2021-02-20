@@ -1,1 +1,0 @@
-SDKCONFIG += boards/sdkconfig.base
