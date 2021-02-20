@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
-
-#include <stdbool.h>
+#include "genhdr/autogen_usb_descriptor.h"
+#include "py/gc.h"
 #include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/objtuple.h"
+#include "shared-bindings/usb_cdc/__init__.h"
+#include "shared-bindings/usb_cdc/Serial.h"
+#include "tusb.h"
 
-#include "shared-bindings/supervisor/RunReason.h"
+#if CFG_TUD_CDC != 2
+#error CFG_TUD_CDC must be exactly 2
+#endif
 
-extern const mp_obj_type_t supervisor_runtime_type;
+static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
+    {   .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
+        .write_timeout = -1.0f,
+        .idx = 0,
+    }, {
+        .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
+        .write_timeout = -1.0f,
+        .idx = 1,
+    }
+};
 
-void supervisor_set_run_reason(supervisor_run_reason_t run_reason);
-
-bool common_hal_supervisor_runtime_get_serial_connected(void);
-
-bool common_hal_supervisor_runtime_get_serial_bytes_available(void);
-
-//TODO: placeholders for future functions
-//bool common_hal_get_supervisor_runtime_repl_active(void);
-//bool common_hal_get_supervisor_runtime_usb_enumerated(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_RUNTIME_H
+const mp_rom_obj_tuple_t usb_cdc_serials_tuple = {
+    .base.type = &mp_type_tuple,
+    .len = CFG_TUD_CDC,
+    .items = {
+        &serial_objs[0],
+        &serial_objs[1],
+    },
+};

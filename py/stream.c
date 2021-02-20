@@ -99,14 +99,22 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
 
 STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     // What to do if sz < -1?  Python docs don't specify this case.
-    // CPython does a readall, but here we silently let negatives through,
-    // and they will cause a MemoryError.
+    // CPython does a readall, let's do the same.
     mp_int_t sz;
-    if (n_args == 1 || args[1] == mp_const_none || ((sz = mp_obj_get_int(args[1])) == -1)) {
-        return stream_readall(args[0]);
-    }
-
     const mp_stream_p_t *stream_p = mp_get_stream(args[0]);
+    if (stream_p->pyserial_read_compatibility) {
+        // Pyserial defaults to sz=1 if not specified.
+        if (n_args == 1) {
+            sz = 1;
+        } else {
+            // Pyserial treats negative size as 0.
+            sz = MAX(0, mp_obj_get_int(args[1]));
+        }
+    } else {
+        if (n_args == 1 || args[1] == mp_const_none || (sz = mp_obj_get_int(args[1])) <= -1) {
+            return stream_readall(args[0]);
+        }
+    }
 
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (stream_p->is_text) {
@@ -284,7 +292,7 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
     mp_uint_t len = bufinfo.len;
     if (n_args > 2) {
-        if (mp_get_stream(args[0])->pyserial_compatibility) {
+        if (mp_get_stream(args[0])->pyserial_readinto_compatibility) {
             mp_raise_ValueError(translate("length argument not allowed for this type"));
         }
         len = mp_obj_get_int(args[2]);
@@ -297,7 +305,10 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
     if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
-            return mp_const_none;
+            // pyserial readinto never returns None, just 0.
+            return mp_get_stream(args[0])->pyserial_dont_return_none_compatibility
+                ? MP_OBJ_NEW_SMALL_INT(0)
+                : mp_const_none;
         }
         mp_raise_OSError(error);
     } else {
@@ -323,7 +334,10 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
                 // If we read nothing, return None, just like read().
                 // Otherwise, return data read so far.
                 if (total_size == 0) {
-                    return mp_const_none;
+                    // pyserial read() never returns None, just b''.
+                    return stream_p->pyserial_dont_return_none_compatibility
+                        ? mp_const_empty_bytes
+                        : mp_const_none;
                 }
                 break;
             }

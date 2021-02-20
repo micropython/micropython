@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbertfor Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
+#include <stdint.h>
 
-#include <stdbool.h>
 #include "py/obj.h"
+#include "py/runtime.h"
 
-#include "shared-bindings/supervisor/RunReason.h"
+#include "shared-bindings/usb_cdc/__init__.h"
+#include "shared-bindings/usb_cdc/Serial.h"
 
-extern const mp_obj_type_t supervisor_runtime_type;
+#include "py/runtime.h"
 
-void supervisor_set_run_reason(supervisor_run_reason_t run_reason);
+//| """USB CDC Serial streams
+//|
+//| The `usb_cdc` module allows access to USB CDC (serial) communications."""
+//|
+//| serials: Tuple[Serial, ...]
+//| """Tuple of all CDC streams. Each item is a `Serial`.
+//| ``serials[0]`` is the USB REPL connection.
+//| ``serials[1]`` is a second USB serial connection, unconnected to the REPL.
+//| """
+//|
 
-bool common_hal_supervisor_runtime_get_serial_connected(void);
+static const mp_map_elem_t usb_cdc_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_cdc) },
+    { MP_ROM_QSTR(MP_QSTR_Serial),   MP_OBJ_FROM_PTR(&usb_cdc_serial_type) },
+    { MP_ROM_QSTR(MP_QSTR_serials),  MP_OBJ_FROM_PTR(&usb_cdc_serials_tuple) },
+};
 
-bool common_hal_supervisor_runtime_get_serial_bytes_available(void);
+static MP_DEFINE_CONST_DICT(usb_cdc_module_globals, usb_cdc_module_globals_table);
 
-//TODO: placeholders for future functions
-//bool common_hal_get_supervisor_runtime_repl_active(void);
-//bool common_hal_get_supervisor_runtime_usb_enumerated(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_RUNTIME_H
+const mp_obj_module_t usb_cdc_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&usb_cdc_module_globals,
+};

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
+#ifndef SHARED_MODULE_USB_CDC_SERIAL_H
+#define SHARED_MODULE_USB_CDC_SERIAL_H
 
-#include <stdbool.h>
 #include "py/obj.h"
 
-#include "shared-bindings/supervisor/RunReason.h"
+typedef struct {
+    mp_obj_base_t base;
+    mp_float_t timeout;       // if negative, wait forever.
+    mp_float_t write_timeout; // if negative, wait forever.
+    uint8_t idx;              // which CDC device?
+} usb_cdc_serial_obj_t;
 
-extern const mp_obj_type_t supervisor_runtime_type;
-
-void supervisor_set_run_reason(supervisor_run_reason_t run_reason);
-
-bool common_hal_supervisor_runtime_get_serial_connected(void);
-
-bool common_hal_supervisor_runtime_get_serial_bytes_available(void);
-
-//TODO: placeholders for future functions
-//bool common_hal_get_supervisor_runtime_repl_active(void);
-//bool common_hal_get_supervisor_runtime_usb_enumerated(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_RUNTIME_H
+#endif // SHARED_MODULE_USB_CDC_SERIAL_H

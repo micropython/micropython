@@ -118,7 +118,6 @@ bool serial_bytes_available(void) {
     return tud_cdc_available() > 0;
 #endif
 }
-
 void serial_write_substring(const char* text, uint32_t length) {
     if (length == 0) {
         return;

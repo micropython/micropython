@@ -299,6 +299,13 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define BINASCII_MODULE
 #endif
 
+#if CIRCUITPY_BITBANGIO
+#define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
+extern const struct _mp_obj_module_t bitbangio_module;
+#else
+#define BITBANGIO_MODULE
+#endif
+
 #if CIRCUITPY_BITOPS
 extern const struct _mp_obj_module_t bitops_module;
 #define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
@@ -306,13 +313,6 @@ extern const struct _mp_obj_module_t bitops_module;
 #define BITOPS_MODULE
 #endif
 
-
-#if CIRCUITPY_BITBANGIO
-#define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
-extern const struct _mp_obj_module_t bitbangio_module;
-#else
-#define BITBANGIO_MODULE
-#endif
 
 #if CIRCUITPY_BLEIO
 #define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
@@ -744,6 +744,13 @@ extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE
 #endif
 
+#if CIRCUITPY_USB_CDC
+extern const struct _mp_obj_module_t usb_cdc_module;
+#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
+#else
+#define USB_CDC_MODULE
+#endif
+
 #if CIRCUITPY_USB_HID
 extern const struct _mp_obj_module_t usb_hid_module;
 #define USB_HID_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
@@ -827,8 +834,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
-    BITOPS_MODULE \
     BITBANGIO_MODULE \
+    BITOPS_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
     BUSDEVICE_MODULE \
@@ -884,6 +891,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     SUPERVISOR_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
+    USB_CDC_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \

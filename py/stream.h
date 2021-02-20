@@ -72,7 +72,9 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
-    bool pyserial_compatibility: 1;  // adjust API to match pyserial more closely
+    bool pyserial_readinto_compatibility: 1;         // Disallow size parameter in readinto()
+    bool pyserial_read_compatibility: 1;             // Disallow omitting read(size) size parameter
+    bool pyserial_dont_return_none_compatibility: 1; // Don't return None for read() or readinto()
 } mp_stream_p_t;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
