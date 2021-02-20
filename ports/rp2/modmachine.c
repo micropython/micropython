@@ -37,6 +37,8 @@
 #include "hardware/watchdog.h"
 #include "pico/bootrom.h"
 #include "pico/unique_id.h"
+#include "pico/stdlib.h"
+
 
 #define RP2_RESET_PWRON (1)
 #define RP2_RESET_WDT (3)
@@ -80,10 +82,19 @@ STATIC mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
-STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
+    } else {
+        mp_int_t freq = mp_obj_get_int(args[0]);
+        if (set_sys_clock_khz(freq / 1000, false)) {
+            return mp_const_none;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("valid range 12-270MHz"));
+        }
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_idle(void) {
     best_effort_wfe_or_timeout(make_timeout_time_ms(1));
