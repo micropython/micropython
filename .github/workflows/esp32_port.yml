@@ -8,13 +8,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     container:
       image: espressif/idf:release-v4.0
     strategy:
       matrix:
         board: [WROVER_SPIRAM]
     steps:
+    - name: Install Git
+      run: |
+        add-apt-repository ppa:git-core/ppa
+        apt-get update
+        apt-get install git
     - uses: actions/checkout@v2
     - name: Set ESPIDF path
       run: echo "ESPIDF=$IDF_PATH" >> $GITHUB_ENV
