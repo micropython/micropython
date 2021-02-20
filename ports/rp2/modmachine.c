@@ -87,11 +87,10 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
     } else {
         mp_int_t freq = mp_obj_get_int(args[0]);
-        if (set_sys_clock_khz(freq / 1000, false)) {
-            return mp_const_none;
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("valid range 12-270MHz"));
+        if (!set_sys_clock_khz(freq / 1000, false)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
         }
+        return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
