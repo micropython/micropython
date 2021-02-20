@@ -8,9 +8,10 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        board: [STM32F7DISC]
     steps:
     - uses: actions/checkout@v2
     - name: arm-none-eabi-gcc
@@ -21,5 +22,10 @@ jobs:
       run: git submodule update --init --recursive  
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
-    - name: Build the unix port
-      run: make -j $(nproc) -C ports/stm32 BOARD=STM32F7DISC
+    - name: Build ${{ matrix.board }}
+      run: make -j $(nproc) -C ports/stm32 BOARD=${{ matrix.board }}
+    - uses: actions/upload-artifact@v2
+      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
+      with:
+        name: ${{ matrix.board }}.hex
+        path: ports/stm32/build-${{ matrix.board }}/firmware.hex
