@@ -239,6 +239,7 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
+#if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_in) {
     mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typecode = mp_obj_str_get_str(typecode_in);
@@ -256,6 +257,7 @@ STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_
     return MP_OBJ_FROM_PTR(result);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
+#endif
 #endif
 
 STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
