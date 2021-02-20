@@ -9,22 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-18.04
-    container:
-      image: espressif/idf:release-v4.0
     strategy:
       matrix:
-        board: [WROVER_SPIRAM]
+        board: [GENERIC_SPIRAM]
     steps:
-    - name: Install Git
-      run: |
-        apt-get update
-        apt-get install -y software-properties-common
-        add-apt-repository ppa:git-core/ppa -y
-        apt-get update
-        apt-get install -y git
     - uses: actions/checkout@v2
+    - uses: Install ESPIDF
+      run: | 
+        git clone https://github.com/espressif/esp-idf.git
+        git -C esp-idf checkout v4.0.2
+        git -C esp-idf submodule update --init \
+          components/bt/controller/lib \
+          components/bt/host/nimble/nimble \
+          components/esp_wifi/lib_esp32 \
+          components/esptool_py/esptool \
+          components/lwip/lwip \
+          components/mbedtls/mbedtls
+       ./esp-idf/install.sh
     - name: Set ESPIDF path
-      run: echo "ESPIDF=$IDF_PATH" >> $GITHUB_ENV
+      run: echo "ESPIDF=$PWD/esp-idf" >> $GITHUB_ENV
     - name: Update submodules
       run: git submodule update --init --recursive  
     - name: Build mpy-cross
