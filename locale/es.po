@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-20 01:10+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-02-21 01:50+0000\n"
+"Last-Translator: Rodrigo Argumedo <rodrigo.argumedo@outlook.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -582,7 +582,7 @@ msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "Solo puede alertar en RTC IO de deep sleep"
+msgstr "Solo puede alertar en RTC IO de deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
@@ -1138,7 +1138,7 @@ msgstr "error Input/output"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d jumps on pin"
-msgstr "La instruction %d jumps en pin"
+msgstr "La instruction %d salta en pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
