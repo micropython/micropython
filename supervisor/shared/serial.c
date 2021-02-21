@@ -37,81 +37,10 @@
 #include "tusb.h"
 
 #ifdef MY_DEBUGUART
-#include <stdio.h>
-#include <stdarg.h>
-#include "nrfx.h"
-#include "nrf_uart.h"
-#include "nrfx_uart.h"
-const nrfx_uarte_t _dbg_uart_inst = NRFX_UARTE_INSTANCE(1);
-static int _dbg_uart_initialized = 0;
-#define DBG_PBUF_LEN 80
-static char _dbg_pbuf[DBG_PBUF_LEN+1];
-
-void _debug_uart_init(void) {
-  //if (_dbg_uart_initialized) return;
-   nrfx_uarte_config_t config = {
-        .pseltxd = 26,
-        .pselrxd = 15,
-        .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
-        .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
-        .p_context = NULL,
-        .baudrate = NRF_UART_BAUDRATE_115200,
-        .interrupt_priority = 7,
-        .hal_cfg = {
-            .hwfc = NRF_UARTE_HWFC_DISABLED,
-            .parity = NRF_UARTE_PARITY_EXCLUDED
-        }
-    };
-    nrfx_uarte_init(&_dbg_uart_inst, &config, NULL);
-    // drive config
-    nrf_gpio_cfg(config.pseltxd,
-		 NRF_GPIO_PIN_DIR_OUTPUT,
-		 NRF_GPIO_PIN_INPUT_DISCONNECT,
-		 NRF_GPIO_PIN_PULLUP, // orig=NOPULL
-		 NRF_GPIO_PIN_H0H1,  // orig=S0S1
-		 NRF_GPIO_PIN_NOSENSE);
-    _dbg_uart_initialized = 1;
-    return;
-}
-
-void _debug_print_substr(const char* text, uint32_t length) {
-  char* data = (char*)text;
-  int   siz;
-  while(length != 0) {
-    if (length <= DBG_PBUF_LEN) {
-      siz = length;
-    }
-    else {
-      siz = DBG_PBUF_LEN;
-    }
-    memcpy(_dbg_pbuf, data, siz);
-    _dbg_pbuf[siz] = 0;
-    nrfx_uarte_tx(&_dbg_uart_inst, (uint8_t const*)_dbg_pbuf, siz);
-    data += siz;
-    length -= siz;
-  }
-}
-
-void _debug_uart_deinit(void) {
-    nrfx_uarte_uninit(&_dbg_uart_inst);
-}
-
-int dbg_printf(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    int ret = vprintf(fmt, ap);
-    va_end(ap);
-    return ret;
-}
-
-extern void _debug_led_init(void);
-extern void _debug_led_set(int v);
-#else /*!MY_DEBUGUART*/
-int dbg_printf(const char *fmt, ...) {
-    return 0;
-}
+// XXX  these functions are in nrf/supervisor/port.c
+extern void _debug_uart_init(void);
+extern void _debug_print_substr(const char* text, uint32_t length);
 #endif
-
 
 /*
  * Note: DEBUG_UART currently only works on STM32,
@@ -143,7 +72,6 @@ void serial_early_init(void) {
 
 #ifdef MY_DEBUGUART
      _debug_uart_init();
-     _debug_led_init();
 #endif
 }
 
