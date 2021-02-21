@@ -328,6 +328,21 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
     return mp_const_none;
 }
 
+//|     def sort(self, key: function, reverse: bool) -> None:
+//|         """Sort the members of the group."""
+//|         ...
+//|
+STATIC mp_obj_t displayio_group_obj_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    displayio_group_t *self = native_group(pos_args[0]);
+    mp_obj_t *args = m_new(mp_obj_t, n_args);
+    for (size_t i = 1; i < n_args; ++i) {
+        args[i] = pos_args[i];
+    }
+    args[0] = self->members;
+    return mp_obj_list_sort(n_args, pos_args, kw_args);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_sort_obj, 1, displayio_group_obj_sort);
+
 STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&displayio_group_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_scale), MP_ROM_PTR(&displayio_group_scale_obj) },
@@ -338,6 +353,7 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&displayio_group_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&displayio_group_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&displayio_group_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&displayio_group_sort_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
