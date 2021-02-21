@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-30 02:32+0000\n"
-"Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
+"PO-Revision-Date: 2021-02-21 16:00+0000\n"
+"Last-Translator: David Glaude <david.glaude@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -352,7 +352,7 @@ msgstr "Tous les canaux d'événements sont utilisés"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Tous les automates finis sont utilisés"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -657,7 +657,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr ""
+msgstr "Ne peut définir les options de socket"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -1094,7 +1094,7 @@ msgstr "Erreur d'initialisation I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "périphérique I2C utilisé"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1123,7 +1123,7 @@ msgstr "Taille de tampon incorrecte"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
-msgstr ""
+msgstr "Taille du programme d'initialisation non valide"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
