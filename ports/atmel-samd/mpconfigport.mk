@@ -48,10 +48,8 @@ CIRCUITPY_SDCARDIO ?= 0
 # Not enough RAM for framebuffers
 CIRCUITPY_FRAMEBUFFERIO ?= 0
 
-# SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
-# Because of that, there aren't enough endpoints for a secondary CDC serial connection.
-USB_MSC_EP_NUM_OUT = 1
-CIRCUITPY_USB_CDC = 0
+# Not enough room in 192kB or 256kB builds for secondary CDC.
+CIRCUITPY_USB_CDC ?= 0
 
 CIRCUITPY_ULAB = 0
 
