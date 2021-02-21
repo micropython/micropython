@@ -3396,6 +3396,10 @@ msgstr "allocazione di memoria fallita, allocando %u byte"
 msgid "memory allocation failed, heap is locked"
 msgstr "allocazione di memoria fallita, l'heap è bloccato"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "modulo non trovato"

@@ -3442,6 +3442,10 @@ msgstr "l'allocation de mémoire a échoué en allouant %u octets"
 msgid "memory allocation failed, heap is locked"
 msgstr "l'allocation de mémoire a échoué, le tas est vérrouillé"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module introuvable"
