@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2021-02-21 16:22+0000\n"
-"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
+"Last-Translator: David Glaude <david.glaude@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -1845,15 +1845,15 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
-msgstr ""
+msgstr "Le programme fait des entrées sans charger d'ISR"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does OUT without loading OSR"
-msgstr ""
+msgstr "Le programme fait des sorties sans charger d'OSR"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program must contain at least one 16-bit instruction."
-msgstr ""
+msgstr "Le programme doit contenir au moins une instruction de 16 bits"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
@@ -1976,7 +1976,7 @@ msgstr "Erreur de réinitialisation SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr "Périphérique SPI est en untilisation"
+msgstr "Périphérique SPI utilisé"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
