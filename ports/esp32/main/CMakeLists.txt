@@ -5,6 +5,10 @@ get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
 
+set(MICROPY_QSTRDEFS_PORT
+    ${PROJECT_DIR}/qstrdefsport.h
+)
+
 set(MICROPY_SOURCE_EXTMOD_EXTRA
     ${MICROPY_DIR}/extmod/modonewire.c
 )
