@@ -51,7 +51,8 @@
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
 
-
+#if 0
+// XXX
 #define DEBUG_LED_PIN (NRF_GPIO_PIN_MAP(1, 11)) // P1_11 = LED
 void _debug_led_init(void) {
     nrf_gpio_cfg_output(DEBUG_LED_PIN);
@@ -59,7 +60,7 @@ void _debug_led_init(void) {
 void _debug_led_set(int v) {
     nrf_gpio_pin_write(DEBUG_LED_PIN, v);
 }
-
+#endif
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -84,10 +85,10 @@ STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
         return NRF_SLEEP_WAKEUP_TIMER;
     }
 #if 0
+    // XXX  not implemented yet
     if (alarm_touch_touchalarm_woke_us_up()) {
         return ESP_SLEEP_WAKEUP_TOUCHPAD;
     }
-    return esp_sleep_get_wakeup_cause();
 #endif
     if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
         return NRF_SLEEP_WAKEUP_RESETPIN;
@@ -130,16 +131,16 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
 #endif
     switch (cause) {
       case NRF_SLEEP_WAKEUP_TIMER: {
-	return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+        return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
       }
       case NRF_SLEEP_WAKEUP_TOUCHPAD: {
-	return mp_const_none;
+        return mp_const_none;
       }
       case NRF_SLEEP_WAKEUP_GPIO: {
-	return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+        return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
       }
       default:
-	break;
+        break;
     }
     return mp_const_none;
 }
@@ -154,6 +155,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
 #if 0
+    // XXX  not implemented yet
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 #endif
 }
@@ -170,17 +172,17 @@ STATIC void _idle_until_alarm(void) {
         if (alarm_woken_from_sleep()) {
             alarm_save_wake_alarm();
 #ifdef MY_DEBUGUART
-	    int cause = _get_wakeup_cause();
-	    printf("wakeup(%d)\r\n", cause);
+            int cause = _get_wakeup_cause();
+            printf("wakeup(%d)\r\n", cause);
 #endif
             return;
         }
         port_idle_until_interrupt();
 #ifdef MY_DEBUGUART
-	if (ct > 0) {
-	    printf("_");
-	    --ct;
-	}
+       if (ct > 0) {
+           printf("_");
+           --ct;
+       }
 #endif
     }
 }
@@ -201,8 +203,8 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         r_obj = mp_const_none;
     }
     else {
-      r_obj = _get_wake_alarm(n_alarms, alarms);
-      alarm_reset();
+        r_obj = _get_wake_alarm(n_alarms, alarms);
+        alarm_reset();
     }
     return r_obj;
 }
@@ -213,7 +215,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    //alarm_touch_touchalarm_prepare_for_deep_sleep();
+    //alarm_touch_touchalarm_prepare_for_deep_sleep(); // XXX
 
     uint8_t sd_enabled;
     sd_softdevice_is_enabled(&sd_enabled);
