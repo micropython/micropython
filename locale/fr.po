@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2021-02-21 16:19+0000\n"
-"Last-Translator: David Glaude <david.glaude@gmail.com>\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -1441,12 +1441,12 @@ msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
+msgstr "first_in_pin manquant. Instruction %d est déplacée par la/les broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "first_in_pin manquant. L'instruction %d attends dépends de la broche"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1462,7 +1462,7 @@ msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1588,13 +1588,13 @@ msgstr "Aucun réseau avec ce ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "Aucun out dans le programme"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr ""
+msgstr "Aucun pull up trouvé sur SDA ou SCL; vérifiez votre cablage"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1655,7 +1655,7 @@ msgstr "Uniquement 8 ou 16 bit mono avec "
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
+msgstr "Seulement des IN/OUT jusqu'à 8 est supporté"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1717,7 +1717,7 @@ msgstr "Plus de sockets"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
-msgstr ""
+msgstr "Tampon de sortie doit être au moins %d octets"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1757,11 +1757,11 @@ msgstr "Permission refusée"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
-msgstr ""
+msgstr "Nombre de broches doit être au moins 1"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Nombre de broches trop élevé"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1799,7 +1799,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
-msgstr ""
+msgstr "Les broches doivent partager la tranche PWM"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1869,7 +1869,7 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
-msgstr ""
+msgstr "Mode RAISE n'est pas implémenté"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1881,7 +1881,7 @@ msgstr "Erreur d'initialisation du RNG (RNG Init)"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
-msgstr ""
+msgstr "RS485 n'est pas encore supporté sur cet appareil"
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -1976,7 +1976,7 @@ msgstr "Erreur de réinitialisation SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
+msgstr "Périphérique SPI est en untilisation"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -2010,11 +2010,11 @@ msgstr "Un contexte niveau serveur ne peut avoir de hostname"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Set pin count must be between 1 and 5"
-msgstr ""
+msgstr "Nombre de broches configurées doit être entre 1 et 5"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
-msgstr ""
+msgstr "Nombre de broches Side configurées doit être entre 1 et 5"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
@@ -2049,11 +2049,11 @@ msgstr "La pile doit être au moins de 256"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
-msgstr ""
+msgstr "Canal stéréo gauche doit être sur le canal PWM A"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
-msgstr ""
+msgstr "Canal stéréo droit doit être sur le canal PWM B"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -2202,7 +2202,7 @@ msgstr "Erreur de réinitialisation UART"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART not yet supported"
-msgstr ""
+msgstr "UART n'est pas encore supporté"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
