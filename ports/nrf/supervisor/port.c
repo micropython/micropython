@@ -472,3 +472,9 @@ void HardFault_Handler(void) {
         asm("nop;");
     }
 }
+
+#if CIRCUITPY_ALARM
+// in case boards/xxx/board.c does not provide board_deinit()
+MP_WEAK void board_deinit(void) {
+}
+#endif
