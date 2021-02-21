@@ -238,6 +238,26 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_in) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+    const char *typecode = mp_obj_str_get_str(typecode_in);
+    size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
+    size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
+    if (bytelen % element_size != 0) {
+        mp_raise_TypeError(translate("memoryview: length is not a multiple of itemsize"));
+    }
+    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
+
+    // test if the object can be written to
+    if (self->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW) {
+        result->typecode |= MP_OBJ_ARRAY_TYPECODE_FLAG_RW; // indicate writable buffer
+    }
+    return MP_OBJ_FROM_PTR(result);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
+#endif
 #endif
 
 STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
@@ -691,6 +711,15 @@ const mp_obj_type_t mp_type_bytearray = {
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
+#endif
+
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
     .name = MP_QSTR_memoryview,
@@ -700,6 +729,9 @@ const mp_obj_type_t mp_type_memoryview = {
     .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
+#if MICROPY_CPYTHON_COMPAT
+    .locals_dict = (mp_obj_dict_t*)&memoryview_locals_dict,
+#endif
 };
 #endif
 
