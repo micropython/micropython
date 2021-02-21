@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 01:50+0000\n"
-"Last-Translator: Rodrigo Argumedo <rodrigo.argumedo@outlook.com>\n"
+"PO-Revision-Date: 2021-02-21 22:27+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -3427,6 +3427,7 @@ msgstr "la asignación de memoria falló, el heap está bloqueado"
 #: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr ""
+"memoryview: la longitud no es un múltiplo del tamaño del elemento (itemsize)"
 
 #: py/builtinimport.c
 msgid "module not found"
