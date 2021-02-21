@@ -24,6 +24,7 @@ CIRCUITPY_NEOPIXEL_WRITE = 0
 endif
 
 CIRCUITPY_FULL_BUILD = 1
+CIRCUITPY_BITOPS = 1
 CIRCUITPY_PWMIO = 1
 
 # Things that need to be implemented.
@@ -49,4 +50,5 @@ INTERNAL_LIBM = 1
 
 USB_SERIAL_NUMBER_LENGTH = 16
 
+# Number of USB endpoint pairs.
 USB_NUM_EP = 8

@@ -37,6 +37,8 @@
 typedef struct {
     mp_obj_base_t base;
     I2C_HandleTypeDef handle;
+    IRQn_Type irq;
+    bool frame_in_prog;
     bool has_lock;
     const mcu_periph_obj_t *scl;
     const mcu_periph_obj_t *sda;

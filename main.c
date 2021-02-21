@@ -69,6 +69,19 @@
 #include "shared-bindings/alarm/__init__.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
+#endif
+
+#if CIRCUITPY_CANIO
+#include "common-hal/canio/CAN.h"
+#endif
+
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -81,17 +94,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_BOARD
-#include "shared-module/board/__init__.h"
-#endif
-
-#if CIRCUITPY_BLEIO
-#include "shared-bindings/_bleio/__init__.h"
-#include "supervisor/shared/bluetooth.h"
-#endif
-
-#if CIRCUITPY_CANIO
-#include "common-hal/canio/CAN.h"
+#if CIRCUITPY_USB_CDC
+#include "shared-module/usb_cdc/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI

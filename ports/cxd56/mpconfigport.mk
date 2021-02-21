@@ -7,6 +7,9 @@ USB_CDC_EP_NUM_DATA_IN = 1
 USB_MSC_EP_NUM_OUT = 5
 USB_MSC_EP_NUM_IN = 4
 
+# Number of USB endpoint pairs.
+USB_NUM_EP = 6
+
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
 
 CIRCUITPY_AUDIOBUSIO = 0

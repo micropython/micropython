@@ -29,6 +29,7 @@ CIRCUITPY_BUSDEVICE = 0
 MICROPY_PY_ASYNC_AWAIT = 0
 
 SUPEROPT_GC = 0
+SUPEROPT_VM = 0
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
