@@ -27,33 +27,13 @@
 #include "shared-bindings/displayio/Group.h"
 
 #include "py/runtime.h"
+#include "py/objlist.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
 #if CIRCUITPY_VECTORIO
 #include "shared-bindings/vectorio/VectorShape.h"
 #endif
 
-#include <string.h>
-#define LIST_MIN_ALLOC 4
-
-STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
-    if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
-    }
-    size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
-    mp_obj_t ret = self->items[index];
-    self->len -= 1;
-    memmove(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
-    // Clear stale pointer from slot which just got freed to prevent GC issues
-    self->items[self->len] = MP_OBJ_NULL;
-    if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {
-        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
-        self->alloc /= 2;
-    }
-    return ret;
-}
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
     mp_obj_list_t *members = mp_obj_new_list(0, NULL);
@@ -343,8 +323,7 @@ void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp
 
 mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index) {
     _remove_layer(self, index);
-    mp_obj_t args[] = {self->members, MP_OBJ_NEW_SMALL_INT(index)};
-    return list_pop(2, args);
+    return mp_obj_list_pop(self->members, index);
 }
 
 mp_int_t common_hal_displayio_group_index(displayio_group_t* self, mp_obj_t layer) {

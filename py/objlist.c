@@ -270,13 +270,10 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
+mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     if (self->len == 0) {
         mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
     }
-    size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memmove(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
@@ -287,6 +284,13 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
         self->alloc /= 2;
     }
     return ret;
+}
+
+STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
+    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
+    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
+    size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
+    return mp_obj_list_pop(self, index);
 }
 
 STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
