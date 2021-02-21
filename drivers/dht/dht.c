@@ -37,7 +37,9 @@
 #define mp_hal_pin_od_high_dht mp_hal_pin_od_high
 #endif
 
-STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
+STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in, mp_obj_t irq_lock) {
+    mp_uint_t irq_state=0;
+
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     mp_hal_pin_open_drain(pin);
 
@@ -54,7 +56,9 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     mp_hal_pin_od_low(pin);
     mp_hal_delay_ms(18);
 
-    mp_uint_t irq_state = mp_hal_quiet_timing_enter();
+    if (mp_obj_is_true(irq_lock)) {
+        irq_state = mp_hal_quiet_timing_enter();
+    }
 
     // release the line so the device can respond
     mp_hal_pin_od_high_dht(pin);
@@ -84,11 +88,15 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
         buf[i / 8] = (buf[i / 8] << 1) | (ticks > 48);
     }
 
-    mp_hal_quiet_timing_exit(irq_state);
+    if (mp_obj_is_true(irq_lock)) {
+        mp_hal_quiet_timing_exit(irq_state);
+    }
     return mp_const_none;
 
 timeout:
-    mp_hal_quiet_timing_exit(irq_state);
+    if (mp_obj_is_true(irq_lock)) {
+        mp_hal_quiet_timing_exit(irq_state);
+    }
     mp_raise_OSError(MP_ETIMEDOUT);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(dht_readinto_obj, dht_readinto);
+MP_DEFINE_CONST_FUN_OBJ_3(dht_readinto_obj, dht_readinto);

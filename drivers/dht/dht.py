@@ -7,16 +7,21 @@ except:
     from pyb import dht_readinto
 
 
+class DHTChecksumError(Exception):
+    pass
+
+
 class DHTBase:
-    def __init__(self, pin):
+    def __init__(self, pin, irq_block=True):
         self.pin = pin
         self.buf = bytearray(5)
+        self.irq_block = irq_block
 
     def measure(self):
         buf = self.buf
-        dht_readinto(self.pin, buf)
+        dht_readinto(self.pin, buf, self.irq_block)
         if (buf[0] + buf[1] + buf[2] + buf[3]) & 0xFF != buf[4]:
-            raise Exception("checksum error")
+            raise DHTChecksumError("Measure failed")
 
 
 class DHT11(DHTBase):

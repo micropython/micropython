@@ -63,3 +63,22 @@ To make newer I2C sensors work in backwards compatible 1-wire mode, you must
 connect both pins 3 and 4 to GND. This disables the I2C interface.
 
 DHT22 sensors are now sold under the name AM2302 and are otherwise identical.
+
+NOTE: if your are using a PWM channel in parallel of your measure, there can
+be some glitches on the PWM channel at the measure time. This is because
+the DHT drivers locks interrupts for accurate protocol timing handling,
+and the PWM driver relies on these interrupts. The constructor of the DHT
+objects has an extra argument irq_lock which can be set to False.
+The risk is low, but in case of timing issues a DHTChecksumError can be
+raised, catch it and retry.
+
+    >>> import dht
+    >>> import machine
+    >>> d = dht.DHT22(machine.Pin(4), False)
+    >>> measure_ok = False
+    >>> while not measure_ok:
+    >>>     try:
+    >>>         d.measure()
+    >>>         measure_ok = True
+    >>>     except dht.DHTChecksumError:
+    >>>         pass
