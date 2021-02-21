@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 01:50+0000\n"
+"PO-Revision-Date: 2021-02-21 22:27+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3438,7 +3438,7 @@ msgstr ""
 
 #: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
-msgstr ""
+msgstr "memoryview: o comprimento não é um múltiplo do tamanho dos itens"
 
 #: py/builtinimport.c
 msgid "module not found"
