@@ -684,6 +684,7 @@ mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 extern mp_float_t uint64_to_float(uint64_t ui64);
+extern uint64_t float_to_uint64(float f);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
