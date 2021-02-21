@@ -33,10 +33,31 @@
 #include "shared-bindings/vectorio/VectorShape.h"
 #endif
 
+#include <string.h>
+#define LIST_MIN_ALLOC 4
+
+STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
+    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
+    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
+    if (self->len == 0) {
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
+    }
+    size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
+    mp_obj_t ret = self->items[index];
+    self->len -= 1;
+    memmove(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
+    // Clear stale pointer from slot which just got freed to prevent GC issues
+    self->items[self->len] = MP_OBJ_NULL;
+    if (self->alloc > LIST_MIN_ALLOC && self->alloc > 2 * self->len) {
+        self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc/2);
+        self->alloc /= 2;
+    }
+    return ret;
+}
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
-    displayio_group_child_t* children = m_new(displayio_group_child_t, max_size);
-    displayio_group_construct(self, children, max_size, scale, x, y);
+    mp_obj_list_t *members = mp_obj_new_list(0, NULL);
+    displayio_group_construct(self, members, scale, x, y);
 }
 
 bool common_hal_displayio_group_get_hidden(displayio_group_t* self) {
@@ -51,16 +72,16 @@ void common_hal_displayio_group_set_hidden(displayio_group_t* self, bool hidden)
     if (self->hidden_by_parent) {
         return;
     }
-    for (size_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             displayio_tilegrid_set_hidden_by_parent(layer, hidden);
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
@@ -77,16 +98,16 @@ void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) 
     if (self->hidden) {
         return;
     }
-    for (size_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             displayio_tilegrid_set_hidden_by_parent(layer, hidden);
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
@@ -100,18 +121,18 @@ uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
 
 bool displayio_group_get_previous_area(displayio_group_t *self, displayio_area_t* area) {
     bool first = true;
-    for (size_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
         displayio_area_t layer_area;
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             if (!displayio_tilegrid_get_previous_area(layer, &layer_area)) {
                 continue;
             }
         } else {
             layer = mp_instance_cast_to_native_base(
-                self->children[i].original, &displayio_group_type);
+                self->members->items[i], &displayio_group_type);
             if (layer != MP_OBJ_NULL) {
                 if (!displayio_group_get_previous_area(layer, &layer_area)) {
                     continue;
@@ -140,24 +161,24 @@ static void _update_child_transforms(displayio_group_t* self) {
     if (!self->in_group) {
         return;
     }
-    for (size_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
 #if CIRCUITPY_VECTORIO
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &vectorio_vector_shape_type);
+            self->members->items[i], &vectorio_vector_shape_type);
         if (layer != MP_OBJ_NULL) {
             vectorio_vector_shape_update_transform(layer, &self->absolute_transform);
             continue;
         }
 #endif
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             displayio_tilegrid_update_transform(layer, &self->absolute_transform);
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             displayio_group_update_transform(layer, &self->absolute_transform);
             continue;
@@ -279,7 +300,7 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
     bool rendered_last_frame = false;
 #if CIRCUITPY_VECTORIO
     layer = mp_instance_cast_to_native_base(
-        self->children[index].original, &vectorio_vector_shape_type);
+        self->members->items[index], &vectorio_vector_shape_type);
     if (layer != MP_OBJ_NULL) {
         bool has_dirty_area = vectorio_vector_shape_get_dirty_area(layer, &layer_area);
         rendered_last_frame = has_dirty_area;
@@ -287,14 +308,14 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
     }
 #endif
     layer = mp_instance_cast_to_native_base(
-        self->children[index].original, &displayio_tilegrid_type);
+        self->members->items[index], &displayio_tilegrid_type);
     if (layer != MP_OBJ_NULL) {
         displayio_tilegrid_t* tilegrid = layer;
         rendered_last_frame = displayio_tilegrid_get_previous_area(tilegrid, &layer_area);
         displayio_tilegrid_update_transform(tilegrid, NULL);
     }
     layer = mp_instance_cast_to_native_base(
-        self->children[index].original, &displayio_group_type);
+        self->members->items[index], &displayio_group_type);
     if (layer != MP_OBJ_NULL) {
         displayio_group_t* group = layer;
         rendered_last_frame = displayio_group_get_previous_area(group, &layer_area);
@@ -312,59 +333,45 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
 }
 
 void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer) {
-    if (self->size == self->max_size) {
-        mp_raise_RuntimeError(translate("Group full"));
-    }
     _add_layer(self, layer);
-    // Shift everything right.
-    for (size_t i = self->size; i > index; i--) {
-        self->children[i] = self->children[i - 1];
+    mp_obj_list_append(self->members, mp_const_none);
+    for (size_t i = self->members->len - 1; i > index; i--) {
+         self->members->items[i] = self->members->items[i - 1];
     }
-    self->children[index].original = layer;
-    self->size++;
+    self->members->items[index] = layer;
 }
 
 mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index) {
-    self->size--;
-    mp_obj_t item = self->children[index].original;
     _remove_layer(self, index);
-
-    // Shift everything left.
-    for (size_t i = index; i < self->size; i++) {
-        self->children[i] = self->children[i + 1];
-    }
-    self->children[self->size].original = NULL;
-    return item;
+    mp_obj_t args[] = {self->members, MP_OBJ_NEW_SMALL_INT(index)};
+    return list_pop(2, args);
 }
 
 mp_int_t common_hal_displayio_group_index(displayio_group_t* self, mp_obj_t layer) {
-    for (size_t i = 0; i < self->size; i++) {
-        if (self->children[i].original == layer) {
-            return i;
-        }
-    }
-    return -1;
+    mp_obj_t args[] = {self->members, layer};
+    mp_obj_t *index = mp_seq_index_obj(
+        self->members->items, self->members->len, 2, args);
+    return MP_OBJ_SMALL_INT_VALUE(index);
 }
 
 size_t common_hal_displayio_group_get_len(displayio_group_t* self) {
-    return self->size;
+    return self->members->len;
 }
 
 mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index) {
-    return self->children[index].original;
+    return self->members->items[index];
 }
 
 void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer) {
     _add_layer(self, layer);
     _remove_layer(self, index);
-    self->children[index].original = layer;
+    mp_obj_list_store(self, MP_OBJ_NEW_SMALL_INT(index), layer);
 }
 
-void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
+void displayio_group_construct(displayio_group_t* self, mp_obj_list_t* members, uint32_t scale, mp_int_t x, mp_int_t y) {
     self->x = x;
     self->y = y;
-    self->children = child_array;
-    self->max_size = max_size;
+    self->members = members;
     self->item_removed = false;
     self->scale = scale;
     self->in_group = false;
@@ -373,11 +380,11 @@ void displayio_group_construct(displayio_group_t* self, displayio_group_child_t*
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
-    for (int32_t i = self->size - 1; i >= 0 ; i--) {
+    for (int32_t i = self->members->len - 1; i >= 0 ; i--) {
         mp_obj_t layer;
 #if CIRCUITPY_VECTORIO
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &vectorio_vector_shape_type);
+            self->members->items[i], &vectorio_vector_shape_type);
         if (layer != MP_OBJ_NULL) {
             if (vectorio_vector_shape_fill_area(layer, colorspace, area, mask, buffer)) {
                 return true;
@@ -386,7 +393,7 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
         }
 #endif
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
                 return true;
@@ -394,7 +401,7 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             if (displayio_group_fill_area(layer, colorspace, area, mask, buffer)) {
                 return true;
@@ -407,24 +414,24 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
 
 void displayio_group_finish_refresh(displayio_group_t *self) {
     self->item_removed = false;
-    for (int32_t i = self->size - 1; i >= 0 ; i--) {
+    for (int32_t i = self->members->len - 1; i >= 0 ; i--) {
         mp_obj_t layer;
 #if CIRCUITPY_VECTORIO
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &vectorio_vector_shape_type);
+            self->members->items[i], &vectorio_vector_shape_type);
         if (layer != MP_OBJ_NULL) {
             vectorio_vector_shape_finish_refresh(layer);
             continue;
         }
 #endif
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             displayio_tilegrid_finish_refresh(layer);
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             displayio_group_finish_refresh(layer);
             continue;
@@ -438,24 +445,24 @@ displayio_area_t* displayio_group_get_refresh_areas(displayio_group_t *self, dis
         tail = &self->dirty_area;
     }
 
-    for (int32_t i = self->size - 1; i >= 0 ; i--) {
+    for (int32_t i = self->members->len - 1; i >= 0 ; i--) {
         mp_obj_t layer;
 #if CIRCUITPY_VECTORIO
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &vectorio_vector_shape_type);
+            self->members->items[i], &vectorio_vector_shape_type);
         if (layer != MP_OBJ_NULL) {
             tail = vectorio_vector_shape_get_refresh_areas(layer, tail);
             continue;
         }
 #endif
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_tilegrid_type);
+            self->members->items[i], &displayio_tilegrid_type);
         if (layer != MP_OBJ_NULL) {
             tail = displayio_tilegrid_get_refresh_areas(layer, tail);
             continue;
         }
         layer = mp_instance_cast_to_native_base(
-            self->children[i].original, &displayio_group_type);
+            self->members->items[i], &displayio_group_type);
         if (layer != MP_OBJ_NULL) {
             tail = displayio_group_get_refresh_areas(layer, tail);
             continue;

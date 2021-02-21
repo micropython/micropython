@@ -270,15 +270,20 @@ displayio_tilegrid_t blinka_sprite = {
 };
 
 #if CIRCUITPY_TERMINALIO
-#define CHILD_COUNT 2
-displayio_group_child_t splash_children[2] = {
-    {&blinka_sprite},
-    {&supervisor_terminal_text_grid},
+mp_obj_t members[] = { &blinka_sprite, &supervisor_terminal_text_grid, };
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 2,
+    .len = 2,
+    .items = members,
 };
 #else
-#define CHILD_COUNT 1
-displayio_group_child_t splash_children[1] = {
-    {&blinka_sprite},
+mp_obj_t members[] = { &blinka_sprite };
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 1,
+    .len = 1,
+    .items = members,
 };
 #endif
 
@@ -287,9 +292,7 @@ displayio_group_t circuitpython_splash = {
     .x = 0,
     .y = 0,
     .scale = 2,
-    .size = CHILD_COUNT,
-    .max_size = CHILD_COUNT,
-    .children = splash_children,
+    .members = &splash_children,
     .item_removed = false,
     .in_group = false,
     .hidden = false,
