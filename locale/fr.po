@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 16:00+0000\n"
+"PO-Revision-Date: 2021-02-21 16:19+0000\n"
 "Last-Translator: David Glaude <david.glaude@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -1133,6 +1133,8 @@ msgstr "Échec d'initialisation par manque de mémoire"
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
+"La taille (%d) du tampon d'entrée doit être un multiple du nombre (%d) de "
+"brins"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1143,29 +1145,33 @@ msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
+#, c-format, fuzzy
 msgid "Instruction %d jumps on pin"
-msgstr ""
+msgstr "Instruction %d saute sur la broche"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
+"Instruction %d décale vers l'intérieur de plus de bits que le nombre de "
+"broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
 msgstr ""
+"instruction %d décale vers l'extérieur de plus de bits que le nombre de "
+"broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr ""
+msgstr "instruction %d utilise des broches supplémentaires"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d waits on input outside of count"
-msgstr ""
+msgstr "instruction %d attend sur une entrée hors du compte"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1430,7 +1436,7 @@ msgstr "Broche MISO ou MOSI manquante"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr ""
+msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1446,11 +1452,12 @@ msgstr ""
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
 msgstr ""
+"first_out_pin manquant. Instruction %d est déplacée par la/les broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1495,7 +1502,7 @@ msgstr "Aucun canal DMA trouvé"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA pacing timer found"
-msgstr ""
+msgstr "Aucun minuteur de rythme DMA trouvé"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1850,11 +1857,11 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
+msgstr "Taille du programme invalide"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program too large"
-msgstr ""
+msgstr "Programme trop grand"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -3443,8 +3450,9 @@ msgid "memory allocation failed, heap is locked"
 msgstr "l'allocation de mémoire a échoué, le tas est vérrouillé"
 
 #: py/objarray.c
+#, fuzzy
 msgid "memoryview: length is not a multiple of itemsize"
-msgstr ""
+msgstr "memoryview: la longueur n'est pas un multiple de la taille d'un élément"
 
 #: py/builtinimport.c
 msgid "module not found"
