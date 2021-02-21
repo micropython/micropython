@@ -340,6 +340,15 @@ mp_float_t uint64_to_float(uint64_t ui64) {
     return (mp_float_t) ((uint32_t) (ui64 >> 32) * 4294967296.0f + (uint32_t) (ui64 & 0xffffffff));
 }
 
+// Convert a uint64_t to a 32-bit float to a uint64_t without invoking extra math routines.
+// which are large.
+// Assume f >= 0.
+uint64_t float_to_uint64(float f) {
+    // 4294967296 = 2^32
+    const uint32_t upper_half = (uint32_t) (f /  4294967296.0f);
+    const uint32_t lower_half = (uint32_t) f;
+    return (((uint64_t) upper_half) << 32) + lower_half;
+}
 #pragma GCC diagnostic pop
 
 #endif // MICROPY_PY_BUILTINS_FLOAT
