@@ -97,7 +97,7 @@ static const flash_layout_t flash_layout[] = {
 };
 #endif
 
-#elif defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+#elif defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
 static const flash_layout_t flash_layout[] = {
     { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
@@ -159,7 +159,7 @@ static uint32_t get_page(uint32_t addr) {
 }
 #endif
 
-#elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB)
+#elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
 
 static uint32_t get_page(uint32_t addr) {
     return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
@@ -263,7 +263,7 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.PageAddress = flash_dest;
     EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
-    #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB)
+    #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.Page = get_page(flash_dest);
@@ -370,7 +370,7 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
 
     HAL_StatusTypeDef status = HAL_OK;
 
-    #if defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
     // program the flash uint64 by uint64
     for (int i = 0; i < num_word32 / 2; i++) {

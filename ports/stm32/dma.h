@@ -100,7 +100,7 @@ extern const dma_descr_t dma_I2C_2_RX;
 extern const dma_descr_t dma_I2C_1_TX;
 extern const dma_descr_t dma_I2C_1_RX;
 
-#elif defined(STM32L4) || defined(STM32WB)
+#elif defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
 extern const dma_descr_t dma_ADC_1_RX;
 extern const dma_descr_t dma_ADC_2_RX;

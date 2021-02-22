@@ -151,7 +151,7 @@ void powerctrl_check_enter_bootloader(void) {
     #endif
 }
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB)
+#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB) && !defined(STM32WL)
 
 typedef struct _sysclk_scaling_table_entry_t {
     uint16_t mhz;
@@ -542,9 +542,15 @@ set_clk:
     return 0;
 }
 
-#elif defined(STM32WB)
+#elif defined(STM32WB) || defined(STM32WL)
 
+#if defined(STM32WB)
 #include "stm32wbxx_ll_utils.h"
+#define FLASH_LATENCY_MAX LL_FLASH_LATENCY_3
+#else
+#include "stm32wlxx_ll_utils.h"
+#define FLASH_LATENCY_MAX LL_FLASH_LATENCY_2
+#endif
 
 #define LPR_THRESHOLD (2000000)
 #define VOS2_THRESHOLD (16000000)
@@ -605,8 +611,8 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     } else if (sysclk_mode == SYSCLK_MODE_MSI) {
         // Set flash latency to maximum to ensure the latency is large enough for
         // both the current SYSCLK and the SYSCLK that will be selected below.
-        LL_FLASH_SetLatency(LL_FLASH_LATENCY_3);
-        while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_3) {
+        LL_FLASH_SetLatency(FLASH_LATENCY_MAX);
+        while (LL_FLASH_GetLatency() != FLASH_LATENCY_MAX) {
         }
 
         // Before changing the MSIRANGE value, if MSI is on then it must also be ready.
@@ -686,7 +692,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+    #if !defined(STM32F0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -765,7 +771,7 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32H7)
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
     }
-    #elif defined(STM32WB)
+    #elif defined(STM32WB) || defined(STM32WL)
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_PLLCLK) {
     }
     #else
@@ -861,7 +867,7 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
-    #elif defined(STM32G4)
+    #elif defined(STM32G4) || defined(STM32WL)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_MISR_ALRAMF | RTC_MISR_ALRBMF | RTC_MISR_WUTMF | RTC_MISR_TSMF)
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -885,7 +891,7 @@ void powerctrl_enter_standby_mode(void) {
     // clear RTC wake-up flags
     #if defined(SR_BITS)
     RTC->SR &= ~SR_BITS;
-    #elif defined(STM32G4)
+    #elif defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~ISR_BITS;
     #else
     RTC->ISR &= ~ISR_BITS;
@@ -907,6 +913,9 @@ void powerctrl_enter_standby_mode(void) {
     // clear all wake-up flags
     PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
     // TODO
+    #elif defined(STM32WL)
+    // clear all wake-up flags
+    PWR->SCR |= PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
     #else
     // clear global wake-up flag
     PWR->CR |= PWR_CR_CWUF;
