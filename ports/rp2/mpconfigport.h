@@ -102,6 +102,7 @@
 #define MICROPY_PY_URE_SUB                      (1)
 #define MICROPY_PY_UHASHLIB                     (1)
 #define MICROPY_PY_UBINASCII                    (1)
+#define MICROPY_PY_UBINASCII_CRC32              (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_PY_URANDOM                      (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)

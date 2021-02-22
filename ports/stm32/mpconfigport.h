@@ -165,6 +165,7 @@
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
 #ifndef MICROPY_PY_UBINASCII
 #define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_UBINASCII_CRC32  (1)
 #endif
 #ifndef MICROPY_PY_UOS
 #define MICROPY_PY_UOS              (1)
