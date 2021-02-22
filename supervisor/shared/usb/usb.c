@@ -62,6 +62,7 @@ void load_serial_number(void) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
+    usb_serial_number[0] = 0x300 | MP_ARRAY_SIZE(usb_serial_number);
     for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
         for (int j = 0; j < 2; j++) {
             uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
