@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-20 01:10+0000\n"
+"PO-Revision-Date: 2021-02-21 22:27+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -582,7 +582,7 @@ msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "Solo puede alertar en RTC IO de deep sleep"
+msgstr "Solo puede alertar en RTC IO de deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
@@ -1138,7 +1138,7 @@ msgstr "error Input/output"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d jumps on pin"
-msgstr "La instruction %d jumps en pin"
+msgstr "La instruction %d salta en pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1433,7 +1433,8 @@ msgstr "first_in_pin no encontrado. La instrucción %d desplaza de los pin(es)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "first_in_pin no encontrado. La instrucción %d espera basada en este pin"
+msgstr ""
+"first_in_pin no encontrado. La instrucción %d espera basada en este pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1450,7 +1451,8 @@ msgstr "first_in_pin no encontrado. La instrucción %d escribe pin(es)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "first_set_pin no encontrado. La instrucción %d configura el/los pin(es)"
+msgstr ""
+"first_set_pin no encontrado. La instrucción %d configura el/los pin(es)"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -3421,6 +3423,11 @@ msgstr "la asignación de memoria falló, asignando %u bytes"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "la asignación de memoria falló, el heap está bloqueado"
+
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+"memoryview: la longitud no es un múltiplo del tamaño del elemento (itemsize)"
 
 #: py/builtinimport.c
 msgid "module not found"

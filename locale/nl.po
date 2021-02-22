@@ -3398,6 +3398,10 @@ msgstr "geheugentoewijzing mislukt, %u bytes worden toegewezen"
 msgid "memory allocation failed, heap is locked"
 msgstr "geheugentoewijzing mislukt, heap is vergrendeld"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module niet gevonden"
