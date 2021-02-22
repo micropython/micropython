@@ -1,7 +1,7 @@
 MCU_SERIES = wb
 CMSIS_MCU = STM32WB55xx
 AF_FILE = boards/stm32wb55_af.csv
-STARTUP_FILE = lib/stm32lib/CMSIS/STM32WBxx/Source/Templates/gcc/startup_stm32wb55xx_cm4.o
+STARTUP_FILE = $(STM32LIB_CMSIS_BASE)/Source/Templates/gcc/startup_stm32wb55xx_cm4.o
 
 ifeq ($(USE_MBOOT),1)
 # When using Mboot all the text goes together after the bootloader
