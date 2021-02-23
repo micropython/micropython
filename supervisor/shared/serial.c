@@ -37,7 +37,7 @@
 #include "tusb.h"
 
 #ifdef MY_DEBUGUART
-// XXX  these functions are in nrf/supervisor/port.c
+// XXX  these functions are in nrf/supervisor/debug_uart.c
 extern void _debug_uart_init(void);
 extern void _debug_print_substr(const char* text, uint32_t length);
 #endif
