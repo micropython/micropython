@@ -15,4 +15,4 @@
 // #define DEFAULT_UART_BUS_TX (&pin_PA10)
 
 // Flash chip is W25Q16JVUXIQ connected over QSPI
-#define TOTAL_FLASH_SIZE 2 * 1024 * 1024
+#define TOTAL_FLASH_SIZE (2 * 1024 * 1024)
