@@ -70,7 +70,7 @@ typedef union {
 struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
-    #elif defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32F0) || defined(STM32F3) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
@@ -85,7 +85,7 @@ struct _dma_descr_t {
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32H7) || defined(STM32F3)  || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -95,7 +95,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .MemDataAlignment = DMA_MDATAALIGN_BYTE,
     .Mode = DMA_NORMAL,
     .Priority = DMA_PRIORITY_LOW,
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F4)|| defined(STM32F7) || defined(STM32H7)
     .FIFOMode = DMA_FIFOMODE_DISABLE,
     .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
     .MemBurst = DMA_MBURST_INC4,
@@ -106,7 +106,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 #if ENABLE_SDIO && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F3) || defined(STM32F7)
     .Channel = 0,
     #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,
@@ -118,7 +118,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
     .MemDataAlignment = DMA_MDATAALIGN_WORD,
     #if defined(STM32F4) || defined(STM32F7)
     .Mode = DMA_PFCTRL,
-    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32F3)
     .Mode = DMA_NORMAL,
     #endif
     .Priority = DMA_PRIORITY_VERY_HIGH,
@@ -134,7 +134,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 // Default parameters to dma_init() for DAC tx
 static const DMA_InitTypeDef dma_init_struct_dac = {
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F3) ||  defined(STM32F7)
     .Channel = 0,
     #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,

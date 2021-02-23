@@ -74,6 +74,16 @@
 #define ADC_CAL2                ((uint16_t *)0x1ffff7c2)
 #define ADC_CAL_BITS            (12)
 
+#if defined(STM32F3)
+
+#define ADC_FIRST_GPIO_CHANNEL  (0)
+#define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_SCALE_V             (3.3f)
+#define ADC_CAL_ADDRESS         (0x1ffff7ba) // VREFINT_CAL_ADDR
+#define ADC_CAL1                ((uint16_t *)0x1ffff7b8) // TEMPSENSOR_CAL1_ADDR
+#define ADC_CAL2                ((uint16_t *)0x1ffff7c2) // TEMPSENSOR_CAL2_ADDR
+#define ADC_CAL_BITS            (12)
+
 #elif defined(STM32F4)
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
@@ -150,6 +160,14 @@
     defined(STM32L476xx) || defined(STM32L496xx) || \
     defined(STM32WB55xx)
 #define VBAT_DIV (3)
+#elif  defined(STM32F301x8) || defined(STM32F302x8) \
+    defined(STM32F302xC) || defined(STM32F302xE) || \
+    defined(STM32F303x8) || defined(STM32F303xC) || \
+    defined(STM32F303xE) || defined(STM32F373xC) || \
+    defined(STM32F334x8) || defined(STM32F318xx) || \
+    defined(STM32F328xx) || defined(STM32F358xx) || \
+    defined(STM32F378xx) || defined(STM32F398xx)
+#define VBAT_DIV (4)
 #else
 #error Unsupported processor
 #endif
@@ -195,7 +213,7 @@ STATIC bool is_adcx_channel(int channel) {
     #if defined(STM32F411xE)
     // The HAL has an incorrect IS_ADC_CHANNEL macro for the F411 so we check for temp
     return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
-    #elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
+    #elif defined(STM32F0) || defined(STM32F3) || defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
     #elif defined(STM32H7)
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
@@ -218,7 +236,7 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
     uint32_t tickstart = HAL_GetTick();
     #if defined(STM32F4) || defined(STM32F7)
     while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
-    #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) 
     while (READ_BIT(ADCx->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
     #else
     #error Unsupported processor
@@ -230,7 +248,7 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
 }
 
 STATIC void adcx_clock_enable(void) {
-    #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F0) || defined(STM32F3) || defined(STM32F4) || defined(STM32F7)
     ADCx_CLK_ENABLE();
     #elif defined(STM32H7)
     __HAL_RCC_ADC3_CLK_ENABLE();
@@ -265,6 +283,12 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
     adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_55CYCLES_5;    // ~4uS
+    #if defined(STM32F3)
+    adch->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+    adch->Init.ScanConvMode = DISABLE;
+    adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adch->Init.DMAContinuousRequests = DISABLE;
+    // adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_61CYCLES_5; 
     #elif defined(STM32F4) || defined(STM32F7)
     adch->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
     adch->Init.ScanConvMode = DISABLE;
@@ -294,9 +318,14 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
 
     #if defined(STM32H7)
     HAL_ADCEx_Calibration_Start(adch, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-    #endif
-    #if defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32L4) || defined(STM32WB)
     HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
+    #elif defined(STM32F0)
+        #if defined(STM32F373xC) || defined(STM32F378xx)
+            HAL_ADCEx_Calibration_Start(adch);
+        #else
+            HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
+        #endif
     #endif
 }
 
@@ -334,6 +363,8 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 
     #if defined(STM32F0)
     sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
+    #elif defined(STM32F3)
+    sConfig.SamplingTime = ADC_SAMPLETIME_61CYCLES_5;
     #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
     #elif defined(STM32H7)
@@ -530,7 +561,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             // for subsequent samples we can just set the "start sample" bit
             #if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+            #elif defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
@@ -640,7 +671,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             // ADC is started: set the "start sample" bit
             #if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+            #elif defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor

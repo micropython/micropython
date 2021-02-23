@@ -248,7 +248,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
     // DAC peripheral clock
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F3) || defined(STM32F4) || defined(STM32F7)
     __DAC_CLK_ENABLE();
     #elif defined(STM32H7)
     __HAL_RCC_DAC12_CLK_ENABLE();
