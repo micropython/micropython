@@ -36,10 +36,6 @@
 #include "shared-module/displayio/Palette.h"
 
 typedef struct {
-    mp_obj_t original;
-} displayio_group_child_t;
-
-typedef struct {
     mp_obj_base_t base;
     mp_obj_list_t *members;
     displayio_buffer_transform_t absolute_transform;
