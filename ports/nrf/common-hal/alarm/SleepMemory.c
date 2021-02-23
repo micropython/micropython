@@ -26,12 +26,12 @@
  */
 
 #include <string.h>
-#ifdef MY_DEBUGUART
-#include "supervisor/serial.h"  // dbg_printf()
-#endif
-
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
+
+#ifdef MY_DEBUGUART
+extern void dbg_dump_RAMreg(void);
+#endif
 
 #define RTC_DATA_ATTR __attribute__((section(".uninitialized")))
 static RTC_DATA_ATTR uint8_t _sleep_mem[SLEEP_MEMORY_LENGTH];
@@ -47,11 +47,8 @@ static int is_sleep_memory_valid(void) {
     return 0;
 }
 
-extern void dbg_dump_RAMreg(void);
-static void initialize_sleep_memory(void) {
-    memset((uint8_t *)_sleep_mem, 0, SLEEP_MEMORY_LENGTH);
-
-    // also, set RAM[n].POWER register for RAM retention
+void set_memory_retention(void) {
+    // set RAM[n].POWER register for RAM retention
     // nRF52840 has RAM[0..7].Section[0..1] and RAM[8].Section[0..5]
     // nRF52833 has RAM[0..7].Section[0..1] and RAM[8].Section[0,1]
     for(int ram = 0; ram <= 7; ++ram) {
@@ -63,6 +60,12 @@ static void initialize_sleep_memory(void) {
 #ifdef NRF52833
     NRF_POWER->RAM[8].POWERSET = 0x00030000; // RETENTION for section 0,1
 #endif
+}
+
+static void initialize_sleep_memory(void) {
+    memset((uint8_t *)_sleep_mem, 0, SLEEP_MEMORY_LENGTH);
+
+    set_memory_retention();
 #ifdef MY_DEBUGUART
     dbg_dump_RAMreg();
 #endif

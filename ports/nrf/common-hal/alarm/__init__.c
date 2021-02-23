@@ -202,12 +202,17 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
+extern void set_memory_retention(void);
+
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     //alarm_touch_touchalarm_prepare_for_deep_sleep(); // XXX
 
     uint8_t sd_enabled;
     sd_softdevice_is_enabled(&sd_enabled);
+
+    set_memory_retention();
+
 #ifdef MY_DEBUGUART
     dbg_printf("go system off.. %d\r\n", sd_enabled);
 #endif
