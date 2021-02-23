@@ -521,7 +521,7 @@ def write_elements(elements, mass_erase_used, progress=None):
         data = elem["data"]
         elem_size = size
         elem_addr = addr
-        if progress:
+        if progress and elem_size:
             progress(elem_addr, 0, elem_size)
         while size > 0:
             write_size = size
