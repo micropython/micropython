@@ -95,11 +95,9 @@ else
   CFLAGS += -flto -flto-partition=none
 endif
 
-ifeq ($(MY_DBG), 1)
-  CFLAGS += -DMY_DBG
-endif
 ifeq ($(MY_DEBUGUART), 1)
   CFLAGS += -DMY_DEBUGUART=1
+  SRC_SUPERVISOR += supervisor/debug_uart.c
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
