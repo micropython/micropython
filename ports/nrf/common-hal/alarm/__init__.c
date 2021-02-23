@@ -51,17 +51,6 @@
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
 
-#if 0
-// XXX
-#define DEBUG_LED_PIN (NRF_GPIO_PIN_MAP(1, 11)) // P1_11 = LED
-void _debug_led_init(void) {
-    nrf_gpio_cfg_output(DEBUG_LED_PIN);
-}
-void _debug_led_set(int v) {
-    nrf_gpio_pin_write(DEBUG_LED_PIN, v);
-}
-#endif
-
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     .base = {

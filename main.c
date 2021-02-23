@@ -588,12 +588,10 @@ int __attribute__((used)) main(void) {
     serial_init();
 
 #if 0 //XXX
-    int rr = (int)common_hal_mcu_processor_get_reset_reason();
-    const char* rrstr[] = {
-     "POWER_ON", "BROWNOUT", "SOFTWARE", "DEEPSLEEPALARM",
-     "RESET_PIN", "WATCHDOG", "UNKNOWN"
-    };
-    dbg_printf("reset_reason=%s\r\n", rrstr[rr]);
+    {
+        extern void dbg_dump_reset_reason(void);
+        dbg_dump_reset_reason();
+    }
 #endif
 
     #if CIRCUITPY_BLEIO

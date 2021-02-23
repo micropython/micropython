@@ -20,9 +20,11 @@
 #include "nrfx_uarte.h"
 #include "nrfx_rtc.h"
 #include "supervisor/serial.h" // dbg_printf()
+#include "shared-bindings/microcontroller/Processor.h"
 
 extern const nrfx_rtc_t rtc_instance;    // port.c
 extern volatile int rtc_woke_up_counter; // port.c
+extern uint32_t reset_reason_saved;
 
 const nrfx_uarte_t _dbg_uart_inst = NRFX_UARTE_INSTANCE(1);
 static int _dbg_uart_initialized = 0;
@@ -87,7 +89,7 @@ int dbg_printf(const char *fmt, ...) {
 }
 
 
-void dbg_dumpRTC(void) {
+void dbg_dump_RTCreg(void) {
     dbg_printf("\r\nRTC2\r\n");
     NRF_RTC_Type  *r = rtc_instance.p_reg;
     dbg_printf("PRESCALER=%08X, ", (int)r->PRESCALER);
@@ -97,6 +99,24 @@ void dbg_dumpRTC(void) {
     dbg_printf("EVENTS_COMPARE[0..3]=%X,%X,%X,%X ", (int)r->EVENTS_COMPARE[0], (int)r->EVENTS_COMPARE[1], (int)r->EVENTS_COMPARE[2], (int)r->EVENTS_COMPARE[3]);
     dbg_printf("CC[0..3]=%08X,%08X,%08X,%08X\r\n", (int)r->CC[0], (int)r->CC[1], (int)r->CC[2], (int)r->CC[3]);
     dbg_printf("woke_up=%d\r\n", rtc_woke_up_counter);
+}
+
+void dbg_dump_RAMreg(void) {
+    int i;
+    for(i = 0; i <= 8; ++i) {
+        dbg_printf(" RAM%d:%08X", i, (int)(NRF_POWER->RAM[i].POWER));
+        if (i==4) dbg_printf("\r\n");
+    }
+    dbg_printf("\r\n");
+}
+
+void dbg_dump_reset_reason(void) {
+    int reset_reason = (int)common_hal_mcu_processor_get_reset_reason();
+    const char* rr_str[] = {
+      "POWER_ON", "BROWNOUT", "SOFTWARE", "DEEPSLEEPALARM",
+      "RESET_PIN", "WATCHDOG", "UNKNOWN"
+    };
+    dbg_printf("reset_reason=%s\r\n", rr_str[reset_reason]);
 }
 
 #else /*!MY_DEBUGUART*/

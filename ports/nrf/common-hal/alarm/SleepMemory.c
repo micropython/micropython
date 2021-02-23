@@ -47,26 +47,15 @@ static int is_sleep_memory_valid(void) {
     return 0;
 }
 
-static void dumpRAMreg(void) {
-#ifdef MY_DEBUGUART
-    int i;
-    for(i = 0; i <= 8; ++i) {
-      dbg_printf(" RAM%d:%08X", i, (int)(NRF_POWER->RAM[i].POWER));
-      if (i==4) dbg_printf("\r\n");
-    }
-    dbg_printf("\r\n");
-#endif
-}
-
+extern void dbg_dump_RAMreg(void);
 static void initialize_sleep_memory(void) {
     memset((uint8_t *)_sleep_mem, 0, SLEEP_MEMORY_LENGTH);
 
     // also, set RAM[n].POWER register for RAM retention
     // nRF52840 has RAM[0..7].Section[0..1] and RAM[8].Section[0..5]
     // nRF52833 has RAM[0..7].Section[0..1] and RAM[8].Section[0,1]
-    dumpRAMreg();
     for(int ram = 0; ram <= 7; ++ram) {
-      NRF_POWER->RAM[ram].POWERSET = 0x00030000; // RETENTION for section 0,1
+        NRF_POWER->RAM[ram].POWERSET = 0x00030000; // RETENTION for section 0,1
     };
 #ifdef NRF52840
     NRF_POWER->RAM[8].POWERSET = 0x001F0000; // RETENTION for section 0..5
@@ -74,7 +63,9 @@ static void initialize_sleep_memory(void) {
 #ifdef NRF52833
     NRF_POWER->RAM[8].POWERSET = 0x00030000; // RETENTION for section 0,1
 #endif
-    dumpRAMreg();
+#ifdef MY_DEBUGUART
+    dbg_dump_RAMreg();
+#endif
 
     _sleep_mem_magicnum = SLEEP_MEMORY_DATA_GUARD;
 }
@@ -82,9 +73,6 @@ static void initialize_sleep_memory(void) {
 void alarm_sleep_memory_reset(void) {
     if (!is_sleep_memory_valid()) {
         initialize_sleep_memory();
-#ifdef MY_DEBUGUART
-        dbg_printf("_sleep_mem[] initialized\r\n");
-#endif
     }
 }
 
