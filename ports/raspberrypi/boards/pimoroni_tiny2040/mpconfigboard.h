@@ -7,6 +7,8 @@
 
 #define MICROPY_HW_USER_SW (&pin_GPIO23)
 
+#define TOTAL_FLASH_SIZE (8 * 1024 * 1024)
+
 // These pins are unconnected
 #define IGNORE_PIN_GPIO8    1
 #define IGNORE_PIN_GPIO9    1
