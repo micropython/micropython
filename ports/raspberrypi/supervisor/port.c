@@ -112,6 +112,9 @@ void reset_port(void) {
     #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
     #endif
+    #if CIRCUITPY_AUDIOCORE
+    audio_dma_reset();
+    #endif
 
     reset_all_pins();
 }
