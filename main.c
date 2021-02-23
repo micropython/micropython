@@ -537,6 +537,10 @@ STATIC int run_repl(void) {
     return exit_code;
 }
 
+#ifdef MY_DEBUGUART
+extern void dbg_dump_reset_reason(void);
+#endif
+
 int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
@@ -589,7 +593,6 @@ int __attribute__((used)) main(void) {
 
 #if 0 //XXX
     {
-        extern void dbg_dump_reset_reason(void);
         dbg_dump_reset_reason();
     }
 #endif
