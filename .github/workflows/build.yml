@@ -456,6 +456,7 @@ jobs:
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
+        - "unexpectedmaker_tinys2"
 
     steps:
     - name: Set up Python 3.8
