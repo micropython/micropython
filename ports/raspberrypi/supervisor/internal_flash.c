@@ -46,9 +46,6 @@
 
 #define RESERVED_FLASH 1 * 1024 * 1024
 
-// TODO: Parameterize flash size based on the configured flash.
-#define TOTAL_FLASH_SIZE 2 * 1024 * 1024
-
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
 #define NO_CACHE 0xffffffff
