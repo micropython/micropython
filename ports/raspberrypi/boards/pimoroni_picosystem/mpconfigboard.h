@@ -38,6 +38,8 @@
 #define DEFAULT_UART_BUS_RX (&pin_GPIO1)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO0)
 
+#define TOTAL_FLASH_SIZE (16 * 1024 * 1024)
+
 // These pins are unconnected
 #define IGNORE_PIN_GPIO3    1
 #define IGNORE_PIN_GPIO10   1
