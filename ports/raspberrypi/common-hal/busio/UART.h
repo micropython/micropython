@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H
 
 #include "py/obj.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "py/ringbuf.h"
 
 #include "src/rp2_common/hardware_uart/include/hardware/uart.h"
 
@@ -38,12 +38,14 @@ typedef struct {
     uint8_t rx_pin;
     uint8_t cts_pin;
     uint8_t rts_pin;
+    uint8_t uart_id;
+    uint8_t uart_irq_id;
     uint32_t baudrate;
     uint32_t timeout_ms;
     uart_inst_t * uart;
 } busio_uart_obj_t;
 
-extern void uart_reset(void);
+extern void reset_uart(void);
 extern void never_reset_uart(uint8_t num);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H

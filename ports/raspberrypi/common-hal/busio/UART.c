@@ -31,17 +31,14 @@
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"
 #include "lib/utils/interrupt_char.h"
+#include "common-hal/microcontroller/Pin.h"
 
+#include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
 #define NO_PIN 0xff
 
 #define UART_INST(uart) (((uart) ? uart1 : uart0))
-
-#define TX  0
-#define RX  1
-#define CTS 2
-#define RTS 3
 
 typedef enum {
     STATUS_FREE = 0,
@@ -51,7 +48,7 @@ typedef enum {
 
 static uart_status_t uart_status[2];
 
-void uart_reset(void) {
+void reset_uart(void) {
     for (uint8_t num = 0; num < 2; num++) {
         if (uart_status[num] == STATUS_IN_USE) {
             uart_status[num] = STATUS_FREE;
@@ -71,7 +68,7 @@ static uint8_t get_free_uart() {
             break;
         }
         if (num) {
-            mp_raise_RuntimeError(translate("All UART peripherals in use"));
+            mp_raise_RuntimeError(translate("All UART peripherals are in use"));
         }
     }
     return num;
@@ -84,8 +81,19 @@ static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t * pin, const uin
     if (!(((pin->number & 3) == pin_type) && ((((pin->number + 4) & 8) >> 3) == uart))) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
+    claim_pin(pin);
     gpio_set_function(pin->number, GPIO_FUNC_UART);
     return pin->number;
+}
+
+static ringbuf_t ringbuf[2];
+
+static void uart0_callback(void) {
+    while (uart_is_readable(uart0) && !ringbuf_put(&ringbuf[0], (uint8_t)uart_get_hw(uart0)->dr)) {}
+}
+
+static void uart1_callback(void) {
+    while (uart_is_readable(uart1) && !ringbuf_put(&ringbuf[1], (uint8_t)uart_get_hw(uart1)->dr)) {}
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -96,25 +104,56 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
         bool sigint_enabled) {
 
+    if (bits > 8) {
+        mp_raise_ValueError(translate("Invalid word/bit length"));
+    }
+
+    if (receiver_buffer_size == 0) {
+        mp_raise_ValueError(translate("Invalid buffer size"));
+    }
+
     if ((rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_NotImplementedError(translate("RS485 is not supported on this board"));
+        mp_raise_NotImplementedError(translate("RS485 Not yet supported on this device"));
     }
 
     uint8_t uart_id = get_free_uart();
 
-    self->tx_pin = pin_init(uart_id, tx, TX);
-    self->rx_pin = pin_init(uart_id, rx, RX);
-    self->cts_pin = pin_init(uart_id, cts, CTS);
-    self->rts_pin = pin_init(uart_id, rts, RTS);
+    self->tx_pin = pin_init(uart_id, tx, 0);
+    self->rx_pin = pin_init(uart_id, rx, 1);
+    self->cts_pin = pin_init(uart_id, cts, 2);
+    self->rts_pin = pin_init(uart_id, rts, 3);
 
     self->uart = UART_INST(uart_id);
+    self->uart_id = uart_id;
     self->baudrate = baudrate;
     self->timeout_ms = timeout * 1000;
 
     uart_init(self->uart, self->baudrate);
-    uart_set_fifo_enabled(self->uart, true);
+    uart_set_fifo_enabled(self->uart, false);
     uart_set_format(self->uart, bits, stop, parity);
     uart_set_hw_flow(self->uart, (cts != NULL), (rts != NULL));
+
+    if (rx != NULL) {
+        // Initially allocate the UART's buffer in the long-lived part of the
+        // heap. UARTs are generally long-lived objects, but the "make long-
+        // lived" machinery is incapable of moving internal pointers like
+        // self->buffer, so do it manually.  (However, as long as internal
+        // pointers like this are NOT moved, allocating the buffer
+        // in the long-lived pool is not strictly necessary)
+        // (This is a macro.)
+        if (!ringbuf_alloc(&ringbuf[uart_id], receiver_buffer_size, true)) {
+            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+        }
+        if (uart_id) {
+            self->uart_irq_id = UART1_IRQ;
+            irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
+        } else {
+            self->uart_irq_id = UART0_IRQ;
+            irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
+        }
+        irq_set_enabled(self->uart_irq_id, true);
+        uart_set_irq_enables(self->uart, true, false);
+    }
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -126,6 +165,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
     uart_deinit(self->uart);
+    ringbuf_free(&ringbuf[self->uart_id]);
     reset_pin_number(self->tx_pin);
     reset_pin_number(self->rx_pin);
     reset_pin_number(self->cts_pin);
@@ -169,36 +209,25 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     size_t total_read = 0;
     uint64_t start_ticks = supervisor_ticks_ms64();
 
-    // Busy-wait until timeout or until we've read enough chars.
-    while (supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) {
-        if (uart_is_readable(self->uart)) {
-            // Read and advance.
-            *data++ = uart_get_hw(self->uart)->dr;
-
-            // Decrease how many chars left to read.
-            len--;
-            total_read++;
-
-            // Reset the timeout on every character read.
+    // Busy-wait for all bytes received or timeout
+    while (len > 0 && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
+        // Reset the timeout on every character read.
+        if (ringbuf_num_filled(&ringbuf[self->uart_id])) {
+            // Prevent conflict with uart irq.
+            irq_set_enabled(self->uart_irq_id, false);
+            // Copy as much received data as available, up to len bytes.
+            size_t num_read = ringbuf_get_n(&ringbuf[self->uart_id], data, len);
+            // Re-enable irq.
+            irq_set_enabled(self->uart_irq_id, true);
+            len-=num_read;
+            data+=num_read;
+            total_read+=num_read;
             start_ticks = supervisor_ticks_ms64();
         }
-
         RUN_BACKGROUND_TASKS;
-
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if (mp_hal_is_interrupted()) {
-            break;
-        }
-
-        // Don't need to read any more: data buf is full.
-        if (len == 0) {
-            break;
-        }
-
-        // If we are zero timeout, make sure we don't loop again (in the event
-        // we read in under 1ms)
-        if (self->timeout_ms == 0) {
-            break;
+            return 0;
         }
     }
 
@@ -228,12 +257,16 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return uart_is_readable(self->uart);
+    return ringbuf_num_filled(&ringbuf[self->uart_id]);
 }
 
-void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {}
+void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    // Prevent conflict with uart irq.
+    irq_set_enabled(self->uart_irq_id, false);
+    ringbuf_clear(&ringbuf[self->uart_id]);
+    irq_set_enabled(self->uart_irq_id, true);
+}
 
-// True if there are no characters still to be written.
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     if (self->tx_pin == NO_PIN) {
         return false;
