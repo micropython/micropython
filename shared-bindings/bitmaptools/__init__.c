@@ -109,12 +109,11 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-//| """:py:class:`Bitmap`"""
 //|
 //| def rotozoom(
-//|        dest_bitmap: Bitmap, ox: int, oy: int,
+//|        dest_bitmap: displayio.Bitmap, ox: int, oy: int,
 //|        dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
-//|        source_bitmap: Bitmap, px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
+//|        source_bitmap: displayio.Bitmap, px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
 //|        angle: float, scale: float, skip_index: int) -> None:
 //|      """Inserts the source bitmap region into the destination bitmap with rotation
 //|      (angle), scale and clipping (both on source and destination bitmaps).
