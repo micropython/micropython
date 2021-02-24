@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/_pixelbuf/PixelBuf.h"
 #include <string.h>
+#include <math.h>
 
 // Helper to ensure we have the native super class instead of a subclass.
 static pixelbuf_pixelbuf_obj_t* native_pixelbuf(mp_obj_t pixelbuf_obj) {
@@ -69,6 +70,7 @@ void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size
     }
     // Call set_brightness so that it can allocate a second buffer if needed.
     self->brightness = 1.0;
+    self->scaled_brightness = 0x100;
     common_hal__pixelbuf_pixelbuf_set_brightness(MP_OBJ_FROM_PTR(self), brightness);
 
     // Turn on auto_write. We don't want to do it with the above brightness call.
@@ -109,26 +111,31 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
     // Skip out if the brightness is already set. The default of self->brightness is 1.0. So, this
     // also prevents the pre_brightness_buffer allocation when brightness is set to 1.0 again.
-    mp_float_t change = brightness - self->brightness;
-    if (-0.001 < change && change < 0.001) {
+    self->brightness = brightness;
+    uint16_t new_scaled_brightness = (int)roundf(brightness * 256);
+    if (new_scaled_brightness == self->scaled_brightness) {
         return;
     }
-    self->brightness = brightness;
+    self->scaled_brightness = new_scaled_brightness;
     size_t pixel_len = self->pixel_count * self->bytes_per_pixel;
-    if (self->pre_brightness_buffer == NULL) {
-        self->pre_brightness_buffer = m_malloc(pixel_len, false);
-        memcpy(self->pre_brightness_buffer, self->post_brightness_buffer, pixel_len);
-    }
-    for (size_t i = 0; i < pixel_len; i++) {
-        // Don't adjust per-pixel luminance bytes in dotstar mode
-        if (self->byteorder.is_dotstar && i % 4 == 0) {
-            continue;
+    if (self->scaled_brightness == 0x100 && !self->pre_brightness_buffer) {
+        return;
+    } else {
+        if (self->pre_brightness_buffer == NULL) {
+            self->pre_brightness_buffer = m_malloc(pixel_len, false);
+            memcpy(self->pre_brightness_buffer, self->post_brightness_buffer, pixel_len);
         }
-        self->post_brightness_buffer[i] = self->pre_brightness_buffer[i] * self->brightness;
-    }
+        for (size_t i = 0; i < pixel_len; i++) {
+            // Don't adjust per-pixel luminance bytes in dotstar mode
+            if (self->byteorder.is_dotstar && i % 4 == 0) {
+                continue;
+            }
+            self->post_brightness_buffer[i] = (self->pre_brightness_buffer[i] * self->scaled_brightness) >> 8;
+        }
 
-    if (self->auto_write) {
-        common_hal__pixelbuf_pixelbuf_show(self_in);
+        if (self->auto_write) {
+            common_hal__pixelbuf_pixelbuf_show(self_in);
+        }
     }
 }
 
@@ -197,28 +204,34 @@ void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t* self, size_t index, uint
     }
     pixelbuf_rgbw_t *rgbw_order = &self->byteorder.byteorder;
     size_t offset = index * self->bytes_per_pixel;
-    if (self->pre_brightness_buffer != NULL) {
-        uint8_t* pre_brightness_buffer = self->pre_brightness_buffer + offset;
-        if (self->bytes_per_pixel == 4) {
-            pre_brightness_buffer[rgbw_order->w] = w;
-        }
-
-        pre_brightness_buffer[rgbw_order->r] = r;
-        pre_brightness_buffer[rgbw_order->g] = g;
-        pre_brightness_buffer[rgbw_order->b] = b;
+    uint8_t *scaled_buffer, *unscaled_buffer;
+    if (self->pre_brightness_buffer) {
+        scaled_buffer = self->post_brightness_buffer + offset;
+        unscaled_buffer = self->pre_brightness_buffer + offset;
+    } else {
+        scaled_buffer = NULL;
+        unscaled_buffer = self->post_brightness_buffer + offset;
     }
 
-    uint8_t* post_brightness_buffer = self->post_brightness_buffer + offset;
     if (self->bytes_per_pixel == 4) {
-        // Only apply brightness if w is actually white (aka not DotStar.)
-        if (!self->byteorder.is_dotstar) {
-            w *= self->brightness;
-        }
-        post_brightness_buffer[rgbw_order->w] = w;
+        unscaled_buffer[rgbw_order->w] = w;
     }
-    post_brightness_buffer[rgbw_order->r] = r * self->brightness;
-    post_brightness_buffer[rgbw_order->g] = g * self->brightness;
-    post_brightness_buffer[rgbw_order->b] = b * self->brightness;
+
+    unscaled_buffer[rgbw_order->r] = r;
+    unscaled_buffer[rgbw_order->g] = g;
+    unscaled_buffer[rgbw_order->b] = b;
+
+    if (scaled_buffer) {
+        if (self->bytes_per_pixel == 4) {
+            if (!self->byteorder.is_dotstar) {
+                w = (w * self->scaled_brightness) >> 8;
+            }
+            scaled_buffer[rgbw_order->w] = w;
+        }
+        scaled_buffer[rgbw_order->r] = (r * self->scaled_brightness) >> 8;
+        scaled_buffer[rgbw_order->g] = (g * self->scaled_brightness) >> 8;
+        scaled_buffer[rgbw_order->b] = (b * self->scaled_brightness) >> 8;
+    }
 }
 
 void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t value) {
@@ -317,4 +330,24 @@ void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);
     }
+}
+
+mp_int_t common_hal__pixelbuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
+    bufinfo->buf = self->pre_brightness_buffer;
+    if (self->pre_brightness_buffer) {
+        // If we have a brightness setting, we must treat the buffer as
+        // read-only (because we have no way to "fire" the
+        // brightness-converting code as a side effect of mutation via the
+        // buffer)
+        if ((flags & MP_BUFFER_WRITE)) {
+            return 1;
+        }
+        bufinfo->buf = self->pre_brightness_buffer;
+    } else {
+        bufinfo->buf = self->post_brightness_buffer;
+    }
+    bufinfo->typecode = 'B';
+    bufinfo->len = self->bytes_per_pixel * common_hal__pixelbuf_pixelbuf_get_len(self_in);
+    return 0;
 }
