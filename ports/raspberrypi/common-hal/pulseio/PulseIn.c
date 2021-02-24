@@ -143,25 +143,25 @@ void common_hal_pulseio_pulsein_interrupt() {
        rxfifo = pio_sm_get_blocking(self->pio, self->sm);
        // translate from fifo to buffer
        for (uint i = 0; i < 32; i++) {
-       bool level = (rxfifo & (1 << i)) >> i;
-       if (level == last_level ) {
-            level_count ++;
-        } else {
-           result = level_count * 6;
-           last_level = level;
-           level_count = 1;
+           bool level = (rxfifo & (1 << i)) >> i;
+           if (level == last_level ) {
+             level_count ++;
+           } else {
+             result = level_count * 6;
+             last_level = level;
+             level_count = 1;
            // ignore pulses that are too long and too short
-           if (result < 10000 && result > 10) {
-            self->buffer[buf_index] = result;
-            buf_index++;
-            self->len++;
-            }
+             if (result < 10000 && result > 10) {
+               self->buffer[buf_index] = result;
+               buf_index++;
+               self->len++;
+             }
            }
-         }
-         // check for a pulse thats too long (20ms)
-            if ( level_count > 3000 ) {
-               break;
-            }
+       }
+       // check for a pulse thats too long (20ms)
+       if ( level_count > 3000 ) {
+            break;
+       }
     }
     pio_sm_set_enabled(self->pio, self->sm, false);
     pio_sm_init(self->pio, self->sm, self->offset, &self->sm_cfg);
@@ -181,7 +181,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     }
 
     // Reconfigure the pin for PIO
-   common_hal_mcu_delay_us(100);
+    common_hal_mcu_delay_us(100);
     gpio_set_function(self->pin, GPIO_FUNC_PIO0);
     pio_sm_set_enabled(self->pio, self->sm, true);
     pio_sm_exec(self->pio,self->sm,0x20a0);
