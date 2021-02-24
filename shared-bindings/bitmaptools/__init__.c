@@ -111,14 +111,16 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 //|
 //| def rotozoom(
-//|        dest_bitmap: displayio.Bitmap, ox: int, oy: int,
-//|        dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
-//|        source_bitmap: displayio.Bitmap, px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
+//|        dest_bitmap: displayio.Bitmap, source_bitmap: displayio.Bitmap,
+//|        *,
+//|        ox: int, oy: int, dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
+//|        px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
 //|        angle: float, scale: float, skip_index: int) -> None:
 //|      """Inserts the source bitmap region into the destination bitmap with rotation
 //|      (angle), scale and clipping (both on source and destination bitmaps).
 //|
-//|      :param bitmap dest_bitmap: The bitmap that will be copied into
+//|      :param bitmap dest_bitmap: Destination bitmap that will be copied into
+//|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
 //|      :param int ox: Horizontal pixel location in destination bitmap where source bitmap
 //|             point (px,py) is placed
 //|      :param int oy: Vertical pixel location in destination bitmap where source bitmap
@@ -127,7 +129,6 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|             region that constrains region of writing into destination bitmap
 //|      :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
 //|             region that constrains region of writing into destination bitmap
-//|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
 //|      :param int px: Horizontal pixel location in source bitmap that is placed into the
 //|             destination bitmap at (ox,oy)
 //|      :param int py: Vertical pixel location in source bitmap that is placed into the
@@ -143,19 +144,20 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|      ...
 //|
 STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
-    enum {ARG_dest_bitmap, ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
-        ARG_source_bitmap, ARG_px, ARG_py,
-        ARG_source_clip0, ARG_source_clip1,
+    enum {ARG_dest_bitmap, ARG_source_bitmap,
+        ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
+        ARG_px, ARG_py, ARG_source_clip0, ARG_source_clip1,
         ARG_angle, ARG_scale, ARG_skip_index};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+
         {MP_QSTR_ox, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to destination->width  / 2
         {MP_QSTR_oy, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to destination->height / 2
         {MP_QSTR_dest_clip0, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         {MP_QSTR_dest_clip1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 
-        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_px, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width  / 2
         {MP_QSTR_py, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height / 2
         {MP_QSTR_source_clip0, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
