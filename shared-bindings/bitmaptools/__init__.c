@@ -32,6 +32,9 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+//| """Collection of bitmap manipulation tools"""
+//|
+
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
     if ( point == mp_const_none ) {
@@ -106,48 +109,38 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-
 //|
-//|     def rotozoom(dest_bitmap: Bitmap, ox: int, oy: int,
-//|                       dest_clip0: Tuple[int, int],
-//|                       dest_clip1: Tuple[int, int],
-//|                       source_bitmap: Bitmap,
-//|                       px: int, py: int,
-//|                       source_clip0: Tuple[int, int],
-//|                       source_clip1: Tuple[int, int],
-//|                       angle: float,
-//|                       scale: float,
-//|                       skip_index: int) -> None:
-//|     """Inserts the source bitmap region into the destination bitmap with rotation (angle), scale
-//|      and clipping (both on source and destination bitmaps).
+//| def rotozoom(
+//|        dest_bitmap: Bitmap, ox: int, oy: int,
+//|        dest_clip0: Tuple[int, int], dest_clip1: Tuple[int, int],
+//|        source_bitmap: Bitmap, px: int, py: int, source_clip0: Tuple[int, int], source_clip1: Tuple[int, int],
+//|        angle: float, scale: float, skip_index: int) -> None:
+//|      """Inserts the source bitmap region into the destination bitmap with rotation
+//|      (angle), scale and clipping (both on source and destination bitmaps).
 //|
-//|         :param bitmap dest_bitmap: The bitmap that will be copied into
-//|         :param int ox: Horizontal pixel location in destination bitmap where source bitmap
-//|                       point (px,py) is placed
-//|         :param int oy: Vertical pixel location in destination bitmap where source bitmap
-//|                       point (px,py) is placed
-//|         :param dest_clip0: First corner of rectangular destination clipping
-//|                       region that constrains region of writing into destination bitmap
-//|         :type dest_clip0: Tuple[int,int]
-//|         :param dest_clip1: second corner of rectangular destination clipping
-//|                       region that constrains region of writing into destination bitmap
-//|         :type dest_clip1: Tuple[int,int]
-//|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
-//|         :param int px: Horizontal pixel location in source bitmap that is placed into the
-//|                       destination bitmap at (ox,oy)
-//|         :param int py: Vertical pixel location in source bitmap that is placed into the
-//|                       destination bitmap at (ox,oy)
-//|         :param source_clip0: First corner of rectangular destination clipping
-//|                       region that constrains region of writing into destination bitmap
-//|         :type source_clip0: Tuple[int,int]
-//|         :param source_clip1: second corner of rectangular destination clipping
-//|                       region that constrains region of writing into destination bitmap
-//|         :type source_clip1: Tuple[int,int]
-//|         :param float angle: angle of rotation, in radians (positive is clockwise direction)
-//|         :param float scale: scaling factor
-//|         :param int skip_index: bitmap palette index in the source that will not be copied,
-//|                                set to None to copy all pixels"""
-//|         ...
+//|      :param bitmap dest_bitmap: The bitmap that will be copied into
+//|      :param int ox: Horizontal pixel location in destination bitmap where source bitmap
+//|             point (px,py) is placed
+//|      :param int oy: Vertical pixel location in destination bitmap where source bitmap
+//|             point (px,py) is placed
+//|      :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
+//|             region that constrains region of writing into destination bitmap
+//|      :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
+//|             region that constrains region of writing into destination bitmap
+//|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|      :param int px: Horizontal pixel location in source bitmap that is placed into the
+//|             destination bitmap at (ox,oy)
+//|      :param int py: Vertical pixel location in source bitmap that is placed into the
+//|             destination bitmap at (ox,oy)
+//|      :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
+//|             region that constrains region of reading from the source bitmap
+//|      :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
+//|             region that constrains region of reading from the source bitmap
+//|      :param float angle: Angle of rotation, in radians (positive is clockwise direction)
+//|      :param float scale: Scaling factor
+//|      :param int skip_index: Bitmap palette index in the source that will not be copied,
+//|             set to None to copy all pixels"""
+//|      ...
 //|
 STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
     enum {ARG_dest_bitmap, ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
