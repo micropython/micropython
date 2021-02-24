@@ -112,7 +112,8 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
     // Skip out if the brightness is already set. The default of self->brightness is 1.0. So, this
     // also prevents the pre_brightness_buffer allocation when brightness is set to 1.0 again.
     self->brightness = brightness;
-    uint16_t new_scaled_brightness = (int)roundf(brightness * 256);
+    // Use 256 steps of brightness so that we can do integer math below.
+    uint16_t new_scaled_brightness = (uint16_t)(brightness * 256);
     if (new_scaled_brightness == self->scaled_brightness) {
         return;
     }
@@ -130,7 +131,7 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
             if (self->byteorder.is_dotstar && i % 4 == 0) {
                 continue;
             }
-            self->post_brightness_buffer[i] = (self->pre_brightness_buffer[i] * self->scaled_brightness) >> 8;
+            self->post_brightness_buffer[i] = (self->pre_brightness_buffer[i] * self->scaled_brightness) / 256;
         }
 
         if (self->auto_write) {
@@ -224,13 +225,13 @@ void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t* self, size_t index, uint
     if (scaled_buffer) {
         if (self->bytes_per_pixel == 4) {
             if (!self->byteorder.is_dotstar) {
-                w = (w * self->scaled_brightness) >> 8;
+                w = (w * self->scaled_brightness) / 256;
             }
             scaled_buffer[rgbw_order->w] = w;
         }
-        scaled_buffer[rgbw_order->r] = (r * self->scaled_brightness) >> 8;
-        scaled_buffer[rgbw_order->g] = (g * self->scaled_brightness) >> 8;
-        scaled_buffer[rgbw_order->b] = (b * self->scaled_brightness) >> 8;
+        scaled_buffer[rgbw_order->r] = (r * self->scaled_brightness) / 256;
+        scaled_buffer[rgbw_order->g] = (g * self->scaled_brightness) / 256;
+        scaled_buffer[rgbw_order->b] = (b * self->scaled_brightness) / 256;
     }
 }
 
@@ -330,24 +331,4 @@ void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);
     }
-}
-
-mp_int_t common_hal__pixelbuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
-    bufinfo->buf = self->pre_brightness_buffer;
-    if (self->pre_brightness_buffer) {
-        // If we have a brightness setting, we must treat the buffer as
-        // read-only (because we have no way to "fire" the
-        // brightness-converting code as a side effect of mutation via the
-        // buffer)
-        if ((flags & MP_BUFFER_WRITE)) {
-            return 1;
-        }
-        bufinfo->buf = self->pre_brightness_buffer;
-    } else {
-        bufinfo->buf = self->post_brightness_buffer;
-    }
-    bufinfo->typecode = 'B';
-    bufinfo->len = self->bytes_per_pixel * common_hal__pixelbuf_pixelbuf_get_len(self_in);
-    return 0;
 }
