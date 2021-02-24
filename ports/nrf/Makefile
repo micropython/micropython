@@ -94,8 +94,8 @@ else
   CFLAGS += -flto -flto-partition=none
 endif
 
-ifeq ($(MY_DEBUGUART), 1)
-  CFLAGS += -DMY_DEBUGUART=1
+ifeq ($(NRF_DEBUG_PRINT), 1)
+  CFLAGS += -DNRF_DEBUG_PRINT=1
   SRC_SUPERVISOR += supervisor/debug_uart.c
 endif
 

@@ -154,7 +154,7 @@ static void setup_pin1_for_lightsleep(void) {
     };
     for(size_t i = 0; i < 64; ++i) {
         uint64_t mask = 1ull << i;
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
         int pull = 0;
         int sense = 0;
 #endif
@@ -165,7 +165,7 @@ static void setup_pin1_for_lightsleep(void) {
             cfg.sense = NRF_GPIOTE_POLARITY_LOTOHI;
             cfg.pull = ((pull_pins & mask) != 0) ?
                         NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             pull = -1; sense = 1;
 #endif
         }
@@ -174,21 +174,21 @@ static void setup_pin1_for_lightsleep(void) {
             cfg.sense = NRF_GPIOTE_POLARITY_HITOLO;
             cfg.pull = ((pull_pins & mask) != 0) ?
                         NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             pull = 1; sense = -1;
 #endif
         }
         else {
             cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
             cfg.pull = NRF_GPIO_PIN_NOPULL;
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             sense = 9;
 #endif
         }
         nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
                             pinalarm_gpiote_handler);
         nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
         dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
 #endif
     }
@@ -198,7 +198,7 @@ static void setup_pin1_for_deepsleep(void) {
     for(size_t i = 0; i < 64; ++i) {
         uint64_t mask = 1ull << i;
         int pull = 0;
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
         int sense = 0;
 #endif
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
@@ -209,7 +209,7 @@ static void setup_pin1_for_deepsleep(void) {
               NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
             nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             sense = NRF_GPIO_PIN_SENSE_HIGH;
 #endif
         }
@@ -219,11 +219,11 @@ static void setup_pin1_for_deepsleep(void) {
               NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
             nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_LOW);
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             sense = NRF_GPIO_PIN_SENSE_LOW;
 #endif
         }
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
         dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
 #endif
     }

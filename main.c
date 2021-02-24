@@ -537,7 +537,7 @@ STATIC int run_repl(void) {
     return exit_code;
 }
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 extern void dbg_dump_reset_reason(void);
 #endif
 

@@ -42,7 +42,7 @@
 //#include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/port.h"
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 #include "supervisor/serial.h" // dbg_printf()
 #endif
 
@@ -98,7 +98,7 @@ bool alarm_woken_from_sleep(void) {
 	   || cause == NRF_SLEEP_WAKEUP_RESETPIN);
 }
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 #if 0
 static const char* cause_str[] = {
   "UNDEFINED",
@@ -150,7 +150,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 }
 
 STATIC void _idle_until_alarm(void) {
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     int ct = 40;
 #endif
     reset_reason_saved = 0;
@@ -160,14 +160,14 @@ STATIC void _idle_until_alarm(void) {
         // Allow ctrl-C interrupt.
         if (alarm_woken_from_sleep()) {
             alarm_save_wake_alarm();
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
             int cause = _get_wakeup_cause();
             printf("wakeup(%d)\r\n", cause);
 #endif
             return;
         }
         port_idle_until_interrupt();
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
        if (ct > 0) {
            printf("_");
            --ct;
@@ -179,14 +179,14 @@ STATIC void _idle_until_alarm(void) {
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     mp_obj_t r_obj = mp_const_none;
     _setup_sleep_alarms(false, n_alarms, alarms);
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     dbg_printf("\r\nsleep...");
 #endif
 
     _idle_until_alarm();
 
     if (mp_hal_is_interrupted()) {
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
         dbg_printf("mp_hal_is_interrupted\r\n");
 #endif
         r_obj = mp_const_none;
@@ -213,7 +213,7 @@ void NORETURN alarm_enter_deep_sleep(void) {
 
     set_memory_retention();
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     dbg_printf("go system off.. %d\r\n", sd_enabled);
 #endif
     if (sd_enabled) {

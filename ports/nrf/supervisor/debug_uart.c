@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 
 #define DEBUG_UART_TXPIN 26
 #define DEBUG_UART_RXPIN 15
@@ -119,8 +119,8 @@ void dbg_dump_reset_reason(void) {
     dbg_printf("reset_reason=%s\r\n", rr_str[reset_reason]);
 }
 
-#else /*!MY_DEBUGUART*/
+#else /*!NRF_DEBUG_PRINT*/
 int dbg_printf(const char *fmt, ...) {
     return 0;
 }
-#endif /*!MY_DEBUGUART*/
+#endif /*!NRF_DEBUG_PRINT*/

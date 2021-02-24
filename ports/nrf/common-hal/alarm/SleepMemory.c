@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 extern void dbg_dump_RAMreg(void);
 #endif
 
@@ -66,7 +66,7 @@ static void initialize_sleep_memory(void) {
     memset((uint8_t *)_sleep_mem, 0, SLEEP_MEMORY_LENGTH);
 
     set_memory_retention();
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     dbg_dump_RAMreg();
 #endif
 

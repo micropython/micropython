@@ -73,7 +73,7 @@ static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 extern void _debug_uart_init(void);
 #endif
 
@@ -234,7 +234,7 @@ void reset_port(void) {
 
     reset_all_pins();
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
 #endif
 }

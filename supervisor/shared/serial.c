@@ -36,7 +36,7 @@
 
 #include "tusb.h"
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
 // XXX  these functions are in nrf/supervisor/debug_uart.c
 extern void _debug_uart_init(void);
 extern void _debug_print_substr(const char* text, uint32_t length);
@@ -70,14 +70,14 @@ void serial_early_init(void) {
     common_hal_busio_uart_never_reset(&debug_uart);
 #endif
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
      _debug_uart_init();
 #endif
 }
 
 void serial_init(void) {
     usb_init();
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
 #endif
 }
@@ -157,7 +157,7 @@ void serial_write_substring(const char* text, uint32_t length) {
     common_hal_busio_uart_write(&debug_uart, (const uint8_t*) text, length, &uart_errcode);
 #endif
 
-#ifdef MY_DEBUGUART
+#ifdef NRF_DEBUG_PRINT
     _debug_print_substr(text, length);
 #endif
 }
