@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/socketpool/SocketPool.h"
+#include "common-hal/socketpool/Socket.h"
 
 #include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
@@ -65,22 +66,23 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
 
-    // Consider LWIP and MbedTLS "variant" sockets to be incompatible (for now)
-    // The variant of the socket is determined by whether the socket is wrapped
-    // by SSL. If no TLS handle is set in sslcontext_wrap_socket, the first call
-    // of bind() or connect() will create a LWIP socket with a corresponding
-    // socketnum.
-    // TODO: move MbedTLS to its own duplicate Socket or Server API, maybe?
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
-    sock->num = -1;
     sock->type = socket_type;
     sock->family = addr_family;
     sock->ipproto = ipproto;
-
-    sock->tls = NULL;
-    sock->ssl_context = NULL;
     sock->pool = self;
+    sock->timeout_ms = (uint)-1;
+
+    // Create LWIP socket
+    int socknum = -1;
+    socknum = lwip_socket(sock->family, sock->type, sock->ipproto);
+    if (socknum < 0 || !register_open_socket(sock)) {
+        mp_raise_RuntimeError(translate("Out of sockets"));
+    }
+    sock->num = socknum;
+    // Sockets should be nonblocking in most cases
+    lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
     return sock;
 }
 

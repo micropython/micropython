@@ -100,13 +100,22 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
     return (mp_obj_t)self;
 }
 
+//|     def __enter__(self) -> busio.SPI:
+//|         """Starts a SPI transaction by configuring the SPI and asserting chip select."""
+//|         ...
+//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_obj___enter__(mp_obj_t self_in) {
     adafruit_bus_device_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_adafruit_bus_device_spidevice_enter(self);
-    return self->spi;
+    return common_hal_adafruit_bus_device_spidevice_enter(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_spidevice___enter___obj, adafruit_bus_device_spidevice_obj___enter__);
 
+
+//|     def __exit__(self) -> None:
+//|         """Ends a SPI transaction by deasserting chip select. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
+//|
 STATIC mp_obj_t adafruit_bus_device_spidevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
     common_hal_adafruit_bus_device_spidevice_exit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;

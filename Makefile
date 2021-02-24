@@ -40,17 +40,18 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
 # Paths to exclude from TRANSLATE_SOURCES
 # Each must be preceded by "-path"; if any wildcards, enclose in quotes.
 # Separate by "-o" (Find's "or" operand)
 TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 	-o -path "ports/*/build" \
-	-o -path ports/esp32s2/esp-idf \
-	-o -path ports/cxd56/spresense-exported-sdk \
-	-o -path ports/stm/st_driver \
 	-o -path ports/atmel-samd/asf4 \
+	-o -path ports/cxd56/spresense-exported-sdk \
+	-o -path ports/esp32s2/esp-idf \
 	-o -path ports/mimxrt10xx/sdk \
+	-o -path ports/raspberrypi/sdk \
+	-o -path ports/stm/st_driver \
 	-o -path lib/tinyusb \
 	-o -path lib/lwip \
 

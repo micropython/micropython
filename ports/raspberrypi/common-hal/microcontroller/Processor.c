@@ -25,6 +25,7 @@
  */
 
 #include <math.h>
+#include <string.h>
 
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
@@ -53,12 +54,9 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-    // TODO: get the unique id from the flash. The chip itself doesn't have one.
-    // for (int i=0; i<4; i++) {
-    //     for (int k=0; k<4; k++) {
-    //         raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
-    //     }
-    // }
+    pico_unique_board_id_t retrieved_id;
+    pico_get_unique_board_id(&retrieved_id);
+    memcpy(raw_id, retrieved_id.id, COMMON_HAL_MCU_PROCESSOR_UID_LENGTH);
 }
 
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {

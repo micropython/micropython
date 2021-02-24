@@ -63,6 +63,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     self->bit_clock = bit_clock;
     self->word_select = word_select;
     self->data = data;
+    claim_pin(bit_clock);
+    claim_pin(word_select);
+    claim_pin(data);
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {

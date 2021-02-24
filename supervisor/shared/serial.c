@@ -47,6 +47,10 @@ busio_uart_obj_t debug_uart;
 byte buf_array[64];
 #endif
 
+#if CIRCUITPY_USB_VENDOR
+bool tud_vendor_connected(void);
+#endif
+
 void serial_early_init(void) {
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     debug_uart.base.type = &busio_uart_type;
@@ -66,6 +70,12 @@ void serial_init(void) {
 }
 
 bool serial_connected(void) {
+#if CIRCUITPY_USB_VENDOR
+    if (tud_vendor_connected()) {
+        return true;
+    }
+#endif
+
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
 #else
@@ -74,6 +84,14 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
+#if CIRCUITPY_USB_VENDOR
+    if (tud_vendor_connected() && tud_vendor_available() > 0) {
+        char tiny_buffer;
+        tud_vendor_read(&tiny_buffer, 1);
+        return tiny_buffer;
+    }
+#endif
+
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     if (tud_cdc_connected() && tud_cdc_available() > 0) {
         return (char) tud_cdc_read_char();
@@ -88,13 +106,18 @@ char serial_read(void) {
 }
 
 bool serial_bytes_available(void) {
+#if CIRCUITPY_USB_VENDOR
+    if (tud_vendor_connected() && tud_vendor_available() > 0) {
+        return true;
+    }
+#endif
+
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
 #else
     return tud_cdc_available() > 0;
 #endif
 }
-
 void serial_write_substring(const char* text, uint32_t length) {
     if (length == 0) {
         return;
@@ -102,6 +125,12 @@ void serial_write_substring(const char* text, uint32_t length) {
 #if CIRCUITPY_TERMINALIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
+#endif
+
+#if CIRCUITPY_USB_VENDOR
+    if (tud_vendor_connected()) {
+        tud_vendor_write(text, length);
+    }
 #endif
 
     uint32_t count = 0;

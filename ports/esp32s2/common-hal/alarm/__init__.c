@@ -150,6 +150,14 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_touch_touchalarm_prepare_for_deep_sleep();
+
+    // Disable brownout detection, which appears to be triggered sometimes when
+    // waking from deep sleep.
+    // See https://www.esp32.com/viewtopic.php?f=13&t=19208#p71084
+    // and https://github.com/adafruit/circuitpython/issues/4025#issuecomment-771027606
+    // TODO: We can remove this workaround when ESP-IDF handles this.
+    CLEAR_PERI_REG_MASK(RTC_CNTL_BROWN_OUT_REG, RTC_CNTL_BROWN_OUT_RST_ENA);
+
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();

@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-17 12:55+0000\n"
+"PO-Revision-Date: 2021-02-21 22:27+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -54,7 +54,7 @@ msgstr "  Fichier \"%q\", ligne %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " est de type %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -70,6 +70,8 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d broches d'adresse, %d broches RGB et %d pour tile indique une hauteur de "
+"%d, et non %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -348,6 +350,10 @@ msgstr "Tous les périphériques UART sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "All state machines in use"
+msgstr "Tous les automates finis sont utilisés"
+
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
 msgstr "Tous les canaux d'événements sync (sync event channels) sont utilisés"
@@ -368,6 +374,7 @@ msgstr "Tous les minuteurs pour cette broche sont utilisés"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Tous les minuteurs sont utilisés"
@@ -396,6 +403,7 @@ msgstr "'AnalogOut' n'est pas supporté sur la broche indiquée"
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Fonctionnalité AnalogOut non supportée"
 
@@ -606,6 +614,7 @@ msgstr "Impossible de supprimer les valeurs"
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
+#: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peut être tiré ('pull') en mode sortie ('output')"
 
@@ -645,6 +654,10 @@ msgstr "'/' ne peut être remonté quand l'USB est actif."
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "Ne peut définir les options de socket"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -832,7 +845,7 @@ msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
-msgstr ""
+msgstr "La broche Data 0 doit être aligné sur l'octet."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -889,11 +902,12 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "Erreur : Impossible de lier"
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -948,7 +962,7 @@ msgstr "La FFT est définie uniquement pour les ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT n'est implémenté que pour les tableaux linéaires"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Échec du handshake SSL"
 
@@ -1078,6 +1092,10 @@ msgstr "Opération d'E/S sur un fichier fermé"
 msgid "I2C Init Error"
 msgstr "Erreur d'initialisation I2C"
 
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "I2C peripheral in use"
+msgstr "périphérique I2C utilisé"
+
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
@@ -1103,9 +1121,20 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Taille de tampon incorrecte"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Init program size invalid"
+msgstr "Taille du programme d'initialisation non valide"
+
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
 msgstr "Échec d'initialisation par manque de mémoire"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+"La taille (%d) du tampon d'entrée doit être un multiple du nombre (%d) de "
+"brins"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1114,6 +1143,35 @@ msgstr "L'entrée prend trop de temps"
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d jumps on pin"
+msgstr "Instruction %d saute sur la broche"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts in more bits than pin count"
+msgstr ""
+"Instruction %d décale vers l'intérieur de plus de bits que le nombre de "
+"broches"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts out more bits than pin count"
+msgstr ""
+"instruction %d décale vers l'extérieur de plus de bits que le nombre de "
+"broches"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d uses extra pin"
+msgstr "instruction %d utilise des broches supplémentaires"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d waits on input outside of count"
+msgstr "instruction %d attend sur une entrée hors du compte"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1166,7 +1224,7 @@ msgstr "Broche DAC non valide fournie"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
-#: shared-bindings/pwmio/PWMOut.c
+#: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
@@ -1260,6 +1318,8 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
@@ -1288,17 +1348,13 @@ msgstr "'security_mode' invalide"
 msgid "Invalid size"
 msgstr "Taille invalide"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "Socket non valide pour TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "État invalide"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1315,10 +1371,6 @@ msgstr "Fichier WAVE invalide"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Longueur de mot / bit invalide"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1381,6 +1433,37 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 msgid "Missing MISO or MOSI Pin"
 msgstr "Broche MISO ou MOSI manquante"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+msgstr "first_in_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d waits based on pin"
+msgstr "first_in_pin manquant. L'instruction %d attends dépends de la broche"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+msgstr ""
+"first_out_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
+
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Doit être une sous-classe de %q."
@@ -1413,8 +1496,13 @@ msgstr "Pas de DAC sur la puce"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr "Aucun minuteur de rythme DMA trouvé"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1434,14 +1522,14 @@ msgstr "Pas de broche MOSI"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
@@ -1497,6 +1585,16 @@ msgstr "Plus de minuteurs disponibles sur cette broche."
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Aucun réseau avec ce ssid"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No out in program"
+msgstr "Aucun out dans le programme"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr "Aucun pull up trouvé sur SDA ou SCL; vérifiez votre cablage"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1555,6 +1653,10 @@ msgstr "Parité impaire non supportée"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Only IN/OUT of up to 8 supported"
+msgstr "Seulement des IN/OUT jusqu'à 8 est supporté"
+
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Seulement les adresses IPv4 sont supportées"
@@ -1608,9 +1710,14 @@ msgstr "Timeout de l'opération"
 msgid "Out of memory"
 msgstr "Hors de mémoire"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr "Tampon de sortie doit être au moins %d octets"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1635,6 +1742,7 @@ msgstr ""
 "à la construction."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus pas encore supporté"
@@ -1647,11 +1755,20 @@ msgstr "Périphérique en utilisation"
 msgid "Permission denied"
 msgstr "Permission refusée"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Pin count must be at least 1"
+msgstr "Nombre de broches doit être au moins 1"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Pin count too large"
+msgstr "Nombre de broches trop élevé"
+
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
+#: ports/raspberrypi/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche 'pin' ne supporte pas les capacitées ADC"
@@ -1679,6 +1796,10 @@ msgstr ""
 "Le brochage utilise %d octets par élément, ce qui consomme plus que le %d "
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr "Les broches doivent partager la tranche PWM"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1722,9 +1843,33 @@ msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 "Feinte de someil profond jusqu'à l'alarme, CTRL-C ou écriture au fichier.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does IN without loading ISR"
+msgstr "Le programme fait des entrées sans charger d'ISR"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does OUT without loading OSR"
+msgstr "Le programme fait des sorties sans charger d'OSR"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program must contain at least one 16-bit instruction."
+msgstr "Le programme doit contenir au moins une instruction de 16 bits."
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program size invalid"
+msgstr "Taille du programme invalide"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program too large"
+msgstr "Programme trop grand"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
+
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
+msgid "RAISE mode is not implemented"
+msgstr "Mode RAISE n'est pas implémenté"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1734,6 +1879,10 @@ msgstr "Erreur de désinitiation du RNG (RNG DeInit)"
 msgid "RNG Init Error"
 msgstr "Erreur d'initialisation du RNG (RNG Init)"
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr "RS485 n'est pas encore supporté sur cet appareil"
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1741,6 +1890,7 @@ msgstr "Inversion RS485 spécifiée sans être en mode RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "La calibration du RTC non supportée sur cette carte"
 
@@ -1749,7 +1899,7 @@ msgid "RTC is not supported on this board"
 msgstr "RTC non supporté sur cette carte"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr "RTS / CTS / RS485 Pas encore supporté sur cet appareil"
 
@@ -1806,11 +1956,6 @@ msgstr "Exécution en mode sécurisé! "
 msgid "SD card CSD format not supported"
 msgstr "Le format de carte SD CSD n'est pas supporté"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
-
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -1828,6 +1973,10 @@ msgstr "Erreur d'initialisation SPI"
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
 msgstr "Erreur de réinitialisation SPI"
+
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "SPI peripheral in use"
+msgstr "Périphérique SPI utilisé"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1859,6 +2008,14 @@ msgstr "Sérialiseur en cours d'utilisation"
 msgid "Server side context cannot have hostname"
 msgstr "Un contexte niveau serveur ne peut avoir de hostname"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Set pin count must be between 1 and 5"
+msgstr "Nombre de broches configurées doit être entre 1 et 5"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Side set pin count must be between 1 and 5"
+msgstr "Nombre de broches Side configurées doit être entre 1 et 5"
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
 msgstr "Taille n'est pas supportée"
@@ -1889,6 +2046,14 @@ msgstr "Fractionnement avec des sous-captures"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "La pile doit être au moins de 256"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr "Canal stéréo gauche doit être sur le canal PWM A"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr "Canal stéréo droit doit être sur le canal PWM B"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -2035,6 +2200,10 @@ msgstr "Erreur d'initialisation UART"
 msgid "UART Re-init error"
 msgstr "Erreur de réinitialisation UART"
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART not yet supported"
+msgstr "UART n'est pas encore supporté"
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr "Erreur d'écriture UART"
@@ -2064,6 +2233,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
@@ -2101,7 +2271,7 @@ msgstr "Écriture impossible vers sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erreur ESP TLS non gérée %d %d %x %d"
@@ -2145,7 +2315,8 @@ msgstr ""
 "appareil ait été refusée ou ignorée."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Débit en bauds non supporté"
 
@@ -2197,6 +2368,7 @@ msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
 "WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
@@ -2411,7 +2583,7 @@ msgstr "les tranches de tampon doivent être de longueurs égales"
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "tampon trop petit pour le nombre d'octets demandé"
 
@@ -3277,6 +3449,10 @@ msgstr "l'allocation de mémoire a échoué en allouant %u octets"
 msgid "memory allocation failed, heap is locked"
 msgstr "l'allocation de mémoire a échoué, le tas est vérrouillé"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr "memoryview: length n'est pas un multiple de itemsize"
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module introuvable"
@@ -3423,7 +3599,7 @@ msgstr "le nombre de points doit être d'au moins 2"
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "objet "
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -3596,6 +3772,10 @@ msgstr "'pop' d'une entrée PulseIn vide"
 msgid "pop from empty %q"
 msgstr "pop sur %q vide"
 
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "port doit être >= 0"
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "le 3e argument de pow() ne peut être 0"
@@ -3612,6 +3792,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -3628,6 +3809,14 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "pull_threshold must be between 1 and 32"
+msgstr "pull_threshold doit être entre 1 et 32"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "push_threshold must be between 1 and 32"
+msgstr "push_threshold doit être entre 1 et 32"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -3827,7 +4016,7 @@ msgstr "le seuil doit être dans la portée 0-65536"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "tile must be greater than zero"
-msgstr ""
+msgstr "tile doit être plus que zéro"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -3835,6 +4024,7 @@ msgstr "time.struct_time() prend une séquence de longueur 9"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
 
@@ -4045,13 +4235,18 @@ msgstr "chien de garde (watchdog) non initialisé"
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog timeout doit être supérieur à 0"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr "width doit être entre 2 et 8 (inclusivement), non %d"
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr "width doit être plus grand que zero"
+msgstr "width doit être plus que zero"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi n’est pas activé"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4116,6 +4311,15 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Utilisation incorrecte de socket TLS"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Problème en activant SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

@@ -84,6 +84,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/hardware_pio/include/ \
        -isystem sdk/src/rp2_common/hardware_pll/include/ \
        -isystem sdk/src/rp2_common/hardware_resets/include/ \
+       -isystem sdk/src/rp2_common/hardware_rtc/include/ \
        -isystem sdk/src/rp2_common/hardware_spi/include/ \
        -isystem sdk/src/rp2_common/hardware_sync/include/ \
        -isystem sdk/src/rp2_common/hardware_timer/include/ \
@@ -98,6 +99,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/pico_platform/include/ \
        -isystem sdk/src/rp2_common/pico_runtime/printf/include/ \
        -isystem sdk/src/rp2_common/pico_bootrom/include/ \
+       -isystem sdk/src/rp2_common/pico_unique_id/include/ \
        -Isdk_config \
        -I../../lib/tinyusb/src \
        -I../../supervisor/shared/usb \
@@ -166,6 +168,7 @@ SRC_SDK := \
 	src/rp2_common/hardware_irq/irq.c \
 	src/rp2_common/hardware_pio/pio.c \
 	src/rp2_common/hardware_pll/pll.c \
+  src/rp2_common/hardware_rtc/rtc.c \
 	src/rp2_common/hardware_spi/spi.c \
 	src/rp2_common/hardware_sync/sync.c \
 	src/rp2_common/hardware_timer/timer.c \
@@ -182,6 +185,7 @@ SRC_SDK := \
 	src/rp2_common/pico_printf/printf.c \
 	src/rp2_common/pico_runtime/runtime.c \
 	src/rp2_common/pico_stdio/stdio.c \
+	src/rp2_common/pico_unique_id/unique_id.c \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 
@@ -192,8 +196,10 @@ SRC_C += \
 	bindings/rp2pio/__init__.c \
 	common-hal/rp2pio/StateMachine.c \
 	common-hal/rp2pio/__init__.c \
+	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
+	extmod/crypto-algorithms/sha256.c \
 	fatfs_port.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
