@@ -70,15 +70,15 @@ the DHT drivers locks interrupts for accurate protocol timing handling,
 and the PWM driver relies on these interrupts. The constructor of the DHT
 objects has an extra argument irq_lock which can be set to False.
 The risk is low, but in case of timing issues a DHTChecksumError can be
-raised, catch it and retry.
+raised, catch it and retry. Depending on your use case, consider limiting
+the number of retries.
 
     >>> import dht
     >>> import machine
     >>> d = dht.DHT22(machine.Pin(4), False)
-    >>> measure_ok = False
-    >>> while not measure_ok:
+    >>> while True:
     >>>     try:
     >>>         d.measure()
-    >>>         measure_ok = True
+    >>>         break
     >>>     except dht.DHTChecksumError:
     >>>         pass
