@@ -143,6 +143,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         common_hal_pwmio_pwmout_set_frequency(self, frequency);
         pwm_set_enabled(slice, true);
     } else {
+        common_hal_pwmio_pwmout_set_frequency(self, frequency);
         common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     }
 
