@@ -28,6 +28,7 @@
 #include <string.h>
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
+#include "nrf_power.h"
 
 #ifdef NRF_DEBUG_PRINT
 extern void dbg_dump_RAMreg(void);
@@ -51,14 +52,24 @@ void set_memory_retention(void) {
     // set RAM[n].POWER register for RAM retention
     // nRF52840 has RAM[0..7].Section[0..1] and RAM[8].Section[0..5]
     // nRF52833 has RAM[0..7].Section[0..1] and RAM[8].Section[0,1]
-    for(int ram = 0; ram <= 7; ++ram) {
-        NRF_POWER->RAM[ram].POWERSET = 0x00030000; // RETENTION for section 0,1
+    for(int block = 0; block <= 7; ++block) {
+        nrf_power_rampower_mask_on(NRF_POWER, block, 
+				   NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+				   NRF_POWER_RAMPOWER_S1RETENTION_MASK);
     };
 #ifdef NRF52840
-    NRF_POWER->RAM[8].POWERSET = 0x001F0000; // RETENTION for section 0..5
+    nrf_power_rampower_mask_on(NRF_POWER, 8, 
+			       NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S1RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S2RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S3RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S4RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S5RETENTION_MASK);
 #endif
 #ifdef NRF52833
-    NRF_POWER->RAM[8].POWERSET = 0x00030000; // RETENTION for section 0,1
+    nrf_power_rampower_mask_on(NRF_POWER, 8, 
+			       NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+			       NRF_POWER_RAMPOWER_S1RETENTION_MASK);
 #endif
 }
 
