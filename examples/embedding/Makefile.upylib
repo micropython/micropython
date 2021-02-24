@@ -133,7 +133,6 @@ SRC_C = $(addprefix ports/unix/,\
 	gccollect.c \
 	unix_mphal.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduselect.c \
@@ -146,6 +145,7 @@ SRC_C = $(addprefix ports/unix/,\
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	utils/printf.c \
+	utils/gchelper_generic.c \
 	timeutils/timeutils.c \
 	)
 

@@ -34,6 +34,7 @@
 #include "py/stackctrl.h"
 
 static char heap[16384];
+mp_state_ctx_t mp_state_ctx;
 
 mp_obj_t execute_from_str(const char *str) {
     nlr_buf_t nlr;
