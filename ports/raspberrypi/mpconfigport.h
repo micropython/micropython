@@ -40,7 +40,10 @@
 // This also includes mpconfigboard.h.
 #include "py/circuitpy_mpconfig.h"
 
+//#include "peripherals/samd/dma.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS;
+    CIRCUITPY_COMMON_ROOT_POINTERS \
+    mp_obj_t counting;
 
 #endif  // __INCLUDED_MPCONFIGPORT_H
