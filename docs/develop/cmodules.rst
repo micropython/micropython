@@ -53,6 +53,30 @@ A MicroPython user C module is a directory with the following files:
   for header files), these should be added to ``CFLAGS_USERMOD`` for C code
   and to ``CXXFLAGS_USERMOD`` for C++ code.
 
+* ``micropython.cmake`` contains the CMake configuration for this module.
+
+  In ``micropython.cmake``, you may use ``${CMAKE_CURRENT_LIST_DIR}`` as the path to
+  the current module.
+
+  Your ``micropython.cmake`` should define an ``INTERFACE`` library and associate
+  your source files, compile definitions and include directories with it.
+  The library should then be linked to the ``usermod`` target.
+
+  .. code-block:: cmake
+
+      add_library(usermod_cexample INTERFACE)
+
+      target_sources(usermod_cexample INTERFACE
+          ${CMAKE_CURRENT_LIST_DIR}/examplemodule.c
+      )
+
+      target_include_directories(usermod_cexample INTERFACE
+          ${CMAKE_CURRENT_LIST_DIR}
+      )
+
+      target_link_libraries(usermod INTERFACE usermod_cexample)
+
+
   See below for full usage example.
 
 
@@ -70,9 +94,11 @@ and has a source file and a Makefile fragment with content as descibed above::
        └──usercmodule/
           └──cexample/
              ├── examplemodule.c
-             └── micropython.mk
+             ├── micropython.mk
+             └── micropython.cmake
 
-Refer to the comments in these 2 files for additional explanation.
+
+Refer to the comments in these files for additional explanation.
 Next to the ``cexample`` module there's also ``cppexample`` which
 works in the same way but shows one way of mixing C and C++ code
 in MicroPython.
@@ -97,10 +123,13 @@ applying 2 modifications:
       ├── modules/
       │   └──example1/
       │       ├──example1.c
-      │       └──micropython.mk
+      │       ├──micropython.mk
+      │       └──micropython.cmake
       │   └──example2/
       │       ├──example2.c
-      │       └──micropython.mk
+      │       ├──micropython.mk
+      │       └──micropython.cmake
+      │   └──micropython.cmake
       └── micropython/
           ├──ports/
          ... ├──stm32/
@@ -109,10 +138,21 @@ applying 2 modifications:
 
   with ``USER_C_MODULES`` set to the ``my_project/modules`` directory.
 
-- all modules found in this directory will be compiled, but only those
-  which are explicitly enabled will be availabe for importing. Enabling a
-  module is done by setting the preprocessor define from its module
-  registration to 1. For example if the source code defines the module with
+  A top level ``micropython.cmake`` - found directly in the ``my_project/modules``
+  directory - should ``include`` all of your modules.
+
+  .. code-block:: cmake
+
+      include(${CMAKE_CURRENT_LIST_DIR}/example1/micropython.cmake)
+      include(${CMAKE_CURRENT_LIST_DIR}/example2/micropython.cmake)
+
+
+- all modules found in this directory (or added via ``include`` in the top-level
+  ``micropython.cmake`` when using CMake) will be compiled, but only those which are
+  explicitly enabled will be available for importing. Enabling a module is done
+  by setting the preprocessor define from its module registration to 1.
+
+  For example if the source code defines the module with
 
   .. code-block:: c
 
@@ -147,6 +187,26 @@ The build output will show the modules found::
     Including User C Module from ../../examples/usercmodule/cexample
     Including User C Module from ../../examples/usercmodule/cppexample
     ...
+
+
+For a CMake-based port such as rp2, this will look a little different:
+
+.. code-block:: bash
+
+    cd micropython/ports/rp2
+    make USER_C_MODULES=../../examples/usercmodule all
+
+
+The CMake build output lists the modules by name::
+
+    ...
+    Including User C Module(s) from ../../examples/usercmodule/micropython.cmake
+    Found User C Module(s): usermod_cexample, usermod_cppexample
+    ...
+
+
+Note that the ``micropython.cmake`` files define ``DMODULE_<name>_ENABLED=1`` automatically.
+The top-level ``micropython.cmake`` can be used to control which modules are enabled.
 
 
 Or for your own project with a directory structure as shown above,
