@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-02 03:38+0000\n"
+"PO-Revision-Date: 2021-02-09 14:03+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -373,6 +373,7 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Suǒyǒu jìshí qì shǐyòng"
@@ -645,7 +646,7 @@ msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzà
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr ""
+msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -1109,6 +1110,11 @@ msgstr "Init chéng xù dà xiǎo wú xiào"
 msgid "Initialization failed due to lack of memory"
 msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr "Shūrù shíjiānguò zhǎng"
@@ -1465,8 +1471,13 @@ msgstr "Méiyǒu DAC zài xīnpiàn shàng de"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Wèi zhǎodào DMA píndào"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr ""
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1558,7 +1569,7 @@ msgstr "chéng xù zhōng wèi tuì chū"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr ""
+msgstr "zài SDA huò SCL shàng wèi zhǎo dào shàng lā; jiǎn chá nín de xiàn lù"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1677,6 +1688,11 @@ msgstr "nèi cún bù zú"
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
@@ -1751,6 +1767,10 @@ msgstr ""
 "Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng "
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr ""
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1828,7 +1848,7 @@ msgstr "RNG chūshǐhuà cuòwù"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
-msgstr ""
+msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -1993,6 +2013,14 @@ msgstr "Yǔ zi bǔhuò fēnliè"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr ""
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -2166,6 +2194,7 @@ msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 
@@ -3364,6 +3393,10 @@ msgstr "nèicún fēnpèi shībài, fēnpèi %u zì jié"
 msgid "memory allocation failed, heap is locked"
 msgstr "jìyì tǐ fēnpèi shībài, duī bèi suǒdìng"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "zhǎo bù dào mókuài"
@@ -3677,6 +3710,10 @@ msgstr "cóng kōng mài chōng tán chū"
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
 msgstr "cóng kōng %q dànchū"
+
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "duān kǒu bì xū wéi >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4135,6 +4172,11 @@ msgstr "wèi chū shǐ huà jiān shì qì"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"

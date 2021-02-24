@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-05 19:47+0000\n"
+"PO-Revision-Date: 2021-02-21 22:27+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -371,6 +371,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alla timers används"
@@ -1110,6 +1111,11 @@ msgstr "Storlek på init-program ogiltigt"
 msgid "Initialization failed due to lack of memory"
 msgstr "Initieringen misslyckades på grund av minnesbrist"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr "indatabuffertlängd (%d) måste vara en multipel av antal strand (%d)"
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr "Indata tar för lång tid"
@@ -1466,8 +1472,13 @@ msgstr "Ingen DAC på chipet"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Ingen DMA-kanal hittades"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr "Ingen DMA pacing timer hittades"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1678,6 +1689,11 @@ msgstr "Slut på minne"
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr "Utdatabuffert måste vara minst %d byte"
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Översampling måste vara multipel av 8."
@@ -1753,6 +1769,10 @@ msgstr ""
 "Pinout använder %d byte per element, vilket förbrukar mer än det idealiska "
 "%d byte.  Om detta inte kan undvikas, skicka allow_inefficient=True till "
 "konstruktorn"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr "Pinnar måste dela PWM-segment"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1999,6 +2019,14 @@ msgstr "Splitting med sub-captures"
 msgid "Stack size must be at least 256"
 msgstr "Stackstorleken måste vara minst 256"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr "Vänster stereokanal måste använda PWM kanal A"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr "Höger stereokanal måste använda PWM kanal B"
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream saknar readinto() eller write() metod."
@@ -2172,6 +2200,7 @@ msgstr "UUID-värdet är inte str, int eller byte-buffert"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Det går inte att allokera buffert för signerad konvertering"
 
@@ -3370,6 +3399,10 @@ msgstr "minnesallokering misslyckades, allokerar %u byte"
 msgid "memory allocation failed, heap is locked"
 msgstr "minnesallokeringen misslyckades, heapen är låst"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr "memoryview: längden är inte en multipel av itemsize"
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "modulen hittades inte"
@@ -3684,6 +3717,10 @@ msgstr "pop från en tom PulseIn"
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
 msgstr "pop från tom %q"
+
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "port måste vara >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4142,6 +4179,11 @@ msgstr "watchdog är inte initierad"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog timeout måste vara större än 0"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr "width måste vara mellan 2 och 8, inte %d"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"

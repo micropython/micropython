@@ -368,6 +368,7 @@ msgstr "Alle timer für diesen Pin werden bereits benutzt"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alle timer werden benutzt"
@@ -1112,6 +1113,11 @@ msgstr ""
 msgid "Initialization failed due to lack of memory"
 msgstr "Initialisierung aufgrund von Speichermangel fehlgeschlagen"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr ""
@@ -1469,8 +1475,13 @@ msgstr "Kein DAC im Chip vorhanden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Kein DMA Kanal gefunden"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr ""
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1682,6 +1693,11 @@ msgstr ""
 msgid "Out of sockets"
 msgstr ""
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample muss ein Vielfaches von 8 sein."
@@ -1755,6 +1771,10 @@ msgstr ""
 "Pinbelegung verwendet %d Bytes pro Element, was mehr als die idealen %d "
 "Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergeben Sie "
 "allow_inefficient = True an den Konstruktor"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr ""
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1995,6 +2015,14 @@ msgstr "Splitting mit sub-captures"
 msgid "Stack size must be at least 256"
 msgstr "Die Stackgröße sollte mindestens 256 sein"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream fehlt readinto() oder write() Methode."
@@ -2172,6 +2200,7 @@ msgstr "Der UUID-Wert ist kein str-, int- oder Byte-Puffer"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 
@@ -3389,6 +3418,10 @@ msgstr "Speicherzuordnung fehlgeschlagen, Zuweisung von %u Bytes"
 msgid "memory allocation failed, heap is locked"
 msgstr "Speicherzuweisung fehlgeschlagen, der Heap ist gesperrt"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "Modul nicht gefunden"
@@ -3705,6 +3738,10 @@ msgstr "pop von einem leeren PulseIn"
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
+msgstr ""
+
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -4168,6 +4205,11 @@ msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c

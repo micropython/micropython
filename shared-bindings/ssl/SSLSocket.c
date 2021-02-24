@@ -71,7 +71,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl
 STATIC mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t ip[4];
-    uint port;
+    uint32_t port;
 
     ssl_sslsocket_obj_t * sslsock = common_hal_ssl_sslsocket_accept(self, ip, &port);
 
@@ -97,8 +97,11 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
+    if (port < 0) {
+        mp_raise_ValueError(translate("port must be >= 0"));
+    }
 
-    bool ok = common_hal_ssl_sslsocket_bind(self, host, hostlen, port);
+    bool ok = common_hal_ssl_sslsocket_bind(self, host, hostlen, (uint32_t)port);
     if (!ok) {
         mp_raise_ValueError(translate("Error: Failure to bind"));
     }
@@ -132,8 +135,11 @@ STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
+    if (port < 0) {
+        mp_raise_ValueError(translate("port must be >= 0"));
+    }
 
-    bool ok = common_hal_ssl_sslsocket_connect(self, host, hostlen, port);
+    bool ok = common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
     if (!ok) {
         mp_raise_OSError(0);
     }

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-27 01:31+0000\n"
+"PO-Revision-Date: 2021-02-10 21:50+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -368,6 +368,7 @@ msgstr "Wszystkie timery tej nóżki w użyciu"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Wszystkie timery w użyciu"
@@ -1104,6 +1105,11 @@ msgstr ""
 msgid "Initialization failed due to lack of memory"
 msgstr "Inicjalizacja nie powiodła się z powodu braku pamięci"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr ""
@@ -1460,8 +1466,13 @@ msgstr "Brak DAC"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Nie znaleziono kanału DMA"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr ""
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1667,6 +1678,11 @@ msgstr "Brak pamięci"
 msgid "Out of sockets"
 msgstr ""
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Nadpróbkowanie musi być wielokrotnością 8."
@@ -1736,6 +1752,10 @@ msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
 msgstr ""
 
 #: py/builtinhelp.c
@@ -1977,6 +1997,14 @@ msgstr "Podział z podgrupami"
 msgid "Stack size must be at least 256"
 msgstr "Stos musi mieć co najmniej 256 bajtów"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr ""
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Strumień nie ma metod readinto() lub write()."
@@ -2140,6 +2168,7 @@ msgstr "UUID nie jest typu str, int lub bytes"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Nie udała się alokacja buforów do konwersji ze znakiem"
 
@@ -3329,6 +3358,10 @@ msgstr "alokacja pamięci nie powiodła się, alokowano %u bajtów"
 msgid "memory allocation failed, heap is locked"
 msgstr "alokacja pamięci nie powiodła się, sterta zablokowana"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "brak modułu"
@@ -3642,6 +3675,10 @@ msgstr "pop z pustego PulseIn"
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
+msgstr ""
+
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -4101,9 +4138,14 @@ msgstr ""
 msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "szerokość musi być większa niż zero"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
@@ -4123,7 +4165,7 @@ msgstr ""
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "nieprawidłowy typ wejścia"
 
 #: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
@@ -4139,7 +4181,7 @@ msgstr "zły typ operandu"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "nieprawidłowy typ wyjścia"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"

@@ -196,8 +196,10 @@ SRC_C += \
 	bindings/rp2pio/__init__.c \
 	common-hal/rp2pio/StateMachine.c \
 	common-hal/rp2pio/__init__.c \
+	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
+	extmod/crypto-algorithms/sha256.c \
 	fatfs_port.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
