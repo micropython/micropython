@@ -87,7 +87,6 @@ INC += -I../../supervisor/shared/usb
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3
-  CFLAGS += -DNDEBUG
   OPTIMIZATION_FLAGS = -Og
 else
   OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
