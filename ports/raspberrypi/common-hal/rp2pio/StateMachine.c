@@ -489,6 +489,10 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t* sel
     if (frequency256 % div256 > 0) {
         div256 += 1;
     }
+    // 0 is interpreted as 0x10000 so it's valid.
+    if (div256 / 256 > 0x10000 || frequency > clock_get_hz(clk_sys)) {
+        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_frequency);
+    }
     self->actual_frequency = frequency256 / div256;
 
     pio_sm_set_clkdiv_int_frac(self->pio, self->state_machine, div256 / 256, div256 % 256);
