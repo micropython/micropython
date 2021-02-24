@@ -109,7 +109,7 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-//| """:py:class:`~displayio.Bitmap`"""
+//| """:py:class:`Bitmap`"""
 //|
 //| def rotozoom(
 //|        dest_bitmap: Bitmap, ox: int, oy: int,
