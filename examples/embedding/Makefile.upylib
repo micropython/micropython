@@ -21,6 +21,9 @@ CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
+# Some systems (eg MacOS) need -fno-common so that mp_state_ctx is placed in the BSS.
+CFLAGS += -fno-common
+
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g
@@ -133,7 +136,6 @@ SRC_C = $(addprefix ports/unix/,\
 	gccollect.c \
 	unix_mphal.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduselect.c \
@@ -146,6 +148,7 @@ SRC_C = $(addprefix ports/unix/,\
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	utils/printf.c \
+	utils/gchelper_generic.c \
 	timeutils/timeutils.c \
 	)
 
