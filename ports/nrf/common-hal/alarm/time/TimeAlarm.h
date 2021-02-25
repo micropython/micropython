@@ -32,6 +32,10 @@ typedef struct {
     mp_float_t monotonic_time;      // values compatible with time.monotonic_time()
 } alarm_time_timealarm_obj_t;
 
+extern volatile int rtc_woke_up_counter;
+extern void port_disable_interrupt_after_ticks_ch(uint32_t channel);
+extern void port_interrupt_after_ticks_ch(uint32_t channel, uint32_t ticks);
+
 // Find the alarm object that caused us to wake up or create an equivalent one.
 mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
 // Check for the wake up alarm from pretend deep sleep.

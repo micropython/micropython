@@ -55,18 +55,14 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
     return timer;
 }
 
-extern volatile int rtc_woke_up_counter;
 bool alarm_time_timealarm_woke_us_up(void) {
   return rtc_woke_up_counter;
 }
 
-extern void port_disable_interrupt_after_ticks_ch(uint32_t channel);
 void alarm_time_timealarm_reset(void) {
     port_disable_interrupt_after_ticks_ch(1);
     rtc_woke_up_counter = 0;
 }
-
-extern void port_interrupt_after_ticks_ch(uint32_t channel, uint32_t ticks);//XXX in port.c
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     bool timealarm_set = false;
