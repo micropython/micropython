@@ -46,15 +46,12 @@ volatile nrfx_gpiote_pin_t _pinhandler_ev_pin;
 #define MYGPIOTE_EV_PIN_UNDEF 0xFF
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
-#if 0
     if (edge) {
         mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
     }
-
-    if (pull && !GPIO_IS_VALID_OUTPUT_GPIO(pin->number)) {
-        mp_raise_ValueError(translate("Cannot pull on input-only pin."));
+    if (pin->number >= NUMBER_OF_PINS) {
+        mp_raise_ValueError(translate("Invalid pin"));
     }
-#endif
     self->pin = pin;
     self->value = value;
     self->pull = pull;
