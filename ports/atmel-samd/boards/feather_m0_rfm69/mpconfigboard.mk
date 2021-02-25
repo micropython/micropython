@@ -13,6 +13,7 @@ CIRCUITPY_FULL_BUILD = 0
 # A number of modules are removed for RFM69 to make room for frozen libraries.
 # Many I/O functions are not available.
 CIRCUITPY_ANALOGIO = 1
+CIRCUITPY_BITMAPTOOLS = 0
 CIRCUITPY_PULSEIO = 0
 CIRCUITPY_NEOPIXEL_WRITE = 1
 CIRCUITPY_ROTARYIO = 0
