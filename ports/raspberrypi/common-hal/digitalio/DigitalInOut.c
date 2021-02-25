@@ -43,6 +43,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     self->output = false;
     self->open_drain = false;
 
+    // Set to input. No output value.
     gpio_init(pin->number);
     return DIGITALINOUT_OK;
 }
@@ -75,10 +76,15 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
         digitalio_drive_mode_t drive_mode) {
     const uint8_t pin = self->pin->number;
-    gpio_set_dir(pin, GPIO_OUT);
-    // TODO: Turn on "strong" pin driving (more current available).
+    gpio_disable_pulls(pin);
+
+    // Turn on "strong" pin driving (more current available).
+    hw_write_masked(&padsbank0_hw->io[pin],
+                    PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB,
+                    PADS_BANK0_GPIO0_DRIVE_BITS);
 
     self->output = true;
+    // Pin direction is ultimately set in set_value. We don't need to do it here.
     common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
     common_hal_digitalio_digitalinout_set_value(self, value);
     return DIGITALINOUT_OK;
@@ -110,9 +116,6 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     const uint8_t pin = self->pin->number;
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
-    if (self->open_drain) {
-        gpio_put(pin, false);
-    }
     // True is implemented differently between modes so reset the value to make
     // sure it's correct for the new mode.
     if (value) {
