@@ -84,8 +84,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
                     PADS_BANK0_GPIO0_DRIVE_BITS);
 
     self->output = true;
+    self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
+
     // Pin direction is ultimately set in set_value. We don't need to do it here.
-    common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
     common_hal_digitalio_digitalinout_set_value(self, value);
     return DIGITALINOUT_OK;
 }
@@ -98,10 +99,21 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t* self, bool value) {
     const uint8_t pin = self->pin->number;
-    if (self->open_drain) {
-        gpio_set_dir(pin, value ? GPIO_IN : GPIO_OUT);
+    if (value) {
+        // If true, set the direction -before- setting the pin value, to
+        // to avoid a glitch true 3.3v on the pin before switching from output to input for open drain.
+        if (self->open_drain) {
+            gpio_set_dir(pin, GPIO_IN);
+        }
+        gpio_put(pin, true);
     } else {
-        gpio_put(pin, value);
+        // If false, set the direction -after- setting the pin value,
+        // to avoid a glitch 3.3v on the pin before switching from input to output for open drain,
+        // when previous value was high.
+        gpio_put(pin, false);
+        if (self->open_drain) {
+            gpio_set_dir(pin, GPIO_OUT);
+        }
     }
 }
 
