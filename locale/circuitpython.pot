@@ -613,7 +613,6 @@ msgid "Cannot output both channels on the same pin"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
-#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr ""
 
@@ -1072,7 +1071,6 @@ msgid "I2SOut not available"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#: ports/nrf/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 msgstr ""
 
@@ -1259,7 +1257,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c
-#: ports/nrf/common-hal/alarm/touch/TouchAlarm.c shared-bindings/pwmio/PWMOut.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr ""
@@ -1641,7 +1639,6 @@ msgid ""
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/nrf/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
@@ -3217,7 +3214,6 @@ msgid "invalid syntax for number"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#: ports/nrf/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
 msgstr ""
 
@@ -3969,7 +3965,6 @@ msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#: ports/nrf/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
 
@@ -4112,7 +4107,6 @@ msgid "vectors must have same lengths"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#: ports/nrf/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
 
