@@ -122,7 +122,6 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     }
 }
 
-extern uint32_t reset_reason_saved;
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
     mcu_reset_reason_t r = RESET_REASON_UNKNOWN;
     if (reset_reason_saved == 0) {

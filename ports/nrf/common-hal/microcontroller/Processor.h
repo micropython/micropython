@@ -36,4 +36,6 @@ typedef struct {
     // Stores no state currently.
 } mcu_processor_obj_t;
 
+extern uint32_t reset_reason_saved;
+
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
