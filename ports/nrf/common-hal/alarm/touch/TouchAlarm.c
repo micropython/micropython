@@ -28,7 +28,7 @@
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-static volatile bool woke_up = false;
+//static volatile bool woke_up = false;
 
 void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin) {
     mp_raise_NotImplementedError(NULL);

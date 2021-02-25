@@ -59,7 +59,7 @@ void alarm_reset(void) {
     alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
-    //alarm_touch_touchalarm_reset();
+    alarm_touch_touchalarm_reset();
 }
 
 extern uint32_t reset_reason_saved;
@@ -119,7 +119,7 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
         return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
       }
       case NRF_SLEEP_WAKEUP_TOUCHPAD: {
-        return mp_const_none;
+        return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
       }
       case NRF_SLEEP_WAKEUP_GPIO: {
         return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
@@ -199,7 +199,7 @@ extern void set_memory_retention(void);
 
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    //alarm_touch_touchalarm_prepare_for_deep_sleep();
+    alarm_touch_touchalarm_prepare_for_deep_sleep();
 
     uint8_t sd_enabled;
     sd_softdevice_is_enabled(&sd_enabled);
