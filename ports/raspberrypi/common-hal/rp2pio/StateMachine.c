@@ -640,9 +640,9 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
             while (tx_remaining && !pio_sm_is_tx_fifo_full(self->pio, self->state_machine)) {
                 if (out_stride_in_bytes == 1) {
                     *tx_destination = *data_out;
-                } else if (in_stride_in_bytes == 2) {
+                } else if (out_stride_in_bytes == 2) {
                     *((uint16_t*) tx_destination) =  *((uint16_t*) data_out);
-                } else if (in_stride_in_bytes == 4) {
+                } else if (out_stride_in_bytes == 4) {
                     *((uint32_t*) tx_destination) = *((uint32_t*) data_out);
                 }
                 data_out += out_stride_in_bytes;
