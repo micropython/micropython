@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 22:27+0000\n"
+"PO-Revision-Date: 2021-02-26 13:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -466,7 +466,7 @@ msgstr "Under minsta bildfrekvens"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "Bitklocka och word select måste vara sekventiella pinnar"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -511,7 +511,7 @@ msgstr "Buffert + offset för liten %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Buffertelement måste vara fyra byte långa eller mindre"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -1102,7 +1102,7 @@ msgstr "IV måste vara %d byte lång"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
 
 #: py/persistentcode.c
 msgid ""
@@ -1122,11 +1122,13 @@ msgstr "Storlek på init-program ogiltigt"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direcion conflicts with initial out pin direction"
-msgstr ""
+msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
+"Initial inställning av pinntillstånd är i konflikt med initialt "
+"utpinntillstånd"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1562,11 +1564,11 @@ msgstr "Inget hårdvarustöd på pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "Inget in i programmet"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "Inget in eller ut i programmet"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1710,7 +1712,7 @@ msgstr "Åtgärden orsakade timeout"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Utbuffertelement ska vara max fyra byte långa"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
