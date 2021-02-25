@@ -164,7 +164,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     uint32_t channel_mask = _mask(self->slice, self->channel);
     channel_use &= ~channel_mask;
     never_reset_channel &= ~channel_mask;
-    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (self->slice * CHANNELS_PER_SLICE + self->channel);
+    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (self->slice * CHANNELS_PER_SLICE);
     if ((channel_use & slice_mask) == 0) {
         target_slice_frequencies[self->slice] = 0;
         slice_variable_frequency &= ~(1 << self->slice);
