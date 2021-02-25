@@ -38,9 +38,6 @@
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 
-//#include "shared-bindings/wifi/__init__.h"
-//#include "shared-bindings/microcontroller/__init__.h"
-
 #include "supervisor/port.h"
 #ifdef NRF_DEBUG_PRINT
 #include "supervisor/serial.h" // dbg_printf()
@@ -73,12 +70,9 @@ STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_us_up()) {
         return NRF_SLEEP_WAKEUP_TIMER;
     }
-#if 0
-    // XXX  not implemented yet
     if (alarm_touch_touchalarm_woke_us_up()) {
-        return ESP_SLEEP_WAKEUP_TOUCHPAD;
+        return NRF_SLEEP_WAKEUP_TOUCHPAD;
     }
-#endif
     if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
         return NRF_SLEEP_WAKEUP_RESETPIN;
     }
@@ -99,7 +93,6 @@ bool alarm_woken_from_sleep(void) {
 }
 
 #ifdef NRF_DEBUG_PRINT
-#if 0
 static const char* cause_str[] = {
   "UNDEFINED",
   "GPIO",
@@ -108,15 +101,18 @@ static const char* cause_str[] = {
   "VBUS",
   "RESETPIN",
 };
-#endif
+void print_wakeup_cause(nrf_sleep_source_t cause) {
+    if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
+        dbg_printf("wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
+		   cause_str[(int)cause]);
+    }
+}
 #endif
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
-#if 0
-    if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
-      printf("wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n", cause_str[(int)cause]);
-    }
+#ifdef NRF_DEBUG_PRINT
+    //print_wakeup_cause(cause);
 #endif
     switch (cause) {
       case NRF_SLEEP_WAKEUP_TIMER: {
@@ -143,10 +139,7 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
-#if 0
-    // XXX  not implemented yet
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
-#endif
 }
 
 STATIC void _idle_until_alarm(void) {
@@ -206,7 +199,7 @@ extern void set_memory_retention(void);
 
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    //alarm_touch_touchalarm_prepare_for_deep_sleep(); // XXX
+    //alarm_touch_touchalarm_prepare_for_deep_sleep();
 
     uint8_t sd_enabled;
     sd_softdevice_is_enabled(&sd_enabled);
