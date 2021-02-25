@@ -39,6 +39,16 @@
 
 #define AUDIO_DMA_CHANNEL_COUNT NUM_DMA_CHANNELS
 
+void audio_dma_reset(void) {
+    for (size_t channel = 0; channel < AUDIO_DMA_CHANNEL_COUNT; channel++) {
+        if (MP_STATE_PORT(playing_audio)[channel] == NULL) {
+            continue;
+        }
+
+        audio_dma_stop(MP_STATE_PORT(playing_audio)[channel]);
+    }
+}
+
 void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer_length,
                               uint8_t** output_buffer, uint32_t* output_buffer_length) {
     if (dma->first_buffer_free) {
@@ -292,9 +302,16 @@ void audio_dma_stop(audio_dma_t* dma) {
     for (size_t i = 0; i < 2; i++) {
         size_t channel = dma->channel[i];
 
+        dma_channel_config c = dma_channel_get_default_config(dma->channel[i]);
+        channel_config_set_enable(&c, false);
+        dma_channel_set_config(channel, &c, false /* trigger */);
+
         if (dma_channel_is_busy(channel)) {
             dma_channel_abort(channel);
         }
+        dma_channel_set_read_addr(channel, NULL, false /* trigger */);
+        dma_channel_set_write_addr(channel, NULL, false /* trigger */);
+        dma_channel_set_trans_count(channel, 0, false /* trigger */);
         dma_channel_unclaim(channel);
         MP_STATE_PORT(playing_audio)[channel] = NULL;
         dma->channel[i] = NUM_DMA_CHANNELS;
