@@ -335,6 +335,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Lahat ng SPI peripherals ay ginagamit"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 #, fuzzy
 msgid "All UART peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
@@ -965,6 +966,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
@@ -1234,7 +1236,8 @@ msgstr "Maling argumento"
 msgid "Invalid bits per value"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
 
@@ -1309,10 +1312,10 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -1361,7 +1364,8 @@ msgstr "Maling bilang ng voice"
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr ""
 
@@ -1865,7 +1869,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -2174,10 +2178,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2518,8 +2518,8 @@ msgid "binary op %q not implemented"
 msgstr "binary op %q hindi implemented"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits ay dapat 7, 8 o 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4281,6 +4281,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits ay dapat 7, 8 o 9"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "Kailangan ng pull up resistors ang SDA o SCL"

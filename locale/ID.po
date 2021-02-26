@@ -338,6 +338,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Semua perangkat SPI sedang digunakan"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Semua perangkat UART sedang digunakan"
 
@@ -971,6 +972,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Gagal untuk mengalokasikan buffer RX"
 
@@ -1240,7 +1242,8 @@ msgstr "Argumen tidak valid"
 msgid "Invalid bits per value"
 msgstr "Bit per nilai tidak valid"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Ukuran buffer tidak valid"
 
@@ -1315,10 +1318,10 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
 
@@ -1367,7 +1370,8 @@ msgstr "Hitungan suara tidak valid"
 msgid "Invalid wave file"
 msgstr "File wave tidak valid"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Panjang kata/bit tidak valid"
 
@@ -1878,7 +1882,7 @@ msgstr "Kesalahan DeInit RNG"
 msgid "RNG Init Error"
 msgstr "Kesalahan Init RNG"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -2196,10 +2200,6 @@ msgstr "Kesalahan Init UART"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "Kesalahan Re-init UART"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2538,7 +2538,7 @@ msgid "binary op %q not implemented"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
+msgid "bits must be in range 5 to 9"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c

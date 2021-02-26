@@ -336,6 +336,7 @@ msgid "All SPI peripherals are in use"
 msgstr ""
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr ""
 
@@ -955,6 +956,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
@@ -1222,7 +1224,8 @@ msgstr ""
 msgid "Invalid bits per value"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr ""
 
@@ -1297,10 +1300,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr ""
 
@@ -1349,7 +1352,8 @@ msgstr ""
 msgid "Invalid wave file"
 msgstr ""
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr ""
 
@@ -1849,7 +1853,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -2157,10 +2161,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2491,7 +2491,7 @@ msgid "binary op %q not implemented"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
+msgid "bits must be in range 5 to 9"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c

@@ -343,6 +343,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Suǒyǒu UART wàiwéi zhèngzài shǐyòng"
 
@@ -968,6 +969,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Fēnpèi RX huǎnchōng shībài"
 
@@ -1237,7 +1239,8 @@ msgstr "Wúxiào de cānshù"
 msgid "Invalid bits per value"
 msgstr "Měi gè zhí de wèi wúxiào"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
 
@@ -1312,10 +1315,10 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
@@ -1364,7 +1367,8 @@ msgstr "Wúxiào de yǔyīn jìshù"
 msgid "Invalid wave file"
 msgstr "Wúxiào de làng làngcháo wénjiàn"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Wúxiào de zì/wèi chángdù"
 
@@ -1877,7 +1881,7 @@ msgstr "RNG qǔxiāo chūshǐhuà cuòwù"
 msgid "RNG Init Error"
 msgstr "RNG chūshǐhuà cuòwù"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
 
@@ -2195,10 +2199,6 @@ msgstr "UART chūshǐhuà cuòwù"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "UART chóngxīn chūshǐhuà cuòwù"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "UART shàng wèi shòu zhī chí"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2537,8 +2537,8 @@ msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bǐtè bìxū shì 7,8 huò 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4284,6 +4284,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART shàng wèi shòu zhī chí"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bǐtè bìxū shì 7,8 huò 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
 #~ msgstr "jǐn zhī chí zuì duō 8 gè IN/OUT"

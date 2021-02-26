@@ -346,6 +346,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Todos os periféricos SPI estão em uso"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Todos os periféricos UART estão em uso"
 
@@ -981,6 +982,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Houve uma falha na aquisição do mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
@@ -1256,7 +1258,8 @@ msgstr "Argumento inválido"
 msgid "Invalid bits per value"
 msgstr "Os valores por bits são inválidos"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "O tamanho do buffer é inválido"
 
@@ -1331,10 +1334,10 @@ msgstr "Pino inválido para canal direito"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Pinos inválidos"
 
@@ -1383,7 +1386,8 @@ msgstr "A contagem da voz é inválida"
 msgid "Invalid wave file"
 msgstr "Aqruivo de ondas inválido"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "O comprimento do bit/palavra são inválidos"
 
@@ -1906,7 +1910,7 @@ msgstr "Erro DeInit RNG"
 msgid "RNG Init Error"
 msgstr "Houve um erro na inicialização do RNG"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "Ainda não há suporte para o RS485 neste dispositivo"
 
@@ -2230,10 +2234,6 @@ msgstr "Houve um erro na inicialização do UART"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "Houve um erro na reinicialização do UART"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "O UART ainda não é suportado"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2575,8 +2575,8 @@ msgid "binary op %q not implemented"
 msgstr "a operação binário %q não foi implementada"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "os bits devem ser 7, 8 ou 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4335,6 +4335,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "O UART ainda não é suportado"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "os bits devem ser 7, 8 ou 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
 #~ msgstr "Somente IN/OUT de até 8 suportados"

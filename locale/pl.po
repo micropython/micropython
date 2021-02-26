@@ -338,6 +338,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Wszystkie peryferia SPI w użyciu"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Wszystkie peryferia UART w użyciu"
 
@@ -963,6 +964,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nie udała się alokacja bufora RX"
 
@@ -1232,7 +1234,8 @@ msgstr "Zły argument"
 msgid "Invalid bits per value"
 msgstr "Zła liczba bitów wartości"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Zła wielkość bufora"
 
@@ -1307,10 +1310,10 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Złe nóżki"
 
@@ -1359,7 +1362,8 @@ msgstr "Zła liczba głosów"
 msgid "Invalid wave file"
 msgstr "Zły plik wave"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Niepoprawna długość słowa/bitu"
 
@@ -1860,7 +1864,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -2168,10 +2172,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2508,8 +2508,8 @@ msgid "binary op %q not implemented"
 msgstr "brak dwu-argumentowego operatora %q"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits musi być 7, 8 lub 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4249,6 +4249,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits musi być 7, 8 lub 9"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "SDA lub SCL wymagają podciągnięcia"
