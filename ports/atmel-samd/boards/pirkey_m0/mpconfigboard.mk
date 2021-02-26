@@ -21,12 +21,11 @@ CIRCUITPY_SAMD = 0
 CIRCUITPY_USB_MIDI = 1
 CIRCUITPY_TOUCHIO = 0
 CIRCUITPY_FULL_BUILD = 0
-# Make more room.
+
 SUPEROPT_GC = 0
+SUPEROPT_VM = 0
 
 # Include these Python libraries in firmware.
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote
-
-CFLAGS_BOARD = --param max-inline-insns-auto=12

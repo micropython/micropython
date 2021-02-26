@@ -39,12 +39,12 @@ typedef struct {
     bool variable_frequency;
     uint16_t duty_cycle;
     uint32_t actual_frequency;
-    uint32_t top;
+    uint16_t top;
 } pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
 // Private API for AudioPWMOut.
-void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint32_t top);
+void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint16_t top);
 // Private APIs for RGBMatrix
 enum pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency);
 void pwmout_free(uint8_t slice, uint8_t channel);

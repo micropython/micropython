@@ -54,7 +54,6 @@ STATIC PIO pio_instances[2] = {pio0, pio1};
 
 void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
-    pio_sm_unclaim(pio, sm);
     uint32_t program_id = _current_program_id[pio_index][sm];
     if (program_id == 0) {
         return;
@@ -89,6 +88,7 @@ void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
         }
     }
     _current_sm_pins[pio_index][sm] = 0;
+    pio_sm_unclaim(pio, sm);
 }
 
 void reset_rp2pio_statemachine(void) {
@@ -130,8 +130,10 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count,
+    uint32_t initial_pin_state, uint32_t initial_pin_direction,
     uint32_t pins_we_use, bool tx_fifo, bool rx_fifo,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
+    bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool claim_pins) {
     // Create a program id that isn't the pointer so we can store it without storing the original object.
@@ -199,6 +201,11 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     _current_sm_pins[pio_index][state_machine] = pins_we_use;
     _current_pins[pio_index] |= pins_we_use;
 
+    pio_sm_set_pins_with_mask(self->pio, state_machine, initial_pin_state, pins_we_use);
+    pio_sm_set_pindirs_with_mask(self->pio, state_machine, initial_pin_direction, pins_we_use);
+    self->initial_pin_state = initial_pin_state;
+    self->initial_pin_direction = initial_pin_direction;
+
     for (size_t pin_number = 0; pin_number < TOTAL_GPIO_COUNT; pin_number++) {
         if ((pins_we_use & (1 << pin_number)) == 0) {
             continue;
@@ -260,27 +267,38 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     self->out = tx_fifo;
     self->out_shift_right = out_shift_right;
     self->in_shift_right = in_shift_right;
+    self->wait_for_txstall = wait_for_txstall;
+
+    self->init = init;
+    self->init_len = init_len;
 
     sm_config_set_fifo_join(&c, join);
 
     pio_sm_init(self->pio, self->state_machine, program_offset, &c);
+    common_hal_rp2pio_statemachine_run(self, init, init_len);
+
+    common_hal_rp2pio_statemachine_set_frequency(self, frequency);
     pio_sm_set_enabled(self->pio, self->state_machine, true);
-    for (size_t i = 0; i < init_len; i++) {
-        pio_sm_exec(self->pio, self->state_machine, init[i]);
-    }
     return true;
+}
+
+static uint32_t mask_and_rotate(const mcu_pin_obj_t* first_pin, uint32_t bit_count, uint32_t value) {
+    value = value & ((1 << bit_count) - 1);
+    uint32_t shift = first_pin->number;
+    return value << shift | value >> (32 - shift);
 }
 
 void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t* program, size_t program_len,
     size_t frequency,
     const uint16_t* init, size_t init_len,
-    const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count,
+    const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count, uint32_t initial_out_pin_state, uint32_t initial_out_pin_direction,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
-    const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count,
-    const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count,
+    const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
+    const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
+    bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right) {
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
@@ -397,9 +415,26 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         mp_raise_ValueError_varg(translate("Program does OUT without loading OSR"));
     }
 
-    if (in_pin_count > 8 || out_pin_count > 8) {
-        mp_raise_NotImplementedError(translate("Only IN/OUT of up to 8 supported"));
+    uint32_t initial_pin_state = mask_and_rotate(first_out_pin, out_pin_count, initial_out_pin_state);
+    uint32_t initial_pin_direction = mask_and_rotate(first_out_pin, out_pin_count, initial_out_pin_direction);
+    initial_set_pin_state = mask_and_rotate(first_set_pin, set_pin_count, initial_set_pin_state);
+    initial_set_pin_direction = mask_and_rotate(first_set_pin, set_pin_count, initial_set_pin_direction);
+    uint32_t set_out_overlap = mask_and_rotate(first_out_pin, out_pin_count, 0xffffffff) &
+                               mask_and_rotate(first_set_pin, set_pin_count, 0xffffffff);
+    // Check that OUT and SET settings agree because we don't have a way of picking one over the other.
+    if ((initial_pin_state & set_out_overlap) != (initial_set_pin_state & set_out_overlap)) {
+        mp_raise_ValueError(translate("Initial set pin state conflicts with initial out pin state"));
     }
+    if ((initial_pin_direction & set_out_overlap) != (initial_set_pin_direction & set_out_overlap)) {
+        mp_raise_ValueError(translate("Initial set pin direcion conflicts with initial out pin direction"));
+    }
+    initial_pin_state |= initial_set_pin_state;
+    initial_pin_direction |= initial_set_pin_direction;
+
+    // Sideset overrides OUT or SET so we always use its values.
+    uint32_t sideset_mask = mask_and_rotate(first_sideset_pin, sideset_pin_count, 0x1f);
+    initial_pin_state = (initial_pin_state & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_state);
+    initial_pin_direction = (initial_pin_direction & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_direction);
 
     bool ok = rp2pio_statemachine_construct(self,
         program, program_len,
@@ -409,8 +444,10 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         first_in_pin, in_pin_count,
         first_set_pin, set_pin_count,
         first_sideset_pin, sideset_pin_count,
+        initial_pin_state, initial_pin_direction,
         pins_we_use, tx_fifo, rx_fifo,
         auto_pull, pull_threshold, out_shift_right,
+        wait_for_txstall,
         auto_push, push_threshold, in_shift_right,
         true /* claim pins */);
     if (!ok) {
@@ -418,8 +455,49 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     }
 }
 
+void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self) {
+    pio_sm_restart(self->pio, self->state_machine);
+
+    uint8_t pio_index = pio_get_index(self->pio);
+    uint32_t pins_we_use = _current_sm_pins[pio_index][self->state_machine];
+    pio_sm_set_pins_with_mask(self->pio, self->state_machine, self->initial_pin_state, pins_we_use);
+    pio_sm_set_pindirs_with_mask(self->pio, self->state_machine, self->initial_pin_direction, pins_we_use);
+    common_hal_rp2pio_statemachine_run(self, self->init, self->init_len);
+    pio_sm_set_enabled(self->pio, self->state_machine, true);
+}
+
+void common_hal_rp2pio_statemachine_stop(rp2pio_statemachine_obj_t *self) {
+    pio_sm_set_enabled(self->pio, self->state_machine, false);
+}
+
+void common_hal_rp2pio_statemachine_run(rp2pio_statemachine_obj_t *self, const uint16_t *instructions, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        pio_sm_exec(self->pio, self->state_machine, instructions[i]);
+    }
+}
+
 uint32_t common_hal_rp2pio_statemachine_get_frequency(rp2pio_statemachine_obj_t* self) {
     return self->actual_frequency;
+}
+
+void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t* self, uint32_t frequency) {
+    if (frequency == 0) {
+        frequency = clock_get_hz(clk_sys);
+    }
+    uint64_t frequency256 = ((uint64_t) clock_get_hz(clk_sys)) * 256;
+    uint64_t div256 = frequency256 / frequency;
+    if (frequency256 % div256 > 0) {
+        div256 += 1;
+    }
+    // 0 is interpreted as 0x10000 so it's valid.
+    if (div256 / 256 > 0x10000 || frequency > clock_get_hz(clk_sys)) {
+        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_frequency);
+    }
+    self->actual_frequency = frequency256 / div256;
+
+    pio_sm_set_clkdiv_int_frac(self->pio, self->state_machine, div256 / 256, div256 % 256);
+    // Reset the clkdiv counter in case our new TOP is lower.
+    pio_sm_clkdiv_restart(self->pio, self->state_machine);
 }
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
@@ -445,9 +523,21 @@ bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self) {
     return self->state_machine == NUM_PIO_STATE_MACHINES;
 }
 
+enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
+    switch (stride) {
+        case 4:
+            return DMA_SIZE_32;
+        case 2:
+            return DMA_SIZE_16;
+        case 1:
+        default:
+            return DMA_SIZE_8;
+    }
+}
+
 static bool _transfer(rp2pio_statemachine_obj_t *self,
-    const uint8_t *data_out, size_t out_len,
-    uint8_t *data_in, size_t in_len) {
+    const uint8_t *data_out, size_t out_len, uint8_t out_stride_in_bytes,
+    uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes) {
     // This implementation is based on SPI but varies because the tx and rx buffers
     // may be different lengths and occur at different times or speeds.
 
@@ -472,42 +562,43 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
     if (tx) {
         tx_destination = (volatile uint8_t*) &self->pio->txf[self->state_machine];
         if (!self->out_shift_right) {
-            tx_destination += 3;
+            tx_destination += 4 - out_stride_in_bytes;
         }
     }
     if (rx) {
         rx_source = (const volatile uint8_t*) &self->pio->rxf[self->state_machine];
-        if (!self->in_shift_right) {
-            rx_source += 3;
+        if (self->in_shift_right) {
+            rx_source += 4 - in_stride_in_bytes;
         }
     }
+    uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
     bool use_dma = (!rx || chan_rx >= 0) && (!tx || chan_tx >= 0);
     if (use_dma) {
         dma_channel_config c;
         uint32_t channel_mask = 0;
         if (tx) {
             c = dma_channel_get_default_config(chan_tx);
-            channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+            channel_config_set_transfer_data_size(&c, _stride_to_dma_size(out_stride_in_bytes));
             channel_config_set_dreq(&c, self->tx_dreq);
             channel_config_set_read_increment(&c, true);
             channel_config_set_write_increment(&c, false);
             dma_channel_configure(chan_tx, &c,
                 tx_destination,
                 data_out,
-                len,
+                out_len / out_stride_in_bytes,
                 false);
             channel_mask |= 1u << chan_tx;
         }
         if (rx) {
             c = dma_channel_get_default_config(chan_rx);
-            channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+            channel_config_set_transfer_data_size(&c, _stride_to_dma_size(in_stride_in_bytes));
             channel_config_set_dreq(&c, self->rx_dreq);
             channel_config_set_read_increment(&c, false);
             channel_config_set_write_increment(&c, true);
             dma_channel_configure(chan_rx, &c,
                 data_in,
                 rx_source,
-                len,
+                in_len / in_stride_in_bytes,
                 false);
             channel_mask |= 1u << chan_rx;
         }
@@ -528,7 +619,7 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
             }
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
-        self->pio->fdebug = PIO_FDEBUG_TXSTALL_BITS;
+        self->pio->fdebug = stall_mask;
     }
 
     // If we have claimed only one channel successfully, we should release immediately. This also
@@ -542,27 +633,31 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
 
     if (!use_dma && !mp_hal_is_interrupted()) {
         // Use software for small transfers, or if couldn't claim two DMA channels
-        size_t rx_remaining = in_len;
-        size_t tx_remaining = out_len;
+        size_t rx_remaining = in_len / in_stride_in_bytes;
+        size_t tx_remaining = out_len / out_stride_in_bytes;
 
         while (rx_remaining || tx_remaining) {
-            for (int i=0; i<32; i++) {
-                bool did_transfer = false;
-                if (tx_remaining && !pio_sm_is_tx_fifo_full(self->pio, self->state_machine)) {
+            while (tx_remaining && !pio_sm_is_tx_fifo_full(self->pio, self->state_machine)) {
+                if (out_stride_in_bytes == 1) {
                     *tx_destination = *data_out;
-                    data_out++;
-                    --tx_remaining;
-                    did_transfer = true;
+                } else if (out_stride_in_bytes == 2) {
+                    *((uint16_t*) tx_destination) =  *((uint16_t*) data_out);
+                } else if (out_stride_in_bytes == 4) {
+                    *((uint32_t*) tx_destination) = *((uint32_t*) data_out);
                 }
-                if (rx_remaining && !pio_sm_is_rx_fifo_empty(self->pio, self->state_machine)) {
+                data_out += out_stride_in_bytes;
+                --tx_remaining;
+            }
+            while (rx_remaining && !pio_sm_is_rx_fifo_empty(self->pio, self->state_machine)) {
+                if (in_stride_in_bytes == 1) {
                     *data_in = (uint8_t) *rx_source;
-                    data_in++;
-                    --rx_remaining;
-                    did_transfer = true;
+                } else if (in_stride_in_bytes == 2) {
+                    *((uint16_t*) data_in) = *((uint16_t*) rx_source);
+                } else if (in_stride_in_bytes == 4) {
+                    *((uint32_t*) data_in) = *((uint32_t*) rx_source);
                 }
-                if (!did_transfer) {
-                    break;
-                }
+                data_in += in_stride_in_bytes;
+                --rx_remaining;
             }
             RUN_BACKGROUND_TASKS;
             if (mp_hal_is_interrupted()) {
@@ -570,24 +665,55 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
             }
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
-        self->pio->fdebug = PIO_FDEBUG_TXSTALL_BITS;
+        self->pio->fdebug = stall_mask;
     }
     // Wait for the state machine to finish transmitting the data we've queued
     // up.
     if (tx) {
         while (!pio_sm_is_tx_fifo_empty(self->pio, self->state_machine) ||
-               (self->pio->fdebug & PIO_FDEBUG_TXSTALL_BITS) == 0) {
+               (self->wait_for_txstall && (self->pio->fdebug & stall_mask) == 0)) {
             RUN_BACKGROUND_TASKS;
         }
     }
     return true;
 }
 
-// Writes out the given data.
-bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self,
-    const uint8_t *data, size_t len) {
+// TODO: Provide a way around these checks in case someone wants to use the FIFO
+// with manually run code.
+
+bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
     if (!self->out) {
         mp_raise_RuntimeError(translate("No out in program"));
     }
-    return _transfer(self, data, len, NULL, 0);
+    return _transfer(self, data, len, stride_in_bytes, NULL, 0, 0);
+}
+
+bool common_hal_rp2pio_statemachine_readinto(rp2pio_statemachine_obj_t *self, uint8_t *data, size_t len, uint8_t stride_in_bytes) {
+    if (!self->in) {
+        mp_raise_RuntimeError(translate("No in in program"));
+    }
+    return _transfer(self, NULL, 0, 0, data, len, stride_in_bytes);
+}
+
+bool common_hal_rp2pio_statemachine_write_readinto(rp2pio_statemachine_obj_t *self,
+                                                   const uint8_t *data_out, size_t out_len, uint8_t out_stride_in_bytes,
+                                                   uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes) {
+    if (!self->in || !self->out) {
+        mp_raise_RuntimeError(translate("No in or out in program"));
+    }
+    return _transfer(self, data_out, out_len, out_stride_in_bytes, data_in, in_len, in_stride_in_bytes);
+}
+
+bool common_hal_rp2pio_statemachine_get_rxstall(rp2pio_statemachine_obj_t* self) {
+    uint32_t stall_mask = 1 << (PIO_FDEBUG_RXSTALL_LSB + self->state_machine);
+    return (self->pio->fdebug & stall_mask) != 0;
+}
+
+void common_hal_rp2pio_statemachine_clear_rxfifo(rp2pio_statemachine_obj_t *self) {
+    uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
+    uint32_t stall_mask = 1 << (PIO_FDEBUG_RXSTALL_LSB + self->state_machine);
+    for (size_t i = 0; i < level; i++) {
+        (void) self->pio->rxf[self->state_machine];
+    }
+    self->pio->fdebug = stall_mask;
 }
