@@ -468,12 +468,12 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
 
     int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     if (in_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("In buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(translate("In buffer elements must be max 4 bytes long"));
     }
 
     int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     if (out_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Out buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(translate("Out buffer elements must be max 4 bytes long"));
     }
 
     bool ok = common_hal_rp2pio_statemachine_write_readinto(self,
