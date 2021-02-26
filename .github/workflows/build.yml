@@ -281,6 +281,9 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "picoplanet"
+        - "pimoroni_keybow2040"
+        - "pimoroni_picosystem"
+        - "pimoroni_tiny2040"
         - "pirkey_m0"
         - "pitaya_go"
         - "pyb_nano_v2"
@@ -453,6 +456,7 @@ jobs:
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
+        - "unexpectedmaker_tinys2"
 
     steps:
     - name: Set up Python 3.8

@@ -25,22 +25,8 @@ CIRCUITPY_VECTORIO = 0
 
 CFLAGS_INLINE_LIMIT = 55
 SUPEROPT_GC = 0
+SUPEROPT_VM = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
-
-CFLAGS_BOARD = --param max-inline-insns-auto=15
-ifeq ($(TRANSLATION), ja)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 35
-endif
-ifeq ($(TRANSLATION), zh_Latn_pinyin)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 35
-endif
-ifeq ($(TRANSLATION), de_DE)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 35
-SUPEROPT_VM = 0
-endif

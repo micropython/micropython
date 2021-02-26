@@ -231,8 +231,8 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,
     .is_text = false,
-    // Match PySerial when possible, such as disallowing optional length argument for .readinto()
-    .pyserial_compatibility = true,
+    // Disallow readinto() size parameter.
+    .pyserial_readinto_compatibility = true,
 };
 
 

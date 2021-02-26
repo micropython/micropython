@@ -49,7 +49,8 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     size_t pixel_count;
-    size_t bytes_per_pixel;
+    uint16_t bytes_per_pixel;
+    uint16_t scaled_brightness;
     pixelbuf_byteorder_details_t byteorder;
     mp_float_t brightness;
     mp_obj_t transmit_buffer_obj;
