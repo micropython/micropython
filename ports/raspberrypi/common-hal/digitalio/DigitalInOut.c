@@ -99,21 +99,18 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t* self, bool value) {
     const uint8_t pin = self->pin->number;
-    if (value) {
-        // If true, set the direction -before- setting the pin value, to
-        // to avoid a glitch true 3.3v on the pin before switching from output to input for open drain.
-        if (self->open_drain) {
-            gpio_set_dir(pin, GPIO_IN);
-        }
-        gpio_put(pin, true);
+    if (self->open_drain && value) {
+        // If true and open-drain, set the direction -before- setting
+        // the pin value, to to avoid a high glitch on the pin before
+        // switching from output to input for open-drain.
+        gpio_set_dir(pin, GPIO_IN);
+        gpio_put(pin, value);
     } else {
-        // If false, set the direction -after- setting the pin value,
-        // to avoid a glitch 3.3v on the pin before switching from input to output for open drain,
-        // when previous value was high.
-        gpio_put(pin, false);
-        if (self->open_drain) {
-            gpio_set_dir(pin, GPIO_OUT);
-        }
+        // Otherwise set the direction -after- setting the pin value,
+        // to avoid a glitch which might occur if the old value was
+        // different and the pin was previously set to input.
+        gpio_put(pin, value);
+        gpio_set_dir(pin, GPIO_OUT);
     }
 }
 
