@@ -93,6 +93,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->character_bits = bits;
     self->timeout_ms = timeout * 1000;
 
+    if (self->character_bits != 7 && self->character_bits != 8) {
+        mp_raise_ValueError(translate("Invalid word/bit length"));
+    }
+
     // We are transmitting one direction if one pin is NULL and the other isn't.
     bool is_onedirection = (rx == NULL) != (tx == NULL);
     bool uart_taken = false;
@@ -152,10 +156,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (uart_taken) {
         mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
-    }
-
-    if(self->rx == NULL && self->tx == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
     }
 
     if (is_onedirection && ((rts != NULL) || (cts != NULL))) {
