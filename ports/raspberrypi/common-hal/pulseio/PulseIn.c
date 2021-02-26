@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017-2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,6 @@ pulseio_pulsein_obj_t* save_self;
 #define NO_PIN 0xff
 
 const uint16_t pulsein_program[] = {
-//   set    pindirs, 0 ; For input
-    0xe080,
 //   wait   0 pin, 0   ; Wait for first low to start
     0x2020,
 //   irq wait 0        ; set IRQ 0 and wait
@@ -55,7 +53,7 @@ const uint16_t pulsein_program[] = {
 //   in    pins, 1 [1] ; sample every 3 cycles (2 instructions, 1 delay)
     0x4101,
 //   jmp bitloop
-    0x0003,
+    0x0002,
 };
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
@@ -85,25 +83,27 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         NULL, 0,
         1 << self->pin, false, true,
         false, 8, false, // TX, unused
-        true, 32, true, // RX iauto-push every 32 bits
+        true, 32, true, // RX auto-push every 32 bits
         false); // claim pins
-    self->pio = state_machine.pio;
-    self->sm = state_machine.state_machine;
-    self->sm_cfg = state_machine.sm_config;
-    self->offset = state_machine.offset;
-    if ( self->pio == pio0 ) {
+    self->state_machine.pio = state_machine.pio;
+    self->state_machine.state_machine = state_machine.state_machine;
+    self->state_machine.sm_config = state_machine.sm_config;
+    self->state_machine.offset = state_machine.offset;
+    if ( self->state_machine.pio == pio0 ) {
        self->pio_interrupt = PIO0_IRQ_0;
     } else {
        self->pio_interrupt = PIO1_IRQ_0;
     }
 
-    pio_sm_set_in_pins(self->pio,self->sm,pin->number);
-    pio_sm_set_enabled(self->pio, self->sm, false);
+    pio_sm_set_in_pins(self->state_machine.pio,self->state_machine.state_machine,pin->number);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
     irq_set_exclusive_handler(self->pio_interrupt, common_hal_pulseio_pulsein_interrupt);
     irq_set_enabled(self->pio_interrupt, true);
-    hw_clear_bits(&self->pio->inte0, 1u << self->sm);
-    hw_set_bits(&self->pio->inte0, 1u << (self->sm+8));
-    pio_sm_set_enabled(self->pio, self->sm, true);
+    hw_clear_bits(&self->state_machine.pio->inte0, 1u << self->state_machine.state_machine);
+    hw_set_bits(&self->state_machine.pio->inte0, 1u << (self->state_machine.state_machine+8));
+    // exec a set pindirs to 0 for input
+    pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0xe080);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
 
 }
 
@@ -116,31 +116,31 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
         return;
     }
     irq_set_enabled(self->pio_interrupt, false);
-    pio_sm_set_enabled(self->pio, self->sm, false);
-    pio_sm_unclaim (self->pio, self->sm);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
+    pio_sm_unclaim (self->state_machine.pio, self->state_machine.state_machine);
     m_free(self->buffer);
     self->pin = NO_PIN;
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
-    pio_sm_set_enabled(self->pio, self->sm, false);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
 }
 
 void common_hal_pulseio_pulsein_interrupt() {
 
     pulseio_pulsein_obj_t* self = save_self;
 // clear interrupt
-    hw_clear_bits(&self->pio->inte0, 1u << self->sm);
-    self->pio->irq = 1u << self->sm;
+    hw_clear_bits(&self->state_machine.pio->inte0, 1u << self->state_machine.state_machine);
+    self->state_machine.pio->irq = 1u << self->state_machine.state_machine;
     irq_clear(self->pio_interrupt);
-    pio_sm_clear_fifos(self->pio,self->sm);
+    pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
     bool last_level = true;
     uint level_count = 0;
     uint16_t result = 0;
     uint16_t buf_index = 0;
     while ( buf_index < self->maxlen ) {
        uint32_t rxfifo = 0;
-       rxfifo = pio_sm_get_blocking(self->pio, self->sm);
+       rxfifo = pio_sm_get_blocking(self->state_machine.pio, self->state_machine.state_machine);
        // translate from fifo to buffer
        for (uint i = 0; i < 32; i++) {
            bool level = (rxfifo & (1 << i)) >> i;
@@ -163,10 +163,10 @@ void common_hal_pulseio_pulsein_interrupt() {
             break;
        }
     }
-    pio_sm_set_enabled(self->pio, self->sm, false);
-    pio_sm_init(self->pio, self->sm, self->offset, &self->sm_cfg);
-    pio_sm_restart(self->pio,self->sm);
-    pio_sm_set_enabled(self->pio, self->sm, true);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
+    pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
+    pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
     irq_set_enabled(self->pio_interrupt, true);
 }
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
@@ -175,7 +175,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     if (trigger_duration > 0) {
         gpio_set_function(self->pin ,GPIO_FUNC_SIO);
         gpio_set_dir(self->pin,true);
-        gpio_put(self->pin, false);
+        gpio_put(self->pin, !self->idle_state);
         common_hal_mcu_delay_us((uint32_t)trigger_duration);
         gpio_set_function(self->pin ,GPIO_FUNC_PIO0);
     }
@@ -183,8 +183,9 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     // Reconfigure the pin for PIO
     common_hal_mcu_delay_us(100);
     gpio_set_function(self->pin, GPIO_FUNC_PIO0);
-    pio_sm_set_enabled(self->pio, self->sm, true);
-    pio_sm_exec(self->pio,self->sm,0x20a0);
+    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
+    // exec a wait for the selected pin to go high
+    pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x20a0);
 }
 
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {

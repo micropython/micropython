@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017-2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio.h"
+#include "common-hal/rp2pio/StateMachine.h"
 
 #include "py/obj.h"
 
@@ -40,10 +41,7 @@ typedef struct {
     bool idle_state;
     volatile uint16_t start;
     volatile uint16_t len;
-    pio_sm_config sm_cfg;
-    PIO pio;
-    uint8_t sm;
-    uint8_t offset;
+    rp2pio_statemachine_obj_t state_machine;
     uint16_t pio_interrupt;
 } pulseio_pulsein_obj_t;
 
