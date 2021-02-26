@@ -130,14 +130,14 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
     // simplest version - use internal functions for get/set pixels
     for (int16_t i=0; i < (x2-x1); i++) {
 
-        const int xs_index = x_reverse ? ( (x2 - 1) - i ) : x1+i; // x-index into the source bitmap
-        const int xd_index = x_reverse ? ((x + (x2-x1)) - i ) : x+i; // x-index into the destination bitmap
+        const int xs_index = x_reverse ? ( (x2) - i - 1) : x1+i; // x-index into the source bitmap
+        const int xd_index = x_reverse ? ((x + (x2-x1)) - i - 1) : x+i; // x-index into the destination bitmap
 
         if ( (xd_index >= 0) && (xd_index < self->width) ) {
             for (int16_t j=0; j < (y2-y1) ; j++){
 
-                const int ys_index = y_reverse ? ( (y2 - 1) - j ) : y1+j ; // y-index into the source bitmap
-                const int yd_index = y_reverse ? ((y + (y2-y1)) - j ) : y+j ; // y-index into the destination bitmap
+                const int ys_index = y_reverse ? ( (y2 ) - j - 1) : y1+j ; // y-index into the source bitmap
+                const int yd_index = y_reverse ? ((y + (y2-y1)) - j - 1) : y+j ; // y-index into the destination bitmap
 
                 if ((yd_index >= 0) && (yd_index < self->height) ) {
                     uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
