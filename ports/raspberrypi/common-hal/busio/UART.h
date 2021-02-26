@@ -43,6 +43,7 @@ typedef struct {
     uint32_t baudrate;
     uint32_t timeout_ms;
     uart_inst_t * uart;
+    ringbuf_t ringbuf;
 } busio_uart_obj_t;
 
 extern void reset_uart(void);

@@ -82,7 +82,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     // This is needed to avoid crashes with certain UART implementations which
     // cannot accomodate being moved after creation. (See
     // https://github.com/adafruit/circuitpython/issues/1056)
-    busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
+    busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
            ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
@@ -387,6 +387,7 @@ const mp_obj_type_t busio_uart_parity_type = {
 };
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__),      MP_ROM_PTR(&busio_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&busio_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&busio_uart___exit___obj) },

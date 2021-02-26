@@ -73,18 +73,27 @@ static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t * pin, const uin
     return pin->number;
 }
 
-static ringbuf_t ringbuf[NUM_UARTS];
+static busio_uart_obj_t* active_uarts[NUM_UARTS];
 
-static void uart0_callback(void) {
-    while (uart_is_readable(uart0) && ringbuf_num_empty(&ringbuf[0]) > 0) {
-        ringbuf_put(&ringbuf[0], (uint8_t)uart_get_hw(uart0)->dr);
+static void _copy_into_ringbuf(ringbuf_t* r, uart_inst_t* uart) {
+    while (uart_is_readable(uart) && ringbuf_num_empty(r) > 0) {
+        ringbuf_put(r, (uint8_t) uart_get_hw(uart)->dr);
     }
 }
 
+static void shared_callback(busio_uart_obj_t *self) {
+    _copy_into_ringbuf(&self->ringbuf, self->uart);
+    // We always clear the interrupt so it doesn't continue to fire because we
+    // may not have read everything available.
+    uart_get_hw(self->uart)->icr = UART_UARTICR_RXIC_BITS;
+}
+
+static void uart0_callback(void) {
+    shared_callback(active_uarts[0]);
+}
+
 static void uart1_callback(void) {
-    while (uart_is_readable(uart1) && ringbuf_num_empty(&ringbuf[1]) > 0) {
-        ringbuf_put(&ringbuf[1], (uint8_t)uart_get_hw(uart1)->dr);
-    }
+    shared_callback(active_uarts[1]);
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -138,9 +147,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         // pointers like this are NOT moved, allocating the buffer
         // in the long-lived pool is not strictly necessary)
         // (This is a macro.)
-        if (!ringbuf_alloc(&ringbuf[uart_id], receiver_buffer_size, true)) {
+        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
+        active_uarts[uart_id] = self;
         if (uart_id == 1) {
             self->uart_irq_id = UART1_IRQ;
             irq_set_exclusive_handler(self->uart_irq_id, uart1_callback);
@@ -149,7 +159,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             irq_set_exclusive_handler(self->uart_irq_id, uart0_callback);
         }
         irq_set_enabled(self->uart_irq_id, true);
-        uart_set_irq_enables(self->uart, true, false);
+        uart_set_irq_enables(self->uart, true /* rx has data */, false /* tx needs data */);
     }
 }
 
@@ -162,7 +172,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
     uart_deinit(self->uart);
-    ringbuf_free(&ringbuf[self->uart_id]);
+    ringbuf_free(&self->ringbuf);
+    active_uarts[self->uart_id] = NULL;
     uart_status[self->uart_id] = STATUS_FREE;
     reset_pin_number(self->tx_pin);
     reset_pin_number(self->rx_pin);
@@ -208,7 +219,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     irq_set_enabled(self->uart_irq_id, false);
 
     // Copy as much received data as available, up to len bytes.
-    size_t total_read = ringbuf_get_n(&ringbuf[self->uart_id], data, len);
+    size_t total_read = ringbuf_get_n(&self->ringbuf, data, len);
 
     // Check if we still need to read more data.
     if (len > total_read) {
@@ -218,7 +229,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         while (len > 0 && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
             if (uart_is_readable(self->uart)) {
                 // Read and advance.
-                *data++ = uart_get_hw(self->uart)->dr;
+                data[total_read] = uart_get_hw(self->uart)->dr;
 
                 // Adjust the counters.
                 len--;
@@ -230,10 +241,15 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
             RUN_BACKGROUND_TASKS;
             // Allow user to break out of a timeout with a KeyboardInterrupt.
             if (mp_hal_is_interrupted()) {
-                return 0;
+                break;
             }
         }
     }
+
+    // Now that we've emptied the ringbuf some, fill it up with anything in the
+    // FIFO. This ensures that we'll empty the FIFO as much as possible and
+    // reset the interrupt when we catch up.
+    _copy_into_ringbuf(&self->ringbuf, self->uart);
 
     // Re-enable irq.
     irq_set_enabled(self->uart_irq_id, true);
@@ -264,13 +280,24 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return ringbuf_num_filled(&ringbuf[self->uart_id]);
+    // Prevent conflict with uart irq.
+    irq_set_enabled(self->uart_irq_id, false);
+    // The UART only interrupts after a threshold so make sure to copy anything
+    // out of its FIFO before measuring how many bytes we've received.
+    _copy_into_ringbuf(&self->ringbuf, self->uart);
+    irq_set_enabled(self->uart_irq_id, false);
+    return ringbuf_num_filled(&self->ringbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // Prevent conflict with uart irq.
     irq_set_enabled(self->uart_irq_id, false);
-    ringbuf_clear(&ringbuf[self->uart_id]);
+    ringbuf_clear(&self->ringbuf);
+
+    // Throw away the FIFO contents too.
+    while (uart_is_readable(self->uart)) {
+        (void) uart_get_hw(self->uart)->dr;
+    }
     irq_set_enabled(self->uart_irq_id, true);
 }
 
