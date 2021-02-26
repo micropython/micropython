@@ -86,12 +86,13 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
     mp_float_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
     int wsecs = (int)(wakeup_in_secs);
-    if (wsecs > 510) { //XXX
-      mp_raise_ValueError(translate("Alarm time is too far."));
+    // timealarm is implemented by RTC, which is a 24bit counter
+    // running at 32768Hz. So, 2^24 / 32768 = 512sec is an upper limit.
+    if (wsecs >= 512) {
+        mp_raise_ValueError(translate("Alarm time must be < 512 seconds."));
     }
 
     uint32_t wakeup_in_ticks = (uint32_t)(wakeup_in_secs * 1024.0f);
-    //printf("alarm_time_timealarm_set_alarms() %d secs 0x%08X ticks\r\n", wsecs, (int)wakeup_in_ticks);
     port_interrupt_after_ticks_ch(1, wakeup_in_ticks);
     rtc_woke_up_counter = 0;
 }

@@ -308,7 +308,7 @@ msgid "Address type out of range"
 msgstr ""
 
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
-msgid "Alarm time is too far."
+msgid "Alarm time must be < 512 seconds."
 msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
