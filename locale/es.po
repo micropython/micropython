@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 22:27+0000\n"
+"PO-Revision-Date: 2021-02-26 13:50+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -473,7 +473,7 @@ msgstr "Por debajo de la tasa mínima de refrescamiento"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "Le reloj de bit y de selector de palabra deben ser pines secuenciales"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -518,7 +518,7 @@ msgstr "Búfer + compensado muy pequeños %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Los elementos del búfer deben de ser de una longitud de 4 bytes o menos"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -1112,6 +1112,8 @@ msgstr "IV debe tener %d bytes de longitud"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In buffer elements must be 4 bytes long or less"
 msgstr ""
+"Los elementos del búfer de entrada deben ser de una longitud de 4 bytes o "
+"menos"
 
 #: py/persistentcode.c
 msgid ""
@@ -1132,10 +1134,14 @@ msgstr "Tamaño del programa Init invalido"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direcion conflicts with initial out pin direction"
 msgstr ""
+"La dirección inicial del pin de configuración esta en conflicto con la "
+"dirección de salida inicial del pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
+"El estado inicial del pin de configuración esta en conflicto con el estado "
+"inicial de salida del pin"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1576,11 +1582,11 @@ msgstr "Sin soporte de hardware en pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "No hay \"in\" en el programa"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "No hay \"in\" o \"out\" en el programa"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1726,6 +1732,8 @@ msgstr "Tiempo de espera agotado"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out buffer elements must be 4 bytes long or less"
 msgstr ""
+"Los elementos del búfer de salida deben ser de una longitud de 4 bytes o "
+"menos"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
