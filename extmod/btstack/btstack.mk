@@ -66,7 +66,7 @@ endif
 LIB_SRC_C += $(SRC_BTSTACK)
 
 # Suppress some warnings.
-BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wimplicit-fallthrough=0
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter # -Wimplicit-fallthrough=0
 ifneq ($(CC),clang)
 BTSTACK_WARNING_CFLAGS += -Wno-format
 endif
