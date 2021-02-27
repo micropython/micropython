@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_pio/include/hardware/pio.h"
 
 // Pins aren't actually defined here. They are in the board specific directory
 // such as boards/arduino_zero/pins.c.
