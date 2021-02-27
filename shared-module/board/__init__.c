@@ -28,7 +28,6 @@
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
-#include "shared-module/board/__init__.h"
 
 #if CIRCUITPY_BUSIO
 #include "shared-bindings/busio/I2C.h"
