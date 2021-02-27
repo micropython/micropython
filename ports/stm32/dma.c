@@ -85,7 +85,7 @@ struct _dma_descr_t {
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32H7) || defined(STM32F3)  || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32H7) || defined(STM32F3) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -95,7 +95,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .MemDataAlignment = DMA_MDATAALIGN_BYTE,
     .Mode = DMA_NORMAL,
     .Priority = DMA_PRIORITY_LOW,
-    #if defined(STM32F4)|| defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     .FIFOMode = DMA_FIFOMODE_DISABLE,
     .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
     .MemBurst = DMA_MBURST_INC4,
@@ -108,7 +108,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)  || defined(STM32F3) 
+    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32F3)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -134,7 +134,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 // Default parameters to dma_init() for DAC tx
 static const DMA_InitTypeDef dma_init_struct_dac = {
-    #if defined(STM32F4) ||  defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
     #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32F3)
     .Request = 0,
@@ -546,7 +546,7 @@ volatile dma_idle_count_t dma_idle;
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
 #endif
 
-#if defined(STM32F0)  || defined(STM32F3)
+#if defined(STM32F0) || defined(STM32F3)
 
 void DMA1_Ch1_IRQHandler(void) {
     IRQ_ENTER(DMA1_Ch1_IRQn);

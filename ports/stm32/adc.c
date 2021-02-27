@@ -236,7 +236,7 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
     uint32_t tickstart = HAL_GetTick();
     #if defined(STM32F4) || defined(STM32F7)
     while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
-    #elif defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) 
+    #elif defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     while (READ_BIT(ADCx->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
     #else
     #error Unsupported processor
@@ -288,7 +288,7 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.ScanConvMode = DISABLE;
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
-    // adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_61CYCLES_5; 
+    // adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_61CYCLES_5;
     #elif defined(STM32F4) || defined(STM32F7)
     adch->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
     adch->Init.ScanConvMode = DISABLE;
@@ -321,11 +321,11 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #elif defined(STM32L4) || defined(STM32WB)
     HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
     #elif defined(STM32F3)
-        #if defined(STM32F373xC) || defined(STM32F378xx)
-            HAL_ADCEx_Calibration_Start(adch);
-        #else
-            HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
-        #endif
+    #if defined(STM32F373xC) || defined(STM32F378xx)
+    HAL_ADCEx_Calibration_Start(adch);
+    #else
+    HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
+    #endif
     #endif
 }
 

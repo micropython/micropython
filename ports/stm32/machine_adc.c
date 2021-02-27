@@ -194,7 +194,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         }
     }
 
-    #if defined(STM32F0) ||defined(STM32F3) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
 
     uint32_t cfgr1_clr = ADC_CFGR1_CONT | ADC_CFGR1_EXTEN | ADC_CFGR1_ALIGN | ADC_CFGR1_RES | ADC_CFGR1_DMAEN;
     uint32_t cfgr1 = res << ADC_CFGR1_RES_Pos;
@@ -225,7 +225,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
 }
 
 STATIC int adc_get_bits(ADC_TypeDef *adc) {
-    #if defined(STM32F0) || defined(STM32F3) ||defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;

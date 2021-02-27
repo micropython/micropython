@@ -211,7 +211,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32L4) 
+#if !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -547,7 +547,7 @@ void powerctrl_enter_stop_mode(void) {
 
     // reconfigure the system clock after waking up
 
-    #if defined(STM32F0)  || defined(STM32F3)
+    #if defined(STM32F0) || defined(STM32F3)
 
     // Enable HSI48
     __HAL_RCC_HSI48_ENABLE();
