@@ -131,12 +131,16 @@ void usb_irq_handler(void) {
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
+#if CIRCUITPY_USB_MSC
     usb_msc_mount();
+#endif
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
+#if CIRCUITPY_USB_MSC
     usb_msc_umount();
+#endif
 }
 
 // Invoked when usb bus is suspended
