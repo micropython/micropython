@@ -314,11 +314,7 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
 
 void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer) {
     _add_layer(self, layer);
-    mp_obj_list_append(self->members, mp_const_none);
-    for (size_t i = self->members->len - 1; i > index; i--) {
-         self->members->items[i] = self->members->items[i - 1];
-    }
-    self->members->items[index] = layer;
+    mp_obj_list_insert(self->members, index, layer);
 }
 
 mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index) {

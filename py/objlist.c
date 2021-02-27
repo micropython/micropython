@@ -270,7 +270,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
+inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     if (self->len == 0) {
         mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
     }
@@ -375,6 +375,15 @@ STATIC mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
+inline void mp_obj_list_insert(mp_obj_list_t *self, size_t index, mp_obj_t obj) {
+    mp_obj_list_append(MP_OBJ_FROM_PTR(self), mp_const_none);
+
+    for (size_t i = self->len - 1; i > index; --i) {
+         self->items[i] = self->items[i - 1];
+    }
+    self->items[index] = obj;
+}
+
 STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
@@ -389,14 +398,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     if ((size_t)index > self->len) {
          index = self->len;
     }
-
-    mp_obj_list_append(self_in, mp_const_none);
-
-    for (mp_int_t i = self->len-1; i > index; i--) {
-         self->items[i] = self->items[i-1];
-    }
-    self->items[index] = obj;
-
+    mp_obj_list_insert(self, index, obj);
     return mp_const_none;
 }
 
