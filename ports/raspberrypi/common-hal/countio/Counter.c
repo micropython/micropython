@@ -19,6 +19,10 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     self->pin_a = pin_a->number;
     self->slice_num = pwm_gpio_to_slice_num(self->pin_a);
 
+    if (MP_STATE_PORT(counting)[self->slice_num] != NULL) {
+        mp_raise_RuntimeError(translate("PWM slice already in use"));
+    }
+
     pwm_clear_irq(self->slice_num);
     pwm_set_irq_enabled(self->slice_num, true);
     irq_set_exclusive_handler(PWM_IRQ_WRAP, counter_interrupt_handler);
@@ -29,12 +33,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     pwm_init(self->slice_num, &cfg, false);
     gpio_set_function(self->pin_a, GPIO_FUNC_PWM);
 
-    self->count = 0;
-
     claim_pin(pin_a);
 
-    MP_STATE_PORT(counting) = self;
+    MP_STATE_PORT(counting)[self->slice_num] = self;
 
+    self->count = 0;
     pwm_set_enabled(self->slice_num, true);
 }
 
@@ -51,10 +54,10 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
     pwm_set_irq_enabled(self->slice_num, false);
 
     reset_pin_number(self->pin_a);
-    gpio_init(self->pin_a);
+
+    MP_STATE_PORT(counting)[self->slice_num] = NULL;
     self->pin_a = 0;
     self->slice_num = 0;
-    MP_STATE_PORT(counting) = NULL;
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {
@@ -75,7 +78,17 @@ void common_hal_countio_counter_reset(countio_counter_obj_t* self){
 }
 
 void counter_interrupt_handler() {
-    countio_counter_obj_t *self = MP_STATE_PORT(counting);
-    pwm_clear_irq(self->slice_num);
-    self->count += 65536;
+    uint32_t mask = pwm_get_irq_status_mask();
+
+    uint8_t i = 1, pos = 1;
+    while (!(i & mask)) {
+        i = i << 1;
+        ++pos;
+    }
+
+    countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos-1];
+    if (self != NULL) {
+        pwm_clear_irq(self->slice_num);
+        self->count += 65536;
+    }
 }

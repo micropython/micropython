@@ -43,7 +43,7 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t counting; \
+    mp_obj_t counting[NUM_PWM_SLICES]; \
     mp_obj_t playing_audio[NUM_DMA_CHANNELS]; \
     CIRCUITPY_COMMON_ROOT_POINTERS;
 
