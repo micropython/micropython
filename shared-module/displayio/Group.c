@@ -35,7 +35,7 @@
 #endif
 
 
-void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
+void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t scale, mp_int_t x, mp_int_t y) {
     mp_obj_list_t *members = mp_obj_new_list(0, NULL);
     displayio_group_construct(self, members, scale, x, y);
 }

@@ -42,7 +42,7 @@
 //|         """Create a Group of a given size and scale. Scale is in one dimension. For example, scale=2
 //|         leads to a layer's pixel being 2x2 pixels when in the group.
 //|
-//|         :param int max_size: The maximum group size.
+//|         :param int max_size: Ignored. Will be removed in 7.x.
 //|         :param int scale: Scale of layer pixels in one dimension.
 //|         :param int x: Initial x position within the parent.
 //|         :param int y: Initial y position within the parent."""
@@ -59,11 +59,6 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t max_size = args[ARG_max_size].u_int;
-    if (max_size < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_max_size);
-    }
-
     mp_int_t scale = args[ARG_scale].u_int;
     if (scale < 1) {
         mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
@@ -71,7 +66,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
-    common_hal_displayio_group_construct(self, max_size, scale, args[ARG_x].u_int, args[ARG_y].u_int);
+    common_hal_displayio_group_construct(self, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }
