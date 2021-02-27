@@ -28,6 +28,5 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H
 
 void reset_board_busses(void);
-void board_reset_pio(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H

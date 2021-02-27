@@ -34,13 +34,3 @@
 
 // Pins aren't actually defined here. They are in the board specific directory
 // such as boards/arduino_zero/pins.c.
-
-// routine to reset both pios
-void board_reset_pio() {
-    for ( uint8_t sm = 0; sm < 4; sm++) {
-      pio_sm_init (pio0, sm, 0, NULL);
-      pio_sm_init (pio1, sm, 0, NULL);
-    }
-    pio_clear_instruction_memory(pio0);
-    pio_clear_instruction_memory(pio1);
-}
