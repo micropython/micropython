@@ -111,7 +111,7 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 
     // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
 
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32F3)
     #define AHBxENR AHBENR
     #define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
     #elif defined(STM32F4) || defined(STM32F7)

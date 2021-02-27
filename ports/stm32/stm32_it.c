@@ -532,7 +532,7 @@ void RTC_WKUP_IRQHandler(void) {
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
 
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);
@@ -750,7 +750,7 @@ void USART2_IRQHandler(void) {
 }
 #endif
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32F3)
 
 void USART3_8_IRQHandler(void) {
     IRQ_ENTER(USART3_8_IRQn);

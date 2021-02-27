@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "adc.h"
 
-#if defined(STM32F0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+#if defined(STM32F0) || defined(STM32F3) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
 #define ADC_V2 (1)
 #else
 #define ADC_V2 (0)
@@ -52,6 +52,9 @@
 #if defined(STM32F0)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_13CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_239CYCLES_5
+#elif defined(STM32F3)
+#define ADC_SAMPLETIME_DEFAULT  ADC_SAMPLETIME_19CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_601CYCLES_5
 #elif defined(STM32F4) || defined(STM32F7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_15CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_480CYCLES
@@ -126,7 +129,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #endif
 
     // Configure clock mode
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32F3)
     adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
@@ -159,7 +162,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #if ADC_V2
     if (!(adc->CR & ADC_CR_ADEN)) {
         // ADC isn't enabled so calibrate it now
-        #if defined(STM32F0) || defined(STM32L0)
+        #if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
         LL_ADC_StartCalibration(adc);
         #elif defined(STM32L4) || defined(STM32WB)
         LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
@@ -191,7 +194,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         }
     }
 
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) ||defined(STM32F3) || defined(STM32L0)
 
     uint32_t cfgr1_clr = ADC_CFGR1_CONT | ADC_CFGR1_EXTEN | ADC_CFGR1_ALIGN | ADC_CFGR1_RES | ADC_CFGR1_DMAEN;
     uint32_t cfgr1 = res << ADC_CFGR1_RES_Pos;
@@ -222,7 +225,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
 }
 
 STATIC int adc_get_bits(ADC_TypeDef *adc) {
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32F3) ||defined(STM32L0)
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
@@ -252,7 +255,7 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     }
     #endif
 
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
 
     if (channel == ADC_CHANNEL_VREFINT) {
         ADC1_COMMON->CCR |= ADC_CCR_VREFEN;

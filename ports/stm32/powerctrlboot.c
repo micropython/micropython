@@ -35,7 +35,7 @@ static inline void powerctrl_config_systick(void) {
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 }
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32F3)
 
 void SystemClock_Config(void) {
     // Enable power control peripheral

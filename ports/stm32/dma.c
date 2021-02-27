@@ -68,7 +68,7 @@ typedef union {
 } dma_idle_count_t;
 
 struct _dma_descr_t {
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F4) ||  || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
     #elif defined(STM32F0) || defined(STM32F3) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     DMA_Channel_TypeDef *instance;
@@ -106,9 +106,9 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 #if ENABLE_SDIO && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
-    #if defined(STM32F4) || defined(STM32F3) || defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)  || defined(STM32F3) 
     .Request = 0,
     #endif
     .Direction = 0,
@@ -134,9 +134,9 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 // Default parameters to dma_init() for DAC tx
 static const DMA_InitTypeDef dma_init_struct_dac = {
-    #if defined(STM32F4) || defined(STM32F3) ||  defined(STM32F7)
+    #if defined(STM32F4) ||  defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32F3)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -176,7 +176,7 @@ static const DMA_InitTypeDef dma_init_struct_dcmi = {
 };
 #endif
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32F3)
 
 #define NCONTROLLERS            (2)
 #define NSTREAMS_PER_CONTROLLER (7)
@@ -536,7 +536,7 @@ volatile dma_idle_count_t dma_idle;
 
 #define DMA_INVALID_CHANNEL 0xff    // Value stored in dma_last_channel which means invalid
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32F3)
 #define DMA1_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA1EN) != 0)
 #if defined(DMA2)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA2EN) != 0)
@@ -546,7 +546,7 @@ volatile dma_idle_count_t dma_idle;
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
 #endif
 
-#if defined(STM32F0)
+#if defined(STM32F0)  || defined(STM32F3)
 
 void DMA1_Ch1_IRQHandler(void) {
     IRQ_ENTER(DMA1_Ch1_IRQn);

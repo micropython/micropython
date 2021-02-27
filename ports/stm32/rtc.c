@@ -610,7 +610,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0)|| defined(STM32F3) || defined(STM32L0)
 #define RTC_WKUP_IRQn RTC_IRQn
 #endif
 

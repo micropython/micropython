@@ -139,7 +139,7 @@ STATIC mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 #endif
 
 STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32F0)
 
     EXTI0_1_IRQn,  EXTI0_1_IRQn,  EXTI2_3_IRQn,  EXTI2_3_IRQn,
     EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,

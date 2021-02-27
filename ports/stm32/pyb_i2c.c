@@ -132,7 +132,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
 
-// The STM32F0, F3, F7, H7 and L4 use a TIMINGR register rather than ClockSpeed and
+// The STM32F0, F3, F4, F7, H7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
 
 #define PYB_I2C_TIMINGR (1)

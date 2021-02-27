@@ -93,7 +93,7 @@ void powerctrl_check_enter_bootloader(void) {
     if ((bl_addr & 0xfff) == 0 && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
         // Reset by NVIC_SystemReset with bootloader data set -> branch to bootloader
         RCC->RCC_SR = RCC_SR_RMVF;
-        #if defined(STM32F0) || defined(STM32F4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F3) || defined(STM32F4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
         __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
         #endif
         uint32_t r0 = BL_STATE[0];
@@ -101,7 +101,7 @@ void powerctrl_check_enter_bootloader(void) {
     }
 }
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB)
+#if !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32WB)
 
 typedef struct _sysclk_scaling_table_entry_t {
     uint16_t mhz;
@@ -211,7 +211,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
+#if !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32L4) 
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -495,7 +495,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
 
 #endif
 
-#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
+#endif // !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
@@ -518,7 +518,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+    #if !defined(STM32F0) && !defined(STM32F3) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -547,7 +547,7 @@ void powerctrl_enter_stop_mode(void) {
 
     // reconfigure the system clock after waking up
 
-    #if defined(STM32F0)
+    #if defined(STM32F0)  || defined(STM32F3)
 
     // Enable HSI48
     __HAL_RCC_HSI48_ENABLE();
@@ -690,7 +690,7 @@ void powerctrl_enter_standby_mode(void) {
 
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32F3) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #else
