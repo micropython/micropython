@@ -544,7 +544,7 @@ void uart_deinit(pyb_uart_obj_t *self) {
     #endif
     #if defined(USART3)
     } else if (self->uart_id == 3) {
-        #if !defined(STM32F0) || !defined(STM32F3)
+        #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
         #endif
         __HAL_RCC_USART3_FORCE_RESET();
