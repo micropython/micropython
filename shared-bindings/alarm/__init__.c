@@ -242,3 +242,8 @@ const mp_obj_module_t alarm_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&alarm_module_globals,
 };
+
+extern void port_idle_until_interrupt(void);
+MP_WEAK void alarm_pretending_deep_sleep(void) {
+    port_idle_until_interrupt();
+}

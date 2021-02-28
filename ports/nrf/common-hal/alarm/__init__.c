@@ -85,13 +85,6 @@ STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
     return NRF_SLEEP_WAKEUP_UNDEFINED;
 }
 
-bool alarm_woken_from_sleep(void) {
-   nrf_sleep_source_t cause = _get_wakeup_cause();
-   return (cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
-	   || cause == NRF_SLEEP_WAKEUP_TOUCHPAD
-	   || cause == NRF_SLEEP_WAKEUP_RESETPIN);
-}
-
 #ifdef NRF_DEBUG_PRINT
 static const char* cause_str[] = {
   "UNDEFINED",
@@ -108,6 +101,17 @@ void print_wakeup_cause(nrf_sleep_source_t cause) {
     }
 }
 #endif
+
+bool alarm_woken_from_sleep(void) {
+   nrf_sleep_source_t cause = _get_wakeup_cause();
+#ifdef NRF_DEBUG_PRINT
+   if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
+       //print_wakeup_cause(cause);
+   }
+#endif
+   return (cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
+	   || cause == NRF_SLEEP_WAKEUP_TOUCHPAD);
+}
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
@@ -152,19 +156,15 @@ STATIC void _idle_until_alarm(void) {
         RUN_BACKGROUND_TASKS;
         // Allow ctrl-C interrupt.
         if (alarm_woken_from_sleep()) {
-            alarm_save_wake_alarm();
-#ifdef NRF_DEBUG_PRINT
-            int cause = _get_wakeup_cause();
-            printf("wakeup(%d)\r\n", cause);
-#endif
-            return;
-        }
+	    alarm_save_wake_alarm();
+	    return;
+	}
         port_idle_until_interrupt();
 #ifdef NRF_DEBUG_PRINT
-       if (ct > 0) {
-           printf("_");
-           --ct;
-       }
+        if (ct > 0) {
+            dbg_printf("_");
+            --ct;
+        }
 #endif
     }
 }
@@ -186,8 +186,8 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     }
     else {
         r_obj = _get_wake_alarm(n_alarms, alarms);
-        alarm_reset();
     }
+    alarm_reset();
     return r_obj;
 }
 
@@ -218,6 +218,16 @@ void NORETURN alarm_enter_deep_sleep(void) {
 
     // should not reach here..
     while(1) ;
+}
+
+void alarm_pretending_deep_sleep(void) {
+    alarm_pin_pinalarm_prepare_for_deep_sleep();
+    alarm_touch_touchalarm_prepare_for_deep_sleep();
+
+    port_idle_until_interrupt();
+    if (alarm_woken_from_sleep()) {
+	alarm_reset();
+    }
 }
 
 void common_hal_alarm_gc_collect(void) {

@@ -27,6 +27,7 @@
 
 #include "py/runtime.h"
 #include <stdio.h>
+#include <assert.h>
 
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -44,6 +45,10 @@
 volatile char _pinhandler_gpiote_count;
 volatile nrfx_gpiote_pin_t _pinhandler_ev_pin;
 #define MYGPIOTE_EV_PIN_UNDEF 0xFF
+static bool pins_configured = false;
+
+extern uint32_t reset_reason_saved;
+extern void dbg_dump_GPIOregs(void);
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
@@ -94,7 +99,6 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
             return alarms[i];
         }
     }
-
     alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
     alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
@@ -133,11 +137,14 @@ void alarm_pin_pinalarm_reset(void) {
     pull_pins = 0;
 }
 
-static void setup_pin1_for_lightsleep(void) {
+static void configure_pins_for_sleep(void) {
+    nrfx_err_t err;
     if ( nrfx_gpiote_is_init() ) {
-      nrfx_gpiote_uninit();
+        nrfx_gpiote_uninit();
     }
-    nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
+    err = nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
+    assert(err == NRFX_SUCCESS);
+    (void)err; // to suppress unused warning
 
     _pinhandler_gpiote_count = 0;
     _pinhandler_ev_pin = MYGPIOTE_EV_PIN_UNDEF;
@@ -151,10 +158,6 @@ static void setup_pin1_for_lightsleep(void) {
     };
     for(size_t i = 0; i < 64; ++i) {
         uint64_t mask = 1ull << i;
-#ifdef NRF_DEBUG_PRINT
-        int pull = 0;
-        int sense = 0;
-#endif
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
             continue;
         }
@@ -162,76 +165,28 @@ static void setup_pin1_for_lightsleep(void) {
             cfg.sense = NRF_GPIOTE_POLARITY_LOTOHI;
             cfg.pull = ((pull_pins & mask) != 0) ?
                         NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
-#ifdef NRF_DEBUG_PRINT
-            pull = -1; sense = 1;
-#endif
         }
         else
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
             cfg.sense = NRF_GPIOTE_POLARITY_HITOLO;
             cfg.pull = ((pull_pins & mask) != 0) ?
                         NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
-#ifdef NRF_DEBUG_PRINT
-            pull = 1; sense = -1;
-#endif
         }
         else {
             cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
             cfg.pull = NRF_GPIO_PIN_NOPULL;
-#ifdef NRF_DEBUG_PRINT
-            sense = 9;
-#endif
         }
-        nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
-                            pinalarm_gpiote_handler);
+        err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
+				  pinalarm_gpiote_handler);
+	assert(err == NRFX_SUCCESS);
         nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
-#ifdef NRF_DEBUG_PRINT
-        dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
-#endif
-    }
-}
-
-static void setup_pin1_for_deepsleep(void) {
-    for(size_t i = 0; i < 64; ++i) {
-        uint64_t mask = 1ull << i;
-        int pull = 0;
-#ifdef NRF_DEBUG_PRINT
-        int sense = 0;
-#endif
-        if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
-            continue;
-        }
         if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
-            pull = ((pull_pins & mask) != 0) ?
-              NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
-            nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
-#ifdef NRF_DEBUG_PRINT
-            sense = NRF_GPIO_PIN_SENSE_HIGH;
-#endif
-        }
-        else
+	}
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
-            pull = ((pull_pins & mask) != 0) ?
-              NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
-            nrf_gpio_cfg_input((uint32_t)i, (nrf_gpio_pin_pull_t)pull);
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_LOW);
-#ifdef NRF_DEBUG_PRINT
-            sense = NRF_GPIO_PIN_SENSE_LOW;
-#endif
-        }
-#ifdef NRF_DEBUG_PRINT
-        dbg_printf("pin=%d, sense=%d, pull=%d\r\n", i, sense, pull);
-#endif
+	}
     }
-#if 0
-    uint32_t pin_number = 2;
-    NRF_GPIO_Type * reg = nrf_gpio_pin_port_decode(&pin_number);
-    dbg_printf(" 2 PIN_CNF=0x%08X\r\n", (unsigned int)(reg->PIN_CNF[pin_number]));
-    pin_number = 28;
-    reg = nrf_gpio_pin_port_decode(&pin_number);
-    dbg_printf("28 PIN_CNF=0x%08X\r\n", (unsigned int)(reg->PIN_CNF[pin_number]));
-#endif
 }
 
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
@@ -261,11 +216,13 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
     }
     if (pin_number != -1) {
         if (!deep_sleep) {
-            setup_pin1_for_lightsleep();
+            configure_pins_for_sleep();
         }
         else {
             // we don't setup gpio HW here but do them in
             // alarm_pin_pinalarm_prepare_for_deep_sleep() below
+	    reset_reason_saved = 0;
+	    pins_configured = false;
         }
     }
     else {
@@ -274,5 +231,11 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
 }
 
 void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
-    setup_pin1_for_deepsleep();
+    if (!pins_configured) {
+        configure_pins_for_sleep();
+	pins_configured = true;
+#ifdef NRF_DEBUG_PRINT
+	dbg_dump_GPIOregs();
+#endif
+    }
 }
