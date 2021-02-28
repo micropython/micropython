@@ -218,7 +218,6 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
-    //dbg_printf("pyexec_file end  result=(code=%d, line=%d)\r\n", exec_result->return_code, exec_result->exception_line);
     return true;
 }
 
@@ -264,7 +263,6 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
 }
 
 STATIC bool run_code_py(safe_mode_t safe_mode) {
-    //dbg_printf("run_code_py (%d)\r\n", (int)safe_mode);
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     serial_write("\n");
@@ -440,7 +438,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 FIL* boot_output_file;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    //dbg_printf("run_boot_py (%d)\r\n", (int)safe_mode);
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
@@ -537,10 +534,6 @@ STATIC int run_repl(void) {
     return exit_code;
 }
 
-#ifdef NRF_DEBUG_PRINT
-extern void dbg_dump_reset_reason(void);
-#endif
-
 int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
@@ -590,12 +583,6 @@ int __attribute__((used)) main(void) {
 
     // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();
-
-#if 0 //XXX
-    {
-        dbg_dump_reset_reason();
-    }
-#endif
 
     #if CIRCUITPY_BLEIO
     supervisor_start_bluetooth();
