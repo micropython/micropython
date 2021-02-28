@@ -430,7 +430,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
+        #if CIRCUITPY_ALARM
 	    alarm_pretending_deep_sleep();
+        #else
+	    port_idle_until_interrupt();
+        #endif
         }
     }
 }
