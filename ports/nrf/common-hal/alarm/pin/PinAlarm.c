@@ -235,7 +235,7 @@ void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
         configure_pins_for_sleep();
 	pins_configured = true;
 #ifdef NRF_DEBUG_PRINT
-	dbg_dump_GPIOregs();
+	//dbg_dump_GPIOregs();
 #endif
     }
 }
