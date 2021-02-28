@@ -88,7 +88,6 @@ int dbg_printf(const char *fmt, ...) {
     return ret;
 }
 
-
 void dbg_dump_RTCreg(void) {
     dbg_printf("\r\nRTC2\r\n");
     NRF_RTC_Type  *r = rtc_instance.p_reg;
@@ -108,6 +107,60 @@ void dbg_dump_RAMreg(void) {
         if (i==4) dbg_printf("\r\n");
     }
     dbg_printf("\r\n");
+}
+
+void dbg_dump_GPIOregs(void) {
+    int i, port, col;
+
+    NRF_GPIO_Type *gpio[] = { NRF_P0, NRF_P1 };
+    const char cnf_pull_chr[] = "-D*U";  // pull down, pull up
+    const char cnf_sense_chr[] = "-?HL"; // sense high, sense low
+    for(port=0, col=0; port<=1; ++port) {
+        for(i=0; i<32; ++i) {
+	    uint32_t cnf = gpio[port]->PIN_CNF[i];
+	    if (cnf != 0x0002) { // changed from default value
+	        dbg_printf("[%d_%02d]:%c%c%c%d%c ", port, i,
+			   (cnf & 1) ? 'O' : 'I',  // output, input
+			   (cnf & 2) ? 'd' : 'c',  // disconnected, connected
+			   cnf_pull_chr[(cnf >> 2) & 3],
+			   (int)((cnf >> 8) & 7),  // drive config 0-7
+			   cnf_sense_chr[(cnf >> 16) & 3]);
+		if (++col >= 6) {
+		    dbg_printf("\r\n");
+		    col = 0;
+		}
+	    }
+	}
+    }
+    if (col > 0) dbg_printf("\r\n");
+
+    dbg_printf("GPIOTE\r\n");
+    NRF_GPIOTE_Type const *reg = NRF_GPIOTE;
+    const char config_mode_chr[] = "-E-T"; // event, task
+    const char config_pol_chr[] = "-HLT"; // low-to-Hi, hi-to-Low, Toggle
+    const char config_outinit_chr[] = "01"; // initial value is 0 or 1
+    for(i=0, col=0; i<8; ++i) {
+        uint32_t conf = reg->CONFIG[i];
+	if (conf != 0) {  // changed from default value
+	    dbg_printf("CONFIG[%d]:%d_%02d,%c%c%c ", i,
+		       (int)((conf >> 13) & 1), (int)((conf >> 8) & 0x1F),
+		       config_mode_chr[conf & 3],
+		       config_pol_chr[(conf >> 16) & 3],
+		       (conf & 3) == 3 ?
+		           config_outinit_chr[(conf >> 20) & 1] : '-');
+	    if (++col >= 4) {
+	        dbg_printf("\r\n");
+		col = 0;
+	    }
+	}
+    }
+    if (col > 0) dbg_printf("\r\n");
+    for(i=0; i<8; ++i) {
+        dbg_printf("EVENTS_IN[%d]:%X ", i, (int)(reg->EVENTS_IN[i]));
+	if ((i & 3) == 3) dbg_printf("\r\n");
+    }
+    dbg_printf("EVENTS_PORT:%X INTENSET:%08X\r\n",
+	       (int)(reg->EVENTS_PORT), (int)(reg->INTENSET));
 }
 
 void dbg_dump_reset_reason(void) {
