@@ -32,6 +32,7 @@
 
 #ifdef NRF_DEBUG_PRINT
 extern void dbg_dump_RAMreg(void);
+#include "supervisor/serial.h" // dbg_printf()
 #endif
 
 #define RTC_DATA_ATTR __attribute__((section(".uninitialized")))
@@ -78,7 +79,7 @@ static void initialize_sleep_memory(void) {
 
     set_memory_retention();
 #ifdef NRF_DEBUG_PRINT
-    dbg_dump_RAMreg();
+    //dbg_dump_RAMreg();
 #endif
 
     _sleep_mem_magicnum = SLEEP_MEMORY_DATA_GUARD;
@@ -87,6 +88,9 @@ static void initialize_sleep_memory(void) {
 void alarm_sleep_memory_reset(void) {
     if (!is_sleep_memory_valid()) {
         initialize_sleep_memory();
+#ifdef NRF_DEBUG_PRINT
+	dbg_printf("sleep memory initialized\r\n");
+#endif
     }
 }
 
