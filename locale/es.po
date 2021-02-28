@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-26 13:50+0000\n"
+"PO-Revision-Date: 2021-03-01 03:21+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2575,7 +2575,7 @@ msgstr "operacion binaria %q no implementada"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
-msgstr ""
+msgstr "los bits deben estar en el rango de 5 a 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
