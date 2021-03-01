@@ -66,6 +66,7 @@ typedef struct _rp2_state_machine_irq_obj_t {
 } rp2_state_machine_irq_obj_t;
 
 STATIC const rp2_state_machine_obj_t rp2_state_machine_obj[8];
+STATIC uint8_t rp2_state_machine_initial_pc[8];
 
 STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
@@ -459,6 +460,7 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     if (offset < 0) {
         rp2_pio_add_program(&rp2_pio_obj[PIO_NUM(self->pio)], args[ARG_prog].u_obj);
         offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + PIO_NUM(self->pio)]);
+        rp2_state_machine_initial_pc[self->id] = offset;
     }
 
     // Compute the clock divider.
@@ -592,6 +594,15 @@ STATIC mp_obj_t rp2_state_machine_active(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_state_machine_active_obj, 1, 2, rp2_state_machine_active);
 
+// StateMachine.restart()
+STATIC mp_obj_t rp2_state_machine_restart(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pio_sm_restart(self->pio, self->sm);
+    pio_sm_exec(self->pio, self->sm, pio_encode_jmp(rp2_state_machine_initial_pc[self->id]));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_restart_obj, rp2_state_machine_restart);
+
 // StateMachine.exec(instr)
 STATIC mp_obj_t rp2_state_machine_exec(mp_obj_t self_in, mp_obj_t instr_in) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -700,6 +711,20 @@ STATIC mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_state_machine_put_obj, 2, 3, rp2_state_machine_put);
 
+// StateMachine.rx_fifo()
+STATIC mp_obj_t rp2_state_machine_rx_fifo(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(pio_sm_get_rx_fifo_level(self->pio, self->sm));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_rx_fifo_obj, rp2_state_machine_rx_fifo);
+
+// StateMachine.tx_fifo()
+STATIC mp_obj_t rp2_state_machine_tx_fifo(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(pio_sm_get_tx_fifo_level(self->pio, self->sm));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_tx_fifo_obj, rp2_state_machine_tx_fifo);
+
 // StateMachine.irq(handler=None, trigger=0|1, hard=False)
 STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -759,9 +784,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_state_machine_irq_obj, 1, rp2_state_machin
 STATIC const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&rp2_state_machine_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&rp2_state_machine_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&rp2_state_machine_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_exec), MP_ROM_PTR(&rp2_state_machine_exec_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&rp2_state_machine_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&rp2_state_machine_put_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rx_fifo), MP_ROM_PTR(&rp2_state_machine_rx_fifo_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tx_fifo), MP_ROM_PTR(&rp2_state_machine_tx_fifo_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_state_machine_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_state_machine_locals_dict, rp2_state_machine_locals_dict_table);
