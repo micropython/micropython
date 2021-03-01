@@ -162,6 +162,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         common_hal_pwmio_pwmout_set_frequency(self, frequency);
         pwm_set_enabled(slice, true);
     } else {
+        common_hal_pwmio_pwmout_set_frequency(self, frequency);
         common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     }
 
@@ -179,7 +180,7 @@ void pwmout_free(uint8_t slice, uint8_t channel) {
     uint32_t channel_mask = _mask(slice, channel);
     channel_use &= ~channel_mask;
     never_reset_channel &= ~channel_mask;
-    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (slice * CHANNELS_PER_SLICE + channel);
+    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (slice * CHANNELS_PER_SLICE);
     if ((channel_use & slice_mask) == 0) {
         target_slice_frequencies[slice] = 0;
         slice_variable_frequency &= ~(1 << slice);

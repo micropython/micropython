@@ -192,7 +192,7 @@ void gc_init(void *start, void *end) {
 }
 
 void gc_deinit(void) {
-    // Run any finalizers before we stop using the heap.
+    // Run any finalisers before we stop using the heap.
     gc_sweep_all();
 
     MP_STATE_MEM(gc_pool_start) = 0;

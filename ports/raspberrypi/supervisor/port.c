@@ -39,6 +39,9 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 
+#include "common-hal/rtc/RTC.h"
+#include "common-hal/busio/UART.h"
+
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/tick.h"
@@ -78,6 +81,9 @@ safe_mode_t port_init(void) {
     // Reset everything into a known state before board_init.
     reset_port();
 
+    // Initialize RTC
+    common_hal_rtc_init();
+
     // For the tick.
     hardware_alarm_claim(0);
     hardware_alarm_set_callback(0, _tick_callback);
@@ -95,6 +101,7 @@ void reset_port(void) {
     #if CIRCUITPY_BUSIO
     reset_i2c();
     reset_spi();
+    reset_uart();
     #endif
 
     #if CIRCUITPY_PWMIO
