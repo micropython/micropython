@@ -105,11 +105,11 @@ bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
-    uint16_t value = 0;
+    int16_t value = 0;
 
     read(analogin_dev[self->number].fd, &value, sizeof(value));
 
-    return value;
+    return (uint16_t) 32768 + (uint16_t) value;
 }
 
 // Reference voltage is a fixed value which is depending on the board.
