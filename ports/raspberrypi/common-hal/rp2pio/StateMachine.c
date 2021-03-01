@@ -426,7 +426,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         mp_raise_ValueError(translate("Initial set pin state conflicts with initial out pin state"));
     }
     if ((initial_pin_direction & set_out_overlap) != (initial_set_pin_direction & set_out_overlap)) {
-        mp_raise_ValueError(translate("Initial set pin direcion conflicts with initial out pin direction"));
+        mp_raise_ValueError(translate("Initial set pin direction conflicts with initial out pin direction"));
     }
     initial_pin_state |= initial_set_pin_state;
     initial_pin_direction |= initial_set_pin_direction;
