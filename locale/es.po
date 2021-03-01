@@ -1135,10 +1135,8 @@ msgid "Init program size invalid"
 msgstr "Tamaño del programa Init invalido"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Initial set pin direcion conflicts with initial out pin direction"
+msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
-"La dirección inicial del pin de configuración esta en conflicto con la "
-"dirección de salida inicial del pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
@@ -4329,6 +4327,11 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
+#~ msgstr ""
+#~ "La dirección inicial del pin de configuración esta en conflicto con la "
+#~ "dirección de salida inicial del pin"
 
 #~ msgid "UART not yet supported"
 #~ msgstr "UART no esta soportado todavia"
