@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
@@ -206,9 +207,66 @@ error:
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
+STATIC mp_obj_t mod_uzlib_gzip(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t data = args[0];
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+    int len = bufinfo.len;
+
+    struct uzlib_comp *comp = m_new_obj(struct uzlib_comp);
+    memset(comp, 0, sizeof(*comp));
+
+    // set deflate compression parameters for gzip
+    comp->dict_size = 32768;
+    comp->hash_bits = 12;
+    size_t hash_size = sizeof(uzlib_hash_entry_t) * (1 << comp->hash_bits);
+    comp->hash_table = gc_alloc(hash_size, false);
+    memset(comp->hash_table, 0, hash_size);
+
+    zlib_start_block(&comp->out);
+    uzlib_compress(comp, bufinfo.buf, len);
+    zlib_finish_block(&comp->out);
+
+    DEBUG_printf("compressed from %u to %u raw bytes\n", len, comp->out.outlen);
+
+    // allocate final buffer incl. 10 header bytes and 8 trailing bytes
+    mp_uint_t dest_buf_size = comp->out.outlen + 18;
+    byte *dest_buf = m_new(byte, dest_buf_size);
+
+    /* GZIP header bytes:                                  */
+    /* 0-1: GZIP ID1, ID2 = 0x1f, 0x8b                     */
+    /* 2:   compression method (8 = deflate)               */
+    /* 3:   flags (0 = no additional header fields)        */
+    /* 4-7: modification time (0 = none)                   */
+    /* 8:   extra flags (4 = compressor used fastest algo) */
+    /* 9:   operating system (3 = unix)                    */
+    static const unsigned char gzip_header[] =
+      { 0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03 };
+
+    memcpy(dest_buf, gzip_header, sizeof(gzip_header));
+    memcpy(dest_buf+sizeof(gzip_header), comp->out.outbuf, comp->out.outlen);
+    
+    // append 32 bit crc of original data
+    uint32_t offset = sizeof(gzip_header)+comp->out.outlen;
+    uint32_t crc = ~uzlib_crc32(bufinfo.buf, len, ~0);
+    memcpy(dest_buf+offset, &crc, sizeof(crc));
+    // append 32 bit length of original data
+    memcpy(dest_buf+offset+sizeof(crc), &len, sizeof(len));
+
+    // free all temporarily used memory
+    free(comp->out.outbuf);     // free internal buffer allocated by compression
+    gc_free(comp->hash_table);
+    m_del_obj(struct uzlib_comp, comp);
+    
+    // return result as MP bytearray
+    return mp_obj_new_bytearray_by_ref(dest_buf_size, dest_buf);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_gzip_obj, 1, 3, mod_uzlib_gzip);
+
 STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uzlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gzip), MP_ROM_PTR(&mod_uzlib_gzip_obj) },
     { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
 
@@ -228,5 +286,7 @@ const mp_obj_module_t mp_module_uzlib = {
 #include "uzlib/tinfgzip.c"
 #include "uzlib/adler32.c"
 #include "uzlib/crc32.c"
+#include "uzlib/genlz77.c"
+#include "uzlib/defl_static.c"
 
 #endif // MICROPY_PY_UZLIB
