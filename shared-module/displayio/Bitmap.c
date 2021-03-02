@@ -116,14 +116,33 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
         mp_raise_RuntimeError(translate("Read-only object"));
     }
 
+    bool x_reverse = false;
+    bool y_reverse = false;
+
+    // Add reverse direction option to protect blitting of self bitmap back into self bitmap
+    if (x > x1) {
+        x_reverse = true;
+    }
+    if (y > y1) {
+        y_reverse = true;
+    }
+
     // simplest version - use internal functions for get/set pixels
-    for (int16_t i=0; i < (x2-x1) ; i++) {
-        if ( (x+i >= 0) && (x+i < self->width) ) {
+    for (int16_t i=0; i < (x2-x1); i++) {
+
+        const int xs_index = x_reverse ? ( (x2) - i - 1) : x1+i; // x-index into the source bitmap
+        const int xd_index = x_reverse ? ((x + (x2-x1)) - i - 1) : x+i; // x-index into the destination bitmap
+
+        if ( (xd_index >= 0) && (xd_index < self->width) ) {
             for (int16_t j=0; j < (y2-y1) ; j++){
-                if ((y+j >= 0) && (y+j < self->height) ) {
-                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
+
+                const int ys_index = y_reverse ? ( (y2 ) - j - 1) : y1+j ; // y-index into the source bitmap
+                const int yd_index = y_reverse ? ((y + (y2-y1)) - j - 1) : y+j ; // y-index into the destination bitmap
+
+                if ((yd_index >= 0) && (yd_index < self->height) ) {
+                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
                     if ( (skip_index_none) || (value != skip_index) ) { // write if skip_value_none is True
-                            common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+                            common_hal_displayio_bitmap_set_pixel(self, xd_index, yd_index, value);
                     }
                 }
             }

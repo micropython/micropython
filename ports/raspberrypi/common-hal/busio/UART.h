@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,26 @@
 #ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H
 #define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H
 
-#include "common-hal/microcontroller/Pin.h"
-
 #include "py/obj.h"
+#include "py/ringbuf.h"
+
+#include "src/rp2_common/hardware_uart/include/hardware/uart.h"
 
 typedef struct {
     mp_obj_base_t base;
-    // struct usart_async_descriptor usart_desc;
-    uint8_t rx_pin;
     uint8_t tx_pin;
-    uint8_t character_bits;
-    bool rx_error;
+    uint8_t rx_pin;
+    uint8_t cts_pin;
+    uint8_t rts_pin;
+    uint8_t uart_id;
+    uint8_t uart_irq_id;
     uint32_t baudrate;
     uint32_t timeout_ms;
-    uint32_t buffer_length;
-    uint8_t* buffer;
+    uart_inst_t * uart;
+    ringbuf_t ringbuf;
 } busio_uart_obj_t;
+
+extern void reset_uart(void);
+extern void never_reset_uart(uint8_t num);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_UART_H

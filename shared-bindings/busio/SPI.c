@@ -57,7 +57,7 @@
 //|
 //|         """Construct an SPI object on the given pins.
 //|
-//|         ..note:: The SPI peripherals allocated in order of desirability, if possible,
+//|         .. note:: The SPI peripherals allocated in order of desirability, if possible,
 //|            such as highest speed and not shared use first. For instance, on the nRF52840,
 //|            there is a single 32MHz SPI peripheral, and multiple 8MHz peripherals,
 //|            some of which may also be used for I2C. The 32MHz SPI peripheral is returned
