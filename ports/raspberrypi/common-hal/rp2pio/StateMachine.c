@@ -673,6 +673,9 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         while (!pio_sm_is_tx_fifo_empty(self->pio, self->state_machine) ||
                (self->wait_for_txstall && (self->pio->fdebug & stall_mask) == 0)) {
             RUN_BACKGROUND_TASKS;
+            if (mp_hal_is_interrupted()) {
+                break;
+            }
         }
     }
     return true;
