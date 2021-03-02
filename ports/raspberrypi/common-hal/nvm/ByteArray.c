@@ -53,7 +53,7 @@ static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
     }
 }
 
-static void write_sector(uint32_t address, uint32_t len, uint8_t* bytes) {
+static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t* bytes) {
     // Write a whole sector to flash, buffering it first and then erasing and rewriting it
     // since we can only erase a whole sector at a time.
     uint8_t buffer[FLASH_SECTOR_SIZE];
@@ -73,24 +73,29 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t* self,
     uint8_t values_in[len];
     common_hal_nvm_bytearray_get_bytes(self, start_index, len, values_in);
 
+    bool all_ones = true;
     for (uint32_t i = 0; i < len; i++) {
         if (values_in[i] != UINT8_MAX) {
-            write_sector(start_index, len, values);
-            return true;
+            all_ones = false;
+            break;
         }
     }
 
-    uint32_t address = (uint32_t) self->start_address + start_index;
-    uint32_t offset = address % FLASH_PAGE_SIZE;
-    uint32_t page_addr = address - offset;
+    if (all_ones) {
+        uint32_t address = (uint32_t) self->start_address + start_index;
+        uint32_t offset = address % FLASH_PAGE_SIZE;
+        uint32_t page_addr = address - offset;
 
-    while (len) {
-        uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
-        write_page(page_addr, offset, write_len, values);
-        len -= write_len;
-        values += write_len;
-        page_addr += FLASH_PAGE_SIZE;
-        offset = 0;
+        while (len) {
+            uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
+            write_page(page_addr, offset, write_len, values);
+            len -= write_len;
+            values += write_len;
+            page_addr += FLASH_PAGE_SIZE;
+            offset = 0;
+        }
+    } else {
+        erase_and_write_sector(start_index, len, values);
     }
 
     return true;
