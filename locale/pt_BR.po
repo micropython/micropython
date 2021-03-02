@@ -1116,8 +1116,8 @@ msgid "IV must be %d bytes long"
 msgstr "O IV deve ter %d bytes de comprimento"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr "No buffer, os elementos devem ter 4 bytes ou menos"
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -1732,10 +1732,6 @@ msgstr "A operação ou o recurso não é suportado"
 msgid "Operation timed out"
 msgstr "A operação expirou"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr "Os elementos da saída do buffer devem ter 4 bytes ou menos"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Sem memória"
@@ -1743,6 +1739,10 @@ msgstr "Sem memória"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -4340,6 +4340,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr "No buffer, os elementos devem ter 4 bytes ou menos"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "Os elementos da saída do buffer devem ter 4 bytes ou menos"
 
 #~ msgid "Initial set pin direcion conflicts with initial out pin direction"
 #~ msgstr ""
