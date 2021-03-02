@@ -36,10 +36,4 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/ugame10
 
 CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
 
-# Tweak inlining depending on language.
-ifeq ($(TRANSLATION), zh_Latn_pinyin)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 45
-else
-CFLAGS_INLINE_LIMIT = 70
-endif
+SUPEROPT_GC = 0
