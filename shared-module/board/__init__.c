@@ -44,10 +44,6 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
-#if CIRCUITPY_RP2PIO
-#include "bindings/rp2pio/StateMachine.h"
-#endif
-
 #if BOARD_I2C
 // Statically allocate the I2C object so it can live past the end of the heap and into the next VM.
 // That way it can be used by built-in I2CDisplay displays and be accessible through board.I2C().
@@ -182,8 +178,5 @@ void reset_board_busses(void) {
 #endif
 #if BOARD_UART
     MP_STATE_VM(shared_uart_bus) = NULL;
-#endif
-#if CIRCUITPY_RP2PIO
-    reset_rp2pio_statemachine();
 #endif
 }
