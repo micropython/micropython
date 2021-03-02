@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "shared-bindings/busio/I2C.h"
 #include "py/runtime.h"
@@ -94,16 +95,16 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 #endif
 
+    // Create a bitbangio.I2C object to do short writes.
+    // Must be done before setting up the I2C pins, since they will be
+    // set up as GPIO by the bitbangio.I2C object.
+    shared_module_bitbangio_i2c_construct(&self->bitbangio_i2c, scl, sda,
+                                          frequency, timeout);
+
     gpio_set_function(sda->number, GPIO_FUNC_I2C);
     gpio_set_function(scl->number, GPIO_FUNC_I2C);
 
     self->baudrate = i2c_init(self->peripheral, frequency);
-
-    // Remember these in case we need to use bitbangio to do short writes.
-    self->sda = sda;
-    self->scl = scl;
-    self->frequency = frequency;
-    self->timeout = timeout;
 
     self->sda_pin = sda->number;
     self->scl_pin = scl->number;
@@ -130,7 +131,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    return common_hal_busio_i2c_write(self, addr, NULL, 0, false) == 0;
+    return common_hal_busio_i2c_write(self, addr, NULL, 0, true) == 0;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -153,20 +154,19 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     if (len <= 2) {
-        // Give up pin ownership temporarily and use a bitbangio.I2C to do the write.
+        // Use a bitbangio.I2C to do the write.
 
-        reset_pin_number(self->sda_pin);
-        reset_pin_number(self->scl_pin);
-        bitbangio_i2c_obj_t bitbangio_i2c;
-        shared_module_bitbangio_i2c_construct(&bitbangio_i2c, self->sda, self->scl,
-                                              self->frequency, self->timeout);
-        uint8_t status = shared_module_bitbangio_i2c_write(&bitbangio_i2c, addr, data, len, transmit_stop_bit);
-        shared_module_bitbangio_i2c_deinit(&bitbangio_i2c);
+        gpio_set_function(self->sda_pin, GPIO_FUNC_SIO);
+        gpio_set_function(self->scl_pin, GPIO_FUNC_SIO);
+        gpio_set_dir(self->sda_pin, GPIO_IN);
+        gpio_put(self->sda_pin, true);
+        gpio_set_dir(self->scl_pin, GPIO_IN);
+        gpio_put(self->scl_pin, true);
 
-        // Take back the pins and restore them to hardware I2C functionality.
-        claim_pin(self->sda);
-        claim_pin(self->scl);
+        uint8_t status = shared_module_bitbangio_i2c_write(&self->bitbangio_i2c,
+                                                           addr, data, len, transmit_stop_bit);
 
+        mp_hal_delay_us(20);
         gpio_set_function(self->sda_pin, GPIO_FUNC_I2C);
         gpio_set_function(self->scl_pin, GPIO_FUNC_I2C);
 
