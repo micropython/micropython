@@ -1923,7 +1923,7 @@ msgstr "Zhǐ dú"
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
@@ -2770,6 +2770,10 @@ msgstr "chr() cān shǔ bùzài fànwéi (256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3928,7 +3932,7 @@ msgstr "sos [:, 3] yīnggāi quán shì"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt xūyào diédài cānshù"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "yuán miànbǎn tài dà"
 

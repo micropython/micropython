@@ -1925,7 +1925,7 @@ msgstr "Skrivskyddad"
 msgid "Read-only filesystem"
 msgstr "Skrivskyddat filsystem"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Skrivskyddat objekt"
 
@@ -2773,6 +2773,10 @@ msgstr "chr() arg är inte i intervallet(256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "circle kan endast registreras i en förälder"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3932,7 +3936,7 @@ msgstr "sos[:, 3] måste vara ettor"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt kräver iterable argument"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "källpalett för stor"
 

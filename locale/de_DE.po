@@ -1923,7 +1923,7 @@ msgstr "Nur lesen möglich, da Schreibgeschützt"
 msgid "Read-only filesystem"
 msgstr "Schreibgeschützte Dateisystem"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Schreibgeschützte Objekt"
 
@@ -2788,6 +2788,10 @@ msgstr "chr() arg ist nicht in range(256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "Kreis kann nur in einem Elternteil registriert werden"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3956,7 +3960,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "Quell-Palette zu groß"
 

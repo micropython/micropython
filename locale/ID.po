@@ -1919,7 +1919,7 @@ msgstr "Baca-saja"
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 #, fuzzy
 msgid "Read-only object"
 msgstr "sistem file (filesystem) bersifat Read-only"
@@ -2765,6 +2765,10 @@ msgstr ""
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
 msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
@@ -3917,7 +3921,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr ""
 
