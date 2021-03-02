@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 03:21+0000\n"
+"PO-Revision-Date: 2021-03-02 02:24+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1137,6 +1137,8 @@ msgstr "Tamaño del programa Init invalido"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
+"La dirección configurada inicial del pin esta en conflicto con la dirección "
+"de salida inicial del pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
@@ -1946,7 +1948,7 @@ msgstr "Solo-lectura"
 msgid "Read-only filesystem"
 msgstr "Sistema de archivos de solo-Lectura"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Objeto de solo-lectura"
 
@@ -2804,6 +2806,10 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "circulo solo puede ser registrado con un pariente"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3965,7 +3971,7 @@ msgstr "sos[:, 3] deberían ser todos unos"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt requiere argumentos iterables"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "paleta fuente muy larga"
 

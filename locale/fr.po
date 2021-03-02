@@ -1952,7 +1952,7 @@ msgstr "Lecture seule"
 msgid "Read-only filesystem"
 msgstr "Système de fichier en lecture seule"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Objet en lecture seule"
 
@@ -2817,6 +2817,10 @@ msgstr "paramètre de chr() hors les bornes de range(256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "le cercle ne peut être enregistré que dans un seul parent"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3985,7 +3989,7 @@ msgstr "sos[:, 3] doivent tous être à un"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt nécessite des argument itératifs"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "la palette source est trop grande"
 
