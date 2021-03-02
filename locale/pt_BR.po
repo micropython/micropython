@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-03 01:01+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1117,7 +1117,7 @@ msgstr "O IV deve ter %d bytes de comprimento"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Os elementos In-buffer devem ter um comprimento de <= 4 bytes"
 
 #: py/persistentcode.c
 msgid ""
@@ -1742,7 +1742,7 @@ msgstr "Sem soquetes"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Os elementos Out-buffer devem ter um comprimento de <= 4 bytes"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -2810,7 +2810,7 @@ msgstr "o círculo só pode ser registrado em um pai"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "O ponto do clipe deve ser uma tupla (x, y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
