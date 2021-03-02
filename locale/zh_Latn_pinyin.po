@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-09 14:03+0000\n"
+"PO-Revision-Date: 2021-03-01 15:19+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.5\n"
 
 #: main.c
 msgid ""
@@ -343,6 +343,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Suǒyǒu UART wàiwéi zhèngzài shǐyòng"
 
@@ -468,7 +469,7 @@ msgstr "Dī yú zuìdī zhèng sùlǜ"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "wèi shí zhōng hé dān cí xuǎn zé bì xū shì shùn xù yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -513,7 +514,7 @@ msgstr "Huǎnchōng qū hé piān yí liàng tài xiǎo %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "huǎn chōng yuán jiàn bì xū wéi 4 zì jié cháng huò gèng shǎo"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -968,6 +969,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Fēnpèi RX huǎnchōng shībài"
 
@@ -1101,7 +1103,7 @@ msgstr "IV bì xū wéi %d zì jié cháng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "zài huǎn chōng yuán jiàn zhōng bì xū shì 4 zì jié cháng huò gèng shǎo"
 
 #: py/persistentcode.c
 msgid ""
@@ -1120,12 +1122,16 @@ msgid "Init program size invalid"
 msgstr "Init chéng xù dà xiǎo wú xiào"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Initial set pin direcion conflicts with initial out pin direction"
+msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
+"chū shǐ shè zhì yǐn jiǎo fāng xiàng yǔ chū shǐ chū yǐn jiǎo fāng xiàng chōng "
+"tū"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
+"chū shǐ shè zhì yǐn jiǎo zhuàng tài yǔ chū shǐ chū yǐn jiǎo zhuàng tài chōng "
+"tū"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1135,6 +1141,7 @@ msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
+"shū rù huǎn chōng qū cháng dù (%d) bì xū shì liàn jì shù de bèi shù (%d)"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1237,7 +1244,8 @@ msgstr "Wúxiào de cānshù"
 msgid "Invalid bits per value"
 msgstr "Měi gè zhí de wèi wúxiào"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
 
@@ -1312,10 +1320,10 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
@@ -1364,7 +1372,8 @@ msgstr "Wúxiào de yǔyīn jìshù"
 msgid "Invalid wave file"
 msgstr "Wúxiào de làng làngcháo wénjiàn"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Wúxiào de zì/wèi chángdù"
 
@@ -1499,7 +1508,7 @@ msgstr "Wèi zhǎodào DMA píndào"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA pacing timer found"
-msgstr ""
+msgstr "wèi zhǎo dào DMA qǐ bó qì"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1561,11 +1570,11 @@ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "chéng xù zhōng méi yǒu"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "chéng xù zhōng méi yǒu jìn chū"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1709,7 +1718,7 @@ msgstr "cāo zuò yǐ fēn shí"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "chū huǎn chōng yuán jiàn bì xū shì 4 zì jié cháng huò gèng shǎo"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
@@ -1722,7 +1731,7 @@ msgstr "tào jiē zì wài"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
-msgstr ""
+msgstr "shū chū huǎn chōng qū bì xū zhì shǎo wéi %d zì jié"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1801,7 +1810,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
-msgstr ""
+msgstr "yǐn jiǎo bì xū gòng xiǎng PWM qiē piàn"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1877,7 +1886,7 @@ msgstr "RNG qǔxiāo chūshǐhuà cuòwù"
 msgid "RNG Init Error"
 msgstr "RNG chūshǐhuà cuòwù"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
 
@@ -2047,11 +2056,11 @@ msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
-msgstr ""
+msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
-msgstr ""
+msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -2195,10 +2204,6 @@ msgstr "UART chūshǐhuà cuòwù"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "UART chóngxīn chūshǐhuà cuòwù"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "UART shàng wèi shòu zhī chí"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2537,8 +2542,8 @@ msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bǐtè bìxū shì 7,8 huò 9"
+msgid "bits must be in range 5 to 9"
+msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -3428,7 +3433,7 @@ msgstr "jìyì tǐ fēnpèi shībài, duī bèi suǒdìng"
 
 #: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
-msgstr ""
+msgstr "nèi cún shì tú: cháng dù bú shì xiàng mù huà de bèi shù"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -4211,7 +4216,7 @@ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
+msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
@@ -4284,6 +4289,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART shàng wèi shòu zhī chí"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bǐtè bìxū shì 7,8 huò 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
 #~ msgstr "jǐn zhī chí zuì duō 8 gè IN/OUT"

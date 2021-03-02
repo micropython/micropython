@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-26 13:50+0000\n"
+"PO-Revision-Date: 2021-03-01 03:21+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -344,6 +344,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Todos los periféricos SPI están siendo usados"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Todos los periféricos UART están siendo usados"
 
@@ -518,7 +519,8 @@ msgstr "Búfer + compensado muy pequeños %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr "Los elementos del búfer deben de ser de una longitud de 4 bytes o menos"
+msgstr ""
+"Los elementos del búfer deben de ser de una longitud de 4 bytes o menos"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -977,6 +979,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "No se puede adquirir el mutex, error 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
@@ -1132,10 +1135,8 @@ msgid "Init program size invalid"
 msgstr "Tamaño del programa Init invalido"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Initial set pin direcion conflicts with initial out pin direction"
+msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
-"La dirección inicial del pin de configuración esta en conflicto con la "
-"dirección de salida inicial del pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
@@ -1255,7 +1256,8 @@ msgstr "Argumento inválido"
 msgid "Invalid bits per value"
 msgstr "Inválido bits por valor"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
@@ -1330,10 +1332,10 @@ msgstr "Pin inválido para canal derecho"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -1382,7 +1384,8 @@ msgstr "Cuenta de voces inválida"
 msgid "Invalid wave file"
 msgstr "Archivo wave inválido"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Tamaño no válido de palabra/bit"
 
@@ -1906,7 +1909,7 @@ msgstr "Error de desinicialización de RNG"
 msgid "RNG Init Error"
 msgstr "Error de inicialización de RNG"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 no esta soportado todavía en este dispositivo"
 
@@ -2229,10 +2232,6 @@ msgstr "Error de inicialización de UART"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "Error de reinicialización de UART"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "UART no esta soportado todavia"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2573,8 +2572,8 @@ msgid "binary op %q not implemented"
 msgstr "operacion binaria %q no implementada"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits deben ser 7, 8 ó 9"
+msgid "bits must be in range 5 to 9"
+msgstr "los bits deben estar en el rango de 5 a 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4328,6 +4327,17 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
+#~ msgstr ""
+#~ "La dirección inicial del pin de configuración esta en conflicto con la "
+#~ "dirección de salida inicial del pin"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART no esta soportado todavia"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits deben ser 7, 8 ó 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
 #~ msgstr "Solamente IN/OUT hasta 8 esta soportado"

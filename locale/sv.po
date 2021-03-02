@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-26 13:50+0000\n"
+"PO-Revision-Date: 2021-03-01 15:19+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -341,6 +341,7 @@ msgid "All SPI peripherals are in use"
 msgstr "All SPI-kringutrustning används"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Alla UART-kringutrustning används"
 
@@ -969,6 +970,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Det gick inte att förvärva mutex, fel 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Det gick inte att tilldela RX-buffert"
 
@@ -1121,8 +1123,8 @@ msgid "Init program size invalid"
 msgstr "Storlek på init-program ogiltigt"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Initial set pin direcion conflicts with initial out pin direction"
-msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr "Initial pinn-riktning står i konflikt med initial utpinns-riktning"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
@@ -1240,7 +1242,8 @@ msgstr "Ogiltigt argument"
 msgid "Invalid bits per value"
 msgstr "Ogiltigt värde för bitar per värde"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Ogiltig buffertstorlek"
 
@@ -1315,10 +1318,10 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
 
@@ -1367,7 +1370,8 @@ msgstr "Ogiltigt kanalantal"
 msgid "Invalid wave file"
 msgstr "Ogiltig wave-fil"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
 
@@ -1884,7 +1888,7 @@ msgstr "RNG DeInit-fel"
 msgid "RNG Init Error"
 msgstr "RNG Init-fel"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 stöds ännu inte på den här enheten"
 
@@ -2203,10 +2207,6 @@ msgstr "UART Init-fel"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "UART reinit-fel"
-
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "UART stöds ännu inte"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -2544,8 +2544,8 @@ msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits måste vara 7, 8 eller 9"
+msgid "bits must be in range 5 to 9"
+msgstr "bits måste mellan 5 och 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -4293,6 +4293,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
+#~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART stöds ännu inte"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits måste vara 7, 8 eller 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
 #~ msgstr "Endast IN/OUT på upp till 8 stöds"
