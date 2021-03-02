@@ -757,12 +757,18 @@ STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_state_machine_irq_obj, 1, rp2_state_machine_irq);
 
 // StateMachine.restart()
-STATIC mp_obj_t rp2_state_machine_restart(mp_obj_t self_in) {
+STATIC mp_obj_t rp2_state_machine_restart(mp_obj_t self_in, mp_obj_t prog_in) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // Get the program data and extract the initial PC
+    mp_obj_t *prog;
+    mp_obj_get_array_fixed_n(prog_in, PROG_MAX_FIELDS, &prog);
+    mp_int_t initial_pc = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + PIO_NUM(self->pio)]);
+
     pio_sm_restart(self->pio, self->sm);
+    pio_sm_exec(self->pio, self->sm, pio_encode_jmp(initial_pc));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_restart_obj, rp2_state_machine_restart);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(rp2_state_machine_restart_obj, rp2_state_machine_restart);
 
 // StateMachine.rx_fifo()
 STATIC mp_obj_t rp2_state_machine_rx_fifo(mp_obj_t self_in) {

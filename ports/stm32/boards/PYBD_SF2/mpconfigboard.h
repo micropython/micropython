@@ -89,6 +89,8 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
 
+#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (0)
+
 // SPI flash #2, to be memory mapped
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (24)
 #define MICROPY_HW_QSPIFLASH_CS     (pyb_pin_QSPI2_CS)
@@ -174,7 +176,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pyb_pin_SD_SW)
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
-#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT     (0)
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT     (1)
 
 // USB config
 #define MICROPY_HW_USB_FS           (1)
