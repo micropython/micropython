@@ -58,6 +58,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
         mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
     alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
     self->base.type = &alarm_time_timealarm_type;
 

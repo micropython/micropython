@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-
-#include "common-hal/alarm/SleepMemory.h"
-
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
-
-extern void common_hal_alarm_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H

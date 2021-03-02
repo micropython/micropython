@@ -50,6 +50,9 @@
 #if CIRCUITPY_SDIOIO
 #include "common-hal/sdioio/SDCard.h"
 #endif
+#if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
+#include "exti.h"
+#endif
 
 #include "clocks.h"
 #include "gpio.h"
@@ -247,6 +250,9 @@ void reset_port(void) {
 #if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
+#if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
+    exti_reset();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -380,6 +386,7 @@ void RTC_WKUP_IRQHandler(void) {
     supervisor_tick();
     __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&_hrtc, RTC_FLAG_WUTF);
     __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
+    _hrtc.State = HAL_RTC_STATE_READY;
 }
 
 volatile bool alarmed_already = false;

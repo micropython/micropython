@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
 
-#include "common-hal/alarm/SleepMemory.h"
+#include "py/obj.h"
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+typedef struct {
+    mp_obj_base_t base;
+    mp_float_t monotonic_time;      // values compatible with time.monotonic_time()
+} alarm_time_timealarm_obj_t;
 
-extern void common_hal_alarm_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+// // Find the alarm object that caused us to wake up or create an equivalent one.
+// mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
+// // Check for the wake up alarm from pretend deep sleep.
+bool alarm_time_timealarm_woke_us_up(void);
+// void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
+// void alarm_time_timealarm_reset(void);

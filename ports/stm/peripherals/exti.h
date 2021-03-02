@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
+#define __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
 
-#include "common-hal/alarm/SleepMemory.h"
+#include STM32_HAL_H
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+#define STM32_GPIO_PORT_SIZE 16
 
-extern void common_hal_alarm_reset(void);
+void exti_reset(void);
+bool stm_peripherals_exti_is_free(uint8_t num);
+bool stm_peripherals_exti_reserve(uint8_t num);
+void stm_peripherals_exti_enable(uint8_t num);
+void stm_peripherals_exti_disable(uint8_t num);
+void stm_peripherals_exti_set_callback(void(*callback)(uint8_t num), uint8_t number);
+void stm_peripherals_exti_free(uint8_t num);
+IRQn_Type stm_peripherals_exti_get_irq(uint8_t num);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__

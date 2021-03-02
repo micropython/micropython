@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-#include "common-hal/alarm/SleepMemory.h"
+#include "py/obj.h"
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+typedef struct {
+    mp_obj_base_t base;
+} alarm_sleep_memory_obj_t;
 
-extern void common_hal_alarm_reset(void);
+extern void alarm_sleep_memory_reset(void);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_SLEEPMEMORY_H

@@ -220,6 +220,8 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	peripherals/timers.c \
+	peripherals/exti.c \
+	peripherals/rtc.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/clocks.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/pins.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/gpio.c \

@@ -157,9 +157,9 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    alarm_save_wake_alarm();
+    common_hal_alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
-    alarm_reset();
+    common_hal_alarm_reset();
     #endif
 
     #if CIRCUITPY_NETWORK
@@ -357,7 +357,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         // an alarm alerts faster than our USB delay or if we pretended to deep
         // sleep.
         #if CIRCUITPY_ALARM
-        if (asleep && alarm_woken_from_sleep()) {
+        if (asleep && common_hal_alarm_woken_from_sleep()) {
             serial_write_compressed(translate("Woken up by alarm.\n"));
             board_init();
             supervisor_set_run_reason(RUN_REASON_STARTUP);
@@ -409,7 +409,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
-                    alarm_enter_deep_sleep();
+                    common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
                     serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
