@@ -262,6 +262,26 @@
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
 #endif
 
+// RF core BLE configuration (a board should define
+// MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES to override all values)
+#ifndef MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES       (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES         (0)
+#define MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE      (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_LINK                  (1)
+#define MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION     (1)
+#define MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE   (0)
+#define MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT              (0x79)
+#define MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU               (0)
+#define MICROPY_HW_RFCORE_BLE_SLAVE_SCA                 (0)
+#define MICROPY_HW_RFCORE_BLE_MASTER_SCA                (0)
+#define MICROPY_HW_RFCORE_BLE_LSE_SOURCE                (0) // use LSE to clock the rfcore (see errata 2.2.1)
+#define MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH     (0xffffffff)
+#define MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME          (0x148)
+#define MICROPY_HW_RFCORE_BLE_VITERBI_MODE              (1)
+#define MICROPY_HW_RFCORE_BLE_LL_ONLY                   (1) // use LL only, we provide the rest of the BLE stack
+#endif
+
 #else
 #error Unsupported MCU series
 #endif
