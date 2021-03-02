@@ -114,11 +114,18 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
 // Reference voltage is a fixed value which is depending on the board.
 // e.g.)
-// - Reference Voltage of A4 and A5 pins on Main Board is 0.7V.
-// - Reference Voltage of A0 ~ A5 pins on External Interface board
-//   is selected 3.3V or 5.0V by a IO Volt jumper pin.
+// - Reference Voltage of A2 and A3 pins on Main Board is 0.7V.
+// - Reference Voltage of A0 ~ A5 pins on External Interface board is 5.0V
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
-    return 0.0f;
+    float voltage;
+
+    if (self->number == 2 || self->number == 3) {
+        voltage = 0.0f;
+    } else {
+        voltage = 5.0f;
+    }
+
+    return voltage;
 }
 
 void analogin_reset(void) {
