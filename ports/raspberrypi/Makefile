@@ -231,8 +231,9 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
 
 SRC_S = supervisor/$(CHIP_FAMILY)_cpu.s
-SRC_S_UPPER = bs2_default_padded_checksummed.S \
-              sdk/src/rp2_common/hardware_divider/divider.S \
+BOOT2_S_UPPER ?= sdk/src/rp2_common/boot_stage2/boot2_generic_03h.S
+BOOT2_S_CFLAGS ?= -DPICO_FLASH_SPI_CLKDIV=2
+SRC_S_UPPER = sdk/src/rp2_common/hardware_divider/divider.S \
               sdk/src/rp2_common/hardware_irq/irq_handler_chain.S \
               sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S \
               sdk/src/rp2_common/pico_double/double_aeabi.S \
@@ -253,7 +254,23 @@ endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S_UPPER:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(BUILD)/boot2_padded_checksummed.o
 
+$(BUILD)/boot2_padded_checksummed.o: $(BUILD)/boot2_padded_checksummed.S
+	$(STEPECHO) "CC $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/boot2_padded_checksummed.S: $(BUILD)/boot2.bin
+	$(STEPECHO) "PAD_CHECKSUM $<"
+	$(Q)$(PYTHON3) sdk/src/rp2_common/boot_stage2/pad_checksum -s 0xffffffff $< $@
+
+$(BUILD)/boot2.bin: $(BUILD)/boot2.elf
+	$(STEPECHO) "OBJCOPY $<"
+	$(Q)$(OBJCOPY) -O binary $< $@
+
+$(BUILD)/boot2.elf: $(BOOT2_S_UPPER) | $(BUILD)/
+	$(STEPECHO) "BOOT $<"
+	$(Q)$(CC) $(CFLAGS) $(BOOT2_S_CFLAGS) -Isdk/src/rp2_common/boot_stage2/asminclude --specs=nosys.specs -nostartfiles -Wl,-T,sdk/src/rp2_common/boot_stage2/boot_stage2.ld -o $@ $<
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
