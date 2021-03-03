@@ -27,4 +27,3 @@ _heap_end = _sstack;
 
 _flash_fs_start = ORIGIN(FLASH_FS);
 _flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
-
