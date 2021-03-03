@@ -157,6 +157,7 @@ SRC_SDK := \
 	src/common/pico_sync/lock_core.c \
 	src/common/pico_sync/mutex.c \
 	src/common/pico_time/time.c \
+	src/common/pico_time/timeout_helper.c \
 	src/common/pico_util/pheap.c \
 	src/rp2_common/hardware_adc/adc.c \
 	src/rp2_common/hardware_claim/claim.c \

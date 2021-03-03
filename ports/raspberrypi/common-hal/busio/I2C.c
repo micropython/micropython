@@ -38,6 +38,9 @@
 
 #define NO_PIN 0xff
 
+// One second
+#define BUS_TIMEOUT_US 1000000
+
 STATIC bool never_reset_i2c[2];
 STATIC i2c_inst_t* i2c[2] = {i2c0, i2c1};
 
@@ -177,24 +180,34 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         return status;
     }
 
-    int result = i2c_write_blocking(self->peripheral, addr, data, len, !transmit_stop_bit);
+    int result = i2c_write_timeout_us(self->peripheral, addr, data, len, !transmit_stop_bit, BUS_TIMEOUT_US);
     if (result == len) {
         return 0;
-    } else if (result == PICO_ERROR_GENERIC) {
-        return MP_ENODEV;
     }
-    return MP_EIO;
+    switch (result) {
+        case PICO_ERROR_GENERIC:
+            return MP_ENODEV;
+        case PICO_ERROR_TIMEOUT:
+            return MP_ETIMEDOUT;
+        default:
+            return MP_EIO;
+    }
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    int result = i2c_read_blocking(self->peripheral, addr, data, len, false);
+    int result = i2c_read_timeout_us(self->peripheral, addr, data, len, false, BUS_TIMEOUT_US);
     if (result == len) {
         return 0;
-    } else if (result == PICO_ERROR_GENERIC) {
-        return MP_ENODEV;
     }
-    return MP_EIO;
+    switch (result) {
+        case PICO_ERROR_GENERIC:
+            return MP_ENODEV;
+        case PICO_ERROR_TIMEOUT:
+            return MP_ETIMEDOUT;
+        default:
+            return MP_EIO;
+    }
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
