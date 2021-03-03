@@ -61,6 +61,29 @@ static uint32_t _mask(uint8_t slice, uint8_t channel) {
     return 1 << (slice * CHANNELS_PER_SLICE + channel);
 }
 
+bool pwmio_claim_slice_channels(uint8_t slice) {
+    uint32_t channel_use_mask_a = _mask(slice, 0);
+    uint32_t channel_use_mask_b = _mask(slice, 1);
+
+    if ((channel_use & channel_use_mask_a) != 0) {
+        return false;
+    }
+    if ((channel_use & channel_use_mask_b) != 0) {
+        return false;
+    }
+
+    channel_use |= channel_use_mask_a;
+    channel_use |= channel_use_mask_b;
+    return true;
+}
+
+void pwmio_release_slice_channels(uint8_t slice) {
+    uint32_t channel_mask = _mask(slice, 0);
+    channel_use &= ~channel_mask;
+    channel_mask = _mask(slice, 1);
+    channel_use &= ~channel_mask;
+}
+
 void pwmout_never_reset(uint8_t slice, uint8_t channel) {
     never_reset_channel |= _mask(slice, channel);
 }
