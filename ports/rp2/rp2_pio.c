@@ -608,6 +608,9 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
             } else {
                 bufinfo.typecode |= 0x20; // make lowercase to support upper and lower
             }
+            if (bufinfo.len <= 0) {  // edge case: buffer of zero length supplied
+                return args[1];
+            }
         }
         if (n_args > 2) {
             shift = mp_obj_get_int(args[2]);
@@ -625,9 +628,6 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
         if (dest == NULL) {
             return mp_obj_new_int_from_uint(value);
         }
-        if (dest >= dest_top) {
-            return args[1];
-        }
         if (bufinfo.typecode == 'b') {
             *(uint8_t *)dest = value;
             dest += sizeof(uint8_t);
@@ -639,6 +639,9 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
             dest += sizeof(uint32_t);
         } else {
             mp_raise_ValueError("unsupported buffer type");
+        }
+        if (dest >= dest_top) {
+            return args[1];
         }
     }
 }
