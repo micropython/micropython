@@ -32,7 +32,7 @@
 
 extern void _PM_IRQ_HANDLER(void);
 
-void *common_hal_rgbmatrix_timer_allocate() {
+void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
     nrfx_timer_t *timer = nrf_peripherals_allocate_timer_or_throw();
     nrf_peripherals_timer_never_reset(timer);
     return timer->p_reg;
