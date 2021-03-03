@@ -165,6 +165,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
 // SD card
+#define MICROPY_HW_SDCARD_SDMMC             (2)
 #define MICROPY_HW_SDMMC2_CK                (pyb_pin_SD_CK)
 #define MICROPY_HW_SDMMC2_CMD               (pyb_pin_SD_CMD)
 #define MICROPY_HW_SDMMC2_D0                (pyb_pin_SD_D0)

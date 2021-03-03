@@ -42,11 +42,10 @@
 
 #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
 
-// The F7 has 2 SDMMC units but at the moment we only support using one of them in
-// a given build.  If a boards config file defines MICROPY_HW_SDMMC2_CK then SDMMC2
-// is used, otherwise SDMMC1 is used.
+// The H7/F7/L4 have 2 SDMMC peripherals, but at the moment this driver only supports using one of them at a time.
+// Use SDMMC2 only if the SD card SDMMC instance is defined explicitly as SDMMC2, otherwise SDMMC1 is used by default.
 
-#if defined(MICROPY_HW_SDMMC2_CK)
+#if (MICROPY_HW_SDCARD_SDMMC == 2)
 #define SDIO SDMMC2
 #define SDMMC_IRQHandler SDMMC2_IRQHandler
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC2_CLK_ENABLE()
@@ -152,7 +151,7 @@ void sdcard_init(void) {
     // Note: the mp_hal_pin_config function will configure the GPIO in
     // fast mode which can do up to 50MHz.  This should be plenty for SDIO
     // which clocks up to 25MHz maximum.
-    #if defined(MICROPY_HW_SDMMC2_CK)
+    #if (MICROPY_HW_SDCARD_SDMMC == 2)
     // Use SDMMC2 peripheral with pins provided by the board's config
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CK);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CMD);
@@ -187,7 +186,7 @@ STATIC void sdmmc_msp_init(void) {
 
     #if defined(STM32H7)
     // Reset SDMMC
-    #if defined(MICROPY_HW_SDMMC2_CK)
+    #if (MICROPY_HW_SDCARD_SDMMC == 2)
     __HAL_RCC_SDMMC2_FORCE_RESET();
     __HAL_RCC_SDMMC2_RELEASE_RESET();
     #else
