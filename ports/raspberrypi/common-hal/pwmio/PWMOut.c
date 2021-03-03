@@ -61,14 +61,22 @@ static uint32_t _mask(uint8_t slice, uint8_t channel) {
     return 1 << (slice * CHANNELS_PER_SLICE + channel);
 }
 
+void pwmout_never_reset(uint8_t slice, uint8_t channel) {
+    never_reset_channel |= _mask(slice, channel);
+}
+
+void pwmout_reset_ok(uint8_t slice, uint8_t channel) {
+    never_reset_channel &= ~_mask(slice, channel);
+}
+
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    never_reset_channel |= _mask(self->slice, self->channel);
+    pwmout_never_reset(self->slice, self->channel);
 
     never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    never_reset_channel &= ~_mask(self->slice, self->channel);
+    pwmout_reset_ok(self->slice, self->channel);
 }
 
 void pwmout_reset(void) {
@@ -92,21 +100,7 @@ void pwmout_reset(void) {
     }
 }
 
-pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
-                                                    const mcu_pin_obj_t* pin,
-                                                    uint16_t duty,
-                                                    uint32_t frequency,
-                                                    bool variable_frequency) {
-    self->pin = pin;
-    self->variable_frequency = variable_frequency;
-    self->duty_cycle = duty;
-
-    if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
-        return PWMOUT_INVALID_FREQUENCY;
-    }
-
-    uint8_t slice = pwm_gpio_to_slice_num(pin->number);
-    uint8_t channel = pwm_gpio_to_channel(pin->number);
+pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency) {
     uint32_t channel_use_mask = _mask(slice, channel);
 
     // Check the channel first.
@@ -128,13 +122,38 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
     }
-    self->slice = slice;
-    self->channel = channel;
 
     channel_use |= channel_use_mask;
     if (variable_frequency) {
         slice_variable_frequency |= 1 << slice;
     }
+
+    return PWMOUT_OK;
+}
+
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
+                                                    const mcu_pin_obj_t* pin,
+                                                    uint16_t duty,
+                                                    uint32_t frequency,
+                                                    bool variable_frequency) {
+    self->pin = pin;
+    self->variable_frequency = variable_frequency;
+    self->duty_cycle = duty;
+
+    if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+
+    uint8_t slice = pwm_gpio_to_slice_num(pin->number);
+    uint8_t channel = pwm_gpio_to_channel(pin->number);
+
+    int r = pwmout_allocate(slice, channel, variable_frequency, frequency);
+    if (r != PWMOUT_OK) {
+        return r;
+    }
+
+    self->slice = slice;
+    self->channel = channel;
 
     if (target_slice_frequencies[slice] != frequency) {
         // Reset the counter and compare values.
@@ -157,20 +176,23 @@ bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->pin == NULL;
 }
 
+void pwmout_free(uint8_t slice, uint8_t channel) {
+    uint32_t channel_mask = _mask(slice, channel);
+    channel_use &= ~channel_mask;
+    never_reset_channel &= ~channel_mask;
+    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (slice * CHANNELS_PER_SLICE);
+    if ((channel_use & slice_mask) == 0) {
+        target_slice_frequencies[slice] = 0;
+        slice_variable_frequency &= ~(1 << slice);
+        pwm_set_enabled(slice, false);
+    }
+}
+
 void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
-    uint32_t channel_mask = _mask(self->slice, self->channel);
-    channel_use &= ~channel_mask;
-    never_reset_channel &= ~channel_mask;
-    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (self->slice * CHANNELS_PER_SLICE);
-    if ((channel_use & slice_mask) == 0) {
-        target_slice_frequencies[self->slice] = 0;
-        slice_variable_frequency &= ~(1 << self->slice);
-        pwm_set_enabled(self->slice, false);
-    }
-
+    pwmout_free(self->slice, self->channel);
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 }

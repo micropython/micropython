@@ -32,7 +32,7 @@
 
 extern const mp_obj_type_t pwmio_pwmout_type;
 
-typedef enum {
+typedef enum pwmout_result_t {
     PWMOUT_OK,
     PWMOUT_INVALID_PIN,
     PWMOUT_INVALID_FREQUENCY,
