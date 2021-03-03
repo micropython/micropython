@@ -34,6 +34,7 @@
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio_instructions.h"
 #include "src/rp2040/hardware_structs/include/hardware/structs/iobank0.h"
+#include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 
 #include "lib/utils/interrupt_char.h"
 #include "py/obj.h"
@@ -101,6 +102,13 @@ void reset_rp2pio_statemachine(void) {
             _reset_statemachine(pio, j, false);
         }
     }
+    for (uint8_t irq=PIO0_IRQ_0; irq <= PIO1_IRQ_1; irq++) {
+       irq_handler_t int_handler = irq_get_exclusive_handler(irq);
+       if (int_handler > 0) {
+          irq_set_enabled (irq, false);
+          irq_remove_handler(irq,int_handler);
+       }
+   }
 }
 
 STATIC uint32_t _check_pins_free(const mcu_pin_obj_t * first_pin, uint8_t pin_count, bool exclusive_pin_use) {
