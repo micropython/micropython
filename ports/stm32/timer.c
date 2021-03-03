@@ -1411,6 +1411,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         // start timer, so that it interrupts on overflow, but clear any
         // pending interrupts which may have been set by initializing it.
         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+        HAL_TIM_Base_Stop(&self->tim); // internal timer state must be released before starting again
         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
         HAL_NVIC_EnableIRQ(self->irqn);
     } else {
