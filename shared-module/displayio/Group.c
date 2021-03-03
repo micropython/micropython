@@ -340,7 +340,7 @@ mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index) {
 void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer) {
     _add_layer(self, layer);
     _remove_layer(self, index);
-    mp_obj_list_store(self, MP_OBJ_NEW_SMALL_INT(index), layer);
+    mp_obj_list_store(self->members, MP_OBJ_NEW_SMALL_INT(index), layer);
 }
 
 void displayio_group_construct(displayio_group_t* self, mp_obj_list_t* members, uint32_t scale, mp_int_t x, mp_int_t y) {
