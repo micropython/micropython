@@ -36,7 +36,6 @@
 #include "shared-bindings/bitbangio/I2C.h"
 #include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-bindings/bitbangio/SPI.h"
-#include "shared-module/bitbangio/types.h"
 
 #include "py/runtime.h"
 

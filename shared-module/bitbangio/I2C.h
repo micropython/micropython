@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -40,22 +40,4 @@ typedef struct {
     volatile bool locked;
 } bitbangio_i2c_obj_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t clock;
-    digitalio_digitalinout_obj_t mosi;
-    digitalio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_I2C_H

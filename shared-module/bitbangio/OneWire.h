@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_ONEWIRE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_ONEWIRE_H
 
-#include "shared-module/bitbangio/OneWire.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bitbangio_onewire_obj_t bitbang;
-} busio_onewire_obj_t;
+    digitalio_digitalinout_obj_t pin;
+} bitbangio_onewire_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_ONEWIRE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_ONEWIRE_H
