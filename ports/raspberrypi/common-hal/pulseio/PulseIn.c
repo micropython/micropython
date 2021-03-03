@@ -81,6 +81,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         pin, 1,
         NULL, 0,
         NULL, 0,
+        1, self->pin,
         1 << self->pin, false, true,
         false, 8, false, // TX, unused
         true, 32, true, // RX auto-push every 32 bits
