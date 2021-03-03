@@ -84,6 +84,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         1, self->pin,
         1 << self->pin, false, true,
         false, 8, false, // TX, unused
+        false,
         true, 32, true, // RX auto-push every 32 bits
         false); // claim pins
     self->state_machine.pio = state_machine.pio;
