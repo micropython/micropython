@@ -27,6 +27,9 @@ if "BOARDS" in os.environ:
 sha, version = build_info.get_version_info()
 
 languages = build_info.get_languages()
+language_allow_list = ['ID', 'de_DE', 'en_US', 'en_x_pirate', 'es', 'fil', 'fr', 'it_IT', 'ja', 'nl', 'pl', 'pt_BR', 'sv', 'zh_Latn_pinyin']
+print('Note: Not building languages', set(languages) - set(language_allow_list))
+
 exit_status = 0
 cores = multiprocessing.cpu_count()
 print('building boards with parallelism {}'.format(cores))
@@ -35,7 +38,7 @@ for board in build_boards:
     os.makedirs(bin_directory, exist_ok=True)
     board_info = all_boards[board]
 
-    for language in languages:
+    for language in language_allow_list:
         bin_directory = "../bin/{board}/{language}".format(board=board, language=language)
         os.makedirs(bin_directory, exist_ok=True)
         start_time = time.monotonic()

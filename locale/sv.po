@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 22:27+0000\n"
+"PO-Revision-Date: 2021-03-01 15:19+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -110,6 +110,7 @@ msgstr "%q måste vara >= 1"
 msgid "%q must be a tuple of length 2"
 msgstr "%q måste vara en tuple av längd 2"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q utanför intervallet"
@@ -340,6 +341,7 @@ msgid "All SPI peripherals are in use"
 msgstr "All SPI-kringutrustning används"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Alla UART-kringutrustning används"
 
@@ -463,6 +465,10 @@ msgstr "Baudrate stöds inte av kringutrustning"
 msgid "Below minimum frame rate"
 msgstr "Under minsta bildfrekvens"
 
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must be sequential pins"
+msgstr "Bitklocka och word select måste vara sekventiella pinnar"
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bitklocka och ordval måste dela en klockenhet"
@@ -503,6 +509,10 @@ msgstr "Ljusstyrka kan inte justeras"
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
 msgstr "Buffert + offset för liten %d %d %d"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Buffer elements must be 4 bytes long or less"
+msgstr "Buffertelement måste vara fyra byte långa eller mindre"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -960,6 +970,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Det gick inte att förvärva mutex, fel 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Det gick inte att tilldela RX-buffert"
 
@@ -1091,6 +1102,10 @@ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
 msgid "IV must be %d bytes long"
 msgstr "IV måste vara %d byte lång"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "In buffer elements must be 4 bytes long or less"
+msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
+
 #: py/persistentcode.c
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
@@ -1106,6 +1121,16 @@ msgstr "Fel buffertstorlek"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
 msgstr "Storlek på init-program ogiltigt"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr "Initial pinn-riktning står i konflikt med initial utpinns-riktning"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin state conflicts with initial out pin state"
+msgstr ""
+"Initial inställning av pinntillstånd är i konflikt med initialt "
+"utpinntillstånd"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1217,7 +1242,8 @@ msgstr "Ogiltigt argument"
 msgid "Invalid bits per value"
 msgstr "Ogiltigt värde för bitar per värde"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Ogiltig buffertstorlek"
 
@@ -1292,10 +1318,10 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
 
@@ -1344,7 +1370,8 @@ msgstr "Ogiltigt kanalantal"
 msgid "Invalid wave file"
 msgstr "Ogiltig wave-fil"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
 
@@ -1472,6 +1499,7 @@ msgstr "Ingen DAC på chipet"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Ingen DMA-kanal hittades"
@@ -1537,6 +1565,14 @@ msgstr "Inget hårdvarustöd på clk-pinne"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Inget hårdvarustöd på pinne"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in in program"
+msgstr "Inget in i programmet"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in or out in program"
+msgstr "Inget in eller ut i programmet"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1626,12 +1662,9 @@ msgid "Odd parity is not supported"
 msgstr "Udda paritet stöds inte"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Endast 8 eller 16 bitars mono med "
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Only IN/OUT of up to 8 supported"
-msgstr "Endast IN/OUT på upp till 8 stöds"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1680,6 +1713,10 @@ msgstr "Operation eller funktion stöds inte"
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out buffer elements must be 4 bytes long or less"
+msgstr "Utbuffertelement ska vara max fyra byte långa"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
@@ -1851,7 +1888,7 @@ msgstr "RNG DeInit-fel"
 msgid "RNG Init Error"
 msgstr "RNG Init-fel"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 stöds ännu inte på den här enheten"
 
@@ -1888,7 +1925,7 @@ msgstr "Skrivskyddad"
 msgid "Read-only filesystem"
 msgstr "Skrivskyddat filsystem"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Skrivskyddat objekt"
 
@@ -2131,6 +2168,7 @@ msgid "To exit, please reset the board without "
 msgstr "För att avsluta, gör reset på kortet utan "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "För många kanaler i sampling."
 
@@ -2170,10 +2208,6 @@ msgstr "UART Init-fel"
 msgid "UART Re-init error"
 msgstr "UART reinit-fel"
 
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr "UART stöds ännu inte"
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr "UART skrivfel"
@@ -2200,6 +2234,7 @@ msgstr "UUID-värdet är inte str, int eller byte-buffert"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Det går inte att allokera buffert för signerad konvertering"
@@ -2509,8 +2544,8 @@ msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits måste vara 7, 8 eller 9"
+msgid "bits must be in range 5 to 9"
+msgstr "bits måste mellan 5 och 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2738,6 +2773,10 @@ msgstr "chr() arg är inte i intervallet(256)"
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "circle kan endast registreras i en förälder"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3745,6 +3784,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "trycka på startknappen vid start.\n"
 
@@ -3824,6 +3864,7 @@ msgstr ""
 "'b' eller 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "samplingsfrekvens utanför räckvidden"
 
@@ -3895,7 +3936,7 @@ msgstr "sos[:, 3] måste vara ettor"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt kräver iterable argument"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "källpalett för stor"
 
@@ -4256,6 +4297,18 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
+#~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART stöds ännu inte"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits måste vara 7, 8 eller 9"
+
+#~ msgid "Only IN/OUT of up to 8 supported"
+#~ msgstr "Endast IN/OUT på upp till 8 stöds"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "SDA eller SCL behöver en pullup"

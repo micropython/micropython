@@ -57,7 +57,7 @@
 #undef free
 #undef realloc
 #define malloc_ll(b, ll) gc_alloc((b), false, (ll))
-#define malloc_with_finaliser(b) gc_alloc((b), true, false)
+#define malloc_with_finaliser(b, ll) gc_alloc((b), true, (ll))
 #define free gc_free
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
@@ -103,8 +103,8 @@ void *m_malloc_maybe(size_t num_bytes, bool long_lived) {
 }
 
 #if MICROPY_ENABLE_FINALISER
-void *m_malloc_with_finaliser(size_t num_bytes) {
-    void *ptr = malloc_with_finaliser(num_bytes);
+void *m_malloc_with_finaliser(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_with_finaliser(num_bytes, long_lived);
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }

@@ -73,7 +73,8 @@ static usb_hid_device_obj_t* get_hid_device(uint8_t report_id) {
 }
 
 // Callbacks invoked when receive Get_Report request through control endpoint
-uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+    (void) itf;
     // only support Input Report
     if ( report_type != HID_REPORT_TYPE_INPUT ) return 0;
 
@@ -83,7 +84,8 @@ uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type,
 }
 
 // Callbacks invoked when receive Set_Report request through control endpoint
-void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+    (void) itf;
     if (report_type == HID_REPORT_TYPE_INVALID) {
         report_id = buffer[0];
         buffer++;
