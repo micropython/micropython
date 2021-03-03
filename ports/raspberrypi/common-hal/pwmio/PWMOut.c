@@ -82,6 +82,7 @@ void pwmio_release_slice_channels(uint8_t slice) {
     channel_use &= ~channel_mask;
     channel_mask = _mask(slice, 1);
     channel_use &= ~channel_mask;
+}
 
 void pwmout_never_reset(uint8_t slice, uint8_t channel) {
     never_reset_channel |= _mask(slice, channel);
