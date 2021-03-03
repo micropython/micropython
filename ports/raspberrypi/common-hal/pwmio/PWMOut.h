@@ -46,4 +46,8 @@ void pwmout_reset(void);
 // Private API for AudioPWMOut.
 void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint16_t top);
 
+// Private API for countio to claim both channels on a slice
+bool pwmio_claim_slice_channels(uint8_t slice);
+void pwmio_release_slice_channels(uint8_t slice);
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H

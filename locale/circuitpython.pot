@@ -1691,6 +1691,10 @@ msgstr ""
 msgid "PWM slice already in use"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c

@@ -4,6 +4,8 @@
 #include "py/mpstate.h"
 #include "supervisor/shared/translate.h"
 
+#include "common-hal/pwmio/PWMOut.h"
+
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
@@ -21,6 +23,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
 
     if (MP_STATE_PORT(counting)[self->slice_num] != NULL) {
         mp_raise_RuntimeError(translate("PWM slice already in use"));
+    }
+
+    uint8_t channel = pwm_gpio_to_channel(self->pin_a);
+    if (!pwmio_claim_slice_channels(self->slice_num)) {
+        mp_raise_RuntimeError(translate("PWM slice channel A already in use"));
     }
 
     pwm_clear_irq(self->slice_num);
@@ -52,6 +59,8 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
 
     pwm_set_enabled(self->slice_num, false);
     pwm_set_irq_enabled(self->slice_num, false);
+
+    pwmio_release_slice_channels(self->slice_num);
 
     reset_pin_number(self->pin_a);
 
