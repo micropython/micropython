@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-02 22:11+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1103,8 +1103,8 @@ msgid "IV must be %d bytes long"
 msgstr "IV måste vara %d byte lång"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -1714,10 +1714,6 @@ msgstr "Operation eller funktion stöds inte"
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr "Utbuffertelement ska vara max fyra byte långa"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Slut på minne"
@@ -1725,6 +1721,10 @@ msgstr "Slut på minne"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -2276,7 +2276,7 @@ msgstr "Oväntad nrfx uuid-typ"
 #: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
+msgstr "Ej hanterat ESP TLS-fel %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -2776,7 +2776,7 @@ msgstr "circle kan endast registreras i en förälder"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "klipppunkten måste vara en tuple (x,y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -4297,6 +4297,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "Utbuffertelement ska vara max fyra byte långa"
 
 #~ msgid "Initial set pin direcion conflicts with initial out pin direction"
 #~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"

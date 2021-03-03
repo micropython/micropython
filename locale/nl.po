@@ -1098,7 +1098,7 @@ msgid "IV must be %d bytes long"
 msgstr "IV %d bytes lang zijn"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
+msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
 
 #: py/persistentcode.c
@@ -1707,10 +1707,6 @@ msgstr ""
 msgid "Operation timed out"
 msgstr ""
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr ""
@@ -1718,6 +1714,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Geen sockets meer beschikbaar"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format

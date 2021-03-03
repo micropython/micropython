@@ -1113,10 +1113,8 @@ msgid "IV must be %d bytes long"
 msgstr "IV debe tener %d bytes de longitud"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
+msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
-"Los elementos del búfer de entrada deben ser de una longitud de 4 bytes o "
-"menos"
 
 #: py/persistentcode.c
 msgid ""
@@ -1734,12 +1732,6 @@ msgstr "Operación no característica no soportada"
 msgid "Operation timed out"
 msgstr "Tiempo de espera agotado"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
-"Los elementos del búfer de salida deben ser de una longitud de 4 bytes o "
-"menos"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Memoria agotada"
@@ -1747,6 +1739,10 @@ msgstr "Memoria agotada"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Se acabaron los enchufes"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -4333,6 +4329,16 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr ""
+#~ "Los elementos del búfer de entrada deben ser de una longitud de 4 bytes o "
+#~ "menos"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr ""
+#~ "Los elementos del búfer de salida deben ser de una longitud de 4 bytes o "
+#~ "menos"
 
 #~ msgid "Initial set pin direcion conflicts with initial out pin direction"
 #~ msgstr ""

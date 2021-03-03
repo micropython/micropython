@@ -1102,8 +1102,8 @@ msgid "IV must be %d bytes long"
 msgstr "IV bì xū wéi %d zì jié cháng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr "zài huǎn chōng yuán jiàn zhōng bì xū shì 4 zì jié cháng huò gèng shǎo"
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -1716,10 +1716,6 @@ msgstr "bù zhī chí cāo zuò huò gōng néng"
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr "chū huǎn chōng yuán jiàn bì xū shì 4 zì jié cháng huò gèng shǎo"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
@@ -1727,6 +1723,10 @@ msgstr "nèi cún bù zú"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -4293,6 +4293,13 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr ""
+#~ "zài huǎn chōng yuán jiàn zhōng bì xū shì 4 zì jié cháng huò gèng shǎo"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "chū huǎn chōng yuán jiàn bì xū shì 4 zì jié cháng huò gèng shǎo"
 
 #~ msgid "UART not yet supported"
 #~ msgstr "UART shàng wèi shòu zhī chí"
