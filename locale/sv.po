@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-02 22:11+0000\n"
+"PO-Revision-Date: 2021-03-03 16:47+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1-dev\n"
 
 #: main.c
 msgid ""
@@ -1104,7 +1104,7 @@ msgstr "IV måste vara %d byte lång"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Antal element i buffert måste vara <= 4 byte"
 
 #: py/persistentcode.c
 msgid ""
@@ -1724,7 +1724,7 @@ msgstr "Slut på sockets"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Element i utbuffer måste vara <= 4 byte långa"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
