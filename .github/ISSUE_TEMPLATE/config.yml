@@ -1,0 +1,7 @@
+contact_links:
+  - name: Adafruit Forum
+    url: https://forums.adafruit.com/
+    about: Not sure if a bug is indeed a bug... post it here.
+  - name: Adafruit Discord
+    url: https://adafru.it/discord
+    about: Similar to the forum but more exposure and prompt replies.
