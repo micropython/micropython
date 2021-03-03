@@ -30,10 +30,6 @@
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
 void board_init(void) {
-    common_hal_never_reset_pin(&pin_GPIO17);
-    gpio_init(17);
-    gpio_set_dir(17, GPIO_OUT);
-    gpio_put(17, true);
 }
 
 bool board_requests_safe_mode(void) {
