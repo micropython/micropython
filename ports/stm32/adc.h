@@ -29,7 +29,7 @@
 extern const mp_obj_type_t pyb_adc_type;
 extern const mp_obj_type_t pyb_adc_all_type;
 
-#if defined(ADC_CHANNEL_VBAT)
+#if defined(ADC_CHANNEL_VBAT) && MICROPY_HW_ENABLE_ADC
 
 static inline void adc_deselect_vbat(ADC_TypeDef *adc, uint32_t channel) {
     (void)adc;
