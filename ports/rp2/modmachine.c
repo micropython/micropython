@@ -33,6 +33,7 @@
 #include "extmod/machine_spi.h"
 
 #include "modmachine.h"
+#include "uart.h"
 #include "hardware/clocks.h"
 #include "hardware/watchdog.h"
 #include "pico/bootrom.h"
@@ -89,6 +90,10 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (!set_sys_clock_khz(freq / 1000, false)) {
             mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
         }
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
         return mp_const_none;
     }
 }
