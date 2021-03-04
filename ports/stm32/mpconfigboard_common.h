@@ -97,6 +97,11 @@
 #define MICROPY_HW_ENABLE_SDCARD (0)
 #endif
 
+// Expose the CSD and CID values from the card inserted, via pyb.SDCard.ident() function
+#ifndef MICROPY_HW_ENABLE_CARD_IDENT
+#define MICROPY_HW_ENABLE_CARD_IDENT (0)
+#endif
+
 // Whether to enable the MMC interface, exposed as pyb.MMCard
 #ifndef MICROPY_HW_ENABLE_MMCARD
 #define MICROPY_HW_ENABLE_MMCARD (0)
@@ -155,11 +160,6 @@
 // Function to determine if the given uart_id is reserved for system use or not.
 #ifndef MICROPY_HW_UART_IS_RESERVED
 #define MICROPY_HW_UART_IS_RESERVED(uart_id) (false)
-#endif
-
-// Defines which UART ports are to be half-duplex
-#ifndef MICROPY_HW_UARTn_IS_HALF_DUPLEX
-#define MICROPY_HW_UARTn_IS_HALF_DUPLEX(n)    (0)
 #endif
 
 /*****************************************************************************/
