@@ -313,8 +313,10 @@ void stm32_main(uint32_t reset_mode) {
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 
+#if 0
     // Check if bootloader should be entered instead of main application
     powerctrl_check_enter_bootloader();
+#endif
 
     // Enable caches and prefetch buffers
 
