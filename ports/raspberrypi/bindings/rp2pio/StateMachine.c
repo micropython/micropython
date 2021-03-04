@@ -69,6 +69,8 @@
 //|                  initial_out_pin_direction: int = 0xffffffff,
 //|                  first_in_pin: Optional[microcontroller.Pin] = None,
 //|                  in_pin_count: int = 1,
+//|                  pull_in_pin_up: int = 0,
+//|                  pull_in_pin_down: int = 0,
 //|                  first_set_pin: Optional[microcontroller.Pin] = None,
 //|                  set_pin_count: int = 1,
 //|                  initial_set_pin_state: int = 0,
@@ -99,6 +101,8 @@
 //|         :param int initial_out_pin_direction: the initial output direction for out pins starting at first_out_pin
 //|         :param ~microcontroller.Pin first_in_pin: the first pin to use with the IN instruction
 //|         :param int in_pin_count: the count of consecutive pins to use with IN starting at first_in_pin
+//|         :param int pull_in_pin_up: a 1-bit in this mask sets pull up on the corresponding in pin
+//|         :param int pull_in_pin_down: a 1-bit in this mask sets pull up on the corresponding in pin. Setting both pulls enables a "bus keep" function, i.e. a weak pull to whatever is current high/low state of GPIO.
 //|         :param ~microcontroller.Pin first_set_pin: the first pin to use with the SET instruction
 //|         :param int set_pin_count: the count of consecutive pins to use with SET starting at first_set_pin
 //|         :param int initial_set_pin_state: the initial output value for set pins starting at first_set_pin
@@ -133,6 +137,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     enum { ARG_program, ARG_frequency, ARG_init,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
+           ARG_pull_in_pin_up, ARG_pull_in_pin_down,
            ARG_first_set_pin, ARG_set_pin_count, ARG_initial_set_pin_state, ARG_initial_set_pin_direction,
            ARG_first_sideset_pin, ARG_sideset_pin_count, ARG_initial_sideset_pin_state, ARG_initial_sideset_pin_direction,
            ARG_exclusive_pin_use,
@@ -151,6 +156,8 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
         { MP_QSTR_first_in_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_in_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_pull_in_pin_up, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pull_in_pin_down, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 
         { MP_QSTR_first_set_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_set_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -233,7 +240,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_frequency].u_int,
         init_bufinfo.buf, init_bufinfo.len / 2,
         first_out_pin, args[ARG_out_pin_count].u_int, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
-        first_in_pin, args[ARG_in_pin_count].u_int,
+        first_in_pin, args[ARG_in_pin_count].u_int, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
         first_set_pin, args[ARG_set_pin_count].u_int, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
         first_sideset_pin, args[ARG_sideset_pin_count].u_int, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
         args[ARG_exclusive_pin_use].u_bool,

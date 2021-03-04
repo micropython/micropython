@@ -53,6 +53,17 @@ STATIC uint32_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
 STATIC PIO pio_instances[2] = {pio0, pio1};
 
+static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin_down, uint32_t pins_we_use) {
+    for (int i=0; i<TOTAL_GPIO_COUNT; i++) {
+        bool used = pins_we_use & (1 << i);
+        if(used) {
+            bool pull_up = pull_pin_up & (1 << i);
+            bool pull_down = pull_pin_down & (1 << i);
+            gpio_set_pulls(i, pull_up, pull_down);
+        }
+    }
+}
+
 void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
     uint32_t program_id = _current_program_id[pio_index][sm];
@@ -136,6 +147,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t* init, size_t init_len,
     const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
+    uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count,
     uint32_t initial_pin_state, uint32_t initial_pin_direction,
@@ -211,8 +223,11 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 
     pio_sm_set_pins_with_mask(self->pio, state_machine, initial_pin_state, pins_we_use);
     pio_sm_set_pindirs_with_mask(self->pio, state_machine, initial_pin_direction, pins_we_use);
+    rp2pio_statemachine_set_pull(pull_pin_up, pull_pin_down, pins_we_use);
     self->initial_pin_state = initial_pin_state;
     self->initial_pin_direction = initial_pin_direction;
+    self->pull_pin_up = pull_pin_up;
+    self->pull_pin_down = pull_pin_down;
 
     for (size_t pin_number = 0; pin_number < TOTAL_GPIO_COUNT; pin_number++) {
         if ((pins_we_use & (1 << pin_number)) == 0) {
@@ -302,6 +317,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t* init, size_t init_len,
     const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count, uint32_t initial_out_pin_state, uint32_t initial_out_pin_direction,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
+    uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
     bool exclusive_pin_use,
@@ -444,12 +460,19 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     initial_pin_state = (initial_pin_state & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_state);
     initial_pin_direction = (initial_pin_direction & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_direction);
 
+    // Deal with pull up/downs
+    uint32_t pull_up = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_up);
+    uint32_t pull_down = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_down);
+    if (initial_pin_direction & (pull_up | pull_down)) {
+        mp_raise_ValueError(translate("pull masks conflict with direction masks"));
+    }
     bool ok = rp2pio_statemachine_construct(self,
         program, program_len,
         frequency,
         init, init_len,
         first_out_pin, out_pin_count,
         first_in_pin, in_pin_count,
+        pull_up, pull_down,
         first_set_pin, set_pin_count,
         first_sideset_pin, sideset_pin_count,
         initial_pin_state, initial_pin_direction,
@@ -470,6 +493,7 @@ void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self) {
     uint32_t pins_we_use = _current_sm_pins[pio_index][self->state_machine];
     pio_sm_set_pins_with_mask(self->pio, self->state_machine, self->initial_pin_state, pins_we_use);
     pio_sm_set_pindirs_with_mask(self->pio, self->state_machine, self->initial_pin_direction, pins_we_use);
+    rp2pio_statemachine_set_pull(self->pull_pin_up, self->pull_pin_down, pins_we_use);
     common_hal_rp2pio_statemachine_run(self, self->init, self->init_len);
     pio_sm_set_enabled(self->pio, self->state_machine, true);
 }
