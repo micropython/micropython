@@ -49,7 +49,7 @@ void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
-    if (esp_task_wdt_deinit() == ESP_OK) {
+    if (esp_task_wdt_delete(NULL) == ESP_OK && esp_task_wdt_deinit() == ESP_OK) {
         self->mode = WATCHDOGMODE_NONE;
     }
 }
