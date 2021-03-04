@@ -93,6 +93,7 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     if (common_hal_audiobusio_pdmin_deinited(self)) {
         return;
     }
+    return common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {
