@@ -28,13 +28,28 @@
 #include "py/runtime.h"
 
 #include "bindings/rp2pio/StateMachine.h"
+#include "bindings/rp2pio/__init__.h"
 
 //| """Hardware interface to RP2 series' programmable IO (PIO) peripheral."""
 //|
 
+//| def pins_are_sequential(pins: List[microcontroller.Pin]) -> bool:
+//|     """Return True if the pins have sequential GPIO numbers, False otherwise"""
+//|     ...
+//|
+STATIC mp_obj_t rp2pio_pins_are_sequential(const mp_obj_t pins) {
+    size_t len;
+    mp_obj_t *items;
+    mp_obj_get_array(pins, &len, &items);
+    return mp_obj_new_bool(common_hal_rp2pio_pins_are_sequential(len, items));
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_pins_are_sequential_obj, rp2pio_pins_are_sequential);
+
 STATIC const mp_rom_map_elem_t rp2pio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rp2pio) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),  MP_ROM_PTR(&rp2pio_statemachine_type) },
+    { MP_ROM_QSTR(MP_QSTR_pins_are_sequential),  MP_ROM_PTR(&rp2pio_pins_are_sequential_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(rp2pio_module_globals, rp2pio_module_globals_table);
