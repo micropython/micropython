@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 
+#include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio.h"
 
 typedef struct {
