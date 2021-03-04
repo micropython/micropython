@@ -69,5 +69,6 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t* sel
 
 bool common_hal_rp2pio_statemachine_get_rxstall(rp2pio_statemachine_obj_t* self);
 void common_hal_rp2pio_statemachine_clear_rxfifo(rp2pio_statemachine_obj_t *self);
+size_t common_hal_rp2pio_statemachine_get_in_waiting(rp2pio_statemachine_obj_t *self);
 
 #endif // MICROPY_INCLUDED_RASPBERRYPI_BINDINGS_RP2PIO_STATEMACHINE_H
