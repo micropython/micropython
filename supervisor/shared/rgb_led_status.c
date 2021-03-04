@@ -47,7 +47,6 @@ static uint8_t status_apa102_color[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, 0,
 
 #if CIRCUITPY_BITBANG_APA102
 #include "shared-bindings/bitbangio/SPI.h"
-#include "shared-module/bitbangio/types.h"
 static bitbangio_spi_obj_t status_apa102 = {
     .base = {
         .type = &bitbangio_spi_type,

@@ -70,9 +70,9 @@ static uint32_t get_nrf_baud (uint32_t baudrate) {
         { 14400, NRF_UARTE_BAUDRATE_14400 },
         { 19200, NRF_UARTE_BAUDRATE_19200 },
         { 28800, NRF_UARTE_BAUDRATE_28800 },
-	{ 31250, NRF_UARTE_BAUDRATE_31250 },
+	    { 31250, NRF_UARTE_BAUDRATE_31250 },
         { 38400, NRF_UARTE_BAUDRATE_38400 },
-	{ 56000, NRF_UARTE_BAUDRATE_56000 },
+	    { 56000, NRF_UARTE_BAUDRATE_56000 },
         { 57600, NRF_UARTE_BAUDRATE_57600 },
         { 76800, NRF_UARTE_BAUDRATE_76800 },
         { 115200, NRF_UARTE_BAUDRATE_115200 },
@@ -143,6 +143,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
+
+    if (bits != 8) {
+        mp_raise_ValueError(translate("Invalid word/bit length"));
+    }
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_ValueError(translate("RS485 Not yet supported on this device"));

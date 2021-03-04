@@ -56,7 +56,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     self->tile = tile;
     self->serpentine = serpentine;
 
-    self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate();
+    self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate(self);
     if (self->timer == NULL) {
         mp_raise_ValueError(translate("No timer available"));
     }
@@ -68,6 +68,8 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
 }
 
 void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self, mp_obj_t framebuffer) {
+    self->paused = 1;
+
     common_hal_rgbmatrix_timer_disable(self->timer);
     if (framebuffer) {
         self->framebuffer = framebuffer;

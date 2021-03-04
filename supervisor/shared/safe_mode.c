@@ -59,7 +59,8 @@ safe_mode_t wait_for_safe_mode_reset(void) {
 
     const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN) {
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_UNKNOWN) {
         return NO_SAFE_MODE;
     }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));

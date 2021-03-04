@@ -107,6 +107,7 @@ msgstr "%q musi być >= 1"
 msgid "%q must be a tuple of length 2"
 msgstr "%q musi być krotką o długości 2"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q poza zakresem"
@@ -337,6 +338,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Wszystkie peryferia SPI w użyciu"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Wszystkie peryferia UART w użyciu"
 
@@ -460,6 +462,10 @@ msgstr ""
 msgid "Below minimum frame rate"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must be sequential pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Zegar bitowy i wybór słowa muszą współdzielić jednostkę zegara"
@@ -500,6 +506,10 @@ msgstr "Jasność nie jest regulowana"
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
 msgstr "Bufor + przesunięcie za małe %d %d %d"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Buffer elements must be 4 bytes long or less"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -954,6 +964,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nie udała się alokacja bufora RX"
 
@@ -1085,6 +1096,10 @@ msgstr ""
 msgid "IV must be %d bytes long"
 msgstr "IV musi mieć długość %d bajtów"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
@@ -1099,6 +1114,14 @@ msgstr "Niewłaściwa wielkość bufora"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
@@ -1211,7 +1234,8 @@ msgstr "Zły argument"
 msgid "Invalid bits per value"
 msgstr "Zła liczba bitów wartości"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Zła wielkość bufora"
 
@@ -1286,10 +1310,10 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Złe nóżki"
 
@@ -1338,7 +1362,8 @@ msgstr "Zła liczba głosów"
 msgid "Invalid wave file"
 msgstr "Zły plik wave"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Niepoprawna długość słowa/bitu"
 
@@ -1466,6 +1491,7 @@ msgstr "Brak DAC"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Nie znaleziono kanału DMA"
@@ -1531,6 +1557,14 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Brak sprzętowej obsługi na nóżce"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in in program"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in or out in program"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1618,12 +1652,9 @@ msgid "Odd parity is not supported"
 msgstr "Nieparzysta parzystość nie jest wspierana"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Tylko 8 lub 16 bitów mono z "
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1678,6 +1709,10 @@ msgstr "Brak pamięci"
 msgid "Out of sockets"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
+
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
@@ -1700,6 +1735,14 @@ msgstr "duty_cycle musi być pomiędzy 0 a 65535 włącznie (rozdzielczość 16 
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Nie można zmienić częstotliwości PWM gdy variable_frequency=False."
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1736,6 +1779,10 @@ msgstr "Nóżka nie obsługuje ADC"
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1829,7 +1876,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -1866,7 +1913,7 @@ msgstr "Tylko do odczytu"
 msgid "Read-only filesystem"
 msgstr "System plików tylko do odczytu"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Obiekt tylko do odczytu"
 
@@ -2099,6 +2146,7 @@ msgid "To exit, please reset the board without "
 msgstr "By wyjść, proszę zresetować płytkę bez "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Zbyt wiele kanałów."
 
@@ -2138,10 +2186,6 @@ msgstr ""
 msgid "UART Re-init error"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr ""
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr "Błąd zapisu UART"
@@ -2168,6 +2212,7 @@ msgstr "UUID nie jest typu str, int lub bytes"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Nie udała się alokacja buforów do konwersji ze znakiem"
@@ -2475,8 +2520,8 @@ msgid "binary op %q not implemented"
 msgstr "brak dwu-argumentowego operatora %q"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits musi być 7, 8 lub 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2701,6 +2746,10 @@ msgstr "argument chr() poza zakresem range(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
 msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
@@ -3704,6 +3753,7 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 
@@ -3782,6 +3832,7 @@ msgstr ""
 "bufor sample_source musi być bytearray lub tablicą typu 'h', 'H', 'b' lub 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "częstotliwość próbkowania poza zakresem"
 
@@ -3853,7 +3904,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "źródłowa paleta jest zbyt duża"
 
@@ -4214,6 +4265,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits musi być 7, 8 lub 9"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "SDA lub SCL wymagają podciągnięcia"

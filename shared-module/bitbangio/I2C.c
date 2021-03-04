@@ -32,7 +32,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-module/bitbangio/types.h"
 #include "supervisor/shared/translate.h"
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {

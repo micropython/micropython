@@ -36,8 +36,13 @@ typedef struct {
     uint32_t pins; // Bitmask of what pins this state machine uses.
     int state_machine;
     PIO pio;
+    const uint16_t* init;
+    size_t init_len;
+    uint32_t initial_pin_state;
+    uint32_t initial_pin_direction;
     bool in;
     bool out;
+    bool wait_for_txstall;
     uint tx_dreq;
     uint rx_dreq;
     bool out_shift_right;
@@ -58,8 +63,10 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count,
+    uint32_t initial_pin_state, uint32_t initial_pin_direction,
     uint32_t pins_we_use, bool tx_fifo, bool rx_fifo,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
+    bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool claim_pins);
 
