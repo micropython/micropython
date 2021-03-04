@@ -31,10 +31,10 @@
 
 #include "py/mpconfig.h"
 
-#ifdef EXTERNAL_FLASH_DEVICES
-#include "supervisor/shared/external_flash/external_flash.h"
-#else
+#if INTERNAL_FLASH_FILESYSTEM
 #include "supervisor/shared/internal_flash.h"
+#else
+#include "supervisor/shared/external_flash/external_flash.h"
 #endif
 
 void supervisor_flash_init(void);

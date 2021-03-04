@@ -173,4 +173,8 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LC709203F
 [submodule "ports/raspberrypi/sdk"]
 	path = ports/raspberrypi/sdk
-	url = https://github.com/raspberrypi/pico-sdk.git
+	url = https://github.com/adafruit/pico-sdk.git
+[submodule "data/nvm.toml"]
+	path = data/nvm.toml
+	url = https://github.com/adafruit/nvm.toml.git
+	branch = main

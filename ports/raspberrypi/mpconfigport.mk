@@ -55,3 +55,5 @@ USB_SERIAL_NUMBER_LENGTH = 16
 
 # Number of USB endpoint pairs.
 USB_NUM_EP = 8
+
+INTERNAL_FLASH_FILESYSTEM = 1
