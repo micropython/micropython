@@ -52,6 +52,22 @@
 #define WIFI_JOIN_STATE_KEYED   (0x0800)
 #define WIFI_JOIN_STATE_ALL     (0x0e01)
 
+#if (MICROPY_HW_WIFI_SDMMC == 2)
+#define SDMMC                   (SDMMC2)
+#define SDMMC_IRQn              (SDMMC2_IRQn)
+#define SDMMC_IRQ_HANDLER       SDMMC2_IRQHandler
+#define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC2_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC2_CLK_DISABLE()
+#define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC2_IS_CLK_DISABLED()
+#else
+#define SDMMC                   (SDMMC1)
+#define SDMMC_IRQn              (SDMMC1_IRQn)
+#define SDMMC_IRQ_HANDLER       SDMMC1_IRQHandler
+#define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC1_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC1_CLK_DISABLE()
+#define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC1_IS_CLK_DISABLED()
+#endif
+
 cyw43_t cyw43_state;
 void (*cyw43_poll)(void);
 uint32_t cyw43_sleep;
@@ -112,7 +128,7 @@ void cyw43_deinit(cyw43_t *self) {
     self->itf_state = 0;
 
     // Disable async polling
-    SDMMC1->MASK &= ~SDMMC_MASK_SDIOITIE;
+    SDMMC->MASK &= ~SDMMC_MASK_SDIOITIE;
     cyw43_poll = NULL;
 
     #ifdef pyb_pin_WL_RFSW_VDD
@@ -164,7 +180,7 @@ STATIC int cyw43_ensure_up(cyw43_t *self) {
     cyw43_sleep = CYW43_SLEEP_MAX;
     cyw43_poll = cyw43_poll_func;
     #if USE_SDIOIT
-    SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+    SDMMC->MASK |= SDMMC_MASK_SDIOITIE;
     #else
     extern void extint_set(const pin_obj_t *pin, uint32_t mode);
     extint_set(pyb_pin_WL_HOST_WAKE, GPIO_MODE_IT_FALLING);
@@ -209,7 +225,7 @@ STATIC void cyw43_poll_func(void) {
     }
 
     #if USE_SDIOIT
-    SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+    SDMMC->MASK |= SDMMC_MASK_SDIOITIE;
     #endif
 }
 
@@ -227,8 +243,8 @@ int cyw43_cb_read_host_interrupt_pin(void *cb_data) {
 void cyw43_cb_ensure_awake(void *cb_data) {
     cyw43_sleep = CYW43_SLEEP_MAX;
     #if !USE_SDIOIT
-    if (__HAL_RCC_SDMMC1_IS_CLK_DISABLED()) {
-        __HAL_RCC_SDMMC1_CLK_ENABLE(); // enable SDIO peripheral
+    if (SDMMC_IS_CLK_DISABLED()) {
+        SDMMC_CLK_ENABLE(); // enable SDIO peripheral
         sdio_enable_high_speed_4bit();
     }
     #endif
