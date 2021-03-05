@@ -150,13 +150,7 @@ else
   CFLAGS += -flto -flto-partition=none
 
   ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    # Increasing max-inline-insns-auto from 20 to 1000 gains about 300 bytes on a small build.
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=1000
-    # These optimizations are normally -O3 only. They improve the way register
-    # allocation is done, but, to quote the gcc doc, 'can, however, make debugging impossible,
-    # since variables will no longer stay in a “home register”.'
-    # On a small build they can gain about 200 bytes.
-    CFLAGS += -fweb -frename-registers
+    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
   endif
 
   ifdef CFLAGS_BOARD
