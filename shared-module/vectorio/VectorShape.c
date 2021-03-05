@@ -93,20 +93,6 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
 }
 
 
-static displayio_buffer_transform_t null_transform = {
-    .x = 0,
-    .y = 0,
-    .dx = 1,
-    .dy = 1,
-    .scale = 1,
-    .width = 0,
-    .height = 0,
-    .mirror_x = false,
-    .mirror_y = false,
-    .transpose_xy = false
-};
-
-
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
         vectorio_ishape_t ishape,
         mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
