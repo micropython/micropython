@@ -81,6 +81,7 @@ jobs:
       working-directory: tests
     - name: Print failure info
       run: |
+        shopt -s nullglob;
         for exp in *.exp;
         do testbase=$(basename $exp .exp);
         echo -e "\nFAILURE $testbase";
