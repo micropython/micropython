@@ -108,9 +108,13 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
         false, // wait for TX stall
         false, 32, true // RX setting we don't use
         );
+
+    common_hal_rp2pio_statemachine_never_reset(&self->state_machine);
 }
 
 void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
+    common_hal_rp2pio_statemachine_deinit(&self->state_machine);
+
     for (uint8_t i = 0; i < 8; i++) {
         reset_pin_number(self->data0_pin + i);
     }
