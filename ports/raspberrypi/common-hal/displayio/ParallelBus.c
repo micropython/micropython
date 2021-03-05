@@ -95,31 +95,19 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
         never_reset_pin_number(data_pin + i);
     }
 
-    // Calculate pin usage all data pins + write pin
-    uint32_t pin_usage = 0;
-    for (uint8_t pin_number = data_pin; pin_number < data_pin+8; pin_number++) {
-        pin_usage += (1 << pin_number);
-    }
-    pin_usage += (1 << write_pin);
-
-    bool ok = rp2pio_statemachine_construct(&self->state_machine,
+    common_hal_rp2pio_statemachine_construct(&self->state_machine,
         parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
         frequency, // frequency
         NULL, 0, // init
-        data0, 8, // first out pin, # out pins
+        data0, 8, 0, 255, // first out pin, # out pins
         NULL, 0, // first in pin, # in pins
-        NULL, 0, // first set pin
-        write, 1, // first sideset pin
-        pin_usage, // pins we use
-        true, // tx fifo
-        false, // rx fifo
+        NULL, 0, 0, 0, // first set pin
+        write, 1, 0, 1, // first sideset pin
+        true, // exclusive pin usage
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
-        false, 32, true, // RX setting we don't use
-        false); // claim pins
-    if (!ok) {
-        // Do nothing. Maybe bitbang?
-        return;
-    }
+        false, // wait for TX stall
+        false, 32, true // RX setting we don't use
+        );
 }
 
 void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
@@ -162,7 +150,7 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
 
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length);
+    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1);
 }
 
 void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
