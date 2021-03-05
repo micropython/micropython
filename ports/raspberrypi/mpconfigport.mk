@@ -28,13 +28,14 @@ CIRCUITPY_FULL_BUILD = 1
 CIRCUITPY_BITOPS = 1
 CIRCUITPY_PWMIO = 1
 CIRCUITPY_RGBMATRIX = 1
+CIRCUITPY_ROTARYIO = 1
 
 # Things that need to be implemented.
+# (Remember to remove any comment when changing a 0 to a 1, make gets confused otherwise)
 CIRCUITPY_FREQUENCYIO = 0 # Use PWM interally
 CIRCUITPY_I2CPERIPHERAL = 0
 CIRCUITPY_NVM = 1
 CIRCUITPY_PULSEIO = 0 # Use PIO interally
-CIRCUITPY_ROTARYIO = 0 # Use PIO interally
 CIRCUITPY_WATCHDOG = 1
 
 # Audio via PWM
