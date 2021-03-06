@@ -1,4 +1,4 @@
-USB_VID = 0x239A
+USB_VID = 0x303A
 USB_PID = 0x80AA
 USB_PRODUCT = "Franzininho WIFI Wrover"
 USB_MANUFACTURER = "Espressif"
