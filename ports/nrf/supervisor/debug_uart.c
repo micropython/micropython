@@ -21,15 +21,25 @@
 #include "nrfx_rtc.h"
 #include "supervisor/serial.h" // dbg_printf()
 #include "shared-bindings/microcontroller/Processor.h"
+#include "common-hal/alarm/__init__.h"
 
 extern const nrfx_rtc_t rtc_instance;    // port.c
-extern volatile int rtc_woke_up_counter; // port.c
 extern uint32_t reset_reason_saved;
 
 const nrfx_uarte_t _dbg_uart_inst = NRFX_UARTE_INSTANCE(1);
 static int _dbg_uart_initialized = 0;
 #define DBG_PBUF_LEN 80
 static char _dbg_pbuf[DBG_PBUF_LEN+1];
+
+void _debug_uart_uninit(void) {
+    nrf_gpio_cfg(DEBUG_UART_TXPIN,
+		 NRF_GPIO_PIN_DIR_INPUT,
+		 NRF_GPIO_PIN_INPUT_DISCONNECT,
+		 NRF_GPIO_PIN_NOPULL,
+		 NRF_GPIO_PIN_S0S1,
+		 NRF_GPIO_PIN_NOSENSE);
+    nrfx_uarte_uninit(&_dbg_uart_inst);
+}
 
 void _debug_uart_init(void) {
     //if (_dbg_uart_initialized) return;
@@ -55,6 +65,16 @@ void _debug_uart_init(void) {
 		 NRF_GPIO_PIN_H0H1,  // orig=S0S1
 		 NRF_GPIO_PIN_NOSENSE);
     _dbg_uart_initialized = 1;
+#if 1 //XXX
+    #define DBGPIN 6+32
+    nrf_gpio_cfg(DBGPIN,
+		 NRF_GPIO_PIN_DIR_OUTPUT,
+		 NRF_GPIO_PIN_INPUT_DISCONNECT,
+		 NRF_GPIO_PIN_NOPULL,
+		 NRF_GPIO_PIN_H0H1,
+		 NRF_GPIO_PIN_NOSENSE);
+    nrf_gpio_pin_write(DBGPIN, 1);
+#endif
     return;
 }
 
@@ -97,7 +117,15 @@ void dbg_dump_RTCreg(void) {
     dbg_printf("EVTENSET=%08X\r\n", (int)r->EVTENSET);
     dbg_printf("EVENTS_COMPARE[0..3]=%X,%X,%X,%X ", (int)r->EVENTS_COMPARE[0], (int)r->EVENTS_COMPARE[1], (int)r->EVENTS_COMPARE[2], (int)r->EVENTS_COMPARE[3]);
     dbg_printf("CC[0..3]=%08X,%08X,%08X,%08X\r\n", (int)r->CC[0], (int)r->CC[1], (int)r->CC[2], (int)r->CC[3]);
-    dbg_printf("woke_up=%d\r\n", rtc_woke_up_counter);
+}
+
+int dbg_check_RTCprescaler(void) {
+    NRF_RTC_Type  *r = rtc_instance.p_reg;
+    if ((int)r->PRESCALER == 0) {
+        dbg_printf("****** PRESCALER == 0\r\n");
+	return -1;
+    }
+    return 0;
 }
 
 void dbg_dump_RAMreg(void) {

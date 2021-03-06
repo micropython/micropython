@@ -42,3 +42,9 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
 bool alarm_time_timealarm_woke_us_up(void);
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 void alarm_time_timealarm_reset(void);
+
+extern void alarm_time_timealarm_prepare_for_deep_sleep(void);
+extern int64_t alarm_time_timealarm_get_wakeup_timediff_ms(void);
+extern void alarm_time_timealarm_clear_wakeup_time(void);
+extern void dbg_dump_RTCreg(void);
+extern void tick_set_prescaler(uint32_t prescaler_val);

@@ -35,6 +35,7 @@ typedef struct {
     mp_obj_base_t base;
 } alarm_sleep_memory_obj_t;
 
+extern void set_memory_retention(void);
 extern void alarm_sleep_memory_reset(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H

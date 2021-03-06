@@ -37,10 +37,13 @@
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "supervisor/port.h"
+#include "supervisor/serial.h"  // serial_connected()
 #ifdef NRF_DEBUG_PRINT
 #include "supervisor/serial.h" // dbg_printf()
+extern int dbg_check_RTCprescaler(void);
 #endif
 
 #include "nrf.h"
@@ -113,6 +116,23 @@ bool alarm_woken_from_sleep(void) {
 	   || cause == NRF_SLEEP_WAKEUP_TOUCHPAD);
 }
 
+nrf_sleep_source_t alarm_woken_from_sleep_2(void) {
+    nrf_sleep_source_t cause = _get_wakeup_cause();
+#ifdef NRF_DEBUG_PRINT
+    if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
+        //print_wakeup_cause(cause);
+    }
+#endif
+    if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
+	cause == NRF_SLEEP_WAKEUP_TIMER ||
+	cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
+        return cause;
+    }
+    else {
+        return NRF_SLEEP_WAKEUP_UNDEFINED;
+    }
+}
+
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
 #ifdef NRF_DEBUG_PRINT
@@ -146,19 +166,74 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
-STATIC void _idle_until_alarm(void) {
+nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
+    bool have_timeout = false;
+    uint64_t start_tick = 0, end_tick = 0;
+
+    if (timediff_ms != -1) {
+        have_timeout = true;
+#if 0
+	int64_t now = common_hal_time_monotonic_ms();
+	dbg_printf("now_ms=%ld timediff_ms=%ld\r\n", (long)now, (long)timediff_ms);
+#endif
+	if (timediff_ms < 0)  timediff_ms = 0;
+	int64_t tickdiff;
+	if (prescaler == 0) {
+	    // 1 tick = 1/1024 sec = 1000/1024 ms
+	    // -> 1 ms = 1024/1000 ticks
+	    tickdiff = (mp_uint_t)(timediff_ms * 1024 / 1000); // ms -> ticks
+	}
+	else {
+	    // 1 tick = prescaler/1024 sec = prescaler*1000/1024 ms
+	    // -> 1ms = 1024/(1000*prescaler) ticks
+	    tickdiff = (mp_uint_t)(timediff_ms * 1024 / (1000 * prescaler));
+	}
+	start_tick = port_get_raw_ticks(NULL);
+	end_tick = start_tick + tickdiff;
+    }
+#if 0
+    dbg_printf("start_tick=%ld end_tick=%ld have_timeout=%c\r\n", (long)start_tick, (long)end_tick, have_timeout ? 'T' : 'F');
+#endif
+
+    int64_t remaining;
+    nrf_sleep_source_t wakeup_cause = NRF_SLEEP_WAKEUP_UNDEFINED;
+    sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
+    sleepmem_wakeup_pin   = WAKEUP_PIN_UNDEF;
+
 #ifdef NRF_DEBUG_PRINT
     int ct = 40;
+    char reason = '?';
+#define WAKEUP_REASON(x) reason = (x)
+#else
+#define WAKEUP_REASON(x)
 #endif
-    reset_reason_saved = 0;
-    // Poll for alarms.
-    while (!mp_hal_is_interrupted()) {
-        RUN_BACKGROUND_TASKS;
-        // Allow ctrl-C interrupt.
-        if (alarm_woken_from_sleep()) {
-	    alarm_save_wake_alarm();
-	    return;
+
+    while(1) {
+	if (mp_hal_is_interrupted()) {
+	    WAKEUP_REASON('I');
+	    break;
 	}
+        if (serial_connected() && serial_bytes_available()) {
+	    WAKEUP_REASON('S');
+	    break;
+	}
+        RUN_BACKGROUND_TASKS;
+	wakeup_cause = alarm_woken_from_sleep_2();
+	if (wakeup_cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
+	    WAKEUP_REASON('0'+wakeup_cause);
+	    break;
+	}
+	if (have_timeout) {
+	    remaining = end_tick - port_get_raw_ticks(NULL);
+	    // We break a bit early so we don't risk setting the alarm before the time when we call
+	    // sleep.
+	    if (remaining < 1) {
+	        WAKEUP_REASON('t');
+	        break;
+	    }
+	    port_interrupt_after_ticks(remaining);
+	}
+        // Idle until an interrupt happens.
         port_idle_until_interrupt();
 #ifdef NRF_DEBUG_PRINT
         if (ct > 0) {
@@ -166,17 +241,39 @@ STATIC void _idle_until_alarm(void) {
             --ct;
         }
 #endif
+	if (have_timeout) {
+	    remaining = end_tick - port_get_raw_ticks(NULL);
+	    if (remaining <= 0) {
+	        wakeup_cause = NRF_SLEEP_WAKEUP_TIMER;
+		sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
+	        WAKEUP_REASON('T');
+		break;
+	    }
+	}
     }
+#ifdef NRF_DEBUG_PRINT
+    dbg_printf("%c\r\n", reason);
+#endif
+    return wakeup_cause;
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     mp_obj_t r_obj = mp_const_none;
+    alarm_time_timealarm_clear_wakeup_time();
     _setup_sleep_alarms(false, n_alarms, alarms);
+
 #ifdef NRF_DEBUG_PRINT
-    dbg_printf("\r\nsleep...");
+    dbg_printf("\r\nlight sleep...");
 #endif
 
-    _idle_until_alarm();
+    int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
+    nrf_sleep_source_t cause = system_on_idle_until_alarm(timediff_ms, 0);
+    (void)cause;
+
+#ifdef NRF_DEBUG_PRINT
+    //dbg_printf("wakeup! ");
+    print_wakeup_cause(cause);
+#endif
 
     if (mp_hal_is_interrupted()) {
 #ifdef NRF_DEBUG_PRINT
@@ -192,29 +289,47 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
 }
 
 void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    alarm_time_timealarm_clear_wakeup_time();
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
-extern void set_memory_retention(void);
+#if defined(MICROPY_QSPI_CS)
+extern void qspi_disable(void);
+#endif
+
+#define PRESCALER_VALUE_IN_DEEP_SLEEP (1024)
+extern void _debug_uart_init(void);
+extern void _debug_uart_uninit(void);
 
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    alarm_touch_touchalarm_prepare_for_deep_sleep();
+    alarm_time_timealarm_prepare_for_deep_sleep();
 
-    uint8_t sd_enabled;
-    sd_softdevice_is_enabled(&sd_enabled);
-
-    set_memory_retention();
+#if defined(MICROPY_QSPI_CS)
+    qspi_disable();
+#endif
 
 #ifdef NRF_DEBUG_PRINT
-    dbg_printf("go system off.. %d\r\n", sd_enabled);
+    dbg_printf("\r\ndeep sleep...");
 #endif
-    if (sd_enabled) {
-        sd_power_system_off();
-    }
-    else {
-        NRF_POWER->SYSTEMOFF = 1;
-    }
+    int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
+    tick_set_prescaler(PRESCALER_VALUE_IN_DEEP_SLEEP -1);
+#ifdef NRF_DEBUG_PRINT
+    dbg_dump_RTCreg(); //XXX
+    dbg_check_RTCprescaler(); //XXX
+#endif
+    nrf_sleep_source_t cause;
+    cause = system_on_idle_until_alarm(timediff_ms,
+				       PRESCALER_VALUE_IN_DEEP_SLEEP);
+    (void)cause;
+
+#ifdef NRF_DEBUG_PRINT
+    dbg_printf("wakeup! ");
+    print_wakeup_cause(cause);
+    dbg_printf("RESET...\r\n\r\n");
+#endif
+
+    reset_cpu();
 
     // should not reach here..
     while(1) ;
@@ -222,12 +337,23 @@ void NORETURN alarm_enter_deep_sleep(void) {
 
 void alarm_pretending_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    alarm_touch_touchalarm_prepare_for_deep_sleep();
+    alarm_time_timealarm_prepare_for_deep_sleep();
 
-    port_idle_until_interrupt();
-    if (alarm_woken_from_sleep()) {
-	alarm_reset();
-    }
+#ifdef NRF_DEBUG_PRINT
+    dbg_printf("\r\npretending to deep sleep...");
+#endif
+
+    int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
+    nrf_sleep_source_t cause = system_on_idle_until_alarm(timediff_ms, 0);
+    (void)cause;
+
+#ifdef NRF_DEBUG_PRINT
+    dbg_printf("wakeup! ");
+    print_wakeup_cause(cause);
+    dbg_printf("continue..\r\n");
+#endif
+
+    alarm_reset();
 }
 
 void common_hal_alarm_gc_collect(void) {

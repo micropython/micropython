@@ -30,6 +30,7 @@
 //#include "supervisor/esp_port.h"
 #include <stdio.h>
 
+#include "common-hal/alarm/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 
@@ -56,17 +57,31 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
 }
 
 bool alarm_time_timealarm_woke_us_up(void) {
-  return rtc_woke_up_counter;
+  return sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_TIMER;
+}
+
+int64_t wakeup_time_saved =0;
+
+int64_t alarm_time_timealarm_get_wakeup_timediff_ms(void) {
+    if (wakeup_time_saved == 0) {
+        return -1;
+    }
+    return wakeup_time_saved - common_hal_time_monotonic_ms();
+}
+
+void alarm_time_timealarm_clear_wakeup_time(void) {
+    wakeup_time_saved = 0;
 }
 
 void alarm_time_timealarm_reset(void) {
     port_disable_interrupt_after_ticks_ch(1);
-    rtc_woke_up_counter = 0;
+    wakeup_time_saved = 0;
 }
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     bool timealarm_set = false;
     alarm_time_timealarm_obj_t *timealarm = MP_OBJ_NULL;
+    wakeup_time_saved = 0;
 
     for (size_t i = 0; i < n_alarms; i++) {
         if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
@@ -82,17 +97,8 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         return;
     }
 
-    // Compute how long to actually sleep, considering the time now.
-    mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
-    mp_float_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
-    int wsecs = (int)(wakeup_in_secs);
-    // timealarm is implemented by RTC, which is a 24bit counter
-    // running at 32768Hz. So, 2^24 / 32768 = 512sec is an upper limit.
-    if (wsecs >= 512) {
-        mp_raise_ValueError(translate("Alarm time must be < 512 seconds."));
-    }
+    wakeup_time_saved = (int64_t)(timealarm->monotonic_time * 1000.0f);
+}
 
-    uint32_t wakeup_in_ticks = (uint32_t)(wakeup_in_secs * 1024.0f);
-    port_interrupt_after_ticks_ch(1, wakeup_in_ticks);
-    rtc_woke_up_counter = 0;
+void alarm_time_timealarm_prepare_for_deep_sleep(void) {
 }

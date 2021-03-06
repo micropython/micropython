@@ -51,6 +51,7 @@
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
+#include "common-hal/alarm/__init__.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
@@ -75,13 +76,13 @@ static void power_warning_handler(void) {
 
 #ifdef NRF_DEBUG_PRINT
 extern void _debug_uart_init(void);
+#define DBGPIN 6+32  //XXX P1_06 = TP1
 #endif
 
 uint32_t reset_reason_saved = 0;
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
-volatile int rtc_woke_up_counter = 0;
 
-const nrfx_rtc_config_t rtc_config = {
+nrfx_rtc_config_t rtc_config = {
     .prescaler = RTC_FREQ_TO_PRESCALER(0x8000),
     .reliable = 0,
     .tick_latency = 0,
@@ -97,6 +98,11 @@ static volatile struct {
 } overflow_tracker __attribute__((section(".uninitialized")));
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
+#ifdef NRF_DEBUG_PRINT
+    if (int_type == NRFX_RTC_INT_TICK) {
+      nrf_gpio_pin_toggle(DBGPIN); //XXX
+    }
+#endif
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
@@ -108,7 +114,7 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
         nrfx_rtc_cc_set(&rtc_instance, 0, 0, false);
     } else if (int_type == NRFX_RTC_INT_COMPARE1) {
         // used in light sleep
-        ++rtc_woke_up_counter;
+        sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
         nrfx_rtc_cc_set(&rtc_instance, 1, 0, false);
     }
 }
@@ -132,6 +138,22 @@ void tick_init(void) {
         overflow_tracker.suffix = OVERFLOW_CHECK_SUFFIX;
         overflow_tracker.overflowed_ticks = 0;
     }
+}
+
+void tick_uninit(void) {
+    nrfx_rtc_counter_clear(&rtc_instance);
+    nrfx_rtc_disable(&rtc_instance);
+    nrfx_rtc_uninit(&rtc_instance);
+}
+
+void tick_set_prescaler(uint32_t prescaler_val) {
+    tick_uninit();
+    // update of prescaler value sometimes fails if we skip this delay..
+    NRFX_DELAY_US(1000);
+    uint16_t prescaler_saved = rtc_config.prescaler;
+    rtc_config.prescaler = prescaler_val;
+    tick_init();
+    rtc_config.prescaler = prescaler_saved;
 }
 
 safe_mode_t port_init(void) {
@@ -166,6 +188,10 @@ safe_mode_t port_init(void) {
     reset_reason_saved = NRF_POWER->RESETREAS;
     // clear all RESET reason bits
     NRF_POWER->RESETREAS = reset_reason_saved;
+    // clear wakeup event/pin when reset by reset-pin
+    if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
+        sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
+    }
 
     // If the board was reset by the WatchDogTimer, we may
     // need to boot into safe mode. Reset the RESETREAS bit

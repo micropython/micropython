@@ -41,6 +41,15 @@ typedef enum {
 
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
+enum {
+    SLEEPMEM_WAKEUP_BY_NONE  = 0,
+    SLEEPMEM_WAKEUP_BY_PIN   = 1,
+    SLEEPMEM_WAKEUP_BY_TIMER = 2,
+};
+#define WAKEUP_PIN_UNDEF 0xFF
+extern uint8_t sleepmem_wakeup_event;
+extern uint8_t sleepmem_wakeup_pin;
+
 extern void alarm_reset(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H

@@ -435,6 +435,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         #else
 	    port_idle_until_interrupt();
         #endif
+	    return false; // to go REPL
         }
     }
 }

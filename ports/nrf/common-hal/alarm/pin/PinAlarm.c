@@ -32,6 +32,7 @@
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "common-hal/alarm/__init__.h"
 
 #include "nrfx.h"
 #include "nrf_gpio.h"
@@ -43,8 +44,6 @@
 
 #define WPIN_UNUSED 0xFF
 volatile char _pinhandler_gpiote_count;
-volatile nrfx_gpiote_pin_t _pinhandler_ev_pin;
-#define MYGPIOTE_EV_PIN_UNDEF 0xFF
 static bool pins_configured = false;
 
 extern uint32_t reset_reason_saved;
@@ -81,11 +80,13 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
 
 static void pinalarm_gpiote_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     ++_pinhandler_gpiote_count;
-    _pinhandler_ev_pin = pin;
+    sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_PIN;
+    sleepmem_wakeup_pin   = pin & 0xFF;
 }
 
 bool alarm_pin_pinalarm_woke_us_up(void) {
-    return (_pinhandler_gpiote_count > 0 && _pinhandler_ev_pin != MYGPIOTE_EV_PIN_UNDEF);
+    return (sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_PIN &&
+	    sleepmem_wakeup_pin != WAKEUP_PIN_UNDEF);
 }
 
 mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
@@ -95,7 +96,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
-	if (alarm->pin->number == _pinhandler_ev_pin) {
+	if (alarm->pin->number == sleepmem_wakeup_pin) {
             return alarms[i];
         }
     }
@@ -105,7 +106,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
         const mcu_pin_obj_t* pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
-        if ((size_t) pin_obj->number == _pinhandler_ev_pin) {
+        if ((size_t) pin_obj->number == sleepmem_wakeup_pin) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
             break;
         }
@@ -147,7 +148,6 @@ static void configure_pins_for_sleep(void) {
     (void)err; // to suppress unused warning
 
     _pinhandler_gpiote_count = 0;
-    _pinhandler_ev_pin = MYGPIOTE_EV_PIN_UNDEF;
 
     nrfx_gpiote_in_config_t cfg = {
         .sense = NRF_GPIOTE_POLARITY_TOGGLE,
