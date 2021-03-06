@@ -235,6 +235,7 @@ jobs:
         - "feather_stm32f405_express"
         - "fluff_m0"
         - "franzininho_wifi_wroom"
+        - "franzininho_wifi_wrover"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
