@@ -49,6 +49,13 @@ from collections import namedtuple
 sys.path.append(sys.path[0] + "/../py")
 import makeqstrdata as qstrutil
 
+import gettext
+import os
+
+if "MPY_LOCALES" in os.environ:
+    _ = gettext.translation('messages', os.environ["MPY_LOCALES"]).gettext
+else:
+    _ = None
 
 class FreezeError(Exception):
     def __init__(self, rawcode, msg):
@@ -72,7 +79,11 @@ config = Config()
 class QStrType:
     def __init__(self, str):
         self.str = str
-        self.qstr_esc = qstrutil.qstr_escape(self.str)
+        if _:
+            self.str = _(str)
+        else:
+            self.str = str
+        self.qstr_esc = qstrutil.qstr_escape(str)
         self.qstr_id = "MP_QSTR_" + self.qstr_esc
 
 
@@ -291,6 +302,8 @@ class RawCode(object):
                 if is_str_type(obj):
                     obj = bytes_cons(obj, "utf8")
                     obj_type = "mp_type_str"
+                    if _:
+                        obj = _(obj)
                 else:
                     obj_type = "mp_type_bytes"
                 print(
