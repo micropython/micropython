@@ -31,9 +31,15 @@
 
 #include "supervisor/linker.h"
 
+#if MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
 #define COMPUTE_ENTRY(x) ((char*)(x) - (char*)&&entry_MP_BC_LOAD_CONST_FALSE)
+typedef int16_t entry_table_type;
+#else
+#define COMPUTE_ENTRY(x) (x)
+typedef void *entry_table_type;
+#endif
 
-static int16_t const PLACE_IN_DTCM_DATA(entry_table[256]) = {
+static entry_table_type const PLACE_IN_DTCM_DATA(entry_table[256]) = {
     [0 ... 255] = COMPUTE_ENTRY(&&entry_default),
     [MP_BC_LOAD_CONST_FALSE] = COMPUTE_ENTRY(&&entry_MP_BC_LOAD_CONST_FALSE),
     [MP_BC_LOAD_CONST_NONE] = COMPUTE_ENTRY(&&entry_MP_BC_LOAD_CONST_NONE),
