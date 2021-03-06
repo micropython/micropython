@@ -57,6 +57,7 @@ if "MPY_LOCALES" in os.environ:
 else:
     _ = None
 
+
 class FreezeError(Exception):
     def __init__(self, rawcode, msg):
         self.rawcode = rawcode
