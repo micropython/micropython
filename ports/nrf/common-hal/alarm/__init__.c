@@ -334,6 +334,25 @@ void NORETURN alarm_enter_deep_sleep(void) {
     while(1) ;
 }
 
+// old version deep sleep code that was used in alarm_enter_deep_sleep()
+//   for anyone who might want true System OFF sleep ..
+#if 0
+void OLD_go_system_off(void) {
+    sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
+    sleepmem_wakeup_pin   = WAKEUP_PIN_UNDEF;
+    uint8_t sd_enabled;
+    sd_softdevice_is_enabled(&sd_enabled);
+    set_memory_retention();
+    dbg_printf("OLD go system off.. %d\r\n", sd_enabled);
+    if (sd_enabled) {
+        sd_power_system_off();
+    }
+    else {
+        NRF_POWER->SYSTEMOFF = 1;
+    }
+}
+#endif
+
 void alarm_pretending_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
