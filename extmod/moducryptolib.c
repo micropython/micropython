@@ -167,15 +167,6 @@ typedef struct _mp_obj_rsa_t {
     uint8_t rsa_key_type;
 } mp_obj_rsa_t;
 
-STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false); //peut etre 1, 1
-    mp_obj_rsa_t *o = m_new_obj(mp_obj_rsa_t);
-    o->base.type = type;
-    o->rsa_key_type = 0;
-
-    return MP_OBJ_FROM_PTR(o);
-
-}
 
 STATIC mp_obj_t ucryptolib_rsa_importKey(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(self_in);
@@ -205,11 +196,27 @@ STATIC mp_obj_t ucryptolib_rsa_importKey(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     self->rsa = mbedtls_pk_rsa( pk );
-
+    
     return MP_OBJ_FROM_PTR(self);
 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ucryptolib_rsa_importKey_obj, ucryptolib_rsa_importKey);
+
+STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false); 
+    mp_obj_rsa_t *o = m_new_obj(mp_obj_rsa_t);
+    o->base.type = type;
+    o->rsa_key_type = 0;
+    
+    if (n_args == 1) {
+        ucryptolib_rsa_importKey(o, args[0]);
+    }
+
+    return MP_OBJ_FROM_PTR(o);
+
+}
+
+
 
 typedef struct _mp_obj_pkcs1v15_t {
     mp_obj_base_t base;
@@ -222,45 +229,68 @@ STATIC mp_obj_t ucryptolib_pkcs1v15_make_new(const mp_obj_type_t *type, size_t n
     o->base.type = type;
     o->key =  MP_OBJ_TO_PTR(args[0]);
 
+
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t ucryptolib_pkcs1v15_sign(mp_obj_t self_in, mp_obj_t arg) {
-    mp_obj_rsa_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t ucryptolib_pkcs1v15_sign(mp_obj_t self_in, mp_obj_t hash) {
+    mp_obj_pkcs1v15_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_t hash_buf = arg;
     mp_buffer_info_t hash_bufinfo;
-    mp_get_buffer_raise(hash_buf, &hash_bufinfo, MP_BUFFER_READ);
-
+    mp_get_buffer_raise(hash, &hash_bufinfo, MP_BUFFER_READ);
+ 
     int ret;
-    vstr_t signature;
-    vstr_init_len(&signature, (self->rsa)->len);
 
-    if( ( ret = mbedtls_rsa_pkcs1_sign(self->rsa , NULL, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_NONE,
-                                hash_bufinfo.len, hash_bufinfo.buf, (byte*)signature.buf ) ) != 0 )
-    {
-        mp_raise_ValueError("Unable to sign message");
+
+    if ( (self->key)->rsa_key_type == 0 ) {
+        mp_raise_ValueError("No RSA key available to sign message");
     }
 
+    if ( (self->key)->rsa_key_type == RSA_KEYTYPE_PUBLIC ) {
+        mp_raise_ValueError("Unable to sign message with public key");
+    }
+
+    vstr_t signature;
+    vstr_init_len(&signature, ((self->key)->rsa)->len);
+
+    if ( hash_bufinfo.len != 32 ) { // why we have to do that ? It's an open question.
+        if( ( ret = mbedtls_rsa_pkcs1_sign((self->key)->rsa , NULL, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_NONE,
+                                    hash_bufinfo.len, hash_bufinfo.buf, (byte*)signature.buf ) ) != 0 ) 
+        {
+            mp_raise_ValueError("Unable to sign message");
+        }
+    } else {
+        if( ( ret = mbedtls_rsa_pkcs1_sign((self->key)->rsa , NULL, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256,
+                                    0, hash_bufinfo.buf, (byte*)signature.buf ) ) != 0 )
+        {
+            mp_raise_ValueError("Unable to sign message");
+        }
+    }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &signature);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ucryptolib_pkcs1v15_sign_obj, ucryptolib_pkcs1v15_sign);
 
 
 STATIC mp_obj_t ucryptolib_pkcs1v15_verify(mp_obj_t self_in, mp_obj_t hash, mp_obj_t signature) {
-    mp_obj_rsa_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_pkcs1v15_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_t hash_buf = hash;
     mp_buffer_info_t hash_bufinfo;
-    mp_get_buffer_raise(hash_buf, &hash_bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(hash, &hash_bufinfo, MP_BUFFER_READ);
 
-    mp_obj_t sign_buf = signature;
     mp_buffer_info_t sign_bufinfo;
-    mp_get_buffer_raise(sign_buf, &sign_bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(signature, &sign_bufinfo, MP_BUFFER_READ);
+
+    if ( (self->key)->rsa_key_type == 0 ) {
+        mp_raise_ValueError("No RSA key available to verify message");
+    }
+
+    if ( (self->key)->rsa_key_type == RSA_KEYTYPE_PRIVATE ) {
+        mp_raise_ValueError("Unable to verify message with private key");
+    }
 
     int ret;
 
-    ret = mbedtls_rsa_pkcs1_verify(self->rsa , NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_NONE,
+    ret = mbedtls_rsa_pkcs1_verify((self->key)->rsa , NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_NONE,
                                 hash_bufinfo.len, hash_bufinfo.buf, sign_bufinfo.buf );
 
     return mp_obj_new_bool(ret == 0);
