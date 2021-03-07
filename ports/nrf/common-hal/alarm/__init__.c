@@ -45,6 +45,7 @@
 #include "supervisor/serial.h" // dbg_printf()
 extern int dbg_check_RTCprescaler(void);
 #endif
+#include "supervisor/qspi_flash.h"
 
 #include "nrf.h"
 #include "nrf_power.h"
@@ -170,6 +171,10 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
 
+#if defined(MICROPY_QSPI_CS)
+    qspi_flash_enter_sleep();
+#endif
+
     if (timediff_ms != -1) {
         have_timeout = true;
 #if 0
@@ -254,6 +259,11 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
 #ifdef NRF_DEBUG_PRINT
     dbg_printf("%c\r\n", reason);
 #endif
+
+#if defined(MICROPY_QSPI_CS)
+    qspi_flash_exit_sleep();
+#endif
+
     return wakeup_cause;
 }
 
@@ -293,21 +303,11 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
-#if defined(MICROPY_QSPI_CS)
-extern void qspi_disable(void);
-#endif
-
 #define PRESCALER_VALUE_IN_DEEP_SLEEP (1024)
-extern void _debug_uart_init(void);
-extern void _debug_uart_uninit(void);
 
 void NORETURN alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
-
-#if defined(MICROPY_QSPI_CS)
-    qspi_disable();
-#endif
 
 #ifdef NRF_DEBUG_PRINT
     dbg_printf("\r\ndeep sleep...");
@@ -315,7 +315,6 @@ void NORETURN alarm_enter_deep_sleep(void) {
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
     tick_set_prescaler(PRESCALER_VALUE_IN_DEEP_SLEEP -1);
 #ifdef NRF_DEBUG_PRINT
-    dbg_dump_RTCreg(); //XXX
     dbg_check_RTCprescaler(); //XXX
 #endif
     nrf_sleep_source_t cause;

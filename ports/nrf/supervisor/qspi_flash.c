@@ -37,6 +37,9 @@
 
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "supervisor/shared/external_flash/qspi_flash.h"
+#ifdef NRF_DEBUG_PRINT
+#include "supervisor/serial.h" // dbg_printf()
+#endif
 
 // When USB is disconnected, disable QSPI in sleep mode to save energy
 void qspi_disable(void)
@@ -190,7 +193,11 @@ void spi_flash_init(void) {
             .readoc = NRF_QSPI_READOC_FASTREAD,
             .writeoc = NRF_QSPI_WRITEOC_PP,
             .addrmode = NRF_QSPI_ADDRMODE_24BIT,
+#ifdef QSPI_FLASH_POWERDOWN
+            .dpmconfig = true
+#else
             .dpmconfig = false
+#endif
         },
         .phy_if = {
             .sck_freq = NRF_QSPI_FREQ_32MDIV16, // Start at a slow 2MHz and speed up once we know what we're talking to.
@@ -237,4 +244,83 @@ void spi_flash_init_device(const external_flash_device* device) {
     }
     NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
     NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
+}
+
+#ifdef QSPI_FLASH_POWERDOWN
+// Parameters for external QSPI Flash power-down
+// for W25Q128FV,
+//   tDP (nCS high to Power-down mode) = 3us
+//   tRES (nCS high to Standby mode)   = 3us
+//   sck_delay = max(tDP, tRES) / 62.5ns = 48  -> 50 (w/ margin)
+#define DUR_DPM_ENTER  1  // tDP  in (256*62.5ns) units
+#define DUR_DPM_EXIT   1  // tRES in (256*62.5ns) units
+#define SCK_DELAY      50 // max(tDP, tRES) in (62.5ns) units
+//   wait necessary just after DPM enter/exit (cut and try)
+#define WAIT_AFTER_DPM_ENTER 10 // usec
+#define WAIT_AFTER_DPM_EXIT  50 // usec
+#endif
+
+static int sck_delay_saved = 0;
+#ifdef NRF_DEBUG_PRINT
+extern void dbg_dumpQSPIreg(void);
+#else
+#define dbg_dumpQSPIreg(...)
+#endif
+
+void qspi_flash_enter_sleep(void) {
+#ifdef QSPI_FLASH_POWERDOWN
+    uint32_t r;
+    NRF_QSPI->DPMDUR =
+        ((DUR_DPM_ENTER & 0xFFFF) << 16) | (DUR_DPM_EXIT & 0xFFFF);
+    // set sck_delay tempolarily
+    r = NRF_QSPI->IFCONFIG1;
+    sck_delay_saved = (r & QSPI_IFCONFIG1_SCKDELAY_Msk)
+				>> QSPI_IFCONFIG1_SCKDELAY_Pos;
+    NRF_QSPI->IFCONFIG1
+        = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
+        | (SCK_DELAY << QSPI_IFCONFIG1_SCKDELAY_Pos);
+
+    // enabling IFCONFIG0.DPMENABLE here won't work.
+    //  -> do it in spi_flash_init()
+    //NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_DPMENABLE_Msk;
+    //dbg_dumpQSPIreg();
+
+    // enter deep power-down mode (DPM)
+    NRF_QSPI->IFCONFIG1 |= QSPI_IFCONFIG1_DPMEN_Msk;
+    NRFX_DELAY_US(WAIT_AFTER_DPM_ENTER);
+    if (!(NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk)) {
+#ifdef NRF_DEBUG_PRINT
+        dbg_printf("qspi flash: DPM failed\r\n");
+#endif
+    }
+#endif
+
+    qspi_disable();
+    //dbg_dumpQSPIreg();
+}
+
+void qspi_flash_exit_sleep(void) {
+    qspi_enable();
+
+#ifdef QSPI_FLASH_POWERDOWN
+    if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
+        // exit deep power-down mode
+        NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_DPMEN_Msk;
+	NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
+
+	if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
+#ifdef NRF_DEBUG_PRINT
+	    dbg_printf("qspi flash: exiting DPM failed\r\n");
+#endif
+	}
+	// restore sck_delay
+	if (sck_delay_saved == 0) {
+	    sck_delay_saved = 10; // default
+	}
+	NRF_QSPI->IFCONFIG1
+	    = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
+	    | (sck_delay_saved << QSPI_IFCONFIG1_SCKDELAY_Pos);
+    }
+    //dbg_dumpQSPIreg();
+#endif
 }
