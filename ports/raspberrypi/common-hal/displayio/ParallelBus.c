@@ -47,10 +47,6 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset, uint32_t frequency) {
 
-    // If we did not set frequency guess at 60Mhz
-    if (frequency == 0)
-        frequency = 60000000;
-
     uint8_t data_pin = data0->number;
     for (uint8_t i = 0; i < 8; i++) {
         if (!pin_number_is_free(data_pin + i)) {
