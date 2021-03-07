@@ -42,7 +42,7 @@
 //|         """You cannot create an instance of `usb_cdc.Serial`.
 //|
 //|         Serial objects are pre-constructed for each CDC device in the USB
-//|         descriptor and added to the ``usb_cdc.ports`` tuple."""
+//|         descriptor and are included in the ``usb_cdc.serials`` tuple."""
 //|         ...
 //|
 
@@ -124,7 +124,12 @@ STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request
 }
 
 //|     connected: bool
-//|     """True if this Serial is connected to a host. (read-only)"""
+//|     """True if this Serial is connected to a host. (read-only)
+//|
+//|     .. note:: The host is considered to be connected if it is asserting DTR (Data Terminal Ready).
+//|       Most terminal programs and ``pyserial`` assert DTR when opening a serial connection.
+//|       However, the C# ``SerialPort`` API does not. You must set ``SerialPort.DtrEnable``.
+//|     """
 //|
 STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
