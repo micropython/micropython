@@ -41,6 +41,27 @@
 #include "supervisor/serial.h" // dbg_printf()
 #endif
 
+#ifdef QSPI_FLASH_POWERDOWN
+// Parameters for external QSPI Flash power-down
+// for W25Q128FV,
+//   tDP (nCS high to Power-down mode) = 3us
+//   tRES (nCS high to Standby mode)   = 3us
+//   sck_delay = max(tDP, tRES) / 62.5ns = 48  -> 50 (w/ margin)
+#define DUR_DPM_ENTER  1  // tDP  in (256*62.5ns) units
+#define DUR_DPM_EXIT   1  // tRES in (256*62.5ns) units
+#define SCK_DELAY      50 // max(tDP, tRES) in (62.5ns) units
+//   wait necessary just after DPM enter/exit (cut and try)
+#define WAIT_AFTER_DPM_ENTER 10 // usec
+#define WAIT_AFTER_DPM_EXIT  50 // usec
+#endif
+
+static int sck_delay_saved = 0;
+#ifdef NRF_DEBUG_PRINT
+extern void dbg_dumpQSPIreg(void);
+#else
+#define dbg_dumpQSPIreg(...)
+#endif
+
 // When USB is disconnected, disable QSPI in sleep mode to save energy
 void qspi_disable(void)
 {
@@ -222,6 +243,13 @@ void spi_flash_init(void) {
 
     // No callback for blocking API
     nrfx_qspi_init(&qspi_cfg, NULL, NULL);
+
+#ifdef QSPI_FLASH_POWERDOWN
+    // If pin-reset while flash is in power-down mode,
+    // the flash cannot accept any commands. Send CMD_WAKE to release it.
+    spi_flash_write_command(CMD_WAKE, NULL, 0);
+    NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
+#endif
 }
 
 void spi_flash_init_device(const external_flash_device* device) {
@@ -245,27 +273,6 @@ void spi_flash_init_device(const external_flash_device* device) {
     NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
     NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
 }
-
-#ifdef QSPI_FLASH_POWERDOWN
-// Parameters for external QSPI Flash power-down
-// for W25Q128FV,
-//   tDP (nCS high to Power-down mode) = 3us
-//   tRES (nCS high to Standby mode)   = 3us
-//   sck_delay = max(tDP, tRES) / 62.5ns = 48  -> 50 (w/ margin)
-#define DUR_DPM_ENTER  1  // tDP  in (256*62.5ns) units
-#define DUR_DPM_EXIT   1  // tRES in (256*62.5ns) units
-#define SCK_DELAY      50 // max(tDP, tRES) in (62.5ns) units
-//   wait necessary just after DPM enter/exit (cut and try)
-#define WAIT_AFTER_DPM_ENTER 10 // usec
-#define WAIT_AFTER_DPM_EXIT  50 // usec
-#endif
-
-static int sck_delay_saved = 0;
-#ifdef NRF_DEBUG_PRINT
-extern void dbg_dumpQSPIreg(void);
-#else
-#define dbg_dumpQSPIreg(...)
-#endif
 
 void qspi_flash_enter_sleep(void) {
 #ifdef QSPI_FLASH_POWERDOWN
