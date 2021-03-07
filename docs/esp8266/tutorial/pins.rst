@@ -19,6 +19,12 @@ it.  To make an input pin use::
 You can either use PULL_UP or None for the input pull-mode.  If it's
 not specified then it defaults to None, which is no pull resistor. GPIO16
 has no pull-up mode.
+
+You can query a ``Pin`` object for it's port number using::
+
+    >>> pin.pin()
+    0
+
 You can read the value on the pin using::
 
     >>> pin.value()
