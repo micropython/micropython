@@ -413,6 +413,14 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// Whether to save trade flash space for speed in MICROPY_OPT_COMPUTED_GOTO.
+// Costs about 3% speed, saves about 1500 bytes space.  In addition to the assumptions
+// of MICROPY_OPT_COMPUTED_GOTO, also assumes that mp_execute_bytecode is less than
+// 32kB in size.
+#ifndef MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (0)
+#endif
+
 // Whether to cache result of map lookups in LOAD_NAME, LOAD_GLOBAL, LOAD_ATTR,
 // STORE_ATTR bytecodes.  Uses 1 byte extra RAM for each of these opcodes and
 // uses a bit of extra code ROM, but greatly improves lookup speed.
