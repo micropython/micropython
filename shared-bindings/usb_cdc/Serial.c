@@ -68,7 +68,8 @@
 //|         return everything readable if no newline is found and ``timeout`` is 0.
 //|         Return ``None`` in case of error.
 //|
-//|         This is a binary stream: the newline character cannot be changed.
+//|         This is a binary stream: the newline character "\\n" cannot be changed.
+//|         If the host computer transmits "\\r" it will be included as part of the line.
 //|
 //|         :param int size: maximum number of characters to read. ``-1`` means as many as possible.
 //|         :return: the line read
