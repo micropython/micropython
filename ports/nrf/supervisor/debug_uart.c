@@ -65,16 +65,6 @@ void _debug_uart_init(void) {
 		 NRF_GPIO_PIN_H0H1,  // orig=S0S1
 		 NRF_GPIO_PIN_NOSENSE);
     _dbg_uart_initialized = 1;
-#if 1 //XXX
-    #define DBGPIN 6+32
-    nrf_gpio_cfg(DBGPIN,
-		 NRF_GPIO_PIN_DIR_OUTPUT,
-		 NRF_GPIO_PIN_INPUT_DISCONNECT,
-		 NRF_GPIO_PIN_NOPULL,
-		 NRF_GPIO_PIN_H0H1,
-		 NRF_GPIO_PIN_NOSENSE);
-    nrf_gpio_pin_write(DBGPIN, 1);
-#endif
     return;
 }
 
@@ -189,6 +179,22 @@ void dbg_dump_GPIOregs(void) {
     }
     dbg_printf("EVENTS_PORT:%X INTENSET:%08X\r\n",
 	       (int)(reg->EVENTS_PORT), (int)(reg->INTENSET));
+}
+
+void dbg_dumpQSPIreg(void) {
+    uint32_t r;
+    dbg_printf("QSPI\r\n");
+    r = NRF_QSPI->IFCONFIG0;
+    dbg_printf("IFCONFIG0 READ=%ld write=%ld ADDR=%ld DPM=%ld PPSIZE=%ld\r\n",
+	       r & 7, (r >> 3) & 7, (r >> 6) & 1, (r >> 7) & 1, (r >> 12) & 1);
+    r = NRF_QSPI->IFCONFIG1;
+    dbg_printf("IFCONFIG1 SCKDELAY=%ld SPIMODE=%ld SCKFREQ=%ld\r\n",
+	       r & 0xFF, (r >> 25) & 1, (r >> 28) & 0xF);
+    r = NRF_QSPI->STATUS;
+    dbg_printf("STATUS    DPM=%ld READY=%ld SREG=0x%02lX\r\n",
+	       (r >> 2) & 1, (r >> 3) & 1, (r >> 24) & 0xFF);
+    r = NRF_QSPI->DPMDUR;
+    dbg_printf("DPMDUR    ENTER=%ld EXIT=%ld\r\n", r & 0xFFFF, (r >> 16) & 0xFFFF);
 }
 
 void dbg_dump_reset_reason(void) {

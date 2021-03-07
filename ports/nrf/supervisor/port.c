@@ -76,7 +76,6 @@ static void power_warning_handler(void) {
 
 #ifdef NRF_DEBUG_PRINT
 extern void _debug_uart_init(void);
-#define DBGPIN 6+32  //XXX P1_06 = TP1
 #endif
 
 uint32_t reset_reason_saved = 0;
@@ -98,11 +97,6 @@ static volatile struct {
 } overflow_tracker __attribute__((section(".uninitialized")));
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
-#ifdef NRF_DEBUG_PRINT
-    if (int_type == NRFX_RTC_INT_TICK) {
-      nrf_gpio_pin_toggle(DBGPIN); //XXX
-    }
-#endif
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
