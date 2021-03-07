@@ -53,9 +53,10 @@
 //   wait necessary just after DPM enter/exit (cut and try)
 #define WAIT_AFTER_DPM_ENTER 10 // usec
 #define WAIT_AFTER_DPM_EXIT  50 // usec
-#endif
 
 static int sck_delay_saved = 0;
+#endif
+
 #ifdef NRF_DEBUG_PRINT
 extern void dbg_dumpQSPIreg(void);
 #else
