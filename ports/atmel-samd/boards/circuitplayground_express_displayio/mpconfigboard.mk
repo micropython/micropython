@@ -7,7 +7,6 @@ CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
 SPI_FLASH_FILESYSTEM = 1
-EXTERNAL_FLASH_DEVICE_COUNT = 2
 EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 
 # Turn off features and optimizations for Crickit build to make room for additional frozen libs.

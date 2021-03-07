@@ -4,7 +4,6 @@ USB_PRODUCT = "stm32f411ce blackpill with flash"
 USB_MANUFACTURER = "Unknown"
 
 SPI_FLASH_FILESYSTEM = 1
-EXTERNAL_FLASH_DEVICE_COUNT = 2
 #See supervisor/shared/external_flash/devices.h for options
 EXTERNAL_FLASH_DEVICES = W25Q64FV,W25Q64JV_IQ
 LONGINT_IMPL = MPZ
