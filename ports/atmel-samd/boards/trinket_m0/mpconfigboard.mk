@@ -12,4 +12,6 @@ CIRCUITPY_FULL_BUILD = 0
 
 SUPEROPT_GC = 0
 SUPEROPT_VM = 0
-CFLAGS_INLINE_LIMIT = 45
+
+# On this particular board, these save about 180 bytes. On other boards, they may -increase- space used.
+CFLAGS_BOARD = -fweb -frename-registers

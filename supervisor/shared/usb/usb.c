@@ -62,6 +62,7 @@ void load_serial_number(void) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
+    usb_serial_number[0] = 0x300 | sizeof(usb_serial_number);
     for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
         for (int j = 0; j < 2; j++) {
             uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
@@ -130,12 +131,16 @@ void usb_irq_handler(void) {
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
+#if CIRCUITPY_USB_MSC
     usb_msc_mount();
+#endif
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
+#if CIRCUITPY_USB_MSC
     usb_msc_umount();
+#endif
 }
 
 // Invoked when usb bus is suspended

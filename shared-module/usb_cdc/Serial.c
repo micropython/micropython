@@ -41,7 +41,8 @@ size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data,
 
     if (wait_forever || wait_for_timeout) {
         // Read more if we have time.
-        uint64_t timeout_ms = self->timeout * 1000;  // Junk value if timeout < 0.
+        // Use special routine to avoid pulling in uint64-float-compatible math routines.
+        uint64_t timeout_ms = float_to_uint64(self->timeout * 1000);  // Junk value if timeout < 0.
         uint64_t start_ticks = supervisor_ticks_ms64();
 
         uint32_t num_read = 0;
@@ -78,7 +79,8 @@ size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t
 
     if (wait_forever || wait_for_timeout) {
         // Write more if we have time.
-        uint64_t timeout_ms = self->write_timeout * 1000;  // Junk value if write_timeout < 0.
+        // Use special routine to avoid pulling in uint64-float-compatible math routines.
+        uint64_t timeout_ms = float_to_uint64(self->write_timeout * 1000);  // Junk value if write_timeout < 0.
         uint64_t start_ticks = supervisor_ticks_ms64();
 
         uint32_t num_written = 0;

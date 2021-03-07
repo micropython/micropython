@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-#include "common-hal/digitalio/DigitalInOut.h"
+#include "shared-module/rgbmatrix/RGBMatrix.h"
 
-#include "py/obj.h"
+void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self);
+void common_hal_rgbmatrix_timer_enable(void*);
+void common_hal_rgbmatrix_timer_disable(void*);
+void common_hal_rgbmatrix_timer_free(void*);
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t scl;
-    digitalio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    uint32_t us_timeout;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t clock;
-    digitalio_digitalinout_obj_t mosi;
-    digitalio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#endif

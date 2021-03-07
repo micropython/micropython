@@ -778,30 +778,32 @@ for idx, descriptor in enumerate(string_descriptors):
     variable_name = StringIndex.index_to_variable[idx]
     if not variable_name:
         variable_name = "string_descriptor{}".format(idx)
+    pointers_to_strings.append("{name}".format(name=variable_name))
 
     const = "const "
     if variable_name == "usb_serial_number":
-        const = ""
-    c_file.write(
-        """\
-{const}uint16_t {NAME}[] = {{
-""".format(
-            const=const, NAME=variable_name
+        length = len(b)
+        c_file.write("    uint16_t {NAME}[{length}];\n".format(NAME=variable_name, length=length//2))
+    else:
+        c_file.write(
+            """\
+    const uint16_t {NAME}[] = {{
+    """.format(
+                const=const, NAME=variable_name
+            )
         )
-    )
-    pointers_to_strings.append("{name}".format(name=variable_name))
-    n = 0
-    while i < len(b):
-        length = b[i]
-        for j in range(length // 2):
-            c_file.write("0x{:04x}, ".format(b[i + 2 * j + 1] << 8 | b[i + 2 * j]))
-        n += 1
-        c_file.write("\n")
-        i += length
-    c_file.write(
-        """\
-};
-"""
+        n = 0
+        while i < len(b):
+            length = b[i]
+            for j in range(length // 2):
+                c_file.write("0x{:04x}, ".format(b[i + 2 * j + 1] << 8 | b[i + 2 * j]))
+            n += 1
+            c_file.write("\n")
+            i += length
+        c_file.write(
+            """\
+    };
+    """
     )
 
 c_file.write(

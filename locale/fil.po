@@ -102,6 +102,7 @@ msgstr "aarehas na haba dapat ang buffer slices"
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr ""
@@ -334,6 +335,7 @@ msgid "All SPI peripherals are in use"
 msgstr "Lahat ng SPI peripherals ay ginagamit"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 #, fuzzy
 msgid "All UART peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
@@ -458,6 +460,10 @@ msgstr ""
 msgid "Below minimum frame rate"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must be sequential pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Ang bit clock at word select dapat makibahagi sa isang clock unit"
@@ -497,6 +503,10 @@ msgstr ""
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Buffer elements must be 4 bytes long or less"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
@@ -956,6 +966,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
@@ -1087,6 +1098,10 @@ msgstr ""
 msgid "IV must be %d bytes long"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
@@ -1101,6 +1116,14 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
@@ -1213,7 +1236,8 @@ msgstr "Maling argumento"
 msgid "Invalid bits per value"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
 
@@ -1288,10 +1312,10 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -1340,7 +1364,8 @@ msgstr "Maling bilang ng voice"
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr ""
 
@@ -1467,6 +1492,7 @@ msgstr "Walang DAC sa chip"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Walang DMA channel na mahanap"
@@ -1532,6 +1558,14 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Walang support sa hardware ang pin"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in in program"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in or out in program"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1622,12 +1656,9 @@ msgid "Odd parity is not supported"
 msgstr "Odd na parity ay hindi supportado"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Tanging 8 o 16 na bit mono na may "
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1682,6 +1713,10 @@ msgstr ""
 msgid "Out of sockets"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
+
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Output buffer must be at least %d bytes"
@@ -1705,6 +1740,14 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 "PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1741,6 +1784,10 @@ msgstr "Ang pin ay walang kakayahan sa ADC"
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1834,7 +1881,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -1871,7 +1918,7 @@ msgstr "Basahin-lamang"
 msgid "Read-only filesystem"
 msgstr "Basahin-lamang mode"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 #, fuzzy
 msgid "Read-only object"
 msgstr "Basahin-lamang"
@@ -2105,6 +2152,7 @@ msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Sobra ang channels sa sample."
 
@@ -2144,10 +2192,6 @@ msgstr ""
 msgid "UART Re-init error"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr ""
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr ""
@@ -2174,6 +2218,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
@@ -2485,8 +2530,8 @@ msgid "binary op %q not implemented"
 msgstr "binary op %q hindi implemented"
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits ay dapat 7, 8 o 9"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2718,6 +2763,10 @@ msgstr "chr() arg wala sa sakop ng range(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
 msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
@@ -3384,6 +3433,10 @@ msgstr "nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
 msgid "memory allocation failed, heap is locked"
 msgstr "abigo ang paglalaan ng memorya, ang heap ay naka-lock"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module hindi nakita"
@@ -3727,6 +3780,7 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 
@@ -3806,6 +3860,7 @@ msgstr ""
 "'H', 'b' o'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "pagpili ng rate wala sa sakop"
 
@@ -3877,7 +3932,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr ""
 
@@ -4242,6 +4297,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits ay dapat 7, 8 o 9"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "Kailangan ng pull up resistors ang SDA o SCL"

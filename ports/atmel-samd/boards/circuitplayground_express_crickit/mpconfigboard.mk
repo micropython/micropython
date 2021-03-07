@@ -13,6 +13,7 @@ EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 # Turn off features and optimizations for Crickit build to make room for additional frozen libs.
 LONGINT_IMPL = NONE
 CIRCUITPY_BITBANGIO = 0
+CIRCUITPY_BITMAPTOOLS = 0
 CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_I2CPERIPHERAL = 0
@@ -22,7 +23,7 @@ CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 
 SUPEROPT_GC = 0
-CFLAGS_INLINE_LIMIT = 40
+SUPEROPT_VM = 0
 
 
 # Include these Python libraries in firmware.

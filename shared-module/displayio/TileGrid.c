@@ -74,6 +74,7 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     self->flip_x = false;
     self->flip_y = false;
     self->transpose_xy = false;
+    self->absolute_transform = NULL;
 }
 
 
@@ -104,23 +105,30 @@ bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_
 }
 
 void _update_current_x(displayio_tilegrid_t *self) {
-    int16_t width;
+    uint16_t width;
     if (self->transpose_xy) {
         width = self->pixel_height;
     } else {
         width = self->pixel_width;
     }
-    if (self->absolute_transform->transpose_xy) {
-        self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->x;
-        self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + width);
+
+    // If there's no transform, substitute an identity transform so the calculations will work.
+    const displayio_buffer_transform_t* absolute_transform =
+        self->absolute_transform  == NULL
+        ? &null_transform
+        : self->absolute_transform;
+
+    if (absolute_transform->transpose_xy) {
+        self->current_area.y1 = absolute_transform->y + absolute_transform->dy * self->x;
+        self->current_area.y2 = absolute_transform->y + absolute_transform->dy * (self->x + width);
         if (self->current_area.y2 < self->current_area.y1) {
             int16_t temp = self->current_area.y2;
             self->current_area.y2 = self->current_area.y1;
             self->current_area.y1 = temp;
         }
     } else {
-        self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->x;
-        self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + width);
+        self->current_area.x1 = absolute_transform->x + absolute_transform->dx * self->x;
+        self->current_area.x2 = absolute_transform->x + absolute_transform->dx * (self->x + width);
         if (self->current_area.x2 < self->current_area.x1) {
             int16_t temp = self->current_area.x2;
             self->current_area.x2 = self->current_area.x1;
@@ -130,23 +138,30 @@ void _update_current_x(displayio_tilegrid_t *self) {
 }
 
 void _update_current_y(displayio_tilegrid_t *self) {
-    int16_t height;
+    uint16_t height;
     if (self->transpose_xy) {
         height = self->pixel_width;
     } else {
         height = self->pixel_height;
     }
-    if (self->absolute_transform->transpose_xy) {
-        self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->y;
-        self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + height);
+
+    // If there's no transform, substitute an identity transform so the calculations will work.
+    const displayio_buffer_transform_t* absolute_transform =
+        self->absolute_transform  == NULL
+        ? &null_transform
+        : self->absolute_transform;
+
+    if (absolute_transform->transpose_xy) {
+        self->current_area.x1 = absolute_transform->x + absolute_transform->dx * self->y;
+        self->current_area.x2 = absolute_transform->x + absolute_transform->dx * (self->y + height);
         if (self->current_area.x2 < self->current_area.x1) {
             int16_t temp = self->current_area.x2;
             self->current_area.x2 = self->current_area.x1;
             self->current_area.x1 = temp;
         }
     } else {
-        self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->y;
-        self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + height);
+        self->current_area.y1 = absolute_transform->y + absolute_transform->dy * self->y;
+        self->current_area.y2 = absolute_transform->y + absolute_transform->dy * (self->y + height);
         if (self->current_area.y2 < self->current_area.y1) {
             int16_t temp = self->current_area.y2;
             self->current_area.y2 = self->current_area.y1;
