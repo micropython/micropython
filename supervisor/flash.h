@@ -31,7 +31,7 @@
 
 #include "py/mpconfig.h"
 
-#ifdef EXTERNAL_FLASH_DEVICE_COUNT
+#ifdef EXTERNAL_FLASH_DEVICES
 #include "supervisor/shared/external_flash/external_flash.h"
 #else
 #include "supervisor/shared/internal_flash.h"
