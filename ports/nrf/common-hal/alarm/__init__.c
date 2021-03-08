@@ -170,6 +170,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
+    int64_t tickdiff;
 
 #if defined(MICROPY_QSPI_CS)
     qspi_flash_enter_sleep();
@@ -182,7 +183,6 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
 	dbg_printf("now_ms=%ld timediff_ms=%ld\r\n", (long)now, (long)timediff_ms);
 #endif
 	if (timediff_ms < 0)  timediff_ms = 0;
-	int64_t tickdiff;
 	if (prescaler == 0) {
 	    // 1 tick = 1/1024 sec = 1000/1024 ms
 	    // -> 1 ms = 1024/1000 ticks
@@ -262,6 +262,18 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
 
 #if defined(MICROPY_QSPI_CS)
     qspi_flash_exit_sleep();
+#endif
+
+    tickdiff = port_get_raw_ticks(NULL) - start_tick;
+    if (prescaler == 0) {
+        timediff_ms = tickdiff / 1024;
+    }
+    else {
+        timediff_ms = tickdiff * prescaler / 1024;
+    }
+    (void)timediff_ms;
+#ifdef NRF_DEBUG_PRINT
+    dbg_printf("lapse %6.1f sec\r\n", (double)(timediff_ms));
 #endif
 
     return wakeup_cause;
@@ -368,10 +380,17 @@ void alarm_pretending_deep_sleep(void) {
 #ifdef NRF_DEBUG_PRINT
     dbg_printf("wakeup! ");
     print_wakeup_cause(cause);
-    dbg_printf("continue..\r\n");
 #endif
 
     alarm_reset();
+
+    // if one of Alarm event occurred, reset myself
+    if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
+	cause == NRF_SLEEP_WAKEUP_TIMER ||
+	cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
+        reset_cpu();
+    }
+    // else, just return and go into REPL
 }
 
 void common_hal_alarm_gc_collect(void) {
