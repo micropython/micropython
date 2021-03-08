@@ -761,7 +761,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3
 // Bluetooth object: GATTC (Central/Scanner role)
 // ----------------------------------------------------------------------------
 
-#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 STATIC mp_obj_t bluetooth_ble_gattc_discover_services(size_t n_args, const mp_obj_t *args) {
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
@@ -830,7 +830,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_exchange_mtu(mp_obj_t self_in, mp_obj_t conn
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_exchange_mtu_obj, bluetooth_ble_gattc_exchange_mtu);
 
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
@@ -921,15 +921,15 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
     { MP_ROM_QSTR(MP_QSTR_gap_passkey), MP_ROM_PTR(&bluetooth_ble_gap_passkey_obj) },
     #endif
-    // GATT Server (i.e. peripheral/advertiser role)
+    // GATT Server
     { MP_ROM_QSTR(MP_QSTR_gatts_register_services), MP_ROM_PTR(&bluetooth_ble_gatts_register_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_read), MP_ROM_PTR(&bluetooth_ble_gatts_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_write), MP_ROM_PTR(&bluetooth_ble_gatts_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_notify), MP_ROM_PTR(&bluetooth_ble_gatts_notify_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_indicate), MP_ROM_PTR(&bluetooth_ble_gatts_indicate_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_set_buffer), MP_ROM_PTR(&bluetooth_ble_gatts_set_buffer_obj) },
-    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-    // GATT Client (i.e. central/scanner role)
+    #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+    // GATT Client
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_services), MP_ROM_PTR(&bluetooth_ble_gattc_discover_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_characteristics), MP_ROM_PTR(&bluetooth_ble_gattc_discover_characteristics_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_descriptors), MP_ROM_PTR(&bluetooth_ble_gattc_discover_descriptors_obj) },
@@ -1067,6 +1067,8 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_DONE) {
             // No params required.
             data_tuple->len = 0;
+        #endif
+        #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT) {
             // conn_handle, start_handle, end_handle, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, &o->irq_data_uuid, NULL);
@@ -1085,7 +1087,7 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_DONE || event == MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE) {
             // conn_handle, value_handle, status
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, NULL, NULL);
-        #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+        #endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
         }
 
         MICROPY_PY_BLUETOOTH_EXIT
@@ -1228,7 +1230,7 @@ void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
-mp_int_t mp_bluetooth_gattc_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
+mp_int_t mp_bluetooth_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
     mp_int_t args[] = {conn_handle, cid, psm, our_mtu, peer_mtu};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_ACCEPT, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
     // Return non-zero from IRQ handler to fail the accept.
@@ -1237,22 +1239,22 @@ mp_int_t mp_bluetooth_gattc_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, 
     return ret;
 }
 
-void mp_bluetooth_gattc_on_l2cap_connect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
+void mp_bluetooth_on_l2cap_connect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
     mp_int_t args[] = {conn_handle, cid, psm, our_mtu, peer_mtu};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_CONNECT, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-void mp_bluetooth_gattc_on_l2cap_disconnect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t status) {
+void mp_bluetooth_on_l2cap_disconnect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t status) {
     mp_int_t args[] = {conn_handle, cid, psm, status};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_DISCONNECT, args, 4, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-void mp_bluetooth_gattc_on_l2cap_send_ready(uint16_t conn_handle, uint16_t cid, uint8_t status) {
+void mp_bluetooth_on_l2cap_send_ready(uint16_t conn_handle, uint16_t cid, uint8_t status) {
     mp_int_t args[] = {conn_handle, cid, status};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_SEND_READY, args, 3, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-void mp_bluetooth_gattc_on_l2cap_recv(uint16_t conn_handle, uint16_t cid) {
+void mp_bluetooth_on_l2cap_recv(uint16_t conn_handle, uint16_t cid) {
     mp_int_t args[] = {conn_handle, cid};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_RECV, args, 2, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
@@ -1267,7 +1269,9 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
     mp_int_t args[] = {addr_type, adv_type, rssi};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_SCAN_RESULT, args, 1, 2, addr, NULL_UUID, &data, &data_len, 1);
 }
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid) {
     mp_int_t args[] = {conn_handle, start_handle, end_handle};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT, args, 3, 0, NULL_ADDR, service_uuid, NULL_DATA, NULL_DATA_LEN, 0);
@@ -1325,7 +1329,7 @@ void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle
     invoke_irq_handler(event, args, 3, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 #else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 // Callbacks are called in interrupt context (i.e. can't allocate), so we need to push the data
@@ -1471,7 +1475,9 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
     }
     schedule_ringbuf(atomic_state);
 }
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid) {
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
@@ -1559,7 +1565,7 @@ void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle
     }
     schedule_ringbuf(atomic_state);
 }
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 #endif // MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 

@@ -742,11 +742,13 @@ void USART1_IRQHandler(void) {
     IRQ_EXIT(USART1_IRQn);
 }
 
+#if defined(USART2)
 void USART2_IRQHandler(void) {
     IRQ_ENTER(USART2_IRQn);
     uart_irq_handler(2);
     IRQ_EXIT(USART2_IRQn);
 }
+#endif
 
 #if defined(STM32F0)
 
@@ -772,29 +774,37 @@ void USART4_5_IRQHandler(void) {
 
 #else
 
+#if defined(USART3)
 void USART3_IRQHandler(void) {
     IRQ_ENTER(USART3_IRQn);
     uart_irq_handler(3);
     IRQ_EXIT(USART3_IRQn);
 }
+#endif
 
+#if defined(UART4)
 void UART4_IRQHandler(void) {
     IRQ_ENTER(UART4_IRQn);
     uart_irq_handler(4);
     IRQ_EXIT(UART4_IRQn);
 }
+#endif
 
+#if defined(UART5)
 void UART5_IRQHandler(void) {
     IRQ_ENTER(UART5_IRQn);
     uart_irq_handler(5);
     IRQ_EXIT(UART5_IRQn);
 }
+#endif
 
+#if defined(USART6)
 void USART6_IRQHandler(void) {
     IRQ_ENTER(USART6_IRQn);
     uart_irq_handler(6);
     IRQ_EXIT(USART6_IRQn);
 }
+#endif
 
 #if defined(UART7)
 void UART7_IRQHandler(void) {
@@ -828,6 +838,14 @@ void UART10_IRQHandler(void) {
 }
 #endif
 
+#endif
+
+#if defined(LPUART1)
+void LPUART1_IRQHandler(void) {
+    IRQ_ENTER(LPUART1_IRQn);
+    uart_irq_handler(PYB_LPUART_1);
+    IRQ_EXIT(LPUART1_IRQn);
+}
 #endif
 
 #if MICROPY_PY_PYB_LEGACY

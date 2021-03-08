@@ -8,3 +8,7 @@ x = 0x8000000000000000
 print((x + 1) // x)
 x = 0x86c60128feff5330
 print((x + 1) // x)
+
+# these check edge cases where borrow overflows
+print((2 ** 48 - 1) ** 2 // (2 ** 48 - 1))
+print((2 ** 256 - 2 ** 32) ** 2 // (2 ** 256 - 2 ** 32))

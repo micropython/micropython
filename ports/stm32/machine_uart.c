@@ -76,7 +76,14 @@
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
-        mp_printf(print, "UART(%u)", self->uart_id);
+        #ifdef LPUART1
+        if (self->uart_id == PYB_LPUART_1) {
+            mp_printf(print, "UART('LP1')");
+        } else
+        #endif
+        {
+            mp_printf(print, "UART(%u)", self->uart_id);
+        }
     } else {
         mp_int_t bits;
         uint32_t cr1 = self->uartx->CR1;
@@ -98,8 +105,16 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         if (cr1 & USART_CR1_PCE) {
             bits -= 1;
         }
-        mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-            self->uart_id, uart_get_baudrate(self), bits);
+        #ifdef LPUART1
+        if (self->uart_id == PYB_LPUART_1) {
+            mp_printf(print, "UART('LP1', baudrate=%u, bits=%u, parity=",
+                uart_get_baudrate(self), bits);
+        } else
+        #endif
+        {
+            mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
+                self->uart_id, uart_get_baudrate(self), bits);
+        }
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
         } else if (!(cr1 & USART_CR1_PS)) {
@@ -334,6 +349,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         #ifdef MICROPY_HW_UART10_NAME
         } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
             uart_id = PYB_UART_10;
+        #endif
+        #ifdef MICROPY_HW_LPUART1_NAME
+        } else if (strcmp(port, MICROPY_HW_LPUART1_NAME) == 0) {
+            uart_id = PYB_LPUART_1;
+        #endif
+        #ifdef LPUART1
+        } else if (strcmp(port, "LP1") == 0 && uart_exists(PYB_LPUART_1)) {
+            uart_id = PYB_LPUART_1;
         #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%s) doesn't exist"), port);

@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_ESP8266_GCCOLLECT_H
 #define MICROPY_INCLUDED_ESP8266_GCCOLLECT_H
 
+#include <stdint.h>
+
 extern uint32_t _text_start;
 extern uint32_t _text_end;
 extern uint32_t _irom0_text_start;

@@ -62,8 +62,6 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-
 // We have inlined IRQ functions for efficiency (they are generally
 // 1 machine instruction).
 //

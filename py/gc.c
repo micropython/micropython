@@ -49,7 +49,7 @@
 // detect untraced object still in use
 #define CLEAR_ON_SWEEP (0)
 
-#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
+#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / MP_BYTES_PER_OBJ_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
 // ATB = allocation table byte
@@ -118,9 +118,9 @@ void gc_init(void *start, void *end) {
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
     #if MICROPY_ENABLE_FINALISER
-    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
     #else
-    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     #endif
 
     MP_STATE_MEM(gc_alloc_table_start) = (byte *)start;

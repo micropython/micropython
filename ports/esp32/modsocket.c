@@ -46,7 +46,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
-#include "tcpip_adapter.h"
 #include "mdns.h"
 #include "modnetwork.h"
 
@@ -55,18 +54,6 @@
 #include "lwip/ip4.h"
 #include "lwip/igmp.h"
 #include "esp_log.h"
-
-#if !MICROPY_ESP_IDF_4
-#define lwip_bind lwip_bind_r
-#define lwip_listen lwip_listen_r
-#define lwip_accept lwip_accept_r
-#define lwip_setsockopt lwip_setsockopt_r
-#define lwip_fnctl lwip_fnctl_r
-#define lwip_recvfrom lwip_recvfrom_r
-#define lwip_write lwip_write_r
-#define lwip_sendto lwip_sendto_r
-#define lwip_close lwip_close_r
-#endif
 
 #define SOCKET_POLL_US (100000)
 #define MDNS_QUERY_TIMEOUT_MS (5000)
@@ -153,16 +140,6 @@ void usocket_events_handler(void) {
 
 #endif // MICROPY_PY_USOCKET_EVENTS
 
-NORETURN static void exception_from_errno(int _errno) {
-    // Here we need to convert from lwip errno values to MicroPython's standard ones
-    if (_errno == EADDRINUSE) {
-        _errno = MP_EADDRINUSE;
-    } else if (_errno == EINPROGRESS) {
-        _errno = MP_EINPROGRESS;
-    }
-    mp_raise_OSError(_errno);
-}
-
 static inline void check_for_exceptions(void) {
     mp_handle_pending(true);
 }
@@ -181,7 +158,12 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         memcpy(nodename_no_local, nodename, nodename_len - local_len);
         nodename_no_local[nodename_len - local_len] = '\0';
 
+        #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
         struct ip4_addr addr = {0};
+        #else
+        esp_ip4_addr_t addr = {0};
+        #endif
+
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
             if (err == ESP_ERR_NOT_FOUND) {
@@ -285,7 +267,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
 
     sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
     if (sock->fd < 0) {
-        exception_from_errno(errno);
+        mp_raise_OSError(errno);
     }
     _socket_settimeout(sock, UINT64_MAX);
 
@@ -299,7 +281,7 @@ STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {
     int r = lwip_bind(self->fd, res->ai_addr, res->ai_addrlen);
     lwip_freeaddrinfo(res);
     if (r < 0) {
-        exception_from_errno(errno);
+        mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
@@ -310,7 +292,7 @@ STATIC mp_obj_t socket_listen(const mp_obj_t arg0, const mp_obj_t arg1) {
     int backlog = mp_obj_get_int(arg1);
     int r = lwip_listen(self->fd, backlog);
     if (r < 0) {
-        exception_from_errno(errno);
+        mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
@@ -331,7 +313,7 @@ STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
             break;
         }
         if (errno != EAGAIN) {
-            exception_from_errno(errno);
+            mp_raise_OSError(errno);
         }
         check_for_exceptions();
     }
@@ -373,7 +355,7 @@ STATIC mp_obj_t socket_connect(const mp_obj_t arg0, const mp_obj_t arg1) {
     MP_THREAD_GIL_ENTER();
     lwip_freeaddrinfo(res);
     if (r != 0) {
-        exception_from_errno(errno);
+        mp_raise_OSError(errno);
     }
 
     return mp_const_none;
@@ -392,7 +374,7 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             int val = mp_obj_get_int(args[3]);
             int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &val, sizeof(int));
             if (ret != 0) {
-                exception_from_errno(errno);
+                mp_raise_OSError(errno);
             }
             break;
         }
@@ -543,7 +525,7 @@ mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
     int errcode;
     mp_uint_t ret = _socket_read_data(self_in, vstr.buf, len, from, from_len, &errcode);
     if (ret == MP_STREAM_ERROR) {
-        exception_from_errno(errcode);
+        mp_raise_OSError(errcode);
     }
 
     vstr.len = ret;
@@ -576,8 +558,9 @@ int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
         MP_THREAD_GIL_EXIT();
         int r = lwip_write(sock->fd, data + sentlen, datalen - sentlen);
         MP_THREAD_GIL_ENTER();
-        if (r < 0 && errno != EWOULDBLOCK) {
-            exception_from_errno(errno);
+        // lwip returns EINPROGRESS when trying to send right after a non-blocking connect
+        if (r < 0 && errno != EWOULDBLOCK && errno != EINPROGRESS) {
+            mp_raise_OSError(errno);
         }
         if (r > 0) {
             sentlen += r;
@@ -585,7 +568,7 @@ int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
         check_for_exceptions();
     }
     if (sentlen == 0) {
-        mp_raise_OSError(MP_ETIMEDOUT);
+        mp_raise_OSError(sock->retries == 0 ? MP_EWOULDBLOCK : MP_ETIMEDOUT);
     }
     return sentlen;
 }
@@ -635,7 +618,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
             return mp_obj_new_int_from_uint(ret);
         }
         if (ret == -1 && errno != EWOULDBLOCK) {
-            exception_from_errno(errno);
+            mp_raise_OSError(errno);
         }
         check_for_exceptions();
     }
@@ -668,7 +651,8 @@ STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_
         if (r > 0) {
             return r;
         }
-        if (r < 0 && errno != EWOULDBLOCK) {
+        // lwip returns MP_EINPROGRESS when trying to write right after a non-blocking connect
+        if (r < 0 && errno != EWOULDBLOCK && errno != EINPROGRESS) {
             *errcode = errno;
             return MP_STREAM_ERROR;
         }

@@ -34,13 +34,27 @@ import subprocess
 # Public functions to be used in the manifest
 
 
-def include(manifest):
+def include(manifest, **kwargs):
     """Include another manifest.
 
     The manifest argument can be a string (filename) or an iterable of
     strings.
 
     Relative paths are resolved with respect to the current manifest file.
+
+    Optional kwargs can be provided which will be available to the
+    included script via the `options` variable.
+
+    e.g. include("path.py", extra_features=True)
+
+    in path.py:
+        options.defaults(standard_features=True)
+
+        # freeze minimal modules.
+        if options.standard_features:
+            # freeze standard modules.
+        if options.extra_features:
+            # freeze extra modules.
     """
 
     if not isinstance(manifest, str):
@@ -53,7 +67,7 @@ def include(manifest):
             # Applies to includes and input files.
             prev_cwd = os.getcwd()
             os.chdir(os.path.dirname(manifest))
-            exec(f.read())
+            exec(f.read(), globals(), {"options": IncludeOptions(**kwargs)})
             os.chdir(prev_cwd)
 
 
@@ -123,6 +137,18 @@ KIND_MPY = 3
 VARS = {}
 
 manifest_list = []
+
+
+class IncludeOptions:
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
+        self._defaults = {}
+
+    def defaults(self, **kwargs):
+        self._defaults = kwargs
+
+    def __getattr__(self, name):
+        return self._kwargs.get(name, self._defaults.get(name, None))
 
 
 class FreezeError(Exception):

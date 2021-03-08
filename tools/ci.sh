@@ -82,38 +82,22 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_idf3_setup {
-    sudo pip3 install pyserial 'pyparsing<2.4'
-    curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar zxf -
+function ci_esp32_setup {
     git clone https://github.com/espressif/esp-idf.git
+    git -C esp-idf checkout v4.0.2
+    git -C esp-idf submodule update --init \
+        components/bt/controller/lib \
+        components/bt/host/nimble/nimble \
+        components/esp_wifi/lib_esp32 \
+        components/esptool_py/esptool \
+        components/lwip/lwip \
+        components/mbedtls/mbedtls
+    ./esp-idf/install.sh
 }
 
-function ci_esp32_idf3_path {
-    echo $(pwd)/xtensa-esp32-elf/bin
-}
-
-function ci_esp32_idf3_build {
+function ci_esp32_build {
+    source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
-    git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
-    git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2 components/nimble components/bt
-    make ${MAKEOPTS} -C ports/esp32 submodules
-    make ${MAKEOPTS} -C ports/esp32
-}
-
-function ci_esp32_idf4_setup {
-    sudo pip3 install pyserial 'pyparsing<2.4'
-    curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2019r2-linux-amd64.tar.gz | tar zxf -
-    git clone https://github.com/espressif/esp-idf.git
-}
-
-function ci_esp32_idf4_path {
-    echo $(pwd)/xtensa-esp32-elf/bin
-}
-
-function ci_esp32_idf4_build {
-    make ${MAKEOPTS} -C mpy-cross
-    git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V4 :=" ports/esp32/Makefile | cut -d " " -f 3)
-    git -C esp-idf submodule update --init components/bt/controller/lib components/bt/host/nimble/nimble components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
     make ${MAKEOPTS} -C ports/esp32 submodules
     make ${MAKEOPTS} -C ports/esp32
 }
@@ -195,8 +179,7 @@ function ci_rp2_setup {
 
 function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
-    git submodule update --init lib/pico-sdk
-    git -C lib/pico-sdk submodule update --init lib/tinyusb
+    git submodule update --init lib/pico-sdk lib/tinyusb
     make ${MAKEOPTS} -C ports/rp2
 }
 
@@ -240,6 +223,11 @@ function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55
+    # Test mboot_pack_dfu.py created a valid file, and that its unpack-dfu command works.
+    BOARD_WB55=ports/stm32/boards/NUCLEO_WB55
+    BUILD_WB55=ports/stm32/build-NUCLEO_WB55
+    python3 ports/stm32/mboot/mboot_pack_dfu.py -k $BOARD_WB55/mboot_keys.h unpack-dfu $BUILD_WB55/firmware.pack.dfu $BUILD_WB55/firmware.unpack.dfu
+    diff $BUILD_WB55/firmware.unpack.dfu $BUILD_WB55/firmware.dfu
 }
 
 ########################################################################################
@@ -472,27 +460,28 @@ function ci_windows_build {
 # ports/zephyr
 
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:v0.11.8
+    docker pull zephyrprojectrtos/ci:v0.11.13
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
-      -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.11.3 \
+      -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.12.2 \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
+      -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:v0.11.8
+      zephyrprojectrtos/ci:v0.11.13
     docker ps -a
 }
 
 function ci_zephyr_install {
-    docker exec zephyr-ci west init --mr v2.4.0 /zephyrproject
+    docker exec zephyr-ci west init --mr v2.5.0 /zephyrproject
     docker exec -w /zephyrproject zephyr-ci west update
     docker exec -w /zephyrproject zephyr-ci west zephyr-export
 }
 
 function ci_zephyr_build {
-    docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS}"
-    docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS} BOARD=frdm_k64f"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS}"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=frdm_k64f"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=mimxrt1050_evk"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=reel_board"
+    docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
+    docker exec zephyr-ci west build -p auto -b frdm_k64f -- -DCONF_FILE=prj_minimal.conf
+    docker exec zephyr-ci west build -p auto -b qemu_x86
+    docker exec zephyr-ci west build -p auto -b frdm_k64f
+    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
+    docker exec zephyr-ci west build -p auto -b reel_board
 }

@@ -34,9 +34,6 @@
 #include "mpthreadport.h"
 
 #include "esp_task.h"
-#if !MICROPY_ESP_IDF_4
-#include "freertos/semphr.h"
-#endif
 
 #if MICROPY_PY_THREAD
 

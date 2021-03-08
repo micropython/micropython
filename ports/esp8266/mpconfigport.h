@@ -135,7 +135,6 @@ typedef uint32_t sys_prot_t; // for modlwip
 // ssize_t, off_t as required by POSIX-signatured functions in stream.h
 #include <sys/types.h>
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 

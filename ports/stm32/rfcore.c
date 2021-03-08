@@ -548,30 +548,30 @@ static const struct {
     uint16_t AttMtu;
     uint16_t SlaveSca;
     uint8_t MasterSca;
-    uint8_t LsSource;               // 0=LSE 1=internal RO
+    uint8_t LsSource;
     uint32_t MaxConnEventLength;
     uint16_t HsStartupTime;
     uint8_t ViterbiEnable;
-    uint8_t LlOnly;                 // 0=LL+Host, 1=LL only
+    uint8_t LlOnly;
     uint8_t HwVersion;
 } ble_init_params = {
-    0,
-    0,
-    0, // NumAttrRecord
-    0, // NumAttrServ
-    0, // AttrValueArrSize
-    1, // NumOfLinks
-    1, // ExtendedPacketLengthEnable
-    0, // PrWriteListSize
-    0x79, // MblockCount
-    0, // AttMtu
-    0, // SlaveSca
-    0, // MasterSca
-    1, // LsSource
-    0xffffffff, // MaxConnEventLength
-    0x148, // HsStartupTime
-    0, // ViterbiEnable
-    1, // LlOnly
+    0, // pBleBufferAddress
+    0, // BleBufferSize
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES,
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES,
+    MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE,
+    MICROPY_HW_RFCORE_BLE_NUM_LINK,
+    MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION,
+    MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE,
+    MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT,
+    MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU,
+    MICROPY_HW_RFCORE_BLE_SLAVE_SCA,
+    MICROPY_HW_RFCORE_BLE_MASTER_SCA,
+    MICROPY_HW_RFCORE_BLE_LSE_SOURCE,
+    MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH,
+    MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME,
+    MICROPY_HW_RFCORE_BLE_VITERBI_MODE,
+    MICROPY_HW_RFCORE_BLE_LL_ONLY,
     0, // HwVersion
 };
 

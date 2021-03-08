@@ -206,7 +206,7 @@ void mp_thread_start(void) {
 void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // default stack size is 8k machine-words
     if (*stack_size == 0) {
-        *stack_size = 8192 * BYTES_PER_WORD;
+        *stack_size = 8192 * sizeof(void *);
     }
 
     // minimum stack size is set by pthreads

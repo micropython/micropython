@@ -201,8 +201,6 @@
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
-
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
@@ -331,8 +329,6 @@ extern const struct _mp_obj_module_t ble_module;
         mp_handle_pending(true); \
         __WFI(); \
     } while (0);
-
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

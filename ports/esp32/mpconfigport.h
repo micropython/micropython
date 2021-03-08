@@ -8,10 +8,6 @@
 #include <alloca.h>
 #include "esp_system.h"
 
-#if !MICROPY_ESP_IDF_4
-#include "rom/ets_sys.h"
-#endif
-
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
 #define MICROPY_NLR_SETJMP                  (1)
@@ -55,7 +51,7 @@
 #define MICROPY_MODULE_FROZEN_MPY           (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
-#define MICROPY_USE_INTERNAL_ERRNO          (1)
+#define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
@@ -126,6 +122,12 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
 // extended modules
+#ifndef MICROPY_PY_BLUETOOTH
+#define MICROPY_PY_BLUETOOTH                (1)
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#define MICROPY_BLUETOOTH_NIMBLE            (1)
+#define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
+#endif
 #define MICROPY_PY_UASYNCIO                 (1)
 #define MICROPY_PY_UCTYPES                  (1)
 #define MICROPY_PY_UZLIB                    (1)
@@ -286,9 +288,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 #define MP_SSIZE_MAX (0x7fffffff)

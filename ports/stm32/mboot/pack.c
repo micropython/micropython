@@ -61,10 +61,14 @@ static uint8_t uncompressed_buf[MBOOT_PACK_GZIP_BUFFER_SIZE] __attribute__((alig
 // that a double-word write to flash can only be done once (due to ECC).
 static uint8_t firmware_head[8];
 
+// Flag to indicate that firmware_head contains valid data.
+static bool firmware_head_valid;
+
 void mboot_pack_init(void) {
     erased_base_addr = 0;
     erased_top_addr = 0;
     firmware_chunk_base_addr = 0;
+    firmware_head_valid = false;
 }
 
 // In encrypted mode the erase is automatically managed.
@@ -103,6 +107,7 @@ static int mboot_pack_commit_chunk(uint32_t addr, uint8_t *data, size_t len) {
         addr += sizeof(firmware_head);
         data += sizeof(firmware_head);
         len -= sizeof(firmware_head);
+        firmware_head_valid = true;
     }
 
     // Commit this piece of the firmware.
@@ -131,7 +136,7 @@ static int mboot_pack_handle_full_sig(void) {
         while (len) {
             uint32_t l = len <= buf_alloc ? len : buf_alloc;
             hw_read(addr, l, buf);
-            if (addr == APPLICATION_ADDR) {
+            if (addr == APPLICATION_ADDR && firmware_head_valid) {
                 // The start of the firmware was not yet written to flash so copy
                 // it out of the temporary buffer to compute the full signature.
                 memcpy(buf, firmware_head, sizeof(firmware_head));
@@ -154,8 +159,13 @@ static int mboot_pack_handle_full_sig(void) {
     }
 
     // Full firmware passed the signature check.
-    // Write the start of the firmware so it boots.
-    return hw_write(APPLICATION_ADDR, firmware_head, sizeof(firmware_head));
+
+    if (firmware_head_valid) {
+        // Write the start of the firmware so it boots.
+        ret = hw_write(APPLICATION_ADDR, firmware_head, sizeof(firmware_head));
+    }
+
+    return ret;
 }
 
 // Handle a chunk with firmware data.

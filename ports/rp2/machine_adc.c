@@ -78,7 +78,10 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         }
     }
 
-    adc_init();
+    // Initialise the ADC peripheral if it's not already running.
+    if (!(adc_hw->cs & ADC_CS_EN_BITS)) {
+        adc_init();
+    }
 
     if (ADC_IS_VALID_GPIO(channel)) {
         // Configure the GPIO pin in ADC mode.
