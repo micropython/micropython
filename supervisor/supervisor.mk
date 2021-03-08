@@ -34,7 +34,6 @@ endif
 # But that might not be true in the future.)
 ifdef EXTERNAL_FLASH_DEVICES
   CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
-	    -DEXTERNAL_FLASH_DEVICE_COUNT=$(EXTERNAL_FLASH_DEVICE_COUNT)
 
   SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
     ifeq ($(SPI_FLASH_FILESYSTEM),1)
