@@ -40,9 +40,7 @@
 //|
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `usb_cdc.Serial`.
-//|
-//|         Serial objects are pre-constructed for each CDC device in the USB
-//|         descriptor and are included in the ``usb_cdc.serials`` tuple."""
+//|         The available instances are in the ``usb_cdc.serials`` tuple."""
 //|         ...
 //|
 //|     def read(self, size: int = 1) -> bytes:
@@ -63,21 +61,21 @@
 //|         :rtype: bytes"""
 //|         ...
 //|
-//|     def readline(self, size=-1) -> Optional[bytes]:
-//|         r"""Read a line, ending in a newline character ("\\n"), or
-//|         return everything readable if no newline is found and ``timeout`` is 0.
+//|     def readline(self, size: int = -1) -> Optional[bytes]:
+//|         r"""Read a line ending in a newline character ("\\n"), including the newline.
+//|         Return everything readable if no newline is found and ``timeout`` is 0.
 //|         Return ``None`` in case of error.
 //|
 //|         This is a binary stream: the newline character "\\n" cannot be changed.
-//|         If the host computer transmits "\\r" it will be included as part of the line.
+//|         If the host computer transmits "\\r" it will also be included as part of the line.
 //|
 //|         :param int size: maximum number of characters to read. ``-1`` means as many as possible.
 //|         :return: the line read
 //|         :rtype: bytes or None"""
 //|         ...
 //|
-//|     def readlines(self) -> list:
-//|         """Read multiple lines as a list, using `readline()`
+//|     def readlines(self) -> List[Optional[bytes]]:
+//|         """Read multiple lines as a list, using `readline()`.
 //|
 //|         .. warning:: If ``timeout`` is ``None``,
 //|           `readlines()` will never return, because there is no way to indicate end of stream.
