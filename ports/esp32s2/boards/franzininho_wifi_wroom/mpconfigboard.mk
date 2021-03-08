@@ -1,6 +1,6 @@
 USB_VID = 0x303A
-USB_PID = 0x80AD
-USB_PRODUCT = "Franzininho WIFI w/Wrover"
+USB_PID = 0x80AA
+USB_PRODUCT = "Franzininho WIFI w/Wroom"
 USB_MANUFACTURER = "Espressif"
 
 INTERNAL_FLASH_FILESYSTEM = 1
