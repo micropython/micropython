@@ -1069,10 +1069,6 @@ msgstr "Fallo Genérico"
 msgid "Group already used"
 msgstr "Grupo ya está siendo utilizado"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Group lleno"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1114,7 +1110,8 @@ msgstr "IV debe tener %d bytes de longitud"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr "Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
+msgstr ""
+"Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
 
 #: py/persistentcode.c
 msgid ""
@@ -1836,6 +1833,10 @@ msgstr ""
 "El pinout utiliza %d bytes por elemento, lo que consume más de los %d bytes "
 "ideales. Si esto no se puede evitar, pase allow_inefficient=True al "
 "constructor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -3839,6 +3840,10 @@ msgstr "presionando botón de arranque al inicio.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "presionando ambos botones al inicio.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "pull_threshold debe esta entre 1 y 32"
@@ -4341,6 +4346,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Group full"
+#~ msgstr "Group lleno"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""

@@ -1059,10 +1059,6 @@ msgstr "Generiskt fel"
 msgid "Group already used"
 msgstr "Grupp används redan"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Gruppen är full"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1818,6 +1814,10 @@ msgstr ""
 "Pinout använder %d byte per element, vilket förbrukar mer än det idealiska "
 "%d byte.  Om detta inte kan undvikas, skicka allow_inefficient=True till "
 "konstruktorn"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -3808,6 +3808,10 @@ msgstr "trycka på startknappen vid start.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "trycka båda knapparna vid uppstart.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "pull_threshold måste vara mellan 1 och 32"
@@ -4309,6 +4313,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Group full"
+#~ msgstr "Gruppen är full"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"

@@ -1072,10 +1072,6 @@ msgstr "Falha Genérica"
 msgid "Group already used"
 msgstr "O grupo já está em uso"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Grupo cheio"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1838,6 +1834,10 @@ msgstr ""
 "A pinagem utiliza %d bytes por elemento, que consome mais do que %d bytes do "
 "ideal. Caso isso não possa ser evitado, passe allow_inefficient=True ao "
 "construtor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -3851,6 +3851,10 @@ msgstr "pressionando o botão de boot na inicialização.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "pressionando ambos os botões durante a inicialização.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "O pull_threshold deve ser entre 1 e 32"
@@ -4352,6 +4356,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Group full"
+#~ msgstr "Grupo cheio"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr "No buffer, os elementos devem ter 4 bytes ou menos"

@@ -1058,10 +1058,6 @@ msgstr "tōng yòng gù zhàng"
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Fēnzǔ yǐ mǎn"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1819,6 +1815,10 @@ msgstr ""
 "Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng "
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -3804,6 +3804,10 @@ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
@@ -4305,6 +4309,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Group full"
+#~ msgstr "Fēnzǔ yǐ mǎn"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""
