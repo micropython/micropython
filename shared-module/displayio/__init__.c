@@ -26,6 +26,20 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
+displayio_buffer_transform_t null_transform = {
+    .x = 0,
+    .y = 0,
+    .dx = 1,
+    .dy = 1,
+    .scale = 1,
+    .width = 0,
+    .height = 0,
+    .mirror_x = false,
+    .mirror_y = false,
+    .transpose_xy = false
+};
+
+
 #if CIRCUITPY_RGBMATRIX
 STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {

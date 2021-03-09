@@ -51,6 +51,8 @@ typedef struct {
     bool transpose_xy;
 } displayio_buffer_transform_t;
 
+extern displayio_buffer_transform_t null_transform;
+
 void displayio_area_union(const displayio_area_t* a,
                           const displayio_area_t* b,
                           displayio_area_t* u);

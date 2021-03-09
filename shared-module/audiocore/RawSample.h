@@ -39,7 +39,6 @@ typedef struct {
     bool samples_signed;
     uint8_t channel_count;
     uint32_t sample_rate;
-    bool buffer_read;
 } audioio_rawsample_obj_t;
 
 

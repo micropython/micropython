@@ -43,7 +43,6 @@ void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
     self->len = len;
     self->channel_count = channel_count;
     self->sample_rate = sample_rate;
-    self->buffer_read = false;
 }
 
 void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t* self) {
