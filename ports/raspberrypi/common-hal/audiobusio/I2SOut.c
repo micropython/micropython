@@ -122,6 +122,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
         NULL, 0,
         data, 1, 0, 0xffffffff, // out pin
         NULL, 0, // in pins
+        0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         bit_clock, 2, 0, 0x1f, // sideset pins
         true, // exclusive pin use

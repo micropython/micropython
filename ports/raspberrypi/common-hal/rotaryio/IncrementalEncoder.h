@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "bindings/rp2pio/__init__.h"
+#pragma once
 
-bool common_hal_rp2pio_pins_are_sequential(size_t len, mp_obj_t *items) {
-    if(len == 0) {
-        return true;
-    }
-    mcu_pin_obj_t *last_pin = validate_obj_is_pin(items[0]);
-    for(int i=1; i<len; i++) {
-        mcu_pin_obj_t *pin = validate_obj_is_pin(items[i]);
-        if (pin->number != last_pin->number + 1) {
-            return false;
-        }
-    }
-    return true;
-}
+#include "common-hal/rp2pio/StateMachine.h"
+#include "common-hal/microcontroller/Pin.h"
+
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    rp2pio_statemachine_obj_t state_machine;
+    uint8_t last_state:4;   // <old A><old B><new A><new B>
+    int8_t quarter_count:4; // count intermediate transitions between detents
+    mp_int_t position;
+} rotaryio_incrementalencoder_obj_t;
