@@ -51,10 +51,3 @@
 #define MICROPY_QSPI_SCK            NRF_GPIO_PIN_MAP(0, 19) // Labeled 'SPI_SCK1/SDIO_CLK' in schematic.
 #define MICROPY_QSPI_CS             NRF_GPIO_PIN_MAP(0, 12) // Labeled 'FLASH_CS' in schematic.
 #endif // QSPI_FLASH_FILESYSTEM
-
-#if SPI_FLASH_FILESYSTEM
-#define SPI_FLASH_MOSI_PIN          (&pin_P0_14)
-#define SPI_FLASH_MISO_PIN          (&pin_P0_21)
-#define SPI_FLASH_SCK_PIN           (&pin_P0_19)
-#define SPI_FLASH_CS_PIN            (&pin_P0_12)
-#endif // SPI_FLASH_FILESYSTEM
