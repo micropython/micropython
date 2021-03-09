@@ -129,11 +129,21 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t *code_sta
 #endif
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
+#if MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+    #define ONE_TRUE_DISPATCH() one_true_dispatch: do { \
+        TRACE(ip); \
+        MARK_EXC_IP_GLOBAL(); \
+        goto *(void*)((char*)&&entry_MP_BC_LOAD_CONST_FALSE + entry_table[*ip++]); \
+    } while (0)
+    #define DISPATCH() do { goto one_true_dispatch; } while(0)
+#else
     #define DISPATCH() do { \
         TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
     } while (0)
+    #define ONE_TRUE_DISPATCH() DISPATCH()
+#endif
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
@@ -199,7 +209,7 @@ outer_dispatch_loop:
             for (;;) {
 dispatch_loop:
 #if MICROPY_OPT_COMPUTED_GOTO
-                DISPATCH();
+                ONE_TRUE_DISPATCH();
 #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
