@@ -68,6 +68,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         NULL, 0,
         NULL, 1, 0, 0xffffffff, // out pin
         data_pin, 1, // in pins
+        0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         clock_pin, 1, 0, 0x1f, // sideset pins
         true, // exclusive pin use
@@ -92,6 +93,7 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     if (common_hal_audiobusio_pdmin_deinited(self)) {
         return;
     }
+    return common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {

@@ -67,6 +67,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
         NULL, 0, // init program
         NULL, 1, // out
         NULL, 1, // in
+        0, 0, // in pulls
         NULL, 1, // set
         digitalinout->pin, 1, // sideset
         0, pins_we_use, // initial pin state
