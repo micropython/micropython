@@ -152,20 +152,19 @@ void common_hal_pulseio_pulsein_interrupt() {
            last_level = level;
            level_count = 1;
            // ignore pulses that are too long and too short
-           if (result < 2000 && result > 10) {
+           if (result < 4000 && result > 10) {
                self->buffer[buf_index] = result;
                buf_index++;
                self->len++;
              }
            }
        }
-        gpio_put(pin_GPIO15.number, true);
 // clear interrupt
     irq_clear(self->pio_interrupt);
     hw_clear_bits(&self->state_machine.pio->inte0, 1u << self->state_machine.state_machine);
     self->state_machine.pio->irq = 1u << self->state_machine.state_machine;
-// check for a pulse thats too long (2000 us) and reset
-    if ( level_count > 2000 ) {
+// check for a pulse thats too long (2000 us) or maxlen reached,  and reset
+    if (( level_count > 4000 ) || (buf_index >= self->maxlen)) {
        pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
        pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
        pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
