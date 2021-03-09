@@ -72,6 +72,13 @@ elif STEP == 3:
         f.write("STEP=4\\nEXPECT=\\"" + nxt.info()[4] + "\\"\\n")
     machine.reset()
 elif STEP == 4:
+    log("Mark app invalid and revert to the previous valid app!")
+    nxt = cur.get_next_update()
+    with open("step.py", "w") as f:
+        f.write("STEP=5\\nEXPECT=\\"" + nxt.info()[4] + "\\"\\n")
+    Partition.mark_app_invalid_rollback_and_reboot()
+    machine.reset()
+elif STEP == 5:
     log("Confirming boot ok and DONE!")
     Partition.mark_app_valid_cancel_rollback()
     import uos

@@ -105,14 +105,28 @@ methods to enable over-the-air (OTA) updates.
 
 .. classmethod:: Partition.mark_app_valid_cancel_rollback()
 
-    Signals that the current boot is considered successful.
-    Calling ``mark_app_valid_cancel_rollback`` is required on the first boot of a new
-    partition to avoid an automatic rollback at the next boot.
+    Signals that the current boot is considered successful by writing to the "otadata"
+    partition. Calling ``mark_app_valid_cancel_rollback`` is required on the first boot of a
+    new partition to avoid an automatic rollback at the next boot.
     This uses the ESP-IDF "app rollback" feature with "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
     and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
     feature enabled.
     It is OK to call ``mark_app_valid_cancel_rollback`` on every boot and it is not
     necessary when booting firmare that was loaded using esptool.
+
+.. classmethod:: Partition.mark_app_invalid_rollback_and_reboot()
+
+    Mark the current app partition invalid, rollback to the previous workable partition that
+    was marked as valid with ``mark_app_valid_cancel_rollback()`` and then reboots.
+    If the rollback is sucessfull, the device will reset.  If the flash does not have 
+    at least one valid app (except the running app) then rollback is not possible.
+    If the "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE" option is set, and a reset occurs without
+    calling either 
+    ``mark_app_valid_cancel_rollback()`` or ``mark_app_invalid_rollback_and_reboot()``
+    function then the application is rolled back.
+    This uses the ESP-IDF "app rollback" feature with "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
+    and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
+    feature enabled.
 
 Constants
 ~~~~~~~~~

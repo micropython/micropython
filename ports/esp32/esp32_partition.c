@@ -218,6 +218,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mark_app_valid_cancel_rollback_
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_partition_mark_app_valid_cancel_rollback_obj,
     MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_fun_obj));
 
+STATIC mp_obj_t esp32_partition_mark_app_invalid_rollback_and_reboot(mp_obj_t cls_in) {
+    check_esp_err(esp_ota_mark_app_invalid_rollback_and_reboot());
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_mark_app_invalid_rollback_and_reboot_fun_obj,
+    esp32_partition_mark_app_invalid_rollback_and_reboot);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(esp32_mark_app_invalid_rollback_and_reboot_obj,
+    MP_ROM_PTR(&esp32_partition_mark_app_invalid_rollback_and_reboot_fun_obj));
+
 STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&esp32_partition_find_obj) },
 
@@ -228,6 +237,7 @@ STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_set_boot), MP_ROM_PTR(&esp32_partition_set_boot_obj) },
     { MP_ROM_QSTR(MP_QSTR_mark_app_valid_cancel_rollback), MP_ROM_PTR(&esp32_partition_mark_app_valid_cancel_rollback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mark_app_invalid_rollback_and_reboot), MP_ROM_PTR(&esp32_mark_app_invalid_rollback_and_reboot_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_next_update), MP_ROM_PTR(&esp32_partition_get_next_update_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_INT(ESP32_PARTITION_BOOT) },
