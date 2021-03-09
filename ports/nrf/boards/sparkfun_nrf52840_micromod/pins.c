@@ -68,12 +68,18 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_P0_28) },       // 0.28 - SCK  | SPI_SCK (AIN4)
     { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_P0_20) },        // 0.20 - /CS  | SPI_/CS
 
-    // QSPI, used by flash on this board, but is broken out on MicroMod connector.
-    { MP_ROM_QSTR(MP_QSTR_SPI_SCK1), MP_ROM_PTR(&pin_P0_19) },  // 0.00 - IOSCK | Flash Serial Clock
-    { MP_ROM_QSTR(MP_QSTR_SPI_COPI1), MP_ROM_PTR(&pin_P0_14) }, // 0.00 - IO0 | Flash Data 0
-    { MP_ROM_QSTR(MP_QSTR_SPI_CIPO1), MP_ROM_PTR(&pin_P0_21) }, // 0.00 - IO1 | Flash Data 1
-    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA2), MP_ROM_PTR(&pin_P0_23) },// 0.00 - IO2 | Flash Data 2
-    { MP_ROM_QSTR(MP_QSTR_SPI_CS1), MP_ROM_PTR(&pin_P1_00) },   // 0.00 - IO3 | Flash Data 3
+    // QSPI, used by flash on this board, but is broken out
+    // on the MicroMod connector, to to the SDIO pins.
+    { MP_ROM_QSTR(MP_QSTR_SDIO_CLK), MP_ROM_PTR(&pin_P0_19) },  // 0.00 - SDIO SCK | Used as: QSPI flash SCK
+    { MP_ROM_QSTR(MP_QSTR_SPI_SCK1), MP_ROM_PTR(&pin_P0_19) },  //              SPI_SCK1 alias
+    { MP_ROM_QSTR(MP_QSTR_SDIO_CMD), MP_ROM_PTR(&pin_P0_14) },  // 0.00 - SDIO CMD | Used as: QSPI flash D0 (or SDI)
+    { MP_ROM_QSTR(MP_QSTR_SPI_COPI1), MP_ROM_PTR(&pin_P0_14) },  //             SPI_COPI1 alias
+    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA0), MP_ROM_PTR(&pin_P0_21) },// 0.00 - SDIO DATA0 | Used as: QSPI flash D1 (or SDO)
+    { MP_ROM_QSTR(MP_QSTR_SPI_CIPO1), MP_ROM_PTR(&pin_P0_21) },  //             SPI_CIPO1 alias
+    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA1), MP_ROM_PTR(&pin_P0_22) },// 0.00 - SDIO DATA1 | Unused for flash.
+    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA2), MP_ROM_PTR(&pin_P0_23) },// 0.00 - SDIO DATA2 | Used as: QSPI flash D2
+    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA3), MP_ROM_PTR(&pin_P1_00) },// 0.00 - SDIO DATA3 | Use das: QSPI flash D3 (or /HOLD)
+    { MP_ROM_QSTR(MP_QSTR_SPI_CS1), MP_ROM_PTR(&pin_P1_00) },   //              SPI_CS1 alias
 
     // Reset Pin
     { MP_ROM_QSTR(MP_QSTR_RESET), MP_ROM_PTR(&pin_P1_14) },     // 0.18 - /RESET (NRESET)
