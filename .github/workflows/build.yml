@@ -451,6 +451,7 @@ jobs:
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
         - "franzininho_wifi_wroom"
+        - "franzininho_wifi_wrover"
         - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
