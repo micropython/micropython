@@ -189,6 +189,9 @@ typedef enum {
     MP_IMPORT_STAT_NO_EXIST,
     MP_IMPORT_STAT_DIR,
     MP_IMPORT_STAT_FILE,
+    #if MICROPY_MODULE_LOADDYNLIB
+    MP_IMPORT_STAT_PYD
+    #endif
 } mp_import_stat_t;
 
 mp_import_stat_t mp_import_stat(const char *path);
