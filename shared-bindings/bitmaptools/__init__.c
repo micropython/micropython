@@ -243,12 +243,160 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
+//|
+//| def fill_region(
+//|        dest_bitmap: displayio.Bitmap,
+//|        x1: int, y1: int,
+//|        x2: int, y2: int,
+//|        value: int) -> None:
+//|      """Draws the color value into the destination bitmap within the
+//|      rectangular region bounded by (x1,y1) and (x2,y2), exclusive.
+//|
+//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|      :param int x1: x-pixel position of the first corner of the rectangular fill region
+//|      :param int y1: y-pixel position of the first corner of the rectangular fill region
+//|      :param int x2: x-pixel position of the second corner of the rectangular fill region
+//|      :param int y2: y-pixel position of the second corner of the rectangular fill region
+//|      :param int value: Bitmap palette index that will be written into the rectangular
+//|             fill region in the destination bitmap"""
+//|      ...
+//|
+STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+    enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+            mp_raise_ValueError(translate("out of range of target"));
+        }
+
+    int16_t x1 = args[ARG_x1].u_int;
+    int16_t y1 = args[ARG_y1].u_int;
+    int16_t x2 = args[ARG_x2].u_int;
+    int16_t y2 = args[ARG_y2].u_int;
+
+    // Ensure x1 < x2 and y1 < y2
+    if (x1 > x2) {
+        int16_t temp=x2;
+        x2=x1;
+        x1=temp;
+    }
+    if (y1 > y2) {
+        int16_t temp=y2;
+        y2=y1;
+        y1=temp;
+    }
+
+    // constrain to bitmap dimensions
+    if (x1 < 0) {
+        x1 = 0;
+    } else if (x1 > destination->width) {
+        x1 = destination->width;
+    }
+    if (x2 < 0) {
+        x2 = 0;
+    } else if (x2 > destination->width) {
+        x2 = destination->width;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    } else if (y1 > destination->height) {
+        y1 = destination->height;
+    }
+    if (y2 < 0) {
+        y2 = 0;
+    } else if (y2 > destination->height) {
+        y2 = destination->height;
+    }
+
+    common_hal_bitmaptools_fill_region(destination, x1, y1, x2, y2, value);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_region);
+// requires all 6 arguments
+
+//|
+//| def draw_line(
+//|        dest_bitmap: displayio.Bitmap,
+//|        x1: int, y1: int,
+//|        x2: int, y2: int,
+//|        value: int) -> None:
+//|      """Draws a line into a bitmap specified two endpoints (x1,y1) and (x2,y2).
+//|
+//|      :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|      :param int x1: x-pixel position of the line's first endpoint
+//|      :param int y1: y-pixel position of the line's first endpoint
+//|      :param int x2: x-pixel position of the line's second endpoint
+//|      :param int y2: y-pixel position of the line's second endpoint
+//|      :param int value: Bitmap palette index that will be written into the
+//|             line in the destination bitmap"""
+//|      ...
+//|
+STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+    enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+
+    uint32_t value, color_depth;
+    value = args[ARG_value].u_int;
+    color_depth = (1 << destination->bits_per_value);
+    if (color_depth <= value) {
+            mp_raise_ValueError(translate("out of range of target"));
+        }
+
+    int16_t x1 = args[ARG_x1].u_int;
+    int16_t y1 = args[ARG_y1].u_int;
+    int16_t x2 = args[ARG_x2].u_int;
+    int16_t y2 = args[ARG_y2].u_int;
+
+    // verify points are within the bitmap boundary (inclusive)
+    if ( (x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
+         (x1 >= destination->width)  || (x2 >= destination->width) ||
+         (y1 >= destination->height) || (y2 >= destination->height) ) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+
+    common_hal_bitmaptools_draw_line(destination, x1, y1, x2, y2, value);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
+// requires all 6 arguments
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
+    { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
-
 
 const mp_obj_module_t bitmaptools_module = {
     .base = {&mp_type_module },

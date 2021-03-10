@@ -1042,10 +1042,6 @@ msgstr ""
 msgid "Group already used"
 msgstr ""
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -3643,7 +3639,7 @@ msgstr ""
 msgid "out of range of source"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr ""
 
