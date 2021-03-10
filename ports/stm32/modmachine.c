@@ -90,6 +90,10 @@
 #define PYB_RESET_HARD      (2)
 #define PYB_RESET_WDT       (3)
 #define PYB_RESET_DEEPSLEEP (4)
+#if defined(STM32F7)
+#define PYB_RESET_DEEPSLEEP_X1 (5)
+#define PYB_RESET_DEEPSLEEP_X18 (6)
+#endif
 
 STATIC uint32_t reset_cause;
 
@@ -105,6 +109,14 @@ void machine_init(void) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->CR1 |= PWR_CR1_CSBF;
+	if (PWR->CSR2 & PWR_CSR2_WUPF1) {
+	    reset_cause = PYB_RESET_DEEPSLEEP_X1;
+	    PWR->CR2 |= PWR_CR2_CWUPF1;
+	} else if (PWR->CSR2 & PWR_CSR2_WUPF4) {
+	    reset_cause = PYB_RESET_DEEPSLEEP_X18;
+	    PWR->CR2 |= PWR_CR2_CWUPF4;
+	}
+
     } else
     #elif defined(STM32H7)
     if (PWR->CPUCR & PWR_CPUCR_SBF || PWR->CPUCR & PWR_CPUCR_STOPF) {
@@ -376,6 +388,7 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_standby_mode();
     return mp_const_none;
 }
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(void) {
@@ -448,6 +461,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) },
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) },
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) },
+    #if defined(STM32F7)
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_X1_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP_X1) },
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_X18_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP_X18) },
+    #endif
     #if 0
     { MP_ROM_QSTR(MP_QSTR_WLAN_WAKE),           MP_ROM_INT(PYB_SLP_WAKED_BY_WLAN) },
     { MP_ROM_QSTR(MP_QSTR_PIN_WAKE),            MP_ROM_INT(PYB_SLP_WAKED_BY_GPIO) },
