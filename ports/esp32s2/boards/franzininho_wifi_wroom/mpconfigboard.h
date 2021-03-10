@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+//Micropython setup
 
-#include "common-hal/digitalio/DigitalInOut.h"
+#define MICROPY_HW_BOARD_NAME       "Franzininho WIFI w/Wroom"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "py/obj.h"
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t scl;
-    digitalio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    uint32_t us_timeout;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t clock;
-    digitalio_digitalinout_obj_t mosi;
-    digitalio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#define AUTORESET_DELAY_MS 500

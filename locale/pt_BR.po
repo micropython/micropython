@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-09 16:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -1072,10 +1072,6 @@ msgstr "Falha Genérica"
 msgid "Group already used"
 msgstr "O grupo já está em uso"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Grupo cheio"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1116,8 +1112,8 @@ msgid "IV must be %d bytes long"
 msgstr "O IV deve ter %d bytes de comprimento"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr "No buffer, os elementos devem ter 4 bytes ou menos"
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr "Os elementos In-buffer devem ter um comprimento de <= 4 bytes"
 
 #: py/persistentcode.c
 msgid ""
@@ -1732,10 +1728,6 @@ msgstr "A operação ou o recurso não é suportado"
 msgid "Operation timed out"
 msgstr "A operação expirou"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr "Os elementos da saída do buffer devem ter 4 bytes ou menos"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Sem memória"
@@ -1743,6 +1735,10 @@ msgstr "Sem memória"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr "Os elementos Out-buffer devem ter um comprimento de <= 4 bytes"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1770,6 +1766,14 @@ msgid ""
 msgstr ""
 "A frequência do PWM não pode ser gravada quando variable_frequency for False "
 "na construção."
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr "A fatia do PWM já está em uso"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr "O canal A da fatia do PWM já está em uso"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1808,6 +1812,10 @@ msgstr "O pino não tem recursos de ADC"
 msgid "Pin is input only"
 msgstr "Apenas o pino de entrada"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr "O pino deve estar no canal B do PWM"
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "O pino deve ser compatível com as interrupções do hardware"
@@ -1826,6 +1834,10 @@ msgstr ""
 "A pinagem utiliza %d bytes por elemento, que consome mais do que %d bytes do "
 "ideal. Caso isso não possa ser evitado, passe allow_inefficient=True ao "
 "construtor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "Os pinos devem ser sequenciais"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2810,7 +2822,7 @@ msgstr "o círculo só pode ser registrado em um pai"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "O ponto do clipe deve ser uma tupla (x, y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3839,6 +3851,10 @@ msgstr "pressionando o botão de boot na inicialização.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "pressionando ambos os botões durante a inicialização.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "puxe as máscaras em conflito com as máscaras de direção"
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "O pull_threshold deve ser entre 1 e 32"
@@ -4340,6 +4356,15 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Group full"
+#~ msgstr "Grupo cheio"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr "No buffer, os elementos devem ter 4 bytes ou menos"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "Os elementos da saída do buffer devem ter 4 bytes ou menos"
 
 #~ msgid "Initial set pin direcion conflicts with initial out pin direction"
 #~ msgstr ""

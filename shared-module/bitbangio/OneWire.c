@@ -28,7 +28,6 @@
 #include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-module/bitbangio/types.h"
 
 // Durations are taken from here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126
 

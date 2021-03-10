@@ -1054,10 +1054,6 @@ msgstr ""
 msgid "Group already used"
 msgstr "Groep al gebruikt"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Groep is vol"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1098,7 +1094,7 @@ msgid "IV must be %d bytes long"
 msgstr "IV %d bytes lang zijn"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
+msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
 
 #: py/persistentcode.c
@@ -1707,10 +1703,6 @@ msgstr ""
 msgid "Operation timed out"
 msgstr ""
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr ""
@@ -1718,6 +1710,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Geen sockets meer beschikbaar"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1744,6 +1740,14 @@ msgid ""
 msgstr ""
 "PWM frequentie is niet schrijfbaar wanneer de variable_frequency False is "
 "tijdens constructie."
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1782,6 +1786,10 @@ msgstr "Pin heeft geen ADC mogelijkheden"
 msgid "Pin is input only"
 msgstr "Pin kan alleen voor invoer gebruikt worden"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "Pin moet hardware interrupts ondersteunen"
@@ -1800,6 +1808,10 @@ msgstr ""
 "Pinout gebruikt %d bytes per element, welke meer dan de ideale %d bytes "
 "gebruikt. Als dit niet kan worden vermeden, geef dan het argument "
 "allow_inefficient=True aan de constructor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -3793,6 +3805,10 @@ msgstr "druk bootknop in bij opstarten.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "druk beide knoppen in bij opstarten.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr ""
@@ -4294,6 +4310,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Group full"
+#~ msgstr "Groep is vol"
 
 #~ msgid "bits must be 7, 8 or 9"
 #~ msgstr "bits moet 7, 8, of 9 zijn"

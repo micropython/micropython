@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-09 16:55+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -1059,10 +1059,6 @@ msgstr "Generiskt fel"
 msgid "Group already used"
 msgstr "Grupp används redan"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Gruppen är full"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1103,8 +1099,8 @@ msgid "IV must be %d bytes long"
 msgstr "IV måste vara %d byte lång"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr "Antal element i buffert måste vara <= 4 byte"
 
 #: py/persistentcode.c
 msgid ""
@@ -1714,10 +1710,6 @@ msgstr "Operation eller funktion stöds inte"
 msgid "Operation timed out"
 msgstr "Åtgärden orsakade timeout"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr "Utbuffertelement ska vara max fyra byte långa"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Slut på minne"
@@ -1725,6 +1717,10 @@ msgstr "Slut på minne"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr "Element i utbuffer måste vara <= 4 byte långa"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1750,6 +1746,14 @@ msgid ""
 msgstr ""
 "PWM-frekvensen är inte skrivbar när variable_frequency är falsk vid "
 "skapandet."
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr "PWM-segment används redan"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr "PWM-segmentkanal A används redan"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1788,6 +1792,10 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 msgid "Pin is input only"
 msgstr "Pinnen är enbart ingång"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr "Pinne måste vara på PWM-kanal B"
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "Pinnen måste stödja hårdvaruavbrott"
@@ -1806,6 +1814,10 @@ msgstr ""
 "Pinout använder %d byte per element, vilket förbrukar mer än det idealiska "
 "%d byte.  Om detta inte kan undvikas, skicka allow_inefficient=True till "
 "konstruktorn"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "Pinnarna måste vara i sekvens"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2276,7 +2288,7 @@ msgstr "Oväntad nrfx uuid-typ"
 #: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
+msgstr "Ej hanterat ESP TLS-fel %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -2776,7 +2788,7 @@ msgstr "circle kan endast registreras i en förälder"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "klipppunkten måste vara en tuple (x,y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3796,6 +3808,10 @@ msgstr "trycka på startknappen vid start.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "trycka båda knapparna vid uppstart.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "pull-mask är i konflikt med riktnings-mask"
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "pull_threshold måste vara mellan 1 och 32"
@@ -4297,6 +4313,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Group full"
+#~ msgstr "Gruppen är full"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "Utbuffertelement ska vara max fyra byte långa"
 
 #~ msgid "Initial set pin direcion conflicts with initial out pin direction"
 #~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"

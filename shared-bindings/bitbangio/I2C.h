@@ -30,7 +30,7 @@
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/bitbangio/types.h"
+#include "shared-module/bitbangio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t bitbangio_i2c_type;

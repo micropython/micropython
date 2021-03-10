@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/bitbangio/types.h"
+#include "shared-module/bitbangio/OneWire.h"
 
 extern const mp_obj_type_t bitbangio_onewire_type;
 

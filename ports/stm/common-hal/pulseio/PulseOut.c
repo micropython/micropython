@@ -47,7 +47,7 @@ STATIC volatile uint16_t pulse_array_index = 0;
 STATIC uint16_t pulse_array_length;
 //Timer is shared, must be accessible by interrupt
 STATIC TIM_HandleTypeDef tim_handle;
-pulseio_pulseout_obj_t *curr_pulseout = NULL;
+STATIC pulseio_pulseout_obj_t *curr_pulseout = NULL;
 
 
 STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
