@@ -313,8 +313,9 @@ void stm32_main(uint32_t reset_mode) {
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 
-    // Check if bootloader should be entered instead of main application
-    powerctrl_check_enter_bootloader();
+    // Hook for a board to run code at start up, for example check if a
+    // bootloader should be entered instead of the main application.
+    MICROPY_BOARD_STARTUP();
 
     // Enable caches and prefetch buffers
 
