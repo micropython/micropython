@@ -109,7 +109,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     // exec a set pindirs to 0 for input
     pio_sm_exec(state_machine.pio,state_machine.state_machine,0xe080);
-    //exec the appropriate wait for pin 
+    //exec the appropriate wait for pin
     if (self->idle_state == true ) {
        pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x2020);
     } else {
