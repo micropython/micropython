@@ -109,16 +109,16 @@ set(IDF_COMPONENTS
     xtensa
 )
 
-if((IDF_VERSION_MINOR GREATER 1) OR (IDF_VERSION_MINOR EQUAL 1))
+if(IDF_VERSION_MINOR GREATER_EQUAL 1)
     list(APPEND IDF_COMPONENTS esp_netif)
 endif()
 
-if((IDF_VERSION_MINOR GREATER 2) OR (IDF_VERSION_MINOR EQUAL 2))
+if(IDF_VERSION_MINOR GREATER_EQUAL 2)
     list(APPEND IDF_COMPONENTS esp_system)
     list(APPEND IDF_COMPONENTS esp_timer)
 endif()
 
-if((IDF_VERSION_MINOR GREATER 3) OR (IDF_VERSION_MINOR EQUAL 3))
+if(IDF_VERSION_MINOR GREATER_EQUAL 3)
     list(APPEND IDF_COMPONENTS esp_hw_support)
     list(APPEND IDF_COMPONENTS esp_pm)
     list(APPEND IDF_COMPONENTS hal)
@@ -185,7 +185,7 @@ foreach(comp ${IDF_COMPONENTS})
     endif()
 endforeach()
 
-if((IDF_VERSION_MINOR GREATER 2) OR (IDF_VERSION_MINOR EQUAL 2))
+if(IDF_VERSION_MINOR GREATER_EQUAL 2)
     # These paths cannot currently be found by the IDF_COMPONENTS search loop above,
     # so add them explicitly.
     list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/${IDF_TARGET}/include)
