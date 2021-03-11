@@ -103,7 +103,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, cons
     msg.flags = (stop ? 0 : I2C_M_NOSTOP);
     msg.buffer = (uint8_t *) data;
     msg.length = len;
-    return I2C_TRANSFER(self->i2c_dev, &msg, 1);
+    return -I2C_TRANSFER(self->i2c_dev, &msg, 1);
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address, uint8_t *data, size_t len) {
@@ -114,7 +114,7 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address, uint8
     msg.flags = I2C_M_READ;
     msg.buffer = data;
     msg.length = len;
-    return I2C_TRANSFER(self->i2c_dev, &msg, 1);
+    return -I2C_TRANSFER(self->i2c_dev, &msg, 1);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
