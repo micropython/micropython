@@ -50,7 +50,7 @@ extern void common_hal_alarm_gc_collect(void);
 extern mp_obj_t common_hal_alarm_get_wake_alarm(void);
 
 // Used by wake-up code.
-void common_hal_alarm_save_wake_alarm(void);
+void shared_alarm_save_wake_alarm(void);
 
 
 // True if an alarm is alerting. This is most useful for pretend deep sleep.

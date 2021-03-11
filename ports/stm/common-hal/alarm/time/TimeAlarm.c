@@ -28,6 +28,10 @@
 
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
+#include "supervisor/port.h"
+#include "peripherals/rtc.h"
+
+STATIC volatile bool woke_up;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     self->monotonic_time = monotonic_time;
@@ -37,42 +41,59 @@ mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timeala
     return self->monotonic_time;
 }
 
-// mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-//     // First, check to see if we match
-//     for (size_t i = 0; i < n_alarms; i++) {
-//         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
-//             return alarms[i];
-//         }
-//     }
-//     alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
-//     timer->base.type = &alarm_time_timealarm_type;
-//     // TODO: Set monotonic_time based on the RTC state.
-//     timer->monotonic_time = 0.0f;
-//     return timer;
-// }
-
-// This is run in the timer task. We use it to wake the main CircuitPython task.
-// void timer_callback(void *arg) {
-//     (void) arg;
-//     woke_up = true;
-//     xTaskNotifyGive(circuitpython_task);
-// }
-
-bool alarm_time_timealarm_woke_us_up(void) {
-    // return woke_up;
-    return false;
+mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+    // First, check to see if we match
+    for (size_t i = 0; i < n_alarms; i++) {
+        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+            return alarms[i];
+        }
+    }
+    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
+    timer->base.type = &alarm_time_timealarm_type;
+    // TODO: Set monotonic_time based on the RTC state.
+    timer->monotonic_time = 0.0f;
+    return timer;
 }
 
-// void alarm_time_timealarm_reset(void) {
-//     esp_timer_stop(pretend_sleep_timer);
-//     esp_timer_delete(pretend_sleep_timer);
-//     pretend_sleep_timer = NULL;
-//     woke_up = false;
-// }
+// This is run in the timer task. We use it to wake the main CircuitPython task.
+STATIC void timer_callback(void) {
+    woke_up = true;
+}
+
+bool alarm_time_timealarm_woke_us_up(void) {
+    //mp_printf(&mp_plat_print,"Woke Up:%d\n",woke_up);
+    return woke_up;
+}
+
+void alarm_time_timealarm_reset(void) {
+    // mp_printf(&mp_plat_print,"timealarm reset");
+    woke_up = false;
+}
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
-    // HAL_RTCEx_SetWakeUpTimer_IT(&RTCHandle, 0xA017, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
-    // HAL_RTCEx_SetWakeUpTimer_IT(&_hrtc, rtc_clock_frequency / 1024 / 2, RTC_WAKEUPCLOCK_RTCCLK_DIV2);
-    // HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 1, 0U);
-    // HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
+    // Search through alarms for TimeAlarm instances, and check that there's only one
+    bool timealarm_set = false;
+    alarm_time_timealarm_obj_t *timealarm = MP_OBJ_NULL;
+    for (size_t i = 0; i < n_alarms; i++) {
+        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+            continue;
+        }
+        if (timealarm_set) {
+            mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
+        }
+        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm_set = true;
+    }
+    if (!timealarm_set) {
+        return;
+    }
+
+    // Compute how long to actually sleep, considering the time now.
+    mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+    uint32_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
+    uint32_t wakeup_in_ticks = wakeup_in_secs * 1024;
+
+    // Use alarm B, since port reserves A
+    stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B,timer_callback);
+    stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B,wakeup_in_ticks);
 }

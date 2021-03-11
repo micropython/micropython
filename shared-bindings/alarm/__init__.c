@@ -228,7 +228,7 @@ mp_obj_t alarm_get_wake_alarm(void) {
 }
 
 // Initialize .wake_alarm value.
-void common_hal_alarm_save_wake_alarm(void) {
+void shared_alarm_save_wake_alarm(void) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =

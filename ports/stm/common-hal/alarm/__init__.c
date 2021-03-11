@@ -45,7 +45,7 @@
 void common_hal_alarm_reset(void) {
     // alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
-    // alarm_time_timealarm_reset();
+    alarm_time_timealarm_reset();
     // alarm_touch_touchalarm_reset();
     // esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
@@ -101,7 +101,7 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
-    // alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
+    alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
     // alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
@@ -111,23 +111,20 @@ STATIC void _idle_until_alarm(void) {
         RUN_BACKGROUND_TASKS;
         // Allow ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
-            common_hal_alarm_save_wake_alarm();
+            shared_alarm_save_wake_alarm();
             return;
         }
-        // port_idle_until_interrupt();
+        port_idle_until_interrupt();
     }
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    // if (supervisor_workflow_active()) {
-    //     mp_raise_NotImplementedError(translate("Cannot sleep with USB connected"));
-    // }
-    _setup_sleep_alarms(false, n_alarms, alarms);
-
     // If USB is active, only pretend to sleep. Otherwise, light sleep
     if (supervisor_workflow_active()) {
+        _setup_sleep_alarms(false, n_alarms, alarms);
         _idle_until_alarm();
     } else {
+        _setup_sleep_alarms(false, n_alarms, alarms);
         port_disable_tick();
         HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
         port_enable_tick();
@@ -144,13 +141,17 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 //#define NORETURN __attribute__((noreturn))
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
-    // alarm_pin_pinalarm_prepare_for_deep_sleep();
+    alarm_pin_pinalarm_prepare_for_deep_sleep();
+    //port_disable_tick();
     // alarm_touch_touchalarm_prepare_for_deep_sleep();
-    while(1);
+    // HAL_PWR_EnableBkUpAccess();
+    // __HAL_RCC_BACKUPRESET_FORCE();
+    // __HAL_RCC_BACKUPRESET_RELEASE();
 
-    // The ESP-IDF caches the deep sleep settings and applies them before sleep.
-    // We don't need to worry about resetting them in the interim.
-    // esp_deep_sleep_start();
+    HAL_PWR_EnterSTANDBYMode();
+
+    // Should never hit this
+    while(1);
 }
 
 void common_hal_alarm_gc_collect(void) {

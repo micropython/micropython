@@ -32,7 +32,6 @@
 
 #include "peripherals/exti.h"
 
-
 STATIC bool stm_exti_reserved[STM32_GPIO_PORT_SIZE];
 STATIC void (*stm_exti_callback[STM32_GPIO_PORT_SIZE])(uint8_t num);
 

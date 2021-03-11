@@ -126,7 +126,7 @@ STATIC void _idle_until_alarm(void) {
         // Allow ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
             // This saves the return of common_hal_alarm_get_wake_alarm through Shared Bindings
-            common_hal_alarm_save_wake_alarm();
+            shared_alarm_save_wake_alarm();
             return;
         }
         port_idle_until_interrupt();

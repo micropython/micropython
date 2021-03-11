@@ -35,6 +35,7 @@
 STATIC bool woke_up;
 
 STATIC uint16_t alarm_pin_triggered;
+STATIC bool deep_wkup_enabled;
 
 STATIC void pin_alarm_callback(uint8_t num) {
     alarm_pin_triggered |= (1 << num);
@@ -112,17 +113,32 @@ void alarm_pin_pinalarm_reset(void) {
     woke_up = false;
 }
 
+// Deep sleep alarms don't actually make use of EXTI, but we pretend they're the same.
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
-            stm_peripherals_exti_enable(alarm->pin->number);
+
+            if (deep_sleep) {
+                // Deep sleep only wakes on a rising edge from one pin, WKUP (PA00)
+                if (alarm->pin != &pin_PA00) {
+                    mp_raise_ValueError(translate("Only the WKUP pin can be used to wake from Deep Sleep"));
+                }
+                HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+                __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+                HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+                deep_wkup_enabled = true;
+            } else {
+                stm_peripherals_exti_enable(alarm->pin->number);
+            }
         }
     }
 }
 
 void alarm_pin_pinalarm_reset_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_triggered = 0;
+    deep_wkup_enabled = false;
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
@@ -131,6 +147,10 @@ void alarm_pin_pinalarm_reset_alarms(bool deep_sleep, size_t n_alarms, const mp_
     }
 }
 
+// If we don't have WKUP enabled, ensure it's disabled
+// TODO; is this really required?
 void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
-
+    if (!deep_wkup_enabled) {
+        HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+    }
 }

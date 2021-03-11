@@ -157,7 +157,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    common_hal_alarm_save_wake_alarm();
+    shared_alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
     common_hal_alarm_reset();
     #endif
@@ -300,8 +300,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             }
         }
         #endif
-
-        // TODO: on deep sleep, make sure display is refreshed before sleeping (for e-ink).
 
         cleanup_after_vm(heap);
 
