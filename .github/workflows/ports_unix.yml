@@ -24,7 +24,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_minimal_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   reproducible:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_standard_run_perfbench
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   coverage:
     runs-on: ubuntu-latest
@@ -76,7 +76,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   coverage_32bit:
     runs-on: ubuntu-latest
@@ -94,7 +94,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_coverage_32bit_run_native_mpy_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   nanbox:
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_nanbox_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   float:
     runs-on: ubuntu-latest
@@ -120,7 +120,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_float_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   stackless_clang:
     runs-on: ubuntu-20.04
@@ -134,7 +134,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_stackless_clang_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   float_clang:
     runs-on: ubuntu-20.04
@@ -148,7 +148,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_float_clang_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   settrace:
     runs-on: ubuntu-latest
@@ -160,7 +160,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_settrace_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   settrace_stackless:
     runs-on: ubuntu-latest
@@ -172,7 +172,7 @@ jobs:
       run: source tools/ci.sh && ci_unix_settrace_stackless_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures
 
   macos:
     runs-on: macos-11.0
@@ -185,4 +185,4 @@ jobs:
       run: source tools/ci.sh && ci_unix_macos_run_tests
     - name: Print failures
       if: failure()
-      run: tests/run-tests --print-failures
+      run: tests/run-tests.py --print-failures

@@ -273,7 +273,7 @@ To run a selection of tests on a board/device connected over USB use:
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py --target minimal --device /dev/ttyACM0
 
 See also :ref:`writingtests`.
 

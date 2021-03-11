@@ -63,8 +63,8 @@ $(BUILD)/micropython.js: $(OBJ) library.js wrapper.js
 min: $(BUILD)/micropython.js
 	uglifyjs $< -c -o $(BUILD)/micropython.min.js
 
-test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
+test: $(BUILD)/micropython.js $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py
 
 include $(TOP)/py/mkrules.mk

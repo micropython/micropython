@@ -4,7 +4,7 @@ Writing tests
 =============
 
 Tests in MicroPython are located at the path ``tests/``. The following is a listing of
-key directories and the run-tests runner script:
+key directories and the run-tests.py runner script:
 
 .. code-block:: bash
 
@@ -13,7 +13,7 @@ key directories and the run-tests runner script:
     ├── extmod
     ├── float
     ├── micropython
-    ├── run-tests
+    ├── run-tests.py
     ...
 
 There are subfolders maintained to categorize the tests. Add a test by creating a new file in one of the
@@ -54,17 +54,17 @@ The other way to run tests, which is useful when running on targets other than t
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests
+   $ ./run-tests.py
 
 Then to run on a board:
 
 .. code-block:: bash
 
-   $ ./run-tests --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py --target minimal --device /dev/ttyACM0
 
 And to run only a certain set of tests (eg a directory):
 
 .. code-block:: bash
 
-   $ ./run-tests -d basics
-   $ ./run-tests float/builtin*.py
+   $ ./run-tests.py -d basics
+   $ ./run-tests.py float/builtin*.py

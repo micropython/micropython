@@ -258,7 +258,7 @@ def run_tests(pyb, tests, args, result_dir):
     if not (args.list_tests or args.write_exp):
         # Even if we run completely different tests in a different directory,
         # we need to access feature_checks from the same directory as the
-        # run-tests script itself so use base_path.
+        # run-tests.py script itself so use base_path.
 
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'native_check.py')
@@ -582,19 +582,19 @@ Tests are discovered by scanning test directories for .py files or using the
 specified test files. If test files nor directories are specified, the script
 expects to be ran in the tests directory (where this file is located) and the
 builtin tests suitable for the target platform are ran.
-When running tests, run-tests compares the MicroPython output of the test with the output
+When running tests, run-tests.py compares the MicroPython output of the test with the output
 produced by running the test through CPython unless a <test>.exp file is found, in which
 case it is used as comparison.
-If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the result
+If a test fails, run-tests.py produces a pair of <test>.out and <test>.exp files in the result
 directory with the MicroPython output and the expectations, respectively.
 ''',
         epilog='''\
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
 the last matching regex is used:
-  run-tests -i async - exclude all, then include tests containing "async" anywhere
-  run-tests -e '/big.+int' - include all, then exclude by regex
-  run-tests -e async -i async_foo - include all, exclude async, yet still include async_foo
+  run-tests.py -i async - exclude all, then include tests containing "async" anywhere
+  run-tests.py -e '/big.+int' - include all, then exclude by regex
+  run-tests.py -e async -i async_foo - include all, exclude async, yet still include async_foo
 ''')
     cmd_parser.add_argument('--target', default='unix', help='the target platform')
     cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')

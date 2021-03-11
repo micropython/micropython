@@ -306,7 +306,7 @@ function ci_unix_minimal_build {
 }
 
 function ci_unix_minimal_run_tests {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
 }
 
 function ci_unix_standard_build {
@@ -441,7 +441,7 @@ function ci_unix_macos_run_tests {
     # - OSX has poor time resolution and these uasyncio tests do not have correct output
     # - import_pkg7 has a problem with relative imports
     # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && ./run-tests --exclude 'uasyncio_(basic|heaplock|lock|wait_task)' --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    (cd tests && ./run-tests.py --exclude 'uasyncio_(basic|heaplock|lock|wait_task)' --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
 }
 
 ########################################################################################

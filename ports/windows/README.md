@@ -90,11 +90,11 @@ Running the tests
 This is similar for all ports:
 
     cd ../../tests
-    python ./run-tests
+    python ./run-tests.py
 
 Though when running on Cygwin and using Cygwin's Python installation you'll need:
 
-    python3 ./run-tests
+    python3 ./run-tests.py
 
 Depending on the combination of platform and Python version used it might be
 needed to first set the MICROPY_MICROPYTHON environment variable to
