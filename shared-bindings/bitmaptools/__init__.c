@@ -255,8 +255,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|      :param bitmap dest_bitmap: Destination bitmap that will be written into
 //|      :param int x1: x-pixel position of the first corner of the rectangular fill region
 //|      :param int y1: y-pixel position of the first corner of the rectangular fill region
-//|      :param int x2: x-pixel position of the second corner of the rectangular fill region
-//|      :param int y2: y-pixel position of the second corner of the rectangular fill region
+//|      :param int x2: x-pixel position of the second corner of the rectangular fill region (exclusive)
+//|      :param int y2: y-pixel position of the second corner of the rectangular fill region (exclusive)
 //|      :param int value: Bitmap palette index that will be written into the rectangular
 //|             fill region in the destination bitmap"""
 //|      ...
@@ -288,40 +288,6 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
     int16_t y1 = args[ARG_y1].u_int;
     int16_t x2 = args[ARG_x2].u_int;
     int16_t y2 = args[ARG_y2].u_int;
-
-    // Ensure x1 < x2 and y1 < y2
-    if (x1 > x2) {
-        int16_t temp=x2;
-        x2=x1;
-        x1=temp;
-    }
-    if (y1 > y2) {
-        int16_t temp=y2;
-        y2=y1;
-        y1=temp;
-    }
-
-    // constrain to bitmap dimensions
-    if (x1 < 0) {
-        x1 = 0;
-    } else if (x1 > destination->width) {
-        x1 = destination->width;
-    }
-    if (x2 < 0) {
-        x2 = 0;
-    } else if (x2 > destination->width) {
-        x2 = destination->width;
-    }
-    if (y1 < 0) {
-        y1 = 0;
-    } else if (y1 > destination->height) {
-        y1 = destination->height;
-    }
-    if (y2 < 0) {
-        y2 = 0;
-    } else if (y2 > destination->height) {
-        y2 = destination->height;
-    }
 
     common_hal_bitmaptools_fill_region(destination, x1, y1, x2, y2, value);
 

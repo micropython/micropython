@@ -175,6 +175,17 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     }
 }
 
+int16_t constrain(int16_t input, int16_t min, int16_t max) {
+    // constrain the input between the min and max values
+    if (input < min) {
+        return min;
+    }
+    if (input > max) {
+        return max;
+    }
+    return input;
+}
+
 void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
                                         int16_t x1, int16_t y1,
                                         int16_t x2, int16_t y2,
@@ -187,6 +198,24 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
         mp_raise_RuntimeError(translate("Read-only object"));
     }
 
+    // Ensure x1 < x2 and y1 < y2
+    if (x1 > x2) {
+        int16_t temp=x2;
+        x2=x1;
+        x1=temp;
+    }
+    if (y1 > y2) {
+        int16_t temp=y2;
+        y2=y1;
+        y1=temp;
+    }
+
+    // constrain to bitmap dimensions
+    x1 = constrain(x1, 0, destination->width);
+    x2 = constrain(x2, 0, destination->width);
+    y1 = constrain(y1, 0, destination->height);
+    y2 = constrain(y2, 0, destination->height);
+
     // update the dirty rectangle
     displayio_bitmap_set_dirty_area(destination, x1, y1, x2, y2);
 
@@ -196,17 +225,6 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
             displayio_bitmap_write_pixel(destination, x, y, value);
         }
     }
-}
-
-int16_t constrain(int16_t input, int16_t min, int16_t max) {
-    // constrain the input between the min and max values
-    if (input < min) {
-        return min;
-    }
-    if (input > max) {
-        return max;
-    }
-    return input;
 }
 
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
