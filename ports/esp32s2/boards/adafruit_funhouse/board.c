@@ -54,8 +54,8 @@ void board_init(void) {
 
     // Debug UART
 #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
+    common_hal_never_reset_pin(&pin_GPIO37);
+    common_hal_never_reset_pin(&pin_GPIO38);
 #endif /* DEBUG */
 
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
@@ -73,9 +73,13 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
+    // workaround as board_init() is called before reset_port() in main.c
+    pwmout_reset();
+
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    common_hal_displayio_display_construct(
+        display,
         bus,
         240, // Width (after rotation)
         240, // Height (after rotation)

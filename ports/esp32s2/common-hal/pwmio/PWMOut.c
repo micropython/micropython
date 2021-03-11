@@ -93,7 +93,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     }
     if (timer_index == INDEX_EMPTY) {
         // Running out of timers isn't pin related on ESP32S2 so we can't re-use error messages
-        mp_raise_ValueError(translate("No more timers available"));
+        return PWMOUT_ALL_TIMERS_IN_USE;
     }
 
     // Find a viable channel
@@ -104,7 +104,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         }
     }
     if (channel_index == INDEX_EMPTY) {
-        mp_raise_ValueError(translate("No more channels available"));
+        return PWMOUT_ALL_CHANNELS_IN_USE;
     }
 
     // Run configuration
@@ -126,7 +126,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     self->chan_handle.timer_sel = timer_index;
 
     if (ledc_channel_config(&(self->chan_handle))) {
-        mp_raise_ValueError(translate("Could not initialize channel"));
+        return PWMOUT_INITIALIZATION_ERROR;
     }
 
     // Make reservations

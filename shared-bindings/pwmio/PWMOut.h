@@ -36,8 +36,12 @@ typedef enum pwmout_result_t {
     PWMOUT_OK,
     PWMOUT_INVALID_PIN,
     PWMOUT_INVALID_FREQUENCY,
+    PWMOUT_INVALID_FREQUENCY_ON_PIN,
+    PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE,
     PWMOUT_ALL_TIMERS_ON_PIN_IN_USE,
-    PWMOUT_ALL_TIMERS_IN_USE
+    PWMOUT_ALL_TIMERS_IN_USE,
+    PWMOUT_ALL_CHANNELS_IN_USE,
+    PWMOUT_INITIALIZATION_ERROR,
 } pwmout_result_t;
 
 extern pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,

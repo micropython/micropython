@@ -48,7 +48,7 @@ STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     return (duty*period) / ((1 << 16) - 1);
 }
 
-STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
+STATIC bool timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
                                        uint32_t frequency, uint32_t source_freq) {
     //Find the largest possible period supported by this frequency
     for (int i = 0; i < (1 << 16); i++) {
@@ -58,9 +58,8 @@ STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
             break;
         }
     }
-    if (*prescaler == 0) {
-        mp_raise_ValueError(translate("Invalid frequency supplied"));
-    }
+    // Return successor failure.
+    return *prescaler != 0;
 }
 
 void pwmout_reset(void) {
@@ -138,16 +137,14 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         tim_frequencies[self->tim->tim_index - 1] = frequency;
         stm_peripherals_timer_reserve(TIMx);
     } else { //no match found
-        if (tim_chan_taken) {
-            mp_raise_ValueError(translate("No more timers available on this pin."));
-        } else if (tim_taken_internal) {
-            mp_raise_ValueError(translate("Timer was reserved for internal use - declare PWM pins earlier in the program"));
+        if (tim_chan_taken || tim_taken_internal) {
+            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         } else if (tim_taken_f_mismatch) {
-            mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
+            return PWMOUT_INVALID_FREQUENCY_ON_PIN;
         } else if (var_freq_mismatch) {
-            mp_raise_ValueError(translate("Cannot vary frequency on a timer that is already in use"));
+            return PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE;
         } else {
-            mp_raise_ValueError(translate("Invalid pins for PWMOut"));
+            return PWMOUT_INVALID_PIN;
         }
     }
 
@@ -167,7 +164,9 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     uint32_t prescaler = 0; //prescaler is 15 bit
     uint32_t period = 0; //period is 16 bit
     uint32_t source_freq = stm_peripherals_timer_get_source_freq(TIMx);
-    timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq);
+    if (!timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq)) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
 
     //Timer init
     self->handle.Instance = TIMx;
@@ -180,7 +179,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     //only run init if this is the first instance of this timer
     if (first_time_setup) {
         if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
-            mp_raise_ValueError(translate("Could not initialize timer"));
+            return PWMOUT_INITIALIZATION_ERROR;
         }
     }
 
@@ -190,10 +189,10 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     self->chan_handle.OCPolarity = TIM_OCPOLARITY_HIGH;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Could not initialize channel"));
+        return PWMOUT_INITIALIZATION_ERROR;
     }
     if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Could not start PWM"));
+        return PWMOUT_INITIALIZATION_ERROR;
     }
 
     self->variable_frequency = variable_frequency;
