@@ -1053,10 +1053,6 @@ msgstr ""
 msgid "Group already used"
 msgstr "グループはすでに使われています"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "グループが一杯"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1801,6 +1797,10 @@ msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -3773,6 +3773,10 @@ msgstr ""
 msgid "pressing both buttons at start up.\n"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr ""
@@ -4273,6 +4277,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Group full"
+#~ msgstr "グループが一杯"
 
 #~ msgid "bits must be 7, 8 or 9"
 #~ msgstr "bitsは7, 8, 9のいずれかでなければなりません"

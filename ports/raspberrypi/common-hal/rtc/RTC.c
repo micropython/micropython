@@ -29,9 +29,23 @@
 
 #include "py/runtime.h"
 #include "src/rp2_common/hardware_rtc/include/hardware/rtc.h"
+#include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 
 void common_hal_rtc_init(void) {
+    datetime_t t = {
+            .year  = 2020,
+            .month = 1,
+            .day   = 1,
+            .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
+            .hour  = 0,
+            .min   = 0,
+            .sec   = 0
+    };
+
+    // Start the RTC
     rtc_init();
+    rtc_set_datetime(&t);
+
 }
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {

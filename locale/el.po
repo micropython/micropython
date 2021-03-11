@@ -1042,10 +1042,6 @@ msgstr ""
 msgid "Group already used"
 msgstr ""
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1785,6 +1781,10 @@ msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -3741,6 +3741,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
 msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c

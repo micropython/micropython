@@ -22,9 +22,8 @@
 //|
 //|            For example::
 //|
+//|                import board
 //|                import countio
-//|                import time
-//|                from board import *
 //|
 //|                pin_counter = countio.Counter(board.D1)
 //|                #reset the count after 100 counts

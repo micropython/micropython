@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-09 01:49+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: main.c
 msgid ""
@@ -1058,10 +1058,6 @@ msgstr "tōng yòng gù zhàng"
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Fēnzǔ yǐ mǎn"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1103,7 +1099,7 @@ msgstr "IV bì xū wéi %d zì jié cháng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "huǎn chōng nèi yuán sù bì xū <= 4 zì jié cháng"
 
 #: py/persistentcode.c
 msgid ""
@@ -1726,7 +1722,7 @@ msgstr "tào jiē zì wài"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1754,11 +1750,11 @@ msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bù
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "yǐ jīng zài shǐ yòng de PWM qiē piàn"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1799,7 +1795,7 @@ msgstr "Yǐn jiǎo jǐn shūrù"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1819,6 +1815,10 @@ msgstr ""
 "Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng "
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2785,7 +2785,7 @@ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "jiá dian bì xū shì (x,y) kuài"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3804,6 +3804,10 @@ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
@@ -4305,6 +4309,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Group full"
+#~ msgstr "Fēnzǔ yǐ mǎn"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""

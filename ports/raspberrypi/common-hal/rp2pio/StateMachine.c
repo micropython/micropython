@@ -27,6 +27,7 @@
 #include "bindings/rp2pio/StateMachine.h"
 
 #include "common-hal/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
@@ -52,6 +53,22 @@ STATIC uint32_t _current_pins[NUM_PIOS];
 STATIC uint32_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
 STATIC PIO pio_instances[2] = {pio0, pio1};
+typedef void (*interrupt_handler_type)(void*);
+STATIC interrupt_handler_type _interrupt_handler[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+STATIC void *_interrupt_arg[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+
+STATIC void rp2pio_statemachine_interrupt_handler(void);
+
+static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin_down, uint32_t pins_we_use) {
+    for (int i=0; i<TOTAL_GPIO_COUNT; i++) {
+        bool used = pins_we_use & (1 << i);
+        if(used) {
+            bool pull_up = pull_pin_up & (1 << i);
+            bool pull_down = pull_pin_down & (1 << i);
+            gpio_set_pulls(i, pull_up, pull_down);
+        }
+    }
+}
 
 void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
@@ -89,6 +106,7 @@ void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
         }
     }
     _current_sm_pins[pio_index][sm] = 0;
+    pio->inte0 &= ~((PIO_IRQ0_INTF_SM0_RXNEMPTY_BITS | PIO_IRQ0_INTF_SM0_TXNFULL_BITS | PIO_IRQ0_INTF_SM0_BITS) << sm);
     pio_sm_unclaim(pio, sm);
 }
 
@@ -136,6 +154,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t* init, size_t init_len,
     const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
+    uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count,
     uint32_t initial_pin_state, uint32_t initial_pin_direction,
@@ -211,8 +230,11 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 
     pio_sm_set_pins_with_mask(self->pio, state_machine, initial_pin_state, pins_we_use);
     pio_sm_set_pindirs_with_mask(self->pio, state_machine, initial_pin_direction, pins_we_use);
+    rp2pio_statemachine_set_pull(pull_pin_up, pull_pin_down, pins_we_use);
     self->initial_pin_state = initial_pin_state;
     self->initial_pin_direction = initial_pin_direction;
+    self->pull_pin_up = pull_pin_up;
+    self->pull_pin_down = pull_pin_down;
 
     for (size_t pin_number = 0; pin_number < TOTAL_GPIO_COUNT; pin_number++) {
         if ((pins_we_use & (1 << pin_number)) == 0) {
@@ -302,6 +324,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t* init, size_t init_len,
     const mcu_pin_obj_t * first_out_pin, uint8_t out_pin_count, uint32_t initial_out_pin_state, uint32_t initial_out_pin_direction,
     const mcu_pin_obj_t * first_in_pin, uint8_t in_pin_count,
+    uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t * first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t * first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
     bool exclusive_pin_use,
@@ -444,12 +467,19 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     initial_pin_state = (initial_pin_state & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_state);
     initial_pin_direction = (initial_pin_direction & ~sideset_mask) | mask_and_rotate(first_sideset_pin, sideset_pin_count, initial_sideset_pin_direction);
 
+    // Deal with pull up/downs
+    uint32_t pull_up = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_up);
+    uint32_t pull_down = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_down);
+    if (initial_pin_direction & (pull_up | pull_down)) {
+        mp_raise_ValueError(translate("pull masks conflict with direction masks"));
+    }
     bool ok = rp2pio_statemachine_construct(self,
         program, program_len,
         frequency,
         init, init_len,
         first_out_pin, out_pin_count,
         first_in_pin, in_pin_count,
+        pull_up, pull_down,
         first_set_pin, set_pin_count,
         first_sideset_pin, sideset_pin_count,
         initial_pin_state, initial_pin_direction,
@@ -470,6 +500,7 @@ void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self) {
     uint32_t pins_we_use = _current_sm_pins[pio_index][self->state_machine];
     pio_sm_set_pins_with_mask(self->pio, self->state_machine, self->initial_pin_state, pins_we_use);
     pio_sm_set_pindirs_with_mask(self->pio, self->state_machine, self->initial_pin_direction, pins_we_use);
+    rp2pio_statemachine_set_pull(self->pull_pin_up, self->pull_pin_down, pins_we_use);
     common_hal_rp2pio_statemachine_run(self, self->init, self->init_len);
     pio_sm_set_enabled(self->pio, self->state_machine, true);
 }
@@ -511,6 +542,10 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t* sel
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
     uint8_t sm = self->state_machine;
     uint8_t pio_index = pio_get_index(self->pio);
+    common_hal_mcu_disable_interrupts();
+    _interrupt_arg[pio_index][sm] = NULL;
+    _interrupt_handler[pio_index][sm] = NULL;
+    common_hal_mcu_enable_interrupts();
     _never_reset[pio_index][sm] = false;
     _reset_statemachine(self->pio, sm, leave_pins);
     self->state_machine = NUM_PIO_STATE_MACHINES;
@@ -727,4 +762,40 @@ void common_hal_rp2pio_statemachine_clear_rxfifo(rp2pio_statemachine_obj_t *self
         (void) self->pio->rxf[self->state_machine];
     }
     self->pio->fdebug = stall_mask;
+}
+
+size_t common_hal_rp2pio_statemachine_get_in_waiting(rp2pio_statemachine_obj_t *self) {
+    uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
+    return level;
+}
+
+void common_hal_rp2pio_statemachine_set_interrupt_handler(rp2pio_statemachine_obj_t *self, void(*handler)(void*), void *arg, int mask) {
+    uint8_t pio_index = pio_get_index(self->pio);
+    uint8_t sm = self->state_machine;
+
+    common_hal_mcu_disable_interrupts();
+    uint32_t inte = self->pio->inte0;
+    inte &= ~((PIO_IRQ0_INTF_SM0_RXNEMPTY_BITS | PIO_IRQ0_INTF_SM0_TXNFULL_BITS | PIO_IRQ0_INTF_SM0_BITS) << sm);
+    inte |= (mask << sm);
+    self->pio->inte0 = inte;
+    _interrupt_arg[pio_index][sm] = arg;
+    _interrupt_handler[pio_index][sm] = handler;
+    irq_set_exclusive_handler(PIO0_IRQ_0 + 2 * pio_index, rp2pio_statemachine_interrupt_handler);
+    irq_set_enabled(PIO0_IRQ_0 + 2 * pio_index, true);
+    common_hal_mcu_enable_interrupts();
+}
+
+STATIC void rp2pio_statemachine_interrupt_handler(void) {
+    for (size_t pio_index = 0; pio_index < NUM_PIOS; pio_index++) {
+        PIO pio = pio_instances[pio_index];
+        for (size_t sm = 0; sm < NUM_PIO_STATE_MACHINES; sm++) {
+            if (!_interrupt_handler[pio_index][sm]) {
+                continue;
+            }
+            uint32_t intf = (PIO_IRQ0_INTF_SM0_RXNEMPTY_BITS | PIO_IRQ0_INTF_SM0_TXNFULL_BITS | PIO_IRQ0_INTF_SM0_BITS) << sm;
+            if (pio->ints0 & intf) {
+                _interrupt_handler[pio_index][sm](_interrupt_arg[pio_index][sm]);
+            }
+        }
+    }
 }

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-02 02:24+0000\n"
+"PO-Revision-Date: 2021-03-07 15:50+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: main.c
 msgid ""
@@ -1069,10 +1069,6 @@ msgstr "Fallo Genérico"
 msgid "Group already used"
 msgstr "Grupo ya está siendo utilizado"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Group lleno"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1115,6 +1111,7 @@ msgstr "IV debe tener %d bytes de longitud"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
+"Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
 
 #: py/persistentcode.c
 msgid ""
@@ -1742,7 +1739,7 @@ msgstr "Se acabaron los enchufes"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Los elementos del búfer de salida deben ser de una longitud <= 4 bytes"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1771,11 +1768,11 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "Segmento PWM ya esta en uso"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "Segmento del PWM canal A ya esta en uso"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1816,7 +1813,7 @@ msgstr "El pin es solo de entrada"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "El pin debe estar en el PWM canal B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1836,6 +1833,10 @@ msgstr ""
 "El pinout utiliza %d bytes por elemento, lo que consume más de los %d bytes "
 "ideales. Si esto no se puede evitar, pase allow_inefficient=True al "
 "constructor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2817,7 +2818,7 @@ msgstr "circulo solo puede ser registrado con un pariente"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "El punto clip debe ser una tupla (x, y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -3839,6 +3840,10 @@ msgstr "presionando botón de arranque al inicio.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "presionando ambos botones al inicio.\n"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
 msgstr "pull_threshold debe esta entre 1 y 32"
@@ -4341,6 +4346,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Group full"
+#~ msgstr "Group lleno"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""
