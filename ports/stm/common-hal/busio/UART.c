@@ -268,6 +268,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
     for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
         if (mcu_uart_banks[i] == self->handle.Instance) {
+            reserved_uart[i] = false;
             never_reset_uart[i] = false;
             break;
         }
