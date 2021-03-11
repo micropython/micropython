@@ -11,3 +11,5 @@ MCU_PACKAGE = LQFP64
 
 LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F405_fs.ld
+
+CIRCUITPY_RGBMATRIX ?= 1
