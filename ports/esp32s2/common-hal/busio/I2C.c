@@ -144,8 +144,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
     i2c_driver_delete(self->i2c_num);
 
-    common_hal_reset_pin(self->scl_pin);
     common_hal_reset_pin(self->sda_pin);
+    common_hal_reset_pin(self->scl_pin);
     self->sda_pin = NULL;
     self->scl_pin = NULL;
 
