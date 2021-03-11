@@ -35,9 +35,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso) {
     int port = -1;
 
-    if (clock->number == PIN_SPI4_SCK && mosi->number == PIN_SPI4_MOSI && miso->number == PIN_SPI4_MISO) {
+    if (clock->number == PIN_SPI4_SCK &&
+        (mosi == NULL || mosi->number == PIN_SPI4_MOSI) &&
+        (miso == NULL || miso->number == PIN_SPI4_MISO)) {
         port = 4;
-    } else if (clock->number == PIN_EMMC_CLK && mosi->number == PIN_EMMC_DATA0 && miso->number == PIN_EMMC_DATA1) {
+    } else if (clock->number == PIN_EMMC_CLK &&
+               (mosi == NULL || mosi->number == PIN_EMMC_DATA0) &&
+               (miso == NULL || miso->number == PIN_EMMC_DATA1)) {
         port = 5;
     }
 
