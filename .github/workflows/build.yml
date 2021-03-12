@@ -308,6 +308,7 @@ jobs:
         - "same54_xplained"
         - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
+        - "sensebox_mcu"
         - "serpente"
         - "shirtty"
         - "silicognition-m4-shim"
