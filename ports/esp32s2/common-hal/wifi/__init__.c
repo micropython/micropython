@@ -109,6 +109,7 @@ void common_hal_wifi_init(void) {
 
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
+    self->started = false;
 
     // Even though we just called esp_netif_create_default_wifi_sta,
     //   station mode isn't actually ready for use until esp_wifi_set_mode()
