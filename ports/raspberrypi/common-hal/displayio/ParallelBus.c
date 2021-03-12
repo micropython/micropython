@@ -93,7 +93,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
-        frequency, // frequency
+        frequency * 2, // frequency multiplied by 2 as 2 PIO instructions
         NULL, 0, // init
         data0, 8, 0, 255, // first out pin, # out pins
         NULL, 0, // first in pin, # in pins
