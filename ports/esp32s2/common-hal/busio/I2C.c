@@ -112,6 +112,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         .mode = I2C_MODE_MASTER,
         .sda_io_num = self->sda_pin->number,
         .scl_io_num = self->scl_pin->number,
+        .sda_pullup_en = GPIO_PULLUP_DISABLE,  /*!< Internal GPIO pull mode for I2C sda signal*/
+        .scl_pullup_en = GPIO_PULLUP_DISABLE,  /*!< Internal GPIO pull mode for I2C scl signal*/
 
         .master = {
             .clk_speed = frequency,
