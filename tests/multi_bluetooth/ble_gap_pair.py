@@ -4,6 +4,10 @@
 from micropython import const
 import time, machine, bluetooth
 
+if not hasattr(bluetooth.BLE, "gap_pair"):
+    print("SKIP")
+    raise SystemExit
+
 TIMEOUT_MS = 4000
 
 _IRQ_CENTRAL_CONNECT = const(1)
