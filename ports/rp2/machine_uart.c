@@ -71,7 +71,7 @@ typedef struct _machine_uart_obj_t {
     ringbuf_t write_buffer;
     bool write_lock;
     uint8_t irq_nr;
-    void (*irq_handler)();
+    irq_handler_t irq_handler;
 } machine_uart_obj_t;
 
 STATIC void uart0_irq_handler();
@@ -305,20 +305,10 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         if (self->invert & UART_INVERT_TX) {
             gpio_set_outover(self->tx, GPIO_OVERRIDE_INVERT);
         }
-        // deallocate and allocate the buffers
-        // free a previous buffer if present
-        // this part is inconsistent in accessing the buffer structure itself.
-        if (self->read_buffer.buf != NULL) {
-            m_del(byte, self->read_buffer.buf, self->read_buffer.size);
-            MP_STATE_PORT(rp2_uart_rx_buffer[uart_id]) = NULL;
-        }
+        // allocate the buffers
         ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
         MP_STATE_PORT(rp2_uart_rx_buffer[uart_id]) = self->read_buffer.buf;
 
-        if (self->write_buffer.buf != NULL) {
-            m_del(byte, self->write_buffer.buf, self->write_buffer.size);
-            MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = NULL;
-        }
         ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
         MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
 
