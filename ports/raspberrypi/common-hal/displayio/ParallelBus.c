@@ -96,7 +96,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
         frequency * 2, // frequency multiplied by 2 as 2 PIO instructions
         NULL, 0, // init
         data0, 8, 0, 255, // first out pin, # out pins
-        NULL, 0, // first in pin, # in pins
+        NULL, 0, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin
         write, 1, 0, 1, // first sideset pin
         true, // exclusive pin usage
