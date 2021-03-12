@@ -67,11 +67,11 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t invert;
     ringbuf_t read_buffer;
-    bool read_lock; 
+    bool read_lock;
     ringbuf_t write_buffer;
     bool write_lock;
     uint8_t irq_nr;
-    void(* irq_handler)();
+    void (*irq_handler)();
 } machine_uart_obj_t;
 
 STATIC void uart0_irq_handler();
@@ -128,14 +128,14 @@ STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_RXMIS_BITS) { // rx interrupt?
         // clear all interrupt bits but tx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
-        if (! self->read_lock) {
+        if (!self->read_lock) {
             uart_drain_rx_fifo(self, false);
         }
     }
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
-         // clear all interrupt bits but rx
+        // clear all interrupt bits but rx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_RXIC_BITS);
-        if (! self->write_lock) {
+        if (!self->write_lock) {
             uart_fill_tx_fifo(self, false);
         }
     }
@@ -155,11 +155,11 @@ STATIC void uart1_irq_handler() {
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, "
-                     "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
+        "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop, self->tx, self->rx, self->write_buffer.size - 1, self->read_buffer.size - 1,
         self->timeout, self->timeout_char, _invert_name[self->invert]);
-} 
+}
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
@@ -323,7 +323,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
 
         // set the irq handler
-        irq_set_exclusive_handler (self->irq_nr, self->irq_handler);
+        irq_set_exclusive_handler(self->irq_nr, self->irq_handler);
         irq_set_enabled(self->irq_nr, true);
         // enable the uart irq. this macro sets the rx irq level to 4
         uart_set_irq_enables(self->uart, true, true);

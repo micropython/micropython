@@ -176,7 +176,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
     void *rp2_state_machine_irq_obj[8]; \
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
-    
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
