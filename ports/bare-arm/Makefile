@@ -1,52 +1,59 @@
+# Include the core environment definitions; this will set $(TOP).
 include ../../py/mkenv.mk
 
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-
-# MicroPython feature configurations
-MICROPY_ROM_TEXT_COMPRESSION ?= 1
-
-# include py core make definitions
+# Include py core make definitions.
 include $(TOP)/py/py.mk
 
+# Set makefile-level MicroPython feature configurations.
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
+# Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
+DFU ?= $(TOP)/tools/dfu.py
+PYDFU ?= $(TOP)/tools/pydfu.py
 
-INC += -I.
-INC += -I$(TOP)
-INC += -I$(BUILD)
+# Set CFLAGS.
+CFLAGS += -I. -I$(TOP) -I$(BUILD)
+CFLAGS += -Wall -Werror -std=c99 -nostdlib
+CFLAGS += -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float
+CSUPEROPT = -Os # save some code space for performance-critical code
 
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
-CSUPEROPT = -Os # save some code space
-
-#Debugging/Optimization
+# Select debugging or optimisation build.
 ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -Og
 else
 CFLAGS += -Os -DNDEBUG
+CFLAGS += -fdata-sections -ffunction-sections
 endif
 
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref
-LIBS =
+# Set linker flags.
+LDFLAGS += -nostdlib -T stm32f405.ld --gc-sections
 
-SRC_C = \
-	main.c \
-#	printf.c \
-	string0.c \
-	malloc0.c \
-	gccollect.c \
+# Define the required source files.
+SRC_C += lib.c main.c system.c
 
-SRC_S = \
-#	startup_stm32f40xx.s \
-	gchelper.s \
+# Define the required object files.
+OBJ += $(PY_CORE_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
-
-all: $(BUILD)/firmware.elf
+# Define the top-level target, the main firmware.
+all: $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 	$(Q)$(SIZE) $@
 
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(ECHO) "Create $@"
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $@
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$^ $@
+
+deploy: $(BUILD)/firmware.dfu
+	$(Q)$(PYTHON) $(PYDFU) -u $^
+
+# Include remaining core make rules.
 include $(TOP)/py/mkrules.mk
