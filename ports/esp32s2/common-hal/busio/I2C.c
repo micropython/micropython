@@ -53,7 +53,6 @@ void i2c_reset(void) {
         }
     }
 }
-static bool i2c_inited[I2C_NUM_MAX];
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
@@ -90,10 +89,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 #endif
 
 
-    if (xSemaphoreCreateBinaryStatic(&self->semaphore) != &self->semaphore) {
+    if (xSemaphoreCreateMutexStatic(&self->semaphore) != &self->semaphore) {
         mp_raise_RuntimeError(translate("Unable to create lock"));
     }
-    xSemaphoreGive(&self->semaphore);
     self->sda_pin = sda;
     self->scl_pin = scl;
     self->i2c_num = I2C_NUM_MAX;
@@ -106,6 +104,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
     i2c_status[self->i2c_num] = STATUS_IN_USE;
+
+    // Delete any previous driver.
+    i2c_driver_delete(self->i2c_num);
+
     i2c_config_t i2c_conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = self->sda_pin->number,
@@ -117,23 +119,16 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
             .clk_speed = frequency,
         }
     };
-    esp_err_t result = i2c_param_config(self->i2c_num, &i2c_conf);
-    if (result != ESP_OK) {
-        mp_raise_ValueError(translate("Invalid pins"));
+    if (i2c_param_config(self->i2c_num, &i2c_conf) != ESP_OK) {
+        mp_raise_ValueError(translate("Invalid frequency"));
     }
 
-
-    if (!i2c_inited[self->i2c_num]) {
-        result = i2c_driver_install(self->i2c_num,
-                                    I2C_MODE_MASTER,
-                                    0,
-                                    0,
-                                    0);
-        if (result != ESP_OK) {
-            mp_raise_OSError(MP_EIO);
-        }
-        i2c_inited[self->i2c_num] = true;
-
+    if (i2c_driver_install(self->i2c_num,
+                           I2C_MODE_MASTER,
+                           0,
+                           0,
+                           0) != ESP_OK) {
+        mp_raise_OSError(MP_EIO);
     }
 
     claim_pin(sda);
@@ -149,12 +144,14 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_status[self->i2c_num] = STATUS_FREE;
+    i2c_driver_delete(self->i2c_num);
 
     common_hal_reset_pin(self->sda_pin);
     common_hal_reset_pin(self->scl_pin);
     self->sda_pin = NULL;
     self->scl_pin = NULL;
+
+    i2c_status[self->i2c_num] = STATUS_FREE;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
