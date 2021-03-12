@@ -25,10 +25,6 @@
  */
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-<<<<<<< HEAD
-=======
-#include "src/rp2_common/hardware_irq/include/hardware/irq.h"
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 
 #include <stdint.h>
 
@@ -49,16 +45,7 @@ volatile uint16_t result = 0;
 volatile uint16_t buf_index = 0;
 
 uint16_t pulsein_program[] = {
-<<<<<<< HEAD
     0x4001, //  1: in     pins, 1
-=======
-    0xe03f, //  0: set    x, 31
-    0x4001, //  1: in     pins, 1
-    0x0041, //  2: jmp    x--, 2
-    0x8060, //  3: push   iffull block
-    0xc020, //  4: irq    wait 0
-    0x0000, //  5: jmp    1
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 };
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
@@ -80,11 +67,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     bool ok = rp2pio_statemachine_construct(&state_machine,
         pulsein_program, sizeof(pulsein_program) / sizeof(pulsein_program[0]),
-<<<<<<< HEAD
         1000000,
-=======
-        1000000 * 3,
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
         NULL, 0,
         NULL, 0,
         pin, 1,
@@ -102,14 +85,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->state_machine.state_machine = state_machine.state_machine;
     self->state_machine.sm_config = state_machine.sm_config;
     self->state_machine.offset = state_machine.offset;
-<<<<<<< HEAD
-=======
-    if ( self->state_machine.pio == pio0 ) {
-       self->pio_interrupt = PIO0_IRQ_0;
-    } else {
-       self->pio_interrupt = PIO1_IRQ_0;
-    }
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
     pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
     last_level = self->idle_state;
     level_count = 0;
@@ -117,13 +92,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     buf_index = 0;
 
     pio_sm_set_in_pins(state_machine.pio,state_machine.state_machine,pin->number);
-<<<<<<< HEAD
     common_hal_rp2pio_statemachine_set_interrupt_handler(&state_machine,&common_hal_pulseio_pulsein_interrupt,NULL,PIO_IRQ0_INTE_SM0_RXNEMPTY_BITS);
-=======
-    irq_set_exclusive_handler(self->pio_interrupt, common_hal_pulseio_pulsein_interrupt);
-    hw_clear_bits(&state_machine.pio->inte0, 1u << state_machine.state_machine);
-    hw_set_bits(&state_machine.pio->inte0, 1u << (state_machine.state_machine+8));
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 
     // exec a set pindirs to 0 for input
     pio_sm_exec(state_machine.pio,state_machine.state_machine,0xe080);
@@ -134,10 +103,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
        pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x20a0);
     }
     pio_sm_set_enabled(state_machine.pio, state_machine.state_machine, true);
-<<<<<<< HEAD
-=======
-    irq_set_enabled(self->pio_interrupt, true);
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -148,10 +113,6 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
-<<<<<<< HEAD
-=======
-    irq_set_enabled(self->pio_interrupt, false);
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
     pio_sm_unclaim (self->state_machine.pio, self->state_machine.state_machine);
     m_free(self->buffer);
@@ -185,23 +146,12 @@ void common_hal_pulseio_pulsein_interrupt() {
              }
            }
        }
-<<<<<<< HEAD
-=======
-// clear interrupt
-    irq_clear(self->pio_interrupt);
-    hw_clear_bits(&self->state_machine.pio->inte0, 1u << self->state_machine.state_machine);
-    self->state_machine.pio->irq = 1u << self->state_machine.state_machine;
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 // check for a pulse thats too long (4000 us) or maxlen reached,  and reset
     if (( level_count > 4000 ) || (buf_index >= self->maxlen)) {
        pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
        pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
        pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
        pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
-<<<<<<< HEAD
-=======
-       irq_set_enabled(self->pio_interrupt, true);
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
     }
 }
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
@@ -219,17 +169,10 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         gpio_put(self->pin, !self->idle_state);
         common_hal_mcu_delay_us((uint32_t)trigger_duration);
         gpio_set_function(self->pin ,GPIO_FUNC_PIO0);
-<<<<<<< HEAD
         common_hal_mcu_delay_us(225);
     }
 
     // Reconfigure the pin for PIO
-=======
-    }
-
-    // Reconfigure the pin for PIO
-    common_hal_mcu_delay_us(200);
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
     gpio_set_function(self->pin, GPIO_FUNC_PIO0);
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
 }

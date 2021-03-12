@@ -42,10 +42,6 @@ typedef struct {
     volatile uint16_t start;
     volatile uint16_t len;
     rp2pio_statemachine_obj_t state_machine;
-<<<<<<< HEAD
-=======
-    uint16_t pio_interrupt;
->>>>>>> a3c3e8a0fa5e06910747f1a95a12b899562a618d
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);
