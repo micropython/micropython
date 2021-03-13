@@ -120,6 +120,7 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
+#define MICROPY_PY_UERRNO                       (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
