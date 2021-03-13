@@ -423,10 +423,10 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && uart_is_readable(self->uart)) {
+        if ((flags & MP_STREAM_POLL_RD) && (ringbuf_avail(&self->read_buffer) > 0)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && uart_is_writable(self->uart)) {
+        if ((flags & MP_STREAM_POLL_WR) && (ringbuf_free(&self->write_buffer) > 0)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
