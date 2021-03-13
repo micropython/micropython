@@ -2144,8 +2144,8 @@ msgid ""
 msgstr ""
 "La alimentación del microntrolador bajó. Asegúrate que tu fuente de "
 "alimentación\n"
-"pueda aportar suficiente energía para todo el circuito y presiona reset ("
-"luego de expulsar CIRCUITPY)\n"
+"pueda aportar suficiente energía para todo el circuito y presiona reset "
+"(luego de expulsar CIRCUITPY)\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -3739,7 +3739,7 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 msgid "out of range of source"
 msgstr "fuera de rango de fuente"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "fuera de rango del objetivo"
 
