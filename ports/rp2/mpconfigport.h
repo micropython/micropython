@@ -88,6 +88,7 @@
 #define MICROPY_PY_SYS_STDFILES                 (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER             (1)
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
+#define MICROPY_PY_UERRNO                       (1)
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
 
