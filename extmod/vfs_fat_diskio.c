@@ -34,7 +34,7 @@ STATIC fs_user_mount_t *disk_get_device(void *bdev) {
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read (
-    bdev_t pdrv,      /* Physical drive nmuber (0..) */
+    bdev_t pdrv,      /* Physical drive */
     BYTE *buff,        /* Data buffer to store read data */
     DWORD sector,    /* Sector address (LBA) */
     UINT count        /* Number of sectors to read (1..128) */
@@ -75,7 +75,7 @@ DRESULT disk_read (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_write (
-    bdev_t pdrv,          /* Physical drive nmuber (0..) */
+    bdev_t pdrv,          /* Physical drive */
     const BYTE *buff,    /* Data to be written */
     DWORD sector,        /* Sector address (LBA) */
     UINT count            /* Number of sectors to write (1..128) */
@@ -122,7 +122,7 @@ DRESULT disk_write (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_ioctl (
-    bdev_t pdrv,      /* Physical drive nmuber (0..) */
+    bdev_t pdrv,      /* Physical drive */
     BYTE cmd,         /* Control code */
     void *buff        /* Buffer to send/receive control data */
 )
