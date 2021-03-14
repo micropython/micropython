@@ -42,10 +42,10 @@
 //|     Example usage::
 //|
 //|         import analogio
-//|         from microcontroller import pin
+//|         from board import *
 //|
-//|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
-//|         dac.value = 32768                           # makes PA02 1.65V"""
+//|         dac = analogio.AnalogOut(A2)                # output on pin A2
+//|         dac.value = 32768                           # makes A2 1.65V"""
 //|
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogOut on the given pin.

@@ -124,7 +124,7 @@ const mp_obj_property_t analogio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     reference_voltage: Optional[float]
+//|     reference_voltage: float
 //|     """The maximum voltage measurable (also known as the reference voltage) as a
 //|     `float` in Volts."""
 //|
