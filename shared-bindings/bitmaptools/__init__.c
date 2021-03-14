@@ -357,7 +357,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
-//| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False):
+//| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False) -> None:
 //|     """Read from a binary file into a bitmap
 //| The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
 //|
