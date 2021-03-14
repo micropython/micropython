@@ -27,7 +27,9 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H
 
+#include "shared-module/displayio/Bitmap.h"
 #include "py/obj.h"
+#include "extmod/vfs_fat.h"
 
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
                                             int16_t dest_clip0_x, int16_t dest_clip0_y,
@@ -48,5 +50,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
                                  int16_t x0, int16_t y0,
                                  int16_t x1, int16_t y1,
                                  uint32_t value);
+
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H

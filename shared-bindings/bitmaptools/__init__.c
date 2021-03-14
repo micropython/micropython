@@ -357,7 +357,83 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
+//| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False):
+//|     """Read from a binary file into a bitmap
+//| The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
+//|
+//| The bytes in an element can be optionally swapped, and the pixels in an element can be reversed.
+//|
+//| This function doesn't parse image headers, but is useful to speed up loading of uncompressed image formats such as PCF glyph data.
+//|
+//|     :param displayio.Bitmap bitmap: A writable bitmap
+//|     :param typing.BinaryIO file: A file opened in binary mode
+//|     :param int bits_per_pixel: Number of bits per pixel.  Values 1, 2, 4, 8, 16, 24, and 32 are supported;
+//|     :param int element_size: Number of bytes per element.  Values of 1, 2, and 4 are supported, except that 24 ``bits_per_pixel`` requires 1 byte per element.
+//|     :param bool reverse_pixels_in_element: If set, the first pixel in a word is taken from the Most Signficant Bits; otherwise, it is taken from the Least Significant Bits.
+//|     :param bool swap_bytes_in_element: If the ``element_size`` is not 1, then reverse the byte order of each element read.
+//|     """
+//|     ...
+//|
+
+STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_file, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_bits_per_pixel, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_element_size, MP_ARG_INT, { .u_int = 1 } },
+        { MP_QSTR_reverse_pixels_in_element, MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_swap_bytes_in_element,  MP_ARG_BOOL, { .u_bool = false } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (!MP_OBJ_IS_TYPE(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
+        mp_raise_TypeError(NULL);
+    }
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+    if (!MP_OBJ_IS_TYPE(args[ARG_file].u_obj, &mp_type_fileio)) {
+        mp_raise_TypeError(NULL);
+    }
+    pyb_file_obj_t* file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
+
+    int element_size = args[ARG_element_size].u_int;
+    if (element_size != 1 && element_size != 2 && element_size != 4) {
+            mp_raise_ValueError_varg(translate("invalid element_size %d, must be, 1, 2, or 4"), element_size);
+    }
+
+    int bits_per_pixel = args[ARG_bits_per_pixel].u_int;
+    switch (bits_per_pixel) {
+        case 24:
+            if (element_size != 1) {
+                mp_raise_ValueError_varg(translate("invalid element size %d for bits_per_pixel %d\n"), element_size, bits_per_pixel);
+            }
+            break;
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+        case 16:
+        case 32:
+            break;
+        default:
+            mp_raise_ValueError_varg(translate("invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"), bits_per_pixel);
+    }
+
+    bool reverse_pixels_in_element = args[ARG_reverse_pixels_in_element].u_bool;
+    bool swap_bytes_in_element = args[ARG_swap_bytes_in_element].u_bool;
+
+    common_hal_bitmaptools_readinto(bitmap, file, element_size, bits_per_pixel, reverse_pixels_in_element, swap_bytes_in_element);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
+
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
