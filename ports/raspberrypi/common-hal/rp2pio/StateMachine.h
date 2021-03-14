@@ -51,6 +51,8 @@ typedef struct {
     bool out_shift_right;
     bool in_shift_right;
     uint32_t actual_frequency;
+    pio_sm_config sm_config;
+    uint8_t offset;
 } rp2pio_statemachine_obj_t;
 
 void reset_rp2pio_statemachine(void);

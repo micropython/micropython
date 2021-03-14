@@ -222,6 +222,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     if (program_offset == 32) {
         program_offset = pio_add_program(self->pio, &program_struct);
     }
+    self->offset = program_offset;
     _current_program_id[pio_index][state_machine] = program_id;
     _current_program_len[pio_index][state_machine] = program_len;
     _current_program_offset[pio_index][state_machine] = program_offset;
@@ -303,6 +304,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     self->init_len = init_len;
 
     sm_config_set_fifo_join(&c, join);
+    self->sm_config = c;
 
     pio_sm_init(self->pio, self->state_machine, program_offset, &c);
     common_hal_rp2pio_statemachine_run(self, init, init_len);

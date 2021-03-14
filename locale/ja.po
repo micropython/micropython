@@ -3671,7 +3671,7 @@ msgstr "ord()は1文字を要求しますが、長さ %d の文字列が与え�
 msgid "out of range of source"
 msgstr "ソースが範囲外"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr ""
 

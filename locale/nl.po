@@ -3704,7 +3704,7 @@ msgstr "ord() verwacht een teken (char) maar vond een string van lengte %d"
 msgid "out of range of source"
 msgstr "buiten bereik van bron"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "buiten bereik van doel"
 

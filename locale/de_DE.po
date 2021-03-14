@@ -3732,7 +3732,7 @@ msgstr ""
 msgid "out of range of source"
 msgstr "Außerhalb des Bereichs der Quelle"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "Außerhalb des Bereichs des Ziels"
 

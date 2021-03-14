@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dave Putz for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
-#include "shared-module/displayio/area.h"
+
+#define NO_PIN 0xff
 
 typedef struct {
     mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
-    size_t* data;
-    uint16_t stride; // size_t's
-    uint8_t bits_per_value;
-    uint8_t x_shift;
-    size_t x_mask;
-    displayio_area_t dirty_area;
-    uint16_t bitmask;
-    bool read_only;
-} displayio_bitmap_t;
+    uint8_t pin;
+} pulseio_pulseout_obj_t;
 
-void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);
-displayio_area_t* displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t* tail);
-void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
-void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value);
+void pulseout_reset(void);
+void pulseout_interrupt_handler(uint8_t index);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
