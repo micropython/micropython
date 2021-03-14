@@ -9,10 +9,6 @@ set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_DIR}/qstrdefsport.h
 )
 
-set(MICROPY_SOURCE_EXTMOD_EXTRA
-    ${MICROPY_DIR}/extmod/modonewire.c
-)
-
 set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1.c
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
@@ -75,7 +71,6 @@ set(MICROPY_SOURCE_PORT
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
-    ${MICROPY_SOURCE_EXTMOD_EXTRA}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
 )
@@ -129,7 +124,6 @@ idf_component_register(
     SRCS
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
-        ${MICROPY_SOURCE_EXTMOD_EXTRA}
         ${MICROPY_SOURCE_LIB}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
