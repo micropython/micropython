@@ -361,14 +361,12 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* f
         if (swap_bytes) {
             switch(element_size) {
             case 2:
-                {
-                    for(int i=0; i< rowsize_in_u16; i++) {
-                        rowdata16[i] = __builtin_bswap16(rowdata16[i]);
-                    }
+                for(size_t i=0; i< rowsize_in_u16; i++) {
+                    rowdata16[i] = __builtin_bswap16(rowdata16[i]);
                 }
                 break;
             case 4:
-                for(int i=0; i< rowsize_in_u32; i++) {
+                for(size_t i=0; i< rowsize_in_u32; i++) {
                     rowdata32[i] = __builtin_bswap32(rowdata32[i]);
                 }
             default:
