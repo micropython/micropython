@@ -43,6 +43,7 @@
 #define DEFAULT_UART1_TX (4)
 #define DEFAULT_UART1_RX (5)
 #define DEFAULT_BUFFER_SIZE (256)
+#define MIN_BUFFER_SIZE  (128)
 #define MAX_BUFFER_SIZE  (32766)
 
 #define IS_VALID_PERIPH(uart, pin)  (((((pin) + 4) & 8) >> 3) == (uart))
@@ -261,8 +262,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         rxbuf_len = args[ARG_rxbuf].u_int;
         // minimal size is DEFAULT_BUFFER_SIZE
         // maximal size is MAX_BUFFER_SIZE
-        if (rxbuf_len < DEFAULT_BUFFER_SIZE) {
-            rxbuf_len = DEFAULT_BUFFER_SIZE;
+        if (rxbuf_len < MIN_BUFFER_SIZE) {
+            rxbuf_len = MIN_BUFFER_SIZE;
         } else if (rxbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("rxbuf too large"));
         }
@@ -275,8 +276,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         txbuf_len = args[ARG_txbuf].u_int;
         // minimal size is DEFAULT_BUFFER_SIZE
         // maximal size is MAX_BUFFER_SIZE
-        if (txbuf_len < DEFAULT_BUFFER_SIZE) {
-            txbuf_len = DEFAULT_BUFFER_SIZE;
+        if (txbuf_len < MIN_BUFFER_SIZE) {
+            txbuf_len = MIN_BUFFER_SIZE;
         } else if (txbuf_len > MAX_BUFFER_SIZE) {
             mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
         }
