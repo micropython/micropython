@@ -40,7 +40,7 @@ Classes
 
         Indexed read of *self*, called as ``a[index]`` (where ``a`` is an ``array``).
         Returns a value if *index* is an ``int`` and an ``array`` if *index* is a slice. 
-        Negative indices count from end and ``IndexError``is thrown if the index out of range.
+        Negative indices count from end and ``IndexError`` is thrown if the index out of range.
         
  	     **Note:** ``__getitem__`` cannot be called directly (``a.__getitem__(index)`` fails) and
  	     is not present in ``__dict__``, however ``a[index]`` does work.
@@ -49,7 +49,7 @@ Classes
 
         Indexed write into *self*, called as ``a[index] = value`` (where ``a`` is an ``array``).
         ``value`` is a single value if *index* is an ``int`` and an ``array`` if *index* is a slice. 
-        Negative indices count from end and ``IndexError``is thrown if the index out of range.
+        Negative indices count from end and ``IndexError`` is thrown if the index out of range.
         
  	     **Note:** ``__setitem__`` cannot be called directly (``a.__setitem__(index, value)`` fails) and
  	     is not present in ``__dict__``, however ``a[index] = value`` does work.
@@ -63,14 +63,14 @@ Classes
 
     .. method:: __add__(other)
 
-        Return a new ``array`` that is the concatonation of *self* with *other*, called as ``a + other`` (where ``a`` and *other* are both ``array``s).
+        Return a new ``array`` that is the concatonation of *self* with *other*, called as ``a + other`` (where ``a`` and *other* are both ``arrays``).
         
  	     **Note:** ``__add__`` cannot be called directly (``a.__add__(other)`` fails) and
  	     is not present in ``__dict__``, however ``a + other`` does work.
 
     .. method:: __iadd__(other)
 
-        Concatonates *self* with *other* in-place, called as ``a += other`` (where ``a`` and *other* are both ``array``s).
+        Concatonates *self* with *other* in-place, called as ``a += other`` (where ``a`` and *other* are both ``arrays``).
         Equivalent to ``extend(other)``.
         
  	     **Note:** ``__iadd__`` cannot be called directly (``a.__iadd__(other)`` fails) and
