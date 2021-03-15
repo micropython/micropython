@@ -30,6 +30,7 @@ import glob
 import fnmatch
 import itertools
 import os
+import pathlib
 import re
 import subprocess
 
@@ -80,7 +81,7 @@ def list_files(args, paths, exclusions=None, prefix=""):
     files = set()
     args = [os.path.join(prefix, arg) for arg in args]
     for pattern in paths:
-        files.update(fnmatch.filter(args, os.path.join(prefix, pattern)))
+        files.update(arg for arg in args if pathlib.Path(arg).match(pattern))
     for pattern in exclusions or []:
         files.difference_update(fnmatch.filter(files, os.path.join(prefix, pattern)))
     return sorted(files)
