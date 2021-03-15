@@ -21,6 +21,6 @@ repos:
         language: system
     -   id: formatting
         name: Formatting
-        entry: sh -c "git diff --staged --name-only | xargs python3 tools/codeformat.py"
+        entry: sh -c "git diff --staged --name-only | xargs -r python3 tools/codeformat.py"
         types_or: [c, python]
         language: system
