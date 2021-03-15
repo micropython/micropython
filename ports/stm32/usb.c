@@ -994,6 +994,10 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     pyb_usb_hid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
+        if(!self->usb_dev->usbd_hid_itf.base.usbd) {
+            // not enumerated for first time yet, structures not initalized.
+            return 0;
+        }
         uintptr_t flags = arg;
         ret = 0;
         if ((flags & MP_STREAM_POLL_RD) && usbd_hid_rx_num(&self->usb_dev->usbd_hid_itf) > 0) {
