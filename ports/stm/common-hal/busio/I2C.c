@@ -61,11 +61,11 @@ STATIC bool never_reset_i2c[MAX_I2C];
 #define ALL_CLOCKS 0xFF
 STATIC void i2c_clock_enable(uint8_t mask);
 STATIC void i2c_clock_disable(uint8_t mask);
-STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef * I2Cx);
+STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx);
 
 void i2c_reset(void) {
     uint16_t never_reset_mask = 0x00;
-    for(int i = 0; i < MAX_I2C; i++) {
+    for (int i = 0; i < MAX_I2C; i++) {
         if (!never_reset_i2c[i]) {
             reserved_i2c[i] = false;
         } else {
@@ -76,10 +76,10 @@ void i2c_reset(void) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
 
     // Match pins to I2C objects
-    I2C_TypeDef * I2Cx;
+    I2C_TypeDef *I2Cx;
     uint8_t sda_len = MP_ARRAY_SIZE(mcu_i2c_sda_list);
     uint8_t scl_len = MP_ARRAY_SIZE(mcu_i2c_scl_list);
     bool i2c_taken = false;
@@ -107,7 +107,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     // Handle typedef selection, errors
-    if (self->sda != NULL && self->scl != NULL ) {
+    if (self->sda != NULL && self->scl != NULL) {
         I2Cx = mcu_i2c_banks[self->sda->periph_index - 1];
     } else {
         if (i2c_taken) {
@@ -171,8 +171,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     self->frame_in_prog = false;
 
-    //start the receive interrupt chain
-    HAL_NVIC_DisableIRQ(self->irq); //prevent handle lock contention
+    // start the receive interrupt chain
+    HAL_NVIC_DisableIRQ(self->irq); // prevent handle lock contention
     HAL_NVIC_SetPriority(self->irq, 1, 0);
     HAL_NVIC_EnableIRQ(self->irq);
 }
@@ -215,15 +215,15 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
     bool grabbed_lock = false;
 
-    //Critical section code that may be required at some point.
+    // Critical section code that may be required at some point.
     // uint32_t store_primask = __get_PRIMASK();
     // __disable_irq();
     // __DMB();
 
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
 
     // __DMB();
     // __set_PRIMASK(store_primask);
@@ -240,7 +240,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     HAL_StatusTypeDef result;
     if (!transmit_stop_bit) {
         uint32_t xfer_opt;
@@ -251,31 +251,29 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
             xfer_opt = I2C_NEXT_FRAME;
         }
         result = HAL_I2C_Master_Seq_Transmit_IT(&(self->handle),
-                                    (uint16_t)(addr << 1), (uint8_t *)data,
-                                    (uint16_t)len, xfer_opt);
-        while (HAL_I2C_GetState(&(self->handle)) != HAL_I2C_STATE_READY)
-        {
+            (uint16_t)(addr << 1), (uint8_t *)data,
+            (uint16_t)len, xfer_opt);
+        while (HAL_I2C_GetState(&(self->handle)) != HAL_I2C_STATE_READY) {
             RUN_BACKGROUND_TASKS;
         }
         self->frame_in_prog = true;
     } else {
         result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr << 1),
-                                                        (uint8_t *)data, (uint16_t)len, 500);
+            (uint8_t *)data, (uint16_t)len, 500);
     }
     return result == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-        uint8_t *data, size_t len) {
+    uint8_t *data, size_t len) {
     if (!self->frame_in_prog) {
-        return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500)
-                                    == HAL_OK ? 0 : MP_EIO;
+        return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr << 1), data, (uint16_t)len, 500)
+               == HAL_OK ? 0 : MP_EIO;
     } else {
         HAL_StatusTypeDef result = HAL_I2C_Master_Seq_Receive_IT(&(self->handle),
-                                    (uint16_t)(addr << 1), (uint8_t *)data,
-                                    (uint16_t)len, I2C_LAST_FRAME);
-        while (HAL_I2C_GetState(&(self->handle)) != HAL_I2C_STATE_READY)
-        {
+            (uint16_t)(addr << 1), (uint8_t *)data,
+            (uint16_t)len, I2C_LAST_FRAME);
+        while (HAL_I2C_GetState(&(self->handle)) != HAL_I2C_STATE_READY) {
             RUN_BACKGROUND_TASKS;
         }
         self->frame_in_prog = false;
@@ -338,7 +336,7 @@ STATIC void i2c_clock_disable(uint8_t mask) {
     #endif
 }
 
-STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef * I2Cx) {
+STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef *I2Cx) {
     #ifdef I2C1
     if (I2Cx == I2C1) {
         self->irq = I2C1_EV_IRQn;
@@ -362,8 +360,8 @@ STATIC void i2c_assign_irq(busio_i2c_obj_t *self, I2C_TypeDef * I2Cx) {
 }
 
 STATIC void call_hal_irq(int i2c_num) {
-    //Create casted context pointer
-    busio_i2c_obj_t * context = (busio_i2c_obj_t*)MP_STATE_PORT(cpy_i2c_obj_all)[i2c_num - 1];
+    // Create casted context pointer
+    busio_i2c_obj_t *context = (busio_i2c_obj_t *)MP_STATE_PORT(cpy_i2c_obj_all)[i2c_num - 1];
     if (context != NULL) {
         HAL_NVIC_ClearPendingIRQ(context->irq);
         HAL_I2C_EV_IRQHandler(&context->handle);

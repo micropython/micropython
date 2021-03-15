@@ -63,7 +63,7 @@
 //|     """Catchall exception for Bluetooth related errors."""
 //|     ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
-NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...) {
+NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_BluetoothError, fmt, argptr);
@@ -77,7 +77,7 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...)
 //|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
-NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
+NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
 
@@ -86,7 +86,7 @@ NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
 //|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
-NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) {
+NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_SecurityError, fmt, argptr);
@@ -97,9 +97,9 @@ NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) 
 // Called when _bleio is imported.
 STATIC mp_obj_t bleio___init__(void) {
 // HCI cannot be enabled on import, because we need to setup the HCI adapter first.
-#if !CIRCUITPY_BLEIO_HCI
+    #if !CIRCUITPY_BLEIO_HCI
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
-#endif
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
@@ -116,7 +116,7 @@ STATIC mp_obj_dict_t bleio_module_globals;
 //|     ...
 //|
 mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
-#if CIRCUITPY_BLEIO_HCI
+    #if CIRCUITPY_BLEIO_HCI
     if (adapter_obj != mp_const_none && !MP_OBJ_IS_TYPE(adapter_obj, &bleio_adapter_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), bleio_adapter_type.name);
     }
@@ -127,9 +127,9 @@ mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
     if (elem) {
         elem->value = adapter_obj;
     }
-#else
+    #else
     mp_raise_NotImplementedError(translate("Not settable"));
-#endif
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_set_adapter_obj, bleio_set_adapter);
@@ -142,7 +142,7 @@ STATIC mp_map_elem_t bleio_module_globals_table[] = {
 #else
 #define OBJ_FROM_PTR MP_ROM_PTR
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
-#endif
+    #endif
     // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
     { MP_ROM_QSTR(MP_QSTR_Adapter),              OBJ_FROM_PTR(&bleio_adapter_type) },
@@ -158,16 +158,16 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Service),              OBJ_FROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),                 OBJ_FROM_PTR(&bleio_uuid_type) },
 
-#if CIRCUITPY_BLEIO_HCI
+    #if CIRCUITPY_BLEIO_HCI
     // For HCI, _bleio.adapter is settable, and starts as None.
     { MP_ROM_QSTR(MP_QSTR_adapter),              mp_const_none },
-    { MP_ROM_QSTR(MP_QSTR_set_adapter),          (mp_obj_t) &bleio_set_adapter_obj },
-#else
+    { MP_ROM_QSTR(MP_QSTR_set_adapter),          (mp_obj_t)&bleio_set_adapter_obj },
+    #else
     // For non-HCI _bleio.adapter is a fixed singleton, and is not settable.
     // _bleio.set_adapter will raise NotImplementedError.
     { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_adapter),          MP_ROM_PTR(&bleio_set_adapter_obj) },
-#endif
+    #endif
 
     // Errors
     { MP_ROM_QSTR(MP_QSTR_BluetoothError),       OBJ_FROM_PTR(&mp_type_bleio_BluetoothError) },
@@ -197,5 +197,5 @@ void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind
 
 const mp_obj_module_t bleio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&bleio_module_globals,
+    .globals = (mp_obj_dict_t *)&bleio_module_globals,
 };

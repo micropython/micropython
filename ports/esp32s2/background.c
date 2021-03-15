@@ -48,6 +48,8 @@ void port_background_task(void) {
     #endif
 }
 
-void port_start_background_task(void) {}
+void port_start_background_task(void) {
+}
 
-void port_finish_background_task(void) {}
+void port_finish_background_task(void) {
+}

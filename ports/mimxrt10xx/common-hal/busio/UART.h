@@ -40,7 +40,7 @@ typedef struct {
     mp_obj_base_t base;
     LPUART_Type *uart;
     lpuart_handle_t handle;
-    uint8_t* ringbuf;
+    uint8_t *ringbuf;
     bool rx_ongoing;
     uint32_t baudrate;
     uint8_t character_bits;

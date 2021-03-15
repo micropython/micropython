@@ -45,16 +45,16 @@
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return (mp_obj_type_t*)&mp_type_int;
+        return (mp_obj_type_t *)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
-        return (mp_obj_type_t*)&mp_type_str;
+        return (mp_obj_type_t *)&mp_type_str;
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(o_in)) {
-        return (mp_obj_type_t*)&mp_type_float;
+        return (mp_obj_type_t *)&mp_type_float;
     #endif
     } else {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
-        return (mp_obj_type_t*)o->type;
+        return (mp_obj_type_t *)o->type;
     }
 }
 
@@ -75,15 +75,15 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     }
     #endif
 
-#ifndef NDEBUG
+    #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
         return;
     }
-#endif
+    #endif
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
-        type->print((mp_print_t*)print, o_in, kind);
+        type->print((mp_print_t *)print, o_in, kind);
     } else {
         mp_printf(print, "<%q>", type->name);
     }
@@ -101,28 +101,28 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
         if (n > 0) {
             assert(n % 3 == 0);
             // Decompress the format strings
-            const compressed_string_t* traceback = translate("Traceback (most recent call last):\n");
+            const compressed_string_t *traceback = translate("Traceback (most recent call last):\n");
             char decompressed[decompress_length(traceback)];
             decompress(traceback, decompressed);
-#if MICROPY_ENABLE_SOURCE_LINE
-            const compressed_string_t* frame = translate("  File \"%q\", line %d");
-#else
-            const compressed_string_t* frame = translate("  File \"%q\"");
-#endif
+            #if MICROPY_ENABLE_SOURCE_LINE
+            const compressed_string_t *frame = translate("  File \"%q\", line %d");
+            #else
+            const compressed_string_t *frame = translate("  File \"%q\"");
+            #endif
             char decompressed_frame[decompress_length(frame)];
             decompress(frame, decompressed_frame);
-            const compressed_string_t* block_fmt = translate(", in %q\n");
+            const compressed_string_t *block_fmt = translate(", in %q\n");
             char decompressed_block[decompress_length(block_fmt)];
             decompress(block_fmt, decompressed_block);
 
             // Print the traceback
             mp_print_str(print, decompressed);
             for (int i = n - 3; i >= 0; i -= 3) {
-#if MICROPY_ENABLE_SOURCE_LINE
+                #if MICROPY_ENABLE_SOURCE_LINE
                 mp_printf(print, decompressed_frame, values[i], (int)values[i + 1]);
-#else
+                #else
                 mp_printf(print, decompressed_frame, values[i]);
-#endif
+                #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
@@ -214,7 +214,9 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             // both SMALL_INT, and not equal if we get here
             return false;
         } else {
-            mp_obj_t temp = o2; o2 = o1; o1 = temp;
+            mp_obj_t temp = o2;
+            o2 = o1;
+            o1 = temp;
             // o2 is now the SMALL_INT, o1 is not
             // fall through to generic op
         }
@@ -268,10 +270,10 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
         return mp_obj_int_get_checked(arg);
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_int);
+        mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_int);
         #else
-            mp_raise_TypeError_varg(
-                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
+        mp_raise_TypeError_varg(
+            translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
         #endif
     }
 }
@@ -331,10 +333,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_float);
+        mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_float);
         #else
-            mp_raise_TypeError_varg(
-                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
+        mp_raise_TypeError_varg(
+            translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
         #endif
     }
 
@@ -364,10 +366,10 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_complex);
+        mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_complex);
         #else
-            mp_raise_TypeError_varg(
-                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
+        mp_raise_TypeError_varg(
+            translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
         #endif
     }
 }
@@ -382,10 +384,10 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
         mp_obj_list_get(o, len, items);
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("expected tuple/list"));
+        mp_raise_TypeError(translate("expected tuple/list"));
         #else
-            mp_raise_TypeError_varg(
-                translate("object '%q' is not a tuple or list"), mp_obj_get_type_qstr(o));
+        mp_raise_TypeError_varg(
+            translate("object '%q' is not a tuple or list"), mp_obj_get_type_qstr(o));
         #endif
     }
 }
@@ -396,10 +398,10 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_ValueError(translate("tuple/list has wrong length"));
+        mp_raise_ValueError(translate("tuple/list has wrong length"));
         #else
-            mp_raise_ValueError_varg(translate("requested length %d but object has length %d"),
-                (int)len, (int)seq_len);
+        mp_raise_ValueError_varg(translate("requested length %d but object has length %d"),
+            (int)len, (int)seq_len);
         #endif
     }
 }
@@ -411,11 +413,11 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("indices must be integers"));
+        mp_raise_TypeError(translate("indices must be integers"));
         #else
-            mp_raise_TypeError_varg(
-                translate("%q indices must be integers, not %q"),
-                type->name, mp_obj_get_type_qstr(index));
+        mp_raise_TypeError_varg(
+            translate("%q indices must be integers, not %q"),
+            type->name, mp_obj_get_type_qstr(index));
         #endif
     }
 
@@ -431,10 +433,10 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     } else {
         if (i < 0 || (mp_uint_t)i >= len) {
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                mp_raise_IndexError(translate("index out of range"));
+            mp_raise_IndexError(translate("index out of range"));
             #else
-                mp_raise_msg_varg(&mp_type_IndexError,
-                    translate("%q index out of range"), type->name);
+            mp_raise_msg_varg(&mp_type_IndexError,
+                translate("%q index out of range"), type->name);
             #endif
         }
     }
@@ -466,10 +468,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == MP_OBJ_NULL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("object has no len"));
+        mp_raise_TypeError(translate("object has no len"));
         #else
-            mp_raise_TypeError_varg(
-                translate("object of type '%q' has no len()"), mp_obj_get_type_qstr(o_in));
+        mp_raise_TypeError_varg(
+            translate("object of type '%q' has no len()"), mp_obj_get_type_qstr(o_in));
         #endif
     } else {
         return len;
@@ -479,10 +481,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+        #if !MICROPY_PY_BUILTINS_STR_UNICODE
         // It's simple - unicode is slow, non-unicode is fast
         MP_OBJ_IS_STR(o_in) ||
-#endif
+        #endif
         MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
         GET_STR_LEN(o_in, l);
         return MP_OBJ_NEW_SMALL_INT(l);
@@ -509,24 +511,24 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     }
     if (value == MP_OBJ_NULL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("object does not support item deletion"));
+        mp_raise_TypeError(translate("object does not support item deletion"));
         #else
-            mp_raise_TypeError_varg(
-                translate("'%q' object does not support item deletion"), mp_obj_get_type_qstr(base));
+        mp_raise_TypeError_varg(
+            translate("'%q' object does not support item deletion"), mp_obj_get_type_qstr(base));
         #endif
     } else if (value == MP_OBJ_SENTINEL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("object is not subscriptable"));
+        mp_raise_TypeError(translate("object is not subscriptable"));
         #else
-            mp_raise_TypeError_varg(
-                translate("'%q' object is not subscriptable"), mp_obj_get_type_qstr(base));
+        mp_raise_TypeError_varg(
+            translate("'%q' object is not subscriptable"), mp_obj_get_type_qstr(base));
         #endif
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_TypeError(translate("object does not support item assignment"));
+        mp_raise_TypeError(translate("object does not support item assignment"));
         #else
-            mp_raise_TypeError_varg(
-                translate("'%q' object does not support item assignment"), mp_obj_get_type_qstr(base));
+        mp_raise_TypeError_varg(
+            translate("'%q' object does not support item assignment"), mp_obj_get_type_qstr(base));
         #endif
     }
 }
@@ -565,7 +567,7 @@ STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
 
 mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_generic_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_generic_it_t *o = (mp_obj_generic_it_t*)iter_buf;
+    mp_obj_generic_it_t *o = (mp_obj_generic_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = generic_it_iternext;
     o->obj = obj;
@@ -593,7 +595,9 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     switch (op) {
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }

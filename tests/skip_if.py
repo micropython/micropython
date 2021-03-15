@@ -6,17 +6,22 @@
 # This must be on one line so its skipped when built into tests.
 """This file provides helpers to detect particular running conditions and skip the test when appropriate."""
 
+
 def skip():
     print("SKIP")
     raise SystemExit
 
+
 def always():
     skip()
 
+
 def no_reversed():
     import builtins
+
     if "reversed" not in dir(builtins):
         skip()
+
 
 def no_bigint():
     try:
@@ -27,27 +32,34 @@ def no_bigint():
     except OverflowError:
         skip()
 
+
 def board_in(*board):
     try:
         import test_env
     except ImportError:
+
         class Env:
             def __init__(self, board):
                 self.board = board
+
         test_env = Env("unknown")
     if test_env.board in board:
         skip()
+
 
 def board_not_in(*board):
     try:
         import test_env
     except ImportError:
+
         class Env:
             def __init__(self, board):
                 self.board = board
+
         test_env = Env("unknown")
     if test_env.board not in board:
         skip()
+
 
 def no_cpython_compat():
     try:
@@ -59,13 +71,14 @@ def no_cpython_compat():
     except TypeError:
         skip()
 
+
 def no_slice_assign():
     try:
         memoryview
     except:
         skip()
-    b1 = bytearray(b'1234')
-    b2 = bytearray(b'5678')
+    b1 = bytearray(b"1234")
+    b2 = bytearray(b"5678")
     m1 = memoryview(b1)
     m2 = memoryview(b2)
     try:
@@ -78,6 +91,7 @@ def no_reverse_ops():
     class Foo:
         def __radd__(self, other):
             pass
+
     try:
         5 + Foo()
     except TypeError:

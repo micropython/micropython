@@ -58,12 +58,12 @@ void pulseout_reset() {
     refcount = 0;
 }
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pwmio_pwmout_obj_t* carrier,
-                                            const mcu_pin_obj_t* pin,
-                                            uint32_t frequency,
-                                            uint16_t duty_cycle) {
-        mp_raise_NotImplementedError(translate("Unsupported operation"));
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
+    const pwmio_pwmout_obj_t *carrier,
+    const mcu_pin_obj_t *pin,
+    uint32_t frequency,
+    uint16_t duty_cycle) {
+    mp_raise_NotImplementedError(translate("Unsupported operation"));
 
     refcount++;
 
@@ -71,11 +71,11 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
 }
 
-bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
     return self->pin == NO_PIN;
 }
 
-void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     if (common_hal_pulseio_pulseout_deinited(self)) {
         return;
     }
@@ -85,7 +85,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
     self->pin = NO_PIN;
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
     pulse_buffer = pulses;
     pulse_index = 0;
     pulse_length = length;

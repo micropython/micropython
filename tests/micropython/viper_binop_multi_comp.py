@@ -1,6 +1,6 @@
 # test multi comparison operators
 @micropython.viper
-def f(x:int, y:int):
+def f(x: int, y: int):
     if 0 < x < y:
         print(x, "<", y)
     if 3 > x > y:
@@ -13,6 +13,7 @@ def f(x:int, y:int):
         print(x, ">=", y)
     if 2 == x != y:
         print(x, "!=", y)
+
 
 f(1, 1)
 f(2, 1)

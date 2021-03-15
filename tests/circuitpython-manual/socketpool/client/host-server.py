@@ -20,7 +20,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     with conn:
         s.settimeout(TIMEOUT)
-        print('Connected by', addr)
+        print("Connected by", addr)
         data = conn.recv(128)
         print("got: " + str(data))
         conn.sendall(data)

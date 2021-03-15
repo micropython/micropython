@@ -34,11 +34,11 @@
 #include "supervisor/shared/translate.h"
 
 void struct_validate_format(char fmt) {
-#if MICROPY_NONSTANDARD_TYPECODES
-    if( fmt == 'S' || fmt == 'O') {
+    #if MICROPY_NONSTANDARD_TYPECODES
+    if (fmt == 'S' || fmt == 'O') {
         mp_raise_RuntimeError(translate("'S' and 'O' are not supported format types"));
     }
-#endif
+    #endif
 }
 
 char get_fmt_type(const char **fmt) {
@@ -119,7 +119,7 @@ mp_uint_t shared_modules_struct_calcsize(mp_obj_t fmt_in) {
     return size;
 }
 
-void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size_t n_args, const mp_obj_t *args) {
+void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
     const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
@@ -164,50 +164,50 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size
     }
 }
 
-mp_obj_tuple_t * shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p, bool exact_size) {
+mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p, bool exact_size) {
 
-  const char *fmt = mp_obj_str_get_str(fmt_in);
-  char fmt_type = get_fmt_type(&fmt);
-  const mp_uint_t num_items = calcsize_items(fmt);
-  const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
-  mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_items, NULL));
+    const char *fmt = mp_obj_str_get_str(fmt_in);
+    char fmt_type = get_fmt_type(&fmt);
+    const mp_uint_t num_items = calcsize_items(fmt);
+    const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
+    mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_items, NULL));
 
-  // If exact_size, make sure the buffer is exactly the right size.
-  // Otherwise just make sure it's big enough.
-  if (exact_size) {
-      if (p + total_sz != end_p) {
-          mp_raise_RuntimeError(translate("buffer size must match format"));
-      }
-  } else {
-      if (p + total_sz > end_p) {
-          mp_raise_RuntimeError(translate("buffer too small"));
-      }
-  }
+    // If exact_size, make sure the buffer is exactly the right size.
+    // Otherwise just make sure it's big enough.
+    if (exact_size) {
+        if (p + total_sz != end_p) {
+            mp_raise_RuntimeError(translate("buffer size must match format"));
+        }
+    } else {
+        if (p + total_sz > end_p) {
+            mp_raise_RuntimeError(translate("buffer too small"));
+        }
+    }
 
-  for (uint i = 0; i < num_items;) {
-      mp_uint_t sz = 1;
+    for (uint i = 0; i < num_items;) {
+        mp_uint_t sz = 1;
 
-      struct_validate_format(*fmt);
+        struct_validate_format(*fmt);
 
-      if (unichar_isdigit(*fmt)) {
-          sz = get_fmt_num(&fmt);
-      }
-      mp_obj_t item;
-      if (*fmt == 's') {
-          item = mp_obj_new_bytes(p, sz);
-          p += sz;
-          res->items[i++] = item;
-      } else {
-          while (sz--) {
-              item = mp_binary_get_val(fmt_type, *fmt, &p);
-              // Pad bytes are not stored.
-              if (*fmt != 'x') {
-                  res->items[i++] = item;
-              }
-          }
-      }
-      fmt++;
-  }
-  return res;
+        if (unichar_isdigit(*fmt)) {
+            sz = get_fmt_num(&fmt);
+        }
+        mp_obj_t item;
+        if (*fmt == 's') {
+            item = mp_obj_new_bytes(p, sz);
+            p += sz;
+            res->items[i++] = item;
+        } else {
+            while (sz--) {
+                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                // Pad bytes are not stored.
+                if (*fmt != 'x') {
+                    res->items[i++] = item;
+                }
+            }
+        }
+        fmt++;
+    }
+    return res;
 
 }

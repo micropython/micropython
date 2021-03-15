@@ -4,7 +4,7 @@ try:
     io.BytesIO
     io.BufferedWriter
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 bts = io.BytesIO()

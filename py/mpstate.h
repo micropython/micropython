@@ -104,7 +104,7 @@ typedef struct _mp_state_mem_t {
     mp_thread_mutex_t gc_mutex;
     #endif
 
-    void** permanent_pointers;
+    void **permanent_pointers;
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section
@@ -233,7 +233,7 @@ typedef struct _mp_state_thread_t {
     char *stack_top;
 
     #if MICROPY_MAX_STACK_USAGE
-    char* stack_bottom;
+    char *stack_bottom;
     #endif
 
     #if MICROPY_STACK_CHECK

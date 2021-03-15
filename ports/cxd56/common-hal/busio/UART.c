@@ -42,7 +42,7 @@
 #include "shared-bindings/busio/UART.h"
 
 typedef struct {
-    const char* devpath;
+    const char *devpath;
     const mcu_pin_obj_t *tx;
     const mcu_pin_obj_t *rx;
     int fd;
@@ -53,11 +53,11 @@ STATIC busio_uart_dev_t busio_uart_dev[] = {
 };
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
-    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
+    const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
+    const mcu_pin_obj_t *rs485_dir, bool rs485_invert,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
-    mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
     struct termios tio;
 
@@ -180,7 +180,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout_us / 1000000.0f);
+    return (mp_float_t)(self->timeout_us / 1000000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {

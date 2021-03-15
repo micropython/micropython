@@ -174,8 +174,8 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_
     if (duty < 0 || duty > 0xffff) {
         mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
     }
-   common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
-   return mp_const_none;
+    common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_duty_cycle_obj, pwmio_pwmout_obj_set_duty_cycle);
 
@@ -211,8 +211,8 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
             "PWM frequency not writable when variable_frequency is False on "
             "construction."));
     }
-   common_hal_pwmio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
-   return mp_const_none;
+    common_hal_pwmio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
 
@@ -241,5 +241,5 @@ const mp_obj_type_t pwmio_pwmout_type = {
     { &mp_type_type },
     .name = MP_QSTR_PWMOut,
     .make_new = pwmio_pwmout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pwmio_pwmout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pwmio_pwmout_locals_dict,
 };

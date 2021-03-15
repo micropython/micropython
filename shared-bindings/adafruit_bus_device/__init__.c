@@ -43,7 +43,7 @@ STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_i2c_device_globals, adafruit_bus
 
 const mp_obj_module_t adafruit_bus_device_i2c_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&adafruit_bus_device_i2c_device_globals,
+    .globals = (mp_obj_dict_t *)&adafruit_bus_device_i2c_device_globals,
 };
 
 STATIC const mp_rom_map_elem_t adafruit_bus_device_spi_device_globals_table[] = {
@@ -54,7 +54,7 @@ STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_spi_device_globals, adafruit_bus
 
 const mp_obj_module_t adafruit_bus_device_spi_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&adafruit_bus_device_spi_device_globals,
+    .globals = (mp_obj_dict_t *)&adafruit_bus_device_spi_device_globals,
 };
 
 //| """Hardware accelerated external bus access
@@ -74,5 +74,5 @@ STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_module_globals, adafruit_bus_dev
 
 const mp_obj_module_t adafruit_bus_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&adafruit_bus_device_module_globals,
+    .globals = (mp_obj_dict_t *)&adafruit_bus_device_module_globals,
 };

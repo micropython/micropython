@@ -82,22 +82,22 @@ void *m_malloc(size_t num_bytes, bool long_lived) {
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
     MP_STATE_MEM(current_bytes_allocated) += num_bytes;
     UPDATE_PEAK();
-#endif
+    #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
     return ptr;
 }
 
 void *m_malloc_maybe(size_t num_bytes, bool long_lived) {
     void *ptr = malloc_ll(num_bytes, long_lived);
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
     MP_STATE_MEM(current_bytes_allocated) += num_bytes;
     UPDATE_PEAK();
-#endif
+    #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
     return ptr;
 }
@@ -108,11 +108,11 @@ void *m_malloc_with_finaliser(size_t num_bytes, bool long_lived) {
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
     MP_STATE_MEM(current_bytes_allocated) += num_bytes;
     UPDATE_PEAK();
-#endif
+    #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
     return ptr;
 }
@@ -131,12 +131,12 @@ void *m_malloc0(size_t num_bytes, bool long_lived) {
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
 #else
 void *m_realloc(void *ptr, size_t new_num_bytes) {
-#endif
+    #endif
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL && new_num_bytes != 0) {
         m_malloc_fail(new_num_bytes);
     }
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
     // after all, it's *total*. But consider for example 2K block
     // shrunk to 1K and then grown to 2K again. It's still 2K
@@ -146,7 +146,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
     MP_STATE_MEM(total_bytes_allocated) += diff;
     MP_STATE_MEM(current_bytes_allocated) += diff;
     UPDATE_PEAK();
-#endif
+    #endif
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
     #else
@@ -159,9 +159,9 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move) {
 #else
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
-#endif
+    #endif
     void *new_ptr = realloc_ext(ptr, new_num_bytes, allow_move);
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
     // after all, it's *total*. But consider for example 2K block
     // shrunk to 1K and then grown to 2K again. It's still 2K
@@ -174,7 +174,7 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
         MP_STATE_MEM(current_bytes_allocated) += diff;
         UPDATE_PEAK();
     }
-#endif
+    #endif
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
     #else
@@ -187,11 +187,11 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
 void m_free(void *ptr, size_t num_bytes) {
 #else
 void m_free(void *ptr) {
-#endif
+    #endif
     free(ptr);
-#if MICROPY_MEM_STATS
+    #if MICROPY_MEM_STATS
     MP_STATE_MEM(current_bytes_allocated) -= num_bytes;
-#endif
+    #endif
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("free %p, %d\n", ptr, num_bytes);
     #else

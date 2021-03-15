@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#include "py/mphal.h"  //*****************************
+#include "py/mphal.h"  // *****************************
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "common-hal/_bleio/Adapter.h"
@@ -63,8 +63,8 @@ typedef struct __attribute__ ((packed)) {
 typedef struct __attribute__ ((packed)) {
     uint8_t pkt_type;
     uint16_t handle : 12;
-    uint8_t pb: 2;            // Packet boundary flag: ACL_DATA_PB values.
-    uint8_t bc: 2;            // Broadcast flag: always 0b00 for BLE.
+    uint8_t pb : 2;            // Packet boundary flag: ACL_DATA_PB values.
+    uint8_t bc : 2;            // Broadcast flag: always 0b00 for BLE.
     uint16_t data_len;        // length of data[] in this packet.
     uint8_t data[];
 }  h4_hci_acl_pkt_t;
@@ -89,7 +89,7 @@ typedef struct __attribute__ ((packed)) {
 //////////////////////////////////////////////////////////////////////
 // Static storage:
 
-//FIX size
+// FIX size
 #define RX_BUFFER_SIZE (3 + 255)
 #define ACL_DATA_BUFFER_SIZE (255)
 
@@ -107,7 +107,7 @@ STATIC bool cmd_response_received;
 STATIC uint16_t cmd_response_opcode;
 STATIC uint8_t cmd_response_status;
 STATIC size_t cmd_response_len;
-STATIC uint8_t* cmd_response_data;
+STATIC uint8_t *cmd_response_data;
 
 STATIC volatile bool hci_poll_in_progress = false;
 
@@ -119,7 +119,7 @@ STATIC volatile bool hci_poll_in_progress = false;
 #endif // HCI_DEBUG
 
 STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
-    h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t*) pkt_data;
+    h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *)pkt_data;
 
     if (pkt->pb != ACL_DATA_PB_MIDDLE) {
         // This is the start of a fragmented acl_data packet or is a full packet.
@@ -132,7 +132,7 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
         acl_data_len += pkt->data_len;
     }
 
-    acl_data_t *acl = (acl_data_t *) &acl_data_buffer;
+    acl_data_t *acl = (acl_data_t *)&acl_data_buffer;
     if (acl_data_len != sizeof(acl) + acl->acl_data_len) {
         // We don't have the full packet yet.
         return;
@@ -167,18 +167,17 @@ STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
     }
 }
 
-STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
-{
-    h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t*) pkt_data;
+STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[]) {
+    h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t *)pkt_data;
 
     switch (pkt->evt) {
         case BT_HCI_EVT_DISCONN_COMPLETE: {
             struct bt_hci_evt_disconn_complete *disconn_complete =
-                (struct bt_hci_evt_disconn_complete*) pkt->params;
-            (void) disconn_complete;
+                (struct bt_hci_evt_disconn_complete *)pkt->params;
+            (void)disconn_complete;
 
             att_remove_connection(disconn_complete->handle, disconn_complete->reason);
-            //FIX L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
+            // FIX L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
             break;
         }
 
@@ -188,7 +187,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
                 struct bt_hci_evt_cc_status cc_status;
             } __packed;
 
-            struct cmd_complete_with_status *evt = (struct cmd_complete_with_status *) pkt->params;
+            struct cmd_complete_with_status *evt = (struct cmd_complete_with_status *)pkt->params;
 
             num_command_packets_allowed = evt->cmd_complete.ncmd;
 
@@ -197,7 +196,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
             cmd_response_status = evt->cc_status.status;
             // All the bytes following cmd_complete, -including- the status byte, which is
             // included in all the _bt_hci_rp_* structs.
-            cmd_response_data = (uint8_t *) &evt->cc_status;
+            cmd_response_data = (uint8_t *)&evt->cc_status;
             // Includes status byte.
             cmd_response_len = pkt->param_len - sizeof_field(struct cmd_complete_with_status, cmd_complete);
 
@@ -205,7 +204,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         case BT_HCI_EVT_CMD_STATUS: {
-            struct bt_hci_evt_cmd_status *evt = (struct bt_hci_evt_cmd_status *) pkt->params;
+            struct bt_hci_evt_cmd_status *evt = (struct bt_hci_evt_cmd_status *)pkt->params;
 
             num_command_packets_allowed = evt->ncmd;
 
@@ -220,7 +219,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
 
         case BT_HCI_EVT_NUM_COMPLETED_PACKETS: {
             struct bt_hci_evt_num_completed_packets *evt =
-                (struct bt_hci_evt_num_completed_packets *) pkt->params;
+                (struct bt_hci_evt_num_completed_packets *)pkt->params;
 
             // Start at zero-th pair: (conn handle, num completed packets).
             struct bt_hci_handle_count *handle_and_count = &(evt->h[0]);
@@ -232,8 +231,8 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         case BT_HCI_EVT_LE_META_EVENT: {
-            struct bt_hci_evt_le_meta_event *meta_evt = (struct bt_hci_evt_le_meta_event *) pkt->params;
-            uint8_t *le_evt =  pkt->params + sizeof (struct bt_hci_evt_le_meta_event);
+            struct bt_hci_evt_le_meta_event *meta_evt = (struct bt_hci_evt_le_meta_event *)pkt->params;
+            uint8_t *le_evt = pkt->params + sizeof (struct bt_hci_evt_le_meta_event);
 
             if (meta_evt->subevent == BT_HCI_EVT_LE_CONN_COMPLETE) {
                 // Advertising stops when connection occurs.
@@ -243,7 +242,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
                 bleio_adapter_advertising_was_stopped(&common_hal_bleio_adapter_obj);
 
                 struct bt_hci_evt_le_conn_complete *le_conn_complete =
-                    (struct bt_hci_evt_le_conn_complete *) le_evt;
+                    (struct bt_hci_evt_le_conn_complete *)le_evt;
 
                 if (le_conn_complete->status == BT_HCI_ERR_SUCCESS) {
                     att_add_connection(
@@ -258,9 +257,9 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
                 }
             } else if (meta_evt->subevent == BT_HCI_EVT_LE_ADVERTISING_REPORT) {
                 struct bt_hci_evt_le_advertising_info *le_advertising_info =
-                    (struct bt_hci_evt_le_advertising_info *) le_evt;
+                    (struct bt_hci_evt_le_advertising_info *)le_evt;
                 if (le_advertising_info->evt_type == BT_HCI_ADV_DIRECT_IND) {
-                    //FIX
+                    // FIX
                     // last byte is RSSI
                     // GAP.handleLeAdvertisingReport(leAdvertisingReport->type,
                     //                               leAdvertisingReport->peerBdaddrType,
@@ -275,9 +274,9 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         default:
-#if HCI_DEBUG
+            #if HCI_DEBUG
             mp_printf(&mp_plat_print, "process_evt_pkt: Unknown event: %02x\n");
-#endif
+            #endif
             break;
     }
 }
@@ -333,7 +332,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
             case H4_ACL:
                 if (rx_idx >= sizeof(h4_hci_acl_pkt_t)) {
                     const size_t total_len =
-                        sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *) rx_buffer)->data_len;
+                        sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *)rx_buffer)->data_len;
                     if (rx_idx == total_len) {
                         packet_is_complete = true;
                     }
@@ -346,7 +345,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
             case H4_EVT:
                 if (rx_idx >= sizeof(h4_hci_evt_pkt_t)) {
                     const size_t total_len =
-                        sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *) rx_buffer)->param_len;
+                        sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *)rx_buffer)->param_len;
                     if (rx_idx == total_len) {
                         packet_is_complete = true;
                     }
@@ -374,23 +373,23 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 
         switch (rx_buffer[0]) {
             case H4_ACL:
-#if HCI_DEBUG
+                #if HCI_DEBUG
                 dump_acl_pkt(false, pkt_len, rx_buffer);
-#endif
+                #endif
                 process_acl_data_pkt(pkt_len, rx_buffer);
                 break;
 
             case H4_EVT:
-#if HCI_DEBUG
+                #if HCI_DEBUG
                 dump_evt_pkt(false, pkt_len, rx_buffer);
-#endif
+                #endif
                 process_evt_pkt(pkt_len, rx_buffer);
                 break;
 
             default:
-#if HCI_DEBUG
+                #if HCI_DEBUG
                 mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
-#endif
+                #endif
                 break;
         }
 
@@ -425,21 +424,21 @@ STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     return HCI_OK;
 }
 
-STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* params) {
+STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void *params) {
     uint8_t cmd_pkt_len = sizeof(h4_hci_cmd_pkt_t) + params_len;
     uint8_t tx_buffer[cmd_pkt_len];
 
     // cmd header is at the beginning of tx_buffer
-    h4_hci_cmd_pkt_t *cmd_pkt = (h4_hci_cmd_pkt_t *) tx_buffer;
+    h4_hci_cmd_pkt_t *cmd_pkt = (h4_hci_cmd_pkt_t *)tx_buffer;
     cmd_pkt->pkt_type = H4_CMD;
     cmd_pkt->opcode = opcode;
     cmd_pkt->param_len = params_len;
 
     memcpy(cmd_pkt->params, params, params_len);
 
-#if HCI_DEBUG
-        dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
-#endif
+    #if HCI_DEBUG
+    dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
+    #endif
 
     int result = write_pkt(tx_buffer, cmd_pkt_len);
     if (result != HCI_OK) {
@@ -478,8 +477,8 @@ hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint16_t data_len, u
     const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + sizeof(acl_data_t) + data_len;
     uint8_t tx_buffer[buf_len];
 
-    h4_hci_acl_pkt_t *acl_pkt = (h4_hci_acl_pkt_t *) tx_buffer;
-    acl_data_t *acl_data = (acl_data_t *) acl_pkt->data;
+    h4_hci_acl_pkt_t *acl_pkt = (h4_hci_acl_pkt_t *)tx_buffer;
+    acl_data_t *acl_data = (acl_data_t *)acl_pkt->data;
     acl_pkt->pkt_type = H4_ACL;
     acl_pkt->handle = handle;
     acl_pkt->pb = ACL_DATA_PB_FIRST_FLUSH;
@@ -490,9 +489,9 @@ hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint16_t data_len, u
 
     memcpy(&acl_data->acl_data, data, data_len);
 
-#if HCI_DEBUG
-        dump_acl_pkt(true, buf_len, tx_buffer);
-#endif
+    #if HCI_DEBUG
+    dump_acl_pkt(true, buf_len, tx_buffer);
+    #endif
 
     pending_pkt++;
 
@@ -512,7 +511,7 @@ hci_result_t hci_read_local_version(uint8_t *hci_version, uint16_t *hci_revision
     hci_result_t result = send_command(BT_HCI_OP_READ_LOCAL_VERSION_INFO, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_read_local_version_info *response =
-            (struct bt_hci_rp_read_local_version_info *) cmd_response_data;
+            (struct bt_hci_rp_read_local_version_info *)cmd_response_data;
         *hci_version = response->hci_version;
         *hci_revision = response->hci_revision;
         *lmp_version = response->lmp_version;
@@ -526,7 +525,7 @@ hci_result_t hci_read_local_version(uint8_t *hci_version, uint16_t *hci_revision
 hci_result_t hci_read_bd_addr(bt_addr_t *addr) {
     int result = send_command(BT_HCI_OP_READ_BD_ADDR, 0, NULL);
     if (result == HCI_OK) {
-        struct bt_hci_rp_read_bd_addr *response = (struct bt_hci_rp_read_bd_addr *) cmd_response_data;
+        struct bt_hci_rp_read_bd_addr *response = (struct bt_hci_rp_read_bd_addr *)cmd_response_data;
         memcpy(addr->val, response->bdaddr.val, sizeof_field(bt_addr_t, val));
     }
 
@@ -536,7 +535,7 @@ hci_result_t hci_read_bd_addr(bt_addr_t *addr) {
 hci_result_t hci_read_rssi(uint16_t handle, int *rssi) {
     int result = send_command(BT_HCI_OP_READ_RSSI, sizeof(handle), &handle);
     if (result == HCI_OK) {
-        struct bt_hci_rp_read_rssi *response = (struct bt_hci_rp_read_rssi *) cmd_response_data;
+        struct bt_hci_rp_read_rssi *response = (struct bt_hci_rp_read_rssi *)cmd_response_data;
         *rssi = response->rssi;
     }
 
@@ -551,7 +550,7 @@ hci_result_t hci_le_read_buffer_size(uint16_t *le_max_len, uint8_t *le_max_num) 
     int result = send_command(BT_HCI_OP_LE_READ_BUFFER_SIZE, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_buffer_size *response =
-            (struct bt_hci_rp_le_read_buffer_size *) cmd_response_data;
+            (struct bt_hci_rp_le_read_buffer_size *)cmd_response_data;
         *le_max_len = response->le_max_len;
         *le_max_num = response->le_max_num;
     }
@@ -563,7 +562,7 @@ hci_result_t hci_read_buffer_size(uint16_t *acl_max_len, uint8_t *sco_max_len, u
     int result = send_command(BT_HCI_OP_READ_BUFFER_SIZE, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_read_buffer_size *response =
-            (struct bt_hci_rp_read_buffer_size *) cmd_response_data;
+            (struct bt_hci_rp_read_buffer_size *)cmd_response_data;
         *acl_max_len = response->acl_max_len;
         *sco_max_len = response->sco_max_len;
         *acl_max_num = response->acl_max_num;
@@ -608,10 +607,10 @@ hci_result_t hci_le_set_extended_advertising_parameters(uint8_t handle, uint16_t
         .scan_req_notify_enable = scan_req_notify_enable,
     };
     // Assumes little-endian.
-    memcpy(params.prim_min_interval, (void *) &prim_min_interval,
-           sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_min_interval));
-    memcpy(params.prim_max_interval, (void *) &prim_max_interval,
-           sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_max_interval));
+    memcpy(params.prim_min_interval, (void *)&prim_min_interval,
+        sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_min_interval));
+    memcpy(params.prim_max_interval, (void *)&prim_max_interval,
+        sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_max_interval));
     memcpy(params.peer_addr.a.val, peer_addr->a.val, sizeof_field(bt_addr_le_t, a.val));
     return send_command(BT_HCI_OP_LE_SET_EXT_ADV_PARAM, sizeof(params), &params);
 }
@@ -620,7 +619,7 @@ hci_result_t hci_le_read_maximum_advertising_data_length(uint16_t *max_adv_data_
     int result = send_command(BT_HCI_OP_LE_READ_MAX_ADV_DATA_LEN, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_max_adv_data_len *response =
-            (struct bt_hci_rp_le_read_max_adv_data_len *) cmd_response_data;
+            (struct bt_hci_rp_le_read_max_adv_data_len *)cmd_response_data;
         *max_adv_data_len = response->max_adv_data_len;
     }
 
@@ -631,9 +630,9 @@ hci_result_t hci_le_read_local_supported_features(uint8_t features[8]) {
     int result = send_command(BT_HCI_OP_LE_READ_LOCAL_FEATURES, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_local_features *response =
-            (struct bt_hci_rp_le_read_local_features *) cmd_response_data;
+            (struct bt_hci_rp_le_read_local_features *)cmd_response_data;
         memcpy(features, response->features,
-               sizeof_field(struct bt_hci_rp_le_read_local_features, features));
+            sizeof_field(struct bt_hci_rp_le_read_local_features, features));
     }
 
     return result;
@@ -685,7 +684,7 @@ hci_result_t hci_le_set_advertising_enable(uint8_t enable) {
 hci_result_t hci_le_set_extended_advertising_enable(uint8_t enable, uint8_t set_num, uint8_t handle[], uint16_t duration[], uint8_t max_ext_adv_evts[]) {
     uint8_t params[sizeof(struct bt_hci_cp_le_set_ext_adv_enable) +
                    set_num * (sizeof(struct bt_hci_ext_adv_set))];
-    struct bt_hci_cp_le_set_ext_adv_enable *params_p = (struct bt_hci_cp_le_set_ext_adv_enable *) &params;
+    struct bt_hci_cp_le_set_ext_adv_enable *params_p = (struct bt_hci_cp_le_set_ext_adv_enable *)&params;
     params_p->enable = enable;
     params_p->set_num = set_num;
     for (size_t i = 0; i < set_num; i++) {

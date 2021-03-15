@@ -37,7 +37,7 @@
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
     // Checks if point is None and returns default_value, otherwise decodes integer value
-    if ( point == mp_const_none ) {
+    if (point == mp_const_none) {
         return default_value;
     }
     return mp_obj_get_int(point);
@@ -46,13 +46,13 @@ STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
 STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_default, int16_t y_default) {
     // Helper function for rotozoom
     // Extract x,y values from a tuple or default if None
-    if ( xy_tuple == mp_const_none ) {
+    if (xy_tuple == mp_const_none) {
         *x = x_default;
         *y = y_default;
-    } else if ( !MP_OBJ_IS_OBJ(xy_tuple) ) {
+    } else if (!MP_OBJ_IS_OBJ(xy_tuple)) {
         mp_raise_ValueError(translate("clip point must be (x,y) tuple"));
     } else {
-        mp_obj_t* items;
+        mp_obj_t *items;
         mp_obj_get_array_fixed_n(xy_tuple, 2, &items);
         *x = mp_obj_get_int(items[0]);
         *y = mp_obj_get_int(items[1]);
@@ -60,7 +60,7 @@ STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_d
 }
 
 STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tuple, int16_t *clip0_x, int16_t *clip0_y,
-                                                   mp_obj_t clip1_tuple, int16_t *clip1_x, int16_t *clip1_y) {
+    mp_obj_t clip1_tuple, int16_t *clip1_x, int16_t *clip1_y) {
     // Helper function for rotozoom
     // 1. Extract the clip x,y points from the two clip tuples
     // 2. Rearrange values such that clip0_ < clip1_
@@ -70,12 +70,12 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
     extract_tuple(clip1_tuple, clip1_x, clip1_y, bitmap->width, bitmap->height);
 
     // Ensure the value for clip0 is less than clip1 (for both x and y)
-    if ( *clip0_x > *clip1_x ) {
+    if (*clip0_x > *clip1_x) {
         int16_t temp_value = *clip0_x; // swap values
         *clip0_x = *clip1_x;
         *clip1_x = temp_value;
     }
-    if ( *clip0_y > *clip1_y ) {
+    if (*clip0_y > *clip1_y) {
         int16_t temp_value = *clip0_y; // swap values
         *clip0_y = *clip1_y;
         *clip1_y = temp_value;
@@ -143,11 +143,11 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|             set to None to copy all pixels"""
 //|      ...
 //|
-STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_source_bitmap,
-        ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
-        ARG_px, ARG_py, ARG_source_clip0, ARG_source_clip1,
-        ARG_angle, ARG_scale, ARG_skip_index};
+          ARG_ox, ARG_oy, ARG_dest_clip0, ARG_dest_clip1,
+          ARG_px, ARG_py, ARG_source_clip0, ARG_source_clip1,
+          ARG_angle, ARG_scale, ARG_skip_index};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
@@ -165,7 +165,7 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
         {MP_QSTR_angle, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to 0.0
         {MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to 1.0
-        {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj=mp_const_none} },
+        {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -182,35 +182,35 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
     // Confirm the destination location target (ox,oy); if None, default to bitmap midpoint
     int16_t ox, oy;
-    ox = validate_point(args[ARG_ox].u_obj, destination->width  / 2);
+    ox = validate_point(args[ARG_ox].u_obj, destination->width / 2);
     oy = validate_point(args[ARG_oy].u_obj, destination->height / 2);
 
     // Confirm the source location target (px,py); if None, default to bitmap midpoint
     int16_t px, py;
-    px = validate_point(args[ARG_px].u_obj, source->width  / 2);
+    px = validate_point(args[ARG_px].u_obj, source->width / 2);
     py = validate_point(args[ARG_py].u_obj, source->height / 2);
 
     // Validate the clipping regions for the destination bitmap
     int16_t dest_clip0_x, dest_clip0_y, dest_clip1_x, dest_clip1_y;
 
     validate_clip_region(destination, args[ARG_dest_clip0].u_obj, &dest_clip0_x, &dest_clip0_y,
-                               args[ARG_dest_clip1].u_obj, &dest_clip1_x, &dest_clip1_y);
+        args[ARG_dest_clip1].u_obj, &dest_clip1_x, &dest_clip1_y);
 
     // Validate the clipping regions for the source bitmap
     int16_t source_clip0_x, source_clip0_y, source_clip1_x, source_clip1_y;
 
     validate_clip_region(source, args[ARG_source_clip0].u_obj, &source_clip0_x, &source_clip0_y,
-                                 args[ARG_source_clip1].u_obj, &source_clip1_x, &source_clip1_y);
+        args[ARG_source_clip1].u_obj, &source_clip1_x, &source_clip1_y);
 
     // Confirm the angle value
-    float angle=0.0;
-    if ( args[ARG_angle].u_obj != mp_const_none ) {
+    float angle = 0.0;
+    if (args[ARG_angle].u_obj != mp_const_none) {
         angle = mp_obj_get_float(args[ARG_angle].u_obj);
     }
 
     // Confirm the scale value
-    float scale=1.0;
-    if ( args[ARG_scale].u_obj != mp_const_none ) {
+    float scale = 1.0;
+    if (args[ARG_scale].u_obj != mp_const_none) {
         scale = mp_obj_get_float(args[ARG_scale].u_obj);
     }
     if (scale < 0) { // ensure scale >= 0
@@ -219,7 +219,7 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
     uint32_t skip_index;
     bool skip_index_none; // Flag whether input skip_value was None
-    if (args[ARG_skip_index].u_obj == mp_const_none ) {
+    if (args[ARG_skip_index].u_obj == mp_const_none) {
         skip_index = 0;
         skip_index_none = true;
     } else {
@@ -228,14 +228,14 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
     }
 
     common_hal_bitmaptools_rotozoom(destination, ox, oy,
-                                            dest_clip0_x, dest_clip0_y,
-                                            dest_clip1_x, dest_clip1_y,
-                                            source, px, py,
-                                            source_clip0_x, source_clip0_y,
-                                            source_clip1_x, source_clip1_y,
-                                            angle,
-                                            scale,
-                                            skip_index, skip_index_none);
+        dest_clip0_x, dest_clip0_y,
+        dest_clip1_x, dest_clip1_y,
+        source, px, py,
+        source_clip0_x, source_clip0_y,
+        source_clip1_x, source_clip1_y,
+        angle,
+        scale,
+        skip_index, skip_index_none);
 
     return mp_const_none;
 }
@@ -261,7 +261,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|             fill region in the destination bitmap"""
 //|      ...
 //|
-STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -281,8 +281,8 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-            mp_raise_ValueError(translate("out of range of target"));
-        }
+        mp_raise_ValueError(translate("out of range of target"));
+    }
 
     int16_t x1 = args[ARG_x1].u_int;
     int16_t y1 = args[ARG_y1].u_int;
@@ -314,7 +314,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|             line in the destination bitmap"""
 //|      ...
 //|
-STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -334,8 +334,8 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-            mp_raise_ValueError(translate("out of range of target"));
-        }
+        mp_raise_ValueError(translate("out of range of target"));
+    }
 
     int16_t x1 = args[ARG_x1].u_int;
     int16_t y1 = args[ARG_y1].u_int;
@@ -343,9 +343,9 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     int16_t y2 = args[ARG_y2].u_int;
 
     // verify points are within the bitmap boundary (inclusive)
-    if ( (x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
-         (x1 >= destination->width)  || (x2 >= destination->width) ||
-         (y1 >= destination->height) || (y2 >= destination->height) ) {
+    if ((x1 < 0) || (x2 < 0) || (y1 < 0) || (y2 < 0) ||
+        (x1 >= destination->width) || (x2 >= destination->width) ||
+        (y1 >= destination->height) || (y2 >= destination->height)) {
         mp_raise_ValueError(translate("out of range of target"));
     }
 
@@ -366,5 +366,5 @@ STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globa
 
 const mp_obj_module_t bitmaptools_module = {
     .base = {&mp_type_module },
-    .globals = (mp_obj_dict_t*)&bitmaptools_module_globals,
+    .globals = (mp_obj_dict_t *)&bitmaptools_module_globals,
 };

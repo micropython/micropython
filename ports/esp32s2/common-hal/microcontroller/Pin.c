@@ -59,20 +59,20 @@ STATIC void floating_gpio_reset(gpio_num_t pin_number) {
 }
 
 void never_reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == -1 ) {
-         return;
+    if (pin_number == -1) {
+        return;
     }
     never_reset_pins[pin_number / 32] |= 1 << pin_number % 32;
 }
 
-void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pin_number(pin->number);
 }
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(gpio_num_t pin_number) {
-    if (pin_number == -1 ) {
-         return;
+    if (pin_number == -1) {
+        return;
     }
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
@@ -88,7 +88,7 @@ void reset_pin_number(gpio_num_t pin_number) {
     #endif
 }
 
-void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     if (pin == NULL) {
         return;
     }
@@ -112,7 +112,7 @@ void reset_all_pins(void) {
     #endif
 }
 
-void claim_pin(const mcu_pin_obj_t* pin) {
+void claim_pin(const mcu_pin_obj_t *pin) {
     in_use[pin->number / 32] |= (1 << (pin->number % 32));
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -121,7 +121,7 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
-void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
     claim_pin(pin);
 }
 

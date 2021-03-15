@@ -47,7 +47,7 @@ void pewpew_interrupt_handler(uint8_t index) {
     if (index != pewpew_tc_index) {
         return;
     }
-    Tc* tc = tc_insts[index];
+    Tc *tc = tc_insts[index];
     if (!tc->COUNT16.INTFLAG.bit.MC0) {
         return;
     }
@@ -60,7 +60,7 @@ void pewpew_interrupt_handler(uint8_t index) {
 }
 
 void pew_init() {
-    pew_obj_t* pew = MP_STATE_VM(pew_singleton);
+    pew_obj_t *pew = MP_STATE_VM(pew_singleton);
 
     common_hal_digitalio_digitalinout_switch_to_input(pew->buttons, PULL_UP);
 
@@ -97,8 +97,8 @@ void pew_init() {
 
         #ifdef SAMD21
         tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 |
-                                TC_CTRLA_PRESCALER_DIV64 |
-                                TC_CTRLA_WAVEGEN_MFRQ;
+            TC_CTRLA_PRESCALER_DIV64 |
+            TC_CTRLA_WAVEGEN_MFRQ;
         #endif
         #ifdef SAM_D5X_E5X
         tc_reset(tc);

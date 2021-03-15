@@ -74,10 +74,12 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_const_true;
+        case MP_UNARY_OP_BOOL:
+            return mp_const_true;
         case MP_UNARY_OP_LEN:
             return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_len(self));
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -130,7 +132,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
             mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
         }
-        uint8_t* buf = bufinfo.buf;
+        uint8_t *buf = bufinfo.buf;
         if (bufinfo.len == 3 || bufinfo.len == 4) {
             color = buf[0] << 16 | buf[1] << 8 | buf[2];
         } else {
@@ -191,5 +193,5 @@ const mp_obj_type_t displayio_palette_type = {
     .subscr = palette_subscr,
     .unary_op = group_unary_op,
     .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t*)&displayio_palette_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_palette_locals_dict,
 };

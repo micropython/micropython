@@ -30,6 +30,6 @@
 
 // We use this when we can allocate the whole cache in RAM.
 #define FLASH_ROOT_POINTERS \
-    uint8_t** flash_ram_cache; \
+    uint8_t **flash_ram_cache; \
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_EXTERNAL_FLASH_ROOT_POINTERS_H

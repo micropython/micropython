@@ -11,6 +11,7 @@ import os
 import datetime
 import subprocess
 
+
 def get_version_info_from_git():
     # Python 2.6 doesn't have check_output, so check for that
     try:
@@ -21,7 +22,11 @@ def get_version_info_from_git():
 
     # Note: git describe doesn't work if no tag is available
     try:
-        git_tag = subprocess.check_output(["git", "describe", "--dirty", "--always", "--tags"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
+        git_tag = subprocess.check_output(
+            ["git", "describe", "--dirty", "--always", "--tags"],
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        ).strip()
     except subprocess.CalledProcessError as er:
         if er.returncode == 128:
             # git exit code of 128 means no repository found
@@ -30,7 +35,11 @@ def get_version_info_from_git():
     except OSError:
         return None
     try:
-        git_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
+        git_hash = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        ).strip()
     except subprocess.CalledProcessError:
         git_hash = "unknown"
     except OSError:
@@ -38,9 +47,13 @@ def get_version_info_from_git():
 
     try:
         # Check if there are any modified files.
-        subprocess.check_call(["git", "diff", "--no-ext-diff", "--quiet", "--exit-code"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["git", "diff", "--no-ext-diff", "--quiet", "--exit-code"], stderr=subprocess.STDOUT
+        )
         # Check if there are any staged files.
-        subprocess.check_call(["git", "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["git", "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT
+        )
     except subprocess.CalledProcessError:
         git_hash += "-dirty"
     except OSError:
@@ -50,6 +63,7 @@ def get_version_info_from_git():
     ver = git_tag.split("-")[0].split(".")
 
     return git_tag, git_hash, ver
+
 
 def get_version_info_from_docs_conf():
     with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "conf.py")) as f:
@@ -62,6 +76,7 @@ def get_version_info_from_docs_conf():
                     ver.append("0")
                 return git_tag, "<no hash>", ver
     return None
+
 
 def make_version_header(filename):
     # Get version info using git, with fallback to docs/conf.py
@@ -87,21 +102,29 @@ def make_version_header(filename):
 #define MICROPY_VERSION_MICRO (%s)
 #define MICROPY_VERSION_STRING "%s"
 #define MICROPY_FULL_VERSION_INFO ("Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME)
-""" % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"),
-    ver[0].replace('v', ''), ver[1], ver[2], version_string)
+""" % (
+        git_tag,
+        git_hash,
+        datetime.date.today().strftime("%Y-%m-%d"),
+        ver[0].replace("v", ""),
+        ver[1],
+        ver[2],
+        version_string,
+    )
 
     # Check if the file contents changed from last time
     write_file = True
     if os.path.isfile(filename):
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             existing_data = f.read()
         if existing_data == file_data:
             write_file = False
 
     # Only write the file if we need to
     if write_file:
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             f.write(file_data)
+
 
 if __name__ == "__main__":
     make_version_header(sys.argv[1])

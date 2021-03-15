@@ -42,8 +42,7 @@ void serial_init(void) {
     huart2.Init.Mode = UART_MODE_TX_RX;
     huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-    if (HAL_UART_Init(&huart2) == HAL_OK)
-    {
+    if (HAL_UART_Init(&huart2) == HAL_OK) {
         stm32f4_peripherals_status_led(1,1);
     }
 }
@@ -62,7 +61,7 @@ bool serial_bytes_available(void) {
     return __HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE);
 }
 
-void serial_write(const char* text) {
+void serial_write(const char *text) {
     serial_write_substring(text, strlen(text));
 }
 
@@ -70,5 +69,5 @@ void serial_write_substring(const char *text, uint32_t len) {
     if (len == 0) {
         return;
     }
-    HAL_UART_Transmit(&huart2, (uint8_t*)text, len, 5000);
+    HAL_UART_Transmit(&huart2, (uint8_t *)text, len, 5000);
 }

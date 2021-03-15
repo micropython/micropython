@@ -35,7 +35,7 @@
 
 STATIC supervisor_run_reason_t _run_reason;
 
-//TODO: add USB, REPL to description once they're operational
+// TODO: add USB, REPL to description once they're operational
 //| class Runtime:
 //|     """Current status of runtime objects.
 //|
@@ -55,7 +55,7 @@ STATIC supervisor_run_reason_t _run_reason;
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
 //|
-STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self){
+STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_connected());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
@@ -72,7 +72,7 @@ const mp_obj_property_t supervisor_runtime_serial_connected_obj = {
 //|     on the USB serial input.  Allows for polling to see whether
 //|     to call the built-in input() or wait. (read-only)"""
 //|
-STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self){
+STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_supervisor_runtime_get_serial_bytes_available());
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, supervisor_runtime_get_serial_bytes_available);

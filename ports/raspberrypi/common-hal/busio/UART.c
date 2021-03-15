@@ -61,7 +61,7 @@ void never_reset_uart(uint8_t num) {
     uart_status[num] = STATUS_NEVER_RESET;
 }
 
-static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t * pin, const uint8_t pin_type) {
+static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t *pin, const uint8_t pin_type) {
     if (pin == NULL) {
         return NO_PIN;
     }
@@ -73,11 +73,11 @@ static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t * pin, const uin
     return pin->number;
 }
 
-static busio_uart_obj_t* active_uarts[NUM_UARTS];
+static busio_uart_obj_t *active_uarts[NUM_UARTS];
 
-static void _copy_into_ringbuf(ringbuf_t* r, uart_inst_t* uart) {
+static void _copy_into_ringbuf(ringbuf_t *r, uart_inst_t *uart) {
     while (uart_is_readable(uart) && ringbuf_num_empty(r) > 0) {
-        ringbuf_put(r, (uint8_t) uart_get_hw(uart)->dr);
+        ringbuf_put(r, (uint8_t)uart_get_hw(uart)->dr);
     }
 }
 
@@ -97,12 +97,12 @@ static void uart1_callback(void) {
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-        const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
-        const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-        uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
-        mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
-        bool sigint_enabled) {
+    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
+    const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
+    const mcu_pin_obj_t *rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
+    bool sigint_enabled) {
 
     if (bits > 8) {
         mp_raise_ValueError(translate("Invalid word/bit length"));
@@ -223,7 +223,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Check if we still need to read more data.
     if (len > total_read) {
-        len-=total_read;
+        len -= total_read;
         uint64_t start_ticks = supervisor_ticks_ms64();
         // Busy-wait until timeout or until we've read enough chars.
         while (len > 0 && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
@@ -272,7 +272,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout_ms / 1000.0f);
+    return (mp_float_t)(self->timeout_ms / 1000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
@@ -296,7 +296,7 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 
     // Throw away the FIFO contents too.
     while (uart_is_readable(self->uart)) {
-        (void) uart_get_hw(self->uart)->dr;
+        (void)uart_get_hw(self->uart)->dr;
     }
     irq_set_enabled(self->uart_irq_id, true);
 }

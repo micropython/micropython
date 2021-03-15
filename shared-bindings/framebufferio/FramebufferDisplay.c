@@ -62,7 +62,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
     };
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -87,7 +87,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static framebufferio_framebufferdisplay_obj_t* native_display(mp_obj_t display_obj) {
+static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_obj) {
     mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &framebufferio_framebufferdisplay_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
@@ -102,7 +102,7 @@ static framebufferio_framebufferdisplay_obj_t* native_display(mp_obj_t display_o
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    displayio_group_t* group = NULL;
+    displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
         group = MP_OBJ_TO_PTR(native_group(group_in));
     }
@@ -339,40 +339,40 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-      mp_raise_ValueError(translate("Buffer is not a bytearray."));
+        mp_raise_ValueError(translate("Buffer is not a bytearray."));
     }
     if (self->core.colorspace.depth != 16) {
-      mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+        mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
 
     displayio_area_t area = {
-      .x1 = 0,
-      .y1 = y,
-      .x2 = self->core.width,
-      .y2 = y + 1
+        .x1 = 0,
+        .y1 = y,
+        .x2 = self->core.width,
+        .y2 = y + 1
     };
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t buffer_size = self->core.width / pixels_per_word;
     uint16_t pixels_per_buffer = displayio_area_size(&area);
     if (pixels_per_buffer % pixels_per_word) {
-      buffer_size += 1;
+        buffer_size += 1;
     }
 
     uint32_t *result_buffer = bufinfo.buf;
     size_t result_buffer_size = bufinfo.len;
 
     if (result_buffer_size >= (buffer_size * 4)) {
-      volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
-      uint32_t mask[mask_length];
+        volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+        uint32_t mask[mask_length];
 
-      for (uint16_t k = 0; k < mask_length; k++) {
-        mask[k] = 0x00000000;
-      }
+        for (uint16_t k = 0; k < mask_length; k++) {
+            mask[k] = 0x00000000;
+        }
 
-      displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
-      return result;
+        displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
+        return result;
     } else {
-      mp_raise_ValueError(translate("Buffer is too small"));
+        mp_raise_ValueError(translate("Buffer is too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
@@ -398,5 +398,5 @@ const mp_obj_type_t framebufferio_framebufferdisplay_type = {
     { &mp_type_type },
     .name = MP_QSTR_FramebufferDisplay,
     .make_new = framebufferio_framebufferdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t*)&framebufferio_framebufferdisplay_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&framebufferio_framebufferdisplay_locals_dict,
 };

@@ -41,6 +41,6 @@ extern bool apa102_mosi_in_use;
 #endif
 
 void reset_all_pins(void);
-void claim_pin(const mcu_pin_obj_t* pin);
+void claim_pin(const mcu_pin_obj_t *pin);
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_MICROCONTROLLER_PIN_H

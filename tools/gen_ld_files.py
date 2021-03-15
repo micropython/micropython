@@ -12,31 +12,39 @@ import sys
 import re
 from string import Template
 
-parser = argparse.ArgumentParser(description='Apply #define values to .template.ld file.')
-parser.add_argument('template_files', metavar='TEMPLATE_FILE', type=argparse.FileType('r'),
-                    nargs='+', help="template filename: <something>.template.ld")
-parser.add_argument('--defines', type=argparse.FileType('r'), required=True)
-parser.add_argument('--out_dir', required=True)
+parser = argparse.ArgumentParser(description="Apply #define values to .template.ld file.")
+parser.add_argument(
+    "template_files",
+    metavar="TEMPLATE_FILE",
+    type=argparse.FileType("r"),
+    nargs="+",
+    help="template filename: <something>.template.ld",
+)
+parser.add_argument("--defines", type=argparse.FileType("r"), required=True)
+parser.add_argument("--out_dir", required=True)
 
 args = parser.parse_args()
 
 defines = {}
 
 #
-REMOVE_UL_RE = re.compile('([0-9]+)UL')
+REMOVE_UL_RE = re.compile("([0-9]+)UL")
+
+
 def remove_UL(s):
-    return REMOVE_UL_RE.sub(r'\1', s)
+    return REMOVE_UL_RE.sub(r"\1", s)
+
 
 # We skip all lines before
 # // START_LD_DEFINES
 # Then we look for lines like this:
 # /*NAME_OF_VALUE=*/ NAME_OF_VALUE;
-VALUE_LINE_RE = re.compile(r'^/\*\s*(\w+)\s*=\*/\s*(.*);\s*$')
+VALUE_LINE_RE = re.compile(r"^/\*\s*(\w+)\s*=\*/\s*(.*);\s*$")
 
 start_processing = False
 for line in args.defines:
     line = line.strip()
-    if line == '// START_LD_DEFINES':
+    if line == "// START_LD_DEFINES":
         start_processing = True
         continue
     if start_processing:
@@ -50,10 +58,10 @@ fail = False
 
 for template_file in args.template_files:
     ld_template_basename = os.path.basename(template_file.name)
-    ld_pathname = os.path.join(args.out_dir, ld_template_basename.replace('.template.ld', '.ld'))
-    with open(ld_pathname, 'w') as output:
-        for k,v in defines.items():
-            print('/*', k, '=', v, '*/', file=output)
+    ld_pathname = os.path.join(args.out_dir, ld_template_basename.replace(".template.ld", ".ld"))
+    with open(ld_pathname, "w") as output:
+        for k, v in defines.items():
+            print("/*", k, "=", v, "*/", file=output)
         print(file=output)
         try:
             output.write(Template(template_file.read()).substitute(defines))

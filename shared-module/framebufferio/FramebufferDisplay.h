@@ -53,13 +53,13 @@ typedef struct {
     bool first_manual_refresh;
 } framebufferio_framebufferdisplay_obj_t;
 
-void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self);
-void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self);
-void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self);
+void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t *self);
+void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t *self);
+void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t *self);
 
-void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self);
+void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t *self);
 
-mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebufferio_framebufferdisplay_obj_t* self);
+mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebufferio_framebufferdisplay_obj_t *self);
 
 typedef bool (*framebuffer_get_auto_brightness_fun)(mp_obj_t);
 typedef bool (*framebuffer_get_reverse_pixels_in_byte_fun)(mp_obj_t);

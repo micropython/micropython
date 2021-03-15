@@ -363,13 +363,13 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
         return mp_const_none;
     }
 
-    uint8_t* original_pointer = bufinfo.buf;
+    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t*)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
     }
@@ -413,13 +413,13 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
         return mp_const_none;
     }
 
-    uint8_t* original_pointer = bufinfo.buf;
+    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t*)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -484,12 +484,12 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     }
 
     bool ok = common_hal_rp2pio_statemachine_write_readinto(self,
-                                            ((uint8_t*)buf_out_info.buf) + out_start,
-                                            out_length,
-                                            out_stride_in_bytes,
-                                            ((uint8_t*)buf_in_info.buf) + in_start,
-                                            in_length,
-                                            in_stride_in_bytes);
+        ((uint8_t *)buf_out_info.buf) + out_start,
+        out_length,
+        out_stride_in_bytes,
+        ((uint8_t *)buf_in_info.buf) + in_start,
+        in_length,
+        in_stride_in_bytes);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -594,10 +594,10 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine_locals_dict_table);
 
 const mp_obj_type_t rp2pio_statemachine_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_StateMachine,
-   .make_new = rp2pio_statemachine_make_new,
-   .locals_dict = (mp_obj_dict_t*)&rp2pio_statemachine_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_StateMachine,
+    .make_new = rp2pio_statemachine_make_new,
+    .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
 };
 
 rp2pio_statemachine_obj_t *validate_obj_is_statemachine(mp_obj_t obj) {

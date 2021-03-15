@@ -49,8 +49,8 @@ void audio_dma_reset(void) {
     }
 }
 
-void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer_length,
-                              uint8_t** output_buffer, uint32_t* output_buffer_length) {
+void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer_length,
+    uint8_t **output_buffer, uint32_t *output_buffer_length) {
     if (dma->first_buffer_free) {
         *output_buffer = dma->first_buffer;
     } else {
@@ -59,9 +59,9 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     if (dma->signed_to_unsigned ||
-          dma->unsigned_to_signed ||
-          dma->sample_spacing > 1 ||
-          (dma->sample_resolution != dma->output_resolution)) {
+        dma->unsigned_to_signed ||
+        dma->sample_spacing > 1 ||
+        (dma->sample_resolution != dma->output_resolution)) {
         *output_buffer_length = buffer_length / dma->sample_spacing;
         uint32_t out_i = 0;
         if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
@@ -69,22 +69,22 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
 
             for (uint32_t i = 0; i < buffer_length; i += dma->sample_spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint16_t*) *output_buffer)[out_i] = ((uint16_t) ((int8_t*) buffer)[i] + 0x80) << shift;
+                    ((uint16_t *)*output_buffer)[out_i] = ((uint16_t)((int8_t *)buffer)[i] + 0x80) << shift;
                 } else if (dma->unsigned_to_signed) {
-                    ((int16_t*) *output_buffer)[out_i] = ((int16_t) ((uint8_t*) buffer)[i] - 0x80) << shift;
+                    ((int16_t *)*output_buffer)[out_i] = ((int16_t)((uint8_t *)buffer)[i] - 0x80) << shift;
                 } else {
-                    ((uint16_t*) *output_buffer)[out_i] = ((uint16_t) ((uint8_t*) buffer)[i]) << shift;
+                    ((uint16_t *)*output_buffer)[out_i] = ((uint16_t)((uint8_t *)buffer)[i]) << shift;
                 }
                 out_i += 1;
             }
         } else if (dma->sample_resolution <= 8 && dma->output_resolution <= 8) {
             for (uint32_t i = 0; i < buffer_length; i += dma->sample_spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint8_t*) *output_buffer)[out_i] = ((int8_t*) buffer)[i] + 0x80;
+                    ((uint8_t *)*output_buffer)[out_i] = ((int8_t *)buffer)[i] + 0x80;
                 } else if (dma->unsigned_to_signed) {
-                    ((int8_t*) *output_buffer)[out_i] = ((uint8_t*) buffer)[i] - 0x80;
+                    ((int8_t *)*output_buffer)[out_i] = ((uint8_t *)buffer)[i] - 0x80;
                 } else {
-                    ((uint8_t*) *output_buffer)[out_i] = ((uint8_t*) buffer)[i];
+                    ((uint8_t *)*output_buffer)[out_i] = ((uint8_t *)buffer)[i];
                 }
                 out_i += 1;
             }
@@ -92,17 +92,17 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
             size_t shift = 16 - dma->output_resolution;
             for (uint32_t i = 0; i < buffer_length / 2; i += dma->sample_spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint16_t*) *output_buffer)[out_i] = ((int16_t*) buffer)[i] + 0x8000;
-                } else if (dma->unsigned_to_signed)  {
-                    ((int16_t*) *output_buffer)[out_i] = ((uint16_t*) buffer)[i] - 0x8000;
+                    ((uint16_t *)*output_buffer)[out_i] = ((int16_t *)buffer)[i] + 0x8000;
+                } else if (dma->unsigned_to_signed) {
+                    ((int16_t *)*output_buffer)[out_i] = ((uint16_t *)buffer)[i] - 0x8000;
                 } else {
-                    ((uint16_t*) *output_buffer)[out_i] = ((uint16_t*) buffer)[i];
+                    ((uint16_t *)*output_buffer)[out_i] = ((uint16_t *)buffer)[i];
                 }
                 if (dma->output_resolution < 16) {
                     if (dma->output_signed) {
-                        ((int16_t*) *output_buffer)[out_i] = ((int16_t*) *output_buffer)[out_i] >> shift;
+                        ((int16_t *)*output_buffer)[out_i] = ((int16_t *)*output_buffer)[out_i] >> shift;
                     } else {
-                        ((uint16_t*) *output_buffer)[out_i] = ((uint16_t*) *output_buffer)[out_i] >> shift;
+                        ((uint16_t *)*output_buffer)[out_i] = ((uint16_t *)*output_buffer)[out_i] >> shift;
                     }
                 }
                 out_i += 1;
@@ -116,17 +116,17 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
     dma->first_buffer_free = !dma->first_buffer_free;
 }
 
-void audio_dma_load_next_block(audio_dma_t* dma) {
+void audio_dma_load_next_block(audio_dma_t *dma) {
     uint8_t dma_channel = dma->channel[1];
     if (dma->first_channel_free) {
         dma_channel = dma->channel[0];
     }
     dma->first_channel_free = !dma->first_channel_free;
 
-    uint8_t* output_buffer;
+    uint8_t *output_buffer;
     uint32_t output_buffer_length;
     audioio_get_buffer_result_t get_buffer_result;
-    uint8_t* buffer;
+    uint8_t *buffer;
     uint32_t buffer_length;
     get_buffer_result = audiosample_get_buffer(dma->sample,
         dma->single_channel, dma->audio_channel, &buffer, &buffer_length);
@@ -151,22 +151,22 @@ void audio_dma_load_next_block(audio_dma_t* dma) {
             audiosample_reset_buffer(dma->sample, dma->single_channel, dma->audio_channel);
         } else {
             // Set channel trigger to ourselves so we don't keep going.
-            dma_channel_hw_t* c = &dma_hw->ch[dma_channel];
+            dma_channel_hw_t *c = &dma_hw->ch[dma_channel];
             c->al1_ctrl = (c->al1_ctrl & ~DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS) | (dma_channel << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
         }
     }
 }
 
 // Playback should be shutdown before calling this.
-audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
-                              mp_obj_t sample,
-                              bool loop,
-                              bool single_channel,
-                              uint8_t audio_channel,
-                              bool output_signed,
-                              uint8_t output_resolution,
-                              uint32_t output_register_address,
-                              uint8_t dma_trigger_source) {
+audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
+    mp_obj_t sample,
+    bool loop,
+    bool single_channel,
+    uint8_t audio_channel,
+    bool output_signed,
+    uint8_t output_resolution,
+    uint32_t output_register_address,
+    uint8_t dma_trigger_source) {
     // Use two DMA channels to  because the DMA can't wrap to itself without the
     // buffer being power of two aligned.
     dma->channel[0] = dma_claim_unused_channel(false);
@@ -195,24 +195,24 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     bool samples_signed;
     uint32_t max_buffer_length;
     audiosample_get_buffer_structure(sample, single_channel, &single_buffer, &samples_signed,
-                                     &max_buffer_length, &dma->sample_spacing);
+        &max_buffer_length, &dma->sample_spacing);
 
     // Check to see if we have to scale the resolution up.
     if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
         max_buffer_length *= 2;
     }
     if (output_signed != samples_signed ||
-          dma->sample_spacing > 1 ||
-          (dma->sample_resolution != dma->output_resolution)) {
+        dma->sample_spacing > 1 ||
+        (dma->sample_resolution != dma->output_resolution)) {
         max_buffer_length /= dma->sample_spacing;
-        dma->first_buffer = (uint8_t*) m_realloc(dma->first_buffer, max_buffer_length);
+        dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
         if (dma->first_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
 
         dma->first_buffer_free = true;
         if (!single_buffer) {
-            dma->second_buffer = (uint8_t*) m_realloc(dma->second_buffer, max_buffer_length);
+            dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
             if (dma->second_buffer == NULL) {
                 return AUDIO_DMA_MEMORY_ERROR;
             }
@@ -247,7 +247,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         // Chain to the other channel by default.
         channel_config_set_chain_to(&c, dma->channel[(i + 1) % 2]);
         dma_channel_set_config(dma->channel[i], &c, false /* trigger */);
-        dma_channel_set_write_addr(dma->channel[i], (void*) output_register_address, false /* trigger */);
+        dma_channel_set_write_addr(dma->channel[i], (void *)output_register_address, false /* trigger */);
     }
 
     // We keep the audio_dma_t for internal use and the sample as a root pointer because it
@@ -290,7 +290,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     return AUDIO_DMA_OK;
 }
 
-void audio_dma_stop(audio_dma_t* dma) {
+void audio_dma_stop(audio_dma_t *dma) {
     // Disable our interrupts.
     dma_hw->inte0 &= ~((1 << dma->channel[0]) | (1 << dma->channel[1]));
     irq_set_mask_enabled(1 << DMA_IRQ_0, false);
@@ -322,12 +322,12 @@ void audio_dma_stop(audio_dma_t* dma) {
 
 // To pause we simply stop the DMA. It is the responsibility of the output peripheral
 // to hold the previous value.
-void audio_dma_pause(audio_dma_t* dma) {
+void audio_dma_pause(audio_dma_t *dma) {
     dma_hw->ch[dma->channel[0]].al1_ctrl &= ~DMA_CH0_CTRL_TRIG_EN_BITS;
     dma_hw->ch[dma->channel[1]].al1_ctrl &= ~DMA_CH0_CTRL_TRIG_EN_BITS;
 }
 
-void audio_dma_resume(audio_dma_t* dma) {
+void audio_dma_resume(audio_dma_t *dma) {
     // Always re-enable the non-busy channel first so it's ready to continue when the busy channel
     // finishes and chains to it. (An interrupt could make the time between enables long.)
     size_t first = 0;
@@ -340,7 +340,7 @@ void audio_dma_resume(audio_dma_t* dma) {
     dma_hw->ch[dma->channel[second]].al1_ctrl |= DMA_CH0_CTRL_TRIG_EN_BITS;
 }
 
-bool audio_dma_get_paused(audio_dma_t* dma) {
+bool audio_dma_get_paused(audio_dma_t *dma) {
     if (dma->channel[0] >= AUDIO_DMA_CHANNEL_COUNT) {
         return false;
     }
@@ -349,12 +349,12 @@ bool audio_dma_get_paused(audio_dma_t* dma) {
     return (control & DMA_CH0_CTRL_TRIG_EN_BITS) == 0;
 }
 
-void audio_dma_init(audio_dma_t* dma) {
+void audio_dma_init(audio_dma_t *dma) {
     dma->first_buffer = NULL;
     dma->second_buffer = NULL;
 }
 
-void audio_dma_deinit(audio_dma_t* dma) {
+void audio_dma_deinit(audio_dma_t *dma) {
     m_free(dma->first_buffer);
     dma->first_buffer = NULL;
 
@@ -362,7 +362,7 @@ void audio_dma_deinit(audio_dma_t* dma) {
     dma->second_buffer = NULL;
 }
 
-bool audio_dma_get_playing(audio_dma_t* dma) {
+bool audio_dma_get_playing(audio_dma_t *dma) {
     if (dma->channel[0] == NUM_DMA_CHANNELS) {
         return false;
     }
@@ -378,7 +378,7 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
 // WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
 // background tasks such as this and causes a stack overflow.
 STATIC void dma_callback_fun(void *arg) {
-    audio_dma_t* dma = arg;
+    audio_dma_t *dma = arg;
     if (dma == NULL) {
         return;
     }
@@ -390,8 +390,8 @@ void isr_dma_0(void) {
     for (size_t i = 0; i < NUM_DMA_CHANNELS; i++) {
         uint32_t mask = 1 << i;
         if ((dma_hw->intr & mask) != 0 && MP_STATE_PORT(playing_audio)[i] != NULL) {
-            audio_dma_t* dma = MP_STATE_PORT(playing_audio)[i];
-            background_callback_add(&dma->callback, dma_callback_fun, (void*)dma);
+            audio_dma_t *dma = MP_STATE_PORT(playing_audio)[i];
+            background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
             dma_hw->ints0 = mask;
         }
     }

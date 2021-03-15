@@ -135,5 +135,5 @@ const mp_obj_type_t rtc_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = rtc_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&rtc_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rtc_rtc_locals_dict,
 };

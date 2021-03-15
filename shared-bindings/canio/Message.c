@@ -50,7 +50,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -95,7 +95,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
 //|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return mp_obj_new_bytes((const byte*)common_hal_canio_message_get_data(self), common_hal_canio_message_get_length(self));
+    return mp_obj_new_bytes((const byte *)common_hal_canio_message_get_data(self), common_hal_canio_message_get_length(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_data_get_obj, canio_message_data_get);
 

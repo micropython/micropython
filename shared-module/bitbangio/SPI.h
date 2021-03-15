@@ -37,11 +37,11 @@ typedef struct {
     digitalio_digitalinout_obj_t mosi;
     digitalio_digitalinout_obj_t miso;
     uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
+    bool has_miso : 1;
+    bool has_mosi : 1;
+    uint8_t polarity : 1;
+    uint8_t phase : 1;
+    volatile bool locked : 1;
 } bitbangio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_SPI_H

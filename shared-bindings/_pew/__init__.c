@@ -57,9 +57,9 @@ STATIC const mp_rom_map_elem_t pew_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_ticks),  MP_ROM_PTR(&get_ticks_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(pew_module_globals,
-        pew_module_globals_table);
+    pew_module_globals_table);
 
 const mp_obj_module_t pew_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&pew_module_globals,
+    .globals = (mp_obj_dict_t *)&pew_module_globals,
 };

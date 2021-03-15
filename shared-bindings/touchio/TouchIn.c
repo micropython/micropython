@@ -59,7 +59,7 @@
 //|         ...
 //|
 STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check number of arguments
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
@@ -70,7 +70,7 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     self->base.type = &touchio_touchin_type;
     common_hal_touchio_touchin_construct(self, pin);
 
-    return (mp_obj_t) self;
+    return (mp_obj_t)self;
 }
 
 //|     def deinit(self) -> None:
@@ -144,7 +144,7 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
     .proxy = {(mp_obj_t)&touchio_touchin_get_raw_value_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
- };
+};
 
 
 //|     threshold: Optional[int]

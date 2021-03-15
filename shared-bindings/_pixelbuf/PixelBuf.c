@@ -46,7 +46,7 @@
 
 extern const int32_t colorwheel(float pos);
 
-static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed);
+static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 
 //| class PixelBuf:
 //|     """A fast RGB[W] pixel buffer for LED and similar devices."""
@@ -113,13 +113,13 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     pixelbuf_pixelbuf_obj_t *self = m_new_obj(pixelbuf_pixelbuf_obj_t);
     self->base.type = &pixelbuf_pixelbuf_type;
     common_hal__pixelbuf_pixelbuf_construct(self, args[ARG_size].u_int,
-    &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
-    header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
+        &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
+        header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed) {
+static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
     if (!MP_OBJ_IS_STR(byteorder_obj)) {
         mp_raise_TypeError(translate("byteorder is not a string"));
     }
@@ -242,10 +242,12 @@ const mp_obj_property_t pixelbuf_pixelbuf_byteorder_str = {
 
 STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_const_true;
+        case MP_UNARY_OP_BOOL:
+            return mp_const_true;
         case MP_UNARY_OP_LEN:
             return MP_OBJ_NEW_SMALL_INT(common_hal__pixelbuf_pixelbuf_get_len(self_in));
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -303,7 +305,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     }
 
     if (0) {
-#if MICROPY_PY_BUILTINS_SLICE
+    #if MICROPY_PY_BUILTINS_SLICE
     } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
@@ -332,7 +334,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         }
 
         if (value == MP_OBJ_SENTINEL) { // Get
-            mp_obj_tuple_t* t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
             for (uint i = 0; i < slice_len; i++) {
                 t->items[i] = common_hal__pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
             }
@@ -352,7 +354,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             return MP_OBJ_NULL; // op not supported
             #endif
         }
-#endif
+    #endif
     } else { // Single index rather than slice.
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
         size_t index = mp_get_index(mp_obj_get_type(self_in), length, index_in, false);
@@ -379,12 +381,12 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_loc
 
 
 const mp_obj_type_t pixelbuf_pixelbuf_type = {
-        { &mp_type_type },
-        .name = MP_QSTR_PixelBuf,
-        .subscr = pixelbuf_pixelbuf_subscr,
-        .make_new = pixelbuf_pixelbuf_make_new,
-        .unary_op = pixelbuf_pixelbuf_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        .print = NULL,
-        .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_PixelBuf,
+    .subscr = pixelbuf_pixelbuf_subscr,
+    .make_new = pixelbuf_pixelbuf_make_new,
+    .unary_op = pixelbuf_pixelbuf_unary_op,
+    .getiter = mp_obj_new_generic_iterator,
+    .print = NULL,
+    .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
 };

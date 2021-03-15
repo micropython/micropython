@@ -33,6 +33,9 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-void port_background_task(void) {}
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
+void port_background_task(void) {
+}
+void port_start_background_task(void) {
+}
+void port_finish_background_task(void) {
+}

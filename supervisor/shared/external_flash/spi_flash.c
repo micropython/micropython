@@ -38,12 +38,13 @@
 digitalio_digitalinout_obj_t cs_pin;
 busio_spi_obj_t supervisor_flash_spi_bus;
 
-const external_flash_device* flash_device;
+const external_flash_device *flash_device;
 uint32_t spi_flash_baudrate;
 
 // Enable the flash over SPI.
 static void flash_enable(void) {
-    while (!common_hal_busio_spi_try_lock(&supervisor_flash_spi_bus)) {}
+    while (!common_hal_busio_spi_try_lock(&supervisor_flash_spi_bus)) {
+    }
     common_hal_digitalio_digitalinout_set_value(&cs_pin, false);
 }
 
@@ -53,7 +54,7 @@ static void flash_disable(void) {
     common_hal_busio_spi_unlock(&supervisor_flash_spi_bus);
 }
 
-static bool transfer(uint8_t* command, uint32_t command_length, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+static bool transfer(uint8_t *command, uint32_t command_length, uint8_t *data_in, uint8_t *data_out, uint32_t data_length) {
     flash_enable();
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, command, command_length);
     if (status) {
@@ -69,7 +70,7 @@ static bool transfer(uint8_t* command, uint32_t command_length, uint8_t* data_in
     return status;
 }
 
-static bool transfer_command(uint8_t command, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+static bool transfer_command(uint8_t command, uint8_t *data_in, uint8_t *data_out, uint32_t data_length) {
     return transfer(&command, 1, data_in, data_out, data_length);
 }
 
@@ -77,16 +78,16 @@ bool spi_flash_command(uint8_t command) {
     return transfer_command(command, NULL, NULL, 0);
 }
 
-bool spi_flash_read_command(uint8_t command, uint8_t* data, uint32_t data_length) {
+bool spi_flash_read_command(uint8_t command, uint8_t *data, uint32_t data_length) {
     return transfer_command(command, NULL, data, data_length);
 }
 
-bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t data_length) {
+bool spi_flash_write_command(uint8_t command, uint8_t *data, uint32_t data_length) {
     return transfer_command(command, data, NULL, data_length);
 }
 
 // Pack the low 24 bits of the address into a uint8_t array.
-static void address_to_bytes(uint32_t address, uint8_t* bytes) {
+static void address_to_bytes(uint32_t address, uint8_t *bytes) {
     bytes[0] = (address >> 16) & 0xff;
     bytes[1] = (address >> 8) & 0xff;
     bytes[2] = address & 0xff;
@@ -98,7 +99,7 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
     return transfer(request, 4, NULL, NULL, 0);
 }
 
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length) {
+bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t data_length) {
     uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
@@ -112,7 +113,7 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length)
     return status;
 }
 
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length) {
+bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t data_length) {
     uint8_t request[5] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
     uint8_t command_length = 4;
     if (flash_device->supports_fast_read) {
@@ -145,7 +146,7 @@ void spi_flash_init(void) {
     common_hal_busio_spi_never_reset(&supervisor_flash_spi_bus);
 }
 
-void spi_flash_init_device(const external_flash_device* device) {
+void spi_flash_init_device(const external_flash_device *device) {
     flash_device = device;
     spi_flash_baudrate = device->max_clock_speed_mhz * 1000000;
     if (spi_flash_baudrate > SPI_FLASH_MAX_BAUDRATE) {

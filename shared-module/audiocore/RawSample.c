@@ -30,13 +30,13 @@
 
 #include "shared-module/audiocore/RawSample.h"
 
-void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
-                                            uint8_t* buffer,
-                                            uint32_t len,
-                                            uint8_t bytes_per_sample,
-                                            bool samples_signed,
-                                            uint8_t channel_count,
-                                            uint32_t sample_rate) {
+void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t *self,
+    uint8_t *buffer,
+    uint32_t len,
+    uint8_t bytes_per_sample,
+    bool samples_signed,
+    uint8_t channel_count,
+    uint32_t sample_rate) {
     self->buffer = buffer;
     self->bits_per_sample = bytes_per_sample * 8;
     self->samples_signed = samples_signed;
@@ -45,37 +45,37 @@ void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
     self->sample_rate = sample_rate;
 }
 
-void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t* self) {
+void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t *self) {
     self->buffer = NULL;
 }
-bool common_hal_audioio_rawsample_deinited(audioio_rawsample_obj_t* self) {
+bool common_hal_audioio_rawsample_deinited(audioio_rawsample_obj_t *self) {
     return self->buffer == NULL;
 }
 
-uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t* self) {
+uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t *self) {
     return self->sample_rate;
 }
-void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t* self,
-                                                  uint32_t sample_rate) {
+void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t *self,
+    uint32_t sample_rate) {
     self->sample_rate = sample_rate;
 }
-uint8_t common_hal_audioio_rawsample_get_bits_per_sample(audioio_rawsample_obj_t* self) {
+uint8_t common_hal_audioio_rawsample_get_bits_per_sample(audioio_rawsample_obj_t *self) {
     return self->bits_per_sample;
 }
-uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t* self) {
+uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t *self) {
     return self->channel_count;
 }
 
-void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t* self,
-                                    bool single_channel,
-                                    uint8_t channel) {
+void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t *self,
+    bool single_channel,
+    uint8_t channel) {
 }
 
-audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t* self,
-                                                         bool single_channel,
-                                                         uint8_t channel,
-                                                         uint8_t** buffer,
-                                                         uint32_t* buffer_length) {
+audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t *self,
+    bool single_channel,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length) {
     *buffer_length = self->len;
     if (single_channel) {
         *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8);
@@ -85,9 +85,9 @@ audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t
     return GET_BUFFER_DONE;
 }
 
-void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t* self, bool single_channel,
-                                            bool* single_buffer, bool* samples_signed,
-                                            uint32_t* max_buffer_length, uint8_t* spacing) {
+void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t *self, bool single_channel,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = true;
     *samples_signed = self->samples_signed;
     *max_buffer_length = self->len;

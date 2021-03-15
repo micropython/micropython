@@ -32,8 +32,8 @@
 
 void board_init(void) {
     // SWD Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_13);//SWDIO
-    common_hal_never_reset_pin(&pin_GPIO_AD_12);//SWCLK
+    common_hal_never_reset_pin(&pin_GPIO_AD_13);// SWDIO
+    common_hal_never_reset_pin(&pin_GPIO_AD_12);// SWCLK
 
     // FLEX flash
     common_hal_never_reset_pin(&pin_GPIO_SD_12);
