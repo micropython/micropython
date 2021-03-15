@@ -167,10 +167,7 @@ def main():
         for file in lang_files(C_EXTS):
             fixup_c(file)
         # Revert "// |" back to "//|"
-        subprocess.call(
-            "find shared-bindings ports/*/bindings -name '*.c' -exec sed -i 's/\/ |/\/|/' {} \;",
-            shell=True,
-        )
+        batch(["sed", "-i", "s,^// |,//|,"], lang_files(C_EXTS))
 
     # Format Python files with black.
     if format_py:
