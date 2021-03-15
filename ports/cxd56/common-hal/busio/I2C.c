@@ -27,6 +27,7 @@
 #include <arch/chip/pin.h>
 #include <nuttx/i2c/i2c_master.h>
 #include <cxd56_i2c.h>
+#include <cxd56_pinconfig.h>
 
 #include "py/runtime.h"
 
@@ -49,6 +50,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     self->sda_pin = sda;
     self->frequency = frequency;
     self->i2c_dev = cxd56_i2cbus_initialize(0);
+    CXD56_PIN_CONFIGS(PINCONFS_I2C0);
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
