@@ -462,13 +462,24 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     }
 
     // Compute the clock divider.
-    float div;
+    uint16_t clkdiv_int;
+    uint8_t clkdiv_frac;
     if (args[ARG_freq].u_int < 0) {
-        div = 1;
+        // Default: run at CPU frequency.
+        clkdiv_int = 1;
+        clkdiv_frac = 0;
     } else if (args[ARG_freq].u_int == 0) {
-        div = 0;
+        // Special case of 0: set clkdiv to 0.
+        clkdiv_int = 0;
+        clkdiv_frac = 0;
     } else {
-        div = (float)clock_get_hz(clk_sys) / (float)args[ARG_freq].u_int;
+        // Frequency given in Hz, compute clkdiv from it.
+        uint64_t div = (uint64_t)clock_get_hz(clk_sys) * 256ULL / (uint64_t)args[ARG_freq].u_int;
+        if (!(div >= 1 * 256 && div <= 65536 * 256)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("freq out of range"));
+        }
+        clkdiv_int = div / 256;
+        clkdiv_frac = div & 0xff;
     }
 
     // Disable and reset the state machine.
@@ -476,7 +487,7 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
 
     // Build the state machine config.
     pio_sm_config config = pio_get_default_sm_config();
-    sm_config_set_clkdiv(&config, div);
+    sm_config_set_clkdiv_int_frac(&config, clkdiv_int, clkdiv_frac);
     config.execctrl = mp_obj_get_int_truncated(prog[PROG_EXECCTRL]);
     config.shiftctrl = mp_obj_get_int_truncated(prog[PROG_SHIFTCTRL]);
 
