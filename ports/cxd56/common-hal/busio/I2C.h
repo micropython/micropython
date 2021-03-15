@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    struct i2c_master_s* i2c_dev;
+    struct i2c_master_s *i2c_dev;
     uint32_t frequency;
     bool has_lock;
     const mcu_pin_obj_t *scl_pin;

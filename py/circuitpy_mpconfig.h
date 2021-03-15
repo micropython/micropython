@@ -148,7 +148,7 @@
 
 #define BYTES_PER_WORD (4)
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // Track stack usage. Expose results via ustack module.
 #define MICROPY_MAX_STACK_USAGE       (0)
@@ -420,7 +420,7 @@ extern const struct _mp_obj_module_t terminalio_module;
 #else
 #define ERRNO_MODULE
 #
-#endif
+ #endif
 
 #if CIRCUITPY_ESPIDF
 extern const struct _mp_obj_module_t espidf_module;
@@ -523,7 +523,7 @@ extern const struct _mp_obj_module_t _eve_module;
 extern const struct _mp_obj_module_t memorymonitor_module;
 #define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
 #define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
-                                    mp_obj_t active_allocationalarms;
+    mp_obj_t active_allocationalarms;
 #else
 #define MEMORYMONITOR_MODULE
 #define MEMORYMONITOR_ROOT_POINTERS
@@ -550,7 +550,7 @@ extern const struct _mp_obj_module_t socket_module;
 #define SOCKET_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
 #define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
 #if MICROPY_PY_WIZNET5K
-    extern const struct _mp_obj_module_t wiznet_module;
+extern const struct _mp_obj_module_t wiznet_module;
     #define WIZNET_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
 #endif
 #else
@@ -853,9 +853,9 @@ extern const struct _mp_obj_module_t msgpack_module;
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
-      FONTIO_MODULE \
-      TERMINALIO_MODULE \
-      VECTORIO_MODULE \
+    FONTIO_MODULE \
+    TERMINALIO_MODULE \
+    VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
     FRAMEBUFFERIO_MODULE \
@@ -873,8 +873,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
-      SOCKET_MODULE \
-      WIZNET_MODULE \
+    SOCKET_MODULE \
+    WIZNET_MODULE \
     DUALBANK_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
@@ -938,8 +938,8 @@ struct _supervisor_allocation_node;
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
-    NETWORK_ROOT_POINTERS \
-    struct _supervisor_allocation_node* first_embedded_allocation; \
+        NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())

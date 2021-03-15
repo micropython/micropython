@@ -38,8 +38,8 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
 
-void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
-    busio_i2c_obj_t* i2c, uint16_t device_address, const mcu_pin_obj_t* reset) {
+void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t *self,
+    busio_i2c_obj_t *i2c, uint16_t device_address, const mcu_pin_obj_t *reset) {
 
     // Reset the display before probing
     self->reset.base.type = &mp_type_NoneType;
@@ -67,7 +67,7 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
     self->address = device_address;
 }
 
-void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
+void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t *self) {
     if (self->bus == &self->inline_bus) {
         common_hal_busio_i2c_deinit(self->bus);
     }
@@ -78,7 +78,7 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
 }
 
 bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
-    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_i2cdisplay_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (self->reset.base.type == &mp_type_NoneType) {
         return false;
     }
@@ -90,7 +90,7 @@ bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
 }
 
 bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t obj) {
-    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_i2cdisplay_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_i2c_try_lock(self->bus)) {
         return false;
     }
@@ -99,13 +99,13 @@ bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t obj) {
 }
 
 bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
-    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_i2cdisplay_obj_t *self = MP_OBJ_TO_PTR(obj);
     return common_hal_busio_i2c_try_lock(self->bus);
 }
 
 void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data_type,
-        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
-    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
+    displayio_i2cdisplay_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (data_type == DISPLAY_COMMAND) {
         uint8_t command_bytes[2 * data_length];
         for (uint32_t i = 0; i < data_length; i++) {
@@ -122,6 +122,6 @@ void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data
 }
 
 void common_hal_displayio_i2cdisplay_end_transaction(mp_obj_t obj) {
-    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_i2cdisplay_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_busio_i2c_unlock(self->bus);
 }

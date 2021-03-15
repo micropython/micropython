@@ -38,8 +38,8 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     return touch_value;
 }
 
-void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     if (pin->touch_channel == TOUCH_PAD_MAX) {
         mp_raise_ValueError(translate("Invalid pin"));
     }
@@ -59,11 +59,11 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     self->threshold = get_raw_reading(self) + 100;
 }
 
-bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
+bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
     return self->pin == NULL;
 }
 
-void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
+void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }

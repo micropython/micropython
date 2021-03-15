@@ -36,17 +36,17 @@ void board_init(void) {
 }
 
 bool board_requests_safe_mode(void) {
-  return false;
+    return false;
 }
 
 void reset_board(void) {
     // Turn off board.POWER_SWITCH (power-saving switch) on each soft reload, to prevent confusion.
     nrf_gpio_cfg(POWER_SWITCH_PIN->number,
-                 NRF_GPIO_PIN_DIR_OUTPUT,
-                 NRF_GPIO_PIN_INPUT_DISCONNECT,
-                 NRF_GPIO_PIN_NOPULL,
-                 NRF_GPIO_PIN_S0S1,
-                 NRF_GPIO_PIN_NOSENSE);
+        NRF_GPIO_PIN_DIR_OUTPUT,
+        NRF_GPIO_PIN_INPUT_DISCONNECT,
+        NRF_GPIO_PIN_NOPULL,
+        NRF_GPIO_PIN_S0S1,
+        NRF_GPIO_PIN_NOSENSE);
     nrf_gpio_pin_write(POWER_SWITCH_PIN->number, false);
 
     board_reset_user_neopixels(&pin_P0_13, 10);

@@ -11,13 +11,13 @@ micropython.heap_lock()
 try:
     print([])
 except MemoryError:
-    print('MemoryError')
+    print("MemoryError")
 
 # expansion of a heap block
 try:
     l.extend(l2)
 except MemoryError:
-    print('MemoryError')
+    print("MemoryError")
 
 micropython.heap_unlock()
 

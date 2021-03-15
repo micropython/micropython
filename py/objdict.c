@@ -34,7 +34,7 @@
 #include "supervisor/linker.h"
 #include "supervisor/shared/translate.h"
 
-#define MP_OBJ_IS_DICT_TYPE(o) (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->make_new == dict_make_new)
+#define MP_OBJ_IS_DICT_TYPE(o) (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == dict_make_new)
 
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
@@ -104,15 +104,18 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->map.used != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->map.used);
         #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);
         }
         #endif
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -340,7 +343,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(dict_update)(size_t n_args, const mp_obj_t *args, 
             if (args[1] != args[0]) {
                 size_t cur = 0;
                 mp_map_elem_t *elem = NULL;
-                while ((elem = dict_iter_next((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[1]), &cur)) != NULL) {
+                while ((elem = dict_iter_next((mp_obj_dict_t *)MP_OBJ_TO_PTR(args[1]), &cur)) != NULL) {
                     mp_map_lookup(&self->map, elem->key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = elem->value;
                 }
             }
@@ -436,7 +439,7 @@ STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf)
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_check_self(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
     mp_obj_dict_view_t *view = MP_OBJ_TO_PTR(view_in);
-    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t*)iter_buf;
+    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t *)iter_buf;
     o->base.type = &dict_view_it_type;
     o->kind = view->kind;
     o->dict = view->dict;
@@ -518,7 +521,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
-    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t*)iter_buf;
+    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t *)iter_buf;
     o->base.type = &dict_view_it_type;
     o->kind = MP_DICT_VIEW_KEYS;
     o->dict = self_in;
@@ -557,7 +560,7 @@ const mp_obj_type_t mp_type_dict = {
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
     .getiter = dict_getiter,
-    .locals_dict = (mp_obj_dict_t*)&dict_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
 };
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
@@ -571,7 +574,7 @@ const mp_obj_type_t mp_type_ordereddict = {
     .subscr = dict_subscr,
     .getiter = dict_getiter,
     .parent = &mp_type_dict,
-    .locals_dict = (mp_obj_dict_t*)&dict_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
 };
 #endif
 

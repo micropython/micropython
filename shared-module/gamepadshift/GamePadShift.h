@@ -33,9 +33,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* data_pin;
-    digitalio_digitalinout_obj_t* clock_pin;
-    digitalio_digitalinout_obj_t* latch_pin;
+    digitalio_digitalinout_obj_t *data_pin;
+    digitalio_digitalinout_obj_t *clock_pin;
+    digitalio_digitalinout_obj_t *latch_pin;
     volatile uint8_t pressed;
     volatile uint8_t last;
 } gamepadshift_obj_t;

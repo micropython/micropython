@@ -31,8 +31,8 @@
 #include "py/obj.h"
 
 mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
-    const char* cstr = (const char*) self->record.ssid;
-	return mp_obj_new_str(cstr, strlen(cstr));
+    const char *cstr = (const char *)self->record.ssid;
+    return mp_obj_new_str(cstr, strlen(cstr));
 }
 
 #define MAC_ADDRESS_LENGTH 6
@@ -50,13 +50,13 @@ mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
 }
 
 mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
-    const char* cstr = (const char*) self->record.country.cc;
-        // 2 instead of strlen(cstr) as this gives us only the country-code
-        return mp_obj_new_str(cstr, 2);
+    const char *cstr = (const char *)self->record.country.cc;
+    // 2 instead of strlen(cstr) as this gives us only the country-code
+    return mp_obj_new_str(cstr, 2);
 }
 
 mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
-    const char* authmode = "";
+    const char *authmode = "";
     switch (self->record.authmode) {
         case WIFI_AUTH_OPEN:
             authmode = "OPEN";
@@ -86,5 +86,5 @@ mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
             authmode = "UNKNOWN";
             break;
     }
-        return mp_obj_new_str(authmode, strlen(authmode));
+    return mp_obj_new_str(authmode, strlen(authmode));
 }

@@ -49,49 +49,53 @@
 static void transpose_var(uint32_t *result, const uint8_t *src, int src_stride, int num_strands) {
     uint32_t x = 0, y = 0, t;
 
-    src += (num_strands-1) * src_stride;
+    src += (num_strands - 1) * src_stride;
 
-    switch(num_strands) {
-    case 7:
-        x |= *src << 16;
-        src -= src_stride;
-        FALLTHROUGH;
-    case 6:
-        x |= *src << 8;
-        src -= src_stride;
-        FALLTHROUGH;
-    case 5:
-        x |= *src;
-        src -= src_stride;
-        FALLTHROUGH;
-    case 4:
-        y |= *src << 24;
-        src -= src_stride;
-        FALLTHROUGH;
-    case 3:
-        y |= *src << 16;
-        src -= src_stride;
-        FALLTHROUGH;
-    case 2:
-        y |= *src << 8;
-        src -= src_stride;
-        y |= *src;
+    switch (num_strands) {
+        case 7:
+            x |= *src << 16;
+            src -= src_stride;
+            FALLTHROUGH;
+        case 6:
+            x |= *src << 8;
+            src -= src_stride;
+            FALLTHROUGH;
+        case 5:
+            x |= *src;
+            src -= src_stride;
+            FALLTHROUGH;
+        case 4:
+            y |= *src << 24;
+            src -= src_stride;
+            FALLTHROUGH;
+        case 3:
+            y |= *src << 16;
+            src -= src_stride;
+            FALLTHROUGH;
+        case 2:
+            y |= *src << 8;
+            src -= src_stride;
+            y |= *src;
     }
 
-    t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
-    t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
+    t = (x ^ (x >> 7)) & 0x00AA00AA;
+    x = x ^ t ^ (t << 7);
+    t = (y ^ (y >> 7)) & 0x00AA00AA;
+    y = y ^ t ^ (t << 7);
 
-    t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
-    t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
+    t = (x ^ (x >> 14)) & 0x0000CCCC;
+    x = x ^ t ^ (t << 14);
+    t = (y ^ (y >> 14)) & 0x0000CCCC;
+    y = y ^ t ^ (t << 14);
 
     t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
     y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
     x = t;
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     x = __builtin_bswap32(x);
     y = __builtin_bswap32(y);
-#endif
+    #endif
     result[0] = x;
     result[1] = y;
 }
@@ -99,35 +103,47 @@ static void transpose_var(uint32_t *result, const uint8_t *src, int src_stride, 
 static void transpose_8(uint32_t *result, const uint8_t *src, int src_stride) {
     uint32_t x, y, t;
 
-    y = *src; src += src_stride;
-    y |= (*src << 8); src += src_stride;
-    y |= (*src << 16); src += src_stride;
-    y |= (*src << 24); src += src_stride;
-    x = *src; src += src_stride;
-    x |= (*src << 8); src += src_stride;
-    x |= (*src << 16); src += src_stride;
-    x |= (*src << 24); src += src_stride;
+    y = *src;
+    src += src_stride;
+    y |= (*src << 8);
+    src += src_stride;
+    y |= (*src << 16);
+    src += src_stride;
+    y |= (*src << 24);
+    src += src_stride;
+    x = *src;
+    src += src_stride;
+    x |= (*src << 8);
+    src += src_stride;
+    x |= (*src << 16);
+    src += src_stride;
+    x |= (*src << 24);
+    src += src_stride;
 
-    t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
-    t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
+    t = (x ^ (x >> 7)) & 0x00AA00AA;
+    x = x ^ t ^ (t << 7);
+    t = (y ^ (y >> 7)) & 0x00AA00AA;
+    y = y ^ t ^ (t << 7);
 
-    t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
-    t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
+    t = (x ^ (x >> 14)) & 0x0000CCCC;
+    x = x ^ t ^ (t << 14);
+    t = (y ^ (y >> 14)) & 0x0000CCCC;
+    y = y ^ t ^ (t << 14);
 
     t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
     y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
     x = t;
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     x = __builtin_bswap32(x);
     y = __builtin_bswap32(y);
-#endif
+    #endif
     result[0] = x;
     result[1] = y;
 }
 
 static void bit_transpose_8(uint32_t *result, const uint8_t *src, size_t src_stride, size_t n) {
-    for(size_t i=0; i<n; i++) {
+    for (size_t i = 0; i < n; i++) {
         transpose_8(result, src, src_stride);
         result += 2;
         src += 1;
@@ -135,7 +151,7 @@ static void bit_transpose_8(uint32_t *result, const uint8_t *src, size_t src_str
 }
 
 static void bit_transpose_var(uint32_t *result, const uint8_t *src, size_t src_stride, size_t n, int num_strands) {
-    for(size_t i=0; i<n; i++) {
+    for (size_t i = 0; i < n; i++) {
         transpose_var(result, src, src_stride, num_strands);
         result += 2;
         src += 1;
@@ -143,9 +159,9 @@ static void bit_transpose_var(uint32_t *result, const uint8_t *src, size_t src_s
 }
 
 void common_hal_bitops_bit_transpose(uint8_t *result, const uint8_t *src, size_t inlen, size_t num_strands) {
-    if(num_strands == 8) {
-        bit_transpose_8((uint32_t*)(void*)result, src, inlen/8, inlen/8);
-    } else  {
-        bit_transpose_var((uint32_t*)(void*)result, src, inlen/num_strands, inlen/num_strands, num_strands);
+    if (num_strands == 8) {
+        bit_transpose_8((uint32_t *)(void *)result, src, inlen / 8, inlen / 8);
+    } else {
+        bit_transpose_var((uint32_t *)(void *)result, src, inlen / num_strands, inlen / num_strands, num_strands);
     }
 }

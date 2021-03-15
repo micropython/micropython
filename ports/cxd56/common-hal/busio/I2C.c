@@ -101,7 +101,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, cons
     msg.frequency = self->frequency;
     msg.addr = address;
     msg.flags = (stop ? 0 : I2C_M_NOSTOP);
-    msg.buffer = (uint8_t *) data;
+    msg.buffer = (uint8_t *)data;
     msg.length = len;
     return -I2C_TRANSFER(self->i2c_dev, &msg, 1);
 }

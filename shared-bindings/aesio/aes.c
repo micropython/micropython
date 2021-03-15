@@ -37,119 +37,119 @@
 //|
 
 STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
-                                   const mp_obj_t *pos_args,
-                                   mp_map_t *kw_args) {
-  (void)type;
-  enum { ARG_key, ARG_mode, ARG_IV, ARG_counter, ARG_segment_size };
-  static const mp_arg_t allowed_args[] = {
-      {MP_QSTR_key, MP_ARG_OBJ | MP_ARG_REQUIRED},
-      {MP_QSTR_mode, MP_ARG_INT, {.u_int = AES_MODE_ECB}},
-      {MP_QSTR_IV, MP_ARG_OBJ},
-      {MP_QSTR_counter, MP_ARG_OBJ},
-      {MP_QSTR_segment_size, MP_ARG_INT, {.u_int = 8}},
-  };
-  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    const mp_obj_t *pos_args,
+    mp_map_t *kw_args) {
+    (void)type;
+    enum { ARG_key, ARG_mode, ARG_IV, ARG_counter, ARG_segment_size };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_key, MP_ARG_OBJ | MP_ARG_REQUIRED},
+        {MP_QSTR_mode, MP_ARG_INT, {.u_int = AES_MODE_ECB}},
+        {MP_QSTR_IV, MP_ARG_OBJ},
+        {MP_QSTR_counter, MP_ARG_OBJ},
+        {MP_QSTR_segment_size, MP_ARG_INT, {.u_int = 8}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
 
-  mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                   allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
+        allowed_args, args);
 
-  aesio_aes_obj_t *self = m_new_obj(aesio_aes_obj_t);
-  self->base.type = &aesio_aes_type;
+    aesio_aes_obj_t *self = m_new_obj(aesio_aes_obj_t);
+    self->base.type = &aesio_aes_type;
 
-  mp_buffer_info_t bufinfo;
+    mp_buffer_info_t bufinfo;
 
-  const uint8_t *key = NULL;
-  uint32_t key_length = 0;
-  if (mp_get_buffer(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ)) {
-    if ((bufinfo.len != 16) && (bufinfo.len != 24) && (bufinfo.len != 32)) {
-      mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
+    const uint8_t *key = NULL;
+    uint32_t key_length = 0;
+    if (mp_get_buffer(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ)) {
+        if ((bufinfo.len != 16) && (bufinfo.len != 24) && (bufinfo.len != 32)) {
+            mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
+        }
+        key = bufinfo.buf;
+        key_length = bufinfo.len;
+    } else {
+        mp_raise_TypeError(translate("No key was specified"));
     }
-    key = bufinfo.buf;
-    key_length = bufinfo.len;
-  } else {
-    mp_raise_TypeError(translate("No key was specified"));
-  }
 
-  int mode = args[ARG_mode].u_int;
-  switch (args[ARG_mode].u_int) {
-  case AES_MODE_CBC:
-  case AES_MODE_ECB:
-  case AES_MODE_CTR:
-    break;
-  default:
-    mp_raise_TypeError(translate("Requested AES mode is unsupported"));
-  }
-
-  // IV is required for CBC mode and is ignored for other modes.
-  const uint8_t *iv = NULL;
-  if (args[ARG_IV].u_obj != NULL &&
-      mp_get_buffer(args[ARG_IV].u_obj, &bufinfo, MP_BUFFER_READ)) {
-    if (bufinfo.len != AES_BLOCKLEN) {
-      mp_raise_TypeError_varg(translate("IV must be %d bytes long"),
-                              AES_BLOCKLEN);
+    int mode = args[ARG_mode].u_int;
+    switch (args[ARG_mode].u_int) {
+        case AES_MODE_CBC:
+        case AES_MODE_ECB:
+        case AES_MODE_CTR:
+            break;
+        default:
+            mp_raise_TypeError(translate("Requested AES mode is unsupported"));
     }
-    iv = bufinfo.buf;
-  }
 
-  common_hal_aesio_aes_construct(self, key, key_length, iv, mode,
-                                 args[ARG_counter].u_int);
-  return MP_OBJ_FROM_PTR(self);
+    // IV is required for CBC mode and is ignored for other modes.
+    const uint8_t *iv = NULL;
+    if (args[ARG_IV].u_obj != NULL &&
+        mp_get_buffer(args[ARG_IV].u_obj, &bufinfo, MP_BUFFER_READ)) {
+        if (bufinfo.len != AES_BLOCKLEN) {
+            mp_raise_TypeError_varg(translate("IV must be %d bytes long"),
+                AES_BLOCKLEN);
+        }
+        iv = bufinfo.buf;
+    }
+
+    common_hal_aesio_aes_construct(self, key, key_length, iv, mode,
+        args[ARG_counter].u_int);
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args) {
-  aesio_aes_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    aesio_aes_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-  mp_buffer_info_t bufinfo;
-  mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
-  const uint8_t *key = bufinfo.buf;
-  size_t key_length = bufinfo.len;
-  if (key == NULL) {
-    mp_raise_ValueError(translate("No key was specified"));
-  }
-  if ((key_length != 16) && (key_length != 24) && (key_length != 32)) {
-    mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
-  }
-
-  const uint8_t *iv = NULL;
-  if (n_args > 2) {
-    mp_get_buffer_raise(pos_args[2], &bufinfo, MP_BUFFER_READ);
-    size_t iv_length = bufinfo.len;
-    iv = (const uint8_t *)bufinfo.buf;
-    if (iv_length != AES_BLOCKLEN) {
-      mp_raise_TypeError_varg(translate("IV must be %d bytes long"),
-                              AES_BLOCKLEN);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
+    const uint8_t *key = bufinfo.buf;
+    size_t key_length = bufinfo.len;
+    if (key == NULL) {
+        mp_raise_ValueError(translate("No key was specified"));
     }
-  }
+    if ((key_length != 16) && (key_length != 24) && (key_length != 32)) {
+        mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
+    }
 
-  common_hal_aesio_aes_rekey(self, key, key_length, iv);
-  return mp_const_none;
+    const uint8_t *iv = NULL;
+    if (n_args > 2) {
+        mp_get_buffer_raise(pos_args[2], &bufinfo, MP_BUFFER_READ);
+        size_t iv_length = bufinfo.len;
+        iv = (const uint8_t *)bufinfo.buf;
+        if (iv_length != AES_BLOCKLEN) {
+            mp_raise_TypeError_varg(translate("IV must be %d bytes long"),
+                AES_BLOCKLEN);
+        }
+    }
+
+    common_hal_aesio_aes_rekey(self, key, key_length, iv);
+    return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(aesio_aes_rekey_obj, 2, aesio_aes_rekey);
 
 STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
-                            size_t dest_length) {
-  if (src_length != dest_length) {
-    mp_raise_ValueError(
-        translate("Source and destination buffers must be the same length"));
-  }
+    size_t dest_length) {
+    if (src_length != dest_length) {
+        mp_raise_ValueError(
+            translate("Source and destination buffers must be the same length"));
+    }
 
-  switch (self->mode) {
-  case AES_MODE_ECB:
-    if (src_length != 16) {
-      mp_raise_msg(&mp_type_ValueError,
-                   translate("ECB only operates on 16 bytes at a time"));
+    switch (self->mode) {
+        case AES_MODE_ECB:
+            if (src_length != 16) {
+                mp_raise_msg(&mp_type_ValueError,
+                    translate("ECB only operates on 16 bytes at a time"));
+            }
+            break;
+        case AES_MODE_CBC:
+            if ((src_length & 15) != 0) {
+                mp_raise_msg(&mp_type_ValueError,
+                    translate("CBC blocks must be multiples of 16 bytes"));
+            }
+            break;
+        case AES_MODE_CTR:
+            break;
     }
-    break;
-  case AES_MODE_CBC:
-    if ((src_length & 15) != 0) {
-      mp_raise_msg(&mp_type_ValueError,
-                   translate("CBC blocks must be multiples of 16 bytes"));
-    }
-    break;
-  case AES_MODE_CTR:
-    break;
-  }
 }
 
 //|     def encrypt_into(self, src: ReadableBuffer, dest: WriteableBuffer) -> None:
@@ -161,27 +161,27 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
 //|         ...
 //|
 STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
-                                       mp_obj_t dest) {
-  if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
-    mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
-  }
-  // Convert parameters into expected types.
-  aesio_aes_obj_t *aes = MP_OBJ_TO_PTR(aesio_obj);
+    mp_obj_t dest) {
+    if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
+    }
+    // Convert parameters into expected types.
+    aesio_aes_obj_t *aes = MP_OBJ_TO_PTR(aesio_obj);
 
-  mp_buffer_info_t srcbufinfo, destbufinfo;
-  mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
-  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
-  validate_length(aes, srcbufinfo.len, destbufinfo.len);
+    mp_buffer_info_t srcbufinfo, destbufinfo;
+    mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
+    validate_length(aes, srcbufinfo.len, destbufinfo.len);
 
-  memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
+    memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
 
-  common_hal_aesio_aes_encrypt(aes, (uint8_t *)destbufinfo.buf,
-                               destbufinfo.len);
-  return mp_const_none;
+    common_hal_aesio_aes_encrypt(aes, (uint8_t *)destbufinfo.buf,
+        destbufinfo.len);
+    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
-                                 aesio_aes_encrypt_into);
+    aesio_aes_encrypt_into);
 
 //|     def decrypt_into(self, src: ReadableBuffer, dest: WriteableBuffer) -> None:
 //|         """Decrypt the buffer from ``src`` into ``dest``.
@@ -191,55 +191,55 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
 //|         ...
 //|
 STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
-                                       mp_obj_t dest) {
-  if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
-    mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
-  }
-  // Convert parameters into expected types.
-  aesio_aes_obj_t *aes = MP_OBJ_TO_PTR(aesio_obj);
+    mp_obj_t dest) {
+    if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
+    }
+    // Convert parameters into expected types.
+    aesio_aes_obj_t *aes = MP_OBJ_TO_PTR(aesio_obj);
 
-  mp_buffer_info_t srcbufinfo, destbufinfo;
-  mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
-  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
-  validate_length(aes, srcbufinfo.len, destbufinfo.len);
+    mp_buffer_info_t srcbufinfo, destbufinfo;
+    mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
+    validate_length(aes, srcbufinfo.len, destbufinfo.len);
 
-  memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
+    memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
 
-  common_hal_aesio_aes_decrypt(aes, (uint8_t *)destbufinfo.buf,
-                               destbufinfo.len);
-  return mp_const_none;
+    common_hal_aesio_aes_decrypt(aes, (uint8_t *)destbufinfo.buf,
+        destbufinfo.len);
+    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_decrypt_into_obj,
-                                 aesio_aes_decrypt_into);
+    aesio_aes_decrypt_into);
 
 STATIC mp_obj_t aesio_aes_get_mode(mp_obj_t aesio_obj) {
-  if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
-    mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
-  }
-  aesio_aes_obj_t *self = MP_OBJ_TO_PTR(aesio_obj);
-  return MP_OBJ_NEW_SMALL_INT(self->mode);
+    if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
+    }
+    aesio_aes_obj_t *self = MP_OBJ_TO_PTR(aesio_obj);
+    return MP_OBJ_NEW_SMALL_INT(self->mode);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(aesio_aes_get_mode_obj, aesio_aes_get_mode);
 
 STATIC mp_obj_t aesio_aes_set_mode(mp_obj_t aesio_obj, mp_obj_t mode_obj) {
-  if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
-    mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
-  }
-  aesio_aes_obj_t *self = MP_OBJ_TO_PTR(aesio_obj);
+    if (!MP_OBJ_IS_TYPE(aesio_obj, &aesio_aes_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), aesio_aes_type.name);
+    }
+    aesio_aes_obj_t *self = MP_OBJ_TO_PTR(aesio_obj);
 
-  int mode = mp_obj_get_int(mode_obj);
-  switch (mode) {
-  case AES_MODE_CBC:
-  case AES_MODE_ECB:
-  case AES_MODE_CTR:
-    break;
-  default:
-    mp_raise_TypeError(translate("Requested AES mode is unsupported"));
-  }
+    int mode = mp_obj_get_int(mode_obj);
+    switch (mode) {
+        case AES_MODE_CBC:
+        case AES_MODE_ECB:
+        case AES_MODE_CTR:
+            break;
+        default:
+            mp_raise_TypeError(translate("Requested AES mode is unsupported"));
+    }
 
-  common_hal_aesio_aes_set_mode(self, mode);
-  return mp_const_none;
+    common_hal_aesio_aes_set_mode(self, mode);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(aesio_aes_set_mode_obj, aesio_aes_set_mode);
 

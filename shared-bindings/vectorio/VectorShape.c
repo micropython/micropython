@@ -72,7 +72,7 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
     self->base.type = &vectorio_vector_shape_type;
     common_hal_vectorio_vector_shape_construct(self,
         ishape, pixel_shader, x, y
-    );
+        );
 
     // Wire up event callbacks
     vectorio_event_t on_dirty = {
@@ -186,5 +186,5 @@ const mp_obj_type_t vectorio_vector_shape_type = {
     { &mp_type_type },
     .name = MP_QSTR_VectorShape,
     .make_new = vectorio_vector_shape_make_new,
-    .locals_dict = (mp_obj_dict_t*)&vectorio_vector_shape_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vectorio_vector_shape_locals_dict,
 };

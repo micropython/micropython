@@ -54,7 +54,7 @@ void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times
     for (size_t i = 0; i < times; i++) {
         size_t copy_sz = item_sz * len;
         memcpy(dest, items, copy_sz);
-        dest = (char*)dest + copy_sz;
+        dest = (char *)dest + copy_sz;
     }
 }
 
@@ -169,7 +169,7 @@ bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, size_t len1, const byte *
 
     // Let's deal only with > & >=
     if (op == MP_BINARY_OP_LESS || op == MP_BINARY_OP_LESS_EQUAL) {
-        SWAP(const byte*, data1, data2);
+        SWAP(const byte *, data1, data2);
         SWAP(size_t, len1, len2);
         if (op == MP_BINARY_OP_LESS) {
             op = MP_BINARY_OP_MORE;
@@ -236,7 +236,7 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp
         }
 
         // Otherwise, application of relation op gives the answer
-        return (mp_binary_op(op, items1[i], items2[i]) == mp_const_true);
+        return mp_binary_op(op, items1[i], items2[i]) == mp_const_true;
     }
 
     // If we had tie in the last element...
@@ -281,9 +281,9 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, cons
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value) {
     size_t count = 0;
     for (size_t i = 0; i < len; i++) {
-         if (mp_obj_equal(items[i], value)) {
-              count++;
-         }
+        if (mp_obj_equal(items[i], value)) {
+            count++;
+        }
     }
 
     // Common sense says this cannot overflow small int

@@ -122,5 +122,5 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
 
 const mp_obj_module_t board_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&board_module_globals,
+    .globals = (mp_obj_dict_t *)&board_module_globals,
 };

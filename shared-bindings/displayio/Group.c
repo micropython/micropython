@@ -72,7 +72,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-displayio_group_t* native_group(mp_obj_t group_obj) {
+displayio_group_t *native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
     if (native_group == MP_OBJ_NULL) {
         mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
@@ -202,7 +202,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append
 //|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
-    if ((size_t) MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)){
+    if ((size_t)MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)) {
         return displayio_group_obj_append(self_in, layer);
     }
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
@@ -241,9 +241,9 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
     displayio_group_t *self = native_group(pos_args[0]);
 
     size_t index = mp_get_index(&displayio_group_type,
-                                common_hal_displayio_group_get_len(self),
-                                MP_OBJ_NEW_SMALL_INT(args[ARG_i].u_int),
-                                false);
+        common_hal_displayio_group_get_len(self),
+        MP_OBJ_NEW_SMALL_INT(args[ARG_i].u_int),
+        false);
     return common_hal_displayio_group_pop(self, index);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
@@ -273,9 +273,12 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_group_t *self = native_group(self_in);
     uint16_t len = common_hal_displayio_group_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -359,5 +362,5 @@ const mp_obj_type_t displayio_group_type = {
     .subscr = group_subscr,
     .unary_op = group_unary_op,
     .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t*)&displayio_group_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,
 };

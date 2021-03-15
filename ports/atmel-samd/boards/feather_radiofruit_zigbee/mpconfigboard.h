@@ -11,8 +11,8 @@
 
 // These are pins not to reset.
 #define MICROPY_PORT_A        (PORT_PA22)
-#define MICROPY_PORT_B        ( 0 )
-#define MICROPY_PORT_C        ( 0 )
+#define MICROPY_PORT_B        (0)
+#define MICROPY_PORT_C        (0)
 
 #define BOARD_HAS_CRYSTAL 1
 

@@ -12,8 +12,8 @@
 
 // return values of mp_vfs_lookup_path
 // ROOT is 0 so that the default current directory is the root directory
-#define MP_VFS_NONE ((mp_vfs_mount_t*)1)
-#define MP_VFS_ROOT ((mp_vfs_mount_t*)0)
+#define MP_VFS_NONE ((mp_vfs_mount_t *)1)
+#define MP_VFS_ROOT ((mp_vfs_mount_t *)0)
 
 // MicroPython's port-standardized versions of stat constants
 #define MP_S_IFDIR (0x4000)

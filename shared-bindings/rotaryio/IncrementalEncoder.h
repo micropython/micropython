@@ -32,12 +32,12 @@
 
 extern const mp_obj_type_t rotaryio_incrementalencoder_type;
 
-extern void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b);
-extern void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self);
-extern bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self);
-extern mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self);
-extern void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
+extern void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b);
+extern void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self);
+extern bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self);
+extern mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self);
+extern void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_position);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_ROTARYIO_INCREMENTALENCODER_H

@@ -24,8 +24,8 @@
 #include "att.h"
 
 // Zephyr include files to define HCI communication values and structs.
-//#include "hci_include/hci.h"
-//#include "hci_include/hci_err.h"
+// #include "hci_include/hci.h"
+// #include "hci_include/hci_err.h"
 #include "hci_include/l2cap_internal.h"
 
 #include "py/obj.h"
@@ -44,7 +44,7 @@ STATIC unsigned long timeout = 5000;
 STATIC volatile bool confirm;
 
 STATIC uint16_t long_write_handle = BLE_GATT_HANDLE_INVALID;
-STATIC uint8_t* long_write_value = NULL;
+STATIC uint8_t *long_write_value = NULL;
 STATIC uint16_t long_write_value_length = 0;
 
 // When we send a request, fill this struct with info about the expected response.
@@ -52,7 +52,7 @@ STATIC uint16_t long_write_value_length = 0;
 STATIC struct {
     uint16_t conn_handle;       // Expected handle.
     uint8_t opcode;             // Expected RSP opcode.
-    uint8_t* buffer;            // Pointer to response packet
+    uint8_t *buffer;            // Pointer to response packet
     uint8_t length;             // Length of response packet.
 } expected_rsp;
 
@@ -88,7 +88,7 @@ STATIC uint8_t bleio_properties_to_ble_spec_properties(uint8_t bleio_properties)
     return ble_spec_properties;
 }
 
-//FIX not currently used; reenable when used.
+// FIX not currently used; reenable when used.
 #if 0
 STATIC uint8_t ble_spec_properties_to_bleio_properties(uint8_t ble_spec_properties) {
     uint8_t bleio_properties = 0;
@@ -120,20 +120,19 @@ STATIC void send_error(uint16_t conn_handle, uint8_t opcode, uint16_t handle, ui
         struct bt_att_hdr h;
         struct bt_att_error_rsp r;
     } rsp = { {
-            .code = BT_ATT_OP_ERROR_RSP,
-        }, {
-            .request = opcode,
-        }
-    };
+                  .code = BT_ATT_OP_ERROR_RSP,
+              }, {
+                  .request = opcode,
+              }};
 
-    hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *) &rsp);
+    hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *)&rsp);
 }
 
-STATIC void send_req(uint16_t conn_handle, size_t request_length, uint8_t* request_buffer) {
+STATIC void send_req(uint16_t conn_handle, size_t request_length, uint8_t *request_buffer) {
     hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, request_length, request_buffer);
 }
 
-STATIC int send_req_wait_for_rsp(uint16_t conn_handle, size_t request_length, uint8_t* request_buffer, uint8_t response_buffer[]) {
+STATIC int send_req_wait_for_rsp(uint16_t conn_handle, size_t request_length, uint8_t *request_buffer, uint8_t response_buffer[]) {
     // We expect a particular kind of response after this request.
     expected_rsp.conn_handle = conn_handle;
     // The response opcode is the request opcode + 1.
@@ -192,9 +191,9 @@ void bleio_att_reset(void) {
 }
 
 bool att_connect_to_address(bt_addr_le_t *addr) {
-    //FIX
+    // FIX
     if (hci_le_create_conn(0x0060, 0x0030, 0x00, addr, 0x00,
-                           0x0006, 0x000c, 0x0000, 0x00c8, 0x0004, 0x0006) != 0) {
+        0x0006, 0x000c, 0x0000, 0x00c8, 0x0004, 0x0006) != 0) {
         return false;
     }
 
@@ -229,7 +228,7 @@ bool att_disconnect(uint16_t conn_handle) {
     return !att_handle_is_connected(conn_handle);
 }
 
-//FIX
+// FIX
 // STATIC bool discover_services(uint16_t conn_handle, BLERemoteDevice* device, const char* serviceUuidFilter) {
 //     uint16_t reqStart_handle = 0x0001;
 //     uint16_t reqEnd_handle = 0xffff;
@@ -406,7 +405,7 @@ bool att_disconnect(uint16_t conn_handle) {
 //     return true;
 // }
 
-bool att_discover_attributes(bt_addr_le_t *addr, const char* service_uuid_filter) {
+bool att_discover_attributes(bt_addr_le_t *addr, const char *service_uuid_filter) {
     uint16_t conn_handle = att_conn_handle(addr);
     if (conn_handle == 0xffff) {
         return false;
@@ -418,7 +417,7 @@ bool att_discover_attributes(bt_addr_le_t *addr, const char* service_uuid_filter
     }
 
     // find the device entry for the peeer
-    //FIX BLERemoteDevice* device = NULL;
+    // FIX BLERemoteDevice* device = NULL;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         //     if (bleio_connections[i].conn_handle == conn_handle) {
@@ -454,7 +453,7 @@ bool att_discover_attributes(bt_addr_le_t *addr, const char* service_uuid_filter
     }
 
     // discover services
-    //FIX
+    // FIX
     // if (!att_discover_services(conn_handle, device, service_uuid_filter)) {
     //     return false;
     // }
@@ -481,10 +480,10 @@ void att_set_timeout(unsigned long timeout_in) {
 }
 
 void att_add_connection(uint16_t handle, uint8_t role, bt_addr_le_t *peer_addr, uint16_t interval, uint16_t latency, uint16_t supervision_timeout, uint8_t master_clock_accuracy) {
-    (void) interval;
-    (void) latency;
-    (void) supervision_timeout;
-    (void) master_clock_accuracy;
+    (void)interval;
+    (void)latency;
+    (void)supervision_timeout;
+    (void)master_clock_accuracy;
 
     int peer_index = -1;
 
@@ -508,7 +507,7 @@ void att_add_connection(uint16_t handle, uint8_t role, bt_addr_le_t *peer_addr, 
 
 
 void att_remove_connection(uint16_t conn_handle, uint8_t reason) {
-    (void) reason;
+    (void)reason;
     int peer_index = -1;
     int peer_count = 0;
 
@@ -580,7 +579,7 @@ bool att_is_connected(void) {
 }
 
 bool att_address_is_connected(bt_addr_le_t *addr) {
-    return (att_conn_handle(addr) != 0xffff);
+    return att_conn_handle(addr) != 0xffff;
 }
 
 bool att_handle_is_connected(uint16_t handle) {
@@ -624,10 +623,10 @@ bool att_disconnect_all(void) {
         bleio_connections[i].mtu = BT_ATT_DEFAULT_LE_MTU;
     }
 
-    return (num_disconnects > 0);
+    return num_disconnects > 0;
 }
 
-bool att_notify(uint16_t handle, const uint8_t* value, int length) {
+bool att_notify(uint16_t handle, const uint8_t *value, int length) {
     int num_notifications = 0;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -643,20 +642,21 @@ bool att_notify(uint16_t handle, const uint8_t* value, int length) {
         size_t allowed_length = MIN((uint16_t)(bleio_connections[i].mtu - sizeof(notify_t)), (uint16_t)length);
 
         uint8_t notify_bytes[sizeof(notify_t) + allowed_length];
-        notify_t *notify = (notify_t *) notify_bytes;
-        notify->hdr.code = BT_ATT_OP_NOTIFY;;
+        notify_t *notify = (notify_t *)notify_bytes;
+        notify->hdr.code = BT_ATT_OP_NOTIFY;
+        ;
         notify->ntf.handle = handle;
         memcpy(notify->ntf.value, value, allowed_length);
         hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT,
-                         sizeof(notify_bytes), notify_bytes);
+            sizeof(notify_bytes), notify_bytes);
 
         num_notifications++;
     }
 
-    return (num_notifications > 0);
+    return num_notifications > 0;
 }
 
-bool att_indicate(uint16_t handle, const uint8_t* value, int length) {
+bool att_indicate(uint16_t handle, const uint8_t *value, int length) {
     int num_indications = 0;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -672,15 +672,16 @@ bool att_indicate(uint16_t handle, const uint8_t* value, int length) {
         size_t allowed_length = MIN((uint16_t)(bleio_connections[i].mtu - sizeof(indicate_t)), (uint16_t)length);
 
         uint8_t indicate_bytes[sizeof(indicate_t) + allowed_length];
-        indicate_t *indicate = (indicate_t *) indicate_bytes;
-        indicate->hdr.code = BT_ATT_OP_INDICATE;;
+        indicate_t *indicate = (indicate_t *)indicate_bytes;
+        indicate->hdr.code = BT_ATT_OP_INDICATE;
+        ;
         indicate->ind.handle = handle;
         memcpy(indicate->ind.value, value, allowed_length);
 
         confirm = false;
 
         hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT,
-                         sizeof(indicate_bytes), indicate_bytes);
+            sizeof(indicate_bytes), indicate_bytes);
 
         while (!confirm) {
             // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
@@ -694,11 +695,11 @@ bool att_indicate(uint16_t handle, const uint8_t* value, int length) {
         num_indications++;
     }
 
-    return (num_indications > 0);
+    return num_indications > 0;
 }
 
 STATIC void process_error(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_error_rsp *rsp = (struct bt_att_error_rsp *) data;
+    struct bt_att_error_rsp *rsp = (struct bt_att_error_rsp *)data;
 
     if (dlen != sizeof(struct bt_att_error_rsp)) {
         // Incorrect size; ignore.
@@ -714,7 +715,7 @@ STATIC void process_error(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
 }
 
 STATIC void process_mtu_req(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_exchange_mtu_req *req = (struct bt_att_exchange_mtu_req *) data;
+    struct bt_att_exchange_mtu_req *req = (struct bt_att_exchange_mtu_req *)data;
 
     if (dlen != sizeof(struct bt_att_exchange_mtu_req)) {
         send_error(conn_handle, BT_ATT_OP_MTU_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
@@ -738,17 +739,16 @@ STATIC void process_mtu_req(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) 
         struct bt_att_hdr h;
         struct bt_att_exchange_mtu_rsp r;
     } rsp = { {
-            .code = BT_ATT_OP_MTU_RSP,
-        }, {
-            .mtu = mtu,
-        }
-    };
+                  .code = BT_ATT_OP_MTU_RSP,
+              }, {
+                  .mtu = mtu,
+              }};
 
-    hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *) &rsp);
+    hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *)&rsp);
 }
 
 STATIC void process_mtu_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_exchange_mtu_rsp *rsp = (struct bt_att_exchange_mtu_rsp *) data;
+    struct bt_att_exchange_mtu_rsp *rsp = (struct bt_att_exchange_mtu_rsp *)data;
 
     if (dlen != sizeof(struct bt_att_exchange_mtu_rsp)) {
         return;
@@ -765,7 +765,7 @@ STATIC void process_mtu_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) 
 }
 
 STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_find_info_req *req = (struct bt_att_find_info_req *) data;
+    struct bt_att_find_info_req *req = (struct bt_att_find_info_req *)data;
 
     if (dlen != sizeof(struct bt_att_find_info_req)) {
         send_error(conn_handle, BT_ATT_OP_FIND_INFO_REQ, req->start_handle, BT_ATT_ERR_INVALID_PDU);
@@ -778,7 +778,7 @@ STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     } rsp_t;
 
     uint8_t rsp_bytes[mtu];
-    rsp_t *rsp = (rsp_t *) rsp_bytes;
+    rsp_t *rsp = (rsp_t *)rsp_bytes;
     rsp->h.code = BT_ATT_OP_FIND_INFO_RSP;
 
     // Keeps track of total length of the response.
@@ -832,20 +832,20 @@ STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
         }
 
         if (sizeof_uuid == 2) {
-            struct bt_att_info_16 *info_16 = (struct bt_att_info_16 *) &rsp_bytes[rsp_length];
+            struct bt_att_info_16 *info_16 = (struct bt_att_info_16 *)&rsp_bytes[rsp_length];
             info_16->handle = handle;
             info_16->uuid = common_hal_bleio_uuid_get_uuid16(uuid);
 
             rsp_length += sizeof(struct bt_att_info_16);
         } else {
-            struct bt_att_info_128 *info_128 = (struct bt_att_info_128 *) &rsp_bytes[rsp_length];
+            struct bt_att_info_128 *info_128 = (struct bt_att_info_128 *)&rsp_bytes[rsp_length];
             info_128->handle = handle;
             common_hal_bleio_uuid_get_uuid128(uuid, info_128->uuid);
 
             rsp_length += sizeof(struct bt_att_info_128);
         }
 
-        no_data =false;
+        no_data = false;
     } // end for
 
 
@@ -861,14 +861,13 @@ int att_find_info_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_
         struct bt_att_hdr h;
         struct bt_att_find_info_req r;
     } req = { {
-            .code = BT_ATT_OP_FIND_INFO_REQ,
-        }, {
-            .start_handle = start_handle,
-            .end_handle = end_handle,
-        }
-    };
+                  .code = BT_ATT_OP_FIND_INFO_REQ,
+              }, {
+                  .start_handle = start_handle,
+                  .end_handle = end_handle,
+              }};
 
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
+    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *)&req, response_buffer);
 }
 
 STATIC void process_find_info_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
@@ -880,7 +879,7 @@ STATIC void process_find_info_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t da
 }
 
 STATIC void process_find_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_find_type_req *req = (struct bt_att_find_type_req *) data;
+    struct bt_att_find_type_req *req = (struct bt_att_find_type_req *)data;
 
     if (dlen < sizeof(struct bt_att_find_type_req)) {
         send_error(conn_handle, BT_ATT_OP_FIND_TYPE_RSP, req->start_handle, BT_ATT_ERR_INVALID_PDU);
@@ -893,7 +892,7 @@ STATIC void process_find_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     response[0] = BT_ATT_OP_FIND_TYPE_RSP;
     response_length = 1;
 
-    //FIX
+    // FIX
     // if (find_type_req->type == BLE_UUID_SERVICE_PRIMARY) {
     //     for (uint16_t i = (find_type_req->start_handle - 1); i < GATT.attributeCount() && i <= (find_type_req->end_handle - 1); i++) {
     //         BLELocalAttribute* attribute = GATT.attribute(i);
@@ -926,7 +925,7 @@ STATIC void process_find_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
 }
 
 void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_read_group_req *req = (struct bt_att_read_group_req *) data;
+    struct bt_att_read_group_req *req = (struct bt_att_read_group_req *)data;
     uint16_t type_uuid = req->uuid[0] | (req->uuid[1] << 8);
 
     // We only support returning services for BT_ATT_OP_READ_GROUP_REQ, which is typically used
@@ -944,7 +943,7 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
     } rsp_t;
 
     uint8_t rsp_bytes[mtu];
-    rsp_t *rsp = (rsp_t *) rsp_bytes;
+    rsp_t *rsp = (rsp_t *)rsp_bytes;
     rsp->h.code = BT_ATT_OP_READ_GROUP_RSP;
     rsp->r.len = 0;
 
@@ -991,7 +990,7 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
             // There may be multiple chunks in this transmission.
             rsp->r.len = data_length;
 
-            struct bt_att_group_data *group_data = (struct bt_att_group_data *) &rsp_bytes[rsp_length];
+            struct bt_att_group_data *group_data = (struct bt_att_group_data *)&rsp_bytes[rsp_length];
 
             group_data->start_handle = service->start_handle;
             group_data->end_handle = service->end_handle;
@@ -1017,7 +1016,7 @@ int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end
     } req_t;
 
     uint8_t req_bytes[sizeof(req_t) + sizeof(uuid)];
-    req_t *req = (req_t *) req_bytes;
+    req_t *req = (req_t *)req_bytes;
 
     req->h.code = BT_ATT_OP_READ_GROUP_REQ;
     req->r.start_handle = start_handle;
@@ -1047,7 +1046,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
             return;
         }
 
-        struct bt_att_read_req *req = (struct bt_att_read_req *) data;
+        struct bt_att_read_req *req = (struct bt_att_read_req *)data;
         handle = req->handle;
         response_opcode = BT_ATT_OP_READ_RSP;
 
@@ -1057,7 +1056,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
             return;
         }
 
-        struct bt_att_read_blob_req *req = (struct bt_att_read_blob_req *) data;
+        struct bt_att_read_blob_req *req = (struct bt_att_read_blob_req *)data;
         handle = req->handle;
         offset = req->offset;
         response_opcode = BT_ATT_OP_READ_BLOB_RSP;
@@ -1077,7 +1076,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
     } rsp_t;
 
     uint8_t rsp_bytes[mtu];
-    rsp_t *rsp = (rsp_t *) rsp_bytes;
+    rsp_t *rsp = (rsp_t *)rsp_bytes;
     rsp->h.code = response_opcode;
 
     // Keeps track of total length of the response.
@@ -1105,7 +1104,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
                 return;
             }
 
-            characteristic_declaration_t *char_decl = (characteristic_declaration_t *) rsp->r.value;
+            characteristic_declaration_t *char_decl = (characteristic_declaration_t *)rsp->r.value;
 
             // Convert from the bleio properties bit values to the BLE spec properties bit values.
             // They are not the same :(.
@@ -1160,7 +1159,7 @@ STATIC void process_read_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[])
 }
 
 STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_read_type_req *req = (struct bt_att_read_type_req *) data;
+    struct bt_att_read_type_req *req = (struct bt_att_read_type_req *)data;
     uint16_t type_uuid = req->uuid[0] | (req->uuid[1] << 8);
 
     if (dlen != sizeof(struct bt_att_read_type_req) + sizeof(type_uuid)) {
@@ -1174,7 +1173,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     } rsp_t;
 
     uint8_t rsp_bytes[mtu];
-    rsp_t *rsp = (rsp_t *) rsp_bytes;
+    rsp_t *rsp = (rsp_t *)rsp_bytes;
     rsp->h.code = BT_ATT_OP_READ_TYPE_RSP;
     rsp->r.len = 0;
 
@@ -1233,11 +1232,11 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
             // There may be multiple chunks in this transmission.
             rsp->r.len = data_length;
 
-            struct bt_att_data *att_data = (struct bt_att_data *) &rsp_bytes[rsp_length];
+            struct bt_att_data *att_data = (struct bt_att_data *)&rsp_bytes[rsp_length];
 
             att_data->handle = characteristic->decl_handle;
 
-            characteristic_declaration_t *char_decl = (characteristic_declaration_t *) att_data->value;
+            characteristic_declaration_t *char_decl = (characteristic_declaration_t *)att_data->value;
 
             // Convert from the bleio properties bit values to the BLE spec properties bit values.
             // They are not the same :(.
@@ -1255,7 +1254,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
             // See if request is for a descriptor value with a 16-bit UUID, such as the CCCD.
             bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
             if (bleio_uuid_get_uuid16_or_unknown(descriptor->uuid) == type_uuid) {
-                struct bt_att_data *att_data = (struct bt_att_data *) &rsp_bytes[rsp_length];
+                struct bt_att_data *att_data = (struct bt_att_data *)&rsp_bytes[rsp_length];
 
                 att_data->handle = handle;
 
@@ -1277,7 +1276,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
             bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
             if (bleio_uuid_get_uuid16_or_unknown(characteristic->uuid) == type_uuid) {
 
-                struct bt_att_data *att_data = (struct bt_att_data *) &rsp_bytes[rsp_length];
+                struct bt_att_data *att_data = (struct bt_att_data *)&rsp_bytes[rsp_length];
 
                 att_data->handle = handle;
 
@@ -1299,7 +1298,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
 
     if (no_data) {
         send_error(conn_handle, BT_ATT_OP_READ_TYPE_REQ,
-                   req->start_handle, BT_ATT_ERR_ATTRIBUTE_NOT_FOUND);
+            req->start_handle, BT_ATT_ERR_ATTRIBUTE_NOT_FOUND);
     } else {
         hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, rsp_length, rsp_bytes);
     }
@@ -1312,7 +1311,7 @@ int att_read_type_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_
     } req_t;
 
     uint8_t req_bytes[sizeof(req_t) + sizeof(type)];
-    req_t *req = (req_t *) req_bytes;
+    req_t *req = (req_t *)req_bytes;
 
     req->h.code = BT_ATT_OP_READ_TYPE_REQ;
     req->r.start_handle = start_handle;
@@ -1334,7 +1333,7 @@ STATIC void process_read_type_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t da
 // Handles BT_ATT_OP_WRITE_REQ or BT_ATT_OP_WRITE_
 STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t op, uint8_t dlen, uint8_t data[]) {
     // struct bt_att_write_cmd is identical, so don't bother to split code paths based on opcode.
-    struct bt_att_write_req *req = (struct bt_att_write_req *) data;
+    struct bt_att_write_req *req = (struct bt_att_write_req *)data;
 
     bool with_response = (op == BT_ATT_OP_WRITE_REQ);
 
@@ -1397,7 +1396,7 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
             .code = BT_ATT_OP_WRITE_RSP,
         };
 
-        hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *) &rsp);
+        hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *)&rsp);
     }
 }
 
@@ -1410,7 +1409,7 @@ STATIC void process_write_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]
 }
 
 STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_prepare_write_req *req = (struct bt_att_prepare_write_req *) data;
+    struct bt_att_prepare_write_req *req = (struct bt_att_prepare_write_req *)data;
 
     if (dlen < sizeof(struct bt_att_prepare_write_req)) {
         send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
@@ -1419,7 +1418,7 @@ STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_
 
     uint16_t handle = req->handle;
     uint16_t offset = req->offset;
-    (void) offset;
+    (void)offset;
 
     if (handle > bleio_adapter_max_attribute_handle(&common_hal_bleio_adapter_obj)) {
         send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTRIBUTE_NOT_FOUND);
@@ -1433,7 +1432,7 @@ STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_
         return;
     }
 
-    bleio_characteristic_obj_t* characteristic = MP_OBJ_TO_PTR(attribute);
+    bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute);
 
     if (handle != characteristic->handle) {
         send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTRIBUTE_NOT_LONG);
@@ -1445,7 +1444,7 @@ STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_
         return;
     }
 
-    //FIX if (long_write_handle == BLE_GATT_HANDLE_INVALID)
+    // FIX if (long_write_handle == BLE_GATT_HANDLE_INVALID)
     //     int valueSize = characteristic->valueSize();
 
     //     long_write_value = (uint8_t*)realloc(long_write_value, valueSize);
@@ -1480,7 +1479,7 @@ STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_
 }
 
 STATIC void process_exec_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    struct bt_att_exec_write_req *req = (struct bt_att_exec_write_req *) data;
+    struct bt_att_exec_write_req *req = (struct bt_att_exec_write_req *)data;
 
     if (dlen != sizeof(struct bt_att_exec_write_req)) {
         send_error(conn_handle, BT_ATT_OP_EXEC_WRITE_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
@@ -1488,11 +1487,11 @@ STATIC void process_exec_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t d
     }
 
     if (long_write_handle && (req->flags & 0x01)) {
-        //FIX BLELocalCharacteristic* characteristic = (BLELocalCharacteristic*)GATT.attribute(long_write_handle - 1);
+        // FIX BLELocalCharacteristic* characteristic = (BLELocalCharacteristic*)GATT.attribute(long_write_handle - 1);
 
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
             if (bleio_connections[i].conn_handle == conn_handle) {
-                //FIX characteristic->writeValue(BLEDevice(bleio_connections[i].address_type, bleio_connections[i].address), long_write_value, long_write_value_length);
+                // FIX characteristic->writeValue(BLEDevice(bleio_connections[i].address_type, bleio_connections[i].address), long_write_value, long_write_value_length);
                 break;
             }
         }
@@ -1516,16 +1515,16 @@ STATIC void process_notify_or_indicate(uint16_t conn_handle, uint8_t opcode, uin
     }
 
     // struct bt_att_notify and bt_att_indicate are identical.
-    //FIXunused struct bt_att_notify *req = (struct bt_att_notify *) data;
+    // FIXunused struct bt_att_notify *req = (struct bt_att_notify *) data;
 
-    //FIXunused uint8_t handle = req->handle;
+    // FIXunused uint8_t handle = req->handle;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         if (bleio_connections[i].conn_handle != conn_handle) {
             continue;
         }
 
-        //FIX BLERemoteDevice* device = bleio_connections[i].device;
+        // FIX BLERemoteDevice* device = bleio_connections[i].device;
 
         // if (!device) {
         //     break;
@@ -1562,9 +1561,9 @@ STATIC void process_notify_or_indicate(uint16_t conn_handle, uint8_t opcode, uin
 }
 
 STATIC void process_confirm(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
-    (void) conn_handle;
-    (void) dlen;
-    (void) data;
+    (void)conn_handle;
+    (void)dlen;
+    (void)data;
 
     confirm = true;
 }
@@ -1574,7 +1573,7 @@ bool att_exchange_mtu(uint16_t conn_handle) {
     struct bt_att_exchange_mtu_req req = {
         .mtu = max_mtu,
     };
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
+    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *)&req, response_buffer);
 }
 
 int att_read_req(uint16_t conn_handle, uint16_t handle, uint8_t response_buffer[]) {
@@ -1582,23 +1581,22 @@ int att_read_req(uint16_t conn_handle, uint16_t handle, uint8_t response_buffer[
         struct bt_att_hdr h;
         struct bt_att_read_req r;
     } req = { {
-            .code = BT_ATT_OP_READ_REQ,
-        }, {
-            .handle = handle,
-        }
-    };
+                  .code = BT_ATT_OP_READ_REQ,
+              }, {
+                  .handle = handle,
+              }};
 
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
+    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *)&req, response_buffer);
 }
 
-int att_write_req(uint16_t conn_handle, uint16_t handle, const uint8_t* data, uint8_t data_len, uint8_t response_buffer[]) {
+int att_write_req(uint16_t conn_handle, uint16_t handle, const uint8_t *data, uint8_t data_len, uint8_t response_buffer[]) {
     typedef struct __packed {
         struct bt_att_hdr h;
         struct bt_att_write_req r;
     } req_t;
 
     uint8_t req_bytes[sizeof(req_t) + data_len];
-    req_t *req = (req_t *) req_bytes;
+    req_t *req = (req_t *)req_bytes;
     req->h.code = BT_ATT_OP_WRITE_REQ;
     req->r.handle = handle;
     memcpy(req->r.value, data, data_len);
@@ -1606,14 +1604,14 @@ int att_write_req(uint16_t conn_handle, uint16_t handle, const uint8_t* data, ui
     return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req_bytes, response_buffer);
 }
 
-void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t* data, uint8_t data_len) {
+void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t *data, uint8_t data_len) {
     typedef struct __packed {
         struct bt_att_hdr h;
         struct bt_att_write_cmd r;
     } cmd_t;
 
     uint8_t cmd_bytes[sizeof(cmd_t) + data_len];
-    cmd_t *cmd = (cmd_t *) cmd_bytes;
+    cmd_t *cmd = (cmd_t *)cmd_bytes;
     cmd->h.code = BT_ATT_OP_WRITE_CMD;
     cmd->r.handle = handle;
     memcpy(cmd->r.value, data, data_len);
@@ -1715,7 +1713,7 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
     }
 }
 
-//FIX Do we need all of these?
+// FIX Do we need all of these?
 void check_att_err(uint8_t err) {
     const compressed_string_t *msg = NULL;
     switch (err) {

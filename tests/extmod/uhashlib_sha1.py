@@ -16,13 +16,13 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
-sha1 = hashlib.sha1(b'hello')
-sha1.update(b'world')
+sha1 = hashlib.sha1(b"hello")
+sha1.update(b"world")
 print(sha1.digest())
 
-sha1 = hashlib.sha1(b'hello')
+sha1 = hashlib.sha1(b"hello")
 try:
-    sha1.update(u'world')
+    sha1.update(u"world")
 except TypeError as e:
     print("TypeError")
 print(sha1.digest())

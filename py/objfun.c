@@ -210,7 +210,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
                                                                                   \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
-                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
+            + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \
@@ -286,7 +286,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
 
-#if VM_DETECT_STACK_OVERFLOW
+    #if VM_DETECT_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         if (code_state->sp < code_state->state) {
             printf("VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
@@ -310,7 +310,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
             assert(0);
         }
     }
-#endif
+    #endif
 
     mp_obj_t result;
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
@@ -354,14 +354,14 @@ STATIC void fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
-#endif
+    #endif
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
-#if MICROPY_PY_FUNCTION_ATTRS
+    #if MICROPY_PY_FUNCTION_ATTRS
     .attr = fun_bc_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
@@ -398,7 +398,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = self_in;
-    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void*)self->bytecode);
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);
 }
 
@@ -410,7 +410,7 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte*)fun_data, const_table);
+    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table);
     o->base.type = &mp_type_fun_native;
     return o;
 }
@@ -459,7 +459,7 @@ STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, con
             mp_convert_obj_to_native(args[1], self->type_sig >> 8),
             mp_convert_obj_to_native(args[2], self->type_sig >> 12),
             mp_convert_obj_to_native(args[3], self->type_sig >> 16)
-        );
+            );
     }
 
     return mp_convert_native_to_obj(ret, self->type_sig);
@@ -521,11 +521,11 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
         if (0) {
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         } else if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
-#endif
+        #endif
         } else if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             size_t len;
@@ -569,7 +569,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
             convert_obj_for_inline_asm(args[1]),
             convert_obj_for_inline_asm(args[2]),
             convert_obj_for_inline_asm(args[3])
-        );
+            );
     }
 
     return mp_convert_native_to_obj(ret, self->type_sig);

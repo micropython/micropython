@@ -314,5 +314,5 @@ const mp_obj_type_t usb_cdc_serial_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &usb_cdc_serial_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&usb_cdc_serial_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&usb_cdc_serial_locals_dict,
 };

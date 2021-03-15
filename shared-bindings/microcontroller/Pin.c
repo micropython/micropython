@@ -43,8 +43,8 @@
 //|         ...
 //|
 
-static void get_pin_name(const mcu_pin_obj_t *self, qstr* package, qstr* module, qstr* name) {
-    const mp_map_t* board_map = &board_module_globals.map;
+static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {
+    const mp_map_t *board_map = &board_module_globals.map;
     for (uint8_t i = 0; i < board_map->alloc; i++) {
         if (board_map->table[i].value == self) {
             *package = 0;
@@ -53,7 +53,7 @@ static void get_pin_name(const mcu_pin_obj_t *self, qstr* package, qstr* module,
             return;
         }
     }
-    const mp_map_t* mcu_map = &mcu_pin_globals.map;
+    const mp_map_t *mcu_map = &mcu_pin_globals.map;
     for (uint8_t i = 0; i < mcu_map->alloc; i++) {
         if (mcu_map->table[i].value == self) {
             *package = MP_QSTR_microcontroller;
@@ -74,7 +74,7 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     if (package) {
         mp_printf(print, "%q.%q.%q", package, module, name);
     } else {
-        mp_printf(print, "%q.%q", module , name);
+        mp_printf(print, "%q.%q", module, name);
     }
 }
 
@@ -112,7 +112,7 @@ void validate_list_is_free_pins(qstr what, mcu_pin_obj_t **pins_out, mp_int_t ma
         mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
     }
     *count_out = len;
-    for (mp_int_t i=0; i<len; i++) {
+    for (mp_int_t i = 0; i < len; i++) {
         pins_out[i] = validate_obj_is_free_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
     }
 }
@@ -127,7 +127,7 @@ mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj) {
     return pin;
 }
 
-void assert_pin_free(const mcu_pin_obj_t* pin) {
+void assert_pin_free(const mcu_pin_obj_t *pin) {
     if (pin != NULL && pin != MP_OBJ_TO_PTR(mp_const_none) && !common_hal_mcu_pin_is_free(pin)) {
         qstr package;
         qstr module;

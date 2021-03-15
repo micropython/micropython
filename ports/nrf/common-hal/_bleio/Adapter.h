@@ -43,16 +43,16 @@ extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUN
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t* advertising_data;
-    uint8_t* scan_response_data;
-    uint8_t* current_advertising_data;
-    bleio_scanresults_obj_t* scan_results;
+    uint8_t *advertising_data;
+    uint8_t *scan_response_data;
+    uint8_t *current_advertising_data;
+    bleio_scanresults_obj_t *scan_results;
     mp_obj_t name;
     mp_obj_tuple_t *connection_objs;
     ble_drv_evt_handler_entry_t handler_entry;
 } bleio_adapter_obj_t;
 
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter);
+void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter);
+void bleio_adapter_reset(bleio_adapter_obj_t *adapter);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H

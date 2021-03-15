@@ -144,7 +144,7 @@ uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     return self->frequency;
 }
 
-uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t *self) {
     return self->phase;
 }
 

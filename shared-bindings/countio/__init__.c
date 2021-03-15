@@ -32,5 +32,5 @@ STATIC MP_DEFINE_CONST_DICT(countio_module_globals, countio_module_globals_table
 
 const mp_obj_module_t countio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&countio_module_globals,
+    .globals = (mp_obj_dict_t *)&countio_module_globals,
 };

@@ -59,5 +59,5 @@ STATIC MP_DEFINE_CONST_DICT(audioio_module_globals, audioio_module_globals_table
 
 const mp_obj_module_t audioio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&audioio_module_globals,
+    .globals = (mp_obj_dict_t *)&audioio_module_globals,
 };

@@ -29,7 +29,7 @@
 #include "shared-module/fontio/BuiltinFont.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const fontio_builtinfont_t* font) {
+void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t *tilegrid, const fontio_builtinfont_t *font) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->font = font;
@@ -46,7 +46,7 @@ void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, d
 }
 
 size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, const byte *data, size_t len, int *errcode) {
-    const byte* i = data;
+    const byte *i = data;
     uint16_t start_y = self->cursor_y;
     while (i < data + len) {
         unichar c = utf8_get_char(i);
@@ -61,7 +61,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 self->cursor_x = 0;
             } else if (c == '\n') {
                 self->cursor_y++;
-            // Commands below are used by MicroPython in the REPL
+                // Commands below are used by MicroPython in the REPL
             } else if (c == '\b') {
                 if (self->cursor_x > 0) {
                     self->cursor_x--;

@@ -49,10 +49,10 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
     return common_hal_mcu_pin_number(result);
 }
 
-STATIC void validate_pins(qstr what, uint8_t* pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
+STATIC void validate_pins(qstr what, uint8_t *pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
     mcu_pin_obj_t *pins[max_pins];
     validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
-    for (mp_int_t i=0; i<*count_out; i++) {
+    for (mp_int_t i = 0; i < *count_out; i++) {
         pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
     }
 }
@@ -64,7 +64,7 @@ STATIC void claim_and_never_reset_pin(mp_obj_t pin) {
 
 STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
     mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
-    for (mp_int_t i=0; i<len; i++) {
+    for (mp_int_t i = 0; i < len; i++) {
         claim_and_never_reset_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
     }
 }
@@ -99,15 +99,23 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 
     uint8_t byte_mask = 0;
-    if (bit_mask & 0x000000FF) byte_mask |= 0b0001;
-    if (bit_mask & 0x0000FF00) byte_mask |= 0b0010;
-    if (bit_mask & 0x00FF0000) byte_mask |= 0b0100;
-    if (bit_mask & 0xFF000000) byte_mask |= 0b1000;
+    if (bit_mask & 0x000000FF) {
+        byte_mask |= 0b0001;
+    }
+    if (bit_mask & 0x0000FF00) {
+        byte_mask |= 0b0010;
+    }
+    if (bit_mask & 0x00FF0000) {
+        byte_mask |= 0b0100;
+    }
+    if (bit_mask & 0xFF000000) {
+        byte_mask |= 0b1000;
+    }
 
     uint8_t bytes_per_element = 0xff;
     uint8_t ideal_bytes_per_element = (rgb_pin_count + 7) / 8;
 
-    switch(byte_mask) {
+    switch (byte_mask) {
         case 0b0001:
         case 0b0010:
         case 0b0100:
@@ -172,7 +180,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_bit_depth, ARG_rgb_list, ARG_addr_list,
-        ARG_clock_pin, ARG_latch_pin, ARG_output_enable_pin, ARG_doublebuffer, ARG_framebuffer, ARG_height, ARG_tile, ARG_serpentine };
+           ARG_clock_pin, ARG_latch_pin, ARG_output_enable_pin, ARG_doublebuffer, ARG_framebuffer, ARG_height, ARG_tile, ARG_serpentine };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_bit_depth, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
@@ -265,7 +273,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 //|         ...
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     common_hal_rgbmatrix_rgbmatrix_deinit(self);
     return mp_const_none;
 }
@@ -283,14 +291,14 @@ static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
 //|     and any other value up to 1.0 turns the display on fully."""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_brightness(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
     return mp_obj_new_float(common_hal_rgbmatrix_rgbmatrix_get_paused(self)? 0.0f : 1.0f);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_brightness_obj, rgbmatrix_rgbmatrix_get_brightness);
 
-STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t value_in)  {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
@@ -315,7 +323,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
 //|         ...
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
     common_hal_rgbmatrix_rgbmatrix_refresh(self);
     return mp_const_none;
@@ -326,7 +334,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_r
 //|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_width(self));
 }
@@ -342,7 +350,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
 //|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_height(self));
 }
@@ -365,7 +373,7 @@ STATIC const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix_locals_dict_table);
 
 STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     check_for_deinit(self);
 
     *bufinfo = self->bufinfo;
@@ -427,7 +435,7 @@ STATIC const framebuffer_p_t rgbmatrix_rgbmatrix_proto = {
 };
 
 STATIC mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
+    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
         return 1;
@@ -442,5 +450,5 @@ const mp_obj_type_t rgbmatrix_RGBMatrix_type = {
     .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
     .make_new = rgbmatrix_rgbmatrix_make_new,
     .protocol = &rgbmatrix_rgbmatrix_proto,
-    .locals_dict = (mp_obj_dict_t*)&rgbmatrix_rgbmatrix_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rgbmatrix_rgbmatrix_locals_dict,
 };

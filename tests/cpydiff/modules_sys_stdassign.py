@@ -5,5 +5,6 @@ cause: They are stored in read-only memory.
 workaround: Unknown
 """
 import sys
+
 sys.stdin = None
 print(sys.stdin)

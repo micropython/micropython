@@ -33,13 +33,13 @@
 
 void common_hal_rtc_init(void) {
     datetime_t t = {
-            .year  = 2020,
-            .month = 1,
-            .day   = 1,
-            .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
-            .hour  = 0,
-            .min   = 0,
-            .sec   = 0
+        .year = 2020,
+        .month = 1,
+        .day = 1,
+        .dotw = 3,      // 0 is Sunday, so 3 is Wednesday
+        .hour = 0,
+        .min = 0,
+        .sec = 0
     };
 
     // Start the RTC
@@ -53,17 +53,17 @@ void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
     rtc_get_datetime(&t);
 
     tm->tm_year = t.year;
-    tm->tm_mon  = t.month;
+    tm->tm_mon = t.month;
     tm->tm_mday = t.day;
     tm->tm_wday = t.dotw;
     tm->tm_hour = t.hour;
-    tm->tm_min  = t.min;
-    tm->tm_sec  = t.sec;
+    tm->tm_min = t.min;
+    tm->tm_sec = t.sec;
 
     if (tm->tm_wday == 0) {
         tm->tm_wday = 6;
     } else {
-        tm->tm_wday-=1;
+        tm->tm_wday -= 1;
     }
 }
 
@@ -71,17 +71,17 @@ void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
     if (tm->tm_wday == 6) {
         tm->tm_wday = 0;
     } else {
-        tm->tm_wday+=1;
+        tm->tm_wday += 1;
     }
 
     datetime_t t = {
-        .year   =   tm->tm_year,
-        .month  =   tm->tm_mon,
-        .day    =   tm->tm_mday,
-        .dotw   =   tm->tm_wday,
-        .hour   =   tm->tm_hour,
-        .min    =   tm->tm_min,
-        .sec    =   tm->tm_sec
+        .year = tm->tm_year,
+        .month = tm->tm_mon,
+        .day = tm->tm_mday,
+        .dotw = tm->tm_wday,
+        .hour = tm->tm_hour,
+        .min = tm->tm_min,
+        .sec = tm->tm_sec
     };
     rtc_set_datetime(&t);
 }

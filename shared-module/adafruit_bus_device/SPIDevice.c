@@ -68,14 +68,15 @@ void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice
         mp_obj_t buffer = mp_obj_new_bytearray_of_zeros(1);
 
         mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
-        ((uint8_t*)bufinfo.buf)[0]  = 0xFF;
+        ((uint8_t *)bufinfo.buf)[0] = 0xFF;
 
         uint8_t clocks = self->extra_clocks / 8;
-        if ((self->extra_clocks % 8) != 0)
+        if ((self->extra_clocks % 8) != 0) {
             clocks += 1;
+        }
 
         while (clocks > 0) {
-            if (!common_hal_busio_spi_write(self->spi, ((uint8_t*)bufinfo.buf), 1)) {
+            if (!common_hal_busio_spi_write(self->spi, ((uint8_t *)bufinfo.buf), 1)) {
                 mp_raise_OSError(MP_EIO);
             }
             clocks--;

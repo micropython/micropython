@@ -37,9 +37,9 @@
 
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
+    ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
     )
 
 void gc_init(void *start, void *end);

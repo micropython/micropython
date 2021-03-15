@@ -37,7 +37,7 @@
 #include "py/obj.h"
 
 #include "shared-module/adafruit_bus_device/I2CDevice.h"
-//#include "shared-bindings/busio/I2C.h"
+// #include "shared-bindings/busio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t adafruit_bus_device_i2cdevice_type;
