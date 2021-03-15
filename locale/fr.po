@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-14 23:02+0000\n"
-"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
+"PO-Revision-Date: 2021-03-16 00:47+0000\n"
+"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -358,7 +358,7 @@ msgstr "Tous les automates finis sont utilisés"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr "Tout canaux d'événements sync (sync event channels) sont utilisés"
+msgstr "Tout les canaux d'événements sync sont utilisés"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -1775,7 +1775,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "PWM slice déja utilisée"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
@@ -1820,7 +1820,7 @@ msgstr "La broche est entrée uniquement"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "La broche doit être sur le canal B du PWM"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1843,7 +1843,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
-msgstr ""
+msgstr "Les broches doivent être séquentielles"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2594,7 +2594,7 @@ msgstr "opération binaire '%q' non implémentée"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
-msgstr ""
+msgstr "les bits doivent être compris entre 5 et 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
