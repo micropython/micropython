@@ -42,3 +42,6 @@
 [submodule "lib/pico-sdk"]
 	path = lib/pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "lib/fsp"]
+	path = lib/fsp
+	url = https://github.com/renesas/fsp.git
