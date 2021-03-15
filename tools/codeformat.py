@@ -27,6 +27,7 @@
 
 import argparse
 import glob
+import fnmatch
 import itertools
 import os
 import re
@@ -75,12 +76,13 @@ C_EXTS = (".c", ".h")
 PY_EXTS = (".py",)
 
 
-def list_files(paths, exclusions=None, prefix=""):
+def list_files(args, paths, exclusions=None, prefix=""):
     files = set()
+    args = [os.path.join(prefix, arg) for arg in args]
     for pattern in paths:
-        files.update(glob.glob(os.path.join(prefix, pattern), recursive=True))
+        files.update(fnmatch.filter(args, os.path.join(prefix, pattern)))
     for pattern in exclusions or []:
-        files.difference_update(glob.fnmatch.filter(files, os.path.join(prefix, pattern)))
+        files.difference_update(fnmatch.filter(files, os.path.join(prefix, pattern)))
     return sorted(files)
 
 
@@ -128,23 +130,19 @@ def fixup_c(filename):
 
 
 def main():
-    cmd_parser = argparse.ArgumentParser(description="Auto-format C and Python files.")
+    cmd_parser = argparse.ArgumentParser(description="Auto-format C and Python files -- to be used via pre-commit only.")
     cmd_parser.add_argument("-c", action="store_true", help="Format C code only")
     cmd_parser.add_argument("-p", action="store_true", help="Format Python code only")
     cmd_parser.add_argument("-v", action="store_true", help="Enable verbose output")
-    cmd_parser.add_argument("files", nargs="*", help="Run on specific globs")
+    cmd_parser.add_argument("files", nargs="+", help="Run on specific globs")
     args = cmd_parser.parse_args()
 
     # Setting only one of -c or -p disables the other. If both or neither are set, then do both.
     format_c = args.c or not args.p
     format_py = args.p or not args.c
 
-    # Expand the globs passed on the command line, or use the default globs above.
-    files = []
-    if args.files:
-        files = list_files(args.files, EXCLUSIONS)
-    else:
-        files = list_files(PATHS, EXCLUSIONS, TOP)
+    # Expand the arguments passed on the command line, subject to the PATHS and EXCLUSIONS
+    files = list_files(args.files, PATHS, EXCLUSIONS, TOP)
 
     # Extract files matching a specific language.
     def lang_files(exts):
