@@ -142,7 +142,7 @@ def main():
     # Expand the globs passed on the command line, or use the default globs above.
     files = []
     if args.files:
-        files = list_files(args.files)
+        files = list_files(args.files, EXCLUSIONS)
     else:
         files = list_files(PATHS, EXCLUSIONS, TOP)
 
