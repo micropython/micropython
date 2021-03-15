@@ -51,6 +51,15 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // XBEE pins
     { MP_ROM_QSTR(MP_QSTR_XB1_PWR),   MP_ROM_PTR(&pin_PB03) },
     { MP_ROM_QSTR(MP_QSTR_XB2_PWR),   MP_ROM_PTR(&pin_PB10) },
+    { MP_ROM_QSTR(MP_QSTR_XB1_CS),   MP_ROM_PTR(&pin_PA18) },
+    { MP_ROM_QSTR(MP_QSTR_XB2_CS),   MP_ROM_PTR(&pin_PA14) },
+    { MP_ROM_QSTR(MP_QSTR_XB1_INT),   MP_ROM_PTR(&pin_PA21) },
+    { MP_ROM_QSTR(MP_QSTR_XB2_INT),   MP_ROM_PTR(&pin_PA15) },
+    { MP_ROM_QSTR(MP_QSTR_XB1_RX),   MP_ROM_PTR(&pin_PA23) },
+    { MP_ROM_QSTR(MP_QSTR_XB1_TX),   MP_ROM_PTR(&pin_PA22) },
+    { MP_ROM_QSTR(MP_QSTR_XB2_RX),   MP_ROM_PTR(&pin_PA11) },
+    { MP_ROM_QSTR(MP_QSTR_XB2_TX),   MP_ROM_PTR(&pin_PA10) },
+
 
     // Comm objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
