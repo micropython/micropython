@@ -98,7 +98,13 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
 //|     """The RTC calibration value as an `int`.
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.
-//|     Range and value is hardware specific, but one step is often approximately 1 ppm."""
+//|     Range and value is hardware specific, but one step is often approximately 1 ppm::
+//|
+//|       import rtc
+//|       import time
+//|
+//|       r = rtc.RTC()
+//|       r.calibration = 1"""
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();
