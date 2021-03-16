@@ -36,14 +36,14 @@
 #include "stdlib.h"
 
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
-                                            int16_t dest_clip0_x, int16_t dest_clip0_y,
-                                            int16_t dest_clip1_x, int16_t dest_clip1_y,
-                                            displayio_bitmap_t *source, int16_t px, int16_t py,
-                                            int16_t source_clip0_x, int16_t source_clip0_y,
-                                            int16_t source_clip1_x, int16_t source_clip1_y,
-                                            float angle,
-                                            float scale,
-                                            uint32_t skip_index, bool skip_index_none) {
+    int16_t dest_clip0_x, int16_t dest_clip0_y,
+    int16_t dest_clip1_x, int16_t dest_clip1_y,
+    displayio_bitmap_t *source, int16_t px, int16_t py,
+    int16_t source_clip0_x, int16_t source_clip0_y,
+    int16_t source_clip1_x, int16_t source_clip1_y,
+    float angle,
+    float scale,
+    uint32_t skip_index, bool skip_index_none) {
 
     // Copies region from source to the destination bitmap, including rotation,
     // scaling and clipping of either the source or destination regions
@@ -115,37 +115,77 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     will be on the destination to get a bounding box for scanning */
     dx = -cosAngle * px * scale + sinAngle * py * scale + ox;
     dy = -sinAngle * px * scale - cosAngle * py * scale + oy;
-    if(dx < minx) minx = (int16_t)dx;
-    if(dx > maxx) maxx = (int16_t)dx;
-    if(dy < miny) miny = (int16_t)dy;
-    if(dy > maxy) maxy = (int16_t)dy;
+    if (dx < minx) {
+        minx = (int16_t)dx;
+    }
+    if (dx > maxx) {
+        maxx = (int16_t)dx;
+    }
+    if (dy < miny) {
+        miny = (int16_t)dy;
+    }
+    if (dy > maxy) {
+        maxy = (int16_t)dy;
+    }
 
     dx = cosAngle * (source->width - px) * scale + sinAngle * py * scale + ox;
     dy = sinAngle * (source->width - px) * scale - cosAngle * py * scale + oy;
-    if(dx < minx) minx = (int16_t)dx;
-    if(dx > maxx) maxx = (int16_t)dx;
-    if(dy < miny) miny = (int16_t)dy;
-    if(dy > maxy) maxy = (int16_t)dy;
+    if (dx < minx) {
+        minx = (int16_t)dx;
+    }
+    if (dx > maxx) {
+        maxx = (int16_t)dx;
+    }
+    if (dy < miny) {
+        miny = (int16_t)dy;
+    }
+    if (dy > maxy) {
+        maxy = (int16_t)dy;
+    }
 
     dx = cosAngle * (source->width - px) * scale - sinAngle * (source->height - py) * scale + ox;
     dy = sinAngle * (source->width - px) * scale + cosAngle * (source->height - py) * scale + oy;
-    if(dx < minx) minx = (int16_t)dx;
-    if(dx > maxx) maxx = (int16_t)dx;
-    if(dy < miny) miny = (int16_t)dy;
-    if(dy > maxy) maxy = (int16_t)dy;
+    if (dx < minx) {
+        minx = (int16_t)dx;
+    }
+    if (dx > maxx) {
+        maxx = (int16_t)dx;
+    }
+    if (dy < miny) {
+        miny = (int16_t)dy;
+    }
+    if (dy > maxy) {
+        maxy = (int16_t)dy;
+    }
 
     dx = -cosAngle * px * scale - sinAngle * (source->height - py) * scale + ox;
     dy = -sinAngle * px * scale + cosAngle * (source->height - py) * scale + oy;
-    if(dx < minx) minx = (int16_t)dx;
-    if(dx > maxx) maxx = (int16_t)dx;
-    if(dy < miny) miny = (int16_t)dy;
-    if(dy > maxy) maxy = (int16_t)dy;
+    if (dx < minx) {
+        minx = (int16_t)dx;
+    }
+    if (dx > maxx) {
+        maxx = (int16_t)dx;
+    }
+    if (dy < miny) {
+        miny = (int16_t)dy;
+    }
+    if (dy > maxy) {
+        maxy = (int16_t)dy;
+    }
 
     /* Clipping */
-    if(minx < dest_clip0_x) minx = dest_clip0_x;
-    if(maxx > dest_clip1_x - 1) maxx = dest_clip1_x - 1;
-    if(miny < dest_clip0_y) miny = dest_clip0_y;
-    if(maxy > dest_clip1_y - 1) maxy = dest_clip1_y - 1;
+    if (minx < dest_clip0_x) {
+        minx = dest_clip0_x;
+    }
+    if (maxx > dest_clip1_x - 1) {
+        maxx = dest_clip1_x - 1;
+    }
+    if (miny < dest_clip0_y) {
+        miny = dest_clip0_y;
+    }
+    if (maxy > dest_clip1_y - 1) {
+        maxy = dest_clip1_y - 1;
+    }
 
     float dvCol = cosAngle / scale;
     float duCol = sinAngle / scale;
@@ -159,13 +199,13 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     float rowu = startu + miny * duCol;
     float rowv = startv + miny * dvCol;
 
-    for(y = miny; y <= maxy; y++) {
+    for (y = miny; y <= maxy; y++) {
         float u = rowu + minx * duRow;
         float v = rowv + minx * dvRow;
-        for(x = minx; x <= maxx; x++) {
-            if(u >= source_clip0_x  && u < source_clip1_x && v >= source_clip0_y && v < source_clip1_y) {
+        for (x = minx; x <= maxx; x++) {
+            if (u >= source_clip0_x && u < source_clip1_x && v >= source_clip0_y && v < source_clip1_y) {
                 uint32_t c = common_hal_displayio_bitmap_get_pixel(source, u, v);
-                if( (skip_index_none) || (c != skip_index) ) {
+                if ((skip_index_none) || (c != skip_index)) {
                     common_hal_displayio_bitmap_set_pixel(self, x, y, c);
                 }
             }
@@ -189,9 +229,9 @@ int16_t constrain(int16_t input, int16_t min, int16_t max) {
 }
 
 void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
-                                        int16_t x1, int16_t y1,
-                                        int16_t x2, int16_t y2,
-                                        uint32_t value) {
+    int16_t x1, int16_t y1,
+    int16_t x2, int16_t y2,
+    uint32_t value) {
     // writes the value (a bitmap color index) into a bitmap in the specified rectangular region
     //
     // input checks should ensure that x1 < x2 and y1 < y2 and are within the bitmap region
@@ -202,14 +242,14 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
 
     // Ensure x1 < x2 and y1 < y2
     if (x1 > x2) {
-        int16_t temp=x2;
-        x2=x1;
-        x1=temp;
+        int16_t temp = x2;
+        x2 = x1;
+        x1 = temp;
     }
     if (y1 > y2) {
-        int16_t temp=y2;
-        y2=y1;
-        y1=temp;
+        int16_t temp = y2;
+        y2 = y1;
+        y1 = temp;
     }
 
     // constrain to bitmap dimensions
@@ -223,16 +263,16 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
 
     int16_t x, y;
     for (x = x1; x < x2; x++) {
-        for (y = y1; y < y2; y++ ) {
+        for (y = y1; y < y2; y++) {
             displayio_bitmap_write_pixel(destination, x, y, value);
         }
     }
 }
 
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
-                                 int16_t x0, int16_t y0,
-                                 int16_t x1, int16_t y1,
-                                 uint32_t value) {
+    int16_t x0, int16_t y0,
+    int16_t x1, int16_t y1,
+    uint32_t value) {
 
     if (destination->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));
@@ -277,8 +317,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
         for (y = y0; y < (y1 + 1); y++) { // write a horizontal line
             displayio_bitmap_write_pixel(destination, x0, y, value);
         }
-    }
-    else if (y0 == y1) { // horizontal line
+    } else if (y0 == y1) { // horizontal line
         if (x0 > x1) { // ensure y1 > y0
             temp = x0;
             x0 = x1;
@@ -287,12 +326,11 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
         for (x = x0; x < (x1 + 1); x++) { // write a horizontal line
             displayio_bitmap_write_pixel(destination, x, y0, value);
         }
-    }
-    else {
+    } else {
         bool steep;
-        steep = ( abs(y1 - y0) > abs(x1 - x0) );
+        steep = (abs(y1 - y0) > abs(x1 - x0));
 
-        if ( steep ) { // flip x0<->y0 and x1<->y1
+        if (steep) {   // flip x0<->y0 and x1<->y1
             temp = x0;
             x0 = y0;
             y0 = temp;
@@ -318,16 +356,14 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
 
         if (y0 < y1) {
             ystep = 1;
-        }
-        else {
+        } else {
             ystep = -1;
         }
 
         for (x = x0; x < (x1 + 1); x++) {
             if (steep) {
                 displayio_bitmap_write_pixel(destination, y0, x, value);
-            }
-            else {
+            } else {
                 displayio_bitmap_write_pixel(destination, x, y0, value);
             }
             err -= dy;
@@ -342,23 +378,23 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_value) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
 
-    for (int y=y1; y<y2; y++) {
-        for (int x=x1; x<x2; x++) {
+    for (int y = y1; y < y2; y++) {
+        for (int x = x1; x < x2; x++) {
             uint32_t value;
-            switch(element_size) {
-            default:
-            case 1:
-                value = *(uint8_t*) data;
-                data = (void*)((uint8_t*)data + 1);
-                break;
-            case 2:
-                value = *(uint16_t*) data;
-                data = (void*)((uint16_t*)data + 1);
-                break;
-            case 4:
-                value = *(uint32_t*) data;
-                data = (void*)((uint32_t*)data + 1);
-                break;
+            switch (element_size) {
+                default:
+                case 1:
+                    value = *(uint8_t *)data;
+                    data = (void *)((uint8_t *)data + 1);
+                    break;
+                case 2:
+                    value = *(uint16_t *)data;
+                    data = (void *)((uint16_t *)data + 1);
+                    break;
+                case 4:
+                    value = *(uint32_t *)data;
+                    data = (void *)((uint32_t *)data + 1);
+                    break;
             }
             if (!skip_specified || value != skip_value) {
                 displayio_bitmap_write_pixel(self, x, y, value & mask);
@@ -367,7 +403,7 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
     }
 }
 
-void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
 
     if (self->read_only) {
@@ -378,10 +414,10 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* f
     size_t rowsize = element_size * elements_per_row;
     size_t rowsize_in_u32 = (rowsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     size_t rowsize_in_u16 = (rowsize + sizeof(uint16_t) - 1) / sizeof(uint16_t);
-    for(int y=0; y<self->height; y++) {
+    for (int y = 0; y < self->height; y++) {
         uint32_t rowdata32[rowsize_in_u32];
-        uint16_t *rowdata16 = (uint16_t*)rowdata32;
-        uint8_t *rowdata8 = (uint8_t*)rowdata32;
+        uint16_t *rowdata16 = (uint16_t *)rowdata32;
+        uint8_t *rowdata8 = (uint8_t *)rowdata32;
 
         UINT bytes_read = 0;
         if (f_read(&file->fp, rowdata32, rowsize, &bytes_read) != FR_OK || bytes_read != rowsize) {
@@ -389,63 +425,60 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* f
         }
 
         if (swap_bytes) {
-            switch(element_size) {
-            case 2:
-                for(size_t i=0; i< rowsize_in_u16; i++) {
-                    rowdata16[i] = __builtin_bswap16(rowdata16[i]);
-                }
-                break;
-            case 4:
-                for(size_t i=0; i< rowsize_in_u32; i++) {
-                    rowdata32[i] = __builtin_bswap32(rowdata32[i]);
-                }
-            default:
-                break;
+            switch (element_size) {
+                case 2:
+                    for (size_t i = 0; i < rowsize_in_u16; i++) {
+                        rowdata16[i] = __builtin_bswap16(rowdata16[i]);
+                    }
+                    break;
+                case 4:
+                    for (size_t i = 0; i < rowsize_in_u32; i++) {
+                        rowdata32[i] = __builtin_bswap32(rowdata32[i]);
+                    }
+                default:
+                    break;
             }
         }
 
-        for(int x=0; x<self->width; x++) {
+        for (int x = 0; x < self->width; x++) {
             int value = 0;
-            switch(bits_per_pixel) {
-            case 1:
-                {
+            switch (bits_per_pixel) {
+                case 1: {
                     int byte_offset = x / 8;
                     int bit_offset = reverse_pixels_in_element ? (7 - x % 8) : x % 8;
 
                     value = (rowdata8[byte_offset] >> bit_offset) & 1;
                     break;
                 }
-            case 2:
-                {
+                case 2: {
                     int byte_offset = x / 4;
                     int bit_offset = 2 * (reverse_pixels_in_element ? (3 - x % 4) : x % 4);
 
                     value = (rowdata8[byte_offset] >> bit_offset) & 3;
                     break;
                 }
-            case 4:
-                {
+                case 4: {
                     int byte_offset = x / 2;
                     int bit_offset = 4 * (reverse_pixels_in_element ? (1 - x % 2) : x % 2);
 
                     value = (rowdata8[byte_offset] >> bit_offset) & 7;
                     break;
                 }
-            case 8:
-                value = rowdata8[x];
-                break;
+                case 8:
+                    value = rowdata8[x];
+                    break;
 
-            case 16:
-                value = rowdata16[x];
-                break;
+                case 16:
+                    value = rowdata16[x];
+                    break;
 
-            case 24:
-                value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | (rowdata8[x * 3 + 2] << 8);
-                break;
+                case 24:
+                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | (rowdata8[x * 3 + 2] << 8);
+                    break;
 
-            case 32:
-                value = rowdata32[x];
-                break;
+                case 32:
+                    value = rowdata32[x];
+                    break;
             }
 
             displayio_bitmap_write_pixel(self, x, y, value & mask);
