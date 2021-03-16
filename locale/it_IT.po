@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-18 15:50+0000\n"
-"Last-Translator: Luca De Filippo <luca.defilippo@translationcommons.org>\n"
+"PO-Revision-Date: 2021-03-16 14:54+0000\n"
+"Last-Translator: Alessandro Mandelli <mandelli.alessandro@ngi.it>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -971,9 +971,9 @@ msgid "Failed sending command."
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
+msgstr "Impossibile acquisire il mutex, err  0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
@@ -1016,9 +1016,9 @@ msgid "Failed to parse MP3 file"
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
+msgstr "Impossibile rilasciare il mutex, err  0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
@@ -4164,9 +4164,9 @@ msgid "unindent does not match any outer indentation level"
 msgstr ""
 
 #: py/objstr.c
-#, fuzzy, c-format
+#, c-format
 msgid "unknown conversion specifier %c"
-msgstr "specificatore di conversione %s sconosciuto"
+msgstr "specificatore di conversione %c sconosciuto"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
