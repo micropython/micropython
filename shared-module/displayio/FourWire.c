@@ -36,9 +36,9 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
 
-void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
-    busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
-    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate,
+void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t *self,
+    busio_spi_obj_t *spi, const mcu_pin_obj_t *command,
+    const mcu_pin_obj_t *chip_select, const mcu_pin_obj_t *reset, uint32_t baudrate,
     uint8_t polarity, uint8_t phase) {
 
     self->bus = spi;
@@ -69,7 +69,7 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     common_hal_never_reset_pin(chip_select);
 }
 
-void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
+void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t *self) {
     if (self->bus == &self->inline_bus) {
         common_hal_busio_spi_deinit(self->bus);
     }
@@ -80,7 +80,7 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
 }
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (self->reset.base.type == &mp_type_NoneType) {
         return false;
     }
@@ -92,7 +92,7 @@ bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
 }
 
 bool common_hal_displayio_fourwire_bus_free(mp_obj_t obj) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return false;
     }
@@ -101,19 +101,19 @@ bool common_hal_displayio_fourwire_bus_free(mp_obj_t obj) {
 }
 
 bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return false;
     }
     common_hal_busio_spi_configure(self->bus, self->frequency, self->polarity,
-                                   self->phase, 8);
+        self->phase, 8);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
 
 void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_type,
-        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, data_type == DISPLAY_DATA);
     if (chip_select == CHIP_SELECT_TOGGLE_EVERY_BYTE) {
         // Toggle chip select after each command byte in case the display driver
@@ -130,7 +130,7 @@ void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_t
 }
 
 void common_hal_displayio_fourwire_end_transaction(mp_obj_t obj) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
     common_hal_busio_spi_unlock(self->bus);
 }

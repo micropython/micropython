@@ -87,16 +87,16 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     uint16_t bitmap_height;
     mp_obj_t native = mp_instance_cast_to_native_base(bitmap, &displayio_shape_type);
     if (native != MP_OBJ_NULL) {
-        displayio_shape_t* bmp = MP_OBJ_TO_PTR(native);
+        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
-        displayio_bitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
-        displayio_ondiskbitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
@@ -136,7 +136,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
+static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_t native_tilegrid = mp_instance_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
@@ -354,13 +354,13 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             x = i % width;
             y = i / width;
         } else {
-            mp_obj_t* items;
+            mp_obj_t *items;
             mp_obj_get_array_fixed_n(index_obj, 2, &items);
             x = mp_obj_get_int(items[0]);
             y = mp_obj_get_int(items[1]);
         }
         if (x >= common_hal_displayio_tilegrid_get_width(self) ||
-                y >= common_hal_displayio_tilegrid_get_height(self)) {
+            y >= common_hal_displayio_tilegrid_get_height(self)) {
             mp_raise_IndexError(translate("Tile index out of bounds"));
         }
 
@@ -397,5 +397,5 @@ const mp_obj_type_t displayio_tilegrid_type = {
     .name = MP_QSTR_TileGrid,
     .make_new = displayio_tilegrid_make_new,
     .subscr = tilegrid_subscr,
-    .locals_dict = (mp_obj_dict_t*)&displayio_tilegrid_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_tilegrid_locals_dict,
 };

@@ -51,7 +51,7 @@
 //|         ...
 //|
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
-        const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     enum { ARG_clock, ARG_data, ARG_latch };
     static const mp_arg_t allowed_args[] = {
@@ -61,16 +61,16 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
+        allowed_args, args);
 
     digitalio_digitalinout_obj_t *clock_pin = assert_digitalinout(args[ARG_clock].u_obj);
     digitalio_digitalinout_obj_t *data_pin = assert_digitalinout(args[ARG_data].u_obj);
     digitalio_digitalinout_obj_t *latch_pin = assert_digitalinout(args[ARG_latch].u_obj);
 
-    gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+    gamepadshift_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
         !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton),
-                        &gamepadshift_type)) {
+            &gamepadshift_type)) {
         gamepad_singleton = m_new_ll_obj(gamepadshift_obj_t);
         gamepad_singleton->base.type = &gamepadshift_type;
         if (!MP_STATE_VM(gamepad_singleton)) {
@@ -93,7 +93,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         ...
 //|
 STATIC mp_obj_t gamepadshift_get_pressed(mp_obj_t self_in) {
-    gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+    gamepadshift_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     mp_obj_t pressed = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
     gamepad_singleton->pressed = gamepad_singleton->last;
     return pressed;
@@ -120,5 +120,5 @@ const mp_obj_type_t gamepadshift_type = {
     { &mp_type_type },
     .name = MP_QSTR_GamePadShift,
     .make_new = gamepadshift_make_new,
-    .locals_dict = (mp_obj_dict_t*)&gamepadshift_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&gamepadshift_locals_dict,
 };

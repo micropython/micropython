@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Saola 1 w/Wroom"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"

@@ -37,7 +37,7 @@ extern uint8_t _ld_default_stack_size;
 
 // 24kiB stack
 // #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
-#define CIRCUITPY_DEFAULT_STACK_SIZE            ((uint32_t) &_ld_default_stack_size)
+#define CIRCUITPY_DEFAULT_STACK_SIZE            ((uint32_t)&_ld_default_stack_size)
 
 #include "py/circuitpy_mpconfig.h"
 
@@ -60,6 +60,6 @@ extern uint8_t _ld_default_stack_size;
 #define MICROPY_PORT_ROOT_POINTERS \
     void *cpy_uart_obj_all[MAX_UART]; \
     void *cpy_i2c_obj_all[MAX_I2C]; \
-	CIRCUITPY_COMMON_ROOT_POINTERS
+    CIRCUITPY_COMMON_ROOT_POINTERS
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

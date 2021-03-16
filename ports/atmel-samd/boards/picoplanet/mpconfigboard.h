@@ -33,10 +33,10 @@
 #define DEFAULT_SPI_BUS_SCK (&pin_PA17)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA16)
 
-//#define CP_RGB_STATUS_R (&pin_PA06)
-//#define CP_RGB_STATUS_G (&pin_PA05)
-//#define CP_RGB_STATUS_B (&pin_PA07)
-//#define CP_RGB_STATUS_INVERTED_PWM
-//#define CP_RGB_STATUS_LED
+// #define CP_RGB_STATUS_R (&pin_PA06)
+// #define CP_RGB_STATUS_G (&pin_PA05)
+// #define CP_RGB_STATUS_B (&pin_PA07)
+// #define CP_RGB_STATUS_INVERTED_PWM
+// #define CP_RGB_STATUS_LED
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA06)

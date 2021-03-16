@@ -7,4 +7,5 @@ def test(num):
     while i < ITERS:
         i += 1
 
+
 bench.run(test)

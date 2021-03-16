@@ -43,7 +43,7 @@ static void rgbmatrix_event_handler(nrf_timer_event_t event_type, void *p_contex
     _PM_IRQ_HANDLER();
 }
 
-void common_hal_rgbmatrix_timer_enable(void* ptr) {
+void common_hal_rgbmatrix_timer_enable(void *ptr) {
     nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
     static const nrfx_timer_config_t timer_config = {
         .frequency = NRF_TIMER_FREQ_16MHz,
@@ -55,12 +55,12 @@ void common_hal_rgbmatrix_timer_enable(void* ptr) {
     nrfx_timer_init(timer, &timer_config, &rgbmatrix_event_handler);
 }
 
-void common_hal_rgbmatrix_timer_disable(void* ptr) {
+void common_hal_rgbmatrix_timer_disable(void *ptr) {
     nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
     nrfx_timer_uninit(timer);
 }
 
-void common_hal_rgbmatrix_timer_free(void* ptr) {
+void common_hal_rgbmatrix_timer_free(void *ptr) {
     nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
     nrf_peripherals_free_timer(timer);
 }

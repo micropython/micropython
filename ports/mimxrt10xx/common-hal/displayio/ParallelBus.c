@@ -40,12 +40,12 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     mp_raise_NotImplementedError(translate("ParallelBus not yet supported"));
 }
 
-void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) {
 
 }
 
 bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-	return false;
+    return false;
 }
 
 bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {

@@ -45,7 +45,9 @@ for po_filename in po_filenames:
                 entry.merge(newer_entry)
                 print(entry)
             elif newer_entry and entry.msgstr != newer_entry.msgstr:
-                if newer_entry.msgstr != "" and (newer_entry.msgstr != entry.msgid or entry.msgid in NO_TRANSLATION_WHITELIST):
+                if newer_entry.msgstr != "" and (
+                    newer_entry.msgstr != entry.msgid or entry.msgid in NO_TRANSLATION_WHITELIST
+                ):
                     entry.merge(newer_entry)
                     entry.msgstr = newer_entry.msgstr
                     if "fuzzy" not in newer_entry.flags and "fuzzy" in entry.flags:
@@ -55,7 +57,7 @@ for po_filename in po_filenames:
                         bad_commits[commit] = set()
                     bad_commits[commit].add(po_filename)
                     fixed_ids.add(entry.msgid)
-                    #print(entry.msgid, "\"" + entry.msgstr + "\"", "\"" + newer_entry.msgstr + "\"",)
+                    # print(entry.msgid, "\"" + entry.msgstr + "\"", "\"" + newer_entry.msgstr + "\"",)
             elif newer_entry and newer_entry.flags != entry.flags:
                 entry.flags = newer_entry.flags
             elif newer_entry and newer_entry.obsolete != entry.obsolete:
@@ -86,4 +88,4 @@ for commit in bad_commits:
     files = bad_commits[commit]
     print(commit)
     for file in files:
-        print("\t",file)
+        print("\t", file)

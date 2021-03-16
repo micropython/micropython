@@ -160,7 +160,7 @@ STATIC mp_obj_t supervisor_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_n
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, supervisor_flash_obj_writeblocks);
 
-bool flash_ioctl(size_t cmd, mp_int_t* out_value) {
+bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
     *out_value = 0;
     switch (cmd) {
         case BP_IOCTL_INIT:

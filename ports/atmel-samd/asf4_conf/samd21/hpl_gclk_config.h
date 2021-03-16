@@ -93,8 +93,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 0 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 0 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_0_div
 #ifndef CONF_GCLK_GEN_0_DIV
@@ -177,8 +177,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 1 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 1 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_1_div
 #ifndef CONF_GCLK_GEN_1_DIV
@@ -263,8 +263,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 2 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 2 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_2_div
 #ifndef CONF_GCLK_GEN_2_DIV
@@ -349,8 +349,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 3 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 3 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_3_div
 #ifndef CONF_GCLK_GEN_3_DIV
@@ -435,8 +435,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 4 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 4 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_4_div
 #ifndef CONF_GCLK_GEN_4_DIV
@@ -521,8 +521,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 5 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 5 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_5_div
 #ifndef CONF_GCLK_GEN_5_DIV
@@ -607,8 +607,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 6 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 6 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_6_div
 #ifndef CONF_GCLK_GEN_6_DIV
@@ -693,8 +693,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 7 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 7 division <0x0000-0xFFFF>
 // <i>
 // <id> gclk_gen_7_div
 #ifndef CONF_GCLK_GEN_7_DIV

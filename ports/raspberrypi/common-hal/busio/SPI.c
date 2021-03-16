@@ -41,7 +41,7 @@
 #define NO_INSTANCE 0xff
 
 STATIC bool never_reset_spi[2];
-STATIC spi_inst_t* spi[2] = {spi0, spi1};
+STATIC spi_inst_t *spi[2] = {spi0, spi1};
 
 void reset_spi(void) {
     for (size_t i = 0; i < 2; i++) {
@@ -54,8 +54,8 @@ void reset_spi(void) {
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso) {
     size_t instance_index = NO_INSTANCE;
     if (clock->number % 4 == 2) {
         instance_index = (clock->number / 8) % 2;
@@ -136,7 +136,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     if (baudrate == self->target_frequency &&
         polarity == self->polarity &&
         phase == self->phase &&
@@ -244,7 +244,7 @@ static bool _transfer(busio_spi_obj_t *self,
 
         while (!mp_hal_is_interrupted() && (rx_remaining || tx_remaining)) {
             if (tx_remaining && spi_is_writable(self->peripheral) && rx_remaining - tx_remaining < fifo_depth) {
-                spi_get_hw(self->peripheral)->dr = (uint32_t) *data_out;
+                spi_get_hw(self->peripheral)->dr = (uint32_t)*data_out;
                 // Increment only if the buffer is the transfer length. It's 1 otherwise.
                 if (out_len == len) {
                     data_out++;
@@ -252,7 +252,7 @@ static bool _transfer(busio_spi_obj_t *self,
                 --tx_remaining;
             }
             if (rx_remaining && spi_is_readable(self->peripheral)) {
-                *data_in = (uint8_t) spi_get_hw(self->peripheral)->dr;
+                *data_in = (uint8_t)spi_get_hw(self->peripheral)->dr;
                 // Increment only if the buffer is the transfer length. It's 1 otherwise.
                 if (in_len == len) {
                     data_in++;
@@ -266,29 +266,29 @@ static bool _transfer(busio_spi_obj_t *self,
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
-        const uint8_t *data, size_t len) {
+    const uint8_t *data, size_t len) {
     uint32_t data_in;
-    return _transfer(self, data, len, (uint8_t*) &data_in, MIN(len, 4));
+    return _transfer(self, data, len, (uint8_t *)&data_in, MIN(len, 4));
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
-        uint8_t *data, size_t len, uint8_t write_value) {
+    uint8_t *data, size_t len, uint8_t write_value) {
     uint32_t data_out = write_value << 24 | write_value << 16 | write_value << 8 | write_value;
-    return _transfer(self, (const uint8_t*) &data_out, MIN(4, len), data, len);
+    return _transfer(self, (const uint8_t *)&data_out, MIN(4, len), data, len);
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     return _transfer(self, data_out, len, data_in, len);
 }
 
-uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     return self->real_frequency;
 }
 
-uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t *self) {
     return self->phase;
 }
 
-uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self) {
     return self->polarity;
 }

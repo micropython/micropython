@@ -55,7 +55,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
@@ -65,19 +65,23 @@ mp_obj_t common_hal_os_uname(void) {
 
 bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
     #if (HAS_TRNG)
-    //init the RNG
+    // init the RNG
     __HAL_RCC_RNG_CLK_ENABLE();
     RNG_HandleTypeDef handle;
     handle.Instance = RNG;
-    if (HAL_RNG_Init(&handle) != HAL_OK) mp_raise_ValueError(translate("RNG Init Error"));
+    if (HAL_RNG_Init(&handle) != HAL_OK) {
+        mp_raise_ValueError(translate("RNG Init Error"));
+    }
 
-    //Assign bytes
+    // Assign bytes
     uint32_t i = 0;
     while (i < length) {
         uint32_t new_random;
         uint32_t start = HAL_GetTick();
-        //the HAL function has a timeout, but it isn't long enough, and isn't adjustable
-        while(!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT));
+        // the HAL function has a timeout, but it isn't long enough, and isn't adjustable
+        while (!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT)) {
+            ;
+        }
         if (HAL_RNG_GenerateRandomNumber(&handle, &new_random) != HAL_OK) {
             mp_raise_ValueError(translate("Random number generation error"));
         }
@@ -88,8 +92,10 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
         }
     }
 
-    //shut down the peripheral
-    if (HAL_RNG_DeInit(&handle) != HAL_OK) mp_raise_ValueError(translate("RNG DeInit Error"));
+    // shut down the peripheral
+    if (HAL_RNG_DeInit(&handle) != HAL_OK) {
+        mp_raise_ValueError(translate("RNG DeInit Error"));
+    }
     __HAL_RCC_RNG_CLK_DISABLE();
 
     return true;

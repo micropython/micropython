@@ -59,18 +59,18 @@ typedef struct {
 } mcu_pin_obj_t;
 
 #define PIN(p_gpio, p_number, p_enum, p_adc, p_adc_channel, p_mux_reset, p_pad_reset) \
-{ \
-    { &mcu_pin_type }, \
-    .gpio = p_gpio, \
-    .number = p_number, \
-    .mux_idx = kIOMUXC_SW_MUX_CTL_PAD_ ## p_enum, \
-    .mux_reg = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_ ## p_enum]), \
-    .cfg_reg = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_ ## p_enum]), \
-    .adc = p_adc, \
-    .adc_channel = p_adc_channel, \
-    .mux_reset = p_mux_reset, \
-    .pad_reset = p_pad_reset, \
-}
+    { \
+        { &mcu_pin_type }, \
+        .gpio = p_gpio, \
+        .number = p_number, \
+        .mux_idx = kIOMUXC_SW_MUX_CTL_PAD_##p_enum, \
+        .mux_reg = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##p_enum]), \
+        .cfg_reg = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##p_enum]), \
+        .adc = p_adc, \
+        .adc_channel = p_adc_channel, \
+        .mux_reset = p_mux_reset, \
+        .pad_reset = p_pad_reset, \
+    }
 
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/pins.h"

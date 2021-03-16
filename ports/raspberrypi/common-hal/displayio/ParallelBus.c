@@ -123,7 +123,7 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) 
 }
 
 bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-	displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+	  displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (self->reset.base.type == &mp_type_NoneType) {
         return false;
     }
@@ -145,7 +145,7 @@ bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
 }
 
 void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
-        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
+    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
 
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
 

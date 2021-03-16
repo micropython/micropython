@@ -24,7 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-//TODO
+// TODO
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -102,14 +102,14 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = (uint8_t*) (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+    .start_address = (uint8_t *)(FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
 };
 #endif
 
 // This maps MCU pin names to pin objects.
 // NOTE: for all i.MX chips, order MUST match _iomuxc_sw_mux_ctl_pad enum
 STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
-#ifdef MIMXRT1011_SERIES
+    #ifdef MIMXRT1011_SERIES
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_14), MP_ROM_PTR(&pin_GPIO_AD_14) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_13), MP_ROM_PTR(&pin_GPIO_AD_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_12), MP_ROM_PTR(&pin_GPIO_AD_12) },
@@ -125,7 +125,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_02), MP_ROM_PTR(&pin_GPIO_AD_02) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_01), MP_ROM_PTR(&pin_GPIO_AD_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_00), MP_ROM_PTR(&pin_GPIO_AD_00) },
-    { MP_ROM_QSTR(MP_QSTR_GPIO_SD_14), MP_ROM_PTR(&pin_GPIO_SD_14) }, //spooky ghost pin
+    { MP_ROM_QSTR(MP_QSTR_GPIO_SD_14), MP_ROM_PTR(&pin_GPIO_SD_14) }, // spooky ghost pin
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_13), MP_ROM_PTR(&pin_GPIO_SD_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_12), MP_ROM_PTR(&pin_GPIO_SD_12) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_11), MP_ROM_PTR(&pin_GPIO_SD_11) },
@@ -154,7 +154,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_02), MP_ROM_PTR(&pin_GPIO_02) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_01), MP_ROM_PTR(&pin_GPIO_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_00), MP_ROM_PTR(&pin_GPIO_00) },
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_00), MP_ROM_PTR(&pin_GPIO_EMC_00) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_01), MP_ROM_PTR(&pin_GPIO_EMC_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_02), MP_ROM_PTR(&pin_GPIO_EMC_02) },
@@ -284,6 +284,6 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_09), MP_ROM_PTR(&pin_GPIO_SD_B1_09) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_10), MP_ROM_PTR(&pin_GPIO_SD_B1_10) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_11), MP_ROM_PTR(&pin_GPIO_SD_B1_11) },
-#endif
+    #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

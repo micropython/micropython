@@ -5,4 +5,4 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-ure.compile('^a|b[0-9]\w$', ure.DEBUG)
+ure.compile("^a|b[0-9]\w$", ure.DEBUG)

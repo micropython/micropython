@@ -41,7 +41,7 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
+    const mcu_pin_obj_t *pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
 
 
     countio_counter_obj_t *self = m_new_obj(countio_counter_obj_t);
@@ -115,12 +115,12 @@ const mp_obj_property_t countio_counter_count_obj = {
 //|     def reset(self) -> None:
 //|         """Resets the count back to 0."""
 //|
-STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in){
-	countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
-	check_for_deinit(self);
-	//set the position to zero for reset
-	common_hal_countio_counter_reset(self);
-	return mp_const_none;
+STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in) {
+    countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    // set the position to zero for reset
+    common_hal_countio_counter_reset(self);
+    return mp_const_none;
 }
 
 
@@ -140,5 +140,5 @@ const mp_obj_type_t countio_counter_type = {
     { &mp_type_type },
     .name = MP_QSTR_Counter,
     .make_new = countio_counter_make_new,
-    .locals_dict = (mp_obj_dict_t*)&countio_counter_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&countio_counter_locals_dict,
 };

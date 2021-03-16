@@ -85,8 +85,8 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
 #define CIRCUITPY_JSON_READ_CHUNK_SIZE 64
 
 STATIC mp_uint_t ujson_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
-    (void) size; // Ignore size because we know it's always 1.
-    ujson_stream_t* s = obj;
+    (void)size;  // Ignore size because we know it's always 1.
+    ujson_stream_t *s = obj;
 
     if (s->start == s->end) {
         *errcode = 0;
@@ -99,7 +99,7 @@ STATIC mp_uint_t ujson_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, 
         s->end = mp_obj_get_int(ret);
     }
 
-    *((uint8_t *)buf) = ((uint8_t*) s->bytearray_obj.items)[s->start];
+    *((uint8_t *)buf) = ((uint8_t *)s->bytearray_obj.items)[s->start];
     s->start++;
     return 1;
 }
@@ -139,7 +139,7 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
     mp_obj_t stack_key = MP_OBJ_NULL;
     S_NEXT(s);
     for (;;) {
-        cont:
+    cont:
         if (S_END(s)) {
             break;
         }
@@ -186,11 +186,21 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
                     if (c == '\\') {
                         c = S_NEXT(s);
                         switch (c) {
-                            case 'b': c = 0x08; break;
-                            case 'f': c = 0x0c; break;
-                            case 'n': c = 0x0a; break;
-                            case 'r': c = 0x0d; break;
-                            case 't': c = 0x09; break;
+                            case 'b':
+                                c = 0x08;
+                                break;
+                            case 'f':
+                                c = 0x0c;
+                                break;
+                            case 'n':
+                                c = 0x0a;
+                                break;
+                            case 'r':
+                                c = 0x0d;
+                                break;
+                            case 't':
+                                c = 0x09;
+                                break;
                             case 'u': {
                                 mp_uint_t num = 0;
                                 for (int i = 0; i < 4; i++) {
@@ -216,7 +226,16 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
                 next = mp_obj_new_str(vstr.buf, vstr.len);
                 break;
             case '-':
-            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9': {
                 bool flt = false;
                 vstr_reset(&vstr);
                 for (;;) {
@@ -298,7 +317,7 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
             }
         }
     }
-    success:
+success:
     // It is legal for a stream to have contents after JSON.
     // E.g., A UART is not closed after receiving an object; in load() we will
     //   return the first complete JSON object, while in loads() we will retain
@@ -319,7 +338,7 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
     vstr_clear(&vstr);
     return stack_top;
 
-    fail:
+fail:
     mp_raise_ValueError(translate("syntax error in JSON"));
 }
 
@@ -331,18 +350,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
     size_t len;
     const char *buf = mp_obj_str_get_data(obj, &len);
-    vstr_t vstr = {len, len, (char*)buf, true};
+    vstr_t vstr = {len, len, (char *)buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
     return _mod_ujson_load(MP_OBJ_FROM_PTR(&sio), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);
 
 STATIC const mp_rom_map_elem_t mp_module_ujson_globals_table[] = {
-#if CIRCUITPY
+    #if CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_json) },
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ujson) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_ujson_dump_obj) },
     { MP_ROM_QSTR(MP_QSTR_dumps), MP_ROM_PTR(&mod_ujson_dumps_obj) },
     { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&mod_ujson_load_obj) },
@@ -353,7 +372,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_ujson_globals, mp_module_ujson_globals_tab
 
 const mp_obj_module_t mp_module_ujson = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ujson_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_ujson_globals,
 };
 
-#endif //MICROPY_PY_UJSON
+#endif // MICROPY_PY_UJSON

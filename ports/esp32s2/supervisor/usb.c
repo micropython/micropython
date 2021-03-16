@@ -44,39 +44,36 @@
 #include "tusb.h"
 
 #ifdef CFG_TUSB_DEBUG
-  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE)
+  #define USBD_STACK_SIZE     (3 * configMINIMAL_STACK_SIZE)
 #else
-  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE/2)
+  #define USBD_STACK_SIZE     (3 * configMINIMAL_STACK_SIZE / 2)
 #endif
 
-StackType_t  usb_device_stack[USBD_STACK_SIZE];
+StackType_t usb_device_stack[USBD_STACK_SIZE];
 StaticTask_t usb_device_taskdef;
 
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
-void usb_device_task(void* param)
-{
-  (void) param;
+void usb_device_task(void *param) {
+    (void)param;
 
-  // RTOS forever loop
-  while (1)
-  {
-    // tinyusb device task
-    if (tusb_inited()) {
-        tud_task();
-        tud_cdc_write_flush();
+    // RTOS forever loop
+    while (1) {
+        // tinyusb device task
+        if (tusb_inited()) {
+            tud_task();
+            tud_cdc_write_flush();
+        }
+        vTaskDelay(1);
     }
-    vTaskDelay(1);
-  }
 }
 
-static void configure_pins (usb_hal_context_t *usb)
-{
+static void configure_pins(usb_hal_context_t *usb) {
     /* usb_periph_iopins currently configures USB_OTG as USB Device.
      * Introduce additional parameters in usb_hal_context_t when adding support
      * for USB Host.
      */
-    for (const usb_iopin_dsc_t* iopin = usb_periph_iopins; iopin->pin != -1; ++iopin) {
+    for (const usb_iopin_dsc_t *iopin = usb_periph_iopins; iopin->pin != -1; ++iopin) {
         if ((usb->use_external_phy) || (iopin->ext_phy_only == 0)) {
             gpio_pad_select_gpio(iopin->pin);
             if (iopin->is_output) {
@@ -103,22 +100,21 @@ void init_usb_hardware(void) {
     usb_hal_init(&hal);
     configure_pins(&hal);
 
-    (void) xTaskCreateStatic(usb_device_task,
-                             "usbd",
-                             USBD_STACK_SIZE,
-                             NULL,
-                             5,
-                             usb_device_stack,
-                             &usb_device_taskdef);
+    (void)xTaskCreateStatic(usb_device_task,
+        "usbd",
+        USBD_STACK_SIZE,
+        NULL,
+        5,
+        usb_device_stack,
+        &usb_device_taskdef);
 }
 /**
  * Callback invoked when received an "wanted" char.
  * @param itf           Interface index (for multiple cdc interfaces)
  * @param wanted_char   The wanted char (set previously)
  */
-void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
-{
-    (void) itf; // not used
+void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
+    (void)itf;  // not used
     // Workaround for using lib/utils/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {

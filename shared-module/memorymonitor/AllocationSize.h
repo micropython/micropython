@@ -40,8 +40,8 @@ typedef struct _memorymonitor_allocationsize_obj_t {
     mp_obj_base_t base;
     uint16_t buckets[ALLOCATION_SIZE_BUCKETS];
     // Store the location that points to us so we can remove ourselves.
-    memorymonitor_allocationsize_obj_t** previous;
-    memorymonitor_allocationsize_obj_t* next;
+    memorymonitor_allocationsize_obj_t **previous;
+    memorymonitor_allocationsize_obj_t *next;
     bool paused;
 } memorymonitor_allocationsize_obj_t;
 

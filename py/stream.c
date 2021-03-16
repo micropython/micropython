@@ -235,7 +235,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte flags) {
     int error;
-    mp_uint_t out_sz = mp_stream_rw(self_in, (void*)buf, len, &error, flags);
+    mp_uint_t out_sz = mp_stream_rw(self_in, (void *)buf, len, &error, flags);
     if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             // http://docs.python.org/3/library/io.html#io.RawIOBase.write
@@ -272,7 +272,7 @@ STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
         }
     }
     bufinfo.len -= off;
-    return mp_stream_write(args[0], (byte*)bufinfo.buf + off, MIN(bufinfo.len, max_len), MP_STREAM_RW_WRITE);
+    return mp_stream_write(args[0], (byte *)bufinfo.buf + off, MIN(bufinfo.len, max_len), MP_STREAM_RW_WRITE);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj, 2, 4, stream_write_method);
 
@@ -401,7 +401,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
             mp_raise_OSError(error);
         }
         if (out_sz == 0) {
-done:
+        done:
             // Back out previously added byte
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.
@@ -534,7 +534,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
 int mp_stream_errno;
 
 ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len) {
-    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t out_sz = stream_p->write(stream, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
@@ -545,7 +545,7 @@ ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len) {
 }
 
 ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len) {
-    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t out_sz = stream_p->read(stream, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
@@ -556,7 +556,7 @@ ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len) {
 }
 
 off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
-    const mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    const mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = mp_get_stream(o);
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
@@ -569,7 +569,7 @@ off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
 }
 
 int mp_stream_posix_fsync(mp_obj_t stream) {
-    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(stream);
     const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_FLUSH, 0, &mp_stream_errno);
     if (res == MP_STREAM_ERROR) {

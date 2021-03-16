@@ -34,7 +34,7 @@
 #include "shared-bindings/gnss/GNSS.h"
 
 typedef struct {
-    const char* devpath;
+    const char *devpath;
     int fd;
 } gnss_dev_t;
 
@@ -110,15 +110,15 @@ void common_hal_gnss_update(gnss_obj_t *self) {
 }
 
 mp_float_t common_hal_gnss_get_latitude(gnss_obj_t *self) {
-    return (mp_float_t) self->latitude;
+    return (mp_float_t)self->latitude;
 }
 
 mp_float_t common_hal_gnss_get_longitude(gnss_obj_t *self) {
-    return (mp_float_t) self->longitude;
+    return (mp_float_t)self->longitude;
 }
 
 mp_float_t common_hal_gnss_get_altitude(gnss_obj_t *self) {
-    return (mp_float_t) self->altitude;
+    return (mp_float_t)self->altitude;
 }
 
 void common_hal_gnss_get_timestamp(gnss_obj_t *self, timeutils_struct_time_t *tm) {

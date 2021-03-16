@@ -9,17 +9,17 @@
 #define SPI_FLASH_SCK_PIN    &pin_PA09
 #define SPI_FLASH_CS_PIN     &pin_PA13
 
-#define MICROPY_PORT_A    ( 0 )
-#define MICROPY_PORT_B    ( 0 )
-#define MICROPY_PORT_C    ( 0 )
+#define MICROPY_PORT_A    (0)
+#define MICROPY_PORT_B    (0)
+#define MICROPY_PORT_C    (0)
 
 #define BOARD_HAS_CRYSTAL 1
 
-//I2C
+// I2C
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 
-//SPI
+// SPI
 #define DEFAULT_SPI_BUS_SCK (&pin_PA19)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA18)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA21)

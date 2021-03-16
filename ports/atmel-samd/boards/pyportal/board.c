@@ -53,15 +53,15 @@ uint8_t display_init_sequence[] = {
     0xF2, 1, 0x00,                         // 3Gamma Function Disable
     0x26, 1, 0x01,             // Gamma curve selected
     0xe0, 15, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, // Set Gamma
-      0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00,
+    0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00,
     0xe1, 15, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, // Set Gamma
-      0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
+    0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,
     0x11, DELAY, 120,                // Exit Sleep
     0x29, DELAY, 120, // Display on
 };
 
 void board_init(void) {
-    displayio_parallelbus_obj_t* bus = &displays[0].parallel_bus;
+    displayio_parallelbus_obj_t *bus = &displays[0].parallel_bus;
     bus->base.type = &displayio_parallelbus_type;
     common_hal_displayio_parallelbus_construct(bus,
         &pin_PA16, // Data0
@@ -72,7 +72,7 @@ void board_init(void) {
         &pin_PA00, // Reset
         0); // Frequency
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

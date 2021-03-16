@@ -84,9 +84,9 @@
 //|         ...
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if !CIRCUITPY_AUDIOBUSIO_PDMIN
+    #if !CIRCUITPY_AUDIOBUSIO_PDMIN
     mp_raise_NotImplementedError(translate("PDMIn not available"));
-#else
+    #else
     enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock_pin,     MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -129,13 +129,13 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 
     common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, sample_rate,
-                                          bit_depth, mono, oversample);
+        bit_depth, mono, oversample);
 
     // Wait for the microphone to start up. Some start in 10 msecs; some take as much as 100 msecs.
     mp_hal_delay_ms(startup_delay * 1000);
 
     return MP_OBJ_FROM_PTR(self);
-#endif
+    #endif
 }
 
 #if CIRCUITPY_AUDIOBUSIO_PDMIN
@@ -248,7 +248,7 @@ const mp_obj_type_t audiobusio_pdmin_type = {
     { &mp_type_type },
     .name = MP_QSTR_PDMIn,
     .make_new = audiobusio_pdmin_make_new,
-#if CIRCUITPY_AUDIOBUSIO_PDMIN
-    .locals_dict = (mp_obj_dict_t*)&audiobusio_pdmin_locals_dict,
-#endif
+    #if CIRCUITPY_AUDIOBUSIO_PDMIN
+    .locals_dict = (mp_obj_dict_t *)&audiobusio_pdmin_locals_dict,
+    #endif
 };
