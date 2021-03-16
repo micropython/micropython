@@ -13,5 +13,5 @@
 #define DEFAULT_UART_BUS_RX (&pin_GPIO1)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO0)
 
-// Flash chip is GD25Q64 connected over QSPI
+// Flash chip is GD25Q128 connected over QSPI
 #define TOTAL_FLASH_SIZE (16 * 1024 * 1024)
