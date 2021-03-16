@@ -172,7 +172,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     pio_program_t program_struct = {
         .instructions = (uint16_t *)program,
         .length = program_len,
-        .origin = 0
+        .origin = -1
     };
     for (size_t i = 0; i < NUM_PIOS; i++) {
         PIO pio = pio_instances[i];
