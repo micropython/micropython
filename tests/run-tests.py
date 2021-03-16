@@ -187,7 +187,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
             if not is_special and e.args[0] == "exception":
                 output_mupy = e.args[1] + e.args[2] + b"CRASH"
             else:
-                output_mupy = b"CRASH"
+                output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
