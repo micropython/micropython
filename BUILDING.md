@@ -102,4 +102,6 @@ Pre-commit also requires some additional programs to be installed through your p
  * The gettext package, any modern version
  * uncrustify version 0.71 (0.72 is also tested)
 
+Each time you create a git commit, the pre-commit quality checks will be run.  You can also run them e.g., with `pre-commit run foo.c` or `pre-commit run --all` to run on all files whether modified or not.
+
 Some pre-commit quality checks require your active attention to resolve, others (such as the formatting checks of uncrustify) are made automatically and must simply be incorporated into your code changes by committing them.
