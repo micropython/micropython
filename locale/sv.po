@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-09 16:55+0000\n"
+"PO-Revision-Date: 2021-03-16 14:54+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2914,7 +2914,7 @@ msgstr "differentieringsordning utanför intervallet"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "dimensions do not match"
-msgstr ""
+msgstr "dimensioner matchar inte"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
