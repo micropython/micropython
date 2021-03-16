@@ -112,3 +112,4 @@ try:
     f.write(bytearray(bsize * free))
 except OSError as e:
     print("ENOSPC:", e.args[0] == 28)  # uerrno.ENOSPC
+f.close()
