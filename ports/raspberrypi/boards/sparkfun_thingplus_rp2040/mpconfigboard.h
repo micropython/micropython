@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Sparkfun ThingPlus RP2040"
+#define MICROPY_HW_BOARD_NAME "SparkFun Thing Plus - RP2040"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO8)
