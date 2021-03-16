@@ -339,7 +339,37 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     }
 }
 
+void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_value) {
+    uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
+
+    for (int y=y1; y<y2; y++) {
+        for (int x=x1; x<x2; x++) {
+            uint32_t value;
+            switch(element_size) {
+            default:
+            case 1:
+                value = *(uint8_t*) data;
+                data = (void*)((uint8_t*)data + 1);
+                break;
+            case 2:
+                value = *(uint16_t*) data;
+                data = (void*)((uint16_t*)data + 1);
+                break;
+            case 4:
+                value = *(uint32_t*) data;
+                data = (void*)((uint32_t*)data + 1);
+                break;
+            }
+            if (!skip_specified || value != skip_value) {
+                displayio_bitmap_write_pixel(self, x, y, value & mask);
+            }
+        }
+    }
+}
+
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
+    uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
+
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));
     }
@@ -418,7 +448,7 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* f
                 break;
             }
 
-            displayio_bitmap_write_pixel(self, x, y, value);
+            displayio_bitmap_write_pixel(self, x, y, value & mask);
         }
     }
 

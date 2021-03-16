@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 
+#include "py/binary.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
@@ -357,6 +358,85 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
+//| def arrayblit(bitmap: display.Bitmap, data: ReadableBuffer, x1: int=0, y1: int=0, x2: Optional[int]=None, y2: Optional[int]=None, skip_index:Optional[int]=None) -> None:
+//|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
+//|
+//| The values from ``data`` are taken modulo the number of color values
+//| avalable in the destintaion bitmap.
+//|
+//| If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
+//| are not specified, or are given as -1, they are taken as the width
+//| and height of the image.
+//|
+//| The coordinates affected by the blit are ``x1 <= x < x2`` and ``y1 <
+//| y < y2``.
+//|
+//| ``data`` must contain at least as many elements as required.  If it
+//| contains excess elements, they are ignored.
+//|
+//| The blit takes place by rows, so the first elements of ``data`` go
+//| to the first row, the next elements to the next row, and so on.
+//|
+//|     :param displayio.Bitmap bitmap: A writable bitmap
+//|     :param ReadableBuffer data: Buffer containing the source pixel values
+//|     :param int x1: The left corner of the area to blit into (inclusive)
+//|     :param int y1: The top corner of the area to blit into (inclusive)
+//|     :param int x2: The right of the area to blit into (exclusive)
+//|     :param int y2: The bottom corner of the area to blit into (exclusive)
+//|     :param int skip_index: Bitmap palette index in the source that will not be copied,
+//|             set to None to copy all pixels"""
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_data, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_x1, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_y1, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_x2, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_y2, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_skip_index, MP_ARG_OBJ, {.u_obj = mp_const_none } },
+    }
+;
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (!MP_OBJ_IS_TYPE(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
+        mp_raise_TypeError(NULL);
+    }
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
+
+    int x1 = args[ARG_x1].u_int;
+    int y1 = args[ARG_y1].u_int;
+    int x2 = args[ARG_x2].u_int == -1 ? bitmap->width : args[ARG_x2].u_int;
+    int y2 = args[ARG_y2].u_int == -1 ? bitmap->height : args[ARG_y2].u_int;
+
+    if ((x1 < 0) || (y1 < 0) || (x1 > x2) || (y1 > y2) || (x2 > bitmap->width) || (y2 > bitmap->height)) {
+        mp_raise_IndexError(translate("pixel coordinates out of bounds"));
+    }
+
+    size_t output_element_count = (x2-x1) * (y2-y1);
+    size_t element_size = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    size_t input_element_count = bufinfo.len / element_size;
+
+    bool skip_specified = args[ARG_skip_index].u_obj != mp_const_none;
+    uint32_t skip_index = skip_specified ? mp_obj_get_int(args[ARG_skip_index].u_obj) : 0;
+    if (input_element_count < output_element_count) {
+        mp_raise_IndexError(translate("index out of range"));
+    }
+
+    common_hal_bitmaptools_arrayblit(bitmap, bufinfo.buf, element_size, x1, y1, x2, y2, skip_specified, skip_index);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
+
+
 //| def readinto(bitmap: displayio.Bitmap, file: typing.BinaryIO, bits_per_pixel: int, element_size: int = 1, reverse_pixels_in_element: bool = False, swap_bytes_in_element: bool = False) -> None:
 //|     """Read from a binary file into a bitmap
 //| The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
@@ -435,6 +515,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
 };
