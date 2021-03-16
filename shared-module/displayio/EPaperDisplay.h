@@ -38,9 +38,9 @@ typedef struct {
     displayio_display_core_t core;
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
-    const uint8_t* start_sequence;
+    const uint8_t *start_sequence;
     uint32_t start_sequence_len;
-    const uint8_t* stop_sequence;
+    const uint8_t *stop_sequence;
     uint32_t stop_sequence_len;
     uint16_t refresh_time;
     uint16_t set_column_window_command;
@@ -59,10 +59,10 @@ typedef struct {
     display_chip_select_behavior_t chip_select;
 } displayio_epaperdisplay_obj_t;
 
-void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);
-void release_epaperdisplay(displayio_epaperdisplay_obj_t* self);
+void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t *self);
+void release_epaperdisplay(displayio_epaperdisplay_obj_t *self);
 bool maybe_refresh_epaperdisplay(void);
 
-void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self);
+void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H

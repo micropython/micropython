@@ -67,9 +67,12 @@ STATIC mp_obj_t alarm_sleep_memory_unary_op(mp_unary_op_t op, mp_obj_t self_in) 
     alarm_sleep_memory_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_alarm_sleep_memory_get_length(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -100,7 +103,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
     } else {
         alarm_sleep_memory_obj_t *self = MP_OBJ_TO_PTR(self_in);
         if (0) {
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_alarm_sleep_memory_get_length(self), index_in, &slice)) {
@@ -110,11 +113,11 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
                 // Assign
                 size_t src_len = slice.stop - slice.start;
-                uint8_t* src_items;
+                uint8_t *src_items;
                 if (MP_OBJ_IS_TYPE(value, &mp_type_array) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_bytearray) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_memoryview) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
+                    MP_OBJ_IS_TYPE(value, &mp_type_bytearray) ||
+                    MP_OBJ_IS_TYPE(value, &mp_type_memoryview) ||
+                    MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
@@ -143,11 +146,11 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 common_hal_alarm_sleep_memory_get_bytes(self, slice.start, items, len);
                 return mp_obj_new_bytearray_by_ref(len, items);
             }
-#endif
+        #endif
         } else {
             // Single index rather than slice.
             size_t index = mp_get_index(self->base.type, common_hal_alarm_sleep_memory_get_length(self),
-                    index_in, false);
+                index_in, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 uint8_t value_out;

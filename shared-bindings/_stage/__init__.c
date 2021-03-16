@@ -91,7 +91,7 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     }
 
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
-                 display, scale, background);
+        display, scale, background);
 
     return mp_const_none;
 }
@@ -109,5 +109,5 @@ STATIC MP_DEFINE_CONST_DICT(stage_module_globals, stage_module_globals_table);
 
 const mp_obj_module_t stage_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&stage_module_globals,
+    .globals = (mp_obj_dict_t *)&stage_module_globals,
 };

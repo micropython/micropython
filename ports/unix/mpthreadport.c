@@ -65,10 +65,10 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         // We have access to the context (regs, stack) of the thread but it seems
         // that we don't need the extra information, enough is captured by the
         // gc_collect_regs_and_stack function above
-        //gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
+        // gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
         #if MICROPY_ENABLE_PYSTACK
-        void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
-        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+        void **ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
+        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
         #endif
         thread_signal_done = 1;
     }
@@ -119,7 +119,7 @@ void mp_thread_gc_others(void) {
 }
 
 mp_state_thread_t *mp_thread_get_state(void) {
-    return (mp_state_thread_t*)pthread_getspecific(tls_key);
+    return (mp_state_thread_t *)pthread_getspecific(tls_key);
 }
 
 void mp_thread_set_state(void *state) {
@@ -137,7 +137,7 @@ void mp_thread_start(void) {
     pthread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // default stack size is 8k machine-words
     if (*stack_size == 0) {
         *stack_size = 8192 * BYTES_PER_WORD;

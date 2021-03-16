@@ -38,7 +38,7 @@
 
 #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
 
-static audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
+static audio_dma_t *audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 
 // This cannot be in audio_dma_state because it's volatile.
 static volatile bool audio_dma_pending[AUDIO_DMA_CHANNEL_COUNT];
@@ -64,20 +64,22 @@ void audio_dma_free_channel(uint8_t channel) {
 }
 
 void audio_dma_disable_channel(uint8_t channel) {
-    if (channel >= AUDIO_DMA_CHANNEL_COUNT)
+    if (channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return;
+    }
     dma_disable_channel(channel);
 }
 
 void audio_dma_enable_channel(uint8_t channel) {
-    if (channel >= AUDIO_DMA_CHANNEL_COUNT)
+    if (channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return;
+    }
     dma_enable_channel(channel);
 }
 
-void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer_length,
-                              uint8_t** output_buffer, uint32_t* output_buffer_length,
-                              uint8_t* output_spacing) {
+void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer_length,
+    uint8_t **output_buffer, uint32_t *output_buffer_length,
+    uint8_t *output_spacing) {
     if (dma->first_buffer_free) {
         *output_buffer = dma->first_buffer;
     } else {
@@ -92,18 +94,18 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
         if (dma->bytes_per_sample == 1) {
             for (uint32_t i = 0; i < buffer_length; i += dma->spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint8_t*) *output_buffer)[out_i] = ((int8_t*) buffer)[i] + 0x80;
+                    ((uint8_t *)*output_buffer)[out_i] = ((int8_t *)buffer)[i] + 0x80;
                 } else {
-                    ((int8_t*) *output_buffer)[out_i] = ((uint8_t*) buffer)[i] - 0x80;
+                    ((int8_t *)*output_buffer)[out_i] = ((uint8_t *)buffer)[i] - 0x80;
                 }
                 out_i += 1;
             }
         } else if (dma->bytes_per_sample == 2) {
             for (uint32_t i = 0; i < buffer_length / 2; i += dma->spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint16_t*) *output_buffer)[out_i] = ((int16_t*) buffer)[i] + 0x8000;
+                    ((uint16_t *)*output_buffer)[out_i] = ((int16_t *)buffer)[i] + 0x8000;
                 } else {
-                    ((int16_t*) *output_buffer)[out_i] = ((uint16_t*) buffer)[i] - 0x8000;
+                    ((int16_t *)*output_buffer)[out_i] = ((uint16_t *)buffer)[i] - 0x8000;
                 }
                 out_i += 1;
             }
@@ -117,14 +119,14 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
     dma->first_buffer_free = !dma->first_buffer_free;
 }
 
-void audio_dma_load_next_block(audio_dma_t* dma) {
-    uint8_t* buffer;
+void audio_dma_load_next_block(audio_dma_t *dma) {
+    uint8_t *buffer;
     uint32_t buffer_length;
     audioio_get_buffer_result_t get_buffer_result =
         audiosample_get_buffer(dma->sample, dma->single_channel, dma->audio_channel,
-                               &buffer, &buffer_length);
+            &buffer, &buffer_length);
 
-    DmacDescriptor* descriptor = dma->second_descriptor;
+    DmacDescriptor *descriptor = dma->second_descriptor;
     if (dma->first_descriptor_free) {
         descriptor = dma_descriptor(dma->dma_channel);
     }
@@ -135,14 +137,14 @@ void audio_dma_load_next_block(audio_dma_t* dma) {
         return;
     }
 
-    uint8_t* output_buffer;
+    uint8_t *output_buffer;
     uint32_t output_buffer_length;
     uint8_t output_spacing;
     audio_dma_convert_signed(dma, buffer, buffer_length, &output_buffer, &output_buffer_length,
         &output_spacing);
 
     descriptor->BTCNT.reg = output_buffer_length / dma->beat_size / output_spacing;
-    descriptor->SRCADDR.reg = ((uint32_t) output_buffer) + output_buffer_length;
+    descriptor->SRCADDR.reg = ((uint32_t)output_buffer) + output_buffer_length;
     if (get_buffer_result == GET_BUFFER_DONE) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel, dma->audio_channel);
@@ -153,8 +155,8 @@ void audio_dma_load_next_block(audio_dma_t* dma) {
     descriptor->BTCTRL.bit.VALID = true;
 }
 
-static void setup_audio_descriptor(DmacDescriptor* descriptor, uint8_t beat_size,
-                                   uint8_t spacing, uint32_t output_register_address) {
+static void setup_audio_descriptor(DmacDescriptor *descriptor, uint8_t beat_size,
+    uint8_t spacing, uint32_t output_register_address) {
     uint32_t beat_size_reg = DMAC_BTCTRL_BEATSIZE_BYTE;
     if (beat_size == 2) {
         beat_size_reg = DMAC_BTCTRL_BEATSIZE_HWORD;
@@ -162,22 +164,22 @@ static void setup_audio_descriptor(DmacDescriptor* descriptor, uint8_t beat_size
         beat_size_reg = DMAC_BTCTRL_BEATSIZE_WORD;
     }
     descriptor->BTCTRL.reg = beat_size_reg |
-                             DMAC_BTCTRL_SRCINC |
-                             DMAC_BTCTRL_EVOSEL_BLOCK |
-                             DMAC_BTCTRL_STEPSIZE(spacing - 1) |
-                             DMAC_BTCTRL_STEPSEL_SRC;
+        DMAC_BTCTRL_SRCINC |
+        DMAC_BTCTRL_EVOSEL_BLOCK |
+        DMAC_BTCTRL_STEPSIZE(spacing - 1) |
+        DMAC_BTCTRL_STEPSEL_SRC;
     descriptor->DSTADDR.reg = output_register_address;
 }
 
 // Playback should be shutdown before calling this.
-audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
-                              mp_obj_t sample,
-                              bool loop,
-                              bool single_channel,
-                              uint8_t audio_channel,
-                              bool output_signed,
-                              uint32_t output_register_address,
-                              uint8_t dma_trigger_source) {
+audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
+    mp_obj_t sample,
+    bool loop,
+    bool single_channel,
+    uint8_t audio_channel,
+    bool output_signed,
+    uint32_t output_register_address,
+    uint8_t dma_trigger_source) {
     uint8_t dma_channel = audio_dma_allocate_channel();
     if (dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return AUDIO_DMA_DMA_BUSY;
@@ -199,18 +201,18 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     bool samples_signed;
     uint32_t max_buffer_length;
     audiosample_get_buffer_structure(sample, single_channel, &single_buffer, &samples_signed,
-                                     &max_buffer_length, &dma->spacing);
+        &max_buffer_length, &dma->spacing);
     uint8_t output_spacing = dma->spacing;
     if (output_signed != samples_signed) {
         output_spacing = 1;
         max_buffer_length /= dma->spacing;
-        dma->first_buffer = (uint8_t*) m_realloc(dma->first_buffer, max_buffer_length);
+        dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
         if (dma->first_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
         dma->first_buffer_free = true;
         if (!single_buffer) {
-            dma->second_buffer = (uint8_t*) m_realloc(dma->second_buffer, max_buffer_length);
+            dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
             if (dma->second_buffer == NULL) {
                 return AUDIO_DMA_MEMORY_ERROR;
             }
@@ -221,7 +223,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
 
     dma->event_channel = 0xff;
     if (!single_buffer) {
-        dma->second_descriptor = (DmacDescriptor*) m_malloc(sizeof(DmacDescriptor), false);
+        dma->second_descriptor = (DmacDescriptor *)m_malloc(sizeof(DmacDescriptor), false);
         if (dma->second_descriptor == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
@@ -257,26 +259,26 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         dma->beat_size *= 2;
     }
 
-#ifdef SAM_D5X_E5X
+    #ifdef SAM_D5X_E5X
     int irq = dma->event_channel < 4 ? EVSYS_0_IRQn + dma->event_channel : EVSYS_4_IRQn;
-#else
+    #else
     int irq = EVSYS_IRQn;
-#endif
+    #endif
 
     NVIC_DisableIRQ(irq);
     NVIC_ClearPendingIRQ(irq);
 
-    DmacDescriptor* first_descriptor = dma_descriptor(dma_channel);
+    DmacDescriptor *first_descriptor = dma_descriptor(dma_channel);
     setup_audio_descriptor(first_descriptor, dma->beat_size, output_spacing, output_register_address);
     if (single_buffer) {
         first_descriptor->DESCADDR.reg = 0;
         if (dma->loop) {
-            first_descriptor->DESCADDR.reg = (uint32_t) first_descriptor;
+            first_descriptor->DESCADDR.reg = (uint32_t)first_descriptor;
         }
     } else {
-        first_descriptor->DESCADDR.reg = (uint32_t) dma->second_descriptor;
+        first_descriptor->DESCADDR.reg = (uint32_t)dma->second_descriptor;
         setup_audio_descriptor(dma->second_descriptor, dma->beat_size, output_spacing, output_register_address);
-        dma->second_descriptor->DESCADDR.reg = (uint32_t) first_descriptor;
+        dma->second_descriptor->DESCADDR.reg = (uint32_t)first_descriptor;
     }
 
     // Load the first two blocks up front.
@@ -293,7 +295,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     return AUDIO_DMA_OK;
 }
 
-void audio_dma_stop(audio_dma_t* dma) {
+void audio_dma_stop(audio_dma_t *dma) {
     uint8_t channel = dma->dma_channel;
     if (channel < AUDIO_DMA_CHANNEL_COUNT) {
         audio_dma_disable_channel(channel);
@@ -305,15 +307,15 @@ void audio_dma_stop(audio_dma_t* dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
-void audio_dma_pause(audio_dma_t* dma) {
+void audio_dma_pause(audio_dma_t *dma) {
     dma_suspend_channel(dma->dma_channel);
 }
 
-void audio_dma_resume(audio_dma_t* dma) {
+void audio_dma_resume(audio_dma_t *dma) {
     dma_resume_channel(dma->dma_channel);
 }
 
-bool audio_dma_get_paused(audio_dma_t* dma) {
+bool audio_dma_get_paused(audio_dma_t *dma) {
     if (dma->dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return false;
     }
@@ -322,7 +324,7 @@ bool audio_dma_get_paused(audio_dma_t* dma) {
     return (status & DMAC_CHINTFLAG_SUSP) != 0;
 }
 
-void audio_dma_init(audio_dma_t* dma) {
+void audio_dma_init(audio_dma_t *dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
@@ -337,7 +339,7 @@ void audio_dma_reset(void) {
     }
 }
 
-bool audio_dma_get_playing(audio_dma_t* dma) {
+bool audio_dma_get_playing(audio_dma_t *dma) {
     if (dma->dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return false;
     }
@@ -352,7 +354,7 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
 // WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
 // background tasks such as this and causes a stack overflow.
 STATIC void dma_callback_fun(void *arg) {
-    audio_dma_t* dma = arg;
+    audio_dma_t *dma = arg;
     if (dma == NULL) {
         return;
     }
@@ -362,7 +364,7 @@ STATIC void dma_callback_fun(void *arg) {
 
 void evsyshandler_common(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
-        audio_dma_t* dma = audio_dma_state[i];
+        audio_dma_t *dma = audio_dma_state[i];
         if (dma == NULL) {
             continue;
         }
@@ -370,18 +372,30 @@ void evsyshandler_common(void) {
         if (!block_done) {
             continue;
         }
-        background_callback_add(&dma->callback, dma_callback_fun, (void*)dma);
+        background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
     }
 }
 
 #ifdef SAM_D5X_E5X
-void EVSYS_0_Handler(void) { evsyshandler_common(); }
-void EVSYS_1_Handler(void) { evsyshandler_common(); }
-void EVSYS_2_Handler(void) { evsyshandler_common(); }
-void EVSYS_3_Handler(void) { evsyshandler_common(); }
-void EVSYS_4_Handler(void) { evsyshandler_common(); }
+void EVSYS_0_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_1_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_2_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_3_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_4_Handler(void) {
+    evsyshandler_common();
+}
 #else
-void EVSYS_Handler(void) { evsyshandler_common(); }
+void EVSYS_Handler(void) {
+    evsyshandler_common();
+}
 #endif
 
 #endif

@@ -32,11 +32,11 @@
 extern const mp_obj_type_t mcu_pin_type;
 
 #define PIN(pin, a) \
-{ \
-    { &mcu_pin_type }, \
-    .number = (pin), \
-    .analog = (a) \
-}
+    { \
+        { &mcu_pin_type }, \
+        .number = (pin), \
+        .analog = (a) \
+    }
 
 typedef struct {
     mp_obj_base_t base;
@@ -93,6 +93,6 @@ extern const mcu_pin_obj_t pin_HPADC1;
 void never_reset_pin_number(uint8_t pin_number);
 void reset_pin_number(uint8_t pin_number);
 void reset_all_pins(void);
-void claim_pin(const mcu_pin_obj_t* pin);
+void claim_pin(const mcu_pin_obj_t *pin);
 
 #endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PIN_H

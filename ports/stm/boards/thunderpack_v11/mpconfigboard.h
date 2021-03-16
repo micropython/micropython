@@ -38,7 +38,7 @@
 // Flash config
 #define FLASH_SIZE                  (0x80000)
 #define FLASH_PAGE_SIZE             (0x4000)
-#define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
+#define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE - 0x2000 - 0xC000)
 
 #define HSE_VALUE                   ((uint32_t)24000000U)
 #define BOARD_OVERWRITE_SWD         (1)

@@ -59,9 +59,9 @@ const int32_t colorwheel(float pos) {
     if (pos > 255) {
         pos = pos - ((uint32_t)(pos / 256) * 256);
     }
-    if (pos < 85)
+    if (pos < 85) {
         return (uint8_t)(255 - (pos * 3)) << 16 | (uint8_t)(pos * 3) << 8;
-    else if (pos < 170) {
+    } else if (pos < 170) {
         pos -= 85;
         return (uint8_t)(255 - (pos * 3)) << 8 | (uint8_t)(pos * 3);
     } else {
@@ -81,5 +81,5 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_tab
 
 const mp_obj_module_t pixelbuf_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&pixelbuf_module_globals,
+    .globals = (mp_obj_dict_t *)&pixelbuf_module_globals,
 };

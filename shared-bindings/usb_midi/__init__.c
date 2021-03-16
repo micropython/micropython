@@ -55,5 +55,5 @@ MP_DEFINE_MUTABLE_DICT(usb_midi_module_globals, usb_midi_module_globals_table);
 
 const mp_obj_module_t usb_midi_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&usb_midi_module_globals,
+    .globals = (mp_obj_dict_t *)&usb_midi_module_globals,
 };

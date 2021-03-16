@@ -31,9 +31,9 @@
 #include <string.h>
 
 #include "py/mpconfig.h" // for EXTERNAL_FLASH_QSPI_DUAL
-//#include "nrfx_qspi.h"
+// #include "nrfx_qspi.h"
 
-//#include "shared-bindings/microcontroller/__init__.h"
+// #include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "supervisor/shared/external_flash/qspi_flash.h"
@@ -47,10 +47,10 @@ bool spi_flash_command(uint8_t command) {
     //     .wipwait = false,
     //     .wren = false
     // };
-    return false; //nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL) == NRFX_SUCCESS;
+    return false; // nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL) == NRFX_SUCCESS;
 }
 
-bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length) {
+bool spi_flash_read_command(uint8_t command, uint8_t *response, uint32_t length) {
     // nrf_qspi_cinstr_conf_t cinstr_cfg = {
     //     .opcode = command,
     //     .length = length + 1,
@@ -64,7 +64,7 @@ bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length)
 
 }
 
-bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
+bool spi_flash_write_command(uint8_t command, uint8_t *data, uint32_t length) {
     // nrf_qspi_cinstr_conf_t cinstr_cfg = {
     //     .opcode = command,
     //     .length = length + 1,
@@ -85,12 +85,12 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
     return false;
 }
 
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t length) {
     // return nrfx_qspi_write(data, length, address) == NRFX_SUCCESS;
     return false;
 }
 
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t length) {
     // return nrfx_qspi_read(data, length, address) == NRFX_SUCCESS;
     return false;
 }
@@ -139,7 +139,7 @@ void spi_flash_init(void) {
 //     nrfx_qspi_init(&qspi_cfg, NULL, NULL);
 }
 
-void spi_flash_init_device(const external_flash_device* device) {
+void spi_flash_init_device(const external_flash_device *device) {
     // check_quad_enable(device);
 
     // // Switch to single output line if the device doesn't support quad programs.

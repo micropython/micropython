@@ -35,10 +35,10 @@
 
 typedef struct {
     mp_obj_base_t base;
-    const displayio_bitmap_t* bitmap;
+    const displayio_bitmap_t *bitmap;
     uint8_t width;
     uint8_t height;
-    const byte* unicode_characters;
+    const byte *unicode_characters;
     uint16_t unicode_characters_len;
 } fontio_builtinfont_t;
 

@@ -61,11 +61,11 @@
 #include "audio_dma.h"
 
 #ifdef SAMD21
-#define SERCTRL(name) I2S_SERCTRL_ ## name
+#define SERCTRL(name) I2S_SERCTRL_##name
 #endif
 
 #ifdef SAM_D5X_E5X
-#define SERCTRL(name) I2S_TXCTRL_ ## name
+#define SERCTRL(name) I2S_TXCTRL_##name
 #endif
 
 void i2sout_reset(void) {
@@ -77,7 +77,8 @@ void i2sout_reset(void) {
     #endif
     if (I2S->CTRLA.bit.ENABLE == 1) {
         I2S->CTRLA.bit.ENABLE = 0;
-        while (I2S->SYNCBUSY.bit.ENABLE == 1) {}
+        while (I2S->SYNCBUSY.bit.ENABLE == 1) {
+        }
     }
 
     // Make sure the I2S peripheral is running so we can see if the resources we need are free.
@@ -95,9 +96,9 @@ void i2sout_reset(void) {
 }
 
 // Caller validates that pins are free.
-void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
-        const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select,
-        const mcu_pin_obj_t* data, bool left_justified) {
+void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
+    const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
+    const mcu_pin_obj_t *data, bool left_justified) {
     uint8_t serializer = 0xff;
     uint8_t bc_clock_unit = 0xff;
     uint8_t ws_clock_unit = 0xff;
@@ -130,10 +131,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     if (data == &pin_PA07 || data == &pin_PA19) { // I2S SD[0]
         serializer = 0;
     } else if (data == &pin_PA08
-    #ifdef PIN_PB16
-        || data == &pin_PB16
-    #endif
-    ) { // I2S SD[1]
+               #ifdef PIN_PB16
+               || data == &pin_PB16
+               #endif
+               ) { // I2S SD[1]
         serializer = 1;
     }
     #endif
@@ -168,7 +169,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
 
     if (I2S->CTRLA.bit.ENABLE == 0) {
         I2S->CTRLA.bit.SWRST = 1;
-        while (I2S->CTRLA.bit.SWRST == 1) {}
+        while (I2S->CTRLA.bit.SWRST == 1) {
+        }
     } else {
         #ifdef SAMD21
         if ((I2S->CTRLA.vec.SEREN & (1 << serializer)) != 0) {
@@ -206,11 +208,11 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     audio_dma_init(&self->dma);
 }
 
-bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self) {
     return self->bit_clock == NULL;
 }
 
-void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
@@ -223,8 +225,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     self->data = NULL;
 }
 
-void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
-                                       mp_obj_t sample, bool loop) {
+void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
+    mp_obj_t sample, bool loop) {
     if (common_hal_audiobusio_i2sout_get_playing(self)) {
         common_hal_audiobusio_i2sout_stop(self);
     }
@@ -245,8 +247,8 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->gclk = gclk;
 
     uint32_t clkctrl = I2S_CLKCTRL_MCKSEL_GCLK |
-                       I2S_CLKCTRL_NBSLOTS(1) |
-                       I2S_CLKCTRL_FSWIDTH_HALF;
+        I2S_CLKCTRL_NBSLOTS(1) |
+        I2S_CLKCTRL_FSWIDTH_HALF;
     if (self->left_justified) {
         clkctrl |= I2S_CLKCTRL_BITDELAY_LJ;
     } else {
@@ -293,11 +295,11 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     i2s_set_enable(true);
 
     #ifdef SAMD21
-    uint32_t tx_register = (uint32_t) &I2S->DATA[self->serializer].reg;
+    uint32_t tx_register = (uint32_t)&I2S->DATA[self->serializer].reg;
     uint8_t dmac_id = I2S_DMAC_ID_TX_0 + self->serializer;
     #endif
     #ifdef SAM_D5X_E5X
-    uint32_t tx_register = (uint32_t) &I2S->TXDATA.reg;
+    uint32_t tx_register = (uint32_t)&I2S->TXDATA.reg;
     uint8_t dmac_id = I2S_DMAC_ID_TX_0;
     #endif
     audio_dma_result result = audio_dma_setup_playback(&self->dma, sample, loop, false, 0,
@@ -314,26 +316,29 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 | I2S_INTFLAG_TXUR1;
 
     I2S->CTRLA.vec.CKEN = 1 << self->clock_unit;
-    while ((I2S->SYNCBUSY.vec.CKEN & (1 << self->clock_unit)) != 0) {}
+    while ((I2S->SYNCBUSY.vec.CKEN & (1 << self->clock_unit)) != 0) {
+    }
 
     // Init the serializer after the clock. Otherwise, it will never enable because its unclocked.
     #ifdef SAMD21
     I2S->CTRLA.vec.SEREN = 1 << self->serializer;
-    while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {}
+    while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {
+    }
     #endif
     #ifdef SAM_D5X_E5X
     I2S->CTRLA.bit.TXEN = 1;
-    while (I2S->SYNCBUSY.bit.TXEN == 1) {}
+    while (I2S->SYNCBUSY.bit.TXEN == 1) {
+    }
     #endif
 
     self->playing = true;
 }
 
-void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t *self) {
     audio_dma_pause(&self->dma);
 }
 
-void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t *self) {
     // Clear any overrun/underrun errors
     #ifdef SAMD21
     I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 << self->serializer;
@@ -345,29 +350,33 @@ void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
     audio_dma_resume(&self->dma);
 }
 
-bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t *self) {
     return audio_dma_get_paused(&self->dma);
 }
 
-void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
     audio_dma_stop(&self->dma);
 
     #ifdef SAMD21
     I2S->CTRLA.vec.SEREN &= ~(1 << self->serializer);
-    while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {}
+    while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {
+    }
     #endif
     #ifdef SAM_D5X_E5X
     I2S->CTRLA.bit.TXEN = 0;
-    while (I2S->SYNCBUSY.bit.TXEN == 1) {}
+    while (I2S->SYNCBUSY.bit.TXEN == 1) {
+    }
     #endif
 
     #ifdef SAMD21
     if (self->clock_unit == 0) {
         I2S->CTRLA.bit.CKEN0 = 0;
-        while (I2S->SYNCBUSY.bit.CKEN0 == 1) {}
+        while (I2S->SYNCBUSY.bit.CKEN0 == 1) {
+        }
     } else {
         I2S->CTRLA.bit.CKEN1 = 0;
-        while (I2S->SYNCBUSY.bit.CKEN1 == 1) {}
+        while (I2S->SYNCBUSY.bit.CKEN1 == 1) {
+        }
     }
     #endif
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
@@ -380,7 +389,7 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     self->playing = false;
 }
 
-bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t *self) {
     bool still_playing = audio_dma_get_playing(&self->dma);
     if (self->playing && !still_playing) {
         common_hal_audiobusio_i2sout_stop(self);

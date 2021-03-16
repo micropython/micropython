@@ -39,7 +39,7 @@ STATIC bool never_reset_tim[LEDC_TIMER_MAX];
 STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 void pwmout_reset(void) {
-    for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++ ) {
+    for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
         if (reserved_channels[i] != INDEX_EMPTY && not_first_reset) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
         }
@@ -47,7 +47,7 @@ void pwmout_reset(void) {
             reserved_channels[i] = INDEX_EMPTY;
         }
     }
-    for (size_t i = 0; i < LEDC_TIMER_MAX; i++ ) {
+    for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
         if (reserved_timer_freq[i]) {
             ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
         }
@@ -58,16 +58,16 @@ void pwmout_reset(void) {
     not_first_reset = true;
 }
 
-pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
-                                                    const mcu_pin_obj_t* pin,
-                                                    uint16_t duty,
-                                                    uint32_t frequency,
-                                                    bool variable_frequency) {
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
+    const mcu_pin_obj_t *pin,
+    uint16_t duty,
+    uint32_t frequency,
+    bool variable_frequency) {
     // Calculate duty cycle
     uint32_t duty_bits = 0;
-    uint32_t interval = LEDC_APB_CLK_HZ/frequency;
+    uint32_t interval = LEDC_APB_CLK_HZ / frequency;
     for (size_t i = 0; i < 32; i++) {
-        if(!(interval >> i)) {
+        if (!(interval >> i)) {
             duty_bits = i - 1;
             break;
         }
@@ -83,7 +83,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     size_t channel_index = INDEX_EMPTY;
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
         if ((reserved_timer_freq[i] == frequency) && !variable_frequency) {
-            //prioritize matched frequencies so we don't needlessly take slots
+            // prioritize matched frequencies so we don't needlessly take slots
             timer_index = i;
             break;
         } else if (reserved_timer_freq[i] == 0) {
@@ -155,11 +155,11 @@ void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     never_reset_chan[self->chan_handle.channel] = false;
 }
 
-bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->deinited == true;
 }
 
-void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
@@ -169,7 +169,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     }
     // Search if any other channel is using the timer
     bool taken = false;
-    for (size_t i =0; i < LEDC_CHANNEL_MAX; i++) {
+    for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
         if (reserved_channels[i] == self->tim_handle.timer_num) {
             taken = true;
         }
@@ -186,23 +186,23 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     self->deinited = true;
 }
 
-void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {
     ledc_set_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, duty >> (16 - self->duty_resolution));
     ledc_update_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel);
 }
 
-uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     return ledc_get_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel) << (16 - self->duty_resolution);
 }
 
-void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);
 }
 
-uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
     return ledc_get_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
 }
 
-bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
 }

@@ -29,11 +29,11 @@
 #include "bindings/rp2pio/__init__.h"
 
 bool common_hal_rp2pio_pins_are_sequential(size_t len, mp_obj_t *items) {
-    if(len == 0) {
+    if (len == 0) {
         return true;
     }
     mcu_pin_obj_t *last_pin = validate_obj_is_pin(items[0]);
-    for(int i=1; i<len; i++) {
+    for (int i = 1; i < len; i++) {
         mcu_pin_obj_t *pin = validate_obj_is_pin(items[i]);
         if (pin->number != last_pin->number + 1) {
             return false;

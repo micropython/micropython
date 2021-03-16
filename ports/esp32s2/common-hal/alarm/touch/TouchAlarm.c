@@ -62,7 +62,7 @@ mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp
 
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
-        const mcu_pin_obj_t* pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
+        const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
         if (pin_obj->touch_channel == wake_channel) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
             break;
@@ -74,7 +74,7 @@ mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp
 
 // This is used to wake the main CircuitPython task.
 void touch_interrupt(void *arg) {
-    (void) arg;
+    (void)arg;
     woke_up = true;
     BaseType_t task_wakeup;
     vTaskNotifyGiveFromISR(circuitpython_task, &task_wakeup);
@@ -121,7 +121,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             // configure trigger threshold
             uint32_t touch_value;
             touch_pad_read_benchmark(touch_channel, &touch_value);
-            touch_pad_set_thresh(touch_channel, touch_value * 0.1); //10%
+            touch_pad_set_thresh(touch_channel, touch_value * 0.1); // 10%
         }
     }
 
@@ -161,7 +161,7 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     // configure trigger threshold
     uint32_t touch_value;
     touch_pad_sleep_channel_read_smooth(touch_channel, &touch_value);
-    touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); //10%
+    touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); // 10%
 
     // enable touchpad wakeup
     esp_sleep_enable_touchpad_wakeup();

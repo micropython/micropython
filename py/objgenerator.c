@@ -54,7 +54,7 @@ typedef struct _mp_obj_gen_instance_t {
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
+    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
     assert(self_fun->base.type == &mp_type_fun_bc);
 
     // bytecode prelude: get state size and exception stack size
@@ -95,12 +95,12 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_PY_ASYNC_AWAIT
+    #if MICROPY_PY_ASYNC_AWAIT
     if (self->coroutine_generator) {
         mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
         return;
     }
-#endif
+    #endif
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
 }
 
@@ -204,13 +204,13 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 }
 
 STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
-#if MICROPY_PY_ASYNC_AWAIT
+    #if MICROPY_PY_ASYNC_AWAIT
     // This translate is literally too much for m0 boards
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->coroutine_generator) {
         mp_raise_TypeError(translate("'coroutine' object is not an iterator"));
     }
-#endif
+    #endif
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
 }
 
@@ -228,7 +228,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    if ( !self->coroutine_generator ) {
+    if (!self->coroutine_generator) {
         // Pretend like a generator does not have this coroutine behavior.
         // Pay no attention to the dir() behind the curtain
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
@@ -309,5 +309,5 @@ const mp_obj_type_t mp_type_gen_instance = {
     .unary_op = mp_generic_unary_op,
     .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
-    .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
 };

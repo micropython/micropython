@@ -83,12 +83,11 @@ STATIC void watchdog_watchdogmode_print(const mp_print_t *print, mp_obj_t self_i
     qstr runmode = MP_QSTR_None;
     if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)) {
         runmode = MP_QSTR_RAISE;
-    }
-    else if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)) {
+    } else if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)) {
         runmode = MP_QSTR_RESET;
     }
     mp_printf(print, "%q.%q.%q", MP_QSTR_watchdog, MP_QSTR_WatchDogMode,
-              runmode);
+        runmode);
 }
 
 const mp_obj_type_t watchdog_watchdogmode_type = {

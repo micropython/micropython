@@ -155,15 +155,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mcu_pin_globals,
+    .globals = (mp_obj_dict_t *)&mcu_pin_globals,
 };
 
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_mcu_processor_obj) },
-#if CIRCUITPY_PROCESSOR_COUNT > 1
+    #if CIRCUITPY_PROCESSOR_COUNT > 1
     { MP_ROM_QSTR(MP_QSTR_cpus),  MP_ROM_PTR(&common_hal_multi_processor_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
@@ -191,5 +191,5 @@ STATIC MP_DEFINE_CONST_DICT(mcu_module_globals, mcu_module_globals_table);
 
 const mp_obj_module_t microcontroller_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mcu_module_globals,
+    .globals = (mp_obj_dict_t *)&mcu_module_globals,
 };

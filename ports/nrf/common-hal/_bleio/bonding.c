@@ -59,12 +59,12 @@ const uint32_t BONDING_FLAG = ('1' | '0' << 8 | 'D' << 16 | 'B' << 24);
 #if BONDING_DEBUG
 void bonding_print_block(bonding_block_t *block) {
     printf("at 0x%08lx: is_central: %1d, type: 0x%x, ediv: 0x%04x, data_length: %d\n",
-               (uint32_t) block, block->is_central, block->type, block->ediv, block->data_length);
+        (uint32_t)block, block->is_central, block->type, block->ediv, block->data_length);
 }
 
 void bonding_print_keys(bonding_keys_t *keys) {
-    for (size_t i = 0; i < sizeof(bonding_keys_t); i ++) {
-        printf("%x", ((uint8_t*) keys)[i]);
+    for (size_t i = 0; i < sizeof(bonding_keys_t); i++) {
+        printf("%x", ((uint8_t *)keys)[i]);
     }
     printf("\n");
 }
@@ -77,16 +77,16 @@ STATIC size_t compute_block_size(uint16_t data_length) {
 
 void bonding_erase_storage(void) {
     // Erase all pages in the bonding area.
-    for(uint32_t page_address = BONDING_PAGES_START_ADDR;
-        page_address < BONDING_PAGES_END_ADDR;
-        page_address += FLASH_PAGE_SIZE) {
+    for (uint32_t page_address = BONDING_PAGES_START_ADDR;
+         page_address < BONDING_PAGES_END_ADDR;
+         page_address += FLASH_PAGE_SIZE) {
         // Argument is page number, not address.
         sd_flash_page_erase_sync(page_address / FLASH_PAGE_SIZE);
     }
     // Write marker words at the beginning and the end of the bonding area.
     uint32_t flag = BONDING_FLAG;
-    sd_flash_write_sync((uint32_t *) BONDING_START_FLAG_ADDR, &flag, 1);
-    sd_flash_write_sync((uint32_t *) BONDING_END_FLAG_ADDR, &flag, 1);
+    sd_flash_write_sync((uint32_t *)BONDING_START_FLAG_ADDR, &flag, 1);
+    sd_flash_write_sync((uint32_t *)BONDING_END_FLAG_ADDR, &flag, 1);
 }
 
 // Given NULL to start or block address, return the address of the next valid block.
@@ -97,16 +97,16 @@ STATIC bonding_block_t *next_block(bonding_block_t *block) {
     while (1) {
         // Advance to next block.
         if (block == NULL) {
-            return (bonding_block_t *) BONDING_DATA_START_ADDR;
+            return (bonding_block_t *)BONDING_DATA_START_ADDR;
         } else if (block->type == BLOCK_UNUSED) {
             // Already at last block (the unused block).
             return NULL;
         }
 
         // Advance to next block.
-        block = (bonding_block_t *) ((uint8_t *) block + compute_block_size(block->data_length));
+        block = (bonding_block_t *)((uint8_t *)block + compute_block_size(block->data_length));
 
-        if (block >= (bonding_block_t *) BONDING_DATA_END_ADDR) {
+        if (block >= (bonding_block_t *)BONDING_DATA_END_ADDR) {
             // Went past end of bonding space.
             return NULL;
         }
@@ -133,20 +133,20 @@ STATIC bonding_block_t *find_existing_block(bool is_central, bonding_block_type_
         if (type == block->type) {
             if (type == BLOCK_UNUSED ||
                 (is_central == block->is_central && ediv == block->ediv)) {
-            return block;
+                return block;
             }
         }
     }
 }
 
 // Get an empty block large enough to store data_length data.
-STATIC bonding_block_t* find_unused_block(uint16_t data_length) {
+STATIC bonding_block_t *find_unused_block(uint16_t data_length) {
     bonding_block_t *unused_block = find_existing_block(true, BLOCK_UNUSED, EDIV_INVALID);
     // If no more room, erase all existing blocks and start over.
     if (!unused_block ||
-        (uint8_t *) unused_block + compute_block_size(data_length) >= (uint8_t *) BONDING_DATA_END_ADDR) {
+        (uint8_t *)unused_block + compute_block_size(data_length) >= (uint8_t *)BONDING_DATA_END_ADDR) {
         bonding_erase_storage();
-        unused_block = (bonding_block_t *) BONDING_DATA_START_ADDR;
+        unused_block = (bonding_block_t *)BONDING_DATA_START_ADDR;
     }
     return unused_block;
 }
@@ -155,12 +155,12 @@ STATIC bonding_block_t* find_unused_block(uint16_t data_length) {
 // We don't change data_length, so we can still skip over this block.
 STATIC void invalidate_block(bonding_block_t *block) {
     uint32_t zero = 0;
-    sd_flash_write_sync((uint32_t *) block, &zero, 1);
+    sd_flash_write_sync((uint32_t *)block, &zero, 1);
 }
 
 // Write bonding block header.
 STATIC void write_block_header(bonding_block_t *dest_block, bonding_block_t *source_block_header) {
-    sd_flash_write_sync((uint32_t *) dest_block, (uint32_t *) source_block_header, sizeof(bonding_block_t) / 4);
+    sd_flash_write_sync((uint32_t *)dest_block, (uint32_t *)source_block_header, sizeof(bonding_block_t) / 4);
 }
 
 // Write variable-length data at end of bonding block.
@@ -168,7 +168,7 @@ STATIC void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_
     // Minimize the number of writes. Datasheet says no more than two writes per word before erasing again.
 
     // Start writing after the current header.
-    uint32_t *flash_word_p = (uint32_t *) ((uint8_t *) dest_block + sizeof(bonding_block_t));
+    uint32_t *flash_word_p = (uint32_t *)((uint8_t *)dest_block + sizeof(bonding_block_t));
     while (1) {
         uint32_t word = 0xffffffff;
         memcpy(&word, data, data_length >= 4 ? 4 : data_length);
@@ -186,11 +186,11 @@ STATIC void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_
 STATIC void write_sys_attr_block(bleio_connection_internal_t *connection) {
     uint16_t length = 0;
     // First find out how big a buffer we need, then fetch the data.
-    if(sd_ble_gatts_sys_attr_get(connection->conn_handle, NULL, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
+    if (sd_ble_gatts_sys_attr_get(connection->conn_handle, NULL, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
         return;
     }
     uint8_t sys_attr[length];
-    if(sd_ble_gatts_sys_attr_get(connection->conn_handle, sys_attr, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
+    if (sd_ble_gatts_sys_attr_get(connection->conn_handle, sys_attr, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
         return;
     }
 
@@ -246,16 +246,16 @@ STATIC void write_keys_block(bleio_connection_internal_t *connection) {
     };
     bonding_block_t *new_block = find_unused_block(sizeof(bonding_keys_t));
     write_block_header(new_block, &block_header);
-    write_block_data(new_block, (uint8_t *) &connection->bonding_keys, sizeof(bonding_keys_t));
+    write_block_data(new_block, (uint8_t *)&connection->bonding_keys, sizeof(bonding_keys_t));
 }
 
 void bonding_clear_keys(bonding_keys_t *bonding_keys) {
-    memset((uint8_t*) bonding_keys, 0, sizeof(bonding_keys_t));
+    memset((uint8_t *)bonding_keys, 0, sizeof(bonding_keys_t));
 }
 
 void bonding_reset(void) {
-    if (BONDING_FLAG != *((uint32_t *) BONDING_START_FLAG_ADDR) ||
-        BONDING_FLAG != *((uint32_t *) BONDING_END_FLAG_ADDR)) {
+    if (BONDING_FLAG != *((uint32_t *)BONDING_START_FLAG_ADDR) ||
+        BONDING_FLAG != *((uint32_t *)BONDING_END_FLAG_ADDR)) {
         bonding_erase_storage();
     }
 }
@@ -292,7 +292,7 @@ bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv
     }
 
     return NRF_SUCCESS ==
-        sd_ble_gatts_sys_attr_set(conn_handle, block->data, block->data_length, SYS_ATTR_FLAGS);
+           sd_ble_gatts_sys_attr_set(conn_handle, block->data, block->data_length, SYS_ATTR_FLAGS);
 }
 
 bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_keys) {

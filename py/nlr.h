@@ -57,9 +57,9 @@
         #if defined(__SOFTFP__)
             #define MICROPY_NLR_NUM_REGS (10)
         #else
-            // With hardware FP registers s16-s31 are callee save so in principle
-            // should be saved and restored by the NLR code.  gcc only uses s16-s21
-            // so only save/restore those as an optimisation.
+// With hardware FP registers s16-s31 are callee save so in principle
+// should be saved and restored by the NLR code.  gcc only uses s16-s21
+// so only save/restore those as an optimisation.
             #define MICROPY_NLR_NUM_REGS (10 + 6)
         #endif
     #elif defined(__xtensa__)
@@ -67,7 +67,7 @@
         #define MICROPY_NLR_NUM_REGS (10)
     #else
         #define MICROPY_NLR_SETJMP (1)
-    //#warning "No native NLR support for this arch, using setjmp implementation"
+// #warning "No native NLR support for this arch, using setjmp implementation"
     #endif
 #endif
 

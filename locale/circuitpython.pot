@@ -3104,6 +3104,7 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr ""
 
@@ -3693,7 +3694,7 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
 

@@ -9,12 +9,9 @@ import sys
 import uos as os
 
 
-tests = [
-    "basics", "micropython", "float", "import", "io",
-    " misc", "unicode", "extmod", "unix"
-]
+tests = ["basics", "micropython", "float", "import", "io", " misc", "unicode", "extmod", "unix"]
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     MICROPYTHON = "micropython.exe"
 else:
     MICROPYTHON = "micropython"
@@ -26,13 +23,14 @@ def should_skip(test):
     if test.startswith("viper"):
         return True
 
+
 test_count = 0
 passed_count = 0
 skip_count = 0
 
 for suite in tests:
-    #print("Running in: %s" % suite)
-    if sys.platform == 'win32':
+    # print("Running in: %s" % suite)
+    if sys.platform == "win32":
         # dir /b prints only contained filenames, one on a line
         # http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/dir.mspx
         r = os.system("dir /b %s/*.py >tests.lst" % suite)
@@ -44,7 +42,7 @@ for suite in tests:
         testcases = f.readlines()
         testcases = [l[:-1] for l in testcases]
     assert testcases, "No tests found in dir '%s', which is implausible" % suite
-    #print(testcases)
+    # print(testcases)
     for t in testcases:
         if t == "native_check.py":
             continue
@@ -65,7 +63,7 @@ for suite in tests:
             pass
 
         if exp is not None:
-            #print("run " + qtest)
+            # print("run " + qtest)
             r = os.system(MICROPYTHON + " %s >.tst.out" % qtest)
             if r == 0:
                 f = open(".tst.out")

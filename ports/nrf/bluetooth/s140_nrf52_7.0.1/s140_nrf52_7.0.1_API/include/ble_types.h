@@ -155,27 +155,27 @@ extern "C" {
 /** @} */
 
 /** @brief Set .type and .uuid fields of ble_uuid_struct to specified UUID value. */
-#define BLE_UUID_BLE_ASSIGN(instance, value) do {\
-            instance.type = BLE_UUID_TYPE_BLE; \
-            instance.uuid = value;} while(0)
+#define BLE_UUID_BLE_ASSIGN(instance, value) do { \
+        instance.type = BLE_UUID_TYPE_BLE; \
+        instance.uuid = value;} while (0)
 
 /** @brief Copy type and uuid members from src to dst ble_uuid_t pointer. Both pointers must be valid/non-null. */
-#define BLE_UUID_COPY_PTR(dst, src) do {\
-            (dst)->type = (src)->type; \
-            (dst)->uuid = (src)->uuid;} while(0)
+#define BLE_UUID_COPY_PTR(dst, src) do { \
+        (dst)->type = (src)->type; \
+        (dst)->uuid = (src)->uuid;} while (0)
 
 /** @brief Copy type and uuid members from src to dst ble_uuid_t struct. */
-#define BLE_UUID_COPY_INST(dst, src) do {\
-            (dst).type = (src).type; \
-            (dst).uuid = (src).uuid;} while(0)
+#define BLE_UUID_COPY_INST(dst, src) do { \
+        (dst).type = (src).type; \
+        (dst).uuid = (src).uuid;} while (0)
 
 /** @brief Compare for equality both type and uuid members of two (valid, non-null) ble_uuid_t pointers. */
 #define BLE_UUID_EQ(p_uuid1, p_uuid2) \
-            (((p_uuid1)->type == (p_uuid2)->type) && ((p_uuid1)->uuid == (p_uuid2)->uuid))
+    (((p_uuid1)->type == (p_uuid2)->type) && ((p_uuid1)->uuid == (p_uuid2)->uuid))
 
 /** @brief Compare for difference both type and uuid members of two (valid, non-null) ble_uuid_t pointers. */
 #define BLE_UUID_NEQ(p_uuid1, p_uuid2) \
-            (((p_uuid1)->type != (p_uuid2)->type) || ((p_uuid1)->uuid != (p_uuid2)->uuid))
+    (((p_uuid1)->type != (p_uuid2)->type) || ((p_uuid1)->uuid != (p_uuid2)->uuid))
 
 /** @} */
 
@@ -185,21 +185,21 @@ extern "C" {
 /** @brief 128 bit UUID values. */
 typedef struct
 {
-  uint8_t uuid128[16]; /**< Little-Endian UUID bytes. */
+    uint8_t uuid128[16]; /**< Little-Endian UUID bytes. */
 } ble_uuid128_t;
 
 /** @brief  Bluetooth Low Energy UUID type, encapsulates both 16-bit and 128-bit UUIDs. */
 typedef struct
 {
-  uint16_t    uuid; /**< 16-bit UUID value or octets 12-13 of 128-bit UUID. */
-  uint8_t     type; /**< UUID type, see @ref BLE_UUID_TYPES. If type is @ref BLE_UUID_TYPE_UNKNOWN, the value of uuid is undefined. */
+    uint16_t uuid;  /**< 16-bit UUID value or octets 12-13 of 128-bit UUID. */
+    uint8_t type;   /**< UUID type, see @ref BLE_UUID_TYPES. If type is @ref BLE_UUID_TYPE_UNKNOWN, the value of uuid is undefined. */
 } ble_uuid_t;
 
 /**@brief Data structure. */
 typedef struct
 {
-  uint8_t     *p_data;  /**< Pointer to the data buffer provided to/from the application. */
-  uint16_t     len;     /**< Length of the data buffer, in bytes. */
+    uint8_t *p_data;    /**< Pointer to the data buffer provided to/from the application. */
+    uint16_t len;       /**< Length of the data buffer, in bytes. */
 } ble_data_t;
 
 /** @} */
