@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-18 15:50+0000\n"
-"Last-Translator: Luca De Filippo <luca.defilippo@translationcommons.org>\n"
+"PO-Revision-Date: 2021-03-16 14:54+0000\n"
+"Last-Translator: Alessandro Mandelli <mandelli.alessandro@ngi.it>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -82,6 +82,7 @@ msgstr "%q in uso"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -970,9 +971,9 @@ msgid "Failed sending command."
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
+msgstr "Impossibile acquisire il mutex, err  0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
@@ -984,6 +985,7 @@ msgstr "Impossibile allocare buffer RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1014,9 +1016,9 @@ msgid "Failed to parse MP3 file"
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
+msgstr "Impossibile rilasciare il mutex, err  0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
@@ -1273,7 +1275,7 @@ msgstr "File non valido"
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr ""
 
@@ -2334,7 +2336,7 @@ msgstr "tipo di bitmap non supportato"
 msgid "Unsupported format"
 msgstr "Formato non supportato"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operazione non supportata"
 
@@ -2901,6 +2903,10 @@ msgstr ""
 msgid "differentiation order out of range"
 msgstr ""
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3399,10 +3405,6 @@ msgid "math domain error"
 msgstr "errore di dominio matematico"
 
 #: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -3765,6 +3767,7 @@ msgstr "pop sun un PulseIn vuoto"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3790,6 +3793,8 @@ msgstr "pow() con 3 argomenti richiede interi"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -4159,9 +4164,9 @@ msgid "unindent does not match any outer indentation level"
 msgstr ""
 
 #: py/objstr.c
-#, fuzzy, c-format
+#, c-format
 msgid "unknown conversion specifier %c"
-msgstr "specificatore di conversione %s sconosciuto"
+msgstr "specificatore di conversione %c sconosciuto"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
@@ -4222,10 +4227,6 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
