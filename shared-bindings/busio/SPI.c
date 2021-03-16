@@ -57,7 +57,7 @@
 //|
 //|         """Construct an SPI object on the given pins.
 //|
-//|         ..note:: The SPI peripherals allocated in order of desirability, if possible,
+//|         .. note:: The SPI peripherals allocated in order of desirability, if possible,
 //|            such as highest speed and not shared use first. For instance, on the nRF52840,
 //|            there is a single 32MHz SPI peripheral, and multiple 8MHz peripherals,
 //|            some of which may also be used for I2C. The 32MHz SPI peripheral is returned
@@ -92,9 +92,9 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t* mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t* miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
 
     if (!miso && !mosi) {
         mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
@@ -134,7 +134,7 @@ STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);
 
 STATIC void check_lock(busio_spi_obj_t *self) {
-    asm("");
+    asm ("");
     if (!common_hal_busio_spi_has_lock(self)) {
         mp_raise_RuntimeError(translate("Function requires lock"));
     }
@@ -198,7 +198,7 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
     }
 
     if (!common_hal_busio_spi_configure(self, args[ARG_baudrate].u_int,
-                                           polarity, phase, bits)) {
+        polarity, phase, bits)) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
@@ -265,7 +265,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
         return mp_const_none;
     }
 
-    bool ok = common_hal_busio_spi_write(self, ((uint8_t*)bufinfo.buf) + start, length);
+    bool ok = common_hal_busio_spi_write(self, ((uint8_t *)bufinfo.buf) + start, length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -310,7 +310,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
         return mp_const_none;
     }
 
-    bool ok = common_hal_busio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
+    bool ok = common_hal_busio_spi_read(self, ((uint8_t *)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -371,9 +371,9 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
     }
 
     bool ok = common_hal_busio_spi_transfer(self,
-                                            ((uint8_t*)buf_out_info.buf) + out_start,
-                                            ((uint8_t*)buf_in_info.buf) + in_start,
-                                            out_length);
+        ((uint8_t *)buf_out_info.buf) + out_start,
+        ((uint8_t *)buf_in_info.buf) + in_start,
+        out_length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -417,10 +417,10 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 
 const mp_obj_type_t busio_spi_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_SPI,
-   .make_new = busio_spi_make_new,
-   .locals_dict = (mp_obj_dict_t*)&busio_spi_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_SPI,
+    .make_new = busio_spi_make_new,
+    .locals_dict = (mp_obj_dict_t *)&busio_spi_locals_dict,
 };
 
 busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj) {

@@ -71,7 +71,7 @@ STATIC mp_obj_t random_getrandbits(mp_obj_t num_in) {
     if (n > 32 || n == 0) {
         mp_raise_ValueError(NULL);
     }
-    return mp_obj_new_int_from_uint(shared_modules_random_getrandbits((uint8_t) n));
+    return mp_obj_new_int_from_uint(shared_modules_random_getrandbits((uint8_t)n));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 
@@ -182,5 +182,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_random_globals, mp_module_random_globals_t
 
 const mp_obj_module_t random_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_random_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_random_globals,
 };

@@ -107,6 +107,7 @@ msgstr "%qは1以上でなければなりません"
 msgid "%q must be a tuple of length 2"
 msgstr "%qは長さ2のタプルでなければなりません"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q が範囲外"
@@ -337,6 +338,7 @@ msgid "All SPI peripherals are in use"
 msgstr "全てのSPI周辺機器が使用中"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "全てのUART周辺機器が使用中"
 
@@ -460,6 +462,10 @@ msgstr ""
 msgid "Below minimum frame rate"
 msgstr "最低のフレームレート未満"
 
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must be sequential pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "bit clockとword selectはクロックユニットを共有しなければなりません"
@@ -500,6 +506,10 @@ msgstr "Brightnessは調整可能ではありません"
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
 msgstr "buffer + offsetが小さすぎます %d %d %d"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Buffer elements must be 4 bytes long or less"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -954,6 +964,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "ミューテックスの取得に失敗。エラー 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "RXバッファの確保に失敗"
 
@@ -1042,10 +1053,6 @@ msgstr ""
 msgid "Group already used"
 msgstr "グループはすでに使われています"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "グループが一杯"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1085,6 +1092,10 @@ msgstr ""
 msgid "IV must be %d bytes long"
 msgstr "IVは%dバイト長でなければなりません"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr ""
+
 #: py/persistentcode.c
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
@@ -1101,8 +1112,21 @@ msgstr "バッファサイズが正しくありません"
 msgid "Init program size invalid"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin state conflicts with initial out pin state"
+msgstr ""
+
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1206,7 +1230,8 @@ msgstr "不正な引数"
 msgid "Invalid bits per value"
 msgstr "不正なbits per value"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "不正なバッファサイズ"
 
@@ -1281,10 +1306,10 @@ msgstr "右チャネルのピンが不正"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "ピンが不正"
 
@@ -1333,7 +1358,8 @@ msgstr "不正なボイス数"
 msgid "Invalid wave file"
 msgstr "不正なwaveファイル"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "不正なワード/ビット長"
 
@@ -1460,6 +1486,7 @@ msgstr "チップにDACがありません"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "DMAチャネルが見つかりません"
@@ -1525,6 +1552,14 @@ msgstr "clkピンにハードウェア対応がありません"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "ピンにハードウェア対応がありません"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in in program"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in or out in program"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1614,12 +1649,9 @@ msgid "Odd parity is not supported"
 msgstr "奇数パリティには対応していません"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "8または16ビットの "
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1674,6 +1706,15 @@ msgstr ""
 msgid "Out of sockets"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr ""
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "オーバーサンプルは8の倍数でなければなりません"
@@ -1692,6 +1733,14 @@ msgstr ""
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "PWM周波数は生成時のvariable_frequencyがFalseのとき書き換え不可"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1730,6 +1779,10 @@ msgstr "ピンにADCの能力がありません"
 msgid "Pin is input only"
 msgstr "ピンは入力専用"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "ピンはハードウェア割り込みに対応していなければなりません"
@@ -1744,6 +1797,10 @@ msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -1821,7 +1878,7 @@ msgstr "RNG解体エラー"
 msgid "RNG Init Error"
 msgstr "乱数生成器の初期化エラー"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -1858,7 +1915,7 @@ msgstr "読み込み専用"
 msgid "Read-only filesystem"
 msgstr "読み込み専用のファイルシステム"
 
-#: shared-module/displayio/Bitmap.c
+#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "読み込み専用のオブジェクト"
 
@@ -2097,6 +2154,7 @@ msgid "To exit, please reset the board without "
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "サンプルのチャンネル数が多すぎます"
 
@@ -2136,10 +2194,6 @@ msgstr "UARTの初期化エラー"
 msgid "UART Re-init error"
 msgstr "UARTの再初期化エラー"
 
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "UART not yet supported"
-msgstr ""
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr "UART書き込みエラー"
@@ -2167,6 +2221,7 @@ msgstr "UUIDの値がstr, int, bufferのいずれでもありません"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
@@ -2468,8 +2523,8 @@ msgid "binary op %q not implemented"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bitsは7, 8, 9のいずれかでなければなりません"
+msgid "bits must be in range 5 to 9"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2694,6 +2749,10 @@ msgstr ""
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
 msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
@@ -3355,6 +3414,10 @@ msgstr ""
 msgid "memory allocation failed, heap is locked"
 msgstr "メモリ確保に失敗。ヒープがロックされています"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "モジュールが見つかりません"
@@ -3608,7 +3671,7 @@ msgstr "ord()は1文字を要求しますが、長さ %d の文字列が与え�
 msgid "out of range of source"
 msgstr "ソースが範囲外"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr ""
 
@@ -3698,6 +3761,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 
@@ -3707,6 +3771,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
 msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
@@ -3776,6 +3844,7 @@ msgstr ""
 "sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "サンプリングレートが範囲外"
 
@@ -3847,7 +3916,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr ""
 
@@ -4132,6 +4201,11 @@ msgstr ""
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdogのtimeoutは0以上でなければなりません"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr ""
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
@@ -4203,6 +4277,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Group full"
+#~ msgstr "グループが一杯"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bitsは7, 8, 9のいずれかでなければなりません"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "SDAとSCLにプルアップが必要"

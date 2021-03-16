@@ -35,7 +35,7 @@ struct _displayio_area_t {
     int16_t y1;
     int16_t x2; // Second point is exclusive.
     int16_t y2;
-    const displayio_area_t* next; // Next area in the linked list.
+    const displayio_area_t *next; // Next area in the linked list.
 };
 
 typedef struct {
@@ -51,23 +51,25 @@ typedef struct {
     bool transpose_xy;
 } displayio_buffer_transform_t;
 
-void displayio_area_union(const displayio_area_t* a,
-                          const displayio_area_t* b,
-                          displayio_area_t* u);
-void displayio_area_expand(displayio_area_t* original, const displayio_area_t* addition);
-void displayio_area_copy(const displayio_area_t* src, displayio_area_t* dst);
-void displayio_area_scale(displayio_area_t* area, uint16_t scale);
-void displayio_area_shift(displayio_area_t* area, int16_t dx, int16_t dy);
-bool displayio_area_compute_overlap(const displayio_area_t* a,
-                                    const displayio_area_t* b,
-                                    displayio_area_t* overlap);
-uint16_t displayio_area_width(const displayio_area_t* area);
-uint16_t displayio_area_height(const displayio_area_t* area);
-uint32_t displayio_area_size(const displayio_area_t* area);
-bool displayio_area_equal(const displayio_area_t* a, const displayio_area_t* b);
+extern displayio_buffer_transform_t null_transform;
+
+void displayio_area_union(const displayio_area_t *a,
+    const displayio_area_t *b,
+    displayio_area_t *u);
+void displayio_area_expand(displayio_area_t *original, const displayio_area_t *addition);
+void displayio_area_copy(const displayio_area_t *src, displayio_area_t *dst);
+void displayio_area_scale(displayio_area_t *area, uint16_t scale);
+void displayio_area_shift(displayio_area_t *area, int16_t dx, int16_t dy);
+bool displayio_area_compute_overlap(const displayio_area_t *a,
+    const displayio_area_t *b,
+    displayio_area_t *overlap);
+uint16_t displayio_area_width(const displayio_area_t *area);
+uint16_t displayio_area_height(const displayio_area_t *area);
+uint32_t displayio_area_size(const displayio_area_t *area);
+bool displayio_area_equal(const displayio_area_t *a, const displayio_area_t *b);
 void displayio_area_transform_within(bool mirror_x, bool mirror_y, bool transpose_xy,
-                                     const displayio_area_t* original,
-                                     const displayio_area_t* whole,
-                                     displayio_area_t* transformed);
+    const displayio_area_t *original,
+    const displayio_area_t *whole,
+    displayio_area_t *transformed);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H

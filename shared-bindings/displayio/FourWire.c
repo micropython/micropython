@@ -79,7 +79,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
-    displayio_fourwire_obj_t* self = &allocate_display_bus_or_raise()->fourwire_bus;
+    displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;
 
     uint8_t polarity = args[ARG_polarity].u_int;
@@ -144,7 +144,7 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
         chip_select = CHIP_SELECT_TOGGLE_EVERY_BYTE;
     }
     common_hal_displayio_fourwire_send(self, DISPLAY_COMMAND, chip_select, &command, 1);
-    common_hal_displayio_fourwire_send(self, DISPLAY_DATA, chip_select, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    common_hal_displayio_fourwire_send(self, DISPLAY_DATA, chip_select, ((uint8_t *)bufinfo.buf), bufinfo.len);
     common_hal_displayio_fourwire_end_transaction(self);
 
     return mp_const_none;
@@ -161,5 +161,5 @@ const mp_obj_type_t displayio_fourwire_type = {
     { &mp_type_type },
     .name = MP_QSTR_FourWire,
     .make_new = displayio_fourwire_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_fourwire_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_fourwire_locals_dict,
 };

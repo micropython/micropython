@@ -40,7 +40,7 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-#if CIRCUITPY_SERIAL_BLE
+#if CIRCUITPY_REPL_BLE
 
 static const char default_name[] = "CP-REPL"; // max 8 chars or uuid won't fit in adv data
 static const char NUS_UUID[] = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -66,26 +66,24 @@ static ringbuffer_t m_rx_ring_buffer = {
 
 STATIC void on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
-        case BLE_GAP_EVT_DISCONNECTED:
-        {
+        case BLE_GAP_EVT_DISCONNECTED: {
             mp_obj_t device_obj = MP_OBJ_FROM_PTR(&m_device);
             mp_call_function_0(mp_load_attr(device_obj, qstr_from_str("start_advertising")));
             break;
         }
 
-        case BLE_GATTS_EVT_WRITE:
-        {
+        case BLE_GATTS_EVT_WRITE: {
             ble_gatts_evt_write_t *write = &ble_evt->evt.gatts_evt.params.write;
 
             if (write->handle == m_tx_chara->cccd_handle) {
                 m_cccd_enabled = true;
             } else if (write->handle == m_rx_chara->handle) {
                 for (size_t i = 0; i < write->len; ++i) {
-#if MICROPY_KBD_EXCEPTION
+                    #if MICROPY_KBD_EXCEPTION
                     if (write->data[i] == mp_interrupt_char) {
                         mp_keyboard_interrupt();
                     } else
-#endif
+                    #endif
                     {
                         bufferWrite(&m_rx_ring_buffer, write->data[i]);
                     }
@@ -143,7 +141,7 @@ void ble_uart_init(void) {
 }
 
 bool ble_uart_connected(void) {
-    return (m_device.conn_handle != BLE_CONN_HANDLE_INVALID);
+    return m_device.conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
 char ble_uart_rx_chr(void) {
@@ -179,7 +177,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
         }
 
         mp_buffer_info_t bufinfo = {
-            .buf = (uint8_t*)str,
+            .buf = (uint8_t *)str,
             .len = send_len,
         };
 
@@ -190,4 +188,4 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // CIRCUITPY_SERIAL_BLE
+#endif // CIRCUITPY_REPL_BLE

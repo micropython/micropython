@@ -12,11 +12,11 @@
 #include "extmod/modubinascii.h"
 
 static void check_not_unicode(const mp_obj_t arg) {
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     if (MP_OBJ_IS_STR(arg)) {
         mp_raise_TypeError(translate("a bytes-like object is required"));
     }
-#endif
+    #endif
 }
 
 mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
@@ -41,7 +41,7 @@ mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
         sep = mp_obj_str_get_str(args[1]);
     }
     vstr_init_len(&vstr, out_len);
-    byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
+    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
     for (mp_uint_t i = bufinfo.len; i--;) {
         byte d = (*in >> 4);
         if (d > 9) {
@@ -70,7 +70,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
-    byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
+    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
     byte hex_byte = 0;
     for (mp_uint_t i = bufinfo.len; i--;) {
         byte hex_ch = *in++;
@@ -161,7 +161,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
     vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + 1);
 
     // First pass, we convert input buffer to numeric base 64 values
-    byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
+    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
     mp_uint_t i;
     for (i = bufinfo.len; i >= 3; i -= 3) {
         *out++ = (in[0] & 0xFC) >> 2;
@@ -175,8 +175,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
         if (i == 2) {
             *out++ = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
             *out++ = (in[1] & 0x0F) << 2;
-        }
-        else {
+        } else {
             *out++ = (in[0] & 0x03) << 4;
             *out++ = 64;
         }
@@ -184,7 +183,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
     }
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
-    out = (byte*)vstr.buf;
+    out = (byte *)vstr.buf;
     for (mp_uint_t j = vstr.len - 1; j--;) {
         if (*out < 26) {
             *out += 'A';
@@ -193,7 +192,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
         } else if (*out < 62) {
             *out += '0' - 52;
         } else if (*out == 62) {
-            *out ='+';
+            *out = '+';
         } else if (*out == 63) {
             *out = '/';
         } else {
@@ -237,7 +236,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globa
 
 const mp_obj_module_t mp_module_ubinascii = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_binascii_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_binascii_globals,
 };
 
-#endif //MICROPY_PY_UBINASCII
+#endif // MICROPY_PY_UBINASCII

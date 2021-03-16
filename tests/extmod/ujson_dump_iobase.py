@@ -7,22 +7,23 @@ except ImportError:
     try:
         import io, json
     except ImportError:
-        print('SKIP')
+        print("SKIP")
         raise SystemExit
 
-if not hasattr(io, 'IOBase'):
-    print('SKIP')
+if not hasattr(io, "IOBase"):
+    print("SKIP")
     raise SystemExit
 
 
 # a user stream that only has the write method
 class S(io.IOBase):
     def __init__(self):
-        self.buf = ''
+        self.buf = ""
+
     def write(self, buf):
         if type(buf) == bytearray:
             # uPy passes a bytearray, CPython passes a str
-            buf = str(buf, 'ascii')
+            buf = str(buf, "ascii")
         self.buf += buf
 
 

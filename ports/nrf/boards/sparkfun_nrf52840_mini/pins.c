@@ -3,7 +3,7 @@
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_P1_15) },      // D1/TX
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_P0_17) },      // D0/RX
-	                                                          // D2 on qwiic gap
+    // D2 on qwiic gap
     { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_P0_19) },      // D3
     { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_P0_20) },      // D4
     { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_P0_21) },      // D5

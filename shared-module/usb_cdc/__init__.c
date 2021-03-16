@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-
-#include "common-hal/digitalio/DigitalInOut.h"
-
+#include "genhdr/autogen_usb_descriptor.h"
+#include "py/gc.h"
 #include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/objtuple.h"
+#include "shared-bindings/usb_cdc/__init__.h"
+#include "shared-bindings/usb_cdc/Serial.h"
+#include "tusb.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t scl;
-    digitalio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    uint32_t us_timeout;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
+#if CFG_TUD_CDC != 2
+#error CFG_TUD_CDC must be exactly 2
+#endif
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
+static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
+    {   .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
+        .write_timeout = -1.0f,
+        .idx = 0,}, {
+        .base.type = &usb_cdc_serial_type,
+        .timeout = -1.0f,
+        .write_timeout = -1.0f,
+        .idx = 1,
+    }
+};
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t clock;
-    digitalio_digitalinout_obj_t mosi;
-    digitalio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+const mp_rom_obj_tuple_t usb_cdc_serials_tuple = {
+    .base.type = &mp_type_tuple,
+    .len = CFG_TUD_CDC,
+    .items = {
+        &serial_objs[0],
+        &serial_objs[1],
+    },
+};

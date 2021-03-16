@@ -59,15 +59,17 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
         common_hal_digitalio_digitalinout_switch_to_input(self->digitalinout, PULL_NONE);
 
-        while(common_hal_digitalio_digitalinout_get_value(self->digitalinout)) {
-            if (ticks >= TIMEOUT_TICKS) return TIMEOUT_TICKS;
+        while (common_hal_digitalio_digitalinout_get_value(self->digitalinout)) {
+            if (ticks >= TIMEOUT_TICKS) {
+                return TIMEOUT_TICKS;
+            }
             ticks++;
         }
     }
     return ticks;
 }
 
-void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu_pin_obj_t *pin) {
+void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self, const mcu_pin_obj_t *pin) {
     common_hal_mcu_pin_claim(pin);
     self->digitalinout = m_new_obj(digitalio_digitalinout_obj_t);
     self->digitalinout->base.type = &digitalio_digitalinout_type;
@@ -81,11 +83,11 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu
     self->threshold = raw_reading * 1.05 + 100;
 }
 
-bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
+bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
     return self->digitalinout == MP_OBJ_NULL;
 }
 
-void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
+void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
@@ -111,6 +113,6 @@ uint16_t common_hal_touchio_touchin_get_threshold(touchio_touchin_obj_t *self) {
 }
 
 void common_hal_touchio_touchin_set_threshold(touchio_touchin_obj_t *self,
-        uint16_t new_threshold) {
+    uint16_t new_threshold) {
     self->threshold = new_threshold;
 }

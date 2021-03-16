@@ -96,8 +96,8 @@
 #ifndef CONF_XOSC0_XTALEN
 #define CONF_XOSC0_XTALEN 0
 #endif
-//</h>
-//</e>
+// </h>
+// </e>
 
 #if CONF_XOSC0_FREQUENCY >= 32000000
 #define CONF_XOSC0_CFDPRESC 0x0
@@ -209,8 +209,8 @@
 #ifndef CONF_XOSC1_XTALEN
 #define CONF_XOSC1_XTALEN 0
 #endif
-//</h>
-//</e>
+// </h>
+// </e>
 
 #if CONF_XOSC1_FREQUENCY >= 32000000
 #define CONF_XOSC1_CFDPRESC 0x0
@@ -372,11 +372,11 @@
 #define CONF_DFLL_FINE (0x80)
 #endif
 
-//</e>
+// </e>
 
-//</h>
+// </h>
 
-//</e>
+// </e>
 
 // <e> FDPLL0 Configuration
 // <i> Indicates whether configuration for FDPLL0 is enabled or not
@@ -501,8 +501,8 @@
 #define CONF_FDPLL0_FILTER 0x0
 #endif
 
-//</h>
-//</e>
+// </h>
+// </e>
 // <e> FDPLL1 Configuration
 // <i> Indicates whether configuration for FDPLL1 is enabled or not
 // <id> enable_fdpll1
@@ -626,8 +626,8 @@
 #define CONF_FDPLL1_FILTER 0x0
 #endif
 
-//</h>
-//</e>
+// </h>
+// </e>
 
 // <<< end of configuration section >>>
 

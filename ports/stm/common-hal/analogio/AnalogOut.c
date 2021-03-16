@@ -39,15 +39,15 @@
 
 #include "stm32f4xx_hal.h"
 
-//DAC is shared between both channels.
+// DAC is shared between both channels.
 #if HAS_DAC
 DAC_HandleTypeDef handle;
 #endif
 
 STATIC bool dac_on[2];
 
-void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     #if !(HAS_DAC)
     mp_raise_ValueError(translate("No DAC on chip"));
     #else
@@ -61,17 +61,16 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         mp_raise_ValueError(translate("Invalid DAC pin supplied"));
     }
 
-    //Only init if the shared DAC is empty or reset
+    // Only init if the shared DAC is empty or reset
     if (handle.Instance == NULL || handle.State == HAL_DAC_STATE_RESET) {
         __HAL_RCC_DAC_CLK_ENABLE();
         handle.Instance = DAC;
-        if (HAL_DAC_Init(&handle) != HAL_OK)
-        {
+        if (HAL_DAC_Init(&handle) != HAL_OK) {
             mp_raise_ValueError(translate("DAC Device Init Error"));
         }
     }
 
-    //init channel specific pin
+    // init channel specific pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
@@ -100,8 +99,8 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     self->pin = NULL;
     dac_on[self->dac_index] = false;
 
-    //turn off the DAC if both channels are off
-    if(dac_on[0] == false && dac_on[1] == false) {
+    // turn off the DAC if both channels are off
+    if (dac_on[0] == false && dac_on[1] == false) {
         __HAL_RCC_DAC_CLK_DISABLE();
         HAL_DAC_DeInit(&handle);
     }
@@ -109,7 +108,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
-        uint16_t value) {
+    uint16_t value) {
     #if HAS_DAC
     HAL_DAC_SetValue(&handle, self->channel, DAC_ALIGN_12B_R, value >> 4);
     HAL_DAC_Start(&handle, self->channel);

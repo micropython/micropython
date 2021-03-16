@@ -72,7 +72,7 @@
 //|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args,
-         const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 1, true);
 
     frequencyio_frequencyin_obj_t *self = m_new_obj(frequencyio_frequencyin_obj_t);
@@ -85,7 +85,7 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     const uint16_t capture_period = args[ARG_capture_period].u_int;
 
@@ -209,7 +209,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    //return MP_OBJ_NEW_SMALL_INT(common_hal_frequencyio_frequencyin_get_item(self));
+    // return MP_OBJ_NEW_SMALL_INT(common_hal_frequencyio_frequencyin_get_item(self));
     return mp_obj_new_int_from_float(common_hal_frequencyio_frequencyin_get_item(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_get_value_obj, frequencyio_frequencyin_obj_get_value);
@@ -238,5 +238,5 @@ const mp_obj_type_t frequencyio_frequencyin_type = {
     { &mp_type_type },
     .name = MP_QSTR_frequencyin,
     .make_new = frequencyio_frequencyin_make_new,
-    .locals_dict = (mp_obj_dict_t*)&frequencyio_frequencyin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&frequencyio_frequencyin_locals_dict,
 };

@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -23,4 +23,4 @@
 
 void mp_raise_reload_exception(void);
 
-#endif //CIRCUITPYTHON_RELOAD_H
+#endif // CIRCUITPYTHON_RELOAD_H

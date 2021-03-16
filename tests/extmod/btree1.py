@@ -6,7 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-#f = open("_test.db", "w+b")
+# f = open("_test.db", "w+b")
 f = uio.BytesIO()
 db = btree.open(f, pagesize=512)
 

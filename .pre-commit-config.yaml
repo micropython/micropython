@@ -11,3 +11,16 @@ repos:
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/esp32s2/esp-idf-config/.*|ports/esp32s2/boards/.*/sdkconfig)'
     -   id: trailing-whitespace
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+-   repo: local
+    hooks:
+    -   id: translations
+        name: Translations
+        entry: sh -c "if ! make check-translate; then make translate; fi"
+        types: [c]
+        pass_filenames: false
+        language: system
+    -   id: formatting
+        name: Formatting
+        entry: sh -c "git diff --staged --name-only | xargs python3 tools/codeformat.py"
+        types_or: [c, python]
+        language: system

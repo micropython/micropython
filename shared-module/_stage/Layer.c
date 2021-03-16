@@ -37,7 +37,7 @@ uint16_t get_layer_pixel(layer_obj_t *layer, uint16_t x, uint16_t y) {
 
     // Bounds check.
     if ((x < 0) || (x >= layer->width << 4) ||
-            (y < 0) || (y >= layer->height << 4)) {
+        (y < 0) || (y >= layer->height << 4)) {
         return TRANSPARENT;
     }
 

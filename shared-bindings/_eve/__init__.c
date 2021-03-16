@@ -52,7 +52,7 @@ typedef struct _mp_obj__EVE_t {
 STATIC const mp_obj_type_t _EVE_type;
 
 #define EVEHAL(s) \
-  (&((mp_obj__EVE_t*)mp_instance_cast_to_native_base((s), &_EVE_type))->_eve)
+    (&((mp_obj__EVE_t *)mp_instance_cast_to_native_base((s), &_EVE_type))->_eve)
 
 //|     def register(self, o: object) -> None:
 //|         ...
@@ -90,7 +90,7 @@ STATIC mp_obj_t _cc(mp_obj_t self, mp_obj_t b) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 
-//{
+// {
 
 //|     def AlphaFunc(self, func: int, ref: int) -> None:
 //|         """Set the alpha test function
@@ -103,8 +103,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 //|
 
 STATIC mp_obj_t _alphafunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t func   = mp_obj_get_int_truncated(a0);
-    uint32_t ref    = mp_obj_get_int_truncated(a1);
+    uint32_t func = mp_obj_get_int_truncated(a0);
+    uint32_t ref = mp_obj_get_int_truncated(a1);
     common_hal__eve_AlphaFunc(EVEHAL(self), func, ref);
     return mp_const_none;
 }
@@ -120,7 +120,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
 //|
 
 STATIC mp_obj_t _begin(mp_obj_t self, mp_obj_t a0) {
-    uint32_t prim   = mp_obj_get_int_truncated(a0);
+    uint32_t prim = mp_obj_get_int_truncated(a0);
     common_hal__eve_Begin(EVEHAL(self), prim);
     return mp_const_none;
 }
@@ -134,7 +134,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(begin_obj, _begin);
 //|
 
 STATIC mp_obj_t _bitmapextformat(mp_obj_t self, mp_obj_t a0) {
-    uint32_t fmt    = mp_obj_get_int_truncated(a0);
+    uint32_t fmt = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapExtFormat(EVEHAL(self), fmt);
     return mp_const_none;
 }
@@ -199,7 +199,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmaplayout_obj, 4, 4, _bitmaplayout
 //|
 
 STATIC mp_obj_t _bitmapsizeh(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t width  = mp_obj_get_int_truncated(a0);
+    uint32_t width = mp_obj_get_int_truncated(a0);
     uint32_t height = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapSizeH(EVEHAL(self), width, height);
     return mp_const_none;
@@ -219,9 +219,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmapsizeh_obj, _bitmapsizeh);
 
 STATIC mp_obj_t _bitmapsize(size_t n_args, const mp_obj_t *args) {
     uint32_t filter = mp_obj_get_int_truncated(args[1]);
-    uint32_t wrapx  = mp_obj_get_int_truncated(args[2]);
-    uint32_t wrapy  = mp_obj_get_int_truncated(args[3]);
-    uint32_t width  = mp_obj_get_int_truncated(args[4]);
+    uint32_t wrapx = mp_obj_get_int_truncated(args[2]);
+    uint32_t wrapy = mp_obj_get_int_truncated(args[3]);
+    uint32_t width = mp_obj_get_int_truncated(args[4]);
     uint32_t height = mp_obj_get_int_truncated(args[5]);
     common_hal__eve_BitmapSize(EVEHAL(args[0]), filter, wrapx, wrapy, width, height);
     return mp_const_none;
@@ -236,7 +236,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
 //|
 
 STATIC mp_obj_t _bitmapsource(mp_obj_t self, mp_obj_t a0) {
-    uint32_t addr   = mp_obj_get_int_truncated(a0);
+    uint32_t addr = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapSource(EVEHAL(self), addr);
     return mp_const_none;
 }
@@ -253,10 +253,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapsource_obj, _bitmapsource);
 //|
 
 STATIC mp_obj_t _bitmapswizzle(size_t n_args, const mp_obj_t *args) {
-    uint32_t r      = mp_obj_get_int_truncated(args[1]);
-    uint32_t g      = mp_obj_get_int_truncated(args[2]);
-    uint32_t b      = mp_obj_get_int_truncated(args[3]);
-    uint32_t a      = mp_obj_get_int_truncated(args[4]);
+    uint32_t r = mp_obj_get_int_truncated(args[1]);
+    uint32_t g = mp_obj_get_int_truncated(args[2]);
+    uint32_t b = mp_obj_get_int_truncated(args[3]);
+    uint32_t a = mp_obj_get_int_truncated(args[4]);
     common_hal__eve_BitmapSwizzle(EVEHAL(args[0]), r, g, b, a);
     return mp_const_none;
 }
@@ -275,8 +275,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizz
 //|
 
 STATIC mp_obj_t _bitmaptransforma(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t p      = mp_obj_get_int_truncated(a0);
-    uint32_t v      = mp_obj_get_int_truncated(a1);
+    uint32_t p = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformA(EVEHAL(self), p, v);
     return mp_const_none;
 }
@@ -295,8 +295,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
 //|
 
 STATIC mp_obj_t _bitmaptransformb(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t p      = mp_obj_get_int_truncated(a0);
-    uint32_t v      = mp_obj_get_int_truncated(a1);
+    uint32_t p = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformB(EVEHAL(self), p, v);
     return mp_const_none;
 }
@@ -312,7 +312,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
 //|
 
 STATIC mp_obj_t _bitmaptransformc(mp_obj_t self, mp_obj_t a0) {
-    uint32_t v      = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapTransformC(EVEHAL(self), v);
     return mp_const_none;
 }
@@ -331,8 +331,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
 //|
 
 STATIC mp_obj_t _bitmaptransformd(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t p      = mp_obj_get_int_truncated(a0);
-    uint32_t v      = mp_obj_get_int_truncated(a1);
+    uint32_t p = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformD(EVEHAL(self), p, v);
     return mp_const_none;
 }
@@ -351,8 +351,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
 //|
 
 STATIC mp_obj_t _bitmaptransforme(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t p      = mp_obj_get_int_truncated(a0);
-    uint32_t v      = mp_obj_get_int_truncated(a1);
+    uint32_t p = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a1);
     common_hal__eve_BitmapTransformE(EVEHAL(self), p, v);
     return mp_const_none;
 }
@@ -368,7 +368,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
 //|
 
 STATIC mp_obj_t _bitmaptransformf(mp_obj_t self, mp_obj_t a0) {
-    uint32_t v      = mp_obj_get_int_truncated(a0);
+    uint32_t v = mp_obj_get_int_truncated(a0);
     common_hal__eve_BitmapTransformF(EVEHAL(self), v);
     return mp_const_none;
 }
@@ -385,8 +385,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
 //|
 
 STATIC mp_obj_t _blendfunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t src    = mp_obj_get_int_truncated(a0);
-    uint32_t dst    = mp_obj_get_int_truncated(a1);
+    uint32_t src = mp_obj_get_int_truncated(a0);
+    uint32_t dst = mp_obj_get_int_truncated(a1);
     common_hal__eve_BlendFunc(EVEHAL(self), src, dst);
     return mp_const_none;
 }
@@ -400,7 +400,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(blendfunc_obj, _blendfunc);
 //|
 
 STATIC mp_obj_t _call(mp_obj_t self, mp_obj_t a0) {
-    uint32_t dest   = mp_obj_get_int_truncated(a0);
+    uint32_t dest = mp_obj_get_int_truncated(a0);
     common_hal__eve_Call(EVEHAL(self), dest);
     return mp_const_none;
 }
@@ -416,7 +416,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
 //|
 
 STATIC mp_obj_t _cell(mp_obj_t self, mp_obj_t a0) {
-    uint32_t cell   = mp_obj_get_int_truncated(a0);
+    uint32_t cell = mp_obj_get_int_truncated(a0);
     common_hal__eve_Cell(EVEHAL(self), cell);
     return mp_const_none;
 }
@@ -432,7 +432,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
 //|
 
 STATIC mp_obj_t _clearcolora(mp_obj_t self, mp_obj_t a0) {
-    uint32_t alpha  = mp_obj_get_int_truncated(a0);
+    uint32_t alpha = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearColorA(EVEHAL(self), alpha);
     return mp_const_none;
 }
@@ -450,9 +450,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
 //|
 
 STATIC mp_obj_t _clearcolorrgb(size_t n_args, const mp_obj_t *args) {
-    uint32_t red    = mp_obj_get_int_truncated(args[1]);
-    uint32_t green  = mp_obj_get_int_truncated(args[2]);
-    uint32_t blue   = mp_obj_get_int_truncated(args[3]);
+    uint32_t red = mp_obj_get_int_truncated(args[1]);
+    uint32_t green = mp_obj_get_int_truncated(args[2]);
+    uint32_t blue = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_ClearColorRGB(EVEHAL(args[0]), red, green, blue);
     return mp_const_none;
 }
@@ -468,9 +468,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clearcolorrgb_obj, 4, 4, _clearcolorr
 //|
 
 STATIC mp_obj_t _clear(size_t n_args, const mp_obj_t *args) {
-    uint32_t c      = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 1;
-    uint32_t s      = (n_args > 2) ? mp_obj_get_int_truncated(args[2]) : 1;
-    uint32_t t      = (n_args > 3) ? mp_obj_get_int_truncated(args[3]) : 1;
+    uint32_t c = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 1;
+    uint32_t s = (n_args > 2) ? mp_obj_get_int_truncated(args[2]) : 1;
+    uint32_t t = (n_args > 3) ? mp_obj_get_int_truncated(args[3]) : 1;
     common_hal__eve_Clear(EVEHAL(args[0]), c, s, t);
     return mp_const_none;
 }
@@ -486,7 +486,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
 //|
 
 STATIC mp_obj_t _clearstencil(mp_obj_t self, mp_obj_t a0) {
-    uint32_t s      = mp_obj_get_int_truncated(a0);
+    uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearStencil(EVEHAL(self), s);
     return mp_const_none;
 }
@@ -501,7 +501,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
 //|
 
 STATIC mp_obj_t _cleartag(mp_obj_t self, mp_obj_t a0) {
-    uint32_t s      = mp_obj_get_int_truncated(a0);
+    uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_ClearTag(EVEHAL(self), s);
     return mp_const_none;
 }
@@ -517,7 +517,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
 //|
 
 STATIC mp_obj_t _colora(mp_obj_t self, mp_obj_t a0) {
-    uint32_t alpha  = mp_obj_get_int_truncated(a0);
+    uint32_t alpha = mp_obj_get_int_truncated(a0);
     common_hal__eve_ColorA(EVEHAL(self), alpha);
     return mp_const_none;
 }
@@ -536,10 +536,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
 //|
 
 STATIC mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
-    uint32_t r      = mp_obj_get_int_truncated(args[1]);
-    uint32_t g      = mp_obj_get_int_truncated(args[2]);
-    uint32_t b      = mp_obj_get_int_truncated(args[3]);
-    uint32_t a      = mp_obj_get_int_truncated(args[4]);
+    uint32_t r = mp_obj_get_int_truncated(args[1]);
+    uint32_t g = mp_obj_get_int_truncated(args[2]);
+    uint32_t b = mp_obj_get_int_truncated(args[3]);
+    uint32_t a = mp_obj_get_int_truncated(args[4]);
     common_hal__eve_ColorMask(EVEHAL(args[0]), r, g, b, a);
     return mp_const_none;
 }
@@ -557,9 +557,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
 //|
 
 STATIC mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
-    uint32_t red    = mp_obj_get_int_truncated(args[1]);
-    uint32_t green  = mp_obj_get_int_truncated(args[2]);
-    uint32_t blue   = mp_obj_get_int_truncated(args[3]);
+    uint32_t red = mp_obj_get_int_truncated(args[1]);
+    uint32_t green = mp_obj_get_int_truncated(args[2]);
+    uint32_t blue = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_ColorRGB(EVEHAL(args[0]), red, green, blue);
     return mp_const_none;
 }
@@ -598,7 +598,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(end_obj, _end);
 //|
 
 STATIC mp_obj_t _jump(mp_obj_t self, mp_obj_t a0) {
-    uint32_t dest   = mp_obj_get_int_truncated(a0);
+    uint32_t dest = mp_obj_get_int_truncated(a0);
     common_hal__eve_Jump(EVEHAL(self), dest);
     return mp_const_none;
 }
@@ -612,7 +612,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
 //|
 
 STATIC mp_obj_t _macro(mp_obj_t self, mp_obj_t a0) {
-    uint32_t m      = mp_obj_get_int_truncated(a0);
+    uint32_t m = mp_obj_get_int_truncated(a0);
     common_hal__eve_Macro(EVEHAL(self), m);
     return mp_const_none;
 }
@@ -640,7 +640,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
 //|
 
 STATIC mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
-    uint32_t addr   = mp_obj_get_int_truncated(a0);
+    uint32_t addr = mp_obj_get_int_truncated(a0);
     common_hal__eve_PaletteSource(EVEHAL(self), addr);
     return mp_const_none;
 }
@@ -693,7 +693,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
 //|
 
 STATIC mp_obj_t _scissorsize(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t width  = mp_obj_get_int_truncated(a0);
+    uint32_t width = mp_obj_get_int_truncated(a0);
     uint32_t height = mp_obj_get_int_truncated(a1);
     common_hal__eve_ScissorSize(EVEHAL(self), width, height);
     return mp_const_none;
@@ -711,8 +711,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
 //|
 
 STATIC mp_obj_t _scissorxy(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t x      = mp_obj_get_int_truncated(a0);
-    uint32_t y      = mp_obj_get_int_truncated(a1);
+    uint32_t x = mp_obj_get_int_truncated(a0);
+    uint32_t y = mp_obj_get_int_truncated(a1);
     common_hal__eve_ScissorXY(EVEHAL(self), x, y);
     return mp_const_none;
 }
@@ -730,9 +730,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
 //|
 
 STATIC mp_obj_t _stencilfunc(size_t n_args, const mp_obj_t *args) {
-    uint32_t func   = mp_obj_get_int_truncated(args[1]);
-    uint32_t ref    = mp_obj_get_int_truncated(args[2]);
-    uint32_t mask   = mp_obj_get_int_truncated(args[3]);
+    uint32_t func = mp_obj_get_int_truncated(args[1]);
+    uint32_t ref = mp_obj_get_int_truncated(args[2]);
+    uint32_t mask = mp_obj_get_int_truncated(args[3]);
     common_hal__eve_StencilFunc(EVEHAL(args[0]), func, ref, mask);
     return mp_const_none;
 }
@@ -748,7 +748,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
 //|
 
 STATIC mp_obj_t _stencilmask(mp_obj_t self, mp_obj_t a0) {
-    uint32_t mask   = mp_obj_get_int_truncated(a0);
+    uint32_t mask = mp_obj_get_int_truncated(a0);
     common_hal__eve_StencilMask(EVEHAL(self), mask);
     return mp_const_none;
 }
@@ -765,8 +765,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
 //|
 
 STATIC mp_obj_t _stencilop(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
-    uint32_t sfail  = mp_obj_get_int_truncated(a0);
-    uint32_t spass  = mp_obj_get_int_truncated(a1);
+    uint32_t sfail = mp_obj_get_int_truncated(a0);
+    uint32_t spass = mp_obj_get_int_truncated(a1);
     common_hal__eve_StencilOp(EVEHAL(self), sfail, spass);
     return mp_const_none;
 }
@@ -782,7 +782,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
 //|
 
 STATIC mp_obj_t _tagmask(mp_obj_t self, mp_obj_t a0) {
-    uint32_t mask   = mp_obj_get_int_truncated(a0);
+    uint32_t mask = mp_obj_get_int_truncated(a0);
     common_hal__eve_TagMask(EVEHAL(self), mask);
     return mp_const_none;
 }
@@ -798,14 +798,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
 //|
 
 STATIC mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
-    uint32_t s      = mp_obj_get_int_truncated(a0);
+    uint32_t s = mp_obj_get_int_truncated(a0);
     common_hal__eve_Tag(EVEHAL(self), s);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tag_obj, _tag);
 
 STATIC mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
-    uint32_t frac   = mp_obj_get_int_truncated(a0);
+    uint32_t frac = mp_obj_get_int_truncated(a0);
     common_hal__eve_VertexFormat(EVEHAL(self), frac);
     return mp_const_none;
 }
@@ -822,10 +822,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
 //|
 
 STATIC mp_obj_t _vertex2ii(size_t n_args, const mp_obj_t *args) {
-    uint32_t x      = mp_obj_get_int_truncated(args[1]);
-    uint32_t y      = mp_obj_get_int_truncated(args[2]);
+    uint32_t x = mp_obj_get_int_truncated(args[1]);
+    uint32_t y = mp_obj_get_int_truncated(args[2]);
     uint32_t handle = (n_args > 3) ? mp_obj_get_int_truncated(args[3]) : 0;
-    uint32_t cell   = (n_args > 4) ? mp_obj_get_int_truncated(args[4]) : 0;
+    uint32_t cell = (n_args > 4) ? mp_obj_get_int_truncated(args[4]) : 0;
     common_hal__eve_Vertex2ii(EVEHAL(args[0]), x, y, handle, cell);
     return mp_const_none;
 }
@@ -882,7 +882,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
     { MP_ROM_QSTR(MP_QSTR_VertexFormat), MP_ROM_PTR(&vertexformat_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Vertex2ii), MP_ROM_PTR(&vertex2ii_obj) }
 
-//}
+// }
 
 // Hand-written functions {
 
@@ -911,7 +911,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
 //|
 
 STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
-    mp_float_t width  = mp_obj_get_float(a0);
+    mp_float_t width = mp_obj_get_float(a0);
     common_hal__eve_LineWidth(EVEHAL(self), width);
     return mp_const_none;
 }
@@ -927,7 +927,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
 //|
 
 STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
-    mp_float_t size   = mp_obj_get_float(a0);
+    mp_float_t size = mp_obj_get_float(a0);
     common_hal__eve_PointSize(EVEHAL(self), size);
     return mp_const_none;
 }
@@ -943,7 +943,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 //|
 
 STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
-    mp_float_t x      = mp_obj_get_float(a0);
+    mp_float_t x = mp_obj_get_float(a0);
     common_hal__eve_VertexTranslateX(EVEHAL(self), x);
     return mp_const_none;
 }
@@ -960,7 +960,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
 
 
 STATIC mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
-    mp_float_t y      = mp_obj_get_float(a0);
+    mp_float_t y = mp_obj_get_float(a0);
     common_hal__eve_VertexTranslateY(EVEHAL(self), y);
     return mp_const_none;
 }
@@ -975,7 +975,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
 //|         ...
 //|
 
-//}
+// }
 
 // Append an object x to the FIFO
 #define ADD_X(self, x) \
@@ -1024,7 +1024,7 @@ STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     // Count how many 32-bit words required
     size_t n = 0;
     for (size_t i = 0; i < fmt.len; n++) {
-        switch (((char*)fmt.buf)[i]) {
+        switch (((char *)fmt.buf)[i]) {
             case 'I':
             case 'i':
                 i += 1;
@@ -1044,8 +1044,8 @@ STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     mp_obj_t *a = items;
     uint32_t lo;
 
-    for (size_t i = 0; i < fmt.len; ) {
-        switch (((char*)fmt.buf)[i]) {
+    for (size_t i = 0; i < fmt.len;) {
+        switch (((char *)fmt.buf)[i]) {
             case 'I':
             case 'i':
                 *p++ = mp_obj_get_int_truncated(*a++);
@@ -1091,7 +1091,7 @@ STATIC const mp_obj_type_t _EVE_type = {
     { &mp_type_type },
     .name = MP_QSTR__EVE,
     .make_new = _EVE_make_new,
-    .locals_dict = (void*)&_EVE_locals_dict,
+    .locals_dict = (void *)&_EVE_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module__eve_globals_table[] = {
@@ -1103,5 +1103,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module__eve_globals, mp_module__eve_globals_table
 
 const mp_obj_module_t _eve_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module__eve_globals,
+    .globals = (mp_obj_dict_t *)&mp_module__eve_globals,
 };

@@ -33,20 +33,20 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
-    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
-    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
+void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *self,
+    const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
+    const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset) {
 
     mp_raise_NotImplementedError(translate("ParallelBus not yet supported"));
     // TODO: Implement with PIO and DMA.
 }
 
-void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) {
 
 }
 
 bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-	return false;
+    return false;
 }
 
 bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
@@ -59,7 +59,7 @@ bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
 }
 
 void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
-        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
+    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
 
 }
 

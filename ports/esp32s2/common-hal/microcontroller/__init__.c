@@ -68,12 +68,13 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if(runmode == RUNMODE_SAFE_MODE)
+    if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+    }
 }
 
 void common_hal_mcu_reset(void) {
-    filesystem_flush(); //TODO: implement as part of flash improvements
+    filesystem_flush(); // TODO: implement as part of flash improvements
     esp_restart();
 }
 
@@ -91,7 +92,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
-    .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
+    .start_address = (uint8_t *)CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
 };
 #endif

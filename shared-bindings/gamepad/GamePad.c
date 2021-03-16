@@ -102,14 +102,14 @@
 //|         ...
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
-        const mp_obj_t *args, mp_map_t *kw_args) {
+    const mp_obj_t *args, mp_map_t *kw_args) {
     if (n_args > 8 || n_args == 0) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     for (size_t i = 0; i < n_args; ++i) {
         assert_digitalinout(args[i]);
     }
-    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+    gamepad_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
         !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton), &gamepad_type)) {
         gamepad_singleton = m_new_ll_obj(gamepad_obj_t);
@@ -134,7 +134,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         ...
 //|
 STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
-    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+    gamepad_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     mp_obj_t pressed = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
     gamepad_singleton->pressed = gamepad_singleton->last;
     return pressed;
@@ -162,5 +162,5 @@ const mp_obj_type_t gamepad_type = {
     { &mp_type_type },
     .name = MP_QSTR_GamePad,
     .make_new = gamepad_make_new,
-    .locals_dict = (mp_obj_dict_t*)&gamepad_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&gamepad_locals_dict,
 };

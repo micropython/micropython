@@ -273,5 +273,5 @@ const mp_obj_type_t audioio_audioout_type = {
     { &mp_type_type },
     .name = MP_QSTR_AudioOut,
     .make_new = audioio_audioout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audioio_audioout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audioio_audioout_locals_dict,
 };

@@ -23,7 +23,7 @@ mp_uint_t mp_verbose_flag = 0;
 
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
+long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
     (void)env;
@@ -77,28 +77,28 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
 STATIC int usage(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] <input filename>\n"
-"Options:\n"
-"-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
-"-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
-"-v : verbose (trace various operations); can be multiple\n"
-"-O[N] : apply bytecode optimizations of level N\n"
-"\n"
-"Target specific options:\n"
-"-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-"-mno-unicode : don't support unicode in compiled strings\n"
-"-mcache-lookup-bc : cache map lookups in the bytecode\n"
-"\n"
-"Implementation specific options:\n", argv[0]
-);
+        "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
+        "Options:\n"
+        "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
+        "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
+        "-v : verbose (trace various operations); can be multiple\n"
+        "-O[N] : apply bytecode optimizations of level N\n"
+        "\n"
+        "Target specific options:\n"
+        "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
+        "-mno-unicode : don't support unicode in compiled strings\n"
+        "-mcache-lookup-bc : cache map lookups in the bytecode\n"
+        "\n"
+        "Implementation specific options:\n", argv[0]
+        );
     int impl_opts_cnt = 0;
     printf(
-"  emit={bytecode,native,viper} -- set the default code emitter\n"
-);
+        "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        );
     impl_opts_cnt++;
     printf(
-"  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
-, heap_size);
+        "  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
+        , heap_size);
     impl_opts_cnt++;
 
     if (impl_opts_cnt == 0) {
@@ -162,9 +162,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 
     mp_init();
-#ifdef _WIN32
+    #ifdef _WIN32
     set_fmode_binary();
-#endif
+    #endif
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 
@@ -189,7 +189,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
                     MP_STATE_VM(mp_optimise_value) = 0;
-                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++) {;
+                    }
                 }
             } else if (strcmp(argv[a], "-o") == 0) {
                 if (a + 1 >= argc) {
@@ -264,6 +265,6 @@ void nlr_jump_fail(void *val) {
     exit(1);
 }
 
-void serial_write(const char* text) {
+void serial_write(const char *text) {
     printf("%s", text);
 }

@@ -54,27 +54,26 @@ const uint16_t neopixel_program[] = {
     0xa142
 };
 
-const uint16_t init_program[] = {
-    0xe081
-};
-
-void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t num_bytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t num_bytes) {
     // Set everything up.
     rp2pio_statemachine_obj_t state_machine;
 
     // TODO: Cache the state machine after we create it once. We'll need a way to
     // change the pins then though.
-    uint8_t pin_number = digitalinout->pin->number;
+    uint32_t pins_we_use = 1 << digitalinout->pin->number;
     bool ok = rp2pio_statemachine_construct(&state_machine,
         neopixel_program, sizeof(neopixel_program) / sizeof(neopixel_program[0]),
         800000 * 6, // 800 khz * 6 cycles per bit
-        init_program, 1,
-        NULL, 1,
-        NULL, 1,
-        digitalinout->pin, 1,
-        digitalinout->pin, 1,
-        1 << pin_number, true, false,
+        NULL, 0, // init program
+        NULL, 1, // out
+        NULL, 1, // in
+        0, 0, // in pulls
+        NULL, 1, // set
+        digitalinout->pin, 1, // sideset
+        0, pins_we_use, // initial pin state
+        pins_we_use, true, false,
         true, 8, false, // TX, auto pull every 8 bits. shift left to output msb first
+        true, // Wait for txstall. If we don't, then we'll deinit too quickly.
         false, 32, true, // RX setting we don't use
         false); // claim pins
     if (!ok) {
@@ -84,16 +83,17 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
-    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
-    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes);
+    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */);
 
     // Use a private deinit of the state machine that doesn't reset the pin.
     rp2pio_statemachine_deinit(&state_machine, true);
 
     // Reset the pin and release it from the PIO
     gpio_init(digitalinout->pin->number);
-    common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t*)digitalinout, false, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t *)digitalinout, false, DRIVE_MODE_PUSH_PULL);
 
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 1;

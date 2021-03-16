@@ -61,14 +61,45 @@ static uint32_t _mask(uint8_t slice, uint8_t channel) {
     return 1 << (slice * CHANNELS_PER_SLICE + channel);
 }
 
+bool pwmio_claim_slice_channels(uint8_t slice) {
+    uint32_t channel_use_mask_a = _mask(slice, 0);
+    uint32_t channel_use_mask_b = _mask(slice, 1);
+
+    if ((channel_use & channel_use_mask_a) != 0) {
+        return false;
+    }
+    if ((channel_use & channel_use_mask_b) != 0) {
+        return false;
+    }
+
+    channel_use |= channel_use_mask_a;
+    channel_use |= channel_use_mask_b;
+    return true;
+}
+
+void pwmio_release_slice_channels(uint8_t slice) {
+    uint32_t channel_mask = _mask(slice, 0);
+    channel_use &= ~channel_mask;
+    channel_mask = _mask(slice, 1);
+    channel_use &= ~channel_mask;
+}
+
+void pwmout_never_reset(uint8_t slice, uint8_t channel) {
+    never_reset_channel |= _mask(slice, channel);
+}
+
+void pwmout_reset_ok(uint8_t slice, uint8_t channel) {
+    never_reset_channel &= ~_mask(slice, channel);
+}
+
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    never_reset_channel |= _mask(self->slice, self->channel);
+    pwmout_never_reset(self->slice, self->channel);
 
     never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    never_reset_channel &= ~_mask(self->slice, self->channel);
+    pwmout_reset_ok(self->slice, self->channel);
 }
 
 void pwmout_reset(void) {
@@ -92,21 +123,7 @@ void pwmout_reset(void) {
     }
 }
 
-pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
-                                                    const mcu_pin_obj_t* pin,
-                                                    uint16_t duty,
-                                                    uint32_t frequency,
-                                                    bool variable_frequency) {
-    self->pin = pin;
-    self->variable_frequency = variable_frequency;
-    self->duty_cycle = duty;
-
-    if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
-        return PWMOUT_INVALID_FREQUENCY;
-    }
-
-    uint8_t slice = pwm_gpio_to_slice_num(pin->number);
-    uint8_t channel = pwm_gpio_to_channel(pin->number);
+pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency) {
     uint32_t channel_use_mask = _mask(slice, channel);
 
     // Check the channel first.
@@ -128,13 +145,38 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
             return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
         }
     }
-    self->slice = slice;
-    self->channel = channel;
 
     channel_use |= channel_use_mask;
     if (variable_frequency) {
         slice_variable_frequency |= 1 << slice;
     }
+
+    return PWMOUT_OK;
+}
+
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
+    const mcu_pin_obj_t *pin,
+    uint16_t duty,
+    uint32_t frequency,
+    bool variable_frequency) {
+    self->pin = pin;
+    self->variable_frequency = variable_frequency;
+    self->duty_cycle = duty;
+
+    if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+
+    uint8_t slice = pwm_gpio_to_slice_num(pin->number);
+    uint8_t channel = pwm_gpio_to_channel(pin->number);
+
+    int r = pwmout_allocate(slice, channel, variable_frequency, frequency);
+    if (r != PWMOUT_OK) {
+        return r;
+    }
+
+    self->slice = slice;
+    self->channel = channel;
 
     if (target_slice_frequencies[slice] != frequency) {
         // Reset the counter and compare values.
@@ -143,6 +185,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         common_hal_pwmio_pwmout_set_frequency(self, frequency);
         pwm_set_enabled(slice, true);
     } else {
+        common_hal_pwmio_pwmout_set_frequency(self, frequency);
         common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     }
 
@@ -152,55 +195,58 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     return PWMOUT_OK;
 }
 
-bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->pin == NULL;
 }
 
-void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+void pwmout_free(uint8_t slice, uint8_t channel) {
+    uint32_t channel_mask = _mask(slice, channel);
+    channel_use &= ~channel_mask;
+    never_reset_channel &= ~channel_mask;
+    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (slice * CHANNELS_PER_SLICE);
+    if ((channel_use & slice_mask) == 0) {
+        target_slice_frequencies[slice] = 0;
+        slice_variable_frequency &= ~(1 << slice);
+        pwm_set_enabled(slice, false);
+    }
+}
+
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
-    uint32_t channel_mask = _mask(self->slice, self->channel);
-    channel_use &= ~channel_mask;
-    never_reset_channel &= ~channel_mask;
-    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (self->slice * CHANNELS_PER_SLICE + self->channel);
-    if ((channel_use & slice_mask) == 0) {
-        target_slice_frequencies[self->slice] = 0;
-        slice_variable_frequency &= ~(1 << self->slice);
-        pwm_set_enabled(self->slice, false);
-    }
-
+    pwmout_free(self->slice, self->channel);
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 }
 
-extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
+extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {
     self->duty_cycle = duty;
     // Do arithmetic in 32 bits to prevent overflow.
     uint16_t compare_count;
     if (duty == 65535) {
         // Ensure that 100% duty cycle is 100% full on and not rounded down,
         // but do MIN() to keep value in range, just in case.
-        compare_count = MIN(UINT16_MAX, (uint32_t) self->top + 1);
+        compare_count = MIN(UINT16_MAX, (uint32_t)self->top + 1);
     } else {
-        compare_count= ((uint32_t) duty * self->top + MAX_TOP / 2) / MAX_TOP;
+        compare_count = ((uint32_t)duty * self->top + MAX_TOP / 2) / MAX_TOP;
     }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
     pwm_set_chan_level(self->slice, self->channel, compare_count);
 }
 
-uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     return self->duty_cycle;
 }
 
-void pwmio_pwmout_set_top(pwmio_pwmout_obj_t* self, uint16_t top) {
+void pwmio_pwmout_set_top(pwmio_pwmout_obj_t *self, uint16_t top) {
     self->actual_frequency = common_hal_mcu_processor_get_frequency() / top;
     self->top = top;
     pwm_set_clkdiv_int_frac(self->slice, 1, 0);
     pwm_set_wrap(self->slice, self->top);
 }
 
-void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
     if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
@@ -212,7 +258,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
         // Compute the divisor. It's an 8 bit integer and 4 bit fraction. Therefore,
         // we compute everything * 16 for the fractional part.
         // This is 1 << 12 because 4 bits are the * 16.
-        uint64_t frequency16 = ((uint64_t) clock_get_hz(clk_sys)) / (1 << 12);
+        uint64_t frequency16 = ((uint64_t)clock_get_hz(clk_sys)) / (1 << 12);
         uint64_t div16 = frequency16 / frequency;
         // Round the divisor to try and get closest to the target frequency. We could
         // also always round up and use TOP to get us closer. We may not need that though.
@@ -237,10 +283,10 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
     common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
-uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
     return self->actual_frequency;
 }
 
-bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
 }

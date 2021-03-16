@@ -33,17 +33,17 @@
 void memorymonitor_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 
 #define MP_DEFINE_MEMORYMONITOR_EXCEPTION(exc_name, base_name) \
-const mp_obj_type_t mp_type_memorymonitor_ ## exc_name = { \
-    { &mp_type_type }, \
-    .name = MP_QSTR_ ## exc_name, \
-    .print = memorymonitor_exception_print, \
-    .make_new = mp_obj_exception_make_new, \
-    .attr = mp_obj_exception_attr, \
-    .parent = &mp_type_ ## base_name, \
-};
+    const mp_obj_type_t mp_type_memorymonitor_##exc_name = { \
+        { &mp_type_type }, \
+        .name = MP_QSTR_##exc_name, \
+        .print = memorymonitor_exception_print, \
+        .make_new = mp_obj_exception_make_new, \
+        .attr = mp_obj_exception_attr, \
+        .parent = &mp_type_##base_name, \
+    };
 
 extern const mp_obj_type_t mp_type_memorymonitor_AllocationError;
 
-NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t* msg, ...);
+NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t *msg, ...);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMONITOR___INIT___H

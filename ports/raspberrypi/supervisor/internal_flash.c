@@ -44,10 +44,7 @@
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
-#define RESERVED_FLASH 1 * 1024 * 1024
-
-// TODO: Parameterize flash size based on the configured flash.
-#define TOTAL_FLASH_SIZE 2 * 1024 * 1024
+#define RESERVED_FLASH (1 * 1024 * 1024)
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
@@ -88,8 +85,8 @@ void port_internal_flash_flush(void) {
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     memcpy(dest,
-           (void*)(XIP_BASE + RESERVED_FLASH + block * FILESYSTEM_BLOCK_SIZE),
-           num_blocks * FILESYSTEM_BLOCK_SIZE);
+        (void *)(XIP_BASE + RESERVED_FLASH + block * FILESYSTEM_BLOCK_SIZE),
+        num_blocks * FILESYSTEM_BLOCK_SIZE);
     return 0;
 }
 
@@ -103,18 +100,18 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
         if (_cache_lba != block_address) {
             memcpy(_cache,
-                   (void*)(XIP_BASE + RESERVED_FLASH + sector_offset),
-                   SECTOR_SIZE);
+                (void *)(XIP_BASE + RESERVED_FLASH + sector_offset),
+                SECTOR_SIZE);
             _cache_lba = sector_offset;
         }
         for (uint8_t b = block_offset; b < blocks_per_sector; b++) {
             // Stop copying after the last block.
             if (block >= num_blocks) {
-              break;
+                break;
             }
             memcpy(_cache + b * FILESYSTEM_BLOCK_SIZE,
-                   src + block * FILESYSTEM_BLOCK_SIZE,
-                   FILESYSTEM_BLOCK_SIZE);
+                src + block * FILESYSTEM_BLOCK_SIZE,
+                FILESYSTEM_BLOCK_SIZE);
             block++;
         }
         // Make sure we don't have an interrupt while we do flash operations.

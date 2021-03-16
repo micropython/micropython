@@ -125,9 +125,12 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
     memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_memorymonitor_allocationsize_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -179,5 +182,5 @@ const mp_obj_type_t memorymonitor_allocationsize_type = {
     .subscr = memorymonitor_allocationsize_subscr,
     .unary_op = memorymonitor_allocationsize_unary_op,
     .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t*)&memorymonitor_allocationsize_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&memorymonitor_allocationsize_locals_dict,
 };

@@ -47,8 +47,8 @@ typedef struct {
     bool first_buffer_free;
     uint8_t output_resolution; // in bits
     uint8_t sample_resolution; // in bits
-    uint8_t* first_buffer;
-    uint8_t* second_buffer;
+    uint8_t *first_buffer;
+    uint8_t *second_buffer;
     background_callback_t callback;
 } audio_dma_t;
 
@@ -59,8 +59,8 @@ typedef enum {
 } audio_dma_result;
 
 
-void audio_dma_init(audio_dma_t* dma);
-void audio_dma_deinit(audio_dma_t* dma);
+void audio_dma_init(audio_dma_t *dma);
+void audio_dma_deinit(audio_dma_t *dma);
 void audio_dma_reset(void);
 
 // This sets everything up but doesn't start the timer.
@@ -72,20 +72,20 @@ void audio_dma_reset(void);
 // output_signed is true if the dma'd data should be signed. False and it will be unsigned.
 // output_register_address is the address to copy data to.
 // dma_trigger_source is the DMA trigger source which cause another copy
-audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
-                                          mp_obj_t sample,
-                                          bool loop,
-                                          bool single_channel,
-                                          uint8_t audio_channel,
-                                          bool output_signed,
-                                          uint8_t output_resolution,
-                                          uint32_t output_register_address,
-                                          uint8_t dma_trigger_source);
+audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
+    mp_obj_t sample,
+    bool loop,
+    bool single_channel,
+    uint8_t audio_channel,
+    bool output_signed,
+    uint8_t output_resolution,
+    uint32_t output_register_address,
+    uint8_t dma_trigger_source);
 
-void audio_dma_stop(audio_dma_t* dma);
-bool audio_dma_get_playing(audio_dma_t* dma);
-void audio_dma_pause(audio_dma_t* dma);
-void audio_dma_resume(audio_dma_t* dma);
-bool audio_dma_get_paused(audio_dma_t* dma);
+void audio_dma_stop(audio_dma_t *dma);
+bool audio_dma_get_playing(audio_dma_t *dma);
+void audio_dma_pause(audio_dma_t *dma);
+void audio_dma_resume(audio_dma_t *dma);
+bool audio_dma_get_paused(audio_dma_t *dma);
 
 #endif  // MICROPY_INCLUDED_RASPBERRYPI_AUDIO_DMA_OUT_H

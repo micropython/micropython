@@ -58,7 +58,7 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
             // but no way unicode chars could be there, if c_cc is defined to be a
             // a "char". But it's type is actually cc_t, which can be anything.
             // TODO: For now, we still deal with it like that.
-            cc->items[i] = mp_obj_new_bytes((byte*)&term.c_cc[i], 1);
+            cc->items[i] = mp_obj_new_bytes((byte *)&term.c_cc[i], 1);
         }
     }
     return MP_OBJ_FROM_PTR(r);
@@ -129,7 +129,7 @@ STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_tcsetattr), MP_ROM_PTR(&mod_termios_tcsetattr_obj) },
     { MP_ROM_QSTR(MP_QSTR_setraw), MP_ROM_PTR(&mod_termios_setraw_obj) },
 
-#define C(name) { MP_ROM_QSTR(MP_QSTR_ ## name), MP_ROM_INT(name) }
+#define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(name) }
     C(TCSANOW),
 
     C(B9600),
@@ -146,5 +146,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals
 
 const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_termios_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_termios_globals,
 };

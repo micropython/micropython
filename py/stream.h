@@ -72,7 +72,9 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
-    bool pyserial_compatibility: 1;  // adjust API to match pyserial more closely
+    bool pyserial_readinto_compatibility : 1;         // Disallow size parameter in readinto()
+    bool pyserial_read_compatibility : 1;             // Disallow omitting read(size) size parameter
+    bool pyserial_dont_return_none_compatibility : 1; // Don't return None for read() or readinto()
 } mp_stream_p_t;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
@@ -111,7 +113,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
 #define MP_STREAM_RW_WRITE 2
 #define MP_STREAM_RW_ONCE  1
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, byte flags);
-#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, MP_STREAM_RW_WRITE)
+#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte *)buf, size, err, MP_STREAM_RW_WRITE)
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
