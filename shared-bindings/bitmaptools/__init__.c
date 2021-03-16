@@ -456,7 +456,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|
 
 STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element };
+    enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element, ARG_reverse_rows };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_file, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -464,6 +464,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_element_size, MP_ARG_INT, { .u_int = 1 } },
         { MP_QSTR_reverse_pixels_in_element, MP_ARG_BOOL, { .u_bool = false } },
         { MP_QSTR_swap_bytes_in_element,  MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_reverse_rows,  MP_ARG_BOOL, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -504,8 +505,9 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     bool reverse_pixels_in_element = args[ARG_reverse_pixels_in_element].u_bool;
     bool swap_bytes_in_element = args[ARG_swap_bytes_in_element].u_bool;
+    bool reverse_rows = args[ARG_reverse_rows].u_bool;
 
-    common_hal_bitmaptools_readinto(bitmap, file, element_size, bits_per_pixel, reverse_pixels_in_element, swap_bytes_in_element);
+    common_hal_bitmaptools_readinto(bitmap, file, element_size, bits_per_pixel, reverse_pixels_in_element, swap_bytes_in_element, reverse_rows);
 
     return mp_const_none;
 }
