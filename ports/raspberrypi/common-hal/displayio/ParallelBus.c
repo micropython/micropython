@@ -43,9 +43,9 @@ static const uint16_t parallel_program[] = {
 // .wrap
 };
 
-void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
-    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
-    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset, uint32_t frequency) {
+void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *self,
+    const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
+    const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
 
     uint8_t data_pin = data0->number;
     for (uint8_t i = 0; i < 8; i++) {
@@ -108,7 +108,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     common_hal_rp2pio_statemachine_never_reset(&self->state_machine);
 }
 
-void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) {
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 
     for (uint8_t i = 0; i < 8; i++) {
@@ -123,7 +123,7 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) 
 }
 
 bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-	  displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (self->reset.base.type == &mp_type_NoneType) {
         return false;
     }
@@ -139,7 +139,7 @@ bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
 }
 
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
-    displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
@@ -147,13 +147,13 @@ bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
 void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
 
-    displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
 
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
     common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1);
 }
 
 void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
-    displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
 }
