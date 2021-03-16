@@ -99,6 +99,10 @@ def fixup_c(filename):
             # Get next line.
             l = lines.pop(0)
 
+            # Revert "// |" back to "//| "
+            if l.startswith("// |"):
+                l = "//|" + l[4:]
+
             # Dedent #'s to match indent of following line (not previous line).
             m = re.match(r"( +)#(if |ifdef |ifndef |elif |else|endif)", l)
             if m:
@@ -167,8 +171,6 @@ def main():
         batch(command, lang_files(C_EXTS))
         for file in lang_files(C_EXTS):
             fixup_c(file)
-        # Revert "// |" back to "//|"
-        batch(["sed", "-i", "s,^// |,//|,"], lang_files(C_EXTS))
 
     # Format Python files with black.
     if format_py:
