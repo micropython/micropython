@@ -358,7 +358,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_line);
 // requires all 6 arguments
 
-//| def arrayblit(bitmap: display.Bitmap, data: ReadableBuffer, x1: int=0, y1: int=0, x2: Optional[int]=None, y2: Optional[int]=None, skip_index:Optional[int]=None) -> None:
+//| def arrayblit(bitmap: displayio.Bitmap, data: ReadableBuffer, x1: int=0, y1: int=0, x2: Optional[int]=None, y2: Optional[int]=None, skip_index:Optional[int]=None) -> None:
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //| The values from ``data`` are taken modulo the number of color values
@@ -384,7 +384,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     :param int x2: The right of the area to blit into (exclusive)
 //|     :param int y2: The bottom corner of the area to blit into (exclusive)
 //|     :param int skip_index: Bitmap palette index in the source that will not be copied,
-//|             set to None to copy all pixels"""
+//|             set to None to copy all pixels
 //|     """
 //|     ...
 //|
