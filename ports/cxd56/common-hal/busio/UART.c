@@ -59,6 +59,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
+    int i;
+    int count;
+    char tmp;
     struct termios tio;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
@@ -95,6 +98,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         busio_uart_dev[self->number].fd = open(busio_uart_dev[self->number].devpath, O_RDWR);
         if (busio_uart_dev[self->number].fd < 0) {
             mp_raise_ValueError(translate("Could not initialize UART"));
+        }
+
+        // Wait to make sure the UART is ready
+        usleep(1000);
+        // Clear RX FIFO
+        ioctl(busio_uart_dev[self->number].fd, FIONREAD, (long unsigned int)&count);
+        for (i = 0; i < count; i++) {
+            read(busio_uart_dev[self->number].fd, &tmp, 1);
         }
     }
 

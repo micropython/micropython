@@ -26,6 +26,7 @@
 
 #include <arch/chip/pin.h>
 #include <cxd56_spi.h>
+#include <cxd56_pinconfig.h>
 
 #include "py/runtime.h"
 
@@ -39,10 +40,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         (mosi == NULL || mosi->number == PIN_SPI4_MOSI) &&
         (miso == NULL || miso->number == PIN_SPI4_MISO)) {
         port = 4;
+        CXD56_PIN_CONFIGS(PINCONFS_SPI4);
     } else if (clock->number == PIN_EMMC_CLK &&
                (mosi == NULL || mosi->number == PIN_EMMC_DATA0) &&
                (miso == NULL || miso->number == PIN_EMMC_DATA1)) {
         port = 5;
+        CXD56_PIN_CONFIGS(PINCONFS_EMMCA_SPI5);
     }
 
     if (port < 0) {
