@@ -440,7 +440,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 //|
 //|     The file must be positioned so that it consists of ``bitmap.height`` rows of pixel data, where each row is the smallest multiple of ``element_size`` bytes that can hold ``bitmap.width`` pixels.
 //|
-//|     The bytes in an element can be optionally swapped, and the pixels in an element can be reversed.
+//|     The bytes in an element can be optionally swapped, and the pixels in an element can be reversed.  Also, the
+//|     row loading direction can be reversed, which may be requires for loading certain bitmap files.
 //|
 //|     This function doesn't parse image headers, but is useful to speed up loading of uncompressed image formats such as PCF glyph data.
 //|
