@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-16 00:47+0000\n"
-"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
+"PO-Revision-Date: 2021-03-16 14:54+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -520,7 +520,7 @@ msgstr "Tampon + décalage trop petit %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Éléments du tampon doit être 4 octets ou moins"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -1120,7 +1120,7 @@ msgstr "IV doit être de longueur de %d octets"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Éléments dans le tampon doivent être <= à 4 octets"
 
 #: py/persistentcode.c
 msgid ""
@@ -1589,11 +1589,11 @@ msgstr "Pas de support matériel pour cette broche"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "Programme n'a pas de \"in\""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "Programme n'a aucun \"in\" ni \"out\""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1746,7 +1746,7 @@ msgstr "Plus de sockets"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Éléments du tampon de sortie doivent être <= à 4 octets"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -2834,7 +2834,7 @@ msgstr "le cercle ne peut être enregistré que dans un seul parent"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "point de coupure doît être un tuple (x,y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -2959,7 +2959,7 @@ msgstr "differentiation order hors de portée"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "dimensions do not match"
-msgstr ""
+msgstr "les dimensions ne correspondent pas"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
