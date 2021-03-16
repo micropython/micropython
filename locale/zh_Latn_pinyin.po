@@ -83,6 +83,7 @@ msgstr "%q zhèngzài shǐyòng"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -978,6 +979,7 @@ msgstr "Fēnpèi RX huǎnchōng shībài"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1270,7 +1272,7 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr "Wúxiào de pínlǜ"
 
@@ -2338,7 +2340,7 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Bù zhīchí de cāozuò"
 
@@ -2909,6 +2911,10 @@ msgstr "bùtóng de cānshù bìxū shì ndarray"
 msgid "differentiation order out of range"
 msgstr "chā yì shùn xù fàn wéi"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3401,10 +3407,6 @@ msgid "math domain error"
 msgstr "shùxué yù cuòwù"
 
 #: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "jǔzhèn chǐcùn bù pǐpèi"
-
-#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "jǔzhèn bùshì zhèngdìng de"
 
@@ -3760,6 +3762,7 @@ msgstr "cóng kōng mài chōng tán chū"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3785,6 +3788,8 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -4217,10 +4222,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "huàn xǐng chōng tū"
@@ -4309,6 +4310,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "jǔzhèn chǐcùn bù pǐpèi"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
 
 #~ msgid "Group full"
 #~ msgstr "Fēnzǔ yǐ mǎn"

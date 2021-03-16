@@ -82,6 +82,7 @@ msgstr "%q em uso"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -991,6 +992,7 @@ msgstr "Falha ao alocar buffer RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1285,7 +1287,7 @@ msgstr "Arquivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Tamanho do pedaço de formato inválido"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr "Frequência inválida"
 
@@ -2369,7 +2371,7 @@ msgstr "Não há suporte para o tipo do display bus"
 msgid "Unsupported format"
 msgstr "Formato não suportado"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operação não suportada"
 
@@ -2946,6 +2948,10 @@ msgstr "O argumento diff deve ser um ndarray"
 msgid "differentiation order out of range"
 msgstr "ordem de diferenciação fora do alcance"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3441,10 +3447,6 @@ msgid "math domain error"
 msgstr "erro de domínio matemático"
 
 #: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "as dimensões da matriz não coincidem"
-
-#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "a matriz não é definitiva positiva"
 
@@ -3807,6 +3809,7 @@ msgstr "pop a partir de um PulseIn vazio"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3832,6 +3835,8 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -4264,10 +4269,6 @@ msgstr "o valor deve caber em %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "o value_count deve ser > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "os vetores devem ter os mesmos comprimentos"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "conflito de wakeup"
@@ -4356,6 +4357,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "as dimensões da matriz não coincidem"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "os vetores devem ter os mesmos comprimentos"
 
 #~ msgid "Group full"
 #~ msgstr "Grupo cheio"
