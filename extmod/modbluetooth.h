@@ -405,6 +405,14 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t req_len, uint8_t *resp, size_t resp_len, uint8_t *status);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
 
+#if MICROPY_PY_BLUETOOTH_IRQ_CAN_BE_ON_SEPARATE_THREAD
+void mp_bluetooth_port_sync_init(void);
+bool mp_bluetooth_port_sync_is_main_thread(void);
+void mp_bluetooth_port_sync_yield(void);
+void mp_bluetooth_port_sync_wait_for_signal(void);
+void mp_bluetooth_port_sync_signal_done(void);
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // API implemented by modbluetooth (called by port-specific implementations):
 

@@ -66,9 +66,12 @@
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t irq_handler;
+    mp_obj_t irq_data_tuple;
+    #if MICROPY_PY_BLUETOOTH_IRQ_CAN_BE_ON_SEPARATE_THREAD
+    mp_obj_t irq_event;
+    #endif
     #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
     bool irq_scheduled;
-    mp_obj_t irq_data_tuple;
     uint8_t irq_data_addr_bytes[6];
     uint16_t irq_data_data_alloc;
     mp_obj_array_t irq_data_addr;
@@ -260,10 +263,10 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
 
         o->irq_handler = mp_const_none;
 
-        #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
         // Pre-allocate the event data tuple to prevent needing to allocate in the IRQ handler.
         o->irq_data_tuple = mp_obj_new_tuple(MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN, NULL);
 
+        #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
         // Pre-allocated buffers for address, payload and uuid.
         mp_obj_memoryview_init(&o->irq_data_addr, 'B', 0, 0, o->irq_data_addr_bytes);
         o->irq_data_data_alloc = MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
@@ -272,6 +275,10 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
 
         // Allocate the default ringbuf.
         ringbuf_alloc(&o->ringbuf, MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
+        #endif
+
+        #if MICROPY_PY_BLUETOOTH_IRQ_CAN_BE_ON_SEPARATE_THREAD
+        mp_bluetooth_port_sync_init();
         #endif
 
         MP_STATE_VM(bluetooth) = MP_OBJ_FROM_PTR(o);
@@ -1111,6 +1118,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_ble_invoke_irq_obj, bluetooth_ble_inv
 
 #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
+#if MICROPY_PY_BLUETOOTH_IRQ_CAN_BE_ON_SEPARATE_THREAD
+STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t bluetooth_in) {
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(bluetooth_in);
+    o->irq_event = mp_call_function_2(o->irq_handler, o->irq_event, o->irq_data_tuple);
+    mp_bluetooth_port_sync_signal_done();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_ble_invoke_irq_obj, bluetooth_ble_invoke_irq);
+#endif
+
 STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
     const uint8_t *addr,
@@ -1125,8 +1142,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     mp_obj_array_t mv_data[2];
     assert(n_data <= 2);
 
-    mp_obj_tuple_t *data_tuple = mp_local_alloc(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) * MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
-    data_tuple->base.type = &mp_type_tuple;
+    mp_obj_tuple_t *data_tuple = MP_OBJ_TO_PTR(o->irq_data_tuple);
     data_tuple->len = 0;
 
     for (size_t i = 0; i < n_unsigned; ++i) {
@@ -1154,11 +1170,18 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     }
     assert(data_tuple->len <= MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
 
-    mp_obj_t result = mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(event), MP_OBJ_FROM_PTR(data_tuple));
+    #if MICROPY_PY_BLUETOOTH_IRQ_CAN_BE_ON_SEPARATE_THREAD
+    if (!mp_bluetooth_port_sync_is_main_thread()) {
+        o->irq_event = MP_OBJ_NEW_SMALL_INT(event);
+        while (!mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_ble_invoke_irq_obj), MP_OBJ_FROM_PTR(o))) {
+            mp_bluetooth_port_sync_yield();
+        }
+        mp_bluetooth_port_sync_wait_for_signal();
+        return o->irq_event;
+    }
+    #endif
 
-    mp_local_free(data_tuple);
-
-    return result;
+    return mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(event), MP_OBJ_FROM_PTR(data_tuple));
 }
 
 #define NULL_NUMERIC NULL
