@@ -362,7 +362,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //|     """Inserts pixels from ``data`` into the rectangle of width×height pixels with the upper left corner at ``(x,y)``
 //|
 //| The values from ``data`` are taken modulo the number of color values
-//| avalable in the destintaion bitmap.
+//| avalable in the destination bitmap.
 //|
 //| If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
 //| are not specified, or are given as -1, they are taken as the width
