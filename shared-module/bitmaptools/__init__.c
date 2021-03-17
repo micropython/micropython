@@ -403,7 +403,7 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
     }
 }
 
-void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes, bool reverse_rows) {
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes, bool reverse_rows) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
 
     if (self->read_only) {
@@ -415,10 +415,10 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t* f
     size_t rowsize_in_u32 = (rowsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     size_t rowsize_in_u16 = (rowsize + sizeof(uint16_t) - 1) / sizeof(uint16_t);
 
-    for(int y=0; y<self->height; y++) {
+    for(int y = 0; y < self->height; y++) {
         uint32_t rowdata32[rowsize_in_u32];
-        uint16_t *rowdata16 = (uint16_t*)rowdata32;
-        uint8_t *rowdata8 = (uint8_t*)rowdata32;
+        uint16_t *rowdata16 = (uint16_t *)rowdata32;
+        uint8_t *rowdata8 = (uint8_t *)rowdata32;
         const int y_draw = reverse_rows ? (self->height) - 1 - y : y;
 
         UINT bytes_read = 0;
