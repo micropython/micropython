@@ -3162,6 +3162,7 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "indice fuori intervallo"
 
@@ -3266,6 +3267,11 @@ msgstr ""
 msgid "invalid arguments"
 msgstr "argomenti non validi"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "certificato non valido"
@@ -3273,6 +3279,16 @@ msgstr "certificato non valido"
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "indice dupterm non valido"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr ""
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3743,7 +3759,7 @@ msgstr "parametri devono essere i registri in sequenza da a2 a a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parametri devono essere i registri in sequenza da a2 a a5"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 #, fuzzy
 msgid "pixel coordinates out of bounds"
 msgstr "indirizzo fuori limite"
