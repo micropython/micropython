@@ -415,7 +415,7 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
     size_t rowsize_in_u32 = (rowsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     size_t rowsize_in_u16 = (rowsize + sizeof(uint16_t) - 1) / sizeof(uint16_t);
 
-    for(int y = 0; y < self->height; y++) {
+    for (int y = 0; y < self->height; y++) {
         uint32_t rowdata32[rowsize_in_u32];
         uint16_t *rowdata16 = (uint16_t *)rowdata32;
         uint8_t *rowdata8 = (uint8_t *)rowdata32;
