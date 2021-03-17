@@ -43,6 +43,10 @@ void common_hal_displayio_palette_make_transparent(displayio_palette_t *self, ui
     self->needs_refresh = true;
 }
 
+bool common_hal_displayio_palette_is_transparent(displayio_palette_t *self, uint32_t palette_index) {
+    return self->colors[palette_index].transparent;
+}
+
 uint32_t common_hal_displayio_palette_get_len(displayio_palette_t *self) {
     return self->color_count;
 }

@@ -84,7 +84,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 //|     def __getitem__(self, index: int) -> Optional[int]:
-//|         r"""Return the pixel color at the given index as an integer."""
+//|         """Return the pixel color at the given index as an integer."""
 //|         ...
 //|
 //|     def __setitem__(self, index: int, value: Union[int, ReadableBuffer, Tuple[int, int, int]]) -> None:
@@ -180,9 +180,25 @@ STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t pal
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_obj_make_opaque);
 
+//|     def is_transparent(self, palette_index: int) -> bool:
+//|         """Returns `True` if the palette index is transparent.  Returns `False` if opaque."""
+//|         ...
+//|
+STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t palette_index;
+    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
+        mp_raise_ValueError(translate("palette_index should be an int"));
+    }
+    return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_is_transparent_obj, displayio_palette_obj_is_transparent);
+
 STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_make_transparent), MP_ROM_PTR(&displayio_palette_make_transparent_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_opaque), MP_ROM_PTR(&displayio_palette_make_opaque_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_transparent), MP_ROM_PTR(&displayio_palette_is_transparent_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
 
