@@ -44,6 +44,7 @@
 #include "pico/binary_info.h"
 #include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
+#include "pico/time.h"
 
 extern uint8_t __StackTop, __StackBottom;
 static char gc_heap[192 * 1024];
@@ -168,10 +169,21 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
+#define POLY (0xD5)
+
+uint8_t rosc_random_u8(void) {
+    static uint8_t r;
+    for (size_t i = 0; i < 32; ++i) {
+        r = ((r << 1) | rosc_hw->randombit) ^ (r & 0x80 ? POLY : 0);
+        busy_wait_us_32(1);
+    }
+    return r;
+}
+
 uint32_t rosc_random_u32(void) {
     uint32_t value = 0;
-    for (size_t i = 0; i < 32; ++i) {
-        value = value << 1 | rosc_hw->randombit;
+    for (size_t i = 0; i < 4; ++i) {
+        value = value << 8 | rosc_random_u8();
     }
     return value;
 }
