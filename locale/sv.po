@@ -6,8 +6,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-16 15:42+0000\n"
-"Last-Translator: امير محمد العمري <amyr82669@gmail.com>\n"
+"PO-Revision-Date: 2021-03-17 21:24+0000\n"
+"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -3277,7 +3277,7 @@ msgstr "ogiltiga argument"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
 
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
@@ -3290,12 +3290,12 @@ msgstr "ogiltigt dupterm index"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
+msgstr "ogiltig elementstorlek %d för bits_per_pixel %d\n"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "ogiltig element_size %d, måste vara, 1, 2 eller 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
