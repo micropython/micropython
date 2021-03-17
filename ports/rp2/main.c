@@ -173,7 +173,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 
 uint8_t rosc_random_u8(void) {
     static uint8_t r;
-    for (size_t i = 0; i < 32; ++i) {
+    for (size_t i = 0; i < 8; ++i) {
         r = ((r << 1) | rosc_hw->randombit) ^ (r & 0x80 ? POLY : 0);
         busy_wait_us_32(1);
     }
