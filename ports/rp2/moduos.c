@@ -57,7 +57,7 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-extern uint8_t rosc_random_u8(void);
+extern uint8_t rosc_random_u8(size_t cycles);
 
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
@@ -65,7 +65,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     vstr_init_len(&vstr, n);
 
     for (int i = 0; i < n; i++) {
-        vstr.buf[i] = rosc_random_u8();
+        vstr.buf[i] = rosc_random_u8(8);
     }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
