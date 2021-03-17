@@ -84,7 +84,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 //|     def __getitem__(self, index: int) -> Optional[int]:
-//|         """Return the pixel color at the given index as an integer."""
+//|         r"""Return the pixel color at the given index as an integer."""
 //|         ...
 //|
 //|     def __setitem__(self, index: int, value: Union[int, ReadableBuffer, Tuple[int, int, int]]) -> None:
