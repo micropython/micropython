@@ -368,8 +368,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 //| are not specified, or are given as -1, they are taken as the width
 //| and height of the image.
 //|
-//| The coordinates affected by the blit are ``x1 <= x < x2`` and ``y1 <
-//| y < y2``.
+//| The coordinates affected by the blit are ``x1 <= x < x2`` and ``y1 <= y < y2``.
 //|
 //| ``data`` must contain at least as many elements as required.  If it
 //| contains excess elements, they are ignored.
