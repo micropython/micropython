@@ -1791,9 +1791,9 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
             // <type=our,addr,ediv_rand>
             // Find our secret for this remote device, matching this ediv/rand key.
-            assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            // TODO: Support cases where key->sec.peer_addr is BLE_ADDR_ANY, and
+            // key->sec.ediv_rand_present is false.
             assert(key->sec.idx == 0);
-            assert(key->sec.ediv_rand_present);
             key_data = (const uint8_t *)&key->sec.peer_addr;
             key_data_len = sizeof(ble_addr_t);
             break;
