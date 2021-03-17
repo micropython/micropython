@@ -25,10 +25,12 @@
  */
 
 
+#include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-module/displayio/Bitmap.h"
 
 #include "py/runtime.h"
+#include "py/mperrno.h"
 
 #include "math.h"
 #include "stdlib.h"
@@ -371,4 +373,117 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
             }
         }
     }
+}
+
+void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_value) {
+    uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
+
+    for (int y = y1; y < y2; y++) {
+        for (int x = x1; x < x2; x++) {
+            uint32_t value;
+            switch (element_size) {
+                default:
+                case 1:
+                    value = *(uint8_t *)data;
+                    data = (void *)((uint8_t *)data + 1);
+                    break;
+                case 2:
+                    value = *(uint16_t *)data;
+                    data = (void *)((uint16_t *)data + 1);
+                    break;
+                case 4:
+                    value = *(uint32_t *)data;
+                    data = (void *)((uint32_t *)data + 1);
+                    break;
+            }
+            if (!skip_specified || value != skip_value) {
+                displayio_bitmap_write_pixel(self, x, y, value & mask);
+            }
+        }
+    }
+}
+
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
+    uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
+
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+
+    size_t elements_per_row = (self->width * bits_per_pixel + element_size * 8 - 1) / (element_size * 8);
+    size_t rowsize = element_size * elements_per_row;
+    size_t rowsize_in_u32 = (rowsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+    size_t rowsize_in_u16 = (rowsize + sizeof(uint16_t) - 1) / sizeof(uint16_t);
+    for (int y = 0; y < self->height; y++) {
+        uint32_t rowdata32[rowsize_in_u32];
+        uint16_t *rowdata16 = (uint16_t *)rowdata32;
+        uint8_t *rowdata8 = (uint8_t *)rowdata32;
+
+        UINT bytes_read = 0;
+        if (f_read(&file->fp, rowdata32, rowsize, &bytes_read) != FR_OK || bytes_read != rowsize) {
+            mp_raise_OSError(MP_EIO);
+        }
+
+        if (swap_bytes) {
+            switch (element_size) {
+                case 2:
+                    for (size_t i = 0; i < rowsize_in_u16; i++) {
+                        rowdata16[i] = __builtin_bswap16(rowdata16[i]);
+                    }
+                    break;
+                case 4:
+                    for (size_t i = 0; i < rowsize_in_u32; i++) {
+                        rowdata32[i] = __builtin_bswap32(rowdata32[i]);
+                    }
+                default:
+                    break;
+            }
+        }
+
+        for (int x = 0; x < self->width; x++) {
+            int value = 0;
+            switch (bits_per_pixel) {
+                case 1: {
+                    int byte_offset = x / 8;
+                    int bit_offset = reverse_pixels_in_element ? (7 - x % 8) : x % 8;
+
+                    value = (rowdata8[byte_offset] >> bit_offset) & 1;
+                    break;
+                }
+                case 2: {
+                    int byte_offset = x / 4;
+                    int bit_offset = 2 * (reverse_pixels_in_element ? (3 - x % 4) : x % 4);
+
+                    value = (rowdata8[byte_offset] >> bit_offset) & 3;
+                    break;
+                }
+                case 4: {
+                    int byte_offset = x / 2;
+                    int bit_offset = 4 * (reverse_pixels_in_element ? (1 - x % 2) : x % 2);
+
+                    value = (rowdata8[byte_offset] >> bit_offset) & 7;
+                    break;
+                }
+                case 8:
+                    value = rowdata8[x];
+                    break;
+
+                case 16:
+                    value = rowdata16[x];
+                    break;
+
+                case 24:
+                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | (rowdata8[x * 3 + 2] << 8);
+                    break;
+
+                case 32:
+                    value = rowdata32[x];
+                    break;
+            }
+
+            displayio_bitmap_write_pixel(self, x, y, value & mask);
+        }
+    }
+
+    displayio_bitmap_set_dirty_area(self, 0, 0, self->width, self->height);
 }
