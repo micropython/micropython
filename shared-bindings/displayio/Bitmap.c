@@ -37,7 +37,15 @@
 #include "supervisor/shared/translate.h"
 
 //| class Bitmap:
-//|     """Stores values of a certain size in a 2D array"""
+//|     """Stores values of a certain size in a 2D array
+//|
+//| Bitmaps can be treated as read-only buffers. If the number of bits in a pixel is 8, 16, or 32; and the number of bytes
+//| per row is a multiple of 4, then the resulting memoryview will correspond directly with the bitmap's contents. Otherwise,
+//| the bitmap data is packed into the memoryview with unspecified padding.
+//|
+//| A read-only buffer can be used e.g., with `ulab.fromarray` to efficiently create an array with the same content as a Bitmap;
+//| to move data efficiently from ulab back into a Bitmap, use `bitmaptools.arrayblit`.
+//| """
 //|
 //|     def __init__(self, width: int, height: int, value_count: int) -> None:
 //|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
@@ -300,10 +308,17 @@ STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
 
+// (the get_buffer protocol returns 0 for success, 1 for failure)
+STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
+}
+
 const mp_obj_type_t displayio_bitmap_type = {
     { &mp_type_type },
     .name = MP_QSTR_Bitmap,
     .make_new = displayio_bitmap_make_new,
     .subscr = bitmap_subscr,
     .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
+    .buffer_p = { .get_buffer = bitmap_get_buffer },
 };

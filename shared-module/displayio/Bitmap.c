@@ -271,3 +271,23 @@ void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) 
         self->data[i] = word;
     }
 }
+
+int common_hal_displayio_bitmap_get_buffer(displayio_bitmap_t *self, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    if (flags & MP_BUFFER_WRITE) {
+        return 1;
+    }
+    bufinfo->len = self->stride * self->height * sizeof(size_t);
+    bufinfo->buf = self->data;
+    switch (self->bits_per_value) {
+        case 32:
+            bufinfo->typecode = 'I';
+            break;
+        case 16:
+            bufinfo->typecode = 'H';
+            break;
+        default:
+            bufinfo->typecode = 'B';
+            break;
+    }
+    return 0;
+}
