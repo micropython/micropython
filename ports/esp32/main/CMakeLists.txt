@@ -198,10 +198,14 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-missing-field-initializers
 )
 
+# Additional include directories needed for private NimBLE headers.
+target_include_directories(${MICROPY_TARGET} PUBLIC
+    ${IDF_PATH}/components/bt/host/nimble/nimble
+)
+
 # Add additional extmod and usermod components.
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
-
 
 # Collect all of the include directories and compile definitions for the IDF components.
 foreach(comp ${IDF_COMPONENTS})
