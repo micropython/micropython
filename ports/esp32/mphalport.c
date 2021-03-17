@@ -213,3 +213,28 @@ void mp_hal_wake_main_task_from_isr(void) {
         portYIELD_FROM_ISR();
     }
 }
+
+/******************************************************************************/
+// Bluetooth event synchronisation helpers.
+
+SemaphoreHandle_t mp_bluetooth_port_sync_sem;
+
+void mp_bluetooth_port_sync_init(void) {
+    mp_bluetooth_port_sync_sem = xSemaphoreCreateBinary();
+}
+
+bool mp_bluetooth_port_sync_is_main_thread(void) {
+    return xTaskGetCurrentTaskHandle() == mp_main_task_handle;
+}
+
+void mp_bluetooth_port_sync_yield(void) {
+    vPortYield();
+}
+
+void mp_bluetooth_port_sync_wait_for_signal(void) {
+    xSemaphoreTake(mp_bluetooth_port_sync_sem, portMAX_DELAY);
+}
+
+void mp_bluetooth_port_sync_signal_done(void) {
+    xSemaphoreGive(mp_bluetooth_port_sync_sem);
+}
