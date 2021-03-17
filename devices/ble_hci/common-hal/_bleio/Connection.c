@@ -73,8 +73,8 @@
 static volatile bool m_discovery_in_process;
 static volatile bool m_discovery_successful;
 
-//FIX static bleio_service_obj_t *m_char_discovery_service;
-//FIX static bleio_characteristic_obj_t *m_desc_discovery_characteristic;
+// FIX static bleio_service_obj_t *m_char_discovery_service;
+// FIX static bleio_characteristic_obj_t *m_desc_discovery_characteristic;
 
 // bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 //     bleio_connection_internal_t *self = (bleio_connection_internal_t*)self_in;
@@ -326,7 +326,7 @@ void bleio_connection_clear(bleio_connection_internal_t *self) {
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
     self->is_central = false;
-    //FIX bonding_clear_keys(&self->bonding_keys);
+    // FIX bonding_clear_keys(&self->bonding_keys);
 }
 
 bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {
@@ -350,7 +350,7 @@ void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
 void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bond) {
     self->pair_status = PAIR_WAITING;
 
-    //FIX check_nrf_error(sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params));
+    // FIX check_nrf_error(sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params));
 
     while (self->pair_status == PAIR_WAITING && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
@@ -358,14 +358,14 @@ void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bo
     if (mp_hal_is_interrupted()) {
         return;
     }
-    //FIX    check_sec_status(self->sec_status);
+    // FIX    check_sec_status(self->sec_status);
 }
 
 mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_internal_t *self) {
     while (self->conn_params_updating && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
-    //FIX return 1.25f * self->conn_params.min_conn_interval;
+    // FIX return 1.25f * self->conn_params.min_conn_interval;
     return 0.0f;
 }
 
@@ -729,14 +729,14 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 // }
 
 mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist) {
-    //FIX discover_remote_services(self->connection, service_uuids_whitelist);
+    // FIX discover_remote_services(self->connection, service_uuids_whitelist);
     bleio_connection_ensure_connected(self);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-     mp_obj_tuple_t *services_tuple =
-         mp_obj_new_tuple(self->connection->remote_service_list->len,
-                          self->connection->remote_service_list->items);
-     mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
-     return services_tuple;
+    mp_obj_tuple_t *services_tuple =
+        mp_obj_new_tuple(self->connection->remote_service_list->len,
+            self->connection->remote_service_list->items);
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
+    return services_tuple;
 }
 
 uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self) {
@@ -746,7 +746,7 @@ uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self) {
     return self->connection->conn_handle;
 }
 
-mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* internal) {
+mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *internal) {
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }

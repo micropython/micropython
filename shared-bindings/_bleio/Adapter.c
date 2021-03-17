@@ -82,7 +82,7 @@
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if CIRCUITPY_BLEIO_HCI
+    #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = common_hal_bleio_allocate_adapter_or_raise();
 
     enum { ARG_uart, ARG_rts, ARG_cts };
@@ -111,10 +111,10 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
 
     return MP_OBJ_FROM_PTR(self);
-#else
+    #else
     mp_raise_NotImplementedError(translate("Cannot create a new Adapter; use _bleio.adapter;"));
     return mp_const_none;
-#endif // CIRCUITPY_BLEIO_HCI
+    #endif // CIRCUITPY_BLEIO_HCI
 }
 
 //|
@@ -240,7 +240,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"),
-                                 ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
+            ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
     bool connectable = args[ARG_connectable].u_bool;
@@ -251,7 +251,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
-                                               &data_bufinfo, &scan_response_bufinfo);
+        &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;
 }
@@ -325,12 +325,12 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (timeout != 0.0f && timeout < interval) {
         mp_raise_ValueError(translate("non-zero timeout must be >= interval"));
     }
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 
     const mp_float_t window = mp_obj_get_float(args[ARG_window].u_obj);
     if (window > interval) {

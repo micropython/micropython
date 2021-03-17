@@ -11,7 +11,7 @@
 // Used in hpl/core/hpl_init.c to define which clocks should be initialized first.
 // Not clear why all these need to be specified, but it doesn't work properly otherwise.
 
-//#define CIRCUITPY_GCLK_INIT_1ST (1 << 0 | 1 << 1 | 1 << 3 | 1 <<5)
+// #define CIRCUITPY_GCLK_INIT_1ST (1 << 0 | 1 << 1 | 1 << 3 | 1 <<5)
 #define CIRCUITPY_GCLK_INIT_1ST 0xffff
 
 /* Auto-generated config file hpl_gclk_config.h */
@@ -52,7 +52,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_0_div_sel
+// <id> gclk_gen_0_div_sel
 #ifndef CONF_GCLK_GEN_0_DIVSEL
 #define CONF_GCLK_GEN_0_DIVSEL 0
 #endif
@@ -86,8 +86,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 0 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 0 division <0x0000-0xFFFF>
 // <id> gclk_gen_0_div
 #ifndef CONF_GCLK_GEN_0_DIV
 #define CONF_GCLK_GEN_0_DIV 1
@@ -126,7 +126,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_1_div_sel
+// <id> gclk_gen_1_div_sel
 #ifndef CONF_GCLK_GEN_1_DIVSEL
 #define CONF_GCLK_GEN_1_DIVSEL 0
 #endif
@@ -160,8 +160,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 1 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 1 division <0x0000-0xFFFF>
 // <id> gclk_gen_1_div
 #ifndef CONF_GCLK_GEN_1_DIV
 #define CONF_GCLK_GEN_1_DIV 1
@@ -201,7 +201,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_2_div_sel
+// <id> gclk_gen_2_div_sel
 #ifndef CONF_GCLK_GEN_2_DIVSEL
 #define CONF_GCLK_GEN_2_DIVSEL 1
 #endif
@@ -235,8 +235,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 2 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 2 division <0x0000-0xFFFF>
 // <id> gclk_gen_2_div
 #ifndef CONF_GCLK_GEN_2_DIV
 #define CONF_GCLK_GEN_2_DIV 4
@@ -276,7 +276,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_3_div_sel
+// <id> gclk_gen_3_div_sel
 #ifndef CONF_GCLK_GEN_3_DIVSEL
 #define CONF_GCLK_GEN_3_DIVSEL 0
 #endif
@@ -310,8 +310,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 3 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 3 division <0x0000-0xFFFF>
 // <id> gclk_gen_3_div
 #ifndef CONF_GCLK_GEN_3_DIV
 #define CONF_GCLK_GEN_3_DIV 1
@@ -351,7 +351,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_4_div_sel
+// <id> gclk_gen_4_div_sel
 #ifndef CONF_GCLK_GEN_4_DIVSEL
 #define CONF_GCLK_GEN_4_DIVSEL 0
 #endif
@@ -385,8 +385,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 4 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 4 division <0x0000-0xFFFF>
 // <id> gclk_gen_4_div
 #ifndef CONF_GCLK_GEN_4_DIV
 #define CONF_GCLK_GEN_4_DIV 1
@@ -426,7 +426,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_5_div_sel
+// <id> gclk_gen_5_div_sel
 #ifndef CONF_GCLK_GEN_5_DIVSEL
 #define CONF_GCLK_GEN_5_DIVSEL 0
 #endif
@@ -460,8 +460,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 5 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 5 division <0x0000-0xFFFF>
 // <id> gclk_gen_5_div
 #ifndef CONF_GCLK_GEN_5_DIV
 #define CONF_GCLK_GEN_5_DIV 24
@@ -501,7 +501,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_6_div_sel
+// <id> gclk_gen_6_div_sel
 #ifndef CONF_GCLK_GEN_6_DIVSEL
 #define CONF_GCLK_GEN_6_DIVSEL 0
 #endif
@@ -535,8 +535,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 6 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 6 division <0x0000-0xFFFF>
 // <id> gclk_gen_6_div
 #ifndef CONF_GCLK_GEN_6_DIV
 #define CONF_GCLK_GEN_6_DIV 4
@@ -576,7 +576,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_7_div_sel
+// <id> gclk_gen_7_div_sel
 #ifndef CONF_GCLK_GEN_7_DIVSEL
 #define CONF_GCLK_GEN_7_DIVSEL 0
 #endif
@@ -610,8 +610,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 7 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 7 division <0x0000-0xFFFF>
 // <id> gclk_gen_7_div
 #ifndef CONF_GCLK_GEN_7_DIV
 #define CONF_GCLK_GEN_7_DIV 1
@@ -651,7 +651,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_8_div_sel
+// <id> gclk_gen_8_div_sel
 #ifndef CONF_GCLK_GEN_8_DIVSEL
 #define CONF_GCLK_GEN_8_DIVSEL 0
 #endif
@@ -685,8 +685,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 8 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 8 division <0x0000-0xFFFF>
 // <id> gclk_gen_8_div
 #ifndef CONF_GCLK_GEN_8_DIV
 #define CONF_GCLK_GEN_8_DIV 1
@@ -726,7 +726,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_9_div_sel
+// <id> gclk_gen_9_div_sel
 #ifndef CONF_GCLK_GEN_9_DIVSEL
 #define CONF_GCLK_GEN_9_DIVSEL 0
 #endif
@@ -760,8 +760,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 9 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 9 division <0x0000-0xFFFF>
 // <id> gclk_gen_9_div
 #ifndef CONF_GCLK_GEN_9_DIV
 #define CONF_GCLK_GEN_9_DIV 1
@@ -801,7 +801,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_10_div_sel
+// <id> gclk_gen_10_div_sel
 #ifndef CONF_GCLK_GEN_10_DIVSEL
 #define CONF_GCLK_GEN_10_DIVSEL 0
 #endif
@@ -835,8 +835,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 10 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 10 division <0x0000-0xFFFF>
 // <id> gclk_gen_10_div
 #ifndef CONF_GCLK_GEN_10_DIV
 #define CONF_GCLK_GEN_10_DIV 1
@@ -876,7 +876,7 @@
 
 // <q> Divide Selection
 // <i> Indicates whether Divide Selection is enabled or not
-//<id> gclk_gen_11_div_sel
+// <id> gclk_gen_11_div_sel
 #ifndef CONF_GCLK_GEN_11_DIVSEL
 #define CONF_GCLK_GEN_11_DIVSEL 0
 #endif
@@ -910,8 +910,8 @@
 #endif
 // </h>
 
-//<h> Generic Clock Generator Division
-//<o> Generic clock generator 11 division <0x0000-0xFFFF>
+// <h> Generic Clock Generator Division
+// <o> Generic clock generator 11 division <0x0000-0xFFFF>
 // <id> gclk_gen_11_div
 #ifndef CONF_GCLK_GEN_11_DIV
 #define CONF_GCLK_GEN_11_DIV 1

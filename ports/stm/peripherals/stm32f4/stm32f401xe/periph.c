@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -31,7 +31,7 @@
 
 // I2C
 
-I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
+I2C_TypeDef *mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
 
 const mcu_periph_obj_t mcu_i2c_sda_list[5] = {
     PERIPH(1, 4, &pin_PB07),
@@ -50,7 +50,7 @@ const mcu_periph_obj_t mcu_i2c_scl_list[4] = {
 
 // SPI
 
-SPI_TypeDef * mcu_spi_banks[4] = {SPI1, SPI2, SPI3, SPI4};
+SPI_TypeDef *mcu_spi_banks[4] = {SPI1, SPI2, SPI3, SPI4};
 
 const mcu_periph_obj_t mcu_spi_sck_list[9] = {
     PERIPH(1, 5, &pin_PA05),
@@ -99,7 +99,7 @@ const mcu_periph_obj_t mcu_spi_nss_list[9] = {
     PERIPH(4, 5, &pin_PE11),
 };
 
-USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, NULL, NULL, NULL, USART6};
+USART_TypeDef *mcu_uart_banks[MAX_UART] = {USART1, USART2, NULL, NULL, NULL, USART6};
 bool mcu_uart_has_usart[MAX_UART] = {true, true, false, false, false, true};
 
 const mcu_periph_obj_t mcu_uart_tx_list[6] = {
@@ -120,12 +120,12 @@ const mcu_periph_obj_t mcu_uart_rx_list[6] = {
     PERIPH(2, 7, &pin_PD06),
 };
 
-//Timers
-//TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
-TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, NULL, TIM9, TIM10,
-                                    TIM11, NULL, NULL, NULL};
+// Timers
+// TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
+TIM_TypeDef *mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, NULL, TIM9, TIM10,
+                                  TIM11, NULL, NULL, NULL};
 
-//#define TIM(index, alt, channel, tim_pin)
+// #define TIM(index, alt, channel, tim_pin)
 const mcu_tim_pin_obj_t mcu_tim_pin_list[44] = {
     TIM(2,1,1,&pin_PA00),
     TIM(5,2,1,&pin_PA00),

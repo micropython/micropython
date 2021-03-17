@@ -43,5 +43,5 @@ STATIC MP_DEFINE_CONST_DICT(rgbmatrix_module_globals, rgbmatrix_module_globals_t
 
 const mp_obj_module_t rgbmatrix_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&rgbmatrix_module_globals,
+    .globals = (mp_obj_dict_t *)&rgbmatrix_module_globals,
 };

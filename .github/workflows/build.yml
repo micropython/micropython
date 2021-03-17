@@ -43,8 +43,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - name: Translations
-      run: make check-translate
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools

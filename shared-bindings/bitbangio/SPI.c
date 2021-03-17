@@ -73,16 +73,16 @@
 STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-       { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t* mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t* miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
 
     bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
     self->base.type = &bitbangio_spi_type;
@@ -299,9 +299,9 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     }
 
     bool ok = shared_module_bitbangio_spi_transfer(self,
-                                            ((uint8_t*)buf_out_info.buf) + out_start,
-                                            ((uint8_t*)buf_in_info.buf) + in_start,
-                                            out_length);
+        ((uint8_t *)buf_out_info.buf) + out_start,
+        ((uint8_t *)buf_in_info.buf) + in_start,
+        out_length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -328,5 +328,5 @@ const mp_obj_type_t bitbangio_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPI,
     .make_new = bitbangio_spi_make_new,
-    .locals_dict = (mp_obj_dict_t*)&bitbangio_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bitbangio_spi_locals_dict,
 };

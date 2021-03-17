@@ -48,8 +48,8 @@ typedef struct {
 //    volatile bool errored_too_fast;
 } pulseio_pulsein_obj_t;
 
-//void pulsein_reset(void);
+// void pulsein_reset(void);
 //
-//void pulsein_interrupt_handler(uint8_t channel);
+// void pulsein_interrupt_handler(uint8_t channel);
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PULSEIN_H

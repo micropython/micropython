@@ -37,33 +37,33 @@
 
 STATIC void init_usb_vbus_sense(void) {
 
-#if (BOARD_NO_VBUS_SENSE)
+    #if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
-        // Deactivate VBUS Sensing B
-        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+    // Deactivate VBUS Sensing B
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
 
-        // B-peripheral session valid override enable
-        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
-        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
+    // B-peripheral session valid override enable
+    USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+    USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
     #else
-        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
-        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
-        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
     #endif
-#else
+    #else
     // Enable VBUS hardware sensing
     #ifdef USB_OTG_GCCFG_VBDEN
-        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBDEN;
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBDEN;
     #else
-        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_NOVBUSSENS;
-        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBUSBSEN; // B Device sense
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_NOVBUSSENS;
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBUSBSEN;     // B Device sense
     #endif
-#endif
+    #endif
 }
 
 void init_usb_hardware(void) {
-    //TODO: if future chips overload this with options, move to peripherals management.
+    // TODO: if future chips overload this with options, move to peripherals management.
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     /**USB_OTG_FS GPIO Configuration
@@ -73,7 +73,7 @@ void init_usb_hardware(void) {
     */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-      /* Configure DM DP Pins */
+    /* Configure DM DP Pins */
     GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -135,5 +135,5 @@ void init_usb_hardware(void) {
 }
 
 void OTG_FS_IRQHandler(void) {
-  usb_irq_handler();
+    usb_irq_handler();
 }

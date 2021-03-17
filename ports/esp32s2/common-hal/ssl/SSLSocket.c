@@ -35,27 +35,27 @@
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"
 
-ssl_sslsocket_obj_t* common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t* self,
-                                        uint8_t* ip, uint32_t *port) {
-    socketpool_socket_obj_t * sock = common_hal_socketpool_socket_accept(self->sock, ip, port);
-    ssl_sslsocket_obj_t * sslsock = common_hal_ssl_sslcontext_wrap_socket(self->ssl_context, sock, false, NULL);
+ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self,
+    uint8_t *ip, uint32_t *port) {
+    socketpool_socket_obj_t *sock = common_hal_socketpool_socket_accept(self->sock, ip, port);
+    ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslcontext_wrap_socket(self->ssl_context, sock, false, NULL);
     return sslsock;
 }
 
-bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t* self,
-                                        const char* host, size_t hostlen, uint32_t port) {
+bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self,
+    const char *host, size_t hostlen, uint32_t port) {
     return common_hal_socketpool_socket_bind(self->sock, host, hostlen, port);
 }
 
-void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t* self) {
+void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     common_hal_socketpool_socket_close(self->sock);
     esp_tls_conn_destroy(self->tls);
     self->tls = NULL;
 }
 
-bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t* self,
-                                            const char* host, size_t hostlen, uint32_t port) {
-    esp_tls_cfg_t* tls_config = NULL;
+bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
+    const char *host, size_t hostlen, uint32_t port) {
+    esp_tls_cfg_t *tls_config = NULL;
     tls_config = &self->ssl_context->ssl_config;
     int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tls);
     self->sock->connected = result >= 0;
@@ -88,19 +88,19 @@ bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t* self,
     return self->sock->connected;
 }
 
-bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t* self) {
+bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self) {
     return self->tls == NULL && self->sock->num < 0;
 }
 
-bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t* self) {
+bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self) {
     return self->sock->connected;
 }
 
-bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t* self, int backlog) {
+bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
     return common_hal_socketpool_socket_listen(self->sock, backlog);
 }
 
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t* self, const uint8_t* buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int received = 0;
     bool timed_out = false;
     int status = 0;
@@ -129,7 +129,7 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t* self, const ui
             available = remaining;
         }
         if (available > 0) {
-            status = esp_tls_conn_read(self->tls, (void*) buf + received, available);
+            status = esp_tls_conn_read(self->tls, (void *)buf + received, available);
             if (status == 0) {
                 // Reading zero when something is available indicates a closed
                 // connection. (The available bytes could have been TLS internal.)
@@ -140,7 +140,7 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t* self, const ui
             }
         }
         // In non-blocking mode, fail instead of timing out
-        if (received==0 && self->sock->timeout_ms == 0) {
+        if (received == 0 && self->sock->timeout_ms == 0) {
             mp_raise_OSError(MP_EAGAIN);
         }
     }
@@ -151,7 +151,7 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t* self, const ui
     return received;
 }
 
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t* self, const uint8_t* buf, uint32_t len) {
+mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int sent = -1;
     sent = esp_tls_conn_write(self->tls, buf, len);
 
@@ -171,6 +171,6 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t* self, const uint8_t
     return sent;
 }
 
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t* self, uint32_t timeout_ms) {
+void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms) {
     self->sock->timeout_ms = timeout_ms;
 }

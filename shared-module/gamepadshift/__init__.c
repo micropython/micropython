@@ -30,7 +30,7 @@
 #include "shared-bindings/gamepadshift/GamePadShift.h"
 
 void gamepadshift_tick(void) {
-    void* singleton = MP_STATE_VM(gamepad_singleton);
+    void *singleton = MP_STATE_VM(gamepad_singleton);
     if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
         return;
     }

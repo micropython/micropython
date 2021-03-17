@@ -116,7 +116,7 @@ STATIC int read_byte(mp_reader_t *reader) {
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
-        mp_uint_t b =reader->readbyte(reader->data);
+        mp_uint_t b = reader->readbyte(reader->data);
         if (b == MP_READER_EOF) {
             raise_corrupt_mpy();
         }
@@ -142,7 +142,7 @@ STATIC size_t read_uint(mp_reader_t *reader) {
 STATIC qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     char str[len];
-    read_bytes(reader, (byte*)str, len);
+    read_bytes(reader, (byte *)str, len);
     qstr qst = qstr_from_strn(str, len);
     return qst;
 }
@@ -155,7 +155,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         size_t len = read_uint(reader);
         vstr_t vstr;
         vstr_init_len(&vstr, len);
-        read_bytes(reader, (byte*)vstr.buf, len);
+        read_bytes(reader, (byte *)vstr.buf, len);
         if (obj_type == 's' || obj_type == 'b') {
             return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
         } else if (obj_type == 'i') {
@@ -196,9 +196,11 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     // load qstrs and link global qstr ids into bytecode
     qstr simple_name = load_qstr(reader);
     qstr source_file = load_qstr(reader);
-    ((byte*)ip2)[0] = simple_name; ((byte*)ip2)[1] = simple_name >> 8;
-    ((byte*)ip2)[2] = source_file; ((byte*)ip2)[3] = source_file >> 8;
-    load_bytecode_qstrs(reader, (byte*)ip, bytecode + bc_len);
+    ((byte *)ip2)[0] = simple_name;
+    ((byte *)ip2)[1] = simple_name >> 8;
+    ((byte *)ip2)[2] = source_file;
+    ((byte *)ip2)[3] = source_file >> 8;
+    load_bytecode_qstrs(reader, (byte *)ip, bytecode + bc_len);
 
     // load constant table
     size_t n_obj = read_uint(reader);
@@ -262,7 +264,7 @@ mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
 #include "py/objstr.h"
 
 STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
-    print->print_strn(print->data, (const char*)data, len);
+    print->print_strn(print->data, (const char *)data, len);
 }
 
 #define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
@@ -274,7 +276,7 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     for (; n != 0; n >>= 7) {
         *--p = 0x80 | (n & 0x7f);
     }
-    print->print_strn(print->data, (char*)p, buf + sizeof(buf) - p);
+    print->print_strn(print->data, (char *)p, buf + sizeof(buf) - p);
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr qst) {
@@ -296,7 +298,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         const char *str = mp_obj_str_get_data(o, &len);
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
-        mp_print_bytes(print, (const byte*)str, len);
+        mp_print_bytes(print, (const byte *)str, len);
     } else if (MP_OBJ_TO_PTR(o) == &mp_const_ellipsis_obj) {
         byte obj_type = 'e';
         mp_print_bytes(print, &obj_type, 1);
@@ -320,7 +322,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         mp_obj_print_helper(&pr, o, PRINT_REPR);
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, vstr.len);
-        mp_print_bytes(print, (const byte*)vstr.buf, vstr.len);
+        mp_print_bytes(print, (const byte *)vstr.buf, vstr.len);
         vstr_clear(&vstr);
     }
 }
@@ -369,7 +371,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
         save_obj(print, (mp_obj_t)*const_table++);
     }
     for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
-        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++);
+        save_raw_code(print, (mp_raw_code_t *)(uintptr_t)*const_table++);
     }
 }
 
@@ -380,11 +382,11 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     //  byte  feature flags
     //  byte  number of bits in a small int
     byte header[4] = {'M', MPY_VERSION, MPY_FEATURE_FLAGS_DYNAMIC,
-        #if MICROPY_DYNAMIC_COMPILER
-        mp_dynamic_compiler.small_int_bits,
-        #else
-        mp_small_int_bits(),
-        #endif
+                      #if MICROPY_DYNAMIC_COMPILER
+                      mp_dynamic_compiler.small_int_bits,
+                      #else
+                      mp_small_int_bits(),
+                      #endif
     };
     mp_print_bytes(print, header, sizeof(header));
 
@@ -408,7 +410,7 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    mp_print_t fd_print = {(void*)(intptr_t)fd, fd_print_strn};
+    mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(rc, &fd_print);
     close(fd);
 }

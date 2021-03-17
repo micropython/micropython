@@ -123,5 +123,5 @@ const mp_obj_type_t terminalio_terminal_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &terminalio_terminal_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&terminalio_terminal_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
 };

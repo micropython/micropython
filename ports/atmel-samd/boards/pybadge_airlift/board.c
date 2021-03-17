@@ -48,11 +48,11 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -63,7 +63,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

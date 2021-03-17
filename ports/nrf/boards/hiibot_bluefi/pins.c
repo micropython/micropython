@@ -111,7 +111,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_P27), MP_ROM_PTR(&pin_P1_13) },
     { MP_ROM_QSTR(MP_QSTR_D27), MP_ROM_PTR(&pin_P1_13) },
-    //{ MP_ROM_QSTR(MP_QSTR_TFT_RESET), MP_ROM_PTR(&pin_P1_13) },
+    // { MP_ROM_QSTR(MP_QSTR_TFT_RESET), MP_ROM_PTR(&pin_P1_13) },
     { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT), MP_ROM_PTR(&pin_P1_13) },
 
     // P28~P33/D28~D33 connecte into QSPI FlashROM (W25Q16JV_IQ)

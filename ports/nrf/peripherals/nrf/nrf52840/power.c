@@ -38,10 +38,12 @@ void nrf_peripherals_power_init(void) {
         // checking which prevents writes to UICR.
         // Reported: https://devzone.nordicsemi.com/f/nordic-q-a/57243/nrfx_nvmc-h-api-cannot-write-to-uicr
         NRF_NVMC->CONFIG = NRF_NVMC_MODE_WRITE;
-        while (!(NRF_NVMC->READY & NVMC_READY_READY_Msk)) {}
+        while (!(NRF_NVMC->READY & NVMC_READY_READY_Msk)) {
+        }
         NRF_UICR->REGOUT0 = UICR_REGOUT0_VOUT_3V3 << UICR_REGOUT0_VOUT_Pos;
         __DMB();
-        while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {}
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {
+        }
         NRF_NVMC->CONFIG = NRF_NVMC_MODE_READONLY;
 
         // Must reset to enable change.

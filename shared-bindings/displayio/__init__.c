@@ -88,5 +88,5 @@ STATIC MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_t
 
 const mp_obj_module_t displayio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&displayio_module_globals,
+    .globals = (mp_obj_dict_t *)&displayio_module_globals,
 };

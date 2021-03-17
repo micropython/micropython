@@ -56,5 +56,5 @@ STATIC MP_DEFINE_CONST_DICT(rp2pio_module_globals, rp2pio_module_globals_table);
 
 const mp_obj_module_t rp2pio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&rp2pio_module_globals,
+    .globals = (mp_obj_dict_t *)&rp2pio_module_globals,
 };

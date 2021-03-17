@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "NUCLEO STM32H743"
 #define MICROPY_HW_MCU_NAME         "STM32H743"

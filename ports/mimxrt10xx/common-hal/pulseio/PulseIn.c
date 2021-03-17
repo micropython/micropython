@@ -39,7 +39,7 @@
 #include "supervisor/shared/translate.h"
 
 // TODO
-//static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
+// static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 //    uint32_t sense_setting;
 //    if (!first_edge) {
 //        sense_setting = EIC_CONFIG_SENSE0_BOTH_Val;
@@ -52,9 +52,9 @@
 //    }
 //    set_eic_handler(self->channel, EIC_HANDLER_PULSEIN);
 //    turn_on_eic_channel(self->channel, sense_setting);
-//}
+// }
 
-//void pulsein_interrupt_handler(uint8_t channel) {
+// void pulsein_interrupt_handler(uint8_t channel) {
 //    // Grab the current time first.
 //    uint32_t current_us;
 //    uint64_t current_ms;
@@ -99,10 +99,10 @@
 //    }
 //    self->last_ms = current_ms;
 //    self->last_us = current_us;
-//}
+// }
 
-void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
-        const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
+void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
+    const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
 //    if (!pin->has_extint) {
 //        mp_raise_RuntimeError(translate("No hardware support on pin"));
 //    }
@@ -142,12 +142,12 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 //    pulsein_set_config(self, true);
 }
 
-bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
 //    return self->pin == NO_PIN;
     return true;
 }
 
-void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 //    if (common_hal_pulseio_pulsein_deinited(self)) {
 //        return;
 //    }
@@ -157,13 +157,13 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
 //    self->pin = NO_PIN;
 }
 
-void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
 //    uint32_t mask = 1 << self->channel;
 //    EIC->INTENCLR.reg = mask << EIC_INTENSET_EXTINT_Pos;
 }
 
-void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
-        uint16_t trigger_duration) {
+void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
+    uint16_t trigger_duration) {
 //    // Make sure we're paused.
 //    common_hal_pulseio_pulsein_pause(self);
 //
@@ -192,14 +192,14 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
 //    pulsein_set_config(self, true);
 }
 
-void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
 //    common_hal_mcu_disable_interrupts();
 //    self->start = 0;
 //    self->len = 0;
 //    common_hal_mcu_enable_interrupts();
 }
 
-uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
 //    if (self->len == 0) {
 //        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
 //    }
@@ -213,24 +213,24 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     return 0;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *self) {
 //    return self->maxlen;
     return 0;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
 //    return self->len;
     return 0;
 }
 
-bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
 //    uint32_t mask = 1 << self->channel;
 //    return (EIC->INTENSET.reg & (mask << EIC_INTENSET_EXTINT_Pos)) == 0;
     return true;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
-        int16_t index) {
+uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self,
+    int16_t index) {
 //    common_hal_mcu_disable_interrupts();
 //    if (index < 0) {
 //        index += self->len;

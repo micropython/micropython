@@ -55,7 +55,7 @@ void ble_drv_reset() {
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
 }
 
-void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t* entry, ble_drv_evt_handler_t func, void *param) {
+void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param) {
     entry->next = MP_STATE_VM(ble_drv_evt_handler_entries);
     entry->param = param;
     entry->func = func;
@@ -92,34 +92,34 @@ void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
     }
 }
 
-extern void tusb_hal_nrf_power_event (uint32_t event);
+extern void tusb_hal_nrf_power_event(uint32_t event);
 
 void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
         switch (evt_id) {
             // usb power event
-        case NRF_EVT_POWER_USB_DETECTED:
-        case NRF_EVT_POWER_USB_POWER_READY:
-        case NRF_EVT_POWER_USB_REMOVED: {
-            int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
-                (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
-                (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+            case NRF_EVT_POWER_USB_DETECTED:
+            case NRF_EVT_POWER_USB_POWER_READY:
+            case NRF_EVT_POWER_USB_REMOVED: {
+                int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED) ? NRFX_POWER_USB_EVT_DETECTED:
+                    (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                    (evt_id == NRF_EVT_POWER_USB_REMOVED) ? NRFX_POWER_USB_EVT_REMOVED : -1;
 
-            tusb_hal_nrf_power_event(usbevt);
-        }
+                tusb_hal_nrf_power_event(usbevt);
+            }
             break;
 
             // Set flag indicating that a flash operation has finished.
-        case NRF_EVT_FLASH_OPERATION_SUCCESS:
-            sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
-            break;
-        case NRF_EVT_FLASH_OPERATION_ERROR:
-            sd_flash_operation_status = SD_FLASH_OPERATION_ERROR;
-            break;
+            case NRF_EVT_FLASH_OPERATION_SUCCESS:
+                sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+                break;
+            case NRF_EVT_FLASH_OPERATION_ERROR:
+                sd_flash_operation_status = SD_FLASH_OPERATION_ERROR;
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 
@@ -134,7 +134,7 @@ void SD_EVT_IRQHandler(void) {
             break;
         }
 
-        ble_evt_t* event = (ble_evt_t *)m_ble_evt_buf;
+        ble_evt_t *event = (ble_evt_t *)m_ble_evt_buf;
         #if CIRCUITPY_VERBOSE_BLE
         mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
         #endif
@@ -154,7 +154,7 @@ void SD_EVT_IRQHandler(void) {
         }
         #if CIRCUITPY_VERBOSE_BLE
         if (event->header.evt_id == BLE_GATTS_EVT_WRITE) {
-            ble_gatts_evt_write_t* write_evt = &event->evt.gatts_evt.params.write;
+            ble_gatts_evt_write_t *write_evt = &event->evt.gatts_evt.params.write;
             mp_printf(&mp_plat_print, "Write to: UUID(0x%04x) handle %x of length %d auth %x\n", write_evt->uuid.uuid, write_evt->handle, write_evt->len, write_evt->auth_required);
         }
         #endif

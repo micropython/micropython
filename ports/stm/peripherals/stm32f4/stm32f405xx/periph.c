@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -29,7 +29,7 @@
 #include "peripherals/pins.h"
 #include "peripherals/periph.h"
 
-I2C_TypeDef * mcu_i2c_banks[I2C_BANK_ARRAY_LEN] = {I2C1, I2C2, I2C3};
+I2C_TypeDef *mcu_i2c_banks[I2C_BANK_ARRAY_LEN] = {I2C1, I2C2, I2C3};
 
 const mcu_periph_obj_t mcu_i2c_sda_list[I2C_SDA_ARRAY_LEN] = {
     PERIPH(1, 4, &pin_PB07),
@@ -50,7 +50,7 @@ const mcu_periph_obj_t mcu_i2c_scl_list[I2C_SCL_ARRAY_LEN] = {
     PERIPH(3, 4, &pin_PH07),
 };
 
-SPI_TypeDef * mcu_spi_banks[SPI_BANK_ARRAY_LEN] = {SPI1, SPI2, SPI3};
+SPI_TypeDef *mcu_spi_banks[SPI_BANK_ARRAY_LEN] = {SPI1, SPI2, SPI3};
 
 const mcu_periph_obj_t mcu_spi_sck_list[SPI_SCK_ARRAY_LEN] = {
     PERIPH(1, 5, &pin_PA05),
@@ -88,7 +88,7 @@ const mcu_periph_obj_t mcu_spi_nss_list[SPI_NSS_ARRAY_LEN] = {
     PERIPH(3, 6, &pin_PA15),
 };
 
-USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, USART6};
+USART_TypeDef *mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, USART6};
 bool mcu_uart_has_usart[MAX_UART] = {true, true, true, false, false, true};
 
 const mcu_periph_obj_t mcu_uart_tx_list[UART_TX_ARRAY_LEN] = {
@@ -120,10 +120,10 @@ const mcu_periph_obj_t mcu_uart_rx_list[UART_RX_ARRAY_LEN] = {
     PERIPH(6, 8, &pin_PG09),
 };
 
-//Timers
-//TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
-TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
-                                    TIM11, TIM12, TIM13, TIM14};
+// Timers
+// TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
+TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
+                                                  TIM11, TIM12, TIM13, TIM14};
 
 const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(2, 1, 1, &pin_PA00),
@@ -195,8 +195,8 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(8, 3, 3, &pin_PI07),
 };
 
-//SDIO
-SDIO_TypeDef * mcu_sdio_banks[1] = {SDIO};
+// SDIO
+SDIO_TypeDef *mcu_sdio_banks[1] = {SDIO};
 
 const mcu_periph_obj_t mcu_sdio_clock_list[1] = {
     PERIPH(1, 12, &pin_PC12),
@@ -217,8 +217,8 @@ const mcu_periph_obj_t mcu_sdio_data3_list[1] = {
     PERIPH(1, 12, &pin_PC11),
 };
 
-//CAN
-CAN_TypeDef * mcu_can_banks[2] = {CAN1, CAN2};
+// CAN
+CAN_TypeDef *mcu_can_banks[2] = {CAN1, CAN2};
 
 const mcu_periph_obj_t mcu_can_tx_list[6] = {
     PERIPH(1, 9, &pin_PA11),

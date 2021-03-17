@@ -13,12 +13,7 @@ trigger.switch_to_output(True)
 length = 8000 // 440
 
 samples = []
-sample_names = [
-"unsigned 8 bit",
-"signed 8 bit",
-"unsigned 16 bit",
-"signed 16 bit"
-]
+sample_names = ["unsigned 8 bit", "signed 8 bit", "unsigned 16 bit", "signed 16 bit"]
 
 
 # unsigned 8 bit

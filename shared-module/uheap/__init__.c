@@ -40,8 +40,8 @@
 #include "shared-bindings/uheap/__init__.h"
 
 #define VERIFY_PTR(ptr) ( \
-        (void *) ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && (void *) ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
+    (void *)ptr >= (void *)MP_STATE_MEM(gc_pool_start)         /* must be above start of pool */ \
+    && (void *)ptr < (void *)MP_STATE_MEM(gc_pool_end)            /* must be below end of pool */ \
     )
 
 static void indent(uint8_t levels) {
@@ -60,17 +60,17 @@ static uint32_t int_size(uint8_t indent_level, mp_obj_t obj) {
         return 0;
     }
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
-        mp_obj_int_t* i = MP_OBJ_TO_PTR(obj);
-        return gc_nbytes(obj) + gc_nbytes(i->mpz.dig);
+    mp_obj_int_t *i = MP_OBJ_TO_PTR(obj);
+    return gc_nbytes(obj) + gc_nbytes(i->mpz.dig);
     #else
-        return gc_nbytes(obj);
+    return gc_nbytes(obj);
     #endif
 }
 
 static uint32_t string_size(uint8_t indent_level, mp_obj_t obj) {
     if (MP_OBJ_IS_QSTR(obj)) {
         qstr qs = MP_OBJ_QSTR_VALUE(obj);
-        const char* s = qstr_str(qs);
+        const char *s = qstr_str(qs);
         if (!VERIFY_PTR(s)) {
             return 0;
         }
@@ -78,7 +78,7 @@ static uint32_t string_size(uint8_t indent_level, mp_obj_t obj) {
         mp_printf(&mp_plat_print, "%s\n", s);
         return 0;
     } else { // MP_OBJ_IS_TYPE(o, &mp_type_str)
-        mp_obj_str_t* s = MP_OBJ_TO_PTR(obj);
+        mp_obj_str_t *s = MP_OBJ_TO_PTR(obj);
         return gc_nbytes(s) + gc_nbytes(s->data);
     }
 }
@@ -118,8 +118,8 @@ static uint32_t dict_size(uint8_t indent_level, mp_obj_dict_t *dict) {
 }
 
 static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
-    //indent(indent_level);
-    //mp_print_str(&mp_plat_print, "function\n");
+    // indent(indent_level);
+    // mp_print_str(&mp_plat_print, "function\n");
     if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_0)) {
         return 0;
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_1)) {
@@ -131,7 +131,7 @@ static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_var)) {
         return 0;
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_bc)) {
-        mp_obj_fun_bc_t* fn = MP_OBJ_TO_PTR(obj);
+        mp_obj_fun_bc_t *fn = MP_OBJ_TO_PTR(obj);
         uint32_t total_size = gc_nbytes(fn) + gc_nbytes(fn->bytecode) + gc_nbytes(fn->const_table);
         #if MICROPY_DEBUG_PRINTERS
         mp_printf(&mp_plat_print, "BYTECODE START\n");
@@ -180,7 +180,7 @@ static uint32_t type_size(uint8_t indent_level, mp_obj_type_t *type) {
 
     // mp_obj_base_t base;
     // qstr name;
-    //total_size += string_size(indent_level, MP_OBJ_TO_PTR(type->name));
+    // total_size += string_size(indent_level, MP_OBJ_TO_PTR(type->name));
     // mp_print_fun_t print;
     // mp_make_new_fun_t make_new;     // to make an instance of the type
     //
@@ -258,8 +258,8 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj) {
         return function_size(indent_level, MP_OBJ_TO_PTR(obj));
     }
     if (!VERIFY_PTR(obj)) {
-        //indent(indent_level);
-        //mp_printf(&mp_plat_print, "In ROM\n");
+        // indent(indent_level);
+        // mp_printf(&mp_plat_print, "In ROM\n");
         return 0;
     }
     mp_obj_t type = MP_OBJ_FROM_PTR(mp_obj_get_type(obj));
@@ -274,7 +274,7 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj) {
         return array_size(indent_level, MP_OBJ_TO_PTR(obj));
     } else if (type == &mp_type_memoryview) {
         return memoryview_size(indent_level, MP_OBJ_TO_PTR(obj));
-    }  else if (MP_OBJ_IS_OBJ(obj) && VERIFY_PTR(type)) {
+    } else if (MP_OBJ_IS_OBJ(obj) && VERIFY_PTR(type)) {
         return instance_size(indent_level, MP_OBJ_TO_PTR(obj));
     }
 

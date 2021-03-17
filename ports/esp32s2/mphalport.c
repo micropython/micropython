@@ -57,5 +57,5 @@ mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs, uint8_t reg_count) {
     // because the register value could change after it's been restored but that
     // is unlikely to happen with a heap pointer while we do a GC.
     xthal_window_spill();
-    return (mp_uint_t) __builtin_frame_address(0);
+    return (mp_uint_t)__builtin_frame_address(0);
 }

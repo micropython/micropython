@@ -59,7 +59,7 @@
 //|         ...
 //|
 STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check number of arguments
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
@@ -70,7 +70,7 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     self->base.type = &touchio_touchin_type;
     common_hal_touchio_touchin_construct(self, pin);
 
-    return (mp_obj_t) self;
+    return (mp_obj_t)self;
 }
 
 //|     def deinit(self) -> None:
@@ -144,7 +144,7 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
     .proxy = {(mp_obj_t)&touchio_touchin_get_raw_value_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
- };
+};
 
 
 //|     threshold: Optional[int]
@@ -153,7 +153,13 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
 //|     When the **TouchIn** object is created, an initial `raw_value` is read from the pin,
 //|     and then `threshold` is set to be 100 + that value.
 //|
-//|     You can adjust `threshold` to make the pin more or less sensitive."""
+//|     You can adjust `threshold` to make the pin more or less sensitive::
+//|
+//|       import board
+//|       import touchio
+//|
+//|       touch = touchio.TouchIn(board.A1)
+//|       touch.threshold = 7300"""
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);

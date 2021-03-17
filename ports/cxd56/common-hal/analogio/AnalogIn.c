@@ -36,7 +36,7 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 
 typedef struct {
-    const char* devpath;
+    const char *devpath;
     const mcu_pin_obj_t *pin;
     int fd;
 } analogin_dev_t;
@@ -109,7 +109,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     read(analogin_dev[self->number].fd, &value, sizeof(value));
 
-    return (uint16_t) 32768 + (uint16_t) value;
+    return (uint16_t)32768 + (uint16_t)value;
 }
 
 // Reference voltage is a fixed value which is depending on the board.

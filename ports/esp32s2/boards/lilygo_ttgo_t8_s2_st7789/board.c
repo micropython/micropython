@@ -62,21 +62,21 @@ uint8_t display_init_sequence[] = {
     0x21, 0,
     // display on
     0x29, 0 | DELAY, 255,
- };
+};
 
 static void display_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
 
     common_hal_busio_spi_construct(
         spi,
         &pin_GPIO36,    // CLK
         &pin_GPIO35,    // MOSI
         NULL            // MISO not connected
-    );
+        );
 
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
 
     common_hal_displayio_fourwire_construct(
@@ -88,9 +88,9 @@ static void display_init(void) {
         40000000,       // baudrate
         0,              // polarity
         0               // phase
-    );
+        );
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
 
     // workaround as board_init() is called before reset_port() in main.c
@@ -126,7 +126,7 @@ static void display_init(void) {
         60,             // native_frames_per_second
         true,           // backlight_on_high
         false           // SH1107_addressing
-    );
+        );
 
     common_hal_never_reset_pin(&pin_GPIO33); // backlight pin
 }
@@ -137,10 +137,10 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
-#ifdef DEBUG
+    #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-#endif /* DEBUG */
+    #endif /* DEBUG */
 
     // Display
     display_init();

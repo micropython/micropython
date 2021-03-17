@@ -11,8 +11,8 @@
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 
 
-void common_hal_countio_counter_construct(countio_counter_obj_t* self,
-    const mcu_pin_obj_t* pin_a) {
+void common_hal_countio_counter_construct(countio_counter_obj_t *self,
+    const mcu_pin_obj_t *pin_a) {
 
     if (pwm_gpio_to_channel(pin_a->number) != PWM_CHAN_B) {
         mp_raise_RuntimeError(translate("Pin must be on PWM Channel B"));
@@ -48,11 +48,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     pwm_set_enabled(self->slice_num, true);
 }
 
-bool common_hal_countio_counter_deinited(countio_counter_obj_t* self) {
+bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
     return self->pin_a == 0;
 }
 
-void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
+void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     if (common_hal_countio_counter_deinited(self)) {
         return;
     }
@@ -69,19 +69,19 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
     self->slice_num = 0;
 }
 
-mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {
+mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
     self->count += pwm_get_counter(self->slice_num);
     pwm_set_counter(self->slice_num, 0);
     return self->count;
 }
 
-void common_hal_countio_counter_set_count(countio_counter_obj_t* self,
-        mp_int_t new_count) {
+void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
+    mp_int_t new_count) {
     pwm_set_counter(self->slice_num, 0);
     self->count = new_count;
 }
 
-void common_hal_countio_counter_reset(countio_counter_obj_t* self){
+void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
     pwm_set_counter(self->slice_num, 0);
     self->count = 0;
 }
@@ -95,7 +95,7 @@ void counter_interrupt_handler() {
         ++pos;
     }
 
-    countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos-1];
+    countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos - 1];
     if (self != NULL) {
         pwm_clear_irq(self->slice_num);
         self->count += 65536;

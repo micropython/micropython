@@ -33,12 +33,13 @@
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-STATIC volatile background_callback_t * volatile callback_head, * volatile callback_tail;
+STATIC volatile background_callback_t *volatile callback_head, *volatile callback_tail;
 
 #define CALLBACK_CRITICAL_BEGIN (common_hal_mcu_disable_interrupts())
 #define CALLBACK_CRITICAL_END (common_hal_mcu_enable_interrupts())
 
-MP_WEAK void port_wake_main_task(void) {}
+MP_WEAK void port_wake_main_task(void) {
+}
 
 void background_callback_add_core(background_callback_t *cb) {
     CALLBACK_CRITICAL_BEGIN;
@@ -47,7 +48,7 @@ void background_callback_add_core(background_callback_t *cb) {
         return;
     }
     cb->next = 0;
-    cb->prev = (background_callback_t*)callback_tail;
+    cb->prev = (background_callback_t *)callback_tail;
     if (callback_tail) {
         callback_tail->next = cb;
     }
@@ -77,7 +78,7 @@ void PLACE_IN_ITCM(background_callback_run_all)() {
         return;
     }
     in_background_callback = true;
-    background_callback_t *cb = (background_callback_t*)callback_head;
+    background_callback_t *cb = (background_callback_t *)callback_head;
     callback_head = NULL;
     callback_tail = NULL;
     while (cb) {
@@ -107,8 +108,8 @@ void background_callback_end_critical_section() {
 
 void background_callback_reset() {
     CALLBACK_CRITICAL_BEGIN;
-    background_callback_t *cb = (background_callback_t*)callback_head;
-    while(cb) {
+    background_callback_t *cb = (background_callback_t *)callback_head;
+    while (cb) {
         background_callback_t *next = cb->next;
         memset(cb, 0, sizeof(*cb));
         cb = next;
@@ -134,8 +135,8 @@ void background_callback_gc_collect(void) {
     // It's necessary to traverse the whole list here, as the callbacks
     // themselves can be in non-gc memory, and some of the cb->data
     // objects themselves might be in non-gc memory.
-    background_callback_t *cb = (background_callback_t*)callback_head;
-    while(cb) {
+    background_callback_t *cb = (background_callback_t *)callback_head;
+    while (cb) {
         gc_collect_ptr(cb->data);
         cb = cb->next;
     }

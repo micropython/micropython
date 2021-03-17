@@ -67,7 +67,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     common_hal_rgbmatrix_rgbmatrix_reconstruct(self, framebuffer);
 }
 
-void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self, mp_obj_t framebuffer) {
+void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
     self->paused = 1;
 
     common_hal_rgbmatrix_timer_disable(self->timer);
@@ -80,7 +80,7 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
             self->bufinfo.typecode = 'H';
         }
         // verify that the matrix is big enough
-        mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
+        mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize - 1), false);
     } else {
         common_hal_rgbmatrix_free_impl(self->bufinfo.buf);
         common_hal_rgbmatrix_free_impl(self->protomatter.rgbPins);
@@ -96,7 +96,7 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
     memset(&self->protomatter, 0, sizeof(self->protomatter));
     ProtomatterStatus stat = _PM_init(&self->protomatter,
         self->width, self->bit_depth,
-        self->rgb_count/6, self->rgb_pins,
+        self->rgb_count / 6, self->rgb_pins,
         self->addr_count, self->addr_pins,
         self->clock_pin, self->latch_pin, self->oe_pin,
         self->doublebuffer, self->serpentine ? -self->tile : self->tile,
@@ -120,19 +120,19 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
     if (stat != PROTOMATTER_OK) {
         common_hal_rgbmatrix_rgbmatrix_deinit(self);
         switch (stat) {
-        case PROTOMATTER_ERR_PINS:
-            mp_raise_ValueError(translate("Invalid pin"));
-            break;
-        case PROTOMATTER_ERR_ARG:
-            mp_raise_ValueError(translate("Invalid argument"));
-            break;
-        case PROTOMATTER_ERR_MALLOC:
-            mp_raise_msg(&mp_type_MemoryError, NULL);
-            break;
-        default:
-            mp_raise_msg_varg(&mp_type_RuntimeError,
-                translate("Internal error #%d"), (int)stat);
-            break;
+            case PROTOMATTER_ERR_PINS:
+                mp_raise_ValueError(translate("Invalid pin"));
+                break;
+            case PROTOMATTER_ERR_ARG:
+                mp_raise_ValueError(translate("Invalid argument"));
+                break;
+            case PROTOMATTER_ERR_MALLOC:
+                mp_raise_msg(&mp_type_MemoryError, NULL);
+                break;
+            default:
+                mp_raise_msg_varg(&mp_type_RuntimeError,
+                    translate("Internal error #%d"), (int)stat);
+                break;
         }
     }
 
@@ -147,12 +147,12 @@ STATIC void free_pin(uint8_t *pin) {
 }
 
 STATIC void free_pin_seq(uint8_t *seq, int count) {
-    for (int i=0; i<count; i++) {
+    for (int i = 0; i < count; i++) {
         free_pin(&seq[i]);
     }
 }
 
-void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
+void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
     if (self->timer) {
         common_hal_rgbmatrix_timer_free(self->timer);
         self->timer = 0;
@@ -183,11 +183,11 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
     self->framebuffer = NULL;
 }
 
-void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t* self) {
+void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
 }
 
-void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused) {
+void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t *self, bool paused) {
     if (paused && !self->paused) {
         _PM_stop(&self->protomatter);
     } else if (!paused && self->paused) {
@@ -198,22 +198,22 @@ void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, 
     self->paused = paused;
 }
 
-bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t* self) {
+bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t *self) {
     return self->paused;
 }
 
-void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t* self) {
+void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t *self) {
     if (!self->paused) {
         _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
         _PM_swapbuffer_maybe(&self->protomatter);
     }
 }
 
-int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
+int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t *self) {
     return self->width;
 }
 
-int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
+int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t *self) {
     int computed_height = (self->rgb_count / 3) * (1 << (self->addr_count)) * self->tile;
     return computed_height;
 }

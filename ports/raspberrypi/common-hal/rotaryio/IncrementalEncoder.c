@@ -57,8 +57,8 @@ STATIC const uint16_t encoder_init[] = {
 
 STATIC void incrementalencoder_interrupt_handler(void *self_in);
 
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
     mp_obj_t pins[] = {MP_OBJ_FROM_PTR(pin_a), MP_OBJ_FROM_PTR(pin_b)};
     if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
         mp_raise_RuntimeError(translate("Pins must be sequential"));
@@ -93,28 +93,28 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     common_hal_rp2pio_statemachine_set_interrupt_handler(&self->state_machine, incrementalencoder_interrupt_handler, self, PIO_IRQ0_INTF_SM0_RXNEMPTY_BITS);
 }
 
-bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
+bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
     return common_hal_rp2pio_statemachine_deinited(&self->state_machine);
 }
 
-void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
+void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
-mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
+mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
     return self->position;
 }
 
-void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
-        mp_int_t new_position) {
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
+    mp_int_t new_position) {
     self->position = new_position;
 }
 
 STATIC void incrementalencoder_interrupt_handler(void *self_in) {
-    rotaryio_incrementalencoder_obj_t* self = self_in;
+    rotaryio_incrementalencoder_obj_t *self = self_in;
     // This table also works for detent both at 11 and 00
     // For 11 at detent:
     // Turning cw: 11->01->00->10->11

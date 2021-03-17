@@ -2851,6 +2851,10 @@ msgstr ""
 msgid "differentiation order out of range"
 msgstr ""
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3104,6 +3108,7 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr ""
 
@@ -3354,10 +3359,6 @@ msgstr ""
 
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
 msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
@@ -3693,7 +3694,7 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
@@ -4172,10 +4173,6 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c

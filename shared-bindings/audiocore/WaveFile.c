@@ -86,7 +86,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
         buffer_size = bufinfo.len;
     }
     common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]),
-                                          buffer, buffer_size);
+        buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -214,6 +214,6 @@ const mp_obj_type_t audioio_wavefile_type = {
     { &mp_type_type },
     .name = MP_QSTR_WaveFile,
     .make_new = audioio_wavefile_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audioio_wavefile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audioio_wavefile_locals_dict,
     .protocol = &audioio_wavefile_proto,
 };

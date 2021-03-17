@@ -70,5 +70,5 @@ const mp_obj_type_t vectorio_circle_type = {
     { &mp_type_type },
     .name = MP_QSTR_Circle,
     .make_new = vectorio_circle_make_new,
-    .locals_dict = (mp_obj_dict_t*)&vectorio_circle_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vectorio_circle_locals_dict,
 };
