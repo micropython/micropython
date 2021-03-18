@@ -508,13 +508,15 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
     uint8_t memaddr_buf[4];
     size_t memaddr_len = fill_memaddr_buf(&memaddr_buf[0], memaddr, addrsize);
 
-    int ret = mp_machine_i2c_writeto(self, addr, memaddr_buf, memaddr_len, false);
-    if (ret != memaddr_len) {
-        // must generate STOP
-        mp_machine_i2c_writeto(self, addr, NULL, 0, true);
-        return ret;
-    }
-    return mp_machine_i2c_readfrom(self, addr, buf, len, true);
+    // Create partial write buffers
+    mp_machine_i2c_buf_t bufs[2] = {
+        {.len = memaddr_len, .buf = memaddr_buf},
+        {.len = len, .buf = (uint8_t *)buf},
+    };
+    // Do I2C transfer
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
+    unsigned int flags = MP_MACHINE_I2C_FLAG_READ | MP_MACHINE_I2C_FLAG_STOP;
+    return i2c_p->transfer(self, addr, 2, bufs, flags);
 }
 
 STATIC int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, const uint8_t *buf, size_t len) {

@@ -69,20 +69,40 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
 
     int data_len = 0;
-    for (; n--; ++bufs) {
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
-        } else {
-            if (bufs->len != 0) {
-                i2c_master_write(cmd, bufs->buf, bufs->len, true);
-            }
+
+    i2c_master_start(cmd); 
+
+    // Following assumes function called with either 1 or 2 buffers 
+    if (n > 1) { 
+        // if we were passed 2 buffers, 1st is memory/register, so Q slave addr (W)
+        i2c_master_write_byte(cmd, addr << 1 , true);    
+        // Q actual memory address from buffer   
+        i2c_master_write(cmd, bufs->buf, bufs->len, true);  
+        if (flags & MP_MACHINE_I2C_FLAG_READ) { 
+            // Q repeated start to switch bus to read
+            i2c_master_start(cmd);  
+            // Q slave addr as (R)
+            i2c_master_write_byte(cmd, addr << 1 | MP_MACHINE_I2C_FLAG_READ, true);   
         }
         data_len += bufs->len;
+        //switch to data buffer 
+        ++bufs; 
+    } else { 
+        // simple transaction, just Q slave address with (R/W)
+        i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
+    }   
+
+    if (flags & MP_MACHINE_I2C_FLAG_READ) { 
+        i2c_master_read(cmd, bufs->buf, bufs->len,I2C_MASTER_LAST_NACK); 
+    } else {
+        if (bufs->len != 0) {
+            i2c_master_write(cmd, bufs->buf, bufs->len, true);
+        }
     }
+
+    data_len += bufs->len;
 
     if (flags & MP_MACHINE_I2C_FLAG_STOP) {
         i2c_master_stop(cmd);
