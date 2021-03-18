@@ -401,6 +401,7 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
             }
         }
     }
+    displayio_bitmap_set_dirty_area(self, x1, y1, x2, y2);
 }
 
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
