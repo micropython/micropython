@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-18 23:41+0000\n"
+"PO-Revision-Date: 2021-03-19 16:35+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3318,12 +3318,12 @@ msgstr "index dupterm inválido"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
+msgstr "el tamaño del elemento no es valido%d por bits_per_pixel %d\n"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "el element_size %d,no es valido, debe ser 1,2 ó 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
