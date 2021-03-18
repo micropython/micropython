@@ -240,30 +240,18 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
         mp_raise_RuntimeError(translate("Read-only object"));
     }
 
-    // Ensure x1 < x2 and y1 < y2
-    if (x1 > x2) {
-        int16_t temp = x2;
-        x2 = x1;
-        x1 = temp;
-    }
-    if (y1 > y2) {
-        int16_t temp = y2;
-        y2 = y1;
-        y1 = temp;
-    }
+    displayio_area_t area = { x1, y1, x2, y2 };
+    displayio_area_canon(&area);
 
-    // constrain to bitmap dimensions
-    x1 = constrain(x1, 0, destination->width);
-    x2 = constrain(x2, 0, destination->width);
-    y1 = constrain(y1, 0, destination->height);
-    y2 = constrain(y2, 0, destination->height);
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height };
+    displayio_area_compute_overlap(&area, &bitmap_area, &area);
 
     // update the dirty rectangle
-    displayio_bitmap_set_dirty_area(destination, x1, y1, x2, y2);
+    displayio_bitmap_set_dirty_area(destination, &area);
 
     int16_t x, y;
-    for (x = x1; x < x2; x++) {
-        for (y = y1; y < y2; y++) {
+    for (x = area.x1; x < area.x2; x++) {
+        for (y = area.y1; y < area.y2; y++) {
             displayio_bitmap_write_pixel(destination, x, y, value);
         }
     }
@@ -298,13 +286,11 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
         ybb0 = y1;
         ybb1 = y0 + 1;
     }
+    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1 };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height };
+    displayio_area_compute_overlap(&area, &bitmap_area, &area);
 
-    xbb0 = constrain(xbb0, 0, destination->width);
-    xbb1 = constrain(xbb1, 0, destination->width);
-    ybb0 = constrain(ybb0, 0, destination->height);
-    ybb1 = constrain(ybb1, 0, destination->height);
-
-    displayio_bitmap_set_dirty_area(destination, xbb0, ybb0, xbb1, ybb1);
+    displayio_bitmap_set_dirty_area(destination, &area);
 
     int16_t temp, x, y;
 
@@ -401,7 +387,8 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
             }
         }
     }
-    displayio_bitmap_set_dirty_area(self, x1, y1, x2, y2);
+    displayio_area_t area = { x1, y1, x2, y2 };
+    displayio_bitmap_set_dirty_area(self, &area);
 }
 
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
@@ -486,5 +473,6 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
         }
     }
 
-    displayio_bitmap_set_dirty_area(self, 0, 0, self->width, self->height);
+    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_bitmap_set_dirty_area(self, &a);
 }
