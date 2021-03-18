@@ -59,7 +59,7 @@ STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
 
 STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
     mp_hal_pin_od_high(pin);
-    for (int tries=TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
+    for (int tries = TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
         mp_hal_delay_us(TIMING_LDELAY);
     }
     uint32_t i = mp_hal_quiet_timing_enter();
@@ -75,7 +75,7 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
 
 STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
     mp_hal_pin_od_high(pin);
-    for (int tries=TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
+    for (int tries = TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
         mp_hal_delay_us(TIMING_LDELAY);
     }
     uint32_t i = mp_hal_quiet_timing_enter();
