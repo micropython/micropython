@@ -95,10 +95,6 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     // #    */
 
 
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-
     int16_t x,y;
 
     int16_t minx = dest_clip1_x;
@@ -199,6 +195,9 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     float rowu = startu + miny * duCol;
     float rowv = startv + miny * dvCol;
 
+    displayio_area_t dirty_area = {minx, miny, maxx, maxy};
+    displayio_bitmap_set_dirty_area(self, &dirty_area);
+
     for (y = miny; y <= maxy; y++) {
         float u = rowu + minx * duRow;
         float v = rowv + minx * dvRow;
@@ -236,10 +235,6 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
     //
     // input checks should ensure that x1 < x2 and y1 < y2 and are within the bitmap region
 
-    if (destination->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-
     displayio_area_t area = { x1, y1, x2, y2 };
     displayio_area_canon(&area);
 
@@ -261,10 +256,6 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,
     int16_t x1, int16_t y1,
     uint32_t value) {
-
-    if (destination->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
 
     //
     // adapted from Adafruit_CircuitPython_Display_Shapes.Polygon._line
@@ -394,9 +385,8 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
 
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
+    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_bitmap_set_dirty_area(self, &a);
 
     size_t elements_per_row = (self->width * bits_per_pixel + element_size * 8 - 1) / (element_size * 8);
     size_t rowsize = element_size * elements_per_row;
@@ -472,7 +462,4 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
             displayio_bitmap_write_pixel(self, x, y, value & mask);
         }
     }
-
-    displayio_area_t a = {0, 0, self->width, self->height};
-    displayio_bitmap_set_dirty_area(self, &a);
 }

@@ -106,6 +106,10 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
 }
 
 void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *dirty_area) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+
     displayio_area_t area = *dirty_area;
     displayio_area_canon(&area);
     displayio_area_union(&area, &self->dirty_area, &area);
@@ -145,10 +149,6 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
     // If skip_value is encountered in the source bitmap, it will not be copied.
     // If skip_value is `None`, then all pixels are copied.
     // This function assumes input checks were performed for pixel index entries.
-
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
 
     // Update the dirty area
     int16_t dirty_x_max = (x + (x2 - x1));
@@ -198,10 +198,6 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 }
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-
     // update the dirty region
     displayio_area_t a = {x, y, x + 1, y + 1};
     displayio_bitmap_set_dirty_area(self, &a);
@@ -225,14 +221,8 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-    // Update the dirty area.
-    self->dirty_area.x1 = 0;
-    self->dirty_area.x2 = self->width;
-    self->dirty_area.y1 = 0;
-    self->dirty_area.y2 = self->height;
+    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_bitmap_set_dirty_area(self, &a);
 
     // build the packed word
     uint32_t word = 0;
