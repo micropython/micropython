@@ -320,6 +320,19 @@ bool displayio_area_empty(const displayio_area_t *a) {
     return (a->x1 == a->x2) || (a->y1 == a->y2);
 }
 
+void displayio_area_canon(displayio_area_t *a) {
+    if (a->x1 < a->x2) {
+        int16_t t = a->x1;
+        a->x1 = a->x2;
+        a->x2 = t;
+    }
+    if (a->y1 < a->y2) {
+        int16_t t = a->y1;
+        a->y1 = a->y2;
+        a->y2 = t;
+    }
+}
+
 void displayio_area_union(const displayio_area_t *a,
     const displayio_area_t *b,
     displayio_area_t *u) {
