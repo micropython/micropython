@@ -555,6 +555,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, fuzzy, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Ginagamit na ang DAC"
@@ -1748,7 +1749,6 @@ msgid "PWM slice channel A already in use"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr ""
