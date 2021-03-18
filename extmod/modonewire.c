@@ -33,12 +33,14 @@
 /******************************************************************************/
 // Low-level 1-Wire routines
 
+#define TIMING_LTRIES (10)
+#define TIMING_LDELAY (10)
 #define TIMING_RESET1 (480)
 #define TIMING_RESET2 (70)
 #define TIMING_RESET3 (410)
-#define TIMING_READ1 (5)
-#define TIMING_READ2 (5)
-#define TIMING_READ3 (40)
+#define TIMING_READ1  (10)
+#define TIMING_READ2  (20)
+#define TIMING_READ3  (30)
 #define TIMING_WRITE1 (10)
 #define TIMING_WRITE2 (50)
 #define TIMING_WRITE3 (10)
@@ -57,6 +59,9 @@ STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
 
 STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
     mp_hal_pin_od_high(pin);
+    for (int tries = TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
+        mp_hal_delay_us(TIMING_LDELAY);
+    }
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_READ1);
@@ -69,6 +74,10 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
 }
 
 STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
+    mp_hal_pin_od_high(pin);
+    for (int tries = TIMING_LTRIES; tries && !mp_hal_pin_read(pin); tries--) {
+        mp_hal_delay_us(TIMING_LDELAY);
+    }
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_WRITE1);
