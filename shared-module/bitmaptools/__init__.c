@@ -205,7 +205,7 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
             if (u >= source_clip0_x && u < source_clip1_x && v >= source_clip0_y && v < source_clip1_y) {
                 uint32_t c = common_hal_displayio_bitmap_get_pixel(source, u, v);
                 if ((skip_index_none) || (c != skip_index)) {
-                    common_hal_displayio_bitmap_set_pixel(self, x, y, c);
+                    displayio_bitmap_write_pixel(self, x, y, c);
                 }
             }
             u += duRow;
