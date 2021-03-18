@@ -33,9 +33,12 @@
 #include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
+#include "tusb.h"
+
 STATIC supervisor_run_reason_t _run_reason;
 
-// TODO: add USB, REPL to description once they're operational
+// TODO: add REPL to description once it is operational
+
 //| class Runtime:
 //|     """Current status of runtime objects.
 //|
@@ -51,6 +54,21 @@ STATIC supervisor_run_reason_t _run_reason;
 //|         Use `supervisor.runtime` to access the sole instance available."""
 //|         ...
 //|
+
+//|     usb_connected: bool
+//|     """Returns the USB enumeration status (read-only)."""
+//|
+STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
+    return mp_obj_new_bool(tud_ready());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_usb_connected_obj, supervisor_runtime_get_usb_connected);
+
+const mp_obj_property_t supervisor_runtime_usb_connected_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&supervisor_runtime_get_usb_connected_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
@@ -104,6 +122,7 @@ void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
 }
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_runtime_serial_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_runtime_serial_bytes_available_obj) },
     { MP_ROM_QSTR(MP_QSTR_run_reason), MP_ROM_PTR(&supervisor_runtime_run_reason_obj) },
