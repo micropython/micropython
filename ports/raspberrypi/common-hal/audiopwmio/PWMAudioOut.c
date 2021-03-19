@@ -53,8 +53,8 @@ void audiopwmout_reset() {
 }
 
 // Caller validates that pins are free.
-void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
-        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
+void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *self,
+    const mcu_pin_obj_t *left_channel, const mcu_pin_obj_t *right_channel, uint16_t quiescent_value) {
     if (left_channel != NULL && right_channel != NULL) {
         if (pwm_gpio_to_slice_num(left_channel->number) != pwm_gpio_to_slice_num(right_channel->number)) {
             mp_raise_ValueError(translate("Pins must share PWM slice"));
@@ -106,11 +106,11 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* s
     self->quiescent_value = quiescent_value;
 }
 
-bool common_hal_audiopwmio_pwmaudioout_deinited(audiopwmio_pwmaudioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_deinited(audiopwmio_pwmaudioout_obj_t *self) {
     return common_hal_pwmio_pwmout_deinited(&self->left_pwm);
 }
 
-void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self) {
     if (common_hal_audiopwmio_pwmaudioout_deinited(self)) {
         return;
     }
@@ -125,7 +125,7 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self
     audio_dma_deinit(&self->dma);
 }
 
-void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, mp_obj_t sample, bool loop) {
+void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
     if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
     }
@@ -141,7 +141,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     if (pacing_timer == NUM_DMA_TIMERS) {
         mp_raise_RuntimeError(translate("No DMA pacing timer found"));
     }
-    uint32_t tx_register = (uint32_t) &pwm_hw->slice[self->left_pwm.slice].cc;
+    uint32_t tx_register = (uint32_t)&pwm_hw->slice[self->left_pwm.slice].cc;
     if (common_hal_pwmio_pwmout_deinited(&self->right_pwm)) {
         // Shift the destination if we are outputting to the second PWM channel.
         tx_register += self->left_pwm.channel * sizeof(uint16_t);
@@ -157,7 +157,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
         0, // audio channel
         false,  // output signed
         10,
-        (uint32_t) tx_register, // output register
+        (uint32_t)tx_register,  // output register
         0x3b + pacing_timer); // data request line
 
     if (result == AUDIO_DMA_DMA_BUSY) {
@@ -206,14 +206,14 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     dma_hw->timer[pacing_timer] = best_numerator << 16 | best_denominator;
 }
 
-void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t *self) {
     dma_hw->timer[self->pacing_timer] = 0;
     self->pacing_timer = NUM_DMA_TIMERS;
 
     audio_dma_stop(&self->dma);
 }
 
-bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t *self) {
     bool playing = audio_dma_get_playing(&self->dma);
     if (!playing && self->pacing_timer < NUM_DMA_TIMERS) {
         dma_hw->timer[self->pacing_timer] = 0;
@@ -222,14 +222,14 @@ bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t*
     return playing;
 }
 
-void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t *self) {
     audio_dma_pause(&self->dma);
 }
 
-void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t *self) {
     audio_dma_resume(&self->dma);
 }
 
-bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t *self) {
     return audio_dma_get_paused(&self->dma);
 }

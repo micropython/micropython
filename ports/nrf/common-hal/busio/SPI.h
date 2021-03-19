@@ -38,7 +38,7 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
-    spim_peripheral_t* spim_peripheral;
+    spim_peripheral_t *spim_peripheral;
     bool has_lock;
     uint8_t clock_pin_number;
     uint8_t MOSI_pin_number;

@@ -36,10 +36,10 @@
 
 typedef struct  {
     mp_obj_base_t base;
-    const fontio_builtinfont_t* font;
+    const fontio_builtinfont_t *font;
     uint16_t cursor_x;
     uint16_t cursor_y;
-    displayio_tilegrid_t* tilegrid;
+    displayio_tilegrid_t *tilegrid;
     uint16_t first_row;
 } terminalio_terminal_obj_t;
 

@@ -24,8 +24,7 @@ for i in range(length):
 
 sample = audiocore.RawSample(s16, sample_rate=8000)
 
-dac = audiobusio.I2SOut(bit_clock=board.D10,
-    word_select=board.D11, data=board.D12)
+dac = audiobusio.I2SOut(bit_clock=board.D10, word_select=board.D11, data=board.D12)
 
 trigger.value = False
 dac.play(sample, loop=True)

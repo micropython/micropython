@@ -73,14 +73,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_
 //|     `set_rgb_status_brightness` is called."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
-      // This must be int. If cast to uint8_t first, will never raise a ValueError.
-      int brightness_int = mp_obj_get_int(lvl);
-      if(brightness_int < 0 || brightness_int > 255){
-            mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
-      }
-      set_rgb_status_brightness((uint8_t)brightness_int);
-      return mp_const_none;
+STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
+    // This must be int. If cast to uint8_t first, will never raise a ValueError.
+    int brightness_int = mp_obj_get_int(lvl);
+    if (brightness_int < 0 || brightness_int > 255) {
+        mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
+    }
+    set_rgb_status_brightness((uint8_t)brightness_int);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
@@ -128,5 +128,5 @@ STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals
 
 const mp_obj_module_t supervisor_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&supervisor_module_globals,
+    .globals = (mp_obj_dict_t *)&supervisor_module_globals,
 };

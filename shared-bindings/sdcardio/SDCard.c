@@ -84,7 +84,7 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 8000000} },
         { MP_QSTR_sdio, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 8000000} },
     };
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -108,7 +108,7 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
 //|         :return: The number of 512-byte blocks, as a number"""
 //|
 mp_obj_t sdcardio_sdcard_count(mp_obj_t self_in) {
-    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t*)self_in;
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     return mp_obj_new_int_from_ull(common_hal_sdcardio_sdcard_get_blockcount(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_count_obj, sdcardio_sdcard_count);
@@ -119,7 +119,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_count_obj, sdcardio_sdcard_count);
 //|         :return: None"""
 //|
 mp_obj_t sdcardio_sdcard_deinit(mp_obj_t self_in) {
-    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t*)self_in;
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     common_hal_sdcardio_sdcard_deinit(self);
     return mp_const_none;
 }
@@ -140,7 +140,7 @@ mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, m
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t*)self_in;
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     int result = common_hal_sdcardio_sdcard_readblocks(self, start_block, &bufinfo);
     if (result < 0) {
         mp_raise_OSError(-result);
@@ -164,7 +164,7 @@ mp_obj_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, 
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t*)self_in;
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
     int result = common_hal_sdcardio_sdcard_writeblocks(self, start_block, &bufinfo);
     if (result < 0) {
         mp_raise_OSError(-result);
@@ -185,5 +185,5 @@ const mp_obj_type_t sdcardio_SDCard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDCard,
     .make_new = sdcardio_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t*)&sdcardio_sdcard_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&sdcardio_sdcard_locals_dict,
 };

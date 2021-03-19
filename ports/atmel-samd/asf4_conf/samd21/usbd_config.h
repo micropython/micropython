@@ -101,7 +101,7 @@
 
 #ifndef CONF_USB_COMPOSITE_IPRODUCT
 #define CONF_USB_COMPOSITE_IPRODUCT                                                                                    \
-	(CONF_USB_COMPOSITE_IPRODUCT_EN * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN))
+    (CONF_USB_COMPOSITE_IPRODUCT_EN * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN))
 #endif
 
 // <s> Unicode string of iProduct
@@ -124,8 +124,8 @@
 
 #ifndef CONF_USB_COMPOSITE_ISERIALNUM
 #define CONF_USB_COMPOSITE_ISERIALNUM                                                                                  \
-	(CONF_USB_COMPOSITE_ISERIALNUM_EN                                                                                  \
-	 * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN + CONF_USB_COMPOSITE_ISERIALNUM_EN))
+    (CONF_USB_COMPOSITE_ISERIALNUM_EN                                                                                  \
+    * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN + CONF_USB_COMPOSITE_ISERIALNUM_EN))
 #endif
 
 // <s> Unicode string of iSerialNum
@@ -162,9 +162,9 @@
 
 #ifndef CONF_USB_COMPOSITE_ICONFIG
 #define CONF_USB_COMPOSITE_ICONFIG                                                                                     \
-	(CONF_USB_COMPOSITE_ICONFIG_EN                                                                                     \
-	 * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN + CONF_USB_COMPOSITE_ISERIALNUM_EN            \
-	    + CONF_USB_COMPOSITE_ICONFIG_EN))
+    (CONF_USB_COMPOSITE_ICONFIG_EN                                                                                     \
+    * (CONF_USB_COMPOSITE_IMANUFACT_EN + CONF_USB_COMPOSITE_IPRODUCT_EN + CONF_USB_COMPOSITE_ISERIALNUM_EN            \
+    + CONF_USB_COMPOSITE_ICONFIG_EN))
 #endif
 
 // <s> Unicode string of iConfig
@@ -453,9 +453,9 @@
 
 #ifndef CONF_USB_COMPOSITE_HID_GENERIC_REPORT
 #define CONF_USB_COMPOSITE_HID_GENERIC_REPORT                                                                          \
-	0x06, 0xFF, 0xFF, 0x09, 0x01, 0xA1, 0x01, 0x09, 0x02, 0x09, 0x03, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,  \
-	    0x40, 0x81, 0x02, 0x09, 0x04, 0x09, 0x05, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x40, 0x91, 0x02,    \
-	    0x09, 0x06, 0x09, 0x07, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x04, 0xB1, 0x02, 0xC0
+    0x06, 0xFF, 0xFF, 0x09, 0x01, 0xA1, 0x01, 0x09, 0x02, 0x09, 0x03, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,  \
+    0x40, 0x81, 0x02, 0x09, 0x04, 0x09, 0x05, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x40, 0x91, 0x02,    \
+    0x09, 0x06, 0x09, 0x07, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x04, 0xB1, 0x02, 0xC0
 #endif
 
 // <o> HID Generic INTERRUPT IN Endpoint Address
@@ -650,7 +650,7 @@
 
 #ifndef CONF_USB_MSC_LUN0_LAST_BLOCK_ADDR
 #define CONF_USB_MSC_LUN0_LAST_BLOCK_ADDR                                                                              \
-	((uint32_t)CONF_USB_MSC_LUN0_CAPACITY * 1024 / CONF_USB_MSC_LUN0_BLOCK_SIZE - 1)
+    ((uint32_t)CONF_USB_MSC_LUN0_CAPACITY * 1024 / CONF_USB_MSC_LUN0_BLOCK_SIZE - 1)
 #endif
 
 // </e>
@@ -713,7 +713,7 @@
 
 #ifndef CONF_USB_MSC_LUN1_LAST_BLOCK_ADDR
 #define CONF_USB_MSC_LUN1_LAST_BLOCK_ADDR                                                                              \
-	((uint32_t)CONF_USB_MSC_LUN1_CAPACITY * 1024 / CONF_USB_MSC_LUN1_BLOCK_SIZE - 1)
+    ((uint32_t)CONF_USB_MSC_LUN1_CAPACITY * 1024 / CONF_USB_MSC_LUN1_BLOCK_SIZE - 1)
 #endif
 
 // </e>
@@ -775,7 +775,7 @@
 
 #ifndef CONF_USB_MSC_LUN2_LAST_BLOCK_ADDR
 #define CONF_USB_MSC_LUN2_LAST_BLOCK_ADDR                                                                              \
-	((uint32_t)CONF_USB_MSC_LUN2_CAPACITY * 1024 / CONF_USB_MSC_LUN2_BLOCK_SIZE - 1)
+    ((uint32_t)CONF_USB_MSC_LUN2_CAPACITY * 1024 / CONF_USB_MSC_LUN2_BLOCK_SIZE - 1)
 #endif
 
 // </e>
@@ -837,7 +837,7 @@
 
 #ifndef CONF_USB_MSC_LUN3_LAST_BLOCK_ADDR
 #define CONF_USB_MSC_LUN3_LAST_BLOCK_ADDR                                                                              \
-	((uint32_t)CONF_USB_MSC_LUN3_CAPACITY * 1024 / CONF_USB_MSC_LUN3_BLOCK_SIZE - 1)
+    ((uint32_t)CONF_USB_MSC_LUN3_CAPACITY * 1024 / CONF_USB_MSC_LUN3_BLOCK_SIZE - 1)
 #endif
 
 // </e>

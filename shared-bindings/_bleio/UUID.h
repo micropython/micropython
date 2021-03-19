@@ -39,6 +39,6 @@ extern uint32_t common_hal_bleio_uuid_get_uuid16(bleio_uuid_obj_t *self);
 extern void common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[16]);
 extern uint32_t common_hal_bleio_uuid_get_size(bleio_uuid_obj_t *self);
 
-void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf);
+void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t *buf);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H

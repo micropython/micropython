@@ -37,7 +37,15 @@
 #include "supervisor/shared/translate.h"
 
 //| class Bitmap:
-//|     """Stores values of a certain size in a 2D array"""
+//|     """Stores values of a certain size in a 2D array
+//|
+//| Bitmaps can be treated as read-only buffers. If the number of bits in a pixel is 8, 16, or 32; and the number of bytes
+//| per row is a multiple of 4, then the resulting memoryview will correspond directly with the bitmap's contents. Otherwise,
+//| the bitmap data is packed into the memoryview with unspecified padding.
+//|
+//| A read-only buffer can be used e.g., with `ulab.frombuffer` to efficiently create an array with the same content as a Bitmap;
+//| to move data efficiently from ulab back into a Bitmap, use `bitmaptools.arrayblit`.
+//| """
 //|
 //|     def __init__(self, width: int, height: int, value_count: int) -> None:
 //|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
@@ -150,7 +158,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         x = i % width;
         y = i / width;
     } else {
-        mp_obj_t* items;
+        mp_obj_t *items;
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
         x = mp_obj_get_int(items[0]);
         y = mp_obj_get_int(items[1]);
@@ -189,7 +197,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|                                set to None to copy all pixels"""
 //|         ...
 //|
-STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_x, ARG_y, ARG_source, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index};
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
@@ -199,7 +207,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
         {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
-        {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj=mp_const_none} },
+        {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -220,46 +228,46 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     int16_t y1 = args[ARG_y1].u_int;
     int16_t x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
-    if ( args[ARG_x2].u_obj == mp_const_none ) {
+    if (args[ARG_x2].u_obj == mp_const_none) {
         x2 = source->width;
     } else {
         x2 = mp_obj_get_int(args[ARG_x2].u_obj);
     }
-    //int16_t y2;
-    if ( args[ARG_y2].u_obj == mp_const_none ) {
+    // int16_t y2;
+    if (args[ARG_y2].u_obj == mp_const_none) {
         y2 = source->height;
     } else {
         y2 = mp_obj_get_int(args[ARG_y2].u_obj);
     }
 
     // Check x,y are within self (target) bitmap boundary
-    if ( (x < 0) || (y < 0) || (x > self->width) || (y > self->height) ) {
-            mp_raise_ValueError(translate("out of range of target"));
+    if ((x < 0) || (y < 0) || (x > self->width) || (y > self->height)) {
+        mp_raise_ValueError(translate("out of range of target"));
     }
     // Check x1,y1,x2,y2 are within source bitmap boundary
-    if ( (x1 < 0) || (x1 > source->width)  ||
+    if ((x1 < 0) || (x1 > source->width) ||
         (y1 < 0) || (y1 > source->height) ||
-        (x2 < 0) || (x2 > source->width)  ||
-        (y2 < 0) || (y2 > source->height) ) {
-            mp_raise_ValueError(translate("out of range of source"));
+        (x2 < 0) || (x2 > source->width) ||
+        (y2 < 0) || (y2 > source->height)) {
+        mp_raise_ValueError(translate("out of range of source"));
     }
 
     // Ensure x1 < x2 and y1 < y2
     if (x1 > x2) {
-        int16_t temp=x2;
-        x2=x1;
-        x1=temp;
+        int16_t temp = x2;
+        x2 = x1;
+        x1 = temp;
     }
     if (y1 > y2) {
-        int16_t temp=y2;
-        y2=y1;
-        y1=temp;
+        int16_t temp = y2;
+        y2 = y1;
+        y1 = temp;
     }
 
     uint32_t skip_index;
     bool skip_index_none; // flag whether skip_value was None
 
-    if (args[ARG_skip_index].u_obj == mp_const_none ) {
+    if (args[ARG_skip_index].u_obj == mp_const_none) {
         skip_index = 0;
         skip_index_none = true;
     } else {
@@ -283,7 +291,7 @@ STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) 
 
     mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
     if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
-            mp_raise_ValueError(translate("pixel value requires too many bits"));
+        mp_raise_ValueError(translate("pixel value requires too many bits"));
     }
     common_hal_displayio_bitmap_fill(self, value);
 
@@ -300,10 +308,17 @@ STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
 
+// (the get_buffer protocol returns 0 for success, 1 for failure)
+STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
+}
+
 const mp_obj_type_t displayio_bitmap_type = {
     { &mp_type_type },
     .name = MP_QSTR_Bitmap,
     .make_new = displayio_bitmap_make_new,
     .subscr = bitmap_subscr,
-    .locals_dict = (mp_obj_dict_t*)&displayio_bitmap_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
+    .buffer_p = { .get_buffer = bitmap_get_buffer },
 };

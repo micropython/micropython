@@ -32,15 +32,15 @@
 // Helpers for common usage of nrf_mutex.
 
 // Try to acquire a mutex right now. Raise exception if we can't get it.
-void sd_mutex_acquire_check(nrf_mutex_t* p_mutex);
+void sd_mutex_acquire_check(nrf_mutex_t *p_mutex);
 
 // Wait for a mutex to become available. Run VM background tasks while waiting.
-void sd_mutex_acquire_wait(nrf_mutex_t* p_mutex);
+void sd_mutex_acquire_wait(nrf_mutex_t *p_mutex);
 
 // Wait for a mutex to become available.. Block VM while waiting.
-void sd_mutex_acquire_wait_no_vm(nrf_mutex_t* p_mutex);
+void sd_mutex_acquire_wait_no_vm(nrf_mutex_t *p_mutex);
 
 // Release a mutex, and raise exception on error.
-void sd_mutex_release_check(nrf_mutex_t* p_mutex);
+void sd_mutex_release_check(nrf_mutex_t *p_mutex);
 
 #endif // MICROPY_INCLUDED_NRF_SD_MUTEX_H

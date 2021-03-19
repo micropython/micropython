@@ -55,7 +55,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P9), MP_ROM_PTR(&pin_PC06) },
     { MP_ROM_QSTR(MP_QSTR_P8), MP_ROM_PTR(&pin_PA04) },
     { MP_ROM_QSTR(MP_QSTR_P1), MP_ROM_PTR(&pin_PA01) },
-    { MP_ROM_QSTR(MP_QSTR_P7), MP_ROM_PTR(&pin_PA10) }, //in use by USB
+    { MP_ROM_QSTR(MP_QSTR_P7), MP_ROM_PTR(&pin_PA10) }, // in use by USB
     { MP_ROM_QSTR(MP_QSTR_P6), MP_ROM_PTR(&pin_PC07) },
     { MP_ROM_QSTR(MP_QSTR_P5), MP_ROM_PTR(&pin_PB05) },
     { MP_ROM_QSTR(MP_QSTR_P4), MP_ROM_PTR(&pin_PC01) },

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-01 15:19+0000\n"
+"PO-Revision-Date: 2021-03-16 00:47+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -83,6 +83,7 @@ msgstr "%q zhèngzài shǐyòng"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -978,6 +979,7 @@ msgstr "Fēnpèi RX huǎnchōng shībài"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1058,10 +1060,6 @@ msgstr "tōng yòng gù zhàng"
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Fēnzǔ yǐ mǎn"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1103,7 +1101,7 @@ msgstr "IV bì xū wéi %d zì jié cháng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "huǎn chōng nèi yuán sù bì xū <= 4 zì jié cháng"
 
 #: py/persistentcode.c
 msgid ""
@@ -1274,7 +1272,7 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr "Wúxiào de pínlǜ"
 
@@ -1726,7 +1724,7 @@ msgstr "tào jiē zì wài"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1754,11 +1752,11 @@ msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bù
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "yǐ jīng zài shǐ yòng de PWM qiē piàn"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1799,7 +1797,7 @@ msgstr "Yǐn jiǎo jǐn shūrù"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1819,6 +1817,10 @@ msgstr ""
 "Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng "
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "yǐn jiǎo bì xū shì lián xù de"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2338,7 +2340,7 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Bù zhīchí de cāozuò"
 
@@ -2785,7 +2787,7 @@ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "jiá dian bì xū shì (x,y) kuài"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -2908,6 +2910,10 @@ msgstr "bùtóng de cānshù bìxū shì ndarray"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
 msgstr "chā yì shùn xù fàn wéi"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3162,6 +3168,7 @@ msgstr "suǒyǐn chāochū fànwéi"
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
 
@@ -3266,6 +3273,11 @@ msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 msgid "invalid arguments"
 msgstr "wúxiào de cānshù"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "zhèngshū wúxiào"
@@ -3273,6 +3285,16 @@ msgstr "zhèngshū wúxiào"
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "dupterm suǒyǐn wúxiào"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr ""
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3399,10 +3421,6 @@ msgstr "dìtú huǎnchōng qū tài xiǎo"
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "shùxué yù cuòwù"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "jǔzhèn chǐcùn bù pǐpèi"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
@@ -3704,7 +3722,7 @@ msgstr "ord() yùqí zìfú, dàn chángdù zìfú chuàn %d"
 msgid "out of range of source"
 msgstr "yuán fàn wéi wài"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "mù biāo fàn wéi wài"
 
@@ -3737,7 +3755,7 @@ msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "cānshù bìxū shì xùliè r0 zhì r3 de dēngjì qì"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr "xiàngsù zuòbiāo chāochū biānjiè"
 
@@ -3760,6 +3778,7 @@ msgstr "cóng kōng mài chōng tán chū"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3785,6 +3804,8 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -3803,6 +3824,10 @@ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "lā kǒu zhào yǔ fāng xiàng miàn mó chōng tū"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
@@ -4213,10 +4238,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "huàn xǐng chōng tū"
@@ -4305,6 +4326,15 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "jǔzhèn chǐcùn bù pǐpèi"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
+
+#~ msgid "Group full"
+#~ msgstr "Fēnzǔ yǐ mǎn"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""

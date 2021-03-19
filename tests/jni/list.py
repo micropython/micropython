@@ -1,4 +1,5 @@
 import jni
+
 try:
     ArrayList = jni.cls("java/util/ArrayList")
 except:

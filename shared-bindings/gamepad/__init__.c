@@ -36,9 +36,9 @@ STATIC const mp_rom_map_elem_t gamepad_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_GamePad),  MP_ROM_PTR(&gamepad_type)},
 };
 STATIC MP_DEFINE_CONST_DICT(gamepad_module_globals,
-        gamepad_module_globals_table);
+    gamepad_module_globals_table);
 
 const mp_obj_module_t gamepad_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&gamepad_module_globals,
+    .globals = (mp_obj_dict_t *)&gamepad_module_globals,
 };

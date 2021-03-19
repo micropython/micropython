@@ -91,9 +91,9 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
         } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
             mp_raise_ValueError(translate("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"));
         }
-        common_hal_audioio_rawsample_construct(self, ((uint8_t*)bufinfo.buf), bufinfo.len,
-                                               bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
-                                               args[ARG_sample_rate].u_int);
+        common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
+            bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
+            args[ARG_sample_rate].u_int);
     } else {
         mp_raise_TypeError(translate("buffer must be a bytes-like object"));
     }
@@ -189,6 +189,6 @@ const mp_obj_type_t audioio_rawsample_type = {
     { &mp_type_type },
     .name = MP_QSTR_RawSample,
     .make_new = audioio_rawsample_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audioio_rawsample_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audioio_rawsample_locals_dict,
     .protocol = &audioio_rawsample_proto,
 };

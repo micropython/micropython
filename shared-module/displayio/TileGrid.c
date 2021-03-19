@@ -34,21 +34,21 @@
 #include "shared-bindings/displayio/Shape.h"
 
 void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_t bitmap,
-        uint16_t bitmap_width_in_tiles, uint16_t bitmap_height_in_tiles,
-        mp_obj_t pixel_shader, uint16_t width, uint16_t height,
-        uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile) {
+    uint16_t bitmap_width_in_tiles, uint16_t bitmap_height_in_tiles,
+    mp_obj_t pixel_shader, uint16_t width, uint16_t height,
+    uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile) {
     uint32_t total_tiles = width * height;
     // Sprites will only have one tile so save a little memory by inlining values in the pointer.
-    uint8_t inline_tiles = sizeof(uint8_t*);
+    uint8_t inline_tiles = sizeof(uint8_t *);
     if (total_tiles <= inline_tiles) {
         self->tiles = 0;
         // Pack values into the pointer since there are only a few.
         for (uint32_t i = 0; i < inline_tiles; i++) {
-            ((uint8_t*) &self->tiles)[i] = default_tile;
+            ((uint8_t *)&self->tiles)[i] = default_tile;
         }
         self->inline_tiles = true;
     } else {
-        self->tiles = (uint8_t*) m_malloc(total_tiles, false);
+        self->tiles = (uint8_t *)m_malloc(total_tiles, false);
         for (uint32_t i = 0; i < total_tiles; i++) {
             self->tiles[i] = default_tile;
         }
@@ -78,25 +78,25 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
 }
 
 
-bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t* self) {
+bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t *self) {
     return self->hidden;
 }
 
-void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t* self, bool hidden) {
+void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t *self, bool hidden) {
     self->hidden = hidden;
-    if(!hidden){
+    if (!hidden) {
         self->full_change = true;
     }
 }
 
 void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden) {
     self->hidden_by_parent = hidden;
-    if(!hidden){
+    if (!hidden) {
         self->full_change = true;
     }
 }
 
-bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t* area) {
+bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t *area) {
     if (self->previous_area.x1 == self->previous_area.x2) {
         return false;
     }
@@ -113,8 +113,8 @@ void _update_current_x(displayio_tilegrid_t *self) {
     }
 
     // If there's no transform, substitute an identity transform so the calculations will work.
-    const displayio_buffer_transform_t* absolute_transform =
-        self->absolute_transform  == NULL
+    const displayio_buffer_transform_t *absolute_transform =
+        self->absolute_transform == NULL
         ? &null_transform
         : self->absolute_transform;
 
@@ -146,8 +146,8 @@ void _update_current_y(displayio_tilegrid_t *self) {
     }
 
     // If there's no transform, substitute an identity transform so the calculations will work.
-    const displayio_buffer_transform_t* absolute_transform =
-        self->absolute_transform  == NULL
+    const displayio_buffer_transform_t *absolute_transform =
+        self->absolute_transform == NULL
         ? &null_transform
         : self->absolute_transform;
 
@@ -171,7 +171,7 @@ void _update_current_y(displayio_tilegrid_t *self) {
 }
 
 void displayio_tilegrid_update_transform(displayio_tilegrid_t *self,
-                                         const displayio_buffer_transform_t* absolute_transform) {
+    const displayio_buffer_transform_t *absolute_transform) {
     self->in_group = absolute_transform != NULL;
     self->absolute_transform = absolute_transform;
     if (absolute_transform != NULL) {
@@ -230,9 +230,9 @@ uint16_t common_hal_displayio_tilegrid_get_height(displayio_tilegrid_t *self) {
 }
 
 uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
-    uint8_t* tiles = self->tiles;
+    uint8_t *tiles = self->tiles;
     if (self->inline_tiles) {
-        tiles = (uint8_t*) &self->tiles;
+        tiles = (uint8_t *)&self->tiles;
     }
     if (tiles == NULL) {
         return 0;
@@ -244,16 +244,16 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     if (tile_index >= self->tiles_in_bitmap) {
         mp_raise_ValueError(translate("Tile index out of bounds"));
     }
-    uint8_t* tiles = self->tiles;
+    uint8_t *tiles = self->tiles;
     if (self->inline_tiles) {
-        tiles = (uint8_t*) &self->tiles;
+        tiles = (uint8_t *)&self->tiles;
     }
     if (tiles == NULL) {
         return;
     }
     tiles[y * self->width_in_tiles + x] = tile_index;
     displayio_area_t temp_area;
-    displayio_area_t* tile_area;
+    displayio_area_t *tile_area;
     if (!self->partial_change) {
         tile_area = &self->dirty_area;
     } else {
@@ -331,11 +331,11 @@ void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint
     self->full_change = true;
 }
 
-bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
+bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     // If no tiles are present we have no impact.
-    uint8_t* tiles = self->tiles;
+    uint8_t *tiles = self->tiles;
     if (self->inline_tiles) {
-        tiles = (uint8_t*) &self->tiles;
+        tiles = (uint8_t *)&self->tiles;
     }
     if (tiles == NULL) {
         return false;
@@ -384,9 +384,9 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
     // can either return full coverage or bulk update the mask.
     displayio_area_t transformed;
     displayio_area_transform_within(flip_x != (self->absolute_transform->dx < 0), flip_y != (self->absolute_transform->dy < 0), self->transpose_xy != self->absolute_transform->transpose_xy,
-                                    &overlap,
-                                    &self->current_area,
-                                    &transformed);
+        &overlap,
+        &self->current_area,
+        &transformed);
 
     int16_t start_x = (transformed.x1 - self->current_area.x1);
     int16_t end_x = (transformed.x2 - self->current_area.x1);
@@ -443,7 +443,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             input_pixel.tile_x = (input_pixel.tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
             input_pixel.tile_y = (input_pixel.tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
 
-            //uint32_t value = 0;
+            // uint32_t value = 0;
             output_pixel.pixel = 0;
             input_pixel.pixel = 0;
 
@@ -471,9 +471,9 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             } else {
                 mask[offset / 32] |= 1 << (offset % 32);
                 if (colorspace->depth == 16) {
-                    *(((uint16_t*) buffer) + offset) = output_pixel.pixel;
+                    *(((uint16_t *)buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
-                    *(((uint8_t*) buffer) + offset) = output_pixel.pixel;
+                    *(((uint8_t *)buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {
                     // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
                     if (!colorspace->pixels_in_byte_share_row) {
@@ -492,7 +492,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                         // Reverse the shift by subtracting it from the leftmost shift.
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
-                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
+                    ((uint8_t *)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
         }
@@ -529,7 +529,7 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     // That way they won't change during a refresh and tear.
 }
 
-displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t* tail) {
+displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t *tail) {
     bool first_draw = self->previous_area.x1 == self->previous_area.x2;
     bool hidden = self->hidden || self->hidden_by_parent;
     // Check hidden first because it trumps all other changes.
@@ -553,7 +553,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
 
     // If we have an in-memory bitmap, then check it for modifications.
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
-        displayio_area_t* refresh_area = displayio_bitmap_get_refresh_areas(self->bitmap, tail);
+        displayio_area_t *refresh_area = displayio_bitmap_get_refresh_areas(self->bitmap, tail);
         if (refresh_area != tail) {
             // Special case a TileGrid that shows a full bitmap and use its
             // dirty area. Copy it to ours so we can transform it.
@@ -565,7 +565,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
             }
         }
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
-        displayio_area_t* refresh_area = displayio_shape_get_refresh_areas(self->bitmap, tail);
+        displayio_area_t *refresh_area = displayio_shape_get_refresh_areas(self->bitmap, tail);
         if (refresh_area != tail) {
             displayio_area_copy(refresh_area, &self->dirty_area);
             self->partial_change = true;
@@ -574,9 +574,9 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
 
     self->full_change = self->full_change ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) &&
-         displayio_palette_needs_refresh(self->pixel_shader)) ||
+            displayio_palette_needs_refresh(self->pixel_shader)) ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
-         displayio_colorconverter_needs_refresh(self->pixel_shader));
+            displayio_colorconverter_needs_refresh(self->pixel_shader));
     if (self->full_change || first_draw) {
         self->current_area.next = tail;
         return &self->current_area;

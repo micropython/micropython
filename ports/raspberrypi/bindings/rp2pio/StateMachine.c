@@ -69,6 +69,8 @@
 //|                  initial_out_pin_direction: int = 0xffffffff,
 //|                  first_in_pin: Optional[microcontroller.Pin] = None,
 //|                  in_pin_count: int = 1,
+//|                  pull_in_pin_up: int = 0,
+//|                  pull_in_pin_down: int = 0,
 //|                  first_set_pin: Optional[microcontroller.Pin] = None,
 //|                  set_pin_count: int = 1,
 //|                  initial_set_pin_state: int = 0,
@@ -99,6 +101,8 @@
 //|         :param int initial_out_pin_direction: the initial output direction for out pins starting at first_out_pin
 //|         :param ~microcontroller.Pin first_in_pin: the first pin to use with the IN instruction
 //|         :param int in_pin_count: the count of consecutive pins to use with IN starting at first_in_pin
+//|         :param int pull_in_pin_up: a 1-bit in this mask sets pull up on the corresponding in pin
+//|         :param int pull_in_pin_down: a 1-bit in this mask sets pull up on the corresponding in pin. Setting both pulls enables a "bus keep" function, i.e. a weak pull to whatever is current high/low state of GPIO.
 //|         :param ~microcontroller.Pin first_set_pin: the first pin to use with the SET instruction
 //|         :param int set_pin_count: the count of consecutive pins to use with SET starting at first_set_pin
 //|         :param int initial_set_pin_state: the initial output value for set pins starting at first_set_pin
@@ -133,6 +137,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     enum { ARG_program, ARG_frequency, ARG_init,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
+           ARG_pull_in_pin_up, ARG_pull_in_pin_down,
            ARG_first_set_pin, ARG_set_pin_count, ARG_initial_set_pin_state, ARG_initial_set_pin_direction,
            ARG_first_sideset_pin, ARG_sideset_pin_count, ARG_initial_sideset_pin_state, ARG_initial_sideset_pin_direction,
            ARG_exclusive_pin_use,
@@ -151,6 +156,8 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
         { MP_QSTR_first_in_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_in_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_pull_in_pin_up, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pull_in_pin_down, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 
         { MP_QSTR_first_set_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_set_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -233,7 +240,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_frequency].u_int,
         init_bufinfo.buf, init_bufinfo.len / 2,
         first_out_pin, args[ARG_out_pin_count].u_int, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
-        first_in_pin, args[ARG_in_pin_count].u_int,
+        first_in_pin, args[ARG_in_pin_count].u_int, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
         first_set_pin, args[ARG_set_pin_count].u_int, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
         first_sideset_pin, args[ARG_sideset_pin_count].u_int, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
         args[ARG_exclusive_pin_use].u_bool,
@@ -356,13 +363,13 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
         return mp_const_none;
     }
 
-    uint8_t* original_pointer = bufinfo.buf;
+    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t*)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
     }
@@ -406,13 +413,13 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
         return mp_const_none;
     }
 
-    uint8_t* original_pointer = bufinfo.buf;
+    uint8_t *original_pointer = bufinfo.buf;
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t*)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -477,12 +484,12 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     }
 
     bool ok = common_hal_rp2pio_statemachine_write_readinto(self,
-                                            ((uint8_t*)buf_out_info.buf) + out_start,
-                                            out_length,
-                                            out_stride_in_bytes,
-                                            ((uint8_t*)buf_in_info.buf) + in_start,
-                                            in_length,
-                                            in_stride_in_bytes);
+        ((uint8_t *)buf_out_info.buf) + out_start,
+        out_length,
+        out_stride_in_bytes,
+        ((uint8_t *)buf_in_info.buf) + in_start,
+        in_length,
+        in_stride_in_bytes);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -548,6 +555,24 @@ const mp_obj_property_t rp2pio_statemachine_rxstall_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     in_waiting: int
+//|     """The number of words available to readinto"""
+//|
+
+STATIC mp_obj_t rp2pio_statemachine_obj_get_in_waiting(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_rp2pio_statemachine_get_in_waiting(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_in_waiting_obj, rp2pio_statemachine_obj_get_in_waiting);
+
+const mp_obj_property_t rp2pio_statemachine_in_waiting_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_in_waiting_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rp2pio_statemachine_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -563,15 +588,16 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&rp2pio_statemachine_write_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&rp2pio_statemachine_frequency_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rxstall), MP_ROM_PTR(&rp2pio_statemachine_rxstall_obj) }
+    { MP_ROM_QSTR(MP_QSTR_rxstall), MP_ROM_PTR(&rp2pio_statemachine_rxstall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&rp2pio_statemachine_in_waiting_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine_locals_dict_table);
 
 const mp_obj_type_t rp2pio_statemachine_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_StateMachine,
-   .make_new = rp2pio_statemachine_make_new,
-   .locals_dict = (mp_obj_dict_t*)&rp2pio_statemachine_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_StateMachine,
+    .make_new = rp2pio_statemachine_make_new,
+    .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
 };
 
 rp2pio_statemachine_obj_t *validate_obj_is_statemachine(mp_obj_t obj) {

@@ -42,7 +42,7 @@
 #define BUS_TIMEOUT_US 1000000
 
 STATIC bool never_reset_i2c[2];
-STATIC i2c_inst_t* i2c[2] = {i2c0, i2c1};
+STATIC i2c_inst_t *i2c[2] = {i2c0, i2c1};
 
 void reset_i2c(void) {
     for (size_t i = 0; i < 2; i++) {
@@ -55,7 +55,7 @@ void reset_i2c(void) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     self->peripheral = NULL;
     // I2C pins have a regular pattern. SCL is always odd and SDA is even. They match up in pairs
     // so we can divide by two to get the instance. This pattern repeats.
@@ -73,7 +73,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError(translate("Unsupported baudrate"));
     }
 
-#if CIRCUITPY_REQUIRE_I2C_PULLUPS
+    #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     gpio_set_function(sda->number, GPIO_FUNC_SIO);
     gpio_set_function(scl->number, GPIO_FUNC_SIO);
@@ -96,7 +96,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
-#endif
+    #endif
 
     // Create a bitbangio.I2C object to do short writes.
     // Must be done before setting up the I2C pins, since they will be
@@ -104,7 +104,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     //
     // Sets pins to open drain, high, and input.
     shared_module_bitbangio_i2c_construct(&self->bitbangio_i2c, scl, sda,
-                                          frequency, timeout);
+        frequency, timeout);
 
     self->baudrate = i2c_init(self->peripheral, frequency);
 
@@ -157,7 +157,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     if (len <= 2) {
         // The RP2040 I2C peripheral will not do writes 2 bytes or less long.
         // So use bitbangio.I2C to do the write.
@@ -170,7 +170,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         gpio_put(self->sda_pin, false);
 
         uint8_t status = shared_module_bitbangio_i2c_write(&self->bitbangio_i2c,
-                                                           addr, data, len, transmit_stop_bit);
+            addr, data, len, transmit_stop_bit);
 
         // The pins must be set back to GPIO_FUNC_I2C in the order given here,
         // SCL first, otherwise reads will hang.
@@ -195,7 +195,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-        uint8_t *data, size_t len) {
+    uint8_t *data, size_t len) {
     int result = i2c_read_timeout_us(self->peripheral, addr, data, len, false, BUS_TIMEOUT_US);
     if (result == len) {
         return 0;

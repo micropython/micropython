@@ -36,29 +36,29 @@
 typedef struct {
     mp_obj_base_t base;
     // Pointers that needs to live until the scan is done.
-    void* common_hal_data;
+    void *common_hal_data;
     ringbuf_t buf;
     // Prefixes is a length encoded array of prefixes.
-    uint8_t* prefixes;
+    uint8_t *prefixes;
     size_t prefix_length;
     mp_int_t minimum_rssi;
     bool active;
     bool done;
 } bleio_scanresults_obj_t;
 
-bleio_scanresults_obj_t* shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t* prefixes, size_t prefixes_len, mp_int_t minimum_rssi);
+bleio_scanresults_obj_t *shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t *prefixes, size_t prefixes_len, mp_int_t minimum_rssi);
 
-bool shared_module_bleio_scanresults_get_done(bleio_scanresults_obj_t* self);
-void shared_module_bleio_scanresults_set_done(bleio_scanresults_obj_t* self, bool done);
+bool shared_module_bleio_scanresults_get_done(bleio_scanresults_obj_t *self);
+void shared_module_bleio_scanresults_set_done(bleio_scanresults_obj_t *self, bool done);
 
-void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t* self,
-                                            uint64_t ticks_ms,
-                                            bool connectable,
-                                            bool scan_result,
-                                            int8_t rssi,
-                                            uint8_t *peer_addr,
-                                            uint8_t addr_type,
-                                            uint8_t* data,
-                                            uint16_t len);
+void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t *self,
+    uint64_t ticks_ms,
+    bool connectable,
+    bool scan_result,
+    int8_t rssi,
+    uint8_t *peer_addr,
+    uint8_t addr_type,
+    uint8_t *data,
+    uint16_t len);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANRESULTS_H

@@ -10,7 +10,7 @@ pool = socketpool.SocketPool(wifi.radio)
 
 # make socket
 print("Creating socket")
-sock = pool.socket(pool.AF_INET,pool.SOCK_DGRAM)
+sock = pool.socket(pool.AF_INET, pool.SOCK_DGRAM)
 
 # Fill packet
 packet = bytearray(48)

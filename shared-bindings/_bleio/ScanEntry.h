@@ -39,6 +39,6 @@ mp_obj_t common_hal_bleio_scanentry_get_advertisement_bytes(bleio_scanentry_obj_
 mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self);
 bool common_hal_bleio_scanentry_get_connectable(bleio_scanentry_obj_t *self);
 bool common_hal_bleio_scanentry_get_scan_response(bleio_scanentry_obj_t *self);
-bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, uint8_t* prefixes, size_t prefixes_len, bool all);
+bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, uint8_t *prefixes, size_t prefixes_len, bool all);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H

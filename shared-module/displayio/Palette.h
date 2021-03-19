@@ -71,14 +71,14 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
-    _displayio_color_t* colors;
+    _displayio_color_t *colors;
     uint32_t color_count;
     bool needs_refresh;
 } displayio_palette_t;
 
 // Returns false if color fetch did not succeed (out of range or transparent).
 // Returns true if color is opaque, and sets color.
-bool displayio_palette_get_color(displayio_palette_t *palette, const _displayio_colorspace_t* colorspace, uint32_t palette_index, uint32_t* color);
+bool displayio_palette_get_color(displayio_palette_t *palette, const _displayio_colorspace_t *colorspace, uint32_t palette_index, uint32_t *color);
 bool displayio_palette_needs_refresh(displayio_palette_t *self);
 void displayio_palette_finish_refresh(displayio_palette_t *self);
 

@@ -78,10 +78,9 @@ void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_devi
     } else {
         common_hal_adafruit_bus_device_i2cdevice_unlock(self);
 
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
             mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
-        }
-        else {
+        } else {
             /* In case we receive an unrelated exception pass it up */
             nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
         }

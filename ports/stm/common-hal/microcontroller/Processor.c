@@ -37,10 +37,10 @@
 
 #define STM32_UUID ((uint32_t *)0x1FFF7A10)
 
-//Factory calibration locations
+// Factory calibration locations
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
-#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
-#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+#define ADC_CAL1                ((uint16_t *)(ADC_CAL_ADDRESS + 2))
+#define ADC_CAL2                ((uint16_t *)(ADC_CAL_ADDRESS + 4))
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 // correction factor for reference value
@@ -68,7 +68,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     #if CPY_STM32F4
     __HAL_RCC_ADC1_CLK_ENABLE();
 
-    //HAL Implementation
+    // HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
     set_adc_params(&AdcHandle);
@@ -77,7 +77,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     ADC->CCR |= ADC_CCR_TSVREFE;
     ADC->CCR &= ~ADC_CCR_VBATE; // If this somehow got turned on, it'll return bad values.
 
-    sConfig.Channel = ADC_CHANNEL_TEMPSENSOR; //either 16 or 18, depending on chip
+    sConfig.Channel = ADC_CHANNEL_TEMPSENSOR; // either 16 or 18, depending on chip
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES; // Temp sensor likes 10us minimum
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
@@ -89,7 +89,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     uint32_t value = (uint32_t)HAL_ADC_GetValue(&AdcHandle);
     HAL_ADC_Stop(&AdcHandle);
 
-    //There's no F4 specific appnote for this but it works the same as the L1 in AN3964
+    // There's no F4 specific appnote for this but it works the same as the L1 in AN3964
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
     return (((float)value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
     #else
@@ -101,7 +101,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     #if CPY_STM32F4
     __HAL_RCC_ADC1_CLK_ENABLE();
 
-    //HAL Implementation
+    // HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
     set_adc_params(&AdcHandle);
@@ -121,7 +121,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     uint32_t value = (uint32_t)HAL_ADC_GetValue(&AdcHandle);
     HAL_ADC_Stop(&AdcHandle);
 
-    //This value could be used to actively correct ADC values.
+    // This value could be used to actively correct ADC values.
     adc_refcor = ((float)(*VREFIN_CAL)) / ((float)value);
 
     return adc_refcor * 3.3f;
@@ -136,8 +136,8 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     #if CPY_STM32F4
-    for (int i=0; i<3; i++) {
-        ((uint32_t*) raw_id)[i] = STM32_UUID[i];
+    for (int i = 0; i < 3; i++) {
+        ((uint32_t *)raw_id)[i] = STM32_UUID[i];
     }
     #endif
 }

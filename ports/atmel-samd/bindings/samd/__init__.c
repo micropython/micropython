@@ -43,7 +43,7 @@
 //|
 const mp_obj_module_t samd_clock_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&samd_clock_globals,
+    .globals = (mp_obj_dict_t *)&samd_clock_globals,
 };
 
 STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
@@ -55,5 +55,5 @@ STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);
 
 const mp_obj_module_t samd_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&samd_module_globals,
+    .globals = (mp_obj_dict_t *)&samd_module_globals,
 };

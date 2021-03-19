@@ -54,7 +54,7 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
     // Grab the current time first.
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    uint64_t current_us = ((uint64_t) tv.tv_sec) * 1000000 + tv.tv_usec;
+    uint64_t current_us = ((uint64_t)tv.tv_sec) * 1000000 + tv.tv_usec;
 
     pulseio_pulsein_obj_t *self = pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0];
 
@@ -85,7 +85,7 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
-    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
     }

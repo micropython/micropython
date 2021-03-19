@@ -50,7 +50,7 @@ extern displayio_bitmap_t blinka_bitmap;
 extern displayio_group_t circuitpython_splash;
 
 #if CIRCUITPY_TERMINALIO
-static supervisor_allocation* tilegrid_tiles = NULL;
+static supervisor_allocation *tilegrid_tiles = NULL;
 #endif
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
@@ -59,10 +59,10 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     uint8_t scale = 2;
 
     #if CIRCUITPY_TERMINALIO
-    displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
+    displayio_tilegrid_t *grid = &supervisor_terminal_text_grid;
     bool tall = height_px > width_px;
     uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
-    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px ;
+    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px;
     uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
     // determine scale based on h
     if (width_in_tiles < 80) {
@@ -94,7 +94,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
             return;
         }
     }
-    uint8_t* tiles = (uint8_t*) tilegrid_tiles->ptr;
+    uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
     grid->y = tall ? blinka_bitmap.height : 0;
     grid->x = tall ? 0 : blinka_bitmap.width;
@@ -130,7 +130,7 @@ void supervisor_stop_terminal(void) {
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
     if (tilegrid_tiles != NULL) {
-        supervisor_terminal_text_grid.tiles = (uint8_t*) tilegrid_tiles->ptr;
+        supervisor_terminal_text_grid.tiles = (uint8_t *)tilegrid_tiles->ptr;
     } else {
         supervisor_terminal_text_grid.tiles = NULL;
     }
@@ -139,16 +139,16 @@ void supervisor_display_move_memory(void) {
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         #if CIRCUITPY_RGBMATRIX
-            if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
-                rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
-                common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
-            }
+        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+            rgbmatrix_rgbmatrix_obj_t *pm = &displays[i].rgbmatrix;
+            common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
+        }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
-            if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
-                sharpdisplay_framebuffer_obj_t * sharp = &displays[i].sharpdisplay;
-                common_hal_sharpdisplay_framebuffer_reconstruct(sharp);
-            }
+        if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
+            sharpdisplay_framebuffer_obj_t *sharp = &displays[i].sharpdisplay;
+            common_hal_sharpdisplay_framebuffer_reconstruct(sharp);
+        }
         #endif
     }
     #endif

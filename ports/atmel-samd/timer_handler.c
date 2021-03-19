@@ -49,31 +49,31 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
     // Make sure to add the handler #define to timer_handler.h
     if (is_tc) {
         uint8_t handler = tc_handler[index];
-        switch(handler) {
+        switch (handler) {
             case TC_HANDLER_PULSEIN:
-            #if CIRCUITPY_PULSEIO
+                #if CIRCUITPY_PULSEIO
                 pulsein_timer_interrupt_handler(index);
-            #endif
+                #endif
                 break;
             case TC_HANDLER_PULSEOUT:
-            #if CIRCUITPY_PULSEIO
+                #if CIRCUITPY_PULSEIO
                 pulseout_interrupt_handler(index);
-            #endif
+                #endif
                 break;
             case TC_HANDLER_PEW:
-            #if CIRCUITPY_PEW
+                #if CIRCUITPY_PEW
                 pewpew_interrupt_handler(index);
-            #endif
+                #endif
                 break;
             case TC_HANDLER_FREQUENCYIN:
-            #if CIRCUITPY_FREQUENCYIO
+                #if CIRCUITPY_FREQUENCYIO
                 frequencyin_interrupt_handler(index);
-            #endif
+                #endif
                 break;
             case TC_HANDLER_RGBMATRIX:
-            #if CIRCUITPY_RGBMATRIX
+                #if CIRCUITPY_RGBMATRIX
                 _PM_IRQ_HANDLER();
-            #endif
+                #endif
                 break;
             default:
                 break;

@@ -31,7 +31,7 @@ void mp_stack_ctrl_init(void) {
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
     volatile int stack_dummy;
-    MP_STATE_THREAD(stack_top) = (char*)&stack_dummy;
+    MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
 }
 
 void mp_stack_set_top(void *top) {
@@ -43,7 +43,7 @@ mp_uint_t mp_stack_usage(void) {
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
     volatile int stack_dummy;
-    return MP_STATE_THREAD(stack_top) - (char*)&stack_dummy;
+    return MP_STATE_THREAD(stack_top) - (char *)&stack_dummy;
 }
 
 #if MICROPY_STACK_CHECK
@@ -66,7 +66,7 @@ void mp_stack_check(void) {
 const char MP_MAX_STACK_USAGE_SENTINEL_BYTE = 0xEE;
 
 // Record absolute bottom (logical limit) of stack.
-void mp_stack_set_bottom(void* stack_bottom) {
+void mp_stack_set_bottom(void *stack_bottom) {
     MP_STATE_THREAD(stack_bottom) = stack_bottom;
 }
 
@@ -77,8 +77,8 @@ void mp_stack_set_bottom(void* stack_bottom) {
 //
 // The stack_dummy approach used elsewhere in this file is not safe in
 // all cases. That value may be below the actual top of the stack.
-static void* approx_stack_pointer(void){
-     __asm volatile ("");
+static void *approx_stack_pointer(void) {
+    __asm volatile ("");
     return __builtin_frame_address(0);
 }
 
@@ -89,10 +89,10 @@ void mp_stack_fill_with_sentinel(void) {
     // Start filling stack just below the current stack frame.
     // Continue until we've hit the bottom of the stack (lowest address,
     // logical "ceiling" of stack).
-    char* p = (char *) approx_stack_pointer() - 1;
+    char *p = (char *)approx_stack_pointer() - 1;
 
-    while(p >= MP_STATE_THREAD(stack_bottom)) {
-	*p-- = MP_MAX_STACK_USAGE_SENTINEL_BYTE;
+    while (p >= MP_STATE_THREAD(stack_bottom)) {
+        *p-- = MP_MAX_STACK_USAGE_SENTINEL_BYTE;
     }
 }
 

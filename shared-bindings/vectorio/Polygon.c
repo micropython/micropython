@@ -75,5 +75,5 @@ const mp_obj_type_t vectorio_polygon_type = {
     { &mp_type_type },
     .name = MP_QSTR_Polygon,
     .make_new = vectorio_polygon_make_new,
-    .locals_dict = (mp_obj_dict_t*)&vectorio_polygon_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vectorio_polygon_locals_dict,
 };

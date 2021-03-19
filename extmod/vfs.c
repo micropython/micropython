@@ -75,7 +75,7 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
-            (const byte*)p_out, strlen(p_out));
+            (const byte *)p_out, strlen(p_out));
     }
     return vfs;
 }
@@ -106,7 +106,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // If the mounted object has the VFS protocol, call its import_stat helper
-    const mp_vfs_proto_t *proto = (mp_vfs_proto_t*)mp_proto_get(MP_QSTR_protocol_vfs, vfs->obj);
+    const mp_vfs_proto_t *proto = (mp_vfs_proto_t *)mp_proto_get(MP_QSTR_protocol_vfs, vfs->obj);
     if (proto != NULL) {
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
@@ -168,7 +168,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t *)&args);
 
     // check that the destination mount point is unused
     const char *path_out;
@@ -245,7 +245,7 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_vfs_mount_t *vfs = lookup_path(args[ARG_file].u_obj, &args[ARG_file].u_obj);
-    return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t*)&args);
+    return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t *)&args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);
 
@@ -314,7 +314,7 @@ mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
             t->items[0] = mp_obj_new_str_of_type(
                 self->is_str ? &mp_type_str : &mp_type_bytes,
-                (const byte*)vfs->str + 1, vfs->len - 1);
+                (const byte *)vfs->str + 1, vfs->len - 1);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
             t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
             return MP_OBJ_FROM_PTR(t);

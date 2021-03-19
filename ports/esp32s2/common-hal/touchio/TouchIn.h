@@ -32,7 +32,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
+    const mcu_pin_obj_t *pin;
     uint16_t threshold;
 } touchio_touchin_obj_t;
 

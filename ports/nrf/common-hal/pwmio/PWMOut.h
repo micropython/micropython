@@ -32,10 +32,10 @@
 
 typedef struct {
     mp_obj_base_t base;
-    NRF_PWM_Type* pwm;
+    NRF_PWM_Type *pwm;
     uint8_t pin_number;
-    uint8_t channel: 7;
-    bool variable_frequency: 1;
+    uint8_t channel : 7;
+    bool variable_frequency : 1;
     uint16_t duty_cycle;
     uint32_t frequency;
 } pwmio_pwmout_obj_t;

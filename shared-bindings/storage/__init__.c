@@ -223,5 +223,5 @@ STATIC MP_DEFINE_CONST_DICT(storage_module_globals, storage_module_globals_table
 
 const mp_obj_module_t storage_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&storage_module_globals,
+    .globals = (mp_obj_dict_t *)&storage_module_globals,
 };
