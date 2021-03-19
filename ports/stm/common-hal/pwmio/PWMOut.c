@@ -48,7 +48,7 @@ STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     return (duty * period) / ((1 << 16) - 1);
 }
 
-STATIC void timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
+STATIC bool timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
     uint32_t frequency, uint32_t source_freq) {
     // Find the largest possible period supported by this frequency
     for (int i = 0; i < (1 << 16); i++) {
@@ -58,7 +58,7 @@ STATIC void timer_get_optimal_divisors(uint32_t *period, uint32_t *prescaler,
             break;
         }
     }
-    // Return successor failure.
+    // Return success or failure.
     return *prescaler != 0;
 }
 
