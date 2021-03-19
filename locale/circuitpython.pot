@@ -753,10 +753,6 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr ""
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr ""

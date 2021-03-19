@@ -103,6 +103,8 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->base.type = &pwmio_pwmout_type;
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
     switch (result) {
+        case PWMOUT_OK:
+            break;
         case PWMOUT_INVALID_PIN:
             mp_raise_ValueError(translate("Invalid pin"));
             break;

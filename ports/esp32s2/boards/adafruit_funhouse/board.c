@@ -33,6 +33,8 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
+#include "esp_log.h"
+
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
