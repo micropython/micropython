@@ -349,6 +349,10 @@ msgstr "Tous les périphériques SPI sont utilisés"
 msgid "All UART peripherals are in use"
 msgstr "Tous les périphériques UART sont utilisés"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
@@ -693,7 +697,7 @@ msgstr "Pas de transfert sans broches MOSI et MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisée"
 
@@ -780,14 +784,6 @@ msgstr "Impossible d'initialiser la carte SD"
 msgid "Could not initialize UART"
 msgstr "Impossible d'initialiser UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Impossible d'initialiser le canal"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Impossible d'initialiser le minuteur"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Impossible de réinitialiser le canal"
@@ -808,7 +804,7 @@ msgstr "Impossible d’obtenir l’horloge"
 msgid "Could not set address"
 msgstr "Impossible de définir l’adresse"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Impossible de démarrer PWM"
 
@@ -1059,7 +1055,7 @@ msgstr "Format non supporté"
 msgid "Framebuffer requires %d bytes"
 msgstr "FrameBuffer nécessite %d octets"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 "La fréquence doit correspondre à PWMOut existant à l'utilisation de ce "
@@ -1297,10 +1293,6 @@ msgstr "Taille de bloc de formatage invalide"
 msgid "Invalid frequency"
 msgstr "Fréquence non valide"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Fréquence invalide fournie"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Accès à la mémoire invalide."
@@ -1345,10 +1337,6 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Broches invalides pour PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1603,18 +1591,6 @@ msgstr "Aucune clé n'a été spécifiée"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Pas de support pour chiffre entier long"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "Pas de canal supplémentaire disponible"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "Plus de minuteurs disponibles"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Plus de minuteurs disponibles sur cette broche."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2197,13 +2173,6 @@ msgstr "L'heure est dans le passé."
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Le délai est trop long : le délai maximal est de %d secondes"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"Le minuteur est reservé pour un usage interne - déclarez la broche PWM plus "
-"tôt dans le programme"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -3855,6 +3824,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -4384,6 +4354,34 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Impossible d'initialiser le canal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Impossible d'initialiser le minuteur"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Fréquence invalide fournie"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Broches invalides pour PWMOut"
+
+#~ msgid "No more channels available"
+#~ msgstr "Pas de canal supplémentaire disponible"
+
+#~ msgid "No more timers available"
+#~ msgstr "Plus de minuteurs disponibles"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Plus de minuteurs disponibles sur cette broche."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Le minuteur est reservé pour un usage interne - déclarez la broche PWM "
+#~ "plus tôt dans le programme"
 
 #~ msgid "matrix dimensions do not match"
 #~ msgstr "les dimensions de la matrice ne correspondent pas"
