@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Artyom Skrobov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO_MIDITRACK_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO_MIDITRACK_H
 
-#include "shared-module/audiocore/RawSample.h"
+#include "shared-module/synthio/MidiTrack.h"
 
-extern const mp_obj_type_t audioio_rawsample_type;
+extern const mp_obj_type_t synthio_miditrack_type;
 
-void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t *self,
-    uint8_t *buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed,
-    uint8_t channel_count, uint32_t sample_rate);
+void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
+    const uint8_t *buffer, uint32_t len, uint32_t tempo, uint32_t sample_rate);
 
-void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t *self);
-bool common_hal_audioio_rawsample_deinited(audioio_rawsample_obj_t *self);
-uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t *self);
-uint8_t common_hal_audioio_rawsample_get_bits_per_sample(audioio_rawsample_obj_t *self);
-uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t *self);
-void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t *self, uint32_t sample_rate);
+void common_hal_synthio_miditrack_deinit(synthio_miditrack_obj_t *self);
+bool common_hal_synthio_miditrack_deinited(synthio_miditrack_obj_t *self);
+uint32_t common_hal_synthio_miditrack_get_sample_rate(synthio_miditrack_obj_t *self);
+uint8_t common_hal_synthio_miditrack_get_bits_per_sample(synthio_miditrack_obj_t *self);
+uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SYNTHIO_MIDITRACK_H

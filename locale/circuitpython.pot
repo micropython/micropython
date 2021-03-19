@@ -874,6 +874,11 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr ""
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr ""
@@ -1195,6 +1200,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
+msgstr ""
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
@@ -1877,7 +1886,7 @@ msgstr ""
 msgid "Read-only filesystem"
 msgstr ""
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr ""
 
@@ -2488,10 +2497,6 @@ msgstr ""
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr ""
-
 #: extmod/ulab/code/ulab_create.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -2933,7 +2938,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 

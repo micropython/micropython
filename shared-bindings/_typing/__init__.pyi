@@ -38,7 +38,7 @@ WriteableBuffer = Union[
 """
 
 AudioSample = Union[
-    audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer, audiomp3.MP3Decoder
+    audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer, audiomp3.MP3Decoder, synthio.MidiTrack
 ]
 """Classes that implement the audiosample protocol
 
@@ -46,6 +46,7 @@ AudioSample = Union[
   - `audiocore.RawSample`
   - `audiomixer.Mixer`
   - `audiomp3.MP3Decoder`
+  - `synthio.MidiTrack`
 
   You can play these back with `audioio.AudioOut`, `audiobusio.I2SOut` or `audiopwmio.PWMAudioOut`.
 """
