@@ -38,7 +38,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
+        pip install -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version
@@ -356,7 +356,7 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
@@ -497,7 +497,7 @@ jobs:
     - name: Install CircuitPython deps
       run: |
         source $IDF_PATH/export.sh
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
       env:
         IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
