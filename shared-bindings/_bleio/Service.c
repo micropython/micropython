@@ -169,5 +169,5 @@ const mp_obj_type_t bleio_service_type = {
     .name = MP_QSTR_Service,
     .make_new = bleio_service_make_new,
     .print = bleio_service_print,
-    .locals_dict = (mp_obj_dict_t*)&bleio_service_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_service_locals_dict
 };

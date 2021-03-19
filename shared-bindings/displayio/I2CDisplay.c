@@ -68,7 +68,7 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
     mp_obj_t i2c = args[ARG_i2c_bus].u_obj;
-    displayio_i2cdisplay_obj_t* self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
+    displayio_i2cdisplay_obj_t *self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
     self->base.type = &displayio_i2cdisplay_type;
 
     common_hal_displayio_i2cdisplay_construct(self,
@@ -111,7 +111,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_ob
     }
     uint8_t full_command[bufinfo.len + 1];
     full_command[0] = command;
-    memcpy(full_command + 1, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    memcpy(full_command + 1, ((uint8_t *)bufinfo.buf), bufinfo.len);
     common_hal_displayio_i2cdisplay_send(self, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, full_command, bufinfo.len + 1);
     common_hal_displayio_i2cdisplay_end_transaction(self);
 
@@ -129,5 +129,5 @@ const mp_obj_type_t displayio_i2cdisplay_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2CDisplay,
     .make_new = displayio_i2cdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_i2cdisplay_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_i2cdisplay_locals_dict,
 };

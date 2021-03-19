@@ -112,7 +112,7 @@ typedef enum {
     MP_BINARY_OP_NUM_BYTECODE,
 
     // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
-#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    #if MICROPY_PY_REVERSE_SPECIAL_METHODS
     MP_BINARY_OP_REVERSE_OR = MP_BINARY_OP_NUM_BYTECODE,
     MP_BINARY_OP_REVERSE_XOR,
     MP_BINARY_OP_REVERSE_AND,
@@ -125,13 +125,13 @@ typedef enum {
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
     MP_BINARY_OP_REVERSE_POWER,
-#endif
+    #endif
 
     // This is not emitted by the compiler but is supported by the runtime
     MP_BINARY_OP_DIVMOD
-        #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
+    #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
         = MP_BINARY_OP_NUM_BYTECODE
-        #endif
+    #endif
     ,
 
     // The runtime will convert MP_BINARY_OP_IN to this operator with swapped args.
@@ -166,10 +166,10 @@ typedef enum {
     MP_F_LIST_APPEND,
     MP_F_BUILD_MAP,
     MP_F_STORE_MAP,
-#if MICROPY_PY_BUILTINS_SET
+    #if MICROPY_PY_BUILTINS_SET
     MP_F_STORE_SET,
     MP_F_BUILD_SET,
-#endif
+    #endif
     MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
@@ -182,9 +182,9 @@ typedef enum {
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,
-#if MICROPY_PY_BUILTINS_SLICE
+    #if MICROPY_PY_BUILTINS_SLICE
     MP_F_NEW_SLICE,
-#endif
+    #endif
     MP_F_UNPACK_SEQUENCE,
     MP_F_UNPACK_EX,
     MP_F_DELETE_NAME,

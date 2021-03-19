@@ -40,7 +40,8 @@
 
 STATIC uint8_t bitrev(uint8_t n) {
     uint8_t r = 0;
-    for(int i=0;i<8;i++) r |= ((n>>i) & 1)<<(7-i);
+    for (int i = 0; i < 8; i++) {r |= ((n >> i) & 1) << (7 - i);
+    }
     return r;
 }
 
@@ -70,10 +71,10 @@ bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdispl
 
 void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *self) {
     if (self->bus != &self->inline_bus
-#if BOARD_SPI
+        #if BOARD_SPI
         && self->bus != common_hal_board_get_spi()
-#endif
-    ) {
+        #endif
+        ) {
         memcpy(&self->inline_bus, self->bus, sizeof(busio_spi_obj_t));
         self->bus = &self->inline_bus;
     }
@@ -81,7 +82,7 @@ void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *s
 
 void common_hal_sharpdisplay_framebuffer_reconstruct(sharpdisplay_framebuffer_obj_t *self) {
     // Look up the allocation by the old pointer and get the new pointer from it.
-    supervisor_allocation* alloc = allocation_from_ptr(self->bufinfo.buf);
+    supervisor_allocation *alloc = allocation_from_ptr(self->bufinfo.buf);
     self->bufinfo.buf = alloc ? alloc->ptr : NULL;
 }
 
@@ -90,7 +91,7 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         int row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
         int height = common_hal_sharpdisplay_framebuffer_get_height(self);
         self->bufinfo.len = row_stride * height + 2;
-        supervisor_allocation* alloc = allocate_memory(align32_size(self->bufinfo.len), false, true);
+        supervisor_allocation *alloc = allocate_memory(align32_size(self->bufinfo.len), false, true);
         if (alloc == NULL) {
             m_malloc_fail(self->bufinfo.len);
         }
@@ -100,8 +101,8 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         uint8_t *data = self->bufinfo.buf;
         *data++ = SHARPMEM_BIT_WRITECMD_LSB;
 
-        for(int y=0; y<height; y++) {
-            *data = bitrev(y+1);
+        for (int y = 0; y < height; y++) {
+            *data = bitrev(y + 1);
             data += row_stride;
         }
         self->full_refresh = true;
@@ -160,8 +161,8 @@ void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_ob
 
     // output each changed row
     size_t row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
-    for(int y=0; y<self->height; y++) {
-        if(self->full_refresh || (dirty_row_bitmask[y/8] & (1 << (y & 7)))) {
+    for (int y = 0; y < self->height; y++) {
+        if (self->full_refresh || (dirty_row_bitmask[y / 8] & (1 << (y & 7)))) {
             common_hal_busio_spi_write(self->bus, data, row_stride);
         }
         data += row_stride;

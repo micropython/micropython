@@ -12,15 +12,15 @@
 #define SPI_FLASH_SCK_PIN           &pin_PA19
 #define SPI_FLASH_CS_PIN            &pin_PA22
 
-#define IGNORE_PIN_PA02	    1
-#define IGNORE_PIN_PA03	    1
-#define IGNORE_PIN_PA04	    1
-#define IGNORE_PIN_PA05	    1
-#define IGNORE_PIN_PA06	    1
-#define IGNORE_PIN_PA07	    1
+#define IGNORE_PIN_PA02     1
+#define IGNORE_PIN_PA03     1
+#define IGNORE_PIN_PA04     1
+#define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PA06     1
+#define IGNORE_PIN_PA07     1
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA13     1
-#define IGNORE_PIN_PA14	    1
+#define IGNORE_PIN_PA14     1
 #define IGNORE_PIN_PA20     1
 #define IGNORE_PIN_PA21     1
 // USB is always used internally so skip the pin objects for it.

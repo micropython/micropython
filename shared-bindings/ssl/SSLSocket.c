@@ -73,7 +73,7 @@ STATIC mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
     uint8_t ip[4];
     uint32_t port;
 
-    ssl_sslsocket_obj_t * sslsock = common_hal_ssl_sslsocket_accept(self, ip, &port);
+    ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslsocket_accept(self, ip, &port);
 
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
@@ -95,7 +95,7 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
     size_t hostlen;
-    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
         mp_raise_ValueError(translate("port must be >= 0"));
@@ -133,7 +133,7 @@ STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
     size_t hostlen;
-    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
         mp_raise_ValueError(translate("port must be >= 0"));
@@ -205,7 +205,7 @@ STATIC mp_obj_t ssl_sslsocket_recv_into(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(0);
     }
 
-    mp_int_t ret = common_hal_ssl_sslsocket_recv_into(self, (byte*)bufinfo.buf, len);
+    mp_int_t ret = common_hal_ssl_sslsocket_recv_into(self, (byte *)bufinfo.buf, len);
     return mp_obj_new_int_from_uint(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_recv_into_obj, 2, 3, ssl_sslsocket_recv_into);
@@ -321,6 +321,6 @@ STATIC MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict
 const mp_obj_type_t ssl_sslsocket_type = {
     { &mp_type_type },
     .name = MP_QSTR_SSLSocket,
-    .locals_dict = (mp_obj_dict_t*)&ssl_sslsocket_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
     .unary_op = ssl_sslsocket_unary_op,
 };

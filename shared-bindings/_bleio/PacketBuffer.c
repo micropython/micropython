@@ -247,5 +247,5 @@ const mp_obj_type_t bleio_packet_buffer_type = {
     { &mp_type_type },
     .name = MP_QSTR_PacketBuffer,
     .make_new = bleio_packet_buffer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&bleio_packet_buffer_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_packet_buffer_locals_dict
 };

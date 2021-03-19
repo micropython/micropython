@@ -61,7 +61,7 @@ STATIC bool woke_up = false;
 
 // This is run in the timer task. We use it to wake the main CircuitPython task.
 void timer_callback(void *arg) {
-    (void) arg;
+    (void)arg;
     woke_up = true;
     xTaskNotifyGive(circuitpython_task);
 }
@@ -88,7 +88,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         if (timealarm_set) {
             mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
         }
-        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;
     }
     if (!timealarm_set) {
@@ -110,7 +110,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     // Compute how long to actually sleep, considering the time now.
     mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
     mp_float_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
-    const uint64_t sleep_for_us = (uint64_t) (wakeup_in_secs * 1000000);
+    const uint64_t sleep_for_us = (uint64_t)(wakeup_in_secs * 1000000);
     esp_sleep_enable_timer_wakeup(sleep_for_us);
 
     // Also set the RTC interrupt so it can wake our task. This will be wiped out

@@ -101,18 +101,19 @@ void i2sout_reset(void) {
 }
 
 // Caller validates that pins are free.
-void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
-        const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select,
-        const mcu_pin_obj_t* data, bool left_justified) {
+void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
+    const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
+    const mcu_pin_obj_t *data, bool left_justified) {
     if (bit_clock->number != word_select->number - 1) {
         mp_raise_ValueError(translate("Bit clock and word select must be sequential pins"));
     }
 
-    const uint16_t* program = i2s_program;
+    const uint16_t *program = i2s_program;
     size_t program_len = sizeof(i2s_program) / sizeof(i2s_program[0]);
     if (left_justified) {
         program = i2s_program_left_justified;
-        program_len = sizeof(i2s_program_left_justified) / sizeof(i2s_program_left_justified[0]);;
+        program_len = sizeof(i2s_program_left_justified) / sizeof(i2s_program_left_justified[0]);
+        ;
     }
 
     // Use the state machine to manage pins.
@@ -122,6 +123,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
         NULL, 0,
         data, 1, 0, 0xffffffff, // out pin
         NULL, 0, // in pins
+        0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         bit_clock, 2, 0, 0x1f, // sideset pins
         true, // exclusive pin use
@@ -133,11 +135,11 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     audio_dma_init(&self->dma);
 }
 
-bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self) {
     return common_hal_rp2pio_statemachine_deinited(&self->state_machine);
 }
 
-void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
@@ -145,8 +147,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
-void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
-                                       mp_obj_t sample, bool loop) {
+void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
+    mp_obj_t sample, bool loop) {
     if (common_hal_audiobusio_i2sout_get_playing(self)) {
         common_hal_audiobusio_i2sout_stop(self);
     }
@@ -177,7 +179,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
         0, // audio channel
         true,  // output signed
         bits_per_sample,
-        (uint32_t) &self->state_machine.pio->txf[self->state_machine.state_machine], // output register
+        (uint32_t)&self->state_machine.pio->txf[self->state_machine.state_machine],  // output register
         self->state_machine.tx_dreq); // data request line
 
     if (result == AUDIO_DMA_DMA_BUSY) {
@@ -193,21 +195,21 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->playing = true;
 }
 
-void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t *self) {
     audio_dma_pause(&self->dma);
 }
 
-void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t *self) {
     // Maybe: Clear any overrun/underrun errors
 
     audio_dma_resume(&self->dma);
 }
 
-bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t *self) {
     return audio_dma_get_paused(&self->dma);
 }
 
-void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
     audio_dma_stop(&self->dma);
 
     common_hal_rp2pio_statemachine_stop(&self->state_machine);
@@ -215,7 +217,7 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     self->playing = false;
 }
 
-bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t *self) {
     bool playing = audio_dma_get_playing(&self->dma);
     if (!playing && self->playing) {
         common_hal_audiobusio_i2sout_stop(self);

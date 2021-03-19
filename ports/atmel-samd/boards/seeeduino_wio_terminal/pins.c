@@ -26,7 +26,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D8), MP_ROM_PTR(&pin_PA06) },
 
     { MP_ROM_QSTR(MP_QSTR_D9), MP_ROM_PTR(&pin_PA17) }, // MP_QSTR_SDA
-    { MP_ROM_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_PA16) }, //MP_QSTR_SCL
+    { MP_ROM_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_PA16) }, // MP_QSTR_SCL
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA15) }, // MP_QSTR_LED
 
     // UART pins

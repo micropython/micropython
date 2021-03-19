@@ -27,8 +27,7 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 
-void board_init(void)
-{
+void board_init(void) {
     // struct port_config pin_conf;
     // port_get_config_defaults(&pin_conf);
     //

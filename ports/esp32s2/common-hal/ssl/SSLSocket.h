@@ -36,9 +36,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    socketpool_socket_obj_t * sock;
-    esp_tls_t* tls;
-    ssl_sslcontext_obj_t* ssl_context;
+    socketpool_socket_obj_t *sock;
+    esp_tls_t *tls;
+    ssl_sslcontext_obj_t *ssl_context;
 } ssl_sslsocket_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H

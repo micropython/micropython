@@ -72,7 +72,7 @@ extern const busio_uart_parity_obj_t busio_uart_parity_even_obj;
 extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
 STATIC void validate_timeout(mp_float_t timeout) {
-    if (timeout < (mp_float_t) 0.0f ||  timeout > (mp_float_t) 100.0f) {
+    if (timeout < (mp_float_t)0.0f || timeout > (mp_float_t)100.0f) {
         mp_raise_ValueError(translate("timeout must be 0.0-100.0 seconds"));
     }
 }
@@ -103,10 +103,10 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
-    const mcu_pin_obj_t* tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
+    const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
+    const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
 
-    if ( (tx == NULL) && (rx == NULL) ) {
+    if ((tx == NULL) && (rx == NULL)) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
@@ -130,15 +130,15 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    const mcu_pin_obj_t* rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
-    const mcu_pin_obj_t* cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
-    const mcu_pin_obj_t* rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
+    const mcu_pin_obj_t *rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
+    const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
+    const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
 
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
-                                    args[ARG_baudrate].u_int, bits, parity, stop, timeout,
-                                    args[ARG_receiver_buffer_size].u_int, NULL, false);
+        args[ARG_baudrate].u_int, bits, parity, stop, timeout,
+        args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
 }
 
@@ -427,5 +427,5 @@ const mp_obj_type_t busio_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&busio_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
 };

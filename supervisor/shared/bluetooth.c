@@ -81,13 +81,13 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     }
     // TODO: switch to Adafruit short UUID for the advertisement and add manufacturing data to distinguish ourselves from arduino.
     _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
-                                                   true,
-                                                   false, 0,
-                                                   1.0,
-                                                   circuitpython_advertising_data,
-                                                   sizeof(circuitpython_advertising_data),
-                                                   circuitpython_scan_response_data,
-                                                   sizeof(circuitpython_scan_response_data));
+        true,
+        false, 0,
+        1.0,
+        circuitpython_advertising_data,
+        sizeof(circuitpython_advertising_data),
+        circuitpython_scan_response_data,
+        sizeof(circuitpython_scan_response_data));
 }
 
 void supervisor_start_bluetooth(void) {
@@ -109,15 +109,15 @@ void supervisor_start_bluetooth(void) {
     supervisor_ble_version_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_version_uuid, 0x0203, circuitpython_base_uuid);
     common_hal_bleio_characteristic_construct(&supervisor_ble_version_characteristic,
-                                              &supervisor_ble_service,
-                                              0, // handle (for remote only)
-                                              &supervisor_ble_version_uuid,
-                                              CHAR_PROP_READ,
-                                              SECURITY_MODE_OPEN,
-                                              SECURITY_MODE_NO_ACCESS,
-                                              4, // max length
-                                              true, // fixed length
-                                              NULL); // no initial value
+        &supervisor_ble_service,
+        0,                                       // handle (for remote only)
+        &supervisor_ble_version_uuid,
+        CHAR_PROP_READ,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        4,                                       // max length
+        true,                                       // fixed length
+        NULL);                                       // no initial value
 
     uint32_t version = 1;
     mp_buffer_info_t bufinfo;
@@ -129,15 +129,15 @@ void supervisor_start_bluetooth(void) {
     supervisor_ble_filename_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_filename_uuid, 0x0200, circuitpython_base_uuid);
     common_hal_bleio_characteristic_construct(&supervisor_ble_filename_characteristic,
-                                              &supervisor_ble_service,
-                                              0, // handle (for remote only)
-                                              &supervisor_ble_filename_uuid,
-                                              CHAR_PROP_READ | CHAR_PROP_WRITE,
-                                              SECURITY_MODE_OPEN,
-                                              SECURITY_MODE_OPEN,
-                                              500, // max length
-                                              false, // fixed length
-                                              NULL); // no initial value
+        &supervisor_ble_service,
+        0,                                       // handle (for remote only)
+        &supervisor_ble_filename_uuid,
+        CHAR_PROP_READ | CHAR_PROP_WRITE,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_OPEN,
+        500,                                       // max length
+        false,                                       // fixed length
+        NULL);                                       // no initial value
 
     char code_py[] = "/code.py";
     bufinfo.buf = code_py;
@@ -148,29 +148,29 @@ void supervisor_start_bluetooth(void) {
     supervisor_ble_length_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_length_uuid, 0x0202, circuitpython_base_uuid);
     common_hal_bleio_characteristic_construct(&supervisor_ble_length_characteristic,
-                                              &supervisor_ble_service,
-                                              0, // handle (for remote only)
-                                              &supervisor_ble_length_uuid,
-                                              CHAR_PROP_NOTIFY | CHAR_PROP_READ,
-                                              SECURITY_MODE_OPEN,
-                                              SECURITY_MODE_NO_ACCESS,
-                                              4, // max length
-                                              true, // fixed length
-                                              NULL); // no initial value
+        &supervisor_ble_service,
+        0,                                       // handle (for remote only)
+        &supervisor_ble_length_uuid,
+        CHAR_PROP_NOTIFY | CHAR_PROP_READ,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        4,                                       // max length
+        true,                                       // fixed length
+        NULL);                                       // no initial value
 
     // File actions
     supervisor_ble_contents_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_contents_uuid, 0x0201, circuitpython_base_uuid);
     common_hal_bleio_characteristic_construct(&supervisor_ble_contents_characteristic,
-                                              &supervisor_ble_service,
-                                              0, // handle (for remote only)
-                                              &supervisor_ble_contents_uuid,
-                                              CHAR_PROP_NOTIFY | CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_WRITE,
-                                              SECURITY_MODE_OPEN,
-                                              SECURITY_MODE_OPEN,
-                                              500, // max length
-                                              false, // fixed length
-                                              NULL); // no initial value
+        &supervisor_ble_service,
+        0,                                       // handle (for remote only)
+        &supervisor_ble_contents_uuid,
+        CHAR_PROP_NOTIFY | CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_WRITE,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_OPEN,
+        500,                                       // max length
+        false,                                       // fixed length
+        NULL);                                       // no initial value
 
     supervisor_bluetooth_start_advertising();
     vm_used_ble = false;
@@ -187,7 +187,7 @@ STATIC void update_file_length(void) {
     bufinfo.buf = &file_length;
     bufinfo.len = sizeof(file_length);
     if (active_file.obj.fs != 0) {
-        file_length = (int32_t) f_size(&active_file);
+        file_length = (int32_t)f_size(&active_file);
     }
     common_hal_bleio_characteristic_set_value(&supervisor_ble_length_characteristic, &bufinfo);
 }
@@ -201,8 +201,8 @@ STATIC void open_current_file(void) {
     size_t length = common_hal_bleio_characteristic_get_value(&supervisor_ble_filename_characteristic, path, max_len - 1);
     path[length] = '\0';
 
-    FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-    f_open(fs, &active_file, (char*) path, FA_READ | FA_WRITE);
+    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    f_open(fs, &active_file, (char *)path, FA_READ | FA_WRITE);
 
     update_file_length();
 }
@@ -238,12 +238,12 @@ void supervisor_bluetooth_background(void) {
         new_filename = false;
         // get length and set the characteristic for it
     }
-    uint16_t current_length = ((uint16_t*) current_command)[0];
+    uint16_t current_length = ((uint16_t *)current_command)[0];
     if (current_length > 0 && current_length == current_offset) {
-        uint16_t command = ((uint16_t *) current_command)[1];
+        uint16_t command = ((uint16_t *)current_command)[1];
 
         if (command == 1) {
-            uint16_t max_len = 20; //supervisor_ble_contents_characteristic.max_length;
+            uint16_t max_len = 20; // supervisor_ble_contents_characteristic.max_length;
             uint8_t buf[max_len];
             mp_buffer_info_t bufinfo;
             bufinfo.buf = buf;
@@ -258,8 +258,8 @@ void supervisor_bluetooth_background(void) {
             uint32_t offset = current_command[1];
             uint32_t remove_length = current_command[2];
             uint32_t insert_length = current_command[3];
-            uint32_t file_length =  (int32_t) f_size(&active_file);
-            //uint32_t data_shift_length = fileLength - offset - remove_length;
+            uint32_t file_length = (int32_t)f_size(&active_file);
+            // uint32_t data_shift_length = fileLength - offset - remove_length;
             int32_t data_shift = insert_length - remove_length;
             uint32_t new_length = file_length + data_shift;
 
@@ -278,11 +278,11 @@ void supervisor_bluetooth_background(void) {
                 f_lseek(&active_file, file_length);
                 // Fill end with 0xff so we don't need to erase.
                 uint8_t data = 0xff;
-                for (size_t i = 0; i < (size_t) data_shift; i++) {
+                for (size_t i = 0; i < (size_t)data_shift; i++) {
                     UINT actual;
                     f_write(&active_file, &data, 1, &actual);
                 }
-                for (uint32_t shift_offset = new_length - 1; shift_offset >= offset + insert_length ; shift_offset--) {
+                for (uint32_t shift_offset = new_length - 1; shift_offset >= offset + insert_length; shift_offset--) {
                     UINT actual;
                     f_lseek(&active_file, shift_offset - data_shift);
                     f_read(&active_file, &data, 1, &actual);
@@ -292,7 +292,7 @@ void supervisor_bluetooth_background(void) {
             }
 
             f_lseek(&active_file, offset);
-            uint8_t* data = (uint8_t *) (current_command + 4);
+            uint8_t *data = (uint8_t *)(current_command + 4);
             UINT written;
             f_write(&active_file, data, insert_length, &written);
             f_sync(&active_file);

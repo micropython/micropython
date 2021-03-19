@@ -39,25 +39,25 @@
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
-//static uint8_t refcount = 0;
+// static uint8_t refcount = 0;
 //
-//static uint8_t pulseout_tc_index = 0xff;
+// static uint8_t pulseout_tc_index = 0xff;
 //
-//static __IO PORT_PINCFG_Type *active_pincfg = NULL;
-//static uint16_t *pulse_buffer = NULL;
-//static volatile uint16_t pulse_index = 0;
-//static uint16_t pulse_length;
-//static volatile uint32_t current_compare = 0;
+// static __IO PORT_PINCFG_Type *active_pincfg = NULL;
+// static uint16_t *pulse_buffer = NULL;
+// static volatile uint16_t pulse_index = 0;
+// static uint16_t pulse_length;
+// static volatile uint32_t current_compare = 0;
 //
-//static void turn_on(__IO PORT_PINCFG_Type * pincfg) {
+// static void turn_on(__IO PORT_PINCFG_Type * pincfg) {
 //    pincfg->reg = PORT_PINCFG_PMUXEN;
-//}
+// }
 //
-//static void turn_off(__IO PORT_PINCFG_Type * pincfg) {
+// static void turn_off(__IO PORT_PINCFG_Type * pincfg) {
 //    pincfg->reg = PORT_PINCFG_RESETVALUE;
-//}
+// }
 //
-//void pulse_finish(void) {
+// void pulse_finish(void) {
 //    pulse_index++;
 //
 //    if (active_pincfg == NULL) {
@@ -74,7 +74,7 @@
 //    if (pulse_index % 2 == 0) {
 //        turn_on(active_pincfg);
 //    }
-//}
+// }
 
 void pulseout_interrupt_handler(uint8_t index) {
 //    if (index != pulseout_tc_index) return;
@@ -93,11 +93,11 @@ void pulseout_reset() {
 //    active_pincfg = NULL;
 }
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pwmio_pwmout_obj_t* carrier,
-                                            const mcu_pin_obj_t* pin,
-                                            uint32_t frequency,
-                                            uint16_t duty_cycle) {
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
+    const pwmio_pwmout_obj_t *carrier,
+    const mcu_pin_obj_t *pin,
+    uint32_t frequency,
+    uint16_t duty_cycle) {
 //    if (refcount == 0) {
 //        // Find a spare timer.
 //        Tc *tc = NULL;
@@ -155,12 +155,12 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 //    turn_off(self->pincfg);
 }
 
-bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
 //    return self->pin == NO_PIN;
     return false;
 }
 
-void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
 //    if (common_hal_pulseio_pulseout_deinited(self)) {
 //        return;
 //    }
@@ -177,7 +177,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 //    self->pin = NO_PIN;
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
 //    if (active_pincfg != NULL) {
 //        mp_raise_RuntimeError(translate("Another send is already active"));
 //    }

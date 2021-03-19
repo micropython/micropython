@@ -84,7 +84,7 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         buffer_size = bufinfo.len;
     }
     common_hal_audiomp3_mp3file_construct(self, MP_OBJ_TO_PTR(args[0]),
-                                          buffer, buffer_size);
+        buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -262,6 +262,6 @@ const mp_obj_type_t audiomp3_mp3file_type = {
     { &mp_type_type },
     .name = MP_QSTR_MP3Decoder,
     .make_new = audiomp3_mp3file_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiomp3_mp3file_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiomp3_mp3file_locals_dict,
     .protocol = &audiomp3_mp3file_proto,
 };

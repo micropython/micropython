@@ -25,16 +25,11 @@ ALL_HID_DEVICES_SET = frozenset(ALL_HID_DEVICES.split())
 DEFAULT_HID_DEVICES = "KEYBOARD MOUSE CONSUMER GAMEPAD"
 
 # In the following URL, don't include the https:// because that prefix gets added automatically
-DEFAULT_WEBUSB_URL = (
-    "circuitpython.org"  # In the future, this may become a specific landing page
-)
+DEFAULT_WEBUSB_URL = "circuitpython.org"  # In the future, this may become a specific landing page
 
 parser = argparse.ArgumentParser(description="Generate USB descriptors.")
 parser.add_argument(
-    "--highspeed",
-    default=False,
-    action="store_true",
-    help="descriptor for highspeed device",
+    "--highspeed", default=False, action="store_true", help="descriptor for highspeed device"
 )
 parser.add_argument("--manufacturer", type=str, help="manufacturer of the device")
 parser.add_argument("--product", type=str, help="product name of the device")
@@ -71,16 +66,10 @@ parser.add_argument(
     help="use to not renumber endpoint",
 )
 parser.add_argument(
-    "--cdc_ep_num_notification",
-    type=int,
-    default=0,
-    help="endpoint number of CDC NOTIFICATION",
+    "--cdc_ep_num_notification", type=int, default=0, help="endpoint number of CDC NOTIFICATION"
 )
 parser.add_argument(
-    "--cdc2_ep_num_notification",
-    type=int,
-    default=0,
-    help="endpoint number of CDC2 NOTIFICATION",
+    "--cdc2_ep_num_notification", type=int, default=0, help="endpoint number of CDC2 NOTIFICATION"
 )
 parser.add_argument(
     "--cdc_ep_num_data_out", type=int, default=0, help="endpoint number of CDC DATA OUT"
@@ -89,35 +78,18 @@ parser.add_argument(
     "--cdc_ep_num_data_in", type=int, default=0, help="endpoint number of CDC DATA IN"
 )
 parser.add_argument(
-    "--cdc2_ep_num_data_out",
-    type=int,
-    default=0,
-    help="endpoint number of CDC2 DATA OUT",
+    "--cdc2_ep_num_data_out", type=int, default=0, help="endpoint number of CDC2 DATA OUT"
 )
 parser.add_argument(
     "--cdc2_ep_num_data_in", type=int, default=0, help="endpoint number of CDC2 DATA IN"
 )
-parser.add_argument(
-    "--msc_ep_num_out", type=int, default=0, help="endpoint number of MSC OUT"
-)
-parser.add_argument(
-    "--msc_ep_num_in", type=int, default=0, help="endpoint number of MSC IN"
-)
-parser.add_argument(
-    "--hid_ep_num_out", type=int, default=0, help="endpoint number of HID OUT"
-)
-parser.add_argument(
-    "--hid_ep_num_in", type=int, default=0, help="endpoint number of HID IN"
-)
-parser.add_argument(
-    "--midi_ep_num_out", type=int, default=0, help="endpoint number of MIDI OUT"
-)
-parser.add_argument(
-    "--midi_ep_num_in", type=int, default=0, help="endpoint number of MIDI IN"
-)
-parser.add_argument(
-    "--max_ep", type=int, default=0, help="total number of endpoints available"
-)
+parser.add_argument("--msc_ep_num_out", type=int, default=0, help="endpoint number of MSC OUT")
+parser.add_argument("--msc_ep_num_in", type=int, default=0, help="endpoint number of MSC IN")
+parser.add_argument("--hid_ep_num_out", type=int, default=0, help="endpoint number of HID OUT")
+parser.add_argument("--hid_ep_num_in", type=int, default=0, help="endpoint number of HID IN")
+parser.add_argument("--midi_ep_num_out", type=int, default=0, help="endpoint number of MIDI OUT")
+parser.add_argument("--midi_ep_num_in", type=int, default=0, help="endpoint number of MIDI IN")
+parser.add_argument("--max_ep", type=int, default=0, help="total number of endpoints available")
 parser.add_argument(
     "--webusb_url",
     type=str,
@@ -127,9 +99,7 @@ parser.add_argument(
 parser.add_argument(
     "--vendor_ep_num_out", type=int, default=0, help="endpoint number of VENDOR OUT"
 )
-parser.add_argument(
-    "--vendor_ep_num_in", type=int, default=0, help="endpoint number of VENDOR IN"
-)
+parser.add_argument("--vendor_ep_num_in", type=int, default=0, help="endpoint number of VENDOR IN")
 parser.add_argument(
     "--output_c_file", type=argparse.FileType("w", encoding="UTF-8"), required=True
 )
@@ -261,9 +231,7 @@ def make_cdc_call_management(name):
     )
 
 
-def make_cdc_comm_interface(
-    name, cdc_union, cdc_call_management, cdc_ep_num_notification
-):
+def make_cdc_comm_interface(name, cdc_union, cdc_call_management, cdc_ep_num_notification):
     return standard.InterfaceDescriptor(
         description="{} comm".format(name),
         bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
@@ -273,9 +241,7 @@ def make_cdc_comm_interface(
         subdescriptors=[
             cdc.Header(description="{} comm".format(name), bcdCDC=0x0110),
             cdc_call_management,
-            cdc.AbstractControlManagement(
-                description="{} comm".format(name), bmCapabilities=0x02
-            ),
+            cdc.AbstractControlManagement(description="{} comm".format(name), bmCapabilities=0x02),
             cdc_union,
             standard.EndpointDescriptor(
                 description="{} comm in".format(name),
@@ -297,16 +263,14 @@ def make_cdc_data_interface(name, cdc_ep_num_data_in, cdc_ep_num_data_out):
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="{} data out".format(name),
-                bEndpointAddress=cdc_ep_num_data_out
-                | standard.EndpointDescriptor.DIRECTION_OUT,
+                bEndpointAddress=cdc_ep_num_data_out | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
                 wMaxPacketSize=512 if args.highspeed else 64,
             ),
             standard.EndpointDescriptor(
                 description="{} data in".format(name),
-                bEndpointAddress=cdc_ep_num_data_in
-                | standard.EndpointDescriptor.DIRECTION_IN,
+                bEndpointAddress=cdc_ep_num_data_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
                 wMaxPacketSize=512 if args.highspeed else 64,
@@ -350,8 +314,7 @@ if include_msc:
             subdescriptors=[
                 standard.EndpointDescriptor(
                     description="MSC in",
-                    bEndpointAddress=args.msc_ep_num_in
-                    | standard.EndpointDescriptor.DIRECTION_IN,
+                    bEndpointAddress=args.msc_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                     bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                     bInterval=0,
                     wMaxPacketSize=512 if args.highspeed else 64,
@@ -383,9 +346,7 @@ if include_hid:
         name = args.hid_devices[0]
         combined_hid_report_descriptor = hid.ReportDescriptor(
             description=name,
-            report_descriptor=bytes(
-                hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](0)
-            ),
+            report_descriptor=bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](0)),
         )
         report_ids[name] = 0
     else:
@@ -393,9 +354,7 @@ if include_hid:
         concatenated_descriptors = bytearray()
         for name in args.hid_devices:
             concatenated_descriptors.extend(
-                bytes(
-                    hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id)
-                )
+                bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id))
             )
             report_ids[name] = report_id
             report_id += 1
@@ -414,8 +373,7 @@ if include_hid:
 
     hid_endpoint_out_descriptor = standard.EndpointDescriptor(
         description="HID out",
-        bEndpointAddress=args.hid_ep_num_out
-        | standard.EndpointDescriptor.DIRECTION_OUT,
+        bEndpointAddress=args.hid_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
         bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
         bInterval=8,
     )
@@ -429,13 +387,12 @@ if include_hid:
             iInterface=StringIndex.index("{} HID".format(args.interface_name)),
             subdescriptors=[
                 hid.HIDDescriptor(
-                    description="HID",
-                    wDescriptorLength=len(bytes(combined_hid_report_descriptor)),
+                    description="HID", wDescriptorLength=len(bytes(combined_hid_report_descriptor))
                 ),
                 hid_endpoint_in_descriptor,
                 hid_endpoint_out_descriptor,
             ],
-        ),
+        )
     ]
 
 if include_audio:
@@ -457,9 +414,7 @@ if include_audio:
 
     # USB IN <- midi_out_jack_emb <- midi_in_jack_ext <- CircuitPython
     midi_in_jack_ext = midi.InJackDescriptor(
-        description="MIDI data in from user code.",
-        bJackType=midi.JACK_TYPE_EXTERNAL,
-        iJack=0,
+        description="MIDI data in from user code.", bJackType=midi.JACK_TYPE_EXTERNAL, iJack=0
     )
     midi_out_jack_emb = midi.OutJackDescriptor(
         description="MIDI PC <- {}".format(args.interface_name),
@@ -481,12 +436,11 @@ if include_audio:
                     midi_in_jack_ext,
                     midi_out_jack_emb,
                     midi_out_jack_ext,
-                ],
+                ]
             ),
             standard.EndpointDescriptor(
                 description="MIDI data out to {}".format(args.interface_name),
-                bEndpointAddress=args.midi_ep_num_out
-                | standard.EndpointDescriptor.DIRECTION_OUT,
+                bEndpointAddress=args.midi_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
                 wMaxPacketSize=512 if args.highspeed else 64,
@@ -494,8 +448,7 @@ if include_audio:
             midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
             standard.EndpointDescriptor(
                 description="MIDI data in from {}".format(args.interface_name),
-                bEndpointAddress=args.midi_ep_num_in
-                | standard.EndpointDescriptor.DIRECTION_IN,
+                bEndpointAddress=args.midi_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0x0,
                 wMaxPacketSize=512 if args.highspeed else 64,
@@ -516,9 +469,7 @@ if include_audio:
         bInterfaceSubClass=audio.AUDIO_SUBCLASS_CONTROL,
         bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
         iInterface=StringIndex.index("{} Audio".format(args.interface_name)),
-        subdescriptors=[
-            cs_ac_interface,
-        ],
+        subdescriptors=[cs_ac_interface],
     )
 
     # Audio streaming interfaces must occur before MIDI ones.
@@ -532,16 +483,14 @@ if include_vendor:
     # Vendor-specific interface, for example WebUSB
     vendor_endpoint_in_descriptor = standard.EndpointDescriptor(
         description="VENDOR in",
-        bEndpointAddress=args.vendor_ep_num_in
-        | standard.EndpointDescriptor.DIRECTION_IN,
+        bEndpointAddress=args.vendor_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
         bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
         bInterval=16,
     )
 
     vendor_endpoint_out_descriptor = standard.EndpointDescriptor(
         description="VENDOR out",
-        bEndpointAddress=args.vendor_ep_num_out
-        | standard.EndpointDescriptor.DIRECTION_OUT,
+        bEndpointAddress=args.vendor_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
         bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
         bInterval=16,
     )
@@ -552,10 +501,7 @@ if include_vendor:
         bInterfaceSubClass=0x00,
         bInterfaceProtocol=0x00,
         iInterface=StringIndex.index("{} VENDOR".format(args.interface_name)),
-        subdescriptors=[
-            vendor_endpoint_in_descriptor,
-            vendor_endpoint_out_descriptor,
-        ],
+        subdescriptors=[vendor_endpoint_in_descriptor, vendor_endpoint_out_descriptor],
     )
 
     vendor_interfaces = [vendor_interface]
@@ -583,9 +529,7 @@ if include_vendor:
 # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
 # interface cross-references.
-interfaces = util.join_interfaces(
-    interfaces_to_join, renumber_endpoints=args.renumber_endpoints
-)
+interfaces = util.join_interfaces(interfaces_to_join, renumber_endpoints=args.renumber_endpoints)
 
 if args.max_ep != 0:
     for interface in interfaces:
@@ -597,10 +541,7 @@ if args.max_ep != 0:
                     % (endpoint_address & 0x7F, interface.description, args.max_ep)
                 )
 else:
-    print(
-        "Unable to check whether maximum number of endpoints is respected",
-        file=sys.stderr,
-    )
+    print("Unable to check whether maximum number of endpoints is respected", file=sys.stderr)
 
 # Now adjust the CDC interface cross-references.
 
@@ -668,8 +609,7 @@ if include_vendor:
 configuration = standard.ConfigurationDescriptor(
     description="Composite configuration",
     wTotalLength=(
-        standard.ConfigurationDescriptor.bLength
-        + sum([len(bytes(x)) for x in descriptor_list])
+        standard.ConfigurationDescriptor.bLength + sum([len(bytes(x)) for x in descriptor_list])
     ),
     bNumInterfaces=len(interfaces),
 )
@@ -783,7 +723,9 @@ for idx, descriptor in enumerate(string_descriptors):
     const = "const "
     if variable_name == "usb_serial_number":
         length = len(b)
-        c_file.write("    uint16_t {NAME}[{length}];\n".format(NAME=variable_name, length=length//2))
+        c_file.write(
+            "    uint16_t {NAME}[{length}];\n".format(NAME=variable_name, length=length // 2)
+        )
     else:
         c_file.write(
             """\
@@ -804,7 +746,7 @@ for idx, descriptor in enumerate(string_descriptors):
             """\
     };
     """
-    )
+        )
 
 c_file.write(
     """\
@@ -932,9 +874,7 @@ const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
 static uint8_t {name}_report_buffer[{report_length}];
 """.format(
                 name=name.lower(),
-                report_length=hid_report_descriptors.HID_DEVICE_DATA[
-                    name
-                ].report_length,
+                report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length,
             )
         )
 
@@ -944,9 +884,7 @@ static uint8_t {name}_report_buffer[{report_length}];
 static uint8_t {name}_out_report_buffer[{report_length}];
 """.format(
                     name=name.lower(),
-                    report_length=hid_report_descriptors.HID_DEVICE_DATA[
-                        name
-                    ].out_report_length,
+                    report_length=hid_report_descriptors.HID_DEVICE_DATA[name].out_report_length,
                 )
             )
 
@@ -1113,7 +1051,6 @@ TU_VERIFY_STATIC(sizeof(desc_ms_os_20) == MS_OS_20_DESC_LEN, "Incorrect size");
 // End of section about desc_ms_os_20
 
 """.format(
-            webusb_url=args.webusb_url,
-            webusb_interface=vendor_interface.bInterfaceNumber,
+            webusb_url=args.webusb_url, webusb_interface=vendor_interface.bInterfaceNumber
         )
     )

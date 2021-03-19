@@ -32,10 +32,10 @@
 
 
 void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
-        mp_obj_t *layers, size_t layers_size,
-        uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display,
-        uint8_t scale, uint16_t background) {
+    mp_obj_t *layers, size_t layers_size,
+    uint16_t *buffer, size_t buffer_size,
+    displayio_display_obj_t *display,
+    uint8_t scale, uint16_t background) {
 
 
     displayio_area_t area;
@@ -51,8 +51,8 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         RUN_BACKGROUND_TASKS;
     }
     display->core.send(display->core.bus, DISPLAY_COMMAND,
-                      CHIP_SELECT_TOGGLE_EVERY_BYTE,
-                      &display->write_ram_command, 1);
+        CHIP_SELECT_TOGGLE_EVERY_BYTE,
+        &display->write_ram_command, 1);
     size_t index = 0;
     for (uint16_t y = y0; y < y1; ++y) {
         for (uint8_t yscale = 0; yscale < scale; ++yscale) {
@@ -78,8 +78,8 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
                         display->core.send(display->core.bus, DISPLAY_DATA,
-                                           CHIP_SELECT_UNTOUCHED,
-                                           ((uint8_t*)buffer), buffer_size * 2);
+                            CHIP_SELECT_UNTOUCHED,
+                            ((uint8_t *)buffer), buffer_size * 2);
                         index = 0;
                     }
                 }
@@ -89,8 +89,8 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
     // Send the remaining data.
     if (index) {
         display->core.send(display->core.bus, DISPLAY_DATA,
-                           CHIP_SELECT_UNTOUCHED,
-                           ((uint8_t*)buffer), index * 2);
+            CHIP_SELECT_UNTOUCHED,
+            ((uint8_t *)buffer), index * 2);
     }
 
     displayio_display_core_end_transaction(&display->core);

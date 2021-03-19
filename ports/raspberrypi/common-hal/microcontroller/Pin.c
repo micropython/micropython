@@ -74,8 +74,8 @@ void reset_pin_number(uint8_t pin_number) {
     // disabled and both buffers are as well.
     gpio_init(pin_number);
     hw_clear_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_IE_BITS |
-                                                 PADS_BANK0_GPIO0_PUE_BITS |
-                                                 PADS_BANK0_GPIO0_PDE_BITS);
+        PADS_BANK0_GPIO0_PUE_BITS |
+        PADS_BANK0_GPIO0_PDE_BITS);
     hw_set_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
 
     #ifdef MICROPY_HW_NEOPIXEL
@@ -104,15 +104,15 @@ void reset_pin_number(uint8_t pin_number) {
     #endif
 }
 
-void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pin_number(pin->number);
 }
 
-void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     reset_pin_number(pin->number);
 }
 
-void claim_pin(const mcu_pin_obj_t* pin) {
+void claim_pin(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         neopixel_in_use = true;
@@ -144,7 +144,7 @@ bool pin_number_is_free(uint8_t pin_number) {
            (pad_state & PADS_BANK0_GPIO0_OD_BITS) != 0;
 }
 
-bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         return !neopixel_in_use;
@@ -168,11 +168,11 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     return pin_number_is_free(pin->number);
 }
 
-uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin) {
     return pin->number;
 }
 
-void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
     return claim_pin(pin);
 }
 

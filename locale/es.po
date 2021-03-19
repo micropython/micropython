@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-02 02:24+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-03-12 02:03+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -84,6 +84,7 @@ msgstr "%q está siendo utilizado"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -988,6 +989,7 @@ msgstr "Ha fallado la asignación del buffer RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1069,10 +1071,6 @@ msgstr "Fallo Genérico"
 msgid "Group already used"
 msgstr "Grupo ya está siendo utilizado"
 
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Group lleno"
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1115,6 +1113,7 @@ msgstr "IV debe tener %d bytes de longitud"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
+"Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
 
 #: py/persistentcode.c
 msgid ""
@@ -1286,7 +1285,7 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr "Frecuencia inválida"
 
@@ -1742,7 +1741,7 @@ msgstr "Se acabaron los enchufes"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Los elementos del búfer de salida deben ser de una longitud <= 4 bytes"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1771,11 +1770,11 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "Segmento PWM ya esta en uso"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "Segmento del PWM canal A ya esta en uso"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/raspberrypi/common-hal/displayio/ParallelBus.c
@@ -1816,7 +1815,7 @@ msgstr "El pin es solo de entrada"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "El pin debe estar en el PWM canal B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1836,6 +1835,10 @@ msgstr ""
 "El pinout utiliza %d bytes por elemento, lo que consume más de los %d bytes "
 "ideales. Si esto no se puede evitar, pase allow_inefficient=True al "
 "constructor"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "Los pines deben estar en orden secuencial"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2141,11 +2144,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"La alimentación del microntrolador cayó. Asegúrate que tu fuente de "
+"La alimentación del microntrolador bajó. Asegúrate que tu fuente de "
 "alimentación\n"
 "pueda aportar suficiente energía para todo el circuito y presiona reset "
-"(luego de\n"
-"expulsar CIRCUITPY)\n"
+"(luego de expulsar CIRCUITPY)\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2364,7 +2366,7 @@ msgstr "Sin capacidad de bus tipo display"
 msgid "Unsupported format"
 msgstr "Formato no soportado"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operación no soportada"
 
@@ -2817,7 +2819,7 @@ msgstr "circulo solo puede ser registrado con un pariente"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "El punto de recorte debe ser una tupla (x, y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -2937,6 +2939,10 @@ msgstr "El argumento diff debe ser un ndarray"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
 msgstr "Orden de diferenciación fuera de rango"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3191,6 +3197,7 @@ msgstr "el índice está fuera de límites"
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index fuera de rango"
 
@@ -3295,6 +3302,11 @@ msgstr "el intervalo debe ser der rango %s-%s"
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "certificado inválido"
@@ -3302,6 +3314,16 @@ msgstr "certificado inválido"
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "index dupterm inválido"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr ""
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3430,10 +3452,6 @@ msgstr "map buffer muy pequeño"
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "error de dominio matemático"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "las dimensiones de la matriz no coinciden"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
@@ -3739,7 +3757,7 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 msgid "out of range of source"
 msgstr "fuera de rango de fuente"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "fuera de rango del objetivo"
 
@@ -3772,7 +3790,7 @@ msgstr "los parámetros deben ser registros en secuencia de a2 a a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "los parametros deben ser registros en secuencia del r0 al r3"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr "coordenadas del pixel fuera de límites"
 
@@ -3795,6 +3813,7 @@ msgstr "pop de un PulseIn vacío"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3820,6 +3839,8 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -3838,6 +3859,10 @@ msgstr "presionando botón de arranque al inicio.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "presionando ambos botones al inicio.\n"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "máscara de pull en conflicto con máscara de dirección"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
@@ -4249,10 +4274,6 @@ msgstr "el valor debe caber en %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count debe ser > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "los vectores deben tener el mismo tamaño"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "conflicto de wakeup"
@@ -4341,6 +4362,15 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "las dimensiones de la matriz no coinciden"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "los vectores deben tener el mismo tamaño"
+
+#~ msgid "Group full"
+#~ msgstr "Group lleno"
 
 #~ msgid "In buffer elements must be 4 bytes long or less"
 #~ msgstr ""

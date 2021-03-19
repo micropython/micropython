@@ -88,13 +88,13 @@ STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args,
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT },
     };
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t* command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
     mcu_pin_obj_t *data_pins[4];
     uint8_t num_data;
     validate_list_is_free_pins(MP_QSTR_data, data_pins, MP_ARRAY_SIZE(data_pins), args[ARG_data].u_obj, &num_data);
@@ -126,7 +126,7 @@ STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t frequency = args[ARG_frequency].u_int;
@@ -172,7 +172,7 @@ mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t*)self_in;
+    sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t *)self_in;
     int result = common_hal_sdioio_sdcard_readblocks(self, start_block, &bufinfo);
     if (result < 0) {
         mp_raise_OSError(-result);
@@ -195,7 +195,7 @@ mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t*)self_in;
+    sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t *)self_in;
     int result = common_hal_sdioio_sdcard_writeblocks(self, start_block, &bufinfo);
     if (result < 0) {
         mp_raise_OSError(-result);
@@ -289,8 +289,8 @@ STATIC const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict_table);
 
 const mp_obj_type_t sdioio_SDCard_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_SDCard,
-   .make_new = sdioio_sdcard_make_new,
-   .locals_dict = (mp_obj_dict_t*)&sdioio_sdcard_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_SDCard,
+    .make_new = sdioio_sdcard_make_new,
+    .locals_dict = (mp_obj_dict_t *)&sdioio_sdcard_locals_dict,
 };

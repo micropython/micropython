@@ -53,11 +53,11 @@ uint8_t stop_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -68,7 +68,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
+    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(display,
         bus,

@@ -52,7 +52,7 @@ int ringbuf_put(ringbuf_t *r, uint8_t v);
 void ringbuf_clear(ringbuf_t *r);
 size_t ringbuf_num_empty(ringbuf_t *r);
 size_t ringbuf_num_filled(ringbuf_t *r);
-size_t ringbuf_put_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
-size_t ringbuf_get_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
+size_t ringbuf_put_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
+size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

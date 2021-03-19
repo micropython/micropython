@@ -72,7 +72,7 @@ void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables so we
         // "HardFault".
-        asm("ebreak");
+        asm ("ebreak");
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -82,14 +82,17 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if(runmode == RUNMODE_SAFE_MODE)
+    if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+    }
 }
 
 void common_hal_mcu_reset(void) {
-    filesystem_flush(); //TODO: implement as part of flash improvements
+    filesystem_flush(); // TODO: implement as part of flash improvements
     // NVIC_SystemReset();
-    while(1);
+    while (1) {
+        ;
+    }
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
@@ -106,9 +109,9 @@ const mcu_pin_obj_t pin_TOUCH3 = PIN(2);
 const mcu_pin_obj_t pin_TOUCH4 = PIN(3);
 
 STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
-  { MP_ROM_QSTR(MP_QSTR_TOUCH1), MP_ROM_PTR(&pin_TOUCH1) },
-  { MP_ROM_QSTR(MP_QSTR_TOUCH2), MP_ROM_PTR(&pin_TOUCH2) },
-  { MP_ROM_QSTR(MP_QSTR_TOUCH3), MP_ROM_PTR(&pin_TOUCH3) },
-  { MP_ROM_QSTR(MP_QSTR_TOUCH4), MP_ROM_PTR(&pin_TOUCH4) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH1), MP_ROM_PTR(&pin_TOUCH1) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH2), MP_ROM_PTR(&pin_TOUCH2) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH3), MP_ROM_PTR(&pin_TOUCH3) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH4), MP_ROM_PTR(&pin_TOUCH4) },
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_globals_table);

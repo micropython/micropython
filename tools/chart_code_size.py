@@ -12,15 +12,15 @@ import sh
 # Replace dashes with underscores
 objdump = sh.arm_none_eabi_objdump
 
+
 def parse_hex(h):
     return int("0x" + h, 0)
 
+
 BAD_JUMPS = ["UNPREDICTABLE", "_etext"]
 
-SPECIAL_NODE_COLORS = {
-    "main": "pink",
-    "exception_table": "green"
-}
+SPECIAL_NODE_COLORS = {"main": "pink", "exception_table": "green"}
+
 
 @click.command()
 @click.argument("elf_filename")
@@ -60,7 +60,17 @@ def do_all_the_things(elf_filename):
                         pass
                     else:
                         symbols_by_memory_address[symbol["start_address"]] = symbol
-                elif symbol["debug_type"] in ["DW_TAG_member", "DW_TAG_label", "DW_TAG_typedef", "DW_TAG_enumerator", "DW_TAG_enumeration_type", "DW_TAG_base_type", "DW_TAG_structure_type", "DW_TAG_compile_unit", "DW_TAG_union_type"]:
+                elif symbol["debug_type"] in [
+                    "DW_TAG_member",
+                    "DW_TAG_label",
+                    "DW_TAG_typedef",
+                    "DW_TAG_enumerator",
+                    "DW_TAG_enumeration_type",
+                    "DW_TAG_base_type",
+                    "DW_TAG_structure_type",
+                    "DW_TAG_compile_unit",
+                    "DW_TAG_union_type",
+                ]:
                     # skip symbols that don't end up in memory. the type info is available through the debug address map
                     pass
                 else:
@@ -71,7 +81,11 @@ def do_all_the_things(elf_filename):
                         # print()
                         pass
                     all_symbols[symbol["name"]] = symbol
-            elif symbol and symbol["debug_type"] == "DW_TAG_GNU_call_site_parameter" and "call_site_value" in symbol:
+            elif (
+                symbol
+                and symbol["debug_type"] == "DW_TAG_GNU_call_site_parameter"
+                and "call_site_value" in symbol
+            ):
                 parent = -1
                 while symbol_stack[parent]["debug_type"] != "DW_TAG_subprogram":
                     parent -= 1
@@ -144,10 +158,10 @@ def do_all_the_things(elf_filename):
                     symbol["call_site_value"] = parse_hex(parts[-1].strip(")"))
             else:
                 symbol["other"].append(line)
-                #print(parts)
+                # print(parts)
                 pass
         else:
-            #print(line)
+            # print(line)
             pass
 
     MEMORY_NONE = 0
@@ -162,10 +176,16 @@ def do_all_the_things(elf_filename):
     def get_pointer_map(t, depth=0):
         if t["debug_type"] == "DW_TAG_pointer_type":
             return {0: MEMORY_POINTER}
-        elif t["debug_type"] in ["DW_TAG_const_type", "DW_TAG_typedef", "DW_TAG_member", "DW_TAG_subrange_type", "DW_TAG_volatile_type"]:
+        elif t["debug_type"] in [
+            "DW_TAG_const_type",
+            "DW_TAG_typedef",
+            "DW_TAG_member",
+            "DW_TAG_subrange_type",
+            "DW_TAG_volatile_type",
+        ]:
             if "name" in t and t["name"] == "mp_rom_obj_t":
                 return {0: MEMORY_PY_OBJECT}
-            return get_pointer_map(symbols_by_debug_address[t["type"]], depth+1)
+            return get_pointer_map(symbols_by_debug_address[t["type"]], depth + 1)
         elif t["debug_type"] in ["DW_TAG_base_type", "DW_TAG_enumeration_type"]:
             return {}
         elif t["debug_type"] == "DW_TAG_union_type":
@@ -181,7 +201,7 @@ def do_all_the_things(elf_filename):
             return combined_map
         elif "subtype" in t:
             subtype = symbols_by_debug_address[t["type"]]
-            pmap = get_pointer_map(subtype, depth+1)
+            pmap = get_pointer_map(subtype, depth + 1)
             size = get_size(subtype)
             expanded_map = {}
             for i in range(t["maxlen"]):
@@ -216,11 +236,11 @@ def do_all_the_things(elf_filename):
                 elif t_symbol["debug_type"] == "DW_TAG_volatile_type":
                     type_string.append("volatile")
                 else:
-                    #print("  ", t_symbol)
+                    # print("  ", t_symbol)
                     pass
             type_string.reverse()
             symbol["type_string"] = " ".join(type_string)
-        #print(symbol_name, symbol["debug_type"], symbol.get("type_string", ""))
+        # print(symbol_name, symbol["debug_type"], symbol.get("type_string", ""))
 
     # print()
     # print()
@@ -263,13 +283,17 @@ def do_all_the_things(elf_filename):
             elif symbol_name not in all_symbols:
                 if symbol_name == "nlr_push_tail_var":
                     fake_type = all_symbols["mp_obj_get_type"]["type"]
-                    symbol = {"debug_type": "DW_TAG_variable", "name": symbol_name, "type": fake_type}
+                    symbol = {
+                        "debug_type": "DW_TAG_variable",
+                        "name": symbol_name,
+                        "type": fake_type,
+                    }
                 else:
                     print(line)
                     print(symbol_name, symbol_address)
                     symbol = {"debug_type": "DW_TAG_subprogram", "name": symbol_name}
                 all_symbols[symbol_name] = symbol
-                #raise RuntimeError()
+                # raise RuntimeError()
 
             symbol = all_symbols[symbol_name]
             symbol["start_address"] = symbol_address
@@ -292,13 +316,13 @@ def do_all_the_things(elf_filename):
             offset = last_address - symbol["start_address"]
             if "pointer_map" in symbol:
                 if offset not in symbol["pointer_map"]:
-                    #print(offset, symbol)
+                    # print(offset, symbol)
                     pass
                 else:
                     ref = parse_hex(parts[1])
                     pointer_style = symbol["pointer_map"][offset]
                     if pointer_style == MEMORY_POINTER:
-                        symbol["outgoing_pointers"].add(ref & 0xfffffffe)
+                        symbol["outgoing_pointers"].add(ref & 0xFFFFFFFE)
                     elif pointer_style == MEMORY_PY_OBJECT and ref & 0x3 == 0:
                         symbol["outgoing_pointers"].add(ref)
             if len(parts[1]) == 8 and parts[1][0] == "0":
@@ -315,7 +339,7 @@ def do_all_the_things(elf_filename):
                         print(symbol)
                     if jump_to != symbol["name"] and jump_to not in BAD_JUMPS:
                         symbol["outgoing_jumps"].add(jump_to)
-                        #print(symbol_name, jump_to)
+                        # print(symbol_name, jump_to)
                         if jump_to == "_etext":
                             print(line)
                 elif "UNDEFINED" in line:
@@ -325,7 +349,7 @@ def do_all_the_things(elf_filename):
                 else:
                     print(line)
         else:
-            #print(line)
+            # print(line)
             pass
 
     # print()
@@ -344,7 +368,7 @@ def do_all_the_things(elf_filename):
         for outgoing in symbol["outgoing_pointers"]:
             if outgoing in symbols_by_memory_address:
                 outgoing = symbols_by_memory_address[outgoing]
-                #print(outgoing)
+                # print(outgoing)
                 if outgoing["debug_type"] in ["DW_TAG_GNU_call_site", "DW_TAG_lexical_block"]:
                     continue
                 if outgoing["name"] == "audioio_wavefile_type":
@@ -359,25 +383,25 @@ def do_all_the_things(elf_filename):
         if "outgoing_jumps" in symbol:
             for outgoing in symbol["outgoing_jumps"]:
                 if outgoing not in all_symbols:
-                    #print(outgoing, symbol_name)
+                    # print(outgoing, symbol_name)
                     continue
-                #print(all_symbols[outgoing], symbol_name)
+                # print(all_symbols[outgoing], symbol_name)
 
                 referenced_symbol = all_symbols[outgoing]
                 if "incoming_jumps" not in referenced_symbol:
-                    #print(symbol_name, "->", outgoing)
+                    # print(symbol_name, "->", outgoing)
                     referenced_symbol["incoming_jumps"] = set()
                 referenced_symbol["incoming_jumps"].add(symbol_name)
         if "outgoing_pointers" in symbol:
             for outgoing in symbol["outgoing_pointers"]:
                 if outgoing not in all_symbols:
-                    #print(outgoing, symbol_name)
+                    # print(outgoing, symbol_name)
                     continue
-                #print(all_symbols[outgoing], symbol_name)
+                # print(all_symbols[outgoing], symbol_name)
 
                 referenced_symbol = all_symbols[outgoing]
                 if "incoming_pointers" not in referenced_symbol:
-                    #print(symbol_name, "->", outgoing)
+                    # print(symbol_name, "->", outgoing)
                     referenced_symbol["incoming_pointers"] = set()
                 referenced_symbol["incoming_pointers"].add(symbol_name)
 
@@ -395,8 +419,10 @@ def do_all_the_things(elf_filename):
         #     print("   ", len(symbol["outgoing_pointers"]), "ptrs")
         # if i > 3000:
         #     break
-        if ("incoming_jumps" not in symbol or len(symbol["incoming_jumps"]) == 0) and ("incoming_pointers" not in symbol or len(symbol["incoming_pointers"]) == 0):
-            #print(symbol_name)
+        if ("incoming_jumps" not in symbol or len(symbol["incoming_jumps"]) == 0) and (
+            "incoming_pointers" not in symbol or len(symbol["incoming_pointers"]) == 0
+        ):
+            # print(symbol_name)
             continue
         if "start_address" not in symbol:
             continue
@@ -407,7 +433,7 @@ def do_all_the_things(elf_filename):
         if "outgoing_pointers" in symbol:
             for outgoing in symbol["outgoing_pointers"]:
                 callgraph.add_edge(symbol_name, outgoing, color="red")
-        #print(symbol_name, symbol)
+        # print(symbol_name, symbol)
 
     # Style all of the nodes
     print("styling")
@@ -453,6 +479,7 @@ def do_all_the_things(elf_filename):
     fn = "callgraph.svg"
     print(fn)
     callgraph.draw(fn)
+
 
 if __name__ == "__main__":
     do_all_the_things()

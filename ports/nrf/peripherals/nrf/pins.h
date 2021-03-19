@@ -47,11 +47,11 @@ extern const mp_obj_type_t mcu_pin_type;
 
 // Used in device-specific pins.c
 #define PIN(p_name, p_port, p_pin, p_adc_channel)       \
-{ \
-    { &mcu_pin_type }, \
-    .number = NRF_GPIO_PIN_MAP(p_port, p_pin),      \
-    .adc_channel = (p_adc_channel), \
-}
+    { \
+        { &mcu_pin_type }, \
+        .number = NRF_GPIO_PIN_MAP(p_port, p_pin),      \
+        .adc_channel = (p_adc_channel), \
+    }
 
 // Use illegal pin value to mark unassigned pins.
 #define NO_PIN 0xff

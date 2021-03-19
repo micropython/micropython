@@ -36,7 +36,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    i2c_inst_t * peripheral;
+    i2c_inst_t *peripheral;
     bitbangio_i2c_obj_t bitbangio_i2c;
     bool has_lock;
     uint baudrate;

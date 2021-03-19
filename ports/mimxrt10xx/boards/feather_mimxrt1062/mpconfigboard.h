@@ -1,10 +1,10 @@
 #define MICROPY_HW_BOARD_NAME "Feather MIMXRT1062"
 #define MICROPY_HW_MCU_NAME "IMXRT1062DVJ6A"
 
-//TODO
-//#define MICROPY_HW_LED_STATUS   (&pin_PA27)
+// TODO
+// #define MICROPY_HW_LED_STATUS   (&pin_PA27)
 
-//#define MICROPY_HW_NEOPIXEL (&pin_PB22)
+// #define MICROPY_HW_NEOPIXEL (&pin_PB22)
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code

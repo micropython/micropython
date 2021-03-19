@@ -35,7 +35,6 @@ typedef struct {
     NRF_PWM_Type *pwm;
     uint16_t *buffers[2];
 
-    uint16_t buffer_length;
     uint16_t quiescent_value;
     uint16_t scale;
 

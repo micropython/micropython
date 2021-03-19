@@ -101,5 +101,5 @@ STATIC MP_DEFINE_CONST_DICT(fontio_builtinfont_locals_dict, fontio_builtinfont_l
 const mp_obj_type_t fontio_builtinfont_type = {
     { &mp_type_type },
     .name = MP_QSTR_BuiltinFont,
-    .locals_dict = (mp_obj_dict_t*)&fontio_builtinfont_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&fontio_builtinfont_locals_dict,
 };
