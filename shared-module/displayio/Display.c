@@ -111,7 +111,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         // Avoid PWM types and functions when the module isn't enabled
-        #if (CIRCUITPY_PULSEIO)
+        #if (CIRCUITPY_PWMIO)
         pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
@@ -173,14 +173,14 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, 
     bool ok = false;
 
     // Avoid PWM types and functions when the module isn't enabled
-    #if (CIRCUITPY_PULSEIO)
+    #if (CIRCUITPY_PWMIO)
     bool ispwm = (self->backlight_pwm.base.type == &pwmio_pwmout_type) ? true : false;
     #else
     bool ispwm = false;
     #endif
 
     if (ispwm) {
-        #if (CIRCUITPY_PULSEIO)
+        #if (CIRCUITPY_PWMIO)
         common_hal_pwmio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t)(0xffff * brightness));
         ok = true;
         #else
@@ -410,7 +410,7 @@ STATIC void _update_backlight(displayio_display_obj_t *self) {
     if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
         return;
     }
-    // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
+    // TODO(tannewt): Fade the backlight based on its existing value and a target value. The target
     // should account for ambient light when possible.
     common_hal_displayio_display_set_brightness(self, 1.0);
 
@@ -428,7 +428,7 @@ void displayio_display_background(displayio_display_obj_t *self) {
 void release_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, false);
     release_display_core(&self->core);
-    #if (CIRCUITPY_PULSEIO)
+    #if (CIRCUITPY_PWMIO)
     if (self->backlight_pwm.base.type == &pwmio_pwmout_type) {
         common_hal_pwmio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pwmio_pwmout_deinit(&self->backlight_pwm);

@@ -445,6 +445,7 @@ jobs:
         board:
         - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_feather_esp32s2_tftback_nopsram"
+        - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
