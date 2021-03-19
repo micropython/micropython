@@ -102,14 +102,34 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     pwmio_pwmout_obj_t *self = m_new_obj(pwmio_pwmout_obj_t);
     self->base.type = &pwmio_pwmout_type;
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
-    if (result == PWMOUT_INVALID_PIN) {
-        mp_raise_ValueError(translate("Invalid pin"));
-    } else if (result == PWMOUT_INVALID_FREQUENCY) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
-    } else if (result == PWMOUT_ALL_TIMERS_ON_PIN_IN_USE) {
-        mp_raise_ValueError(translate("All timers for this pin are in use"));
-    } else if (result == PWMOUT_ALL_TIMERS_IN_USE) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+    switch (result) {
+        case PWMOUT_OK:
+            break;
+        case PWMOUT_INVALID_PIN:
+            mp_raise_ValueError(translate("Invalid pin"));
+            break;
+        case PWMOUT_INVALID_FREQUENCY:
+            mp_raise_ValueError(translate("Invalid PWM frequency"));
+            break;
+        case PWMOUT_INVALID_FREQUENCY_ON_PIN:
+            mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
+            break;
+        case PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE:
+            mp_raise_ValueError(translate("Cannot vary frequency on a timer that is already in use"));
+            break;
+        case PWMOUT_ALL_TIMERS_ON_PIN_IN_USE:
+            mp_raise_ValueError(translate("All timers for this pin are in use"));
+            break;
+        case PWMOUT_ALL_TIMERS_IN_USE:
+            mp_raise_RuntimeError(translate("All timers in use"));
+            break;
+        case PWMOUT_ALL_CHANNELS_IN_USE:
+            mp_raise_RuntimeError(translate("All channels in use"));
+            break;
+        default:
+        case PWMOUT_INITIALIZATION_ERROR:
+            mp_raise_RuntimeError(translate("Could not start PWM"));
+            break;
     }
 
     return MP_OBJ_FROM_PTR(self);
