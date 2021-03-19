@@ -83,9 +83,9 @@ void board_init(void) {
         bus,
         240, // Width (after rotation)
         240, // Height (after rotation)
-        0, // column start
+        80, // column start
         0, // row start
-        180, // rotation
+        270, // rotation
         16, // Color depth
         false, // Grayscale
         false, // Pixels in a byte share a row. Only used for depth < 8
