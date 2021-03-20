@@ -195,7 +195,7 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     float rowu = startu + miny * duCol;
     float rowv = startv + miny * dvCol;
 
-    displayio_area_t dirty_area = {minx, miny, maxx, maxy};
+    displayio_area_t dirty_area = {minx, miny, maxx + 1, maxy + 1};
     displayio_bitmap_set_dirty_area(self, &dirty_area);
 
     for (y = miny; y <= maxy; y++) {
