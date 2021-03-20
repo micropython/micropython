@@ -348,6 +348,10 @@ msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
 msgid "All UART peripherals are in use"
 msgstr "Suǒyǒu UART wàiwéi zhèngzài shǐyòng"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Suǒyǒu shǐyòng de shìjiàn píndào"
@@ -562,6 +566,7 @@ msgstr "Huǎn chōng qū tài duǎn ， àn %d zì jié"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Zǒngxiàn yǐn jiǎo %d yǐ zài shǐyòng zhōng"
@@ -680,7 +685,7 @@ msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
 
@@ -764,14 +769,6 @@ msgstr "wú fǎ chū shǐ huà SDCard"
 msgid "Could not initialize UART"
 msgstr "Wúfǎ chūshǐhuà UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Wúfǎ chūshǐhuà píndào"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Wúfǎ chūshǐhuà jìshí qì"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Wúfǎ chóngxīn chūshǐhuà píndào"
@@ -792,7 +789,7 @@ msgstr "Wúfǎ huòqǔ shízhōng"
 msgid "Could not set address"
 msgstr "wú fǎ shè zhì dì zhǐ"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Wúfǎ qǐdòng PWM"
 
@@ -1041,7 +1038,7 @@ msgstr "Bù zhīyuán géshì"
 msgid "Framebuffer requires %d bytes"
 msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng pǐpèi"
 
@@ -1276,10 +1273,6 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 msgid "Invalid frequency"
 msgstr "Wúxiào de pínlǜ"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Tígōng de pínlǜ wúxiào"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
@@ -1324,10 +1317,6 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "PWMOut de yǐn jiǎo wú xiào"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1582,18 +1571,6 @@ msgstr "Wèi zhǐdìng mì yào"
 msgid "No long integer support"
 msgstr "Méiyǒu zhǎng zhěngshù zhīchí"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "Méiyǒu gèng duō kěyòng píndào"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "Méiyǒu gèng duō kěyòng de jìshí qì"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Gāi yǐn jiǎo shàng méiyǒu kěyòng de dìngshí qì."
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Méiyǒu wǎngluò yǔ gāi ssid"
@@ -1759,7 +1736,6 @@ msgid "PWM slice channel A already in use"
 msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "Shàng bù zhīchí ParallelBus"
@@ -2166,13 +2142,6 @@ msgstr "shí jiān yǐ jīng guò qù."
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Chāoshí shíjiān tài zhǎng: Zuìdà chāoshí shíjiān wèi%d miǎo"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"Dìngshí qì bǎoliú gōng nèibù shǐyòng-zài chéngxù de qiánmiàn shēngmíng PWM "
-"yǐn jiǎo"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -3798,6 +3767,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -4326,6 +4296,34 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Wúfǎ chūshǐhuà píndào"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Wúfǎ chūshǐhuà jìshí qì"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Tígōng de pínlǜ wúxiào"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "PWMOut de yǐn jiǎo wú xiào"
+
+#~ msgid "No more channels available"
+#~ msgstr "Méiyǒu gèng duō kěyòng píndào"
+
+#~ msgid "No more timers available"
+#~ msgstr "Méiyǒu gèng duō kěyòng de jìshí qì"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Gāi yǐn jiǎo shàng méiyǒu kěyòng de dìngshí qì."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Dìngshí qì bǎoliú gōng nèibù shǐyòng-zài chéngxù de qiánmiàn shēngmíng "
+#~ "PWM yǐn jiǎo"
 
 #~ msgid "matrix dimensions do not match"
 #~ msgstr "jǔzhèn chǐcùn bù pǐpèi"

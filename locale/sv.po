@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-17 21:24+0000\n"
+"PO-Revision-Date: 2021-03-19 20:36+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -346,6 +346,10 @@ msgstr "All SPI-kringutrustning används"
 msgid "All UART peripherals are in use"
 msgstr "Alla UART-kringutrustning används"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr "Alla kanaler används"
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Alla händelsekanaler används"
@@ -560,6 +564,7 @@ msgstr "Buffert är %d bytes för kort"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Busspinne %d används redan"
@@ -679,7 +684,7 @@ msgstr "Kan inte överföra utan MOSI- och MISO-pinnar."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Kan inte entydigt få sizeof scalar"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Det går inte att ändra frekvensen på en timer som redan används"
 
@@ -765,14 +770,6 @@ msgstr "Kan inte initiera SD-kort"
 msgid "Could not initialize UART"
 msgstr "Det gick inte att initiera UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Det gick inte att initiera kanalen"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Det gick inte att initialisera timern"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Det gick inte att återinitiera kanalen"
@@ -793,7 +790,7 @@ msgstr "Kunde inte hämta klocka"
 msgid "Could not set address"
 msgstr "Kan inte ange adress"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Det gick inte att starta PWM"
 
@@ -1042,7 +1039,7 @@ msgstr "Formatet stöds inte"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer kräver %d byte"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Frekvensen måste matcha befintlig PWMOut med denna timer"
 
@@ -1274,10 +1271,6 @@ msgstr "Ogiltig formatsegmentstorlek"
 msgid "Invalid frequency"
 msgstr "Ogiltig frekvens"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Ogiltig frekvens angiven"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ogiltig minnesåtkomst."
@@ -1322,10 +1315,6 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Ogiltiga pinnar för PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1580,18 +1569,6 @@ msgstr "Ingen nyckel angavs"
 msgid "No long integer support"
 msgstr "Inget stöd för långt heltal"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "Inga fler kanaler tillgängliga"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "Ingen timer tillgänglig"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Inga fler timers tillgängliga på denna pinne."
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Inget nätverk med sådant ssid"
@@ -1758,7 +1735,6 @@ msgid "PWM slice channel A already in use"
 msgstr "PWM-segmentkanal A används redan"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus stöds ännu inte"
@@ -2169,13 +2145,6 @@ msgstr "Tid har passerats."
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
-"programmet"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -3802,6 +3771,7 @@ msgstr "pow() med 3 argument kräver heltal"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -4330,6 +4300,34 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Det gick inte att initiera kanalen"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Det gick inte att initialisera timern"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Ogiltig frekvens angiven"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Ogiltiga pinnar för PWMOut"
+
+#~ msgid "No more channels available"
+#~ msgstr "Inga fler kanaler tillgängliga"
+
+#~ msgid "No more timers available"
+#~ msgstr "Ingen timer tillgänglig"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Inga fler timers tillgängliga på denna pinne."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
+#~ "programmet"
 
 #~ msgid "matrix dimensions do not match"
 #~ msgstr "matrisdimensioner matchar inte"

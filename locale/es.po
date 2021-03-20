@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-12 02:03+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-03-19 16:35+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -349,6 +349,10 @@ msgstr "Todos los periféricos SPI están siendo usados"
 msgid "All UART peripherals are in use"
 msgstr "Todos los periféricos UART están siendo usados"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Todos los canales de eventos estan siendo usados"
@@ -568,6 +572,7 @@ msgstr "Búffer muy corto por %d bytes"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Bus pin %d ya está siendo utilizado"
@@ -688,7 +693,7 @@ msgstr "No se puede transmitir sin pines MOSI y MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "No se puede obtener inequívocamente sizeof escalar"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "No puede variar la frecuencia en un temporizador que ya está en uso"
 
@@ -774,14 +779,6 @@ msgstr "No se pudo inicializar SDCard"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "No se pudo inicializar el canal"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "No se pudo inicializar el temporizador"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "No se pudo reiniciar el canal"
@@ -802,7 +799,7 @@ msgstr "No puedo traer el reloj"
 msgid "Could not set address"
 msgstr "No se puede definir la dirección"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "No se pudo iniciar PWM"
 
@@ -1051,7 +1048,7 @@ msgstr "Sin capacidades para el formato"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer requiere %d bytes"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 "La frecuencia debe coincidir con PWMOut existente usando este temporizador"
@@ -1289,10 +1286,6 @@ msgstr "Formato de fragmento de formato no válido"
 msgid "Invalid frequency"
 msgstr "Frecuencia inválida"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Frecuencia suministrada no válida"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Acceso a memoria no válido."
@@ -1337,10 +1330,6 @@ msgstr "Pin inválido para canal derecho"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "pines inválidos"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Pines inválidos para PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1598,18 +1587,6 @@ msgstr "No se especificó ninguna llave"
 msgid "No long integer support"
 msgstr "No hay soporte de entero largo"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "No hay más canales disponibles"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "No hay más temporizadores disponibles"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "No hay más temporizadores disponibles en este pin."
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "No hay una red con ese ssid"
@@ -1777,7 +1754,6 @@ msgid "PWM slice channel A already in use"
 msgstr "Segmento del PWM canal A ya esta en uso"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus todavía no soportado"
@@ -2191,13 +2167,6 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 "Tiempo de espera demasiado largo: El tiempo máximo de espera es de %d "
 "segundos"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"El temporizador es utilizado para uso interno - declare los pines para PWM "
-"más temprano en el programa"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -2942,7 +2911,7 @@ msgstr "Orden de diferenciación fuera de rango"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "dimensions do not match"
-msgstr ""
+msgstr "las dimensiones no concuerdan"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3305,7 +3274,7 @@ msgstr "argumentos inválidos"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "los bits_per_pixel %d no son validos, deben ser 1, 4, 8, 16, 24 o 32"
 
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
@@ -3318,12 +3287,12 @@ msgstr "index dupterm inválido"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
+msgstr "el tamaño del elemento no es valido%d por bits_per_pixel %d\n"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "el element_size %d,no es valido, debe ser 1,2 ó 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3833,6 +3802,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -4362,6 +4332,34 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "No se pudo inicializar el canal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "No se pudo inicializar el temporizador"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Frecuencia suministrada no válida"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Pines inválidos para PWMOut"
+
+#~ msgid "No more channels available"
+#~ msgstr "No hay más canales disponibles"
+
+#~ msgid "No more timers available"
+#~ msgstr "No hay más temporizadores disponibles"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "No hay más temporizadores disponibles en este pin."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "El temporizador es utilizado para uso interno - declare los pines para "
+#~ "PWM más temprano en el programa"
 
 #~ msgid "matrix dimensions do not match"
 #~ msgstr "las dimensiones de la matriz no coinciden"
