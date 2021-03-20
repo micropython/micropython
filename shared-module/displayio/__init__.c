@@ -309,26 +309,46 @@ bool displayio_area_compute_overlap(const displayio_area_t *a,
     return true;
 }
 
+void displayio_copy_coords(const displayio_area_t *src, displayio_area_t *dest) {
+    dest->x1 = src->x1;
+    dest->y1 = src->y1;
+    dest->x2 = src->x2;
+    dest->y2 = src->y2;
+}
+
+bool displayio_area_empty(const displayio_area_t *a) {
+    return (a->x1 == a->x2) || (a->y1 == a->y2);
+}
+
+void displayio_area_canon(displayio_area_t *a) {
+    if (a->x1 > a->x2) {
+        int16_t t = a->x1;
+        a->x1 = a->x2;
+        a->x2 = t;
+    }
+    if (a->y1 > a->y2) {
+        int16_t t = a->y1;
+        a->y1 = a->y2;
+        a->y2 = t;
+    }
+}
+
 void displayio_area_union(const displayio_area_t *a,
     const displayio_area_t *b,
     displayio_area_t *u) {
-    u->x1 = a->x1;
-    if (b->x1 < u->x1) {
-        u->x1 = b->x1;
-    }
-    u->x2 = a->x2;
-    if (b->x2 > u->x2) {
-        u->x2 = b->x2;
-    }
 
-    u->y1 = a->y1;
-    if (b->y1 < u->y1) {
-        u->y1 = b->y1;
+    if (displayio_area_empty(a)) {
+        displayio_copy_coords(b, u);
+        return;
     }
-    u->y2 = a->y2;
-    if (b->y2 > u->y2) {
-        u->y2 = b->y2;
+    if (displayio_area_empty(b)) {
+        displayio_copy_coords(a, u);
+        return;
     }
+    u->x1 = MIN(a->x1, b->x1);
+    u->y1 = MIN(a->y1, b->y1);
+    u->x2 = MAX(a->x2, b->x2);
+    u->y2 = MAX(a->y2, b->y2);
 }
 
 uint16_t displayio_area_width(const displayio_area_t *area) {
