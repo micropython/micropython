@@ -302,6 +302,7 @@ jobs:
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
+        - "rotary_trinkey_m0"
         - "sam32"
         - "same54_xplained"
         - "seeeduino_wio_terminal"
