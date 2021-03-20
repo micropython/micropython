@@ -77,7 +77,7 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
     // Following assumes function called with either 1 or 2 buffers
     if (n > 1) {
         // if we were passed 2 buffers, 1st is memory/register, so Q slave addr (W)
-        i2c_master_write_byte(cmd, addr << 1 , true);
+        i2c_master_write_byte(cmd, addr << 1, true);
         // Q actual memory address from buffer
         i2c_master_write(cmd, bufs->buf, bufs->len, true);
         if (flags & MP_MACHINE_I2C_FLAG_READ) {
@@ -87,7 +87,7 @@ int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_
             i2c_master_write_byte(cmd, addr << 1 | MP_MACHINE_I2C_FLAG_READ, true);
         }
         data_len += bufs->len;
-        //switch to data buffer
+        // switch to data buffer
         ++bufs;
     } else {
         // simple transaction, just Q slave address with (R/W)
