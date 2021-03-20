@@ -321,12 +321,12 @@ bool displayio_area_empty(const displayio_area_t *a) {
 }
 
 void displayio_area_canon(displayio_area_t *a) {
-    if (a->x1 < a->x2) {
+    if (a->x1 > a->x2) {
         int16_t t = a->x1;
         a->x1 = a->x2;
         a->x2 = t;
     }
-    if (a->y1 < a->y2) {
+    if (a->y1 > a->y2) {
         int16_t t = a->y1;
         a->y1 = a->y2;
         a->y2 = t;
