@@ -464,7 +464,7 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
                     int byte_offset = x / 2;
                     int bit_offset = 4 * (reverse_pixels_in_element ? (1 - x % 2) : x % 2);
 
-                    value = (rowdata8[byte_offset] >> bit_offset) & 15;
+                    value = (rowdata8[byte_offset] >> bit_offset) & 0xf;
                     break;
                 }
                 case 8:
