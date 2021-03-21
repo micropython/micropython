@@ -141,8 +141,11 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 //#define NORETURN __attribute__((noreturn))
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,1);
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,0);
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    //port_disable_tick();
+    port_disable_tick();
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
     // alarm_touch_touchalarm_prepare_for_deep_sleep();
     // HAL_PWR_EnableBkUpAccess();
     // __HAL_RCC_BACKUPRESET_FORCE();

@@ -54,7 +54,7 @@ volatile bool alarmed_already[2];
 bool peripherals_wkup_on = false;
 
 static void (*wkup_callback)(void);
-static void(*alarm_callbacks[2])(void);
+static void (*alarm_callbacks[2])(void);
 
 uint32_t stm32_peripherals_get_rtc_freq(void) {
     return rtc_clock_frequency;
@@ -154,11 +154,20 @@ void stm32_peripherals_rtc_disable_wakeup_timer(void) {
     HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 }
 
+void stm32_peripherals_reset_alarms(void) {
+    HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+    HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
+}
+
 void stm32_peripherals_rtc_assign_alarm_callback(uint8_t alarm_idx, void(*callback)(void)) {
         alarm_callbacks[alarm_idx] = callback;
 }
 
 void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
+    // TEMP: ping set alarm (called by port_interrupt_after_ticks and alarm_time_timealarm_set_alarms)
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6,1);
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6,0);
+
     uint64_t raw_ticks = stm32_peripherals_rtc_raw_ticks(NULL) + ticks;
 
     RTC_AlarmTypeDef alarm;
@@ -187,6 +196,7 @@ void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
     alarm.Alarm = (alarm_idx == PERIPHERALS_ALARM_A) ? RTC_ALARM_A : RTC_ALARM_B;
 
     HAL_RTC_SetAlarm_IT(&hrtc, &alarm, RTC_FORMAT_BIN);
+    HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
     alarmed_already[alarm_idx] = false;
 }
 
@@ -195,6 +205,8 @@ bool stm32_peripherals_rtc_alarm_triggered(uint8_t alarm_idx) {
 }
 
 void RTC_WKUP_IRQHandler(void) {
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,1);
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,0);
     if (wkup_callback) {
         wkup_callback();
     }
@@ -208,6 +220,10 @@ void RTC_Alarm_IRQHandler(void) {
 }
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *_hrtc) {
+    // TEMP
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_3,1);
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_3,0);
+
     if (alarm_callbacks[PERIPHERALS_ALARM_A]) {
         alarm_callbacks[PERIPHERALS_ALARM_A]();
     }
@@ -216,6 +232,10 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *_hrtc) {
 }
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *_hrtc) {
+    //TEMP
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,1);
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,0);
+
     if (alarm_callbacks[PERIPHERALS_ALARM_B]) {
         alarm_callbacks[PERIPHERALS_ALARM_B]();
     }

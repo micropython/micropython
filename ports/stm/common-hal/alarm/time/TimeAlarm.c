@@ -31,6 +31,8 @@
 #include "supervisor/port.h"
 #include "peripherals/rtc.h"
 
+#include STM32_HAL_H
+
 STATIC volatile bool woke_up;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {

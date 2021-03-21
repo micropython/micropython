@@ -173,9 +173,15 @@ safe_mode_t port_init(void) {
         __HAL_RCC_PWR_CLK_ENABLE();
     #endif
 
+    __HAL_RCC_BACKUPRESET_FORCE();
+    __HAL_RCC_BACKUPRESET_RELEASE();
+
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
     stm32_peripherals_rtc_init();
+
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+    stm32_peripherals_reset_alarms();
 
     // Turn off SysTick
     SysTick->CTRL = 0;
@@ -233,6 +239,20 @@ void reset_port(void) {
 #if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
     exti_reset();
 #endif
+
+    // TEMP: set up interrupt logging pins
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    // TEMP: ping port init
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_8,1);
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_8,0);
 }
 
 void reset_to_bootloader(void) {
