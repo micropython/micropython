@@ -132,15 +132,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install dependencies
-      run: |
-        brew install gettext
-        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
-    - name: Versions
-      run: |
-        gcc --version
-        python3 --version
-        msgfmt --version
     - uses: actions/checkout@v2.2.0
       with:
         submodules: true
@@ -150,6 +141,15 @@ jobs:
       run: |
         git describe --dirty --tags
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Install dependencies
+      run: |
+        brew install gettext
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
@@ -355,6 +355,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -366,11 +371,6 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
@@ -404,6 +404,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -415,11 +420,6 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
