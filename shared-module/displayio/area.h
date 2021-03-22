@@ -53,6 +53,9 @@ typedef struct {
 
 extern displayio_buffer_transform_t null_transform;
 
+bool displayio_area_empty(const displayio_area_t *a);
+void displayio_area_copy_coords(const displayio_area_t *src, displayio_area_t *dest);
+void displayio_area_canon(displayio_area_t *a);
 void displayio_area_union(const displayio_area_t *a,
     const displayio_area_t *b,
     displayio_area_t *u);

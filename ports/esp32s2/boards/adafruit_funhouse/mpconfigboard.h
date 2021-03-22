@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+//Micropython setup
 
-#include <stdbool.h>
-#include <stdint.h>
+#define MICROPY_HW_BOARD_NAME       "Adafruit FunHome"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "py/obj.h"
-#include "shared-module/displayio/area.h"
+#define MICROPY_HW_APA_MOSI (&pin_GPIO14)
+#define MICROPY_HW_APA_SCK (&pin_GPIO15)
 
-typedef struct {
-    mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
-    size_t *data;
-    uint16_t stride; // size_t's
-    uint8_t bits_per_value;
-    uint8_t x_shift;
-    size_t x_mask;
-    displayio_area_t dirty_area;
-    uint16_t bitmask;
-    bool read_only;
-} displayio_bitmap_t;
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);
-displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t *tail);
-void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *area);
-void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value);
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#define AUTORESET_DELAY_MS 500
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO33)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO34)

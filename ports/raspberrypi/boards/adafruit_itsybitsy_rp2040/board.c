@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#include "supervisor/board.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "shared-bindings/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-#include "py/obj.h"
-#include "shared-module/displayio/area.h"
+void board_init(void) {
+    common_hal_never_reset_pin(&pin_GPIO16);
+    gpio_init(16);
+    gpio_set_dir(16, GPIO_OUT);
+    gpio_put(16, true);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
-    size_t *data;
-    uint16_t stride; // size_t's
-    uint8_t bits_per_value;
-    uint8_t x_shift;
-    size_t x_mask;
-    displayio_area_t dirty_area;
-    uint16_t bitmask;
-    bool read_only;
-} displayio_bitmap_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);
-displayio_area_t *displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t *tail);
-void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *area);
-void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+void reset_board(void) {
+}

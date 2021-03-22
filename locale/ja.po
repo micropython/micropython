@@ -343,6 +343,10 @@ msgstr "全てのSPI周辺機器が使用中"
 msgid "All UART peripherals are in use"
 msgstr "全てのUART周辺機器が使用中"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "全てのイベントチャネルが使用中"
@@ -557,6 +561,7 @@ msgstr "バッファが %d バイト足りません"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Busピン%dはすでに使用中"
@@ -675,7 +680,7 @@ msgstr "MOSIピンとMISOピンなしに転送できません"
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "スカラのサイズを曖昧さなしに取得できません"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "使用中のタイマー上では周波数を変えられません"
 
@@ -759,14 +764,6 @@ msgstr "SDカードを初期化できません"
 msgid "Could not initialize UART"
 msgstr "UARTを初期化できません"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "チャネルを初期化できません"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "タイマーを初期化できません"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "チャネルを再初期化できません"
@@ -787,7 +784,7 @@ msgstr ""
 msgid "Could not set address"
 msgstr "アドレスをセットできません"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "PWMをスタートできません"
 
@@ -1036,7 +1033,7 @@ msgstr "非対応の形式"
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "このタイマーを使う既存のPWMOutと周波数を一致させる必要があります"
 
@@ -1266,10 +1263,6 @@ msgstr "フォーマットチャンクのサイズが不正"
 msgid "Invalid frequency"
 msgstr "不正な周波数"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "不正な周波数が与えられました"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "不正なメモリアクセス"
@@ -1314,10 +1307,6 @@ msgstr "右チャネルのピンが不正"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "ピンが不正"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "PWMOutのピンが不正"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1571,18 +1560,6 @@ msgstr "キーが指定されていません"
 msgid "No long integer support"
 msgstr "long integerに対応していません"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "使えるチャネルがもうありません"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "使えるタイマーがもうありません"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "このピンには使えるタイマーがもうありません"
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr ""
@@ -1745,7 +1722,6 @@ msgid "PWM slice channel A already in use"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBusにはまだ対応していません"
@@ -2145,11 +2121,6 @@ msgstr ""
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "タイムアウトが長すぎです。最大のタイムアウト長は%d秒"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -3767,6 +3738,7 @@ msgstr "pow()の第3引数には整数が必要"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -4294,6 +4266,27 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "チャネルを初期化できません"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "タイマーを初期化できません"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "不正な周波数が与えられました"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "PWMOutのピンが不正"
+
+#~ msgid "No more channels available"
+#~ msgstr "使えるチャネルがもうありません"
+
+#~ msgid "No more timers available"
+#~ msgstr "使えるタイマーがもうありません"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "このピンには使えるタイマーがもうありません"
 
 #~ msgid "matrix dimensions do not match"
 #~ msgstr "行列の次元が一致しません"
