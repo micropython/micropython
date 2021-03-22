@@ -177,6 +177,7 @@ jobs:
         - "ADM_B_NRF52840_1"
         - "TG-Watch"
         - "adafruit_feather_rp2040"
+        - "adafruit_itsybitsy_rp2040"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
