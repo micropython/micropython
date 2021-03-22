@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-21 22:27+0000\n"
+"PO-Revision-Date: 2021-03-21 21:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -84,6 +84,7 @@ msgstr "%q en cours d'utilisation"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -348,6 +349,10 @@ msgstr "Tous les périphériques SPI sont utilisés"
 msgid "All UART peripherals are in use"
 msgstr "Tous les périphériques UART sont utilisés"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr "Tout les canaux sont utilisés"
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
@@ -358,7 +363,7 @@ msgstr "Tous les automates finis sont utilisés"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr "Tous les canaux d'événements sync (sync event channels) sont utilisés"
+msgstr "Tout les canaux d'événements sync sont utilisés"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -474,7 +479,7 @@ msgstr "Au-dessous de la fréquence d'images minimale"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "Bit clock et word select doivent êtres sur des broches séquentielles"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -519,7 +524,7 @@ msgstr "Tampon + décalage trop petit %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Éléments du tampon doit être 4 octets ou moins"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -566,6 +571,7 @@ msgstr "Tampon trop court de %d octets"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "La broche %d du bus est déjà utilisée"
@@ -691,7 +697,7 @@ msgstr "Pas de transfert sans broches MOSI et MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisée"
 
@@ -778,14 +784,6 @@ msgstr "Impossible d'initialiser la carte SD"
 msgid "Could not initialize UART"
 msgstr "Impossible d'initialiser UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Impossible d'initialiser le canal"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Impossible d'initialiser le minuteur"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Impossible de réinitialiser le canal"
@@ -806,7 +804,7 @@ msgstr "Impossible d’obtenir l’horloge"
 msgid "Could not set address"
 msgstr "Impossible de définir l’adresse"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Impossible de démarrer PWM"
 
@@ -995,6 +993,7 @@ msgstr "Echec de l'allocation du tampon RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1056,7 +1055,7 @@ msgstr "Format non supporté"
 msgid "Framebuffer requires %d bytes"
 msgstr "FrameBuffer nécessite %d octets"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 "La fréquence doit correspondre à PWMOut existant à l'utilisation de ce "
@@ -1076,10 +1075,6 @@ msgstr "Échec génerique"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Groupe déjà utilisé"
-
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Groupe plein"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
@@ -1121,8 +1116,8 @@ msgid "IV must be %d bytes long"
 msgstr "IV doit être de longueur de %d octets"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "In buffer elements must be 4 bytes long or less"
-msgstr ""
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr "Éléments dans le tampon doivent être <= à 4 octets"
 
 #: py/persistentcode.c
 msgid ""
@@ -1143,10 +1138,13 @@ msgstr "Taille du programme d'initialisation non valide"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
+"Direction initiale de \"set pin\" est en conflit avec la direction initiale "
+"de \"out pin\""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
+"État initial de \"set pin\" est en conflit avec l'état initial de \"out pin\""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1294,13 +1292,9 @@ msgstr "Fichier invalide"
 msgid "Invalid format chunk size"
 msgstr "Taille de bloc de formatage invalide"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr "Fréquence non valide"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Fréquence invalide fournie"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
@@ -1346,10 +1340,6 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Broches invalides pour PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1591,11 +1581,11 @@ msgstr "Pas de support matériel pour cette broche"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "Programme n'a pas de \"in\""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "Programme n'a aucun \"in\" ni \"out\""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1604,18 +1594,6 @@ msgstr "Aucune clé n'a été spécifiée"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Pas de support pour chiffre entier long"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "Pas de canal supplémentaire disponible"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "Plus de minuteurs disponibles"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Plus de minuteurs disponibles sur cette broche."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -1738,10 +1716,6 @@ msgstr "Opération ou fonction non supportée"
 msgid "Operation timed out"
 msgstr "Timeout de l'opération"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Out buffer elements must be 4 bytes long or less"
-msgstr ""
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
 msgstr "Hors de mémoire"
@@ -1749,6 +1723,10 @@ msgstr "Hors de mémoire"
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr "Éléments du tampon de sortie doivent être <= à 4 octets"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1777,8 +1755,15 @@ msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à la construction."
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr "PWM slice déja utilisée"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr "Canal A de PWM slice est utilisé"
+
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus pas encore supporté"
@@ -1814,6 +1799,10 @@ msgstr "La broche 'pin' ne supporte pas les capacitées ADC"
 msgid "Pin is input only"
 msgstr "La broche est entrée uniquement"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr "La broche doit être sur le canal B du PWM"
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "La broche doit supporter les interruptions matérielles"
@@ -1832,6 +1821,10 @@ msgstr ""
 "Le brochage utilise %d octets par élément, ce qui consomme plus que le %d "
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "Les broches doivent être séquentielles"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2184,13 +2177,6 @@ msgstr "L'heure est dans le passé."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"Le minuteur est reservé pour un usage interne - déclarez la broche PWM plus "
-"tôt dans le programme"
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Pour quitter, SVP redémarrez la carte sans "
@@ -2362,7 +2348,7 @@ msgstr "Type de bus d'affichage non supporté"
 msgid "Unsupported format"
 msgstr "Format non supporté"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Opération non supportée"
 
@@ -2582,7 +2568,7 @@ msgstr "opération binaire '%q' non implémentée"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
-msgstr ""
+msgstr "les bits doivent être compris entre 5 et 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2820,7 +2806,7 @@ msgstr "le cercle ne peut être enregistré que dans un seul parent"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "point de coupure doît être un tuple (x,y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
@@ -2942,6 +2928,10 @@ msgstr "l'argument diff doit être un ndarray"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
 msgstr "differentiation order hors de portée"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr "les dimensions ne correspondent pas"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3198,6 +3188,7 @@ msgstr "l'index est hors limites"
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index est hors bornes"
 
@@ -3303,6 +3294,11 @@ msgstr "interval doit être dans la portée %s-%s"
 msgid "invalid arguments"
 msgstr "arguments invalides"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "certificat invalide"
@@ -3310,6 +3306,16 @@ msgstr "certificat invalide"
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "index invalide pour dupterm"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr "taille d'élément %d est invalide pour bits_per_pixel %d\n"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr "element_size %d est invalide, doit être 1, 2 ou 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3439,10 +3445,6 @@ msgstr "tampon trop petit"
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "erreur de domaine math"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "les dimensions de la matrice ne correspondent pas"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
@@ -3748,7 +3750,7 @@ msgstr ""
 msgid "out of range of source"
 msgstr "dépassement des bornes de source"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "dépassement des bornes de target"
 
@@ -3781,7 +3783,7 @@ msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "les paramètres doivent être des registres dans la séquence r0 à r3"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr "coordonnées de pixel hors limites"
 
@@ -3805,6 +3807,7 @@ msgstr "'pop' d'une entrée PulseIn vide"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3824,12 +3827,15 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -3848,6 +3854,10 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "masque pull est en conflit avec les masques de direction"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
@@ -4259,10 +4269,6 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "les vecteurs doivent avoir la même longueur"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "conflit au réveil"
@@ -4351,6 +4357,43 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Impossible d'initialiser le canal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Impossible d'initialiser le minuteur"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Fréquence invalide fournie"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Broches invalides pour PWMOut"
+
+#~ msgid "No more channels available"
+#~ msgstr "Pas de canal supplémentaire disponible"
+
+#~ msgid "No more timers available"
+#~ msgstr "Plus de minuteurs disponibles"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Plus de minuteurs disponibles sur cette broche."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Le minuteur est reservé pour un usage interne - déclarez la broche PWM "
+#~ "plus tôt dans le programme"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "les dimensions de la matrice ne correspondent pas"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "les vecteurs doivent avoir la même longueur"
+
+#~ msgid "Group full"
+#~ msgstr "Groupe plein"
 
 #~ msgid "UART not yet supported"
 #~ msgstr "UART n'est pas encore supporté"

@@ -38,7 +38,7 @@ extern uint32_t _estack;
 static uint32_t next_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
 static uint32_t current_stack_size = 0;
 // Actual location and size, may be larger than requested.
-static uint32_t* stack_limit = NULL;
+static uint32_t *stack_limit = NULL;
 static size_t stack_length = 0;
 
 #define EXCEPTION_STACK_SIZE 1024
@@ -47,14 +47,14 @@ void allocate_stack(void) {
 
     if (port_has_fixed_stack()) {
         stack_limit = port_stack_get_limit();
-        stack_length = (port_stack_get_top() - stack_limit)*sizeof(uint32_t);
+        stack_length = (port_stack_get_top() - stack_limit) * sizeof(uint32_t);
         current_stack_size = stack_length;
     } else {
         mp_uint_t regs[10];
         mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
-        mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
-        supervisor_allocation* stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
+        mp_uint_t c_size = (uint32_t)port_stack_get_top() - sp;
+        supervisor_allocation *stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
         if (stack_alloc == NULL) {
             stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true, false);
             current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
@@ -95,7 +95,7 @@ void stack_resize(void) {
     allocate_stack();
 }
 
-uint32_t* stack_get_bottom(void) {
+uint32_t *stack_get_bottom(void) {
     return stack_limit;
 }
 

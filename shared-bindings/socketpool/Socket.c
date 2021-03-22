@@ -74,7 +74,7 @@ STATIC mp_obj_t socketpool_socket_accept(mp_obj_t self_in) {
     uint8_t ip[4];
     uint32_t port;
 
-    socketpool_socket_obj_t * sock = common_hal_socketpool_socket_accept(self, ip, &port);
+    socketpool_socket_obj_t *sock = common_hal_socketpool_socket_accept(self, ip, &port);
 
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = MP_OBJ_FROM_PTR(sock);
@@ -96,7 +96,7 @@ STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
     size_t hostlen;
-    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
         mp_raise_ValueError(translate("port must be >= 0"));
@@ -134,7 +134,7 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
     size_t hostlen;
-    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
         mp_raise_ValueError(translate("port must be >= 0"));
@@ -183,7 +183,7 @@ STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_
     byte ip[4];
     mp_uint_t port;
     mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
-        (byte*)bufinfo.buf, bufinfo.len, ip, &port);
+        (byte *)bufinfo.buf, bufinfo.len, ip, &port);
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = mp_obj_new_int_from_uint(ret);
     tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
@@ -232,7 +232,7 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
         return MP_OBJ_NEW_SMALL_INT(0);
     }
 
-    mp_int_t ret = common_hal_socketpool_socket_recv_into(self, (byte*)bufinfo.buf, len);
+    mp_int_t ret = common_hal_socketpool_socket_recv_into(self, (byte *)bufinfo.buf, len);
     return mp_obj_new_int_from_uint(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3, socketpool_socket_recv_into);
@@ -282,7 +282,7 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
     size_t hostlen;
-    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
         mp_raise_ValueError(translate("port must be >= 0"));
@@ -410,6 +410,6 @@ STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_loc
 const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_Socket,
-    .locals_dict = (mp_obj_dict_t*)&socketpool_socket_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
     .unary_op = socketpool_socket_unary_op,
 };

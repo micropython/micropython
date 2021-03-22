@@ -64,7 +64,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     uint16_t value = adc_read();
 
     // Map value to from 12 to 16 bits
-    return (value << 4);
+    return value << 4;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

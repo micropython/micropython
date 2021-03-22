@@ -15,6 +15,7 @@ def check(s, val):
     assert type(s) == str
     assert int(s) == val
 
+
 # main thread function
 def th(base, n):
     for i in range(n):
@@ -25,10 +26,11 @@ def th(base, n):
         global n_finished
         n_finished += 1
 
+
 lock = _thread.allocate_lock()
 n_thread = 4
 n_finished = 0
-n_qstr_per_thread = 100 # make 1000 for a more stressful test (uses more heap)
+n_qstr_per_thread = 100  # make 1000 for a more stressful test (uses more heap)
 
 # spawn threads
 for i in range(n_thread):
@@ -38,4 +40,4 @@ for i in range(n_thread):
 while n_finished < n_thread:
     time.sleep(1)
 
-print('pass')
+print("pass")

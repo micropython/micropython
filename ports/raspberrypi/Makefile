@@ -106,7 +106,7 @@ INC += -I. \
        -I$(BUILD)
 
 # Pico specific configuration
-CFLAGS += -DPICO_ON_DEVICE=1 -DPICO_NO_BINARY_INFO=0 -DPICO_TIME_DEFAULT_ALARM_POOL_DISABLED=1 -DPICO_DIVIDER_CALL_IDIV0=0 -DPICO_DIVIDER_CALL_LDIV0=0 -DPICO_DIVIDER_HARDWARE=1 -DPICO_DOUBLE_ROM=1 -DPICO_FLOAT_ROM=1 -DPICO_MULTICORE=1 -DPICO_BITS_IN_RAM=0 -DPICO_DIVIDER_IN_RAM=0 -DPICO_DOUBLE_PROPAGATE_NANS=0 -DPICO_DOUBLE_IN_RAM=0 -DPICO_MEM_IN_RAM=0 -DPICO_FLOAT_IN_RAM=0 -DPICO_FLOAT_PROPAGATE_NANS=1 -DPICO_NO_FLASH=0 -DPICO_COPY_TO_RAM=0 -DPICO_DISABLE_SHARED_IRQ_HANDLERS=0
+CFLAGS += -DPICO_ON_DEVICE=1 -DPICO_NO_BINARY_INFO=0 -DPICO_TIME_DEFAULT_ALARM_POOL_DISABLED=1 -DPICO_DIVIDER_CALL_IDIV0=0 -DPICO_DIVIDER_CALL_LDIV0=0 -DPICO_DIVIDER_HARDWARE=1 -DPICO_DOUBLE_ROM=1 -DPICO_FLOAT_ROM=1 -DPICO_MULTICORE=1 -DPICO_BITS_IN_RAM=0 -DPICO_DIVIDER_IN_RAM=0 -DPICO_DOUBLE_PROPAGATE_NANS=0 -DPICO_DOUBLE_IN_RAM=0 -DPICO_MEM_IN_RAM=0 -DPICO_FLOAT_IN_RAM=0 -DPICO_FLOAT_PROPAGATE_NANS=1 -DPICO_NO_FLASH=0 -DPICO_COPY_TO_RAM=0 -DPICO_DISABLE_SHARED_IRQ_HANDLERS=0 -DPICO_NO_BI_BOOTSEL_VIA_DOUBLE_RESET=0
 OPTIMIZATION_FLAGS ?= -O3
 # TinyUSB defines
 CFLAGS += -DTUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX=1 -DCFG_TUSB_MCU=OPT_MCU_RP2040 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
@@ -157,6 +157,7 @@ SRC_SDK := \
 	src/common/pico_sync/lock_core.c \
 	src/common/pico_sync/mutex.c \
 	src/common/pico_time/time.c \
+	src/common/pico_time/timeout_helper.c \
 	src/common/pico_util/pheap.c \
 	src/rp2_common/hardware_adc/adc.c \
 	src/rp2_common/hardware_claim/claim.c \
@@ -176,6 +177,7 @@ SRC_SDK := \
 	src/rp2_common/hardware_watchdog/watchdog.c \
 	src/rp2_common/hardware_xosc/xosc.c \
 	src/rp2_common/pico_bootrom/bootrom.c \
+	src/rp2_common/pico_bootsel_via_double_reset/pico_bootsel_via_double_reset.c \
 	src/rp2_common/pico_double/double_init_rom.c \
 	src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c \
 	src/rp2_common/pico_float/float_init_rom.c \
@@ -232,7 +234,7 @@ SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_
 
 SRC_S = supervisor/$(CHIP_FAMILY)_cpu.s
 BOOT2_S_UPPER ?= sdk/src/rp2_common/boot_stage2/boot2_generic_03h.S
-BOOT2_S_CFLAGS ?= -DPICO_FLASH_SPI_CLKDIV=2
+BOOT2_S_CFLAGS ?= -DPICO_FLASH_SPI_CLKDIV=4
 SRC_S_UPPER = sdk/src/rp2_common/hardware_divider/divider.S \
               sdk/src/rp2_common/hardware_irq/irq_handler_chain.S \
               sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S \

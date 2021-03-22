@@ -146,5 +146,5 @@ const mp_obj_type_t displayio_colorconverter_type = {
     { &mp_type_type },
     .name = MP_QSTR_ColorConverter,
     .make_new = displayio_colorconverter_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_colorconverter_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_colorconverter_locals_dict,
 };

@@ -38,42 +38,73 @@ MP_OBJ_SENTINEL = 4
 
 READLINE_HIST_SIZE = 8
 
-SKIP_SYMBOLS = [".debug_ranges", ".debug_frame", ".debug_loc", ".comment", ".debug_str", ".debug_line", ".debug_abbrev", ".debug_info", "COMMON"]
+SKIP_SYMBOLS = [
+    ".debug_ranges",
+    ".debug_frame",
+    ".debug_loc",
+    ".comment",
+    ".debug_str",
+    ".debug_line",
+    ".debug_abbrev",
+    ".debug_info",
+    "COMMON",
+]
+
 
 @click.command()
 @click.argument("ram_filename")
 @click.argument("bin_filename")
 @click.argument("map_filename")
-@click.option("--print_block_contents", default=False,
-              help="Prints the contents of each allocated block")
-@click.option("--print_unknown_types", default=False,
-              help="Prints the micropython base type if we don't understand it.")
-@click.option("--print_block_state", default=False,
-              help="Prints the heap block states (allocated or free)")
-@click.option("--print_conflicting_symbols", default=False,
-              help="Prints conflicting symbols from the map")
-@click.option("--print-heap-structure/--no-print-heap-structure", default=False,
-              help="Print heap structure")
-@click.option("--output_directory", default="heapvis",
-              help="Destination for rendered output")
-@click.option("--draw-heap-layout/--no-draw-heap-layout", default=True,
-              help="Draw the heap layout")
-@click.option("--draw-heap-ownership/--no-draw-heap-ownership", default=False,
-              help="Draw the ownership graph of blocks on the heap")
-@click.option("--analyze-snapshots", default="last", type=click.Choice(['all', 'last']))
-def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_contents,
-                      print_unknown_types, print_block_state, print_conflicting_symbols,
-                      print_heap_structure, output_directory, draw_heap_layout,
-                      draw_heap_ownership, analyze_snapshots):
+@click.option(
+    "--print_block_contents", default=False, help="Prints the contents of each allocated block"
+)
+@click.option(
+    "--print_unknown_types",
+    default=False,
+    help="Prints the micropython base type if we don't understand it.",
+)
+@click.option(
+    "--print_block_state", default=False, help="Prints the heap block states (allocated or free)"
+)
+@click.option(
+    "--print_conflicting_symbols", default=False, help="Prints conflicting symbols from the map"
+)
+@click.option(
+    "--print-heap-structure/--no-print-heap-structure", default=False, help="Print heap structure"
+)
+@click.option("--output_directory", default="heapvis", help="Destination for rendered output")
+@click.option(
+    "--draw-heap-layout/--no-draw-heap-layout", default=True, help="Draw the heap layout"
+)
+@click.option(
+    "--draw-heap-ownership/--no-draw-heap-ownership",
+    default=False,
+    help="Draw the ownership graph of blocks on the heap",
+)
+@click.option("--analyze-snapshots", default="last", type=click.Choice(["all", "last"]))
+def do_all_the_things(
+    ram_filename,
+    bin_filename,
+    map_filename,
+    print_block_contents,
+    print_unknown_types,
+    print_block_state,
+    print_conflicting_symbols,
+    print_heap_structure,
+    output_directory,
+    draw_heap_layout,
+    draw_heap_ownership,
+    analyze_snapshots,
+):
     with open(ram_filename, "rb") as f:
         ram_dump = f.read()
 
     with open(bin_filename, "rb") as f:
         rom = f.read()
 
-    symbols = {} # name -> address, size
-    symbol_lookup = {} # address -> name
-    manual_symbol_map = {} # autoname -> name
+    symbols = {}  # name -> address, size
+    symbol_lookup = {}  # address -> name
+    manual_symbol_map = {}  # autoname -> name
 
     def add_symbol(name, address=None, size=None):
         if "lto_priv" in name:
@@ -85,7 +116,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         if name in symbols:
             if address and symbols[name][0] and symbols[name][0] != address:
                 if print_conflicting_symbols:
-                    print("Conflicting symbol: {} at addresses 0x{:08x} and 0x{:08x}".format(name, address, symbols[name][0]))
+                    print(
+                        "Conflicting symbol: {} at addresses 0x{:08x} and 0x{:08x}".format(
+                            name, address, symbols[name][0]
+                        )
+                    )
                 return
             if not address:
                 address = symbols[name][0]
@@ -118,21 +153,42 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     add_symbol(parts[0], size=parts[1])
                     name = None
             else:
-                if len(parts) == 1 and parts[0].startswith((".text", ".rodata", ".bss")) and parts[0].count(".") > 1 and not parts[0].isnumeric() and ".str" not in parts[0]:
+                if (
+                    len(parts) == 1
+                    and parts[0].startswith((".text", ".rodata", ".bss"))
+                    and parts[0].count(".") > 1
+                    and not parts[0].isnumeric()
+                    and ".str" not in parts[0]
+                ):
                     name = parts[0].split(".")[2]
-                if len(parts) == 3 and parts[0].startswith("0x") and parts[1].startswith("0x") and name:
+                if (
+                    len(parts) == 3
+                    and parts[0].startswith("0x")
+                    and parts[1].startswith("0x")
+                    and name
+                ):
                     add_symbol(name, parts[0], parts[1])
                     name = None
                 if len(parts) == 2 and parts[0].startswith("0x") and not parts[1].startswith("0x"):
                     add_symbol(parts[1], parts[0])
-                if len(parts) == 4 and parts[0] not in SKIP_SYMBOLS and parts[1].startswith("0x") and parts[2].startswith("0x"):
+                if (
+                    len(parts) == 4
+                    and parts[0] not in SKIP_SYMBOLS
+                    and parts[1].startswith("0x")
+                    and parts[2].startswith("0x")
+                ):
                     name, address, size, source = parts
                     if name.startswith((".text", ".rodata", ".bss")) and name.count(".") > 1:
                         name = name.split(".")[-1]
                         add_symbol(name, address, size)
                     name = None
                 # Linker symbols
-                if len(parts) >= 4 and parts[0].startswith("0x") and parts[2] == "=" and parts[1] != ".":
+                if (
+                    len(parts) >= 4
+                    and parts[0].startswith("0x")
+                    and parts[2] == "="
+                    and parts[1] != "."
+                ):
                     add_symbol(parts[1], parts[0])
 
     rom_start = symbols["_sfixed"][0]
@@ -143,13 +199,14 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
     # print(len(ram_dump) // ram_length, "snapshots")
     if analyze_snapshots == "all":
         snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
-        #snapshots = range(4576, -1, -1)
+        # snapshots = range(4576, -1, -1)
     elif analyze_snapshots == "last":
         snapshots = range(len(ram_dump) // ram_length - 1, len(ram_dump) // ram_length - 2, -1)
     for snapshot_num in snapshots:
-        ram = ram_dump[ram_length*snapshot_num:ram_length*(snapshot_num + 1)]
+        ram = ram_dump[ram_length * snapshot_num : ram_length * (snapshot_num + 1)]
 
         ownership_graph = pgv.AGraph(directed=True)
+
         def load(address, size=4):
             if size is None:
                 raise ValueError("You must provide a size")
@@ -157,11 +214,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 ram_address = address - ram_start
                 if (ram_address + size) > len(ram):
                     raise ValueError("Unable to read 0x{:08x} from ram.".format(address))
-                return ram[ram_address:ram_address+size]
+                return ram[ram_address : ram_address + size]
             elif address < len(rom):
                 if (address + size) > len(rom):
                     raise ValueError("Unable to read 0x{:08x} from rom.".format(address))
-                return rom[address:address+size]
+                return rom[address : address + size]
 
         def load_pointer(address):
             return struct.unpack("<I", load(address))[0]
@@ -197,11 +254,15 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         # These change every run so we load them from the symbol table
         mp_state_ctx = symbols["mp_state_ctx"][0]
         manual_symbol_map["mp_state_ctx+20"] = "mp_state_ctx.vm.last_pool"
-        last_pool = load_pointer(mp_state_ctx + 20) # (gdb) p &mp_state_ctx.vm.last_pool
+        last_pool = load_pointer(mp_state_ctx + 20)  # (gdb) p &mp_state_ctx.vm.last_pool
         manual_symbol_map["mp_state_ctx+108"] = "mp_state_ctx.vm.dict_main.map.table"
-        dict_main_table = load_pointer(mp_state_ctx + 108) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
+        dict_main_table = load_pointer(
+            mp_state_ctx + 108
+        )  # (gdb) p &mp_state_ctx.vm.dict_main.map.table
         manual_symbol_map["mp_state_ctx+84"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
-        imports_table = load_pointer(mp_state_ctx + 84) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
+        imports_table = load_pointer(
+            mp_state_ctx + 84
+        )  # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
 
         manual_symbol_map["mp_state_ctx+124"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
         manual_symbol_map["mp_state_ctx+140"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
@@ -209,7 +270,9 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         manual_symbol_map["0x200015e0"] = "mp_state_ctx.vm.dict_main"
 
         for i in range(READLINE_HIST_SIZE):
-            manual_symbol_map["mp_state_ctx+{}".format(148 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
+            manual_symbol_map[
+                "mp_state_ctx+{}".format(148 + i * 4)
+            ] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
 
         tuple_type = symbols["mp_type_tuple"][0]
         type_type = symbols["mp_type_type"][0]
@@ -217,12 +280,17 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         dict_type = symbols["mp_type_dict"][0]
         property_type = symbols["mp_type_property"][0]
         str_type = symbols["mp_type_str"][0]
-        function_types = [symbols["mp_type_fun_" + x][0] for x in ["bc", "builtin_0", "builtin_1", "builtin_2", "builtin_3", "builtin_var"]]
+        function_types = [
+            symbols["mp_type_fun_" + x][0]
+            for x in ["bc", "builtin_0", "builtin_1", "builtin_2", "builtin_3", "builtin_var"]
+        ]
         bytearray_type = symbols["mp_type_bytearray"][0]
 
-        dynamic_type = 0x40000000 # placeholder, doesn't match any memory
+        dynamic_type = 0x40000000  # placeholder, doesn't match any memory
 
-        long_lived_start = load_pointer(mp_state_ctx + 272) # (gdb) p &mp_state_ctx.mem.gc_lowest_long_lived_ptr
+        long_lived_start = load_pointer(
+            mp_state_ctx + 272
+        )  # (gdb) p &mp_state_ctx.mem.gc_lowest_long_lived_ptr
 
         type_colors = {
             dict_type: "red",
@@ -231,13 +299,23 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             type_type: "orange",
             tuple_type: "skyblue",
             str_type: "pink",
-            bytearray_type: "purple"
-            }
+            bytearray_type: "purple",
+        }
 
         pool_shift = heap_start % BYTES_PER_BLOCK
-        atb_length = total_byte_len * BITS_PER_BYTE // (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB // BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+        atb_length = (
+            total_byte_len
+            * BITS_PER_BYTE
+            // (
+                BITS_PER_BYTE
+                + BITS_PER_BYTE * BLOCKS_PER_ATB // BLOCKS_PER_FTB
+                + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+            )
+        )
         pool_length = atb_length * BLOCKS_PER_ATB * BYTES_PER_BLOCK
-        gc_finaliser_table_byte_len = (atb_length * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) // BLOCKS_PER_FTB
+        gc_finaliser_table_byte_len = (
+            atb_length * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1
+        ) // BLOCKS_PER_FTB
 
         if print_heap_structure:
             print("mp_state_ctx at 0x{:08x} and length {}".format(*symbols["mp_state_ctx"]))
@@ -247,7 +325,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             print("FTB length:", gc_finaliser_table_byte_len)
 
         pool_start = heap_start + total_byte_len - pool_length - pool_shift
-        pool = heap[-pool_length-pool_shift:]
+        pool = heap[-pool_length - pool_shift :]
 
         total_height = 128 * 18
         total_width = (pool_length // (128 * 16)) * 85
@@ -279,9 +357,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             for k in range(current_allocation - 1):
                 rows += "<tr>"
                 for l in range(4):
-                    rows += "<td port=\"{}\" height=\"18\" width=\"20\"></td>".format(4 * (k + 1) + l)
+                    rows += '<td port="{}" height="18" width="20"></td>'.format(4 * (k + 1) + l)
                 rows += "</tr>"
-            table = "<<table bgcolor=\"gray\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"4\" port=\"0\" height=\"18\" width=\"80\">0x{:08x}</td></tr>{}</table>>".format(address, rows)
+            table = '<<table bgcolor="gray" border="1" cellpadding="0" cellspacing="0"><tr><td colspan="4" port="0" height="18" width="80">0x{:08x}</td></tr>{}</table>>'.format(
+                address, rows
+            )
 
             ownership_graph.add_node(address, label=table, style="invisible", shape="plaintext")
             print("add  0x{:08x}".format(address))
@@ -299,7 +379,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     potential_type = word
                     bgcolor = "gray"
                     if address in qstr_pools:
-                        #print(address, len(data))
+                        # print(address, len(data))
                         bgcolor = "tomato"
                     elif potential_type in function_types:
                         bgcolor = "green"
@@ -308,11 +388,12 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     elif print_unknown_types:
                         print("unknown type", hex(potential_type))
 
-                    node.attr["label"] = "<" + node.attr["label"].replace("\"gray\"", "\"" + bgcolor + "\"") + ">"
+                    node.attr["label"] = (
+                        "<" + node.attr["label"].replace('"gray"', '"' + bgcolor + '"') + ">"
+                    )
 
                 if potential_type == str_type and k == 3:
                     string_blocks.append(word)
-
 
                 if potential_type == dict_type:
                     if k == 3:
@@ -322,14 +403,13 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     port = k
                     if k < 4:
                         port = 0
-                    ownership_graph.add_edge(address, word, tailport=str(port)+":_")
+                    ownership_graph.add_edge(address, word, tailport=str(port) + ":_")
                     print("  0x{:08x}".format(word))
                     if address in qstr_pools:
                         if k > 0:
                             qstr_chunks.append(word)
                     if k == 0:
                         potential_type = dynamic_type
-
 
                 if potential_type == dynamic_type:
                     if k == 0:
@@ -340,7 +420,6 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 if potential_type in function_types:
                     if k == 2 and ram_start < word < ram_end:
                         bytecode_blocks.append(word)
-
 
         longest_free = 0
         current_free = 0
@@ -356,7 +435,9 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
                     current_free = 0
                 if block_state != AT_TAIL and current_allocation > 0:
-                    save_allocated_block((i * BLOCKS_PER_ATB + j) * BYTES_PER_BLOCK, current_allocation)
+                    save_allocated_block(
+                        (i * BLOCKS_PER_ATB + j) * BYTES_PER_BLOCK, current_allocation
+                    )
                     current_allocation = 0
                 if block_state == AT_FREE:
                     current_free += 1
@@ -368,13 +449,13 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     # current_allocation > 0 ensures we only extend an allocation thats started.
                     current_allocation += 1
                 longest_free = max(longest_free, current_free)
-        #if current_free > 0:
+        # if current_free > 0:
         #    print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
         if current_allocation > 0:
             save_allocated_block(pool_length, current_allocation)
 
         def is_qstr(obj):
-            return obj & 0xff800007 == 0x00000006
+            return obj & 0xFF800007 == 0x00000006
 
         def find_qstr(qstr_index):
             pool_ptr = last_pool
@@ -396,8 +477,10 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         return "missing"
                 else:
                     rom_offset = pool_ptr - rom_start
-                    prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", rom[rom_offset:rom_offset+32])
-                    pool = rom[rom_offset:rom_offset + 32 + length * 4]
+                    prev, total_prev_len, alloc, length = struct.unpack_from(
+                        "<IIII", rom[rom_offset : rom_offset + 32]
+                    )
+                    pool = rom[rom_offset : rom_offset + 32 + length * 4]
 
                 if qstr_index >= total_prev_len:
                     offset = (qstr_index - total_prev_len) * 4 + 16
@@ -406,14 +489,14 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         start -= rom_start
                         if start > len(rom):
                             return "more than rom: {:x}".format(start + rom_start)
-                        qstr_hash, qstr_len = struct.unpack("<BB", rom[start:start+2])
-                        return rom[start+2:start+2+qstr_len].decode("utf-8")
+                        qstr_hash, qstr_len = struct.unpack("<BB", rom[start : start + 2])
+                        return rom[start + 2 : start + 2 + qstr_len].decode("utf-8")
                     else:
                         if start > heap_start + len(heap):
                             return "out of range: {:x}".format(start)
                         local = start - heap_start
-                        qstr_hash, qstr_len = struct.unpack("<BB", heap[local:local+2])
-                        return heap[local+2:local+2+qstr_len].decode("utf-8")
+                        qstr_hash, qstr_len = struct.unpack("<BB", heap[local : local + 2])
+                        return heap[local + 2 : local + 2 + qstr_len].decode("utf-8")
 
                 pool_ptr = prev
             return "unknown"
@@ -432,7 +515,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             try:
                 node = ownership_graph.get_node(block)
             except KeyError:
-                print("Unable to find memory block for 0x{:08x}. Is there something running?".format(block))
+                print(
+                    "Unable to find memory block for 0x{:08x}. Is there something running?".format(
+                        block
+                    )
+                )
                 continue
             if block not in block_data:
                 continue
@@ -449,14 +536,16 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         edge.attr["tailport"] = str(key)
             rows = ""
             for i in range(len(cells) // 2):
-                rows += "<tr><td port=\"{}\">{}</td><td port=\"{}\">{}</td></tr>".format(
-                    cells[2*i][0],
-                    cells[2*i][1],
-                    cells[2*i+1][0],
-                    cells[2*i+1][1])
+                rows += '<tr><td port="{}">{}</td><td port="{}">{}</td></tr>'.format(
+                    cells[2 * i][0], cells[2 * i][1], cells[2 * i + 1][0], cells[2 * i + 1][1]
+                )
             node.attr["shape"] = "plaintext"
             node.attr["style"] = "invisible"
-            node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"2\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
+            node.attr[
+                "label"
+            ] = '<<table bgcolor="gold" border="1" cellpadding="0" cellspacing="0"><tr><td colspan="2">0x{:08x}</td></tr>{}</table>>'.format(
+                block, rows
+            )
 
         for node, degree in ownership_graph.in_degree_iter():
             print(node, degree)
@@ -488,12 +577,12 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 print("Unable to find memory block for string at 0x{:08x}.".format(block))
                 continue
             try:
-                raw_string = block_data[block].decode('utf-8')
+                raw_string = block_data[block].decode("utf-8")
             except:
                 raw_string = str(block_data[block])
             wrapped = []
             for i in range(0, len(raw_string), 16):
-                wrapped.append(raw_string[i:i+16])
+                wrapped.append(raw_string[i : i + 16])
             node.attr["label"] = "\n".join(wrapped)
             node.attr["style"] = "filled"
             node.attr["fontname"] = "FiraCode-Medium"
@@ -516,17 +605,29 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             rows = ""
             remaining_bytecode = len(data) - 16
             while code_info_size >= 16:
-                rows += "<tr><td colspan=\"16\" bgcolor=\"palegreen\" height=\"18\" width=\"80\"></td></tr>"
+                rows += (
+                    '<tr><td colspan="16" bgcolor="palegreen" height="18" width="80"></td></tr>'
+                )
                 code_info_size -= 16
                 remaining_bytecode -= 16
             if code_info_size > 0:
-                rows += ("<tr><td colspan=\"{}\" bgcolor=\"palegreen\" height=\"18\" width=\"{}\"></td>"
-                         "<td colspan=\"{}\" bgcolor=\"seagreen\" height=\"18\" width=\"{}\"></td></tr>"
-                        ).format(code_info_size, code_info_size * (80 / 16), (16 - code_info_size), (80 / 16) * (16 - code_info_size))
+                rows += (
+                    '<tr><td colspan="{}" bgcolor="palegreen" height="18" width="{}"></td>'
+                    '<td colspan="{}" bgcolor="seagreen" height="18" width="{}"></td></tr>'
+                ).format(
+                    code_info_size,
+                    code_info_size * (80 / 16),
+                    (16 - code_info_size),
+                    (80 / 16) * (16 - code_info_size),
+                )
                 remaining_bytecode -= 16
             for i in range(remaining_bytecode // 16):
-                rows += "<tr><td colspan=\"16\" bgcolor=\"seagreen\" height=\"18\" width=\"80\"></td></tr>"
-            node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\"><tr><td colspan=\"16\" bgcolor=\"lightseagreen\" height=\"18\" width=\"80\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
+                rows += '<tr><td colspan="16" bgcolor="seagreen" height="18" width="80"></td></tr>'
+            node.attr[
+                "label"
+            ] = '<<table border="1" cellspacing="0"><tr><td colspan="16" bgcolor="lightseagreen" height="18" width="80">0x{:08x}</td></tr>{}</table>>'.format(
+                block, rows
+            )
 
         for block in qstr_chunks:
             if block not in block_data:
@@ -543,9 +644,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     continue
                 offset += 2 + qstr_len + 1
                 try:
-                    qstrs_in_chunk += "  " + data[offset - qstr_len - 1: offset - 1].decode("utf-8")
+                    qstrs_in_chunk += "  " + data[offset - qstr_len - 1 : offset - 1].decode(
+                        "utf-8"
+                    )
                 except UnicodeDecodeError:
-                    qstrs_in_chunk += "  " + "░"*qstr_len
+                    qstrs_in_chunk += "  " + "░" * qstr_len
             printable_qstrs = ""
             for i in range(len(qstrs_in_chunk)):
                 c = qstrs_in_chunk[i]
@@ -555,9 +658,13 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     printable_qstrs += qstrs_in_chunk[i]
             wrapped = []
             for i in range(0, len(printable_qstrs), 16):
-                wrapped.append(html.escape(printable_qstrs[i:i+16]))
+                wrapped.append(html.escape(printable_qstrs[i : i + 16]))
             node = ownership_graph.get_node(block)
-            node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\" bgcolor=\"lightsalmon\" width=\"80\"><tr><td height=\"18\" >0x{:08x}</td></tr><tr><td height=\"{}\" >{}</td></tr></table>>".format(block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped))
+            node.attr[
+                "label"
+            ] = '<<table border="1" cellspacing="0" bgcolor="lightsalmon" width="80"><tr><td height="18" >0x{:08x}</td></tr><tr><td height="{}" >{}</td></tr></table>>'.format(
+                block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped)
+            )
             node.attr["fontname"] = "FiraCode-Bold"
             if block >= long_lived_start:
                 node.attr["fontcolor"] = "hotpink"
@@ -598,10 +705,10 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 height = float(node.attr["height"])
             except:
                 height = 0.25
-            #print(hex(address), "height", height, y)
-            #if address in block_data:
+            # print(hex(address), "height", height, y)
+            # if address in block_data:
             #    print(hex(address), block, len(block_data[address]), x, y, height)
-            node.attr["pos"] = "{},{}".format(x * 80, (y - (height - 0.25) * 2) * 18) # in inches
+            node.attr["pos"] = "{},{}".format(x * 80, (y - (height - 0.25) * 2) * 18)  # in inches
 
         # Reformat block nodes so they are the correct size and do not have keys in them.
         for block in sorted(map_element_blocks):
@@ -609,45 +716,58 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 node = ownership_graph.get_node(block)
             except KeyError:
                 if block != 0:
-                    print("Unable to find memory block for 0x{:08x}. Is there something running?".format(block))
+                    print(
+                        "Unable to find memory block for 0x{:08x}. Is there something running?".format(
+                            block
+                        )
+                    )
                 continue
-            #node.attr["fillcolor"] = "gold"
+            # node.attr["fillcolor"] = "gold"
             if block not in block_data:
                 continue
             data = block_data[block]
-            #print("0x{:08x}".format(block))
+            # print("0x{:08x}".format(block))
             cells = []
             for i in range(len(data) // 8):
                 key, value = struct.unpack_from("<II", data, offset=(i * 8))
                 if key == MP_OBJ_NULL or key == MP_OBJ_SENTINEL:
-                    #print("  <empty slot>")
+                    # print("  <empty slot>")
                     cells.append(("", " "))
                 else:
-                    #print("  {}, {}".format(format(key), format(value)))
+                    # print("  {}, {}".format(format(key), format(value)))
                     cells.append((key, ""))
                     # if value in block_data:
                     #     edge = ownership_graph.get_edge(block, value)
                     #     edge.attr["tailport"] = str(key)
             rows = ""
             for i in range(len(cells) // 2):
-                rows += "<tr><td port=\"{}\" height=\"18\" width=\"40\">{}</td><td port=\"{}\" height=\"18\" width=\"40\">{}</td></tr>".format(
-                    cells[2*i][0],
-                    cells[2*i][1],
-                    cells[2*i+1][0],
-                    cells[2*i+1][1])
-            node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\">{}</table>>".format(rows)
+                rows += '<tr><td port="{}" height="18" width="40">{}</td><td port="{}" height="18" width="40">{}</td></tr>'.format(
+                    cells[2 * i][0], cells[2 * i][1], cells[2 * i + 1][0], cells[2 * i + 1][1]
+                )
+            node.attr[
+                "label"
+            ] = '<<table bgcolor="gold" border="1" cellpadding="0" cellspacing="0">{}</table>>'.format(
+                rows
+            )
 
-
-        ownership_graph.add_node("center", pos="{},{}".format(total_width // 2 - 40, total_height // 2), shape="plaintext", label=" ")
-        ownership_graph.graph_attr["viewport"] = "{},{},1,{}".format(total_width, total_height, "center")
+        ownership_graph.add_node(
+            "center",
+            pos="{},{}".format(total_width // 2 - 40, total_height // 2),
+            shape="plaintext",
+            label=" ",
+        )
+        ownership_graph.graph_attr["viewport"] = "{},{},1,{}".format(
+            total_width, total_height, "center"
+        )
 
         ownership_graph.has_layout = True
 
         if draw_heap_layout:
             fn = os.path.join(output_directory, "heap_layout{:04d}.png".format(snapshot_num))
             print(fn)
-            #ownership_graph.write(fn+".dot")
+            # ownership_graph.write(fn+".dot")
             ownership_graph.draw(fn)
+
 
 if __name__ == "__main__":
     do_all_the_things()

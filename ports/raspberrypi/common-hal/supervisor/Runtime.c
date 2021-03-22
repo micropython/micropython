@@ -29,9 +29,9 @@
 #include "supervisor/serial.h"
 
 bool common_hal_supervisor_runtime_get_serial_connected(void) {
-    return (bool) serial_connected();
+    return (bool)serial_connected();
 }
 
 bool common_hal_supervisor_runtime_get_serial_bytes_available(void) {
-    return (bool) serial_bytes_available();
+    return (bool)serial_bytes_available();
 }

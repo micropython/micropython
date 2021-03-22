@@ -80,7 +80,9 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     const mcu_pin_obj_t *rst = validate_obj_is_free_pin_or_none(args[ARG_rst].u_obj);
 
     mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, cs, rst);
-    if (args[ARG_dhcp].u_bool) wiznet5k_start_dhcp();
+    if (args[ARG_dhcp].u_bool) {
+        wiznet5k_start_dhcp();
+    }
     return ret;
 }
 
@@ -118,10 +120,14 @@ STATIC mp_obj_t wiznet5k_dhcp_set_value(mp_obj_t self_in, mp_obj_t value) {
     (void)self_in;
     if (mp_obj_is_true(value)) {
         int ret = wiznet5k_start_dhcp();
-        if (ret) mp_raise_OSError(ret);
+        if (ret) {
+            mp_raise_OSError(ret);
+        }
     } else {
         int ret = wiznet5k_stop_dhcp();
-        if (ret) mp_raise_OSError(ret);
+        if (ret) {
+            mp_raise_OSError(ret);
+        }
     }
     return mp_const_none;
 }
@@ -183,7 +189,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
         { &mp_type_type },
         .name = MP_QSTR_WIZNET5K,
         .make_new = wiznet5k_make_new,
-        .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
+        .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
     },
     .gethostbyname = wiznet5k_gethostbyname,
     .socket = wiznet5k_socket_socket,

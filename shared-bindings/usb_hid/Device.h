@@ -31,7 +31,7 @@
 
 extern const mp_obj_type_t usb_hid_device_type;
 
-void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len);
+void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *report, uint8_t len);
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self);
 uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self);
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2021 Dave Putz for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
 
-#include "common-hal/digitalio/DigitalInOut.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t scl;
-    digitalio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    uint32_t us_timeout;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
+#define NO_PIN 0xff
 
 typedef struct {
     mp_obj_base_t base;
-    digitalio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
+    uint8_t pin;
+} pulseio_pulseout_obj_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t clock;
-    digitalio_digitalinout_obj_t mosi;
-    digitalio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
+void pulseout_reset(void);
+void pulseout_interrupt_handler(uint8_t index);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H

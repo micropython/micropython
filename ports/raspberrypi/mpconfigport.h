@@ -31,10 +31,10 @@
 
 #define MICROPY_PY_SYS_PLATFORM             "RP2040"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (4*1024)
+#define CIRCUITPY_INTERNAL_NVM_SIZE         (4 * 1024)
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR   (0x100FF000)
 
-#define CIRCUITPY_DEFAULT_STACK_SIZE        (24*1024)
+#define CIRCUITPY_DEFAULT_STACK_SIZE        (24 * 1024)
 
 #define MICROPY_USE_INTERNAL_PRINTF         (1)
 
@@ -44,6 +44,7 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
+    mp_obj_t counting[NUM_PWM_SLICES]; \
     mp_obj_t playing_audio[NUM_DMA_CHANNELS]; \
     CIRCUITPY_COMMON_ROOT_POINTERS;
 

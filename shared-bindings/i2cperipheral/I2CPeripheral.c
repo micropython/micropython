@@ -76,8 +76,8 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t* sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_addresses].u_obj, &iter_buf);
@@ -144,7 +144,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral___exit__
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cperipheral_i2c_peripheral_type));
     i2cperipheral_i2c_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    if(common_hal_i2cperipheral_i2c_peripheral_deinited(self)) {
+    if (common_hal_i2cperipheral_i2c_peripheral_deinited(self)) {
         raise_deinited_error();
     }
     enum { ARG_timeout };
@@ -220,10 +220,10 @@ STATIC const mp_rom_map_elem_t i2cperipheral_i2c_peripheral_locals_dict_table[] 
 STATIC MP_DEFINE_CONST_DICT(i2cperipheral_i2c_peripheral_locals_dict, i2cperipheral_i2c_peripheral_locals_dict_table);
 
 const mp_obj_type_t i2cperipheral_i2c_peripheral_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_I2CPeripheral,
-   .make_new = i2cperipheral_i2c_peripheral_make_new,
-   .locals_dict = (mp_obj_dict_t*)&i2cperipheral_i2c_peripheral_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_I2CPeripheral,
+    .make_new = i2cperipheral_i2c_peripheral_make_new,
+    .locals_dict = (mp_obj_dict_t *)&i2cperipheral_i2c_peripheral_locals_dict,
 };
 
 //| class I2CPeripheralRequest:
@@ -429,8 +429,8 @@ STATIC const mp_rom_map_elem_t i2cperipheral_i2c_peripheral_request_locals_dict_
 STATIC MP_DEFINE_CONST_DICT(i2cperipheral_i2c_peripheral_request_locals_dict, i2cperipheral_i2c_peripheral_request_locals_dict_table);
 
 const mp_obj_type_t i2cperipheral_i2c_peripheral_request_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_I2CPeripheralRequest,
-   .make_new = i2cperipheral_i2c_peripheral_request_make_new,
-   .locals_dict = (mp_obj_dict_t*)&i2cperipheral_i2c_peripheral_request_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_I2CPeripheralRequest,
+    .make_new = i2cperipheral_i2c_peripheral_request_make_new,
+    .locals_dict = (mp_obj_dict_t *)&i2cperipheral_i2c_peripheral_request_locals_dict,
 };

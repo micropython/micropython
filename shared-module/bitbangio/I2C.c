@@ -32,7 +32,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-module/bitbangio/types.h"
 #include "supervisor/shared/translate.h"
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {
@@ -144,10 +143,10 @@ STATIC bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
 }
 
 void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
-                                           const mcu_pin_obj_t * scl,
-                                           const mcu_pin_obj_t * sda,
-                                           uint32_t frequency,
-                                           uint32_t us_timeout) {
+    const mcu_pin_obj_t *scl,
+    const mcu_pin_obj_t *sda,
+    uint32_t frequency,
+    uint32_t us_timeout) {
 
     self->us_timeout = us_timeout;
     self->us_delay = 500000 / frequency;
@@ -209,7 +208,7 @@ bool shared_module_bitbangio_i2c_probe(bitbangio_i2c_obj_t *self, uint8_t addr) 
 }
 
 uint8_t shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self, uint16_t addr,
-                                       const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     // start the I2C transaction
     start(self);
     uint8_t status = 0;
@@ -233,7 +232,7 @@ uint8_t shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self, uint16_t ad
 }
 
 uint8_t shared_module_bitbangio_i2c_read(bitbangio_i2c_obj_t *self, uint16_t addr,
-                                      uint8_t * data, size_t len) {
+    uint8_t *data, size_t len) {
     // start the I2C transaction
     start(self);
     uint8_t status = 0;

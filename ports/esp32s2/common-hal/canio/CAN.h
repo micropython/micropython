@@ -42,8 +42,8 @@ typedef struct canio_can_obj {
     int baudrate;
     const mcu_pin_obj_t *rx_pin;
     const mcu_pin_obj_t *tx_pin;
-    bool loopback:1;
-    bool silent:1;
-    bool auto_restart:1;
-    bool fifo_in_use:1;
+    bool loopback : 1;
+    bool silent : 1;
+    bool auto_restart : 1;
+    bool fifo_in_use : 1;
 } canio_can_obj_t;

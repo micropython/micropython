@@ -146,6 +146,7 @@ SRC_SDK := \
 	system_$(CHIP_FAMILY).c \
 
 SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
+$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-undef
 
 SRC_C += \
 	background.c \

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "STM32F4_DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32F407VG"

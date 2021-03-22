@@ -30,8 +30,8 @@
 #include "shared-module/rgbmatrix/RGBMatrix.h"
 
 void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self);
-void common_hal_rgbmatrix_timer_enable(void*);
-void common_hal_rgbmatrix_timer_disable(void*);
-void common_hal_rgbmatrix_timer_free(void*);
+void common_hal_rgbmatrix_timer_enable(void *);
+void common_hal_rgbmatrix_timer_disable(void *);
+void common_hal_rgbmatrix_timer_free(void *);
 
 #endif

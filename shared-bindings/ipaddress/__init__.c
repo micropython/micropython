@@ -38,7 +38,7 @@
 //|
 
 
-bool ipaddress_parse_ipv4address(const char* str_data, size_t str_len, uint32_t* ip_out) {
+bool ipaddress_parse_ipv4address(const char *str_data, size_t str_len, uint32_t *ip_out) {
     size_t period_count = 0;
     size_t period_index[4] = {0, 0, 0, str_len};
     for (size_t i = 0; i < str_len; i++) {
@@ -62,7 +62,7 @@ bool ipaddress_parse_ipv4address(const char* str_data, size_t str_len, uint32_t*
         nlr_buf_t nlr;
         mp_obj_t octet;
         if (nlr_push(&nlr) == 0) {
-            octet = mp_parse_num_integer((const char*) str_data + last_period, period_index[i] - last_period, 10, NULL);
+            octet = mp_parse_num_integer((const char *)str_data + last_period, period_index[i] - last_period, 10, NULL);
             nlr_pop();
         } else {
             return false;
@@ -83,11 +83,11 @@ bool ipaddress_parse_ipv4address(const char* str_data, size_t str_len, uint32_t*
 
 STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     uint32_t value;
-    if (mp_obj_get_int_maybe(ip_in, (mp_int_t*) &value)) {
+    if (mp_obj_get_int_maybe(ip_in, (mp_int_t *)&value)) {
         // We're done.
     } else if (MP_OBJ_IS_STR(ip_in)) {
         GET_STR_DATA_LEN(ip_in, str_data, str_len);
-        if (!ipaddress_parse_ipv4address((const char*) str_data, str_len, &value)) {
+        if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
             mp_raise_ValueError(translate("Not a valid IP string"));
         }
     } else {
@@ -109,5 +109,5 @@ STATIC MP_DEFINE_CONST_DICT(ipaddress_module_globals, ipaddress_module_globals_t
 
 const mp_obj_module_t ipaddress_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&ipaddress_module_globals,
+    .globals = (mp_obj_dict_t *)&ipaddress_module_globals,
 };

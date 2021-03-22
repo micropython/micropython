@@ -54,7 +54,7 @@ const uint16_t neopixel_program[] = {
     0xa142
 };
 
-void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t num_bytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t num_bytes) {
     // Set everything up.
     rp2pio_statemachine_obj_t state_machine;
 
@@ -67,6 +67,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
         NULL, 0, // init program
         NULL, 1, // out
         NULL, 1, // in
+        0, 0, // in pulls
         NULL, 1, // set
         digitalinout->pin, 1, // sideset
         0, pins_we_use, // initial pin state
@@ -82,7 +83,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
-    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
     common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */);
 
@@ -91,7 +93,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     // Reset the pin and release it from the PIO
     gpio_init(digitalinout->pin->number);
-    common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t*)digitalinout, false, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t *)digitalinout, false, DRIVE_MODE_PUSH_PULL);
 
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 1;

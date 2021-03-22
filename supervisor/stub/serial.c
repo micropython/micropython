@@ -46,6 +46,6 @@ bool serial_bytes_available(void) {
     return false;
 }
 
-void serial_write(const char* text) {
-    (void) text;
+void serial_write(const char *text) {
+    (void)text;
 }

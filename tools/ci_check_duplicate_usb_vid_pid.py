@@ -46,7 +46,7 @@ DEFAULT_IGNORELIST = [
     "cp32-m4",
     "metro_m4_express",
     "unexpectedmaker_feathers2",
-    "unexpectedmaker_feathers2_prerelease"
+    "unexpectedmaker_feathers2_prerelease",
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
@@ -60,27 +60,28 @@ cli_parser.add_argument(
         "Board names to ignore duplicate VID/PID combinations. Pass an empty "
         "string to disable all duplicate ignoring. Defaults are: "
         f"{', '.join(DEFAULT_IGNORELIST)}"
-    )
+    ),
 )
 
-def configboard_files():
-    """ A pathlib glob search for all ports/*/boards/*/mpconfigboard.mk file
-        paths.
 
-        :returns: A ``pathlib.Path.glob()`` genarator object
+def configboard_files():
+    """A pathlib glob search for all ports/*/boards/*/mpconfigboard.mk file
+    paths.
+
+    :returns: A ``pathlib.Path.glob()`` genarator object
     """
     working_dir = pathlib.Path().resolve()
     if not working_dir.name.startswith("circuitpython"):
         raise RuntimeError(
-            "Please run USB VID/PID duplicate verification at the "
-            "top-level directory."
+            "Please run USB VID/PID duplicate verification at the " "top-level directory."
         )
     return working_dir.glob("ports/**/boards/**/mpconfigboard.mk")
 
+
 def check_vid_pid(files, ignorelist):
-    """ Compiles a list of USB VID & PID values for all boards, and checks
-        for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
-        if duplicates are found, and lists the duplicates.
+    """Compiles a list of USB VID & PID values for all boards, and checks
+    for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
+    if duplicates are found, and lists the duplicates.
     """
 
     duplicates_found = False
@@ -106,24 +107,18 @@ def check_vid_pid(files, ignorelist):
         if usb_vid and usb_pid:
             id_group = f"{usb_vid.group(1)}:{usb_pid.group(1)}"
             if id_group not in usb_ids:
-                usb_ids[id_group] = {
-                    "boards": [board_name],
-                    "duplicate": False
-                }
+                usb_ids[id_group] = {"boards": [board_name], "duplicate": False}
             else:
-                usb_ids[id_group]['boards'].append(board_name)
+                usb_ids[id_group]["boards"].append(board_name)
                 if not board_ignorelisted:
-                    usb_ids[id_group]['duplicate'] = True
+                    usb_ids[id_group]["duplicate"] = True
                     duplicates_found = True
 
     if duplicates_found:
         duplicates = ""
         for key, value in usb_ids.items():
             if value["duplicate"]:
-                duplicates += (
-                    f"- VID/PID: {key}\n"
-                    f"  Boards: {', '.join(value['boards'])}\n"
-                )
+                duplicates += f"- VID/PID: {key}\n" f"  Boards: {', '.join(value['boards'])}\n"
 
         duplicate_message = (
             f"Duplicate VID/PID usage found!\n{duplicates}\n"
@@ -139,10 +134,7 @@ if __name__ == "__main__":
     arguments = cli_parser.parse_args()
 
     print("Running USB VID/PID Duplicate Checker...")
-    print(
-        f"Ignoring the following boards: {', '.join(arguments.ignorelist)}",
-        end="\n\n"
-    )
+    print(f"Ignoring the following boards: {', '.join(arguments.ignorelist)}", end="\n\n")
 
     board_files = configboard_files()
     check_vid_pid(board_files, arguments.ignorelist)

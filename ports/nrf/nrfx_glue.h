@@ -60,7 +60,7 @@ extern "C" {
 
 void __assert_func(const char *file, int line, const char *func, const char *expr);
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 /**
  * @brief Macro for placing a runtime assertion.
@@ -85,14 +85,14 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 #ifdef SOFTDEVICE_PRESENT
 #define INTERRUPT_PRIORITY_IS_VALID(pri) ((((pri) > 1) && ((pri) < 4)) || \
-                                          (((pri) > 4) && ((pri) < 8)))
+    (((pri) > 4) && ((pri) < 8)))
 #else
 #define INTERRUPT_PRIORITY_IS_VALID(pri) ((pri) < 8)
-#endif //SOFTDEVICE_PRESENT
+#endif // SOFTDEVICE_PRESENT
 
 /**
  * @brief Macro for setting the priority of a specific IRQ.
@@ -103,9 +103,8 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
 #define NRFX_IRQ_PRIORITY_SET(irq_number, priority) \
     _NRFX_IRQ_PRIORITY_SET(irq_number, priority)
 static inline void _NRFX_IRQ_PRIORITY_SET(IRQn_Type irq_number,
-                                          uint8_t   priority)
-{
-    //ASSERT(INTERRUPT_PRIORITY_IS_VALID(priority));
+    uint8_t priority) {
+    // ASSERT(INTERRUPT_PRIORITY_IS_VALID(priority));
     NVIC_SetPriority(irq_number, priority);
 }
 
@@ -115,8 +114,7 @@ static inline void _NRFX_IRQ_PRIORITY_SET(IRQn_Type irq_number,
  * @param irq_number  IRQ number.
  */
 #define NRFX_IRQ_ENABLE(irq_number)  _NRFX_IRQ_ENABLE(irq_number)
-static inline void _NRFX_IRQ_ENABLE(IRQn_Type irq_number)
-{
+static inline void _NRFX_IRQ_ENABLE(IRQn_Type irq_number) {
     NVIC_ClearPendingIRQ(irq_number);
     NVIC_EnableIRQ(irq_number);
 }
@@ -130,8 +128,7 @@ static inline void _NRFX_IRQ_ENABLE(IRQn_Type irq_number)
  * @retval false Otherwise.
  */
 #define NRFX_IRQ_IS_ENABLED(irq_number)  _NRFX_IRQ_IS_ENABLED(irq_number)
-static inline bool _NRFX_IRQ_IS_ENABLED(IRQn_Type irq_number)
-{
+static inline bool _NRFX_IRQ_IS_ENABLED(IRQn_Type irq_number) {
     return 0 != (NVIC->ISER[irq_number / 32] & (1UL << (irq_number % 32)));
 }
 
@@ -141,8 +138,7 @@ static inline bool _NRFX_IRQ_IS_ENABLED(IRQn_Type irq_number)
  * @param irq_number  IRQ number.
  */
 #define NRFX_IRQ_DISABLE(irq_number)  _NRFX_IRQ_DISABLE(irq_number)
-static inline void _NRFX_IRQ_DISABLE(IRQn_Type irq_number)
-{
+static inline void _NRFX_IRQ_DISABLE(IRQn_Type irq_number) {
     NVIC_DisableIRQ(irq_number);
 }
 
@@ -152,8 +148,7 @@ static inline void _NRFX_IRQ_DISABLE(IRQn_Type irq_number)
  * @param irq_number  IRQ number.
  */
 #define NRFX_IRQ_PENDING_SET(irq_number) _NRFX_IRQ_PENDING_SET(irq_number)
-static inline void _NRFX_IRQ_PENDING_SET(IRQn_Type irq_number)
-{
+static inline void _NRFX_IRQ_PENDING_SET(IRQn_Type irq_number) {
     NVIC_SetPendingIRQ(irq_number);
 }
 
@@ -163,8 +158,7 @@ static inline void _NRFX_IRQ_PENDING_SET(IRQn_Type irq_number)
  * @param irq_number  IRQ number.
  */
 #define NRFX_IRQ_PENDING_CLEAR(irq_number) _NRFX_IRQ_PENDING_CLEAR(irq_number)
-static inline void _NRFX_IRQ_PENDING_CLEAR(IRQn_Type irq_number)
-{
+static inline void _NRFX_IRQ_PENDING_CLEAR(IRQn_Type irq_number) {
     NVIC_ClearPendingIRQ(irq_number);
 }
 
@@ -175,9 +169,8 @@ static inline void _NRFX_IRQ_PENDING_CLEAR(IRQn_Type irq_number)
  * @retval false Otherwise.
  */
 #define NRFX_IRQ_IS_PENDING(irq_number) _NRFX_IRQ_IS_PENDING(irq_number)
-static inline bool _NRFX_IRQ_IS_PENDING(IRQn_Type irq_number)
-{
-    return (NVIC_GetPendingIRQ(irq_number) == 1);
+static inline bool _NRFX_IRQ_IS_PENDING(IRQn_Type irq_number) {
+    return NVIC_GetPendingIRQ(irq_number) == 1;
 }
 
 void common_hal_mcu_disable_interrupts(void);
@@ -192,7 +185,7 @@ void common_hal_mcu_enable_interrupts(void);
  */
 #define NRFX_CRITICAL_SECTION_EXIT()    common_hal_mcu_enable_interrupts()
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 /**
  * @brief When set to a non-zero value, this macro specifies that
@@ -206,7 +199,7 @@ void common_hal_mcu_enable_interrupts(void);
 
 #define NRFX_DELAY_US(us_time) nrfx_coredep_delay_us(us_time)
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 /**
  * @brief When set to a non-zero value, this macro specifies that the
@@ -216,7 +209,7 @@ void common_hal_mcu_enable_interrupts(void);
  */
 #define NRFX_CUSTOM_ERROR_CODES 0
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 /**
  * @brief Bitmask defining PPI channels reserved to be used outside of nrfx.

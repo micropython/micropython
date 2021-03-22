@@ -8,18 +8,17 @@ import math
 trigger = digitalio.DigitalInOut(board.D4)
 trigger.switch_to_output(True)
 
+
 def mean(values):
     return sum(values) / len(values)
 
 
 def normalized_rms(values):
     minbuf = int(mean(values))
-    samples_sum = sum(
-        float(sample - minbuf) * (sample - minbuf)
-        for sample in values
-    )
+    samples_sum = sum(float(sample - minbuf) * (sample - minbuf) for sample in values)
 
     return math.sqrt(samples_sum / len(values))
+
 
 # signed 16 bit
 s16 = array.array("H", [0] * 10000)

@@ -86,7 +86,7 @@
 
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
-    } while (0)
+} while (0)
 
 typedef enum {
     STACK_VALUE,
@@ -114,15 +114,25 @@ typedef enum {
 
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
-        case VTYPE_PYOBJ: return MP_QSTR_object;
-        case VTYPE_BOOL: return MP_QSTR_bool;
-        case VTYPE_INT: return MP_QSTR_int;
-        case VTYPE_UINT: return MP_QSTR_uint;
-        case VTYPE_PTR: return MP_QSTR_ptr;
-        case VTYPE_PTR8: return MP_QSTR_ptr8;
-        case VTYPE_PTR16: return MP_QSTR_ptr16;
-        case VTYPE_PTR32: return MP_QSTR_ptr32;
-        case VTYPE_PTR_NONE: default: return MP_QSTR_None;
+        case VTYPE_PYOBJ:
+            return MP_QSTR_object;
+        case VTYPE_BOOL:
+            return MP_QSTR_bool;
+        case VTYPE_INT:
+            return MP_QSTR_int;
+        case VTYPE_UINT:
+            return MP_QSTR_uint;
+        case VTYPE_PTR:
+            return MP_QSTR_ptr;
+        case VTYPE_PTR8:
+            return MP_QSTR_ptr8;
+        case VTYPE_PTR16:
+            return MP_QSTR_ptr16;
+        case VTYPE_PTR32:
+            return MP_QSTR_ptr32;
+        case VTYPE_PTR_NONE:
+        default:
+            return MP_QSTR_None;
     }
 }
 
@@ -163,7 +173,7 @@ struct _emit_t {
     ASM_T *as;
 };
 
-emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, mp_uint_t max_num_labels) {
+emit_t *EXPORT_FUN(new)(mp_obj_t * error_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
     emit->error_slot = error_slot;
     emit->as = m_new0(ASM_T, 1);
@@ -171,7 +181,7 @@ emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, mp_uint_t max_num_labels) {
     return emit;
 }
 
-void EXPORT_FUN(free)(emit_t *emit) {
+void EXPORT_FUN(free)(emit_t * emit) {
     mp_asm_base_deinit(&emit->as->base, false);
     m_del_obj(ASM_T, emit->as);
     m_del(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc);
@@ -188,15 +198,33 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
         default: {
             vtype_kind_t type;
             switch (arg2) {
-                case MP_QSTR_object: type = VTYPE_PYOBJ; break;
-                case MP_QSTR_bool: type = VTYPE_BOOL; break;
-                case MP_QSTR_int: type = VTYPE_INT; break;
-                case MP_QSTR_uint: type = VTYPE_UINT; break;
-                case MP_QSTR_ptr: type = VTYPE_PTR; break;
-                case MP_QSTR_ptr8: type = VTYPE_PTR8; break;
-                case MP_QSTR_ptr16: type = VTYPE_PTR16; break;
-                case MP_QSTR_ptr32: type = VTYPE_PTR32; break;
-                default: EMIT_NATIVE_VIPER_TYPE_ERROR(emit, translate("unknown type '%q'"), arg2); return;
+                case MP_QSTR_object:
+                    type = VTYPE_PYOBJ;
+                    break;
+                case MP_QSTR_bool:
+                    type = VTYPE_BOOL;
+                    break;
+                case MP_QSTR_int:
+                    type = VTYPE_INT;
+                    break;
+                case MP_QSTR_uint:
+                    type = VTYPE_UINT;
+                    break;
+                case MP_QSTR_ptr:
+                    type = VTYPE_PTR;
+                    break;
+                case MP_QSTR_ptr8:
+                    type = VTYPE_PTR8;
+                    break;
+                case MP_QSTR_ptr16:
+                    type = VTYPE_PTR16;
+                    break;
+                case MP_QSTR_ptr32:
+                    type = VTYPE_PTR32;
+                    break;
+                default:
+                    EMIT_NATIVE_VIPER_TYPE_ERROR(emit, translate("unknown type '%q'"), arg2);
+                    return;
             }
             if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
                 emit->return_vtype = type;
@@ -463,7 +491,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         #pragma GCC diagnostic ignored "-Wcast-align"
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
-            f, f_len, (mp_uint_t*)((byte*)f + emit->const_table_offset),
+            f, f_len, (mp_uint_t *)((byte *)f + emit->const_table_offset),
             emit->scope->num_pos_args, emit->scope->scope_flags, type_sig);
         #pragma GCC diagnostic pop
     }
@@ -479,14 +507,14 @@ STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("  adjust_stack; stack_size=%d+%d; stack now:", emit->stack_size - stack_size_delta, stack_size_delta);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         DEBUG_printf(" (v=%d k=%d %d)", si->vtype, si->kind, si->data.u_reg);
     }
     DEBUG_printf("\n");
-#endif
+    #endif
 }
 
 STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
@@ -875,22 +903,40 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     mp_uint_t val;
     if (emit->do_viper_types) {
         switch (tok) {
-            case MP_TOKEN_KW_NONE: vtype = VTYPE_PTR_NONE; val = 0; break;
-            case MP_TOKEN_KW_FALSE: vtype = VTYPE_BOOL; val = 0; break;
-            case MP_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
+            case MP_TOKEN_KW_NONE:
+                vtype = VTYPE_PTR_NONE;
+                val = 0;
+                break;
+            case MP_TOKEN_KW_FALSE:
+                vtype = VTYPE_BOOL;
+                val = 0;
+                break;
+            case MP_TOKEN_KW_TRUE:
+                vtype = VTYPE_BOOL;
+                val = 1;
+                break;
             default:
                 assert(tok == MP_TOKEN_ELLIPSIS);
-                vtype = VTYPE_PYOBJ; val = (mp_uint_t)&mp_const_ellipsis_obj; break;
+                vtype = VTYPE_PYOBJ;
+                val = (mp_uint_t)&mp_const_ellipsis_obj;
+                break;
         }
     } else {
         vtype = VTYPE_PYOBJ;
         switch (tok) {
-            case MP_TOKEN_KW_NONE: val = (mp_uint_t)mp_const_none; break;
-            case MP_TOKEN_KW_FALSE: val = (mp_uint_t)mp_const_false; break;
-            case MP_TOKEN_KW_TRUE: val = (mp_uint_t)mp_const_true; break;
+            case MP_TOKEN_KW_NONE:
+                val = (mp_uint_t)mp_const_none;
+                break;
+            case MP_TOKEN_KW_FALSE:
+                val = (mp_uint_t)mp_const_false;
+                break;
+            case MP_TOKEN_KW_TRUE:
+                val = (mp_uint_t)mp_const_true;
+                break;
             default:
                 assert(tok == MP_TOKEN_ELLIPSIS);
-                val = (mp_uint_t)&mp_const_ellipsis_obj; break;
+                val = (mp_uint_t)&mp_const_ellipsis_obj;
+                break;
         }
     }
     emit_post_push_imm(emit, vtype, val);
@@ -1939,7 +1985,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
             }
             #else
-                #error not implemented
+            #error not implemented
             #endif
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {

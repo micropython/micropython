@@ -2,6 +2,7 @@
 
 import micropython
 import sys
+
 try:
     import uio
 except ImportError:
@@ -15,6 +16,7 @@ try:
 except:
     pass
 
+
 def test():
     micropython.heap_lock()
     global global_exc
@@ -22,8 +24,9 @@ def test():
     try:
         raise global_exc
     except StopIteration:
-        print('StopIteration')
+        print("StopIteration")
     micropython.heap_unlock()
+
 
 # call test() with heap allocation disabled
 test()

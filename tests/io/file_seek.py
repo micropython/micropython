@@ -25,10 +25,10 @@ print(f.tell())
 f.close()
 
 # seek closed file
-f = open('io/data/file1', 'r')
+f = open("io/data/file1", "r")
 f.close()
 try:
     f.seek(1)
 except (OSError, ValueError):
     # CPy raises ValueError, uPy raises OSError
-    print('OSError or ValueError')
+    print("OSError or ValueError")

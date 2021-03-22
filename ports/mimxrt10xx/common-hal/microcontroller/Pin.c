@@ -49,9 +49,9 @@ void reset_all_pins(void) {
         claimed_pins[i] = never_reset_pins[i];
     }
     for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
-        if(!never_reset_pins[i]) {
-            IOMUXC->SW_MUX_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->mux_reset;
-            IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->pad_reset;
+        if (!never_reset_pins[i]) {
+            IOMUXC->SW_MUX_CTL_PAD[i] = ((mcu_pin_obj_t *)(mcu_pin_globals.map.table[i].value))->mux_reset;
+            IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t *)(mcu_pin_globals.map.table[i].value))->pad_reset;
         }
     }
 
@@ -66,14 +66,14 @@ void reset_all_pins(void) {
 
 // Since i.MX pins need extra register and reset information to reset properly,
 // resetting pins by number alone has been removed.
-void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     if (pin == NULL) {
         return;
     }
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
-    *(uint32_t*)pin->mux_reg = pin->mux_reset;
-    *(uint32_t*)pin->cfg_reg = pin->pad_reset;
+    *(uint32_t *)pin->mux_reg = pin->mux_reset;
+    *(uint32_t *)pin->cfg_reg = pin->pad_reset;
 
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -95,11 +95,11 @@ void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
-void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pins[pin->mux_idx] = true;
 }
 
-bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         return !neopixel_in_use;
@@ -117,11 +117,11 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     return !claimed_pins[pin->mux_idx];
 }
 
-uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin) {
     return pin->mux_idx; // returns IOMUXC to align with pin table
 }
 
-void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
     claimed_pins[pin->mux_idx] = true;
 
     #ifdef MICROPY_HW_NEOPIXEL
@@ -139,10 +139,10 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
     #endif
 }
 
-void claim_pin(const mcu_pin_obj_t* pin) {
+void claim_pin(const mcu_pin_obj_t *pin) {
     common_hal_mcu_pin_claim(pin);
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
-    common_hal_reset_pin((mcu_pin_obj_t*)(mcu_pin_globals.map.table[pin_no].value));
+    common_hal_reset_pin((mcu_pin_obj_t *)(mcu_pin_globals.map.table[pin_no].value));
 }

@@ -58,7 +58,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_posix_fileio;
@@ -66,7 +66,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case 't':
                 type = &mp_type_vfs_posix_textio;
                 break;
-            #endif
+                #endif
         }
     }
 
@@ -159,7 +159,7 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             }
             return 0;
         case MP_STREAM_SEEK: {
-            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             off_t off = lseek(o->fd, s->offset, s->whence);
             if (off == (off_t)-1) {
                 *errcode = errno;
@@ -213,7 +213,7 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 #endif
 
@@ -233,10 +233,10 @@ const mp_obj_type_t mp_type_vfs_posix_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 
-const mp_obj_vfs_posix_file_t mp_sys_stdin_obj  = {{&mp_type_textio}, STDIN_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_textio}, STDOUT_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_textio}, STDERR_FILENO};
 

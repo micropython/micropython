@@ -43,8 +43,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - name: Translations
-      run: make check-translate
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
@@ -81,6 +79,7 @@ jobs:
       working-directory: tests
     - name: Print failure info
       run: |
+        shopt -s nullglob;
         for exp in *.exp;
         do testbase=$(basename $exp .exp);
         echo -e "\nFAILURE $testbase";
@@ -178,6 +177,7 @@ jobs:
         - "ADM_B_NRF52840_1"
         - "TG-Watch"
         - "adafruit_feather_rp2040"
+        - "adafruit_itsybitsy_rp2040"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -303,6 +303,7 @@ jobs:
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
+        - "rotary_trinkey_m0"
         - "sam32"
         - "same54_xplained"
         - "seeeduino_wio_terminal"
@@ -313,13 +314,16 @@ jobs:
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_pro_micro_rp2040"
         - "sparkfun_qwiic_micro_no_flash"
         - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_thing_plus"
+        - "sparkfun_thing_plus_rp2040"
         - "spresense"
         - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
@@ -443,12 +447,15 @@ jobs:
         board:
         - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_feather_esp32s2_tftback_nopsram"
+        - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "franzininho_wifi_wroom"
+        - "franzininho_wifi_wrover"
         - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
@@ -475,7 +482,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210128
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210304
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)

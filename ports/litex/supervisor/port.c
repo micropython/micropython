@@ -87,7 +87,7 @@ void reset_port(void) {
 
 void reset_to_bootloader(void) {
     reboot_ctrl_write(0xac);
-    for(;;) {}
+    for (;;) {}
 }
 
 void reset_cpu(void) {
@@ -97,7 +97,7 @@ void reset_cpu(void) {
     // simply writing this value" --
     //     https://workshop.fomu.im/en/latest/riscv.html
     reboot_ctrl_write(0xac);
-    for(;;) {}
+    for (;;) {}
 }
 
 bool port_has_fixed_stack(void) {
@@ -129,7 +129,7 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     // Reading 64 bits may take two loads, so turn of interrupts while we do it.
     common_hal_mcu_disable_interrupts();
     uint64_t raw_tick_snapshot = raw_ticks;

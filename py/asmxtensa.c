@@ -65,7 +65,7 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
     // jump over the constants
     asm_xtensa_op_j(as, as->num_const * WORD_SIZE + 4 - 4);
     mp_asm_base_get_cur_to_write_bytes(&as->base, 1); // padding/alignment byte
-    as->const_table = (uint32_t*)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
+    as->const_table = (uint32_t *)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
 
     // adjust the stack-pointer to store a0, a12, a13, a14 and locals, 16-byte aligned
     as->stack_adjust = (((4 + num_locals) * WORD_SIZE) + 15) & ~15;

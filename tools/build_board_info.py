@@ -125,9 +125,7 @@ def get_version_info():
     version = None
     sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
     try:
-        version = (
-            git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
-        )
+        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass
@@ -191,9 +189,7 @@ def create_pr(changes, updated, git_info, user):
     )
 
     create_branch = {"ref": "refs/heads/" + branch_name, "sha": commit_sha}
-    response = github.post(
-        "/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch
-    )
+    response = github.post("/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch)
     if not response.ok and response.json()["message"] != "Reference already exists":
         print("unable to create branch")
         print(response.text)
@@ -207,8 +203,7 @@ def create_pr(changes, updated, git_info, user):
     }
 
     response = github.put(
-        "/repos/{}/circuitpython-org/contents/_data/files.json".format(user),
-        json=update_file,
+        "/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file
     )
     if not response.ok:
         print("unable to post new file")
@@ -257,9 +252,7 @@ def generate_download_info():
 
     languages = get_languages()
 
-    support_matrix = shared_bindings_matrix.support_matrix_by_board(
-        use_branded_name=False
-    )
+    support_matrix = shared_bindings_matrix.support_matrix_by_board(use_branded_name=False)
 
     new_stable = "-" not in new_tag
 

@@ -33,17 +33,17 @@
 #include "py/obj.h"
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 typedef struct  {
     mp_obj_base_t base;
-    uint8_t* report_buffer;
+    uint8_t *report_buffer;
     uint8_t report_id;
     uint8_t report_length;
     uint8_t usage_page;
     uint8_t usage;
-    uint8_t* out_report_buffer;
+    uint8_t *out_report_buffer;
     uint8_t out_report_length;
 } usb_hid_device_obj_t;
 
@@ -51,7 +51,7 @@ typedef struct  {
 extern usb_hid_device_obj_t usb_hid_devices[];
 
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* SHARED_MODULE_USB_HID_DEVICE_H */

@@ -36,7 +36,7 @@
 
 uint64_t next_start_raw_ticks = 0;
 
-//sysclock divisors
+// sysclock divisors
 #define MAGIC_800_INT  900000  // ~1.11 us  -> 1.2  field
 #define MAGIC_800_T0H  2800000  // ~0.36 us -> 0.44 field
 #define MAGIC_800_T1H  1350000  // ~0.74 us -> 0.84 field
@@ -44,25 +44,26 @@ uint64_t next_start_raw_ticks = 0;
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 
-void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels,
-                                uint32_t numBytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels,
+    uint32_t numBytes) {
     uint8_t *p = pixels, *end = p + numBytes, pix = *p++, mask = 0x80;
     uint32_t start = 0;
     uint32_t cyc = 0;
 
-    //assumes 800_000Hz frequency
-    //Theoretical values here are 800_000 -> 1.25us, 2500000->0.4us, 1250000->0.8us
-    //TODO: try to get dynamic weighting working again
+    // assumes 800_000Hz frequency
+    // Theoretical values here are 800_000 -> 1.25us, 2500000->0.4us, 1250000->0.8us
+    // TODO: try to get dynamic weighting working again
     uint32_t sys_freq = HAL_RCC_GetSysClockFreq();
-    uint32_t interval = sys_freq/MAGIC_800_INT;
-    uint32_t t0 = (sys_freq/MAGIC_800_T0H);
-    uint32_t t1 = (sys_freq/MAGIC_800_T1H);
+    uint32_t interval = sys_freq / MAGIC_800_INT;
+    uint32_t t0 = (sys_freq / MAGIC_800_T0H);
+    uint32_t t1 = (sys_freq / MAGIC_800_T1H);
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
-    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
-    GPIO_TypeDef * p_port = pin_port(digitalinout->pin->port);
+    GPIO_TypeDef *p_port = pin_port(digitalinout->pin->port);
     uint32_t p_mask = pin_mask(digitalinout->pin->number);
 
     __disable_irq();
@@ -71,16 +72,22 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     DWT->CYCCNT = 0;
 
-    for(;;) {
+    for (;;) {
         cyc = (pix & mask) ? t1 : t0;
         start = DWT->CYCCNT;
         LL_GPIO_SetOutputPin(p_port, p_mask);
-        while((DWT->CYCCNT - start) < cyc);
+        while ((DWT->CYCCNT - start) < cyc) {
+            ;
+        }
         LL_GPIO_ResetOutputPin(p_port, p_mask);
-        while((DWT->CYCCNT - start) < interval);
-        if(!(mask >>= 1)) {
-            if(p >= end) break;
-            pix       = *p++;
+        while ((DWT->CYCCNT - start) < interval) {
+            ;
+        }
+        if (!(mask >>= 1)) {
+            if (p >= end) {
+                break;
+            }
+            pix = *p++;
             mask = 0x80;
         }
     }

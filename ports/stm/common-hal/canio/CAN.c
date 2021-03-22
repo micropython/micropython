@@ -38,7 +38,7 @@
 STATIC bool reserved_can[MP_ARRAY_SIZE(mcu_can_banks)];
 
 STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
-    for(size_t i = 0; i<sz; i++, table++) {
+    for (size_t i = 0; i < sz; i++, table++) {
         if (periph_index != -1 && periph_index != table->periph_index) {
             continue;
         }
@@ -50,9 +50,8 @@ STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, 
 }
 
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent)
-{
-#define DIV_ROUND(a, b) (((a) + (b)/2) / (b))
+void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+#define DIV_ROUND(a, b) (((a) + (b) / 2) / (b))
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
 
     const uint8_t can_tx_len = MP_ARRAY_SIZE(mcu_can_tx_list);
@@ -110,7 +109,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 
     __HAL_RCC_CAN1_CLK_ENABLE();
 
-    if(hw == CAN2) {
+    if (hw == CAN2) {
         __HAL_RCC_CAN2_CLK_ENABLE();
         self->start_filter_bank = 14;
         self->end_filter_bank = 28;
@@ -126,9 +125,9 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
         .AutoBusOff = ENABLE,
         .Prescaler = divisor,
         .Mode = (loopback ? CAN_MODE_LOOPBACK : 0) | (silent ? CAN_MODE_SILENT_LOOPBACK : 0),
-        .SyncJumpWidth = (sjw-1) << CAN_BTR_SJW_Pos,
-        .TimeSeg1 = (tq_to_sample-2) << CAN_BTR_TS1_Pos,
-        .TimeSeg2 = (tq_after_sample-1) << CAN_BTR_TS2_Pos,
+        .SyncJumpWidth = (sjw - 1) << CAN_BTR_SJW_Pos,
+            .TimeSeg1 = (tq_to_sample - 2) << CAN_BTR_TS1_Pos,
+            .TimeSeg2 = (tq_after_sample - 1) << CAN_BTR_TS2_Pos,
     };
 
     self->periph_index = periph_index;
@@ -149,7 +148,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 
     // Clear every filter enable bit for this can HW
     uint32_t fa1r = self->filter_hw->FA1R;
-    for (int i = self->start_filter_bank; i<self->end_filter_bank; i++) {
+    for (int i = self->start_filter_bank; i < self->end_filter_bank; i++) {
         fa1r &= ~(1 << i);
     }
     self->filter_hw->FA1R = fa1r;
@@ -160,23 +159,19 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
     reserved_can[periph_index] = true;
 }
 
-bool common_hal_canio_can_loopback_get(canio_can_obj_t *self)
-{
+bool common_hal_canio_can_loopback_get(canio_can_obj_t *self) {
     return self->loopback;
 }
 
-int common_hal_canio_can_baudrate_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_baudrate_get(canio_can_obj_t *self) {
     return self->baudrate;
 }
 
-int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self) {
     return (self->handle.Instance->ESR & CAN_ESR_TEC) >> CAN_ESR_TEC_Pos;
 }
 
-int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self) {
     return (self->handle.Instance->ESR & CAN_ESR_REC) >> CAN_ESR_REC_Pos;
 }
 
@@ -213,15 +208,14 @@ bool common_hal_canio_can_auto_restart_get(canio_can_obj_t *self) {
 }
 
 void common_hal_canio_can_auto_restart_set(canio_can_obj_t *self, bool value) {
-    if(value) {
+    if (value) {
         SET_BIT(self->handle.Instance->MCR, CAN_MCR_ABOM);
     } else {
         CLEAR_BIT(self->handle.Instance->MCR, CAN_MCR_ABOM);
     }
 }
 
-void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
-{
+void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in) {
     canio_message_obj_t *message = message_in;
     uint32_t mailbox;
     bool rtr = message->base.type == &canio_remote_transmission_request_type;
@@ -278,8 +272,7 @@ void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
     }
 }
 
-void common_hal_canio_can_deinit(canio_can_obj_t *self)
-{
+void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     if (self->handle.Instance) {
         SET_BIT(self->handle.Instance->MCR, CAN_MCR_RESET);
         while (READ_BIT(self->handle.Instance->MCR, CAN_MCR_RESET)) {
@@ -290,7 +283,7 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self)
 }
 
 void common_hal_canio_reset(void) {
-    for (size_t i=0; i<MP_ARRAY_SIZE(mcu_can_banks); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_can_banks); i++) {
         SET_BIT(mcu_can_banks[i]->MCR, CAN_MCR_RESET);
         reserved_can[i] = 0;
     }

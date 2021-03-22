@@ -40,12 +40,9 @@
 //|
 //|     def __init__(self) -> None:
 //|         """You cannot create an instance of `usb_cdc.Serial`.
-//|
-//|         Serial objects are pre-constructed for each CDC device in the USB
-//|         descriptor and added to the ``usb_cdc.ports`` tuple."""
+//|         The available instances are in the ``usb_cdc.serials`` tuple."""
 //|         ...
 //|
-
 //|     def read(self, size: int = 1) -> bytes:
 //|         """Read at most ``size`` bytes. If ``size`` exceeds the internal buffer size
 //|         only the bytes in the buffer will be read. If `timeout` is > 0 or ``None``,
@@ -62,6 +59,29 @@
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: bytes"""
+//|         ...
+//|
+//|     def readline(self, size: int = -1) -> Optional[bytes]:
+//|         r"""Read a line ending in a newline character ("\\n"), including the newline.
+//|         Return everything readable if no newline is found and ``timeout`` is 0.
+//|         Return ``None`` in case of error.
+//|
+//|         This is a binary stream: the newline character "\\n" cannot be changed.
+//|         If the host computer transmits "\\r" it will also be included as part of the line.
+//|
+//|         :param int size: maximum number of characters to read. ``-1`` means as many as possible.
+//|         :return: the line read
+//|         :rtype: bytes or None"""
+//|         ...
+//|
+//|     def readlines(self) -> List[Optional[bytes]]:
+//|         """Read multiple lines as a list, using `readline()`.
+//|
+//|         .. warning:: If ``timeout`` is ``None``,
+//|           `readlines()` will never return, because there is no way to indicate end of stream.
+//|
+//|         :return: a list of the line read
+//|         :rtype: list"""
 //|         ...
 //|
 //|     def write(self, buf: ReadableBuffer) -> int:
@@ -124,7 +144,12 @@ STATIC mp_uint_t usb_cdc_serial_ioctl_stream(mp_obj_t self_in, mp_uint_t request
 }
 
 //|     connected: bool
-//|     """True if this Serial is connected to a host. (read-only)"""
+//|     """True if this Serial is connected to a host. (read-only)
+//|
+//|     .. note:: The host is considered to be connected if it is asserting DTR (Data Terminal Ready).
+//|       Most terminal programs and ``pyserial`` assert DTR when opening a serial connection.
+//|       However, the C# ``SerialPort`` API does not. You must set ``SerialPort.DtrEnable``.
+//|     """
 //|
 STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
     usb_cdc_serial_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -289,5 +314,5 @@ const mp_obj_type_t usb_cdc_serial_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &usb_cdc_serial_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&usb_cdc_serial_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&usb_cdc_serial_locals_dict,
 };

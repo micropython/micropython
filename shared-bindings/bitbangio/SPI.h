@@ -30,15 +30,15 @@
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/bitbangio/types.h"
+#include "shared-module/bitbangio/SPI.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t bitbangio_spi_type;
 
 // Construct an underlying SPI object.
 extern void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
-    const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-    const mcu_pin_obj_t * miso);
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso);
 
 extern void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self);
 extern bool shared_module_bitbangio_spi_deinited(bitbangio_spi_obj_t *self);
