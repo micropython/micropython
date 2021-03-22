@@ -88,7 +88,7 @@ safe_mode_t port_init(void) {
     // Set brown out.
 
     // Copy all of the "tightly coupled memory" code and data to run from RAM.
-    // This let's us use the 16k cache for dynamically used data and code.
+    // This lets us use the 16k cache for dynamically used data and code.
     // We must do this before we try and call any of its code or load the data.
     for (uint32_t i = 0; i < ((size_t)&_ld_itcm_size) / 4; i++) {
         (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];

@@ -69,7 +69,11 @@ void supervisor_flash_init(void) {
     uint8_t data[4];
     flash_do_cmd(cmd, data, 4);
     uint8_t power_of_two = 21;
-    if (data[3] >= 20 && data[3] < 30) {
+    // Flash must be at least 2MB (1 << 21) because we use the first 1MB for the
+    // CircuitPython core. We validate the range because Adesto Tech flash chips
+    // don't return the correct value. So, we default to 2MB which will work for
+    // larger chips, it just won't use all of the space.
+    if (data[3] >= 21 && data[3] < 30) {
         power_of_two = data[3];
     }
     _flash_size = 1 << power_of_two;

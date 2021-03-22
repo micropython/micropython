@@ -6,11 +6,11 @@ from jinja2 import Template
 
 
 def main(input_template: pathlib.Path, output_path: pathlib.Path, skus: str = typer.Argument("")):
-    if ", " in skus:
-        skus = skus.split(", ")
+    if "," in skus:
+        skus = skus.split(",")
     else:
         skus = [skus]
-    skus = ['sku="{}"'.format(f) for f in skus]
+    skus = ['sku="{}"'.format(f.strip()) for f in skus]
     flashes = cascadetoml.filter_toml(pathlib.Path("../../data/nvm.toml"), skus)
 
     if len(skus) == 0:
