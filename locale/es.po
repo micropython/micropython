@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-19 16:35+0000\n"
+"PO-Revision-Date: 2021-03-21 21:29+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -351,7 +351,7 @@ msgstr "Todos los periféricos UART están siendo usados"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "Todos los canales esta en uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"

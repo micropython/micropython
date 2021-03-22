@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-16 14:54+0000\n"
+"PO-Revision-Date: 2021-03-21 21:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -351,7 +351,7 @@ msgstr "Tous les périphériques UART sont utilisés"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "Tout les canaux sont utilisés"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -479,7 +479,7 @@ msgstr "Au-dessous de la fréquence d'images minimale"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "Bit clock et word select doivent êtres sur des broches séquentielles"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1138,10 +1138,13 @@ msgstr "Taille du programme d'initialisation non valide"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
+"Direction initiale de \"set pin\" est en conflit avec la direction initiale "
+"de \"out pin\""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
+"État initial de \"set pin\" est en conflit avec l'état initial de \"out pin\""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1758,7 +1761,7 @@ msgstr "PWM slice déja utilisée"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "Canal A de PWM slice est utilisé"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
@@ -3294,7 +3297,7 @@ msgstr "arguments invalides"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
 
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
@@ -3307,12 +3310,12 @@ msgstr "index invalide pour dupterm"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
+msgstr "taille d'élément %d est invalide pour bits_per_pixel %d\n"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "element_size %d est invalide, doit être 1, 2 ou 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3854,7 +3857,7 @@ msgstr "les deux boutons appuyés lors du démarrage.\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
-msgstr ""
+msgstr "masque pull est en conflit avec les masques de direction"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
