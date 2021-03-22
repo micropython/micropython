@@ -1,5 +1,6 @@
 # cmdline: -v -v
 # test printing of all bytecodes
+# fmt: off
 
 def f():
     # constants

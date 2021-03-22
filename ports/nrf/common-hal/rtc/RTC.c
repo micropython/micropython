@@ -49,8 +49,9 @@ __attribute__((section(".uninitialized"))) static uint32_t rtc_offset[3];
 
 void common_hal_rtc_init(void) {
     // If the prefix and suffix are not valid, zero-initialize the RTC offset.
-    if ((rtc_offset[0] != RTC_OFFSET_CHECK_PREFIX) || (rtc_offset[2] != RTC_OFFSET_CHECK_SUFFIX))
+    if ((rtc_offset[0] != RTC_OFFSET_CHECK_PREFIX) || (rtc_offset[2] != RTC_OFFSET_CHECK_SUFFIX)) {
         rtc_offset[1] = 0;
+    }
 }
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
@@ -62,7 +63,7 @@ void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
     uint64_t ticks_s = port_get_raw_ticks(NULL) / 1024;
     uint32_t epoch_s = timeutils_seconds_since_2000(
         tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
-    );
+        );
     rtc_offset[1] = epoch_s - ticks_s;
 
     // Set the prefix and suffix in order to indicate the time is valid.  This

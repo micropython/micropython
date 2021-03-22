@@ -2,11 +2,13 @@
 
 from micropython import const
 
+
 def test_syntax(code):
     try:
         exec(code)
     except SyntaxError:
         print("SyntaxError")
+
 
 # argument not a constant
 test_syntax("a = const(x)")

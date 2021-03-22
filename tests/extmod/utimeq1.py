@@ -13,11 +13,16 @@ MAX = ticks_add(0, -1)
 MODULO_HALF = MAX // 2 + 1
 
 if DEBUG:
+
     def dprint(*v):
         print(*v)
+
+
 else:
+
     def dprint(*v):
         pass
+
 
 # Try not to crash on invalid data
 h = utimeq(10)
@@ -69,21 +74,24 @@ try:
 except IndexError:
     pass
 
+
 def pop_all(h):
     l = []
     while h:
         item = [0, 0, 0]
         h.pop(item)
-        #print("!", item)
+        # print("!", item)
         l.append(tuple(item))
     dprint(l)
     return l
 
+
 def add(h, v):
     h.push(v, 0, 0)
     dprint("-----")
-    #h.dump()
+    # h.dump()
     dprint("-----")
+
 
 h = utimeq(10)
 add(h, 0)
@@ -98,6 +106,7 @@ for i in range(len(l) - 1):
     diff = ticks_diff(l[i + 1][0], l[i][0])
     assert diff > 0
 
+
 def edge_case(edge, offset):
     h = utimeq(10)
     add(h, ticks_add(0, offset))
@@ -107,6 +116,7 @@ def edge_case(edge, offset):
     diff = ticks_diff(l[1][0], l[0][0])
     dprint(diff, diff > 0)
     return diff
+
 
 dprint("===")
 diff = edge_case(MODULO_HALF - 1, 0)

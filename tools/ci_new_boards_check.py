@@ -11,17 +11,19 @@ import yaml
 
 import build_board_info
 
-workflow_file = '.github/workflows/build.yml'
+workflow_file = ".github/workflows/build.yml"
 
 # Get boards in json format
 boards_info_json = build_board_info.get_board_mapping()
 
 # Get all the boards out of the json format
-info_boards = [board for board in boards_info_json.keys() if not boards_info_json[board].get("alias", False)]
+info_boards = [
+    board for board in boards_info_json.keys() if not boards_info_json[board].get("alias", False)
+]
 
 # We need to know the path of the workflow file
 base_path = os.path.dirname(__file__)
-yml_path = os.path.abspath(os.path.join(base_path, '..', workflow_file))
+yml_path = os.path.abspath(os.path.join(base_path, "..", workflow_file))
 
 # Loading board list based on build jobs in the workflow file.
 ci_boards = []
@@ -34,8 +36,8 @@ for job in workflow["jobs"]:
         continue
     job_boards = workflow["jobs"][job]["strategy"]["matrix"]["board"]
     if job_boards != sorted(job_boards):
-        print("Boards for job \"{}\" not sorted. Must be:".format(job))
-        print("        - \"" + "\"\n        - \"".join(sorted(job_boards)) + "\"")
+        print('Boards for job "{}" not sorted. Must be:'.format(job))
+        print('        - "' + '"\n        - "'.join(sorted(job_boards)) + '"')
         ok = False
     ci_boards.extend(job_boards)
 
@@ -47,7 +49,7 @@ missing_boards = set(info_boards) - set(ci_boards)
 
 if missing_boards:
     ok = False
-    print('Boards missing in {}:'.format(workflow_file))
+    print("Boards missing in {}:".format(workflow_file))
     for board in missing_boards:
         print(board)
 

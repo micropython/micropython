@@ -12,6 +12,8 @@ gc.collect()
 print(lst)
 
 # test a deep object
-lst = [[[[[(i, j, k, l)] for i in range(3)] for j in range(3)] for k in range(3)] for l in range(3)]
+lst = [
+    [[[[(i, j, k, l)] for i in range(3)] for j in range(3)] for k in range(3)] for l in range(3)
+]
 gc.collect()
 print(lst)

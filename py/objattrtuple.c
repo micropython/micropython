@@ -51,7 +51,7 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 STATIC void mp_obj_attrtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_tuple_t *o = MP_OBJ_TO_PTR(o_in);
-    const qstr *fields = (const qstr*)MP_OBJ_TO_PTR(o->items[o->len]);
+    const qstr *fields = (const qstr *)MP_OBJ_TO_PTR(o->items[o->len]);
     mp_obj_attrtuple_print_helper(print, fields, o);
 }
 
@@ -60,7 +60,7 @@ STATIC void mp_obj_attrtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // load attribute
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         size_t len = self->len;
-        const qstr *fields = (const qstr*)MP_OBJ_TO_PTR(self->items[len]);
+        const qstr *fields = (const qstr *)MP_OBJ_TO_PTR(self->items[len]);
         for (size_t i = 0; i < len; i++) {
             if (fields[i] == attr) {
                 dest[0] = self->items[i];

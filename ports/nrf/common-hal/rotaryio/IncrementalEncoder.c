@@ -36,15 +36,20 @@ static rotaryio_incrementalencoder_obj_t *_objs[NUMBER_OF_PINS];
 
 static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     rotaryio_incrementalencoder_obj_t *self = _objs[pin];
-    if (!self) return;
+    if (!self) {
+        return;
+    }
 
     // reads a state 0 .. 3 *in order*.
     uint8_t new_state = nrf_gpio_pin_read(self->pin_a);
     new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
 
     uint8_t change = (new_state - self->state) & 0x03;
-    if (change == 1) self->quarter++;
-    else if (change == 3) self->quarter--;
+    if (change == 1) {
+        self->quarter++;
+    } else if (change == 3) {
+        self->quarter--;
+    }
     // ignore other state transitions
 
     self->state = new_state;
@@ -60,8 +65,8 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     }
 }
 
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
 
     self->pin_a = pin_a->number;
     self->pin_b = pin_b->number;
@@ -85,11 +90,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_b);
 }
 
-bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
+bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
     return self->pin_a == NO_PIN;
 }
 
-void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
+void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
@@ -106,11 +111,11 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     self->pin_b = NO_PIN;
 }
 
-mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
+mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
     return self->position;
 }
 
-void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
-        mp_int_t new_position) {
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
+    mp_int_t new_position) {
     self->position = new_position;
 }

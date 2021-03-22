@@ -11,10 +11,13 @@ desc = {
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "arr3": (uctypes.ARRAY | 2, uctypes.UINT16 | 2),
     "arr4": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0, "w": uctypes.UINT16 | 1}),
-    "sub": (0, {
-        'b1': uctypes.BFUINT8 | 0 | 4 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-        'b2': uctypes.BFUINT8 | 0 | 0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-    }),
+    "sub": (
+        0,
+        {
+            "b1": uctypes.BFUINT8 | 0 | 4 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+            "b2": uctypes.BFUINT8 | 0 | 0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+        },
+    ),
 }
 
 data = bytearray(b"01234567")

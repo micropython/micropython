@@ -18,4 +18,4 @@ def test(peer_addr):
 
 
 if __name__ == "__main__":
-    test(socket.getaddrinfo('micropython.org', 443)[0][-1])
+    test(socket.getaddrinfo("micropython.org", 443)[0][-1])

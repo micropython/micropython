@@ -30,10 +30,10 @@
 
 // This macro is used to simplify pin definition in boards/<board>/pins.c
 #define PIN(p_number) \
-const mcu_pin_obj_t pin_GPIO## p_number = { \
-    { &mcu_pin_type }, \
-    .number = p_number \
-}
+    const mcu_pin_obj_t pin_GPIO##p_number = { \
+        { &mcu_pin_type }, \
+        .number = p_number \
+    }
 
 PIN(0);
 PIN(1);

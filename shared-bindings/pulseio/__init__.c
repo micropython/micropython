@@ -62,5 +62,5 @@ STATIC MP_DEFINE_CONST_DICT(pulseio_module_globals, pulseio_module_globals_table
 
 const mp_obj_module_t pulseio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&pulseio_module_globals,
+    .globals = (mp_obj_dict_t *)&pulseio_module_globals,
 };

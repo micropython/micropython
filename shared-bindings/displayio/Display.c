@@ -114,15 +114,15 @@
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
-                const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
-                ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
-                ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
-                ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
-                ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
-                ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
-                ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
-                ARG_SH1107_addressing };
+           ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
+           ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
+           ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
+           ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
+           ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+           ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
+           ARG_SH1107_addressing };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -160,7 +160,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    const mcu_pin_obj_t* backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
+    const mcu_pin_obj_t *backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
 
     mp_float_t brightness = mp_obj_get_float(args[ARG_brightness].u_obj);
 
@@ -170,7 +170,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     }
 
     primary_display_t *disp = allocate_display_or_raise();
-    displayio_display_obj_t *self = &disp->display;;
+    displayio_display_obj_t *self = &disp->display;
+    ;
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         self,
@@ -200,7 +201,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
+static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
     mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &displayio_display_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
@@ -215,7 +216,7 @@ static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
 //|
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = native_display(self_in);
-    displayio_group_t* group = NULL;
+    displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
         group = MP_OBJ_TO_PTR(native_group(group_in));
     }
@@ -268,8 +269,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     uint32_t target_ms_per_frame;
     if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
         target_ms_per_frame = 0xffffffff;
-    }
-    else {
+    } else {
         target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
     }
 
@@ -467,40 +467,40 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-      mp_raise_ValueError(translate("Buffer is not a bytearray."));
+        mp_raise_ValueError(translate("Buffer is not a bytearray."));
     }
     if (self->core.colorspace.depth != 16) {
-      mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+        mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
 
     displayio_area_t area = {
-      .x1 = 0,
-      .y1 = y,
-      .x2 = self->core.width,
-      .y2 = y + 1
+        .x1 = 0,
+        .y1 = y,
+        .x2 = self->core.width,
+        .y2 = y + 1
     };
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t buffer_size = self->core.width / pixels_per_word;
     uint16_t pixels_per_buffer = displayio_area_size(&area);
     if (pixels_per_buffer % pixels_per_word) {
-      buffer_size += 1;
+        buffer_size += 1;
     }
 
     uint32_t *result_buffer = bufinfo.buf;
     size_t result_buffer_size = bufinfo.len;
 
     if (result_buffer_size >= (buffer_size * 4)) {
-      volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
-      uint32_t mask[mask_length];
+        volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+        uint32_t mask[mask_length];
 
-      for (uint16_t k = 0; k < mask_length; k++) {
-        mask[k] = 0x00000000;
-      }
+        for (uint16_t k = 0; k < mask_length; k++) {
+            mask[k] = 0x00000000;
+        }
 
-      displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
-      return result;
+        displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
+        return result;
     } else {
-      mp_raise_ValueError(translate("Buffer is too small"));
+        mp_raise_ValueError(translate("Buffer is too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_row_obj, 1, displayio_display_obj_fill_row);
@@ -526,5 +526,5 @@ const mp_obj_type_t displayio_display_type = {
     { &mp_type_type },
     .name = MP_QSTR_Display,
     .make_new = displayio_display_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_display_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_display_locals_dict,
 };

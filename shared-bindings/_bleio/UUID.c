@@ -228,23 +228,23 @@ STATIC MP_DEFINE_CONST_DICT(bleio_uuid_locals_dict, bleio_uuid_locals_dict_table
 STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-    case MP_UNARY_OP_HASH:
-        if (common_hal_bleio_uuid_get_size(self) == 16) {
-            return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_uuid16(self));
-        } else {
-            union {
-                uint8_t uuid128_bytes[16];
-                uint16_t uuid128_uint16[8];
-            } uuid128;
-            common_hal_bleio_uuid_get_uuid128(self, uuid128.uuid128_bytes);
-            int hash = 0;
-            for (size_t i = 0; i < MP_ARRAY_SIZE(uuid128.uuid128_uint16); i++) {
-                hash += uuid128.uuid128_uint16[i];
+        case MP_UNARY_OP_HASH:
+            if (common_hal_bleio_uuid_get_size(self) == 16) {
+                return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_uuid16(self));
+            } else {
+                union {
+                    uint8_t uuid128_bytes[16];
+                    uint16_t uuid128_uint16[8];
+                } uuid128;
+                common_hal_bleio_uuid_get_uuid128(self, uuid128.uuid128_bytes);
+                int hash = 0;
+                for (size_t i = 0; i < MP_ARRAY_SIZE(uuid128.uuid128_uint16); i++) {
+                    hash += uuid128.uuid128_uint16[i];
+                }
+                return MP_OBJ_NEW_SMALL_INT(hash);
             }
-            return MP_OBJ_NEW_SMALL_INT(hash);
-        }
-    default:
-        return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -260,7 +260,7 @@ STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_
                 if (common_hal_bleio_uuid_get_size(lhs_in) == 16 &&
                     common_hal_bleio_uuid_get_size(rhs_in) == 16) {
                     return mp_obj_new_bool(common_hal_bleio_uuid_get_uuid16(lhs_in) ==
-                                           common_hal_bleio_uuid_get_uuid16(rhs_in));
+                        common_hal_bleio_uuid_get_uuid16(rhs_in));
                 }
                 uint8_t lhs[16];
                 uint8_t rhs[16];
@@ -285,16 +285,16 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         uint8_t uuid128[16];
         common_hal_bleio_uuid_get_uuid128(self, uuid128);
         mp_printf(print, "UUID('"
-                  "%02x%02x%02x%02x-"
-                  "%02x%02x-"
-                  "%02x%02x-"
-                  "%02x%02x-"
-                  "%02x%02x%02x%02x%02x%02x')",
-                  uuid128[15], uuid128[14], uuid128[13], uuid128[12],
-                  uuid128[11], uuid128[10],
-                  uuid128[9], uuid128[8],
-                  uuid128[7], uuid128[6],
-                  uuid128[5], uuid128[4], uuid128[3], uuid128[2], uuid128[1], uuid128[0]);
+            "%02x%02x%02x%02x-"
+            "%02x%02x-"
+            "%02x%02x-"
+            "%02x%02x-"
+            "%02x%02x%02x%02x%02x%02x')",
+            uuid128[15], uuid128[14], uuid128[13], uuid128[12],
+            uuid128[11], uuid128[10],
+            uuid128[9], uuid128[8],
+            uuid128[7], uuid128[6],
+            uuid128[5], uuid128[4], uuid128[3], uuid128[2], uuid128[1], uuid128[0]);
     }
 }
 
@@ -305,5 +305,5 @@ const mp_obj_type_t bleio_uuid_type = {
     .make_new = bleio_uuid_make_new,
     .unary_op = bleio_uuid_unary_op,
     .binary_op = bleio_uuid_binary_op,
-    .locals_dict = (mp_obj_dict_t*)&bleio_uuid_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bleio_uuid_locals_dict,
 };

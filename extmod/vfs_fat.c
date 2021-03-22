@@ -136,7 +136,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
-            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+            t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
         if (fno.fattrib & AM_DIR) {
             // dir
@@ -234,9 +234,9 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
     if ((fno.fattrib & AM_DIR) != 0 &&
-            strlen(new_path) > strlen(old_path) &&
-            new_path[strlen(old_path)] == '/' &&
-            strncmp(old_path, new_path, strlen(old_path)) == 0) {
+        strlen(new_path) > strlen(old_path) &&
+        new_path[strlen(old_path)] == '/' &&
+        strncmp(old_path, new_path, strlen(old_path)) == 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
@@ -324,11 +324,11 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
     // On non-longint builds, the number of seconds since 1970 (epoch) is too
     // large to fit in a smallint, so just return 31-DEC-1999 (0).
     mp_obj_t seconds = MP_OBJ_NEW_SMALL_INT(946684800);
-#else
+    #else
     mp_obj_t seconds = mp_obj_new_int_from_uint(
         timeutils_seconds_since_epoch(
             1980 + ((fno.fdate >> 9) & 0x7f),
@@ -338,7 +338,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
             (fno.ftime >> 5) & 0x3f,
             2 * (fno.ftime & 0x1f)
             ));
-#endif
+    #endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -434,7 +434,7 @@ STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     const char *label_str = mp_obj_str_get_str(label_in);
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     if (res != FR_OK) {
-        if(res == FR_WRITE_PROTECTED) {
+        if (res == FR_WRITE_PROTECTED) {
             mp_raise_msg(&mp_type_OSError, translate("Read-only filesystem"));
         }
         mp_raise_OSError(fresult_to_errno_table[res]);
@@ -467,9 +467,9 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&fat_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_fat_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
-#if MICROPY_FATFS_USE_LABEL
+    #if MICROPY_FATFS_USE_LABEL
     { MP_ROM_QSTR(MP_QSTR_label), MP_ROM_PTR(&fat_vfs_label_obj) },
-#endif
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 
@@ -483,7 +483,7 @@ const mp_obj_type_t mp_fat_vfs_type = {
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
     .protocol = &fat_vfs_proto,
-    .locals_dict = (mp_obj_dict_t*)&fat_vfs_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
 
 };
 

@@ -45,7 +45,7 @@ void peripherals_timer_reset(void) {
     }
 }
 
-void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer) {
+void peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) {
     bool break_loop = false;
 
     // get free timer
@@ -63,7 +63,9 @@ void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer
                 return;
             }
         }
-        if (break_loop) {break;}
+        if (break_loop) {
+            break;
+        }
     }
 
     // initialize timer module
@@ -71,6 +73,6 @@ void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer
     timer_set_counter_value(timer->group, timer->idx, 0);
 }
 
-void peripherals_timer_deinit(timer_index_t * timer) {
+void peripherals_timer_deinit(timer_index_t *timer) {
     timer_deinit(timer->group, timer->idx);
 }

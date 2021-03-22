@@ -39,13 +39,13 @@ typedef struct {
     uint16_t height;
     uint16_t half_width;
     uint16_t half_height;
-    uint16_t* data;
+    uint16_t *data;
     bool mirror_x;
     bool mirror_y;
     displayio_area_t dirty_area;
 } displayio_shape_t;
 
 void displayio_shape_finish_refresh(displayio_shape_t *self);
-displayio_area_t* displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t* tail);
+displayio_area_t *displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t *tail);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H

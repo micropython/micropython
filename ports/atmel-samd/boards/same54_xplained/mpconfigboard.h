@@ -9,9 +9,9 @@
 
 // These are pins not to reset.
 // QSPI Data pins
-#define MICROPY_PORT_A ( PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 )
+#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11)
 // QSPI CS, and QSPI SCK
-#define MICROPY_PORT_B ( PORT_PB10 | PORT_PB11 )
+#define MICROPY_PORT_B (PORT_PB10 | PORT_PB11)
 #define MICROPY_PORT_C (0)
 #define MICROPY_PORT_D (0)
 

@@ -37,8 +37,8 @@
 #define MAX_BAUDRATE (common_hal_mcu_get_clock_frequency() / 48)
 
 void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso) {
     digitalinout_result_t result = common_hal_digitalio_digitalinout_construct(&self->clock, clock);
     if (result != DIGITALINOUT_OK) {
         mp_raise_ValueError(translate("Clock pin init failed."));
@@ -90,7 +90,7 @@ void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self) {
 }
 
 void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     self->delay_half = 500000 / baudrate;
     // round delay_half up so that: actual_baudrate <= requested_baudrate
     if (500000 % baudrate != 0) {
@@ -241,7 +241,7 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
 
 // transfer
 bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len) {
-    if (len > 0 && (!self->has_mosi || !self->has_miso) ) {
+    if (len > 0 && (!self->has_mosi || !self->has_miso)) {
         mp_raise_ValueError(translate("Cannot transfer without MOSI and MISO pins."));
     }
     uint32_t delay_half = self->delay_half;

@@ -31,23 +31,23 @@
 
 extern const mp_obj_type_t aesio_aes_type;
 
-void common_hal_aesio_aes_construct(aesio_aes_obj_t* self,
-                              const uint8_t* key,
-                              uint32_t key_length,
-                              const uint8_t* iv,
-                              int mode,
-                              int counter);
-void common_hal_aesio_aes_rekey(aesio_aes_obj_t* self,
-                          const uint8_t* key,
-                          uint32_t key_length,
-                          const uint8_t* iv);
-void common_hal_aesio_aes_set_mode(aesio_aes_obj_t* self,
-                             int mode);
-void common_hal_aesio_aes_encrypt(aesio_aes_obj_t* self,
-                            uint8_t* buffer,
-                            size_t len);
-void common_hal_aesio_aes_decrypt(aesio_aes_obj_t* self,
-                            uint8_t* buffer,
-                            size_t len);
+void common_hal_aesio_aes_construct(aesio_aes_obj_t *self,
+    const uint8_t *key,
+    uint32_t key_length,
+    const uint8_t *iv,
+    int mode,
+    int counter);
+void common_hal_aesio_aes_rekey(aesio_aes_obj_t *self,
+    const uint8_t *key,
+    uint32_t key_length,
+    const uint8_t *iv);
+void common_hal_aesio_aes_set_mode(aesio_aes_obj_t *self,
+    int mode);
+void common_hal_aesio_aes_encrypt(aesio_aes_obj_t *self,
+    uint8_t *buffer,
+    size_t len);
+void common_hal_aesio_aes_decrypt(aesio_aes_obj_t *self,
+    uint8_t *buffer,
+    size_t len);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AESIO_H

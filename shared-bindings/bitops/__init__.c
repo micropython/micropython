@@ -97,5 +97,5 @@ STATIC MP_DEFINE_CONST_DICT(bitops_module_globals, bitops_module_globals_table);
 
 const mp_obj_module_t bitops_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&bitops_module_globals,
+    .globals = (mp_obj_dict_t *)&bitops_module_globals,
 };

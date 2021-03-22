@@ -40,8 +40,10 @@ void pew_tick(void) {
     static uint8_t last_pressed = 0;
     digitalio_digitalinout_obj_t *pin;
 
-    pew_obj_t* pew = MP_STATE_VM(pew_singleton);
-    if (!pew) { return; }
+    pew_obj_t *pew = MP_STATE_VM(pew_singleton);
+    if (!pew) {
+        return;
+    }
 
     pin = MP_OBJ_TO_PTR(pew->cols[col]);
     ++col;
@@ -69,7 +71,7 @@ void pew_tick(void) {
                 break;
             case 2:
                 if (turn == 2 || turn == 5 || turn == 8 || turn == 11) {
-                        value = true;
+                    value = true;
                 }
                 break;
             case 1:

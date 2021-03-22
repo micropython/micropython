@@ -41,15 +41,15 @@
 #include <stdint.h>
 #include <string.h>
 
-void common_hal_displayio_display_construct(displayio_display_obj_t* self,
-        mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
-        uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
-        uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word, uint8_t set_column_command,
-        uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
-        uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
-        uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
-        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
-        bool backlight_on_high, bool SH1107_addressing) {
+void common_hal_displayio_display_construct(displayio_display_obj_t *self,
+    mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
+    uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
+    uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word, uint8_t set_column_command,
+    uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
+    uint8_t *init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t *backlight_pin,
+    uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
+    bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
+    bool backlight_on_high, bool SH1107_addressing) {
 
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
@@ -111,7 +111,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         // Avoid PWM types and functions when the module isn't enabled
-        #if (CIRCUITPY_PULSEIO)
+        #if (CIRCUITPY_PWMIO)
         pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
@@ -141,47 +141,47 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
-bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
+bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
     return displayio_display_core_show(&self->core, root_group);
 }
 
-uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self){
+uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
     return displayio_display_core_get_width(&self->core);
 }
 
-uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self){
+uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t *self) {
     return displayio_display_core_get_height(&self->core);
 }
 
-bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self) {
+bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t *self) {
     return self->auto_brightness;
 }
 
-void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness) {
+void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t *self, bool auto_brightness) {
     self->auto_brightness = auto_brightness;
 }
 
-mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self) {
+mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t *self) {
     return self->current_brightness;
 }
 
-bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness) {
+bool common_hal_displayio_display_set_brightness(displayio_display_obj_t *self, mp_float_t brightness) {
     self->updating_backlight = true;
-    if (!self->backlight_on_high){
-        brightness = 1.0-brightness;
+    if (!self->backlight_on_high) {
+        brightness = 1.0 - brightness;
     }
     bool ok = false;
 
     // Avoid PWM types and functions when the module isn't enabled
-    #if (CIRCUITPY_PULSEIO)
+    #if (CIRCUITPY_PWMIO)
     bool ispwm = (self->backlight_pwm.base.type == &pwmio_pwmout_type) ? true : false;
     #else
     bool ispwm = false;
     #endif
 
     if (ispwm) {
-        #if (CIRCUITPY_PULSEIO)
-        common_hal_pwmio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t) (0xffff * brightness));
+        #if (CIRCUITPY_PWMIO)
+        common_hal_pwmio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t)(0xffff * brightness));
         ok = true;
         #else
         ok = false;
@@ -193,7 +193,7 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
         ok = displayio_display_core_begin_transaction(&self->core);
         if (ok) {
             if (self->data_as_commands) {
-                uint8_t set_brightness[2] = {self->brightness_command, (uint8_t) (0xff * brightness)};
+                uint8_t set_brightness[2] = {self->brightness_command, (uint8_t)(0xff * brightness)};
                 self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, set_brightness, 2);
             } else {
                 uint8_t command = self->brightness_command;
@@ -212,11 +212,11 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
     return ok;
 }
 
-mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t* self) {
+mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self) {
     return self->core.bus;
 }
 
-STATIC const displayio_area_t* _get_refresh_areas(displayio_display_obj_t *self) {
+STATIC const displayio_area_t *_get_refresh_areas(displayio_display_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -226,14 +226,14 @@ STATIC const displayio_area_t* _get_refresh_areas(displayio_display_obj_t *self)
     return NULL;
 }
 
-STATIC void _send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
+STATIC void _send_pixels(displayio_display_obj_t *self, uint8_t *pixels, uint32_t length) {
     if (!self->data_as_commands) {
         self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
     self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
 }
 
-STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t* area) {
+STATIC bool _refresh_area(displayio_display_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -294,8 +294,8 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
         remaining_rows -= rows_per_buffer;
 
         displayio_display_core_set_region_to_update(&self->core, self->set_column_command,
-              self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false,
-              &subrectangle, self->SH1107_addressing);
+            self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false,
+            &subrectangle, self->SH1107_addressing);
 
         uint16_t subrectangle_size_bytes;
         if (self->core.colorspace.depth >= 8) {
@@ -315,7 +315,7 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
         }
 
         displayio_display_core_begin_transaction(&self->core);
-        _send_pixels(self, (uint8_t*) buffer, subrectangle_size_bytes);
+        _send_pixels(self, (uint8_t *)buffer, subrectangle_size_bytes);
         displayio_display_core_end_transaction(&self->core);
 
         // TODO(tannewt): Make refresh displays faster so we don't starve other
@@ -325,12 +325,12 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
     return true;
 }
 
-STATIC void _refresh_display(displayio_display_obj_t* self) {
+STATIC void _refresh_display(displayio_display_obj_t *self) {
     if (!displayio_display_core_start_refresh(&self->core)) {
         // A refresh on this bus is already in progress.  Try next display.
         return;
     }
-    const displayio_area_t* current_area = _get_refresh_areas(self);
+    const displayio_area_t *current_area = _get_refresh_areas(self);
     while (current_area != NULL) {
         _refresh_area(self, current_area);
         current_area = current_area->next;
@@ -338,10 +338,10 @@ STATIC void _refresh_display(displayio_display_obj_t* self) {
     displayio_display_core_finish_refresh(&self->core);
 }
 
-void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, int rotation){
+void common_hal_displayio_display_set_rotation(displayio_display_obj_t *self, int rotation) {
     bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
     bool will_transposed = (rotation == 90 || rotation == 270);
-    if(transposed != will_transposed) {
+    if (transposed != will_transposed) {
         int tmp = self->core.width;
         self->core.width = self->core.height;
         self->core.height = tmp;
@@ -356,13 +356,13 @@ void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, in
     }
 }
 
-uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self){
+uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t *self) {
     return self->core.rotation;
 }
 
 
-bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
-    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != 0xffffffff) ) {
+bool common_hal_displayio_display_refresh(displayio_display_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
+    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != 0xffffffff)) {
         uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
@@ -386,12 +386,12 @@ bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_
     return true;
 }
 
-bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t* self) {
+bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t *self) {
     return self->auto_refresh;
 }
 
-void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t* self,
-                                                   bool auto_refresh) {
+void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t *self,
+    bool auto_refresh) {
     self->first_manual_refresh = !auto_refresh;
     if (auto_refresh != self->auto_refresh) {
         if (auto_refresh) {
@@ -403,21 +403,21 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t* self
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(displayio_display_obj_t* self) {
+STATIC void _update_backlight(displayio_display_obj_t *self) {
     if (!self->auto_brightness || self->updating_backlight) {
         return;
     }
     if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
         return;
     }
-    // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
+    // TODO(tannewt): Fade the backlight based on its existing value and a target value. The target
     // should account for ambient light when possible.
     common_hal_displayio_display_set_brightness(self, 1.0);
 
     self->last_backlight_refresh = supervisor_ticks_ms64();
 }
 
-void displayio_display_background(displayio_display_obj_t* self) {
+void displayio_display_background(displayio_display_obj_t *self) {
     _update_backlight(self);
 
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
@@ -425,10 +425,10 @@ void displayio_display_background(displayio_display_obj_t* self) {
     }
 }
 
-void release_display(displayio_display_obj_t* self) {
+void release_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, false);
     release_display_core(&self->core);
-    #if (CIRCUITPY_PULSEIO)
+    #if (CIRCUITPY_PWMIO)
     if (self->backlight_pwm.base.type == &pwmio_pwmout_type) {
         common_hal_pwmio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pwmio_pwmout_deinit(&self->backlight_pwm);
@@ -440,12 +440,12 @@ void release_display(displayio_display_obj_t* self) {
     #endif
 }
 
-void reset_display(displayio_display_obj_t* self) {
+void reset_display(displayio_display_obj_t *self) {
     common_hal_displayio_display_set_auto_refresh(self, true);
     self->auto_brightness = true;
     common_hal_displayio_display_show(self, NULL);
 }
 
-void displayio_display_collect_ptrs(displayio_display_obj_t* self) {
+void displayio_display_collect_ptrs(displayio_display_obj_t *self) {
     displayio_display_core_collect_ptrs(&self->core);
 }

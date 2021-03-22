@@ -1,4 +1,5 @@
 import sys
+
 try:
     import uctypes
 except ImportError:
@@ -30,6 +31,6 @@ assert S.ptr[1] == ord("1")
 print(hex(S.ptr16[0]))
 assert hex(S.ptr16[0]) == "0x3130"
 print(S.ptr2[0].b, S.ptr2[1].b)
-print (S.ptr2[0].b, S.ptr2[1].b)
+print(S.ptr2[0].b, S.ptr2[1].b)
 print(hex(S.ptr16[0]))
 assert (S.ptr2[0].b, S.ptr2[1].b) == (48, 49)

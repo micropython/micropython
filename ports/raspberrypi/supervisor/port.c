@@ -128,7 +128,8 @@ void reset_port(void) {
 
 void reset_to_bootloader(void) {
     reset_usb_boot(0, 0);
-    while (true) {}
+    while (true) {
+    }
 }
 
 void reset_cpu(void) {
@@ -172,7 +173,7 @@ uint32_t port_get_saved_word(void) {
     return watchdog_hw->scratch[0];
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
@@ -210,16 +211,15 @@ void port_idle_until_interrupt(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
-__attribute__((used)) void HardFault_Handler(void)
-{
-#ifdef ENABLE_MICRO_TRACE_BUFFER
+__attribute__((used)) void HardFault_Handler(void) {
+    #ifdef ENABLE_MICRO_TRACE_BUFFER
     // Turn off the micro trace buffer so we don't fill it up in the infinite
     // loop below.
     REG_MTB_MASTER = 0x00000000 + 6;
-#endif
+    #endif
 
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }

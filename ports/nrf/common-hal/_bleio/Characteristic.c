@@ -38,7 +38,7 @@
 STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;
     ble_gatts_value_t value = {
-        .p_value = (uint8_t*) &cccd,
+        .p_value = (uint8_t *)&cccd,
         .len = 2,
     };
 
@@ -96,7 +96,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
         mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
-                                 max_length_max, fixed_length ? "True" : "False");
+            max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
@@ -116,7 +116,7 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
     return self->service;
 }
 
-size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t* buf, size_t len) {
+size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t *buf, size_t len) {
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
         uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
@@ -139,7 +139,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
             // Last argument is true if write-no-reponse desired.
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo,
-                                         (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
+                (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
             // Validate data length for local characteristics only.
             if (self->fixed_length && bufinfo->len != self->max_length) {
@@ -216,7 +216,7 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
     check_nrf_error(sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle));
 
     mp_obj_list_append(MP_OBJ_FROM_PTR(self->descriptor_list),
-                       MP_OBJ_FROM_PTR(descriptor));
+        MP_OBJ_FROM_PTR(descriptor));
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
@@ -238,7 +238,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
     ble_gattc_write_params_t write_params = {
         .write_op = BLE_GATT_OP_WRITE_REQ,
         .handle = self->cccd_handle,
-        .p_value = (uint8_t *) &cccd_value,
+        .p_value = (uint8_t *)&cccd_value,
         .len = 2,
     };
 

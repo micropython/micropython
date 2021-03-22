@@ -122,5 +122,5 @@ const mp_obj_type_t mod_msgpack_exttype_type = {
     { &mp_type_type },
     .name = MP_QSTR_ExtType,
     .make_new = mod_msgpack_exttype_make_new,
-    .locals_dict = (mp_obj_dict_t*)&mod_msgpack_exttype_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mod_msgpack_exttype_locals_dict,
 };

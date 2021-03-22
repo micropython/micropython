@@ -6,9 +6,9 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA06)
 
-#define MICROPY_PORT_A		(0)
-#define MICROPY_PORT_B		(0)
-#define MICROPY_PORT_C		(0)
+#define MICROPY_PORT_A          (0)
+#define MICROPY_PORT_B          (0)
+#define MICROPY_PORT_C          (0)
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

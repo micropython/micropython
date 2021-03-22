@@ -78,6 +78,7 @@ msgstr "%q sedang digunakan"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -342,6 +343,10 @@ msgstr "Semua perangkat SPI sedang digunakan"
 msgid "All UART peripherals are in use"
 msgstr "Semua perangkat UART sedang digunakan"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Semua channel event sedang digunakan"
@@ -556,6 +561,7 @@ msgstr "Buffer terlalu pendek untuk %d byte"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Pin bus %d sudah digunakan"
@@ -678,7 +684,7 @@ msgstr "Tidak dapat transfer tanpa pin MOSI dan MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 "Tidak dapat membuat variasi frekuensi pada penghitung waktu yang sudah "
@@ -765,14 +771,6 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Tidak dapat menginisialisasi UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Tidak dapat menginisialisasi kanal"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Tidak dapat menginisialisasi timer"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Tidak dapat menginisialisasi ulang kanal"
@@ -793,7 +791,7 @@ msgstr ""
 msgid "Could not set address"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Tidak dapat memulai PWM"
 
@@ -981,6 +979,7 @@ msgstr "Gagal untuk mengalokasikan buffer RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -1042,7 +1041,7 @@ msgstr ""
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Frekuensi harus cocok dengan PWMOut yang ada menggunakan timer ini"
 
@@ -1268,13 +1267,9 @@ msgstr "File tidak valid"
 msgid "Invalid format chunk size"
 msgstr "Ukuran potongan format tidak valid"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Frekuensi yang diberikan tidak valid"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
@@ -1320,10 +1315,6 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Pin untuk PWMOut tidak valid"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1577,18 +1568,6 @@ msgstr "Tidak ada kunci yang ditentukan"
 msgid "No long integer support"
 msgstr "Tidak ada dukungan bilangan bulat yang panjang"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr ""
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Tidak ada lagi penghitung waktu yang tersedia pada pin ini."
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr ""
@@ -1756,7 +1735,6 @@ msgid "PWM slice channel A already in use"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus belum didukung"
@@ -2162,11 +2140,6 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Untuk keluar, silahkan reset board tanpa "
@@ -2335,7 +2308,7 @@ msgstr "Baudrate tidak didukung"
 msgid "Unsupported format"
 msgstr "Format tidak didukung"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operasi yang tidak didukung"
 
@@ -2900,6 +2873,10 @@ msgstr ""
 msgid "differentiation order out of range"
 msgstr ""
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3153,6 +3130,7 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index keluar dari jangkauan"
 
@@ -3257,6 +3235,11 @@ msgstr ""
 msgid "invalid arguments"
 msgstr "argumen-argumen tidak valid"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "cert tidak valid"
@@ -3264,6 +3247,16 @@ msgstr "cert tidak valid"
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "indeks dupterm tidak valid"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr ""
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3388,10 +3381,6 @@ msgstr ""
 
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
 msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
@@ -3728,7 +3717,7 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parameter harus menjadi register dalam urutan r0 sampai r3"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
@@ -3751,6 +3740,7 @@ msgstr "Muncul dari PulseIn yang kosong"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3770,12 +3760,15 @@ msgstr ""
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -4207,10 +4200,6 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -4299,6 +4288,21 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Tidak dapat menginisialisasi kanal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Tidak dapat menginisialisasi timer"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Frekuensi yang diberikan tidak valid"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Pin untuk PWMOut tidak valid"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Tidak ada lagi penghitung waktu yang tersedia pada pin ini."
 
 #~ msgid "Group full"
 #~ msgstr "Grup penuh"

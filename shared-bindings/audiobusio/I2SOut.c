@@ -91,10 +91,10 @@
 //|         ...
 //|
 STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if !CIRCUITPY_AUDIOBUSIO_I2SOUT
+    #if !CIRCUITPY_AUDIOBUSIO_I2SOUT
     mp_raise_NotImplementedError(translate("I2SOut not available"));
     return NULL;                // Not reachable.
-#else
+    #else
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_left_justified };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bit_clock, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -114,7 +114,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     common_hal_audiobusio_i2sout_construct(self, bit_clock, word_select, data, args[ARG_left_justified].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
-#endif
+    #endif
 }
 
 #if CIRCUITPY_AUDIOBUSIO_I2SOUT
@@ -263,7 +263,7 @@ const mp_obj_property_t audiobusio_i2sout_paused_obj = {
 
 STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Methods
-#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -276,7 +276,7 @@ STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiobusio_i2sout_playing_obj) },
     { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audiobusio_i2sout_paused_obj) },
-#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
+    #endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_locals_dict_table);
 
@@ -284,5 +284,5 @@ const mp_obj_type_t audiobusio_i2sout_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2SOut,
     .make_new = audiobusio_i2sout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiobusio_i2sout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiobusio_i2sout_locals_dict,
 };

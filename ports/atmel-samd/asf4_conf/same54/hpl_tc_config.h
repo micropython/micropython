@@ -45,7 +45,7 @@
 /* Caculate pwm ccx register value based on WAVE_PER_VAL and Waveform Duty Value */
 #if CONF_TC0_PRESCALER < TC_CTRLA_PRESCALER_DIV64_Val
 #define CONF_TC0_CC0                                                                                                   \
-	((uint32_t)(((double)CONF_TC0_WAVE_PER_VAL * CONF_GCLK_TC0_FREQUENCY) / 1000000 / (1 << CONF_TC0_PRESCALER) - 1))
+    ((uint32_t)(((double)CONF_TC0_WAVE_PER_VAL * CONF_GCLK_TC0_FREQUENCY) / 1000000 / (1 << CONF_TC0_PRESCALER) - 1))
 #define CONF_TC0_CC1 ((CONF_TC0_CC0 * CONF_TC0_WAVE_DUTY_VAL) / 1000)
 
 #elif CONF_TC0_PRESCALER == TC_CTRLA_PRESCALER_DIV64_Val
@@ -114,15 +114,15 @@
 #endif
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_CAPTEN0 0
-//#define CONF_TC0_CAPTEN1 0
-//#define CONF_TC0_COPEN0  0
-//#define CONF_TC0_COPEN1  0
+// #define CONF_TC0_CAPTEN0 0
+// #define CONF_TC0_CAPTEN1 0
+// #define CONF_TC0_COPEN0  0
+// #define CONF_TC0_COPEN1  0
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_DIR     0
-//#define CONF_TC0_ONESHOT 0
-//#define CONF_TC0_LUPD    0
+// #define CONF_TC0_DIR     0
+// #define CONF_TC0_ONESHOT 0
+// #define CONF_TC0_LUPD    0
 
 // <q> Debug Running Mode
 // <i> Indicates whether the Debug Running Mode is enabled or not
@@ -182,25 +182,25 @@
 // <6=> Period captured in CC1, pulse width in CC0
 // <7=> Pulse width capture
 // <i> Event which will be performed on an event
-//<id> tc_arch_evact
+// <id> tc_arch_evact
 #ifndef CONF_TC0_EVACT
 #define CONF_TC0_EVACT 0
 #endif
 // </e>
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_WAVEGEN   TC_CTRLA_WAVEGEN_MFRQ_Val
+// #define CONF_TC0_WAVEGEN   TC_CTRLA_WAVEGEN_MFRQ_Val
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_INVEN0 0
-//#define CONF_TC0_INVEN1 0
+// #define CONF_TC0_INVEN0 0
+// #define CONF_TC0_INVEN1 0
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_PERBUF 0
+// #define CONF_TC0_PERBUF 0
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC0_CCBUF0 0
-//#define CONF_TC0_CCBUF1 0
+// #define CONF_TC0_CCBUF0 0
+// #define CONF_TC0_CCBUF1 0
 
 // </h>
 

@@ -73,18 +73,27 @@ void spi_reset(void) {
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-static bool bus_uses_iomux_pins(spi_host_device_t host, const spi_bus_config_t* bus_config)
-{
-    if (bus_config->sclk_io_num>=0 &&
-        bus_config->sclk_io_num != spi_periph_signal[host].spiclk_iomux_pin) return false;
-    if (bus_config->quadwp_io_num>=0 &&
-        bus_config->quadwp_io_num != spi_periph_signal[host].spiwp_iomux_pin) return false;
-    if (bus_config->quadhd_io_num>=0 &&
-        bus_config->quadhd_io_num != spi_periph_signal[host].spihd_iomux_pin) return false;
+static bool bus_uses_iomux_pins(spi_host_device_t host, const spi_bus_config_t *bus_config) {
+    if (bus_config->sclk_io_num >= 0 &&
+        bus_config->sclk_io_num != spi_periph_signal[host].spiclk_iomux_pin) {
+        return false;
+    }
+    if (bus_config->quadwp_io_num >= 0 &&
+        bus_config->quadwp_io_num != spi_periph_signal[host].spiwp_iomux_pin) {
+        return false;
+    }
+    if (bus_config->quadhd_io_num >= 0 &&
+        bus_config->quadhd_io_num != spi_periph_signal[host].spihd_iomux_pin) {
+        return false;
+    }
     if (bus_config->mosi_io_num >= 0 &&
-        bus_config->mosi_io_num != spi_periph_signal[host].spid_iomux_pin) return false;
-    if (bus_config->miso_io_num>=0 &&
-        bus_config->miso_io_num != spi_periph_signal[host].spiq_iomux_pin) return false;
+        bus_config->mosi_io_num != spi_periph_signal[host].spid_iomux_pin) {
+        return false;
+    }
+    if (bus_config->miso_io_num >= 0 &&
+        bus_config->miso_io_num != spi_periph_signal[host].spiq_iomux_pin) {
+        return false;
+    }
 
     return true;
 }
@@ -100,20 +109,18 @@ static void spi_interrupt_handler(void *arg) {
 }
 
 // The interrupt may get invoked by the bus lock.
-static void spi_bus_intr_enable(void *self)
-{
+static void spi_bus_intr_enable(void *self) {
     esp_intr_enable(((busio_spi_obj_t *)self)->interrupt);
 }
 
 // The interrupt is always disabled by the ISR itself, not exposed
-static void spi_bus_intr_disable(void *self)
-{
+static void spi_bus_intr_disable(void *self) {
     esp_intr_disable(((busio_spi_obj_t *)self)->interrupt);
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso) {
 
     spi_bus_config_t bus_config;
     bus_config.mosi_io_num = mosi != NULL ? mosi->number : -1;
@@ -123,8 +130,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     bus_config.quadhd_io_num = -1;
     bus_config.max_transfer_sz = 0; // Uses the default
     bus_config.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_SCLK |
-                       (mosi != NULL ? SPICOMMON_BUSFLAG_MOSI : 0) |
-                       (miso != NULL ? SPICOMMON_BUSFLAG_MISO : 0);
+        (mosi != NULL ? SPICOMMON_BUSFLAG_MOSI : 0) |
+        (miso != NULL ? SPICOMMON_BUSFLAG_MISO : 0);
     bus_config.intr_flags = 0;
 
     // RAM and Flash is often on SPI1 and is unsupported by the IDF so use it as
@@ -161,8 +168,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // The returned lock is stored in the bus lock but must be freed separately with
     // spi_bus_lock_unregister_dev.
     result = spi_bus_lock_register_dev(spi_bus_get_attr(host_id)->lock,
-                                       &config,
-                                       &self->lock);
+        &config,
+        &self->lock);
     if (result == ESP_ERR_NO_MEM) {
         common_hal_busio_spi_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
@@ -170,8 +177,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     lock_dev_handle[host_id] = self->lock;
 
     result = esp_intr_alloc(spicommon_irqsource_for_host(host_id),
-                            bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
-                            spi_interrupt_handler, self, &self->interrupt);
+        bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
+        spi_interrupt_handler, self, &self->interrupt);
     if (result == ESP_ERR_NO_MEM) {
         common_hal_busio_spi_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
@@ -179,7 +186,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     intr_handle[host_id] = self->interrupt;
     spi_bus_lock_set_bg_control(spi_bus_get_attr(host_id)->lock, spi_bus_intr_enable, spi_bus_intr_disable, self);
 
-    spi_hal_context_t* hal = &self->hal_context;
+    spi_hal_context_t *hal = &self->hal_context;
 
     // spi_hal_init clears the given hal context so set everything after.
     spi_hal_init(hal, host_id);
@@ -256,7 +263,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     if (baudrate == self->target_frequency &&
         polarity == self->polarity &&
         phase == self->phase &&
@@ -269,13 +276,13 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->bits = bits;
     self->target_frequency = baudrate;
     self->hal_context.timing_conf = &self->timing_conf;
-    esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
-                                               self->target_frequency,
-                                               128 /* duty_cycle */,
-                                               self->connected_through_gpio,
-                                               0 /* input_delay_ns */,
-                                               &self->real_frequency,
-                                               &self->timing_conf);
+    esp_err_t result = spi_hal_get_clock_conf(&self->hal_context,
+        self->target_frequency,
+        128 /* duty_cycle */,
+        self->connected_through_gpio,
+        0 /* input_delay_ns */,
+        &self->real_frequency,
+        &self->timing_conf);
     if (result != ESP_OK) {
         return false;
     }
@@ -306,7 +313,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
-        const uint8_t *data, size_t len) {
+    const uint8_t *data, size_t len) {
     if (self->MOSI_pin == NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
@@ -314,7 +321,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
-        uint8_t *data, size_t len, uint8_t write_value) {
+    uint8_t *data, size_t len, uint8_t write_value) {
 
     if (self->MISO_pin == NULL) {
         mp_raise_ValueError(translate("No MISO Pin"));
@@ -339,7 +346,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         mp_raise_ValueError(translate("No MISO Pin"));
     }
 
-    spi_hal_context_t* hal = &self->hal_context;
+    spi_hal_context_t *hal = &self->hal_context;
     hal->send_buffer = NULL;
     hal->rcv_buffer = NULL;
     // Reset timing_conf in case we've moved since the last time we used it.
@@ -377,7 +384,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         hal->tx_bitlen = this_length * self->bits;
         hal->rx_bitlen = this_length * self->bits;
         if (data_out != NULL) {
-            hal->send_buffer = (uint8_t*) data_out + offset;
+            hal->send_buffer = (uint8_t *)data_out + offset;
         }
         if (data_in != NULL) {
             hal->rcv_buffer = data_in + offset;
@@ -399,14 +406,14 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     return true;
 }
 
-uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     return self->real_frequency;
 }
 
-uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t *self) {
     return self->phase;
 }
 
-uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self) {
     return self->polarity;
 }

@@ -33,7 +33,7 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 
 typedef struct {
-    const char* devpath;
+    const char *devpath;
     const mcu_pin_obj_t *pin;
     int fd;
     bool reset;
@@ -141,11 +141,11 @@ void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
 void pwmout_reset(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(pwmout_dev); i++) {
         if (pwmout_dev[i].fd >= 0 && pwmout_dev[i].reset) {
-                ioctl(pwmout_dev[i].fd, PWMIOC_STOP, 0);
-                close(pwmout_dev[i].fd);
-                pwmout_dev[i].fd = -1;
+            ioctl(pwmout_dev[i].fd, PWMIOC_STOP, 0);
+            close(pwmout_dev[i].fd);
+            pwmout_dev[i].fd = -1;
 
-                reset_pin_number(pwmout_dev[i].pin->number);
+            reset_pin_number(pwmout_dev[i].pin->number);
         }
     }
 }

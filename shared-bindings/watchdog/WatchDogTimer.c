@@ -177,5 +177,5 @@ const mp_obj_type_t watchdog_watchdogtimer_type = {
     { &mp_type_type },
     .name = MP_QSTR_WatchDogTimer,
     // .make_new = watchdog_watchdogtimer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&watchdog_watchdogtimer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&watchdog_watchdogtimer_locals_dict,
 };

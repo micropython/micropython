@@ -135,7 +135,7 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     sockaddr->items[0] = ip_str;
     sockaddr->items[1] = MP_OBJ_NEW_SMALL_INT(port);
     tuple->items[4] = MP_OBJ_FROM_PTR(sockaddr);
-    return mp_obj_new_list(1, (mp_obj_t*)&tuple);
+    return mp_obj_new_list(1, (mp_obj_t *)&tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_getaddrinfo_obj, 3, socketpool_socketpool_getaddrinfo);
 
@@ -158,5 +158,5 @@ const mp_obj_type_t socketpool_socketpool_type = {
     { &mp_type_type },
     .name = MP_QSTR_SocketPool,
     .make_new = socketpool_socketpool_make_new,
-    .locals_dict = (mp_obj_dict_t*)&socketpool_socketpool_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&socketpool_socketpool_locals_dict,
 };

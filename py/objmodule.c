@@ -44,7 +44,7 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         module_name = mp_obj_str_get_str(elem->value);
     }
 
-#if MICROPY_PY___FILE__
+    #if MICROPY_PY___FILE__
     // If we store __file__ to imported modules then try to lookup this
     // symbol to give more information about the module.
     elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
@@ -52,7 +52,7 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         mp_printf(print, "<module '%s' from '%s'>", module_name, mp_obj_str_get_str(elem->value));
         return;
     }
-#endif
+    #endif
 
     mp_printf(print, "<module '%s'>", module_name);
 }
@@ -153,123 +153,123 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
     { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
 
-#if MICROPY_PY_ARRAY
+    #if MICROPY_PY_ARRAY
     { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_array) },
-#endif
-#if MICROPY_PY_IO
-#if CIRCUITPY
+    #endif
+    #if MICROPY_PY_IO
+    #if CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) },
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
-#endif
-#endif
-#if MICROPY_PY_COLLECTIONS
+    #endif
+    #endif
+    #if MICROPY_PY_COLLECTIONS
     { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) },
-#endif
+    #endif
 // CircuitPython: Now in shared-bindings/, so not defined here.
-#if MICROPY_PY_STRUCT
+    #if MICROPY_PY_STRUCT
     { MP_ROM_QSTR(MP_QSTR_ustruct), MP_ROM_PTR(&mp_module_ustruct) },
-#endif
+    #endif
 
-#if MICROPY_PY_BUILTINS_FLOAT
-#if MICROPY_PY_MATH
+    #if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_MATH
     { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
-#endif
-#if MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
+    #endif
+    #if MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
     { MP_ROM_QSTR(MP_QSTR_cmath), MP_ROM_PTR(&mp_module_cmath) },
-#endif
-#endif
-#if MICROPY_PY_SYS
+    #endif
+    #endif
+    #if MICROPY_PY_SYS
     { MP_ROM_QSTR(MP_QSTR_sys), MP_ROM_PTR(&mp_module_sys) },
-#endif
-#if MICROPY_PY_GC && MICROPY_ENABLE_GC
+    #endif
+    #if MICROPY_PY_GC && MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
-#endif
-#if MICROPY_PY_THREAD
+    #endif
+    #if MICROPY_PY_THREAD
     { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
-#endif
+    #endif
 
     // extmod modules
 
-#if MICROPY_PY_UERRNO
-#if CIRCUITPY
+    #if MICROPY_PY_UERRNO
+    #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
 // TODO: move to shared-bindings/
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
-#endif
-#endif
-#if MICROPY_PY_UCTYPES
+    #endif
+    #endif
+    #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
-#endif
-#if MICROPY_PY_UZLIB
+    #endif
+    #if MICROPY_PY_UZLIB
     { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
-#endif
-#if MICROPY_PY_UJSON
-#if CIRCUITPY
+    #endif
+    #if MICROPY_PY_UJSON
+    #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
 // TODO: move to shared-bindings/
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
-#endif
-#endif
-#if CIRCUITPY_ULAB
-#if CIRCUITPY
+    #endif
+    #endif
+    #if CIRCUITPY_ULAB
+    #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
 // TODO: move to shared-bindings/
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
-#endif
-#endif
-#if MICROPY_PY_URE
-#if CIRCUITPY
+    #endif
+    #endif
+    #if MICROPY_PY_URE
+    #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
 // TODO: move to shared-bindings/
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
-#endif
-#endif
-#if MICROPY_PY_UHEAPQ
+    #endif
+    #endif
+    #if MICROPY_PY_UHEAPQ
     { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
-#endif
-#if MICROPY_PY_UTIMEQ
+    #endif
+    #if MICROPY_PY_UTIMEQ
     { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&mp_module_utimeq) },
-#endif
-#if MICROPY_PY_UHASHLIB
+    #endif
+    #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) },
-#endif
-#if MICROPY_PY_UBINASCII
-#if CIRCUITPY
+    #endif
+    #if MICROPY_PY_UBINASCII
+    #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
 // TODO: move to shared-bindings/
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
-#endif
-#endif
-#if MICROPY_PY_URANDOM
+    #endif
+    #endif
+    #if MICROPY_PY_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
-#endif
-#if MICROPY_PY_USELECT
+    #endif
+    #if MICROPY_PY_USELECT
     { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-#endif
-#if MICROPY_PY_USSL
+    #endif
+    #if MICROPY_PY_USSL
     { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
-#endif
-#if MICROPY_PY_LWIP
+    #endif
+    #if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
-#endif
-#if MICROPY_PY_WEBSOCKET
+    #endif
+    #if MICROPY_PY_WEBSOCKET
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
-#endif
-#if MICROPY_PY_WEBREPL
+    #endif
+    #if MICROPY_PY_WEBREPL
     { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },
-#endif
-#if MICROPY_PY_FRAMEBUF
+    #endif
+    #if MICROPY_PY_FRAMEBUF
     { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },
-#endif
-#if MICROPY_PY_BTREE
+    #endif
+    #if MICROPY_PY_BTREE
     { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
-#endif
+    #endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
@@ -279,9 +279,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     MICROPY_REGISTERED_MODULES
     #endif
 
-#if defined(MICROPY_DEBUG_MODULES) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
+    #if defined(MICROPY_DEBUG_MODULES) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
     , MICROPY_PORT_BUILTIN_DEBUG_MODULES
-#endif
+    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
@@ -302,7 +302,7 @@ mp_obj_t mp_module_get(qstr module_name) {
 
     if (el == NULL) {
         // module not found, look for builtin module names
-        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+        el = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
         if (el == NULL) {
             return MP_OBJ_NULL;
         }

@@ -32,7 +32,7 @@
 // handles empty and full statuses.
 bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
     r->buf = gc_alloc(capacity + 1, false, long_lived);
-    r->size = capacity +  1;
+    r->size = capacity + 1;
     r->iget = r->iput = 0;
     return r->buf != NULL;
 }
@@ -89,10 +89,9 @@ size_t ringbuf_num_filled(ringbuf_t *r) {
 
 // If the ring buffer fills up, not all bytes will be written.
 // Returns how many bytes were successfully written.
-size_t ringbuf_put_n(ringbuf_t* r, uint8_t* buf, size_t bufsize)
-{
-    for(size_t i=0; i < bufsize; i++) {
-        if ( ringbuf_put(r, buf[i]) < 0 ) {
+size_t ringbuf_put_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
+    for (size_t i = 0; i < bufsize; i++) {
+        if (ringbuf_put(r, buf[i]) < 0) {
             // If ringbuf is full, give up and return how many bytes
             // we wrote so far.
             return i;
@@ -102,9 +101,8 @@ size_t ringbuf_put_n(ringbuf_t* r, uint8_t* buf, size_t bufsize)
 }
 
 // Returns how many bytes were fetched.
-size_t ringbuf_get_n(ringbuf_t* r, uint8_t* buf, size_t bufsize)
-{
-    for(size_t i=0; i < bufsize; i++) {
+size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
+    for (size_t i = 0; i < bufsize; i++) {
         int b = ringbuf_get(r);
         if (b < 0) {
             return i;

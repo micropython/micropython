@@ -32,9 +32,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t* buffer;
-    mp_obj_t* rows;
-    mp_obj_t* cols;
+    uint8_t *buffer;
+    mp_obj_t *rows;
+    mp_obj_t *cols;
     digitalio_digitalinout_obj_t *buttons;
     uint8_t rows_size;
     uint8_t cols_size;

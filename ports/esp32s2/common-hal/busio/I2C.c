@@ -55,7 +55,7 @@ void i2c_reset(void) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     // Pins 45 and 46 are "strapping" pins that impact start up behavior. They usually need to
     // be pulled-down so pulling them up for I2C is a bad idea. To make this hard, we don't
     // support I2C on these pins.
@@ -65,7 +65,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError(translate("Invalid pins"));
     }
 
-#if CIRCUITPY_REQUIRE_I2C_PULLUPS
+    #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     gpio_set_direction(sda->number, GPIO_MODE_DEF_INPUT);
     gpio_set_direction(scl->number, GPIO_MODE_DEF_INPUT);
@@ -86,7 +86,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
-#endif
+    #endif
 
 
     if (xSemaphoreCreateMutexStatic(&self->semaphore) != &self->semaphore) {
@@ -124,10 +124,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     if (i2c_driver_install(self->i2c_num,
-                           I2C_MODE_MASTER,
-                           0,
-                           0,
-                           0) != ESP_OK) {
+        I2C_MODE_MASTER,
+        0,
+        0,
+        0) != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
 
@@ -182,11 +182,11 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1, true);
-    i2c_master_write(cmd, (uint8_t*) data, len, true);
+    i2c_master_write(cmd, (uint8_t *)data, len, true);
     if (transmit_stop_bit) {
         i2c_master_stop(cmd);
     }
@@ -202,7 +202,7 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-                                  uint8_t *data, size_t len) {
+    uint8_t *data, size_t len) {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1 | 1, true); // | 1 to indicate read
