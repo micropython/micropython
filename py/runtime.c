@@ -91,7 +91,7 @@ void mp_init(void) {
     #endif
 
     // init global module dict
-    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
+    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), MICROPY_LOADED_MODULES_DICT_SIZE);
 
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
