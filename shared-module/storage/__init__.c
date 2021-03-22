@@ -149,7 +149,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
         mp_raise_OSError(MP_EINVAL);
     }
 
-    #ifdef USB_AVAILABLE
+    #if CIRCUITPY_USB_MSC
     if (!usb_msc_ejected()) {
         mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
     }
