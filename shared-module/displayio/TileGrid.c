@@ -583,7 +583,7 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     }
 
     if (self->partial_change) {
-        if (self->absolute_transform->transpose_xy) {
+        if (self->transpose_xy != self->absolute_transform->transpose_xy) {
             int16_t x1 = self->dirty_area.x1;
             self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y1);
             self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x1);
