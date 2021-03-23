@@ -181,6 +181,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     git submodule update --init lib/pico-sdk lib/tinyusb
     make ${MAKEOPTS} -C ports/rp2
+    make ${MAKEOPTS} -C ports/rp2 clean
+    make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
 }
 
 ########################################################################################
