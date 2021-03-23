@@ -32,7 +32,13 @@ endif
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and (Q)SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
-ifdef EXTERNAL_FLASH_DEVICES
+ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
+  ifeq ($(DISABLE_FILESYSTEM),1)
+    SRC_SUPERVISOR += supervisor/stub/internal_flash.c
+  else
+    SRC_SUPERVISOR += supervisor/internal_flash.c
+  endif
+else
   CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
 
   SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
@@ -42,12 +48,6 @@ ifdef EXTERNAL_FLASH_DEVICES
     ifeq ($(QSPI_FLASH_FILESYSTEM),1)
       SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
     endif
-else
-  ifeq ($(DISABLE_FILESYSTEM),1)
-    SRC_SUPERVISOR += supervisor/stub/internal_flash.c
-  else
-    SRC_SUPERVISOR += supervisor/internal_flash.c
-  endif
 endif
 
 ifeq ($(USB),FALSE)

@@ -36,7 +36,7 @@ enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
         // stack + heap
         2
-        #ifdef EXTERNAL_FLASH_DEVICES
+        #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
         #endif
         #if CIRCUITPY_USB_MIDI
