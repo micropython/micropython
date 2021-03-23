@@ -17,6 +17,8 @@
 #define DEFAULT_UART_BUS_RX (&pin_PA23)
 #define DEFAULT_UART_BUS_TX (&pin_PA22)
 
+#define SAMD21_BOD33_LEVEL (6)
+
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
