@@ -36,7 +36,7 @@ def main(input_template: pathlib.Path, output_path: pathlib.Path, skus: str = ty
                 return None
         return shared_value
 
-    quad_enable_status_byte = all_match(flashes["nvm"], "quad_enable_status_byte", 0)
+    quad_enable_status_byte = all_match(flashes["nvm"], "quad_enable_status_byte", None)
     quad_enable_bit_mask = all_match(flashes["nvm"], "quad_enable_bit_mask")
     continuous_status_write = all_have(flashes["nvm"], "01_continuous_status_write")
     split_status_write = all_have(flashes["nvm"], "write_status_register_split")
