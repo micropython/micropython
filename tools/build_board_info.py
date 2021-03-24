@@ -84,13 +84,32 @@ aliases_by_board = {
     "pewpew10": ["pewpew13"],
 }
 
+language_allow_list = set([
+    "ID",
+    "de_DE",
+    "en_US",
+    "en_x_pirate",
+    "es",
+    "fil",
+    "fr",
+    "it_IT",
+    "ja",
+    "nl",
+    "pl",
+    "pt_BR",
+    "sv",
+    "zh_Latn_pinyin",
+])
 
-def get_languages():
-    languages = []
+
+def get_languages(list_all = False):
+    languages = set()
     for f in os.scandir("../locale"):
         if f.name.endswith(".po"):
-            languages.append(f.name[:-3])
-    return languages
+            languages.add(f.name[:-3])
+    if not list_all:
+        languages = languages & language_allow_list
+    return sorted(list(languages))
 
 
 def get_board_mapping():
@@ -163,10 +182,7 @@ def get_current_info():
     return git_info, current_info
 
 
-def create_pr(changes, updated, git_info, user):
-    commit_sha, original_blob_sha = git_info
-    branch_name = "new_release_" + changes["new_release"]
-
+def create_json(updated):
     # Convert the dictionary to a list of boards. Liquid templates only handle arrays.
     updated_list = []
     all_ids = sorted(updated.keys())
@@ -174,9 +190,15 @@ def create_pr(changes, updated, git_info, user):
         info = updated[id]
         info["id"] = id
         updated_list.append(info)
+    return json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
 
-    updated = json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
+
+def create_pr(changes, updated, git_info, user):
+    commit_sha, original_blob_sha = git_info
+    branch_name = "new_release_" + changes["new_release"]
+    updated = create_json(updated)
     # print(updated.decode("utf-8"))
+
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
@@ -302,6 +324,7 @@ def generate_download_info():
         create_pr(changes, current_info, git_info, user)
     else:
         print("No new release to update")
+        # print(create_json(current_info).decode("utf8"))
 
 
 if __name__ == "__main__":
