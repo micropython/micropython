@@ -187,6 +187,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     LPSPI_Enable(self->spi, false);
     uint32_t tcrPrescaleValue;
     self->baudrate = LPSPI_MasterSetBaudRate(self->spi, config.baudRate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    self->spi->TCR = (self->spi->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE(tcrPrescaleValue);
     LPSPI_Enable(self->spi, true);
 
     claim_pin(self->clock->pin);
@@ -236,6 +237,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     LPSPI_Enable(self->spi, false);
     uint32_t tcrPrescaleValue;
     self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    self->spi->TCR = (self->spi->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE(tcrPrescaleValue);
     LPSPI_Enable(self->spi, true);
 
     if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
