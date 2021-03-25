@@ -42,12 +42,21 @@ else
   CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
 
   SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
-    ifeq ($(SPI_FLASH_FILESYSTEM),1)
-      SRC_SUPERVISOR += supervisor/shared/external_flash/spi_flash.c
-    endif
-    ifeq ($(QSPI_FLASH_FILESYSTEM),1)
-      SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
-    endif
+  ifeq ($(SPI_FLASH_FILESYSTEM),1)
+    SRC_SUPERVISOR += supervisor/shared/external_flash/spi_flash.c
+  endif
+  ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+    SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
+  endif
+
+$(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jinja ../../tools/gen_nvm_devices.py | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)install -d $(BUILD)/genhdr
+	$(Q)$(PYTHON3) ../../tools/gen_nvm_devices.py $< $@
+
+$(BUILD)/supervisor/shared/external_flash/spi_flash.o: $(HEADER_BUILD)/devices.h
+$(BUILD)/supervisor/shared/external_flash/external_flash.o: $(HEADER_BUILD)/devices.h
+
 endif
 
 ifeq ($(USB),FALSE)
