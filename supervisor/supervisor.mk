@@ -54,7 +54,6 @@ $(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jin
 	$(Q)install -d $(BUILD)/genhdr
 	$(Q)$(PYTHON3) ../../tools/gen_nvm_devices.py $< $@
 
-$(BUILD)/supervisor/shared/external_flash/spi_flash.o: $(HEADER_BUILD)/devices.h
 $(BUILD)/supervisor/shared/external_flash/external_flash.o: $(HEADER_BUILD)/devices.h
 
 endif
