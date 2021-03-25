@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "genhdr/devices.h"
 #include "supervisor/flash.h"
 #include "supervisor/spi_flash_api.h"
 #include "supervisor/shared/external_flash/common_commands.h"
