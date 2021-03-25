@@ -234,6 +234,10 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
 
+    if (baudrate > 30000000) {
+        baudrate = 30000000; // "Absolute maximum frequency of operation (fop) is 30 MHz" -- IMXRT1010CEC.pdf
+    }
+
     LPSPI_Enable(self->spi, false);
     uint32_t tcrPrescaleValue;
     self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
