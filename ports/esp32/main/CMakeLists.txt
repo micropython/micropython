@@ -72,12 +72,16 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_sdcard.c
 )
 
+# Include LVGL bindings rules
+include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_EXTMOD_EXTRA}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
+    ${LV_SRC}
 )
 
 set(IDF_COMPONENTS
@@ -107,6 +111,9 @@ set(IDF_COMPONENTS
     ulp
     vfs
     xtensa
+    esp_http_client
+    esp-tls
+    nghttp
 )
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1)
@@ -133,11 +140,13 @@ idf_component_register(
         ${MICROPY_SOURCE_LIB}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
+        ${LV_SRC}
     INCLUDE_DIRS
         ${MICROPY_DIR}
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
+        ${LV_INCLUDE}
     REQUIRES
         ${IDF_COMPONENTS}
 )
@@ -156,6 +165,7 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
+    LV_KCONFIG_IGNORE
 )
 
 # Disable some warnings to keep the build output clean.
@@ -194,3 +204,7 @@ endif()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+# Add lv_bindings rules
+
+all_lv_bindings()

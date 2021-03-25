@@ -35,4 +35,12 @@ set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 
 # Include main IDF cmake file and define the project.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+# Include LVGL component, ignore KCONFIG
+
+idf_build_component(${CMAKE_SOURCE_DIR}/../../lib/lv_bindings/lvgl)
+idf_build_set_property(COMPILE_DEFINITIONS "-DLV_KCONFIG_IGNORE" APPEND)
+
 project(micropython)
+
+
