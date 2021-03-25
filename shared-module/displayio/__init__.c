@@ -245,21 +245,6 @@ void displayio_gc_collect(void) {
     }
 }
 
-void displayio_area_expand(displayio_area_t *original, const displayio_area_t *addition) {
-    if (addition->x1 < original->x1) {
-        original->x1 = addition->x1;
-    }
-    if (addition->y1 < original->y1) {
-        original->y1 = addition->y1;
-    }
-    if (addition->x2 > original->x2) {
-        original->x2 = addition->x2;
-    }
-    if (addition->y2 > original->y2) {
-        original->y2 = addition->y2;
-    }
-}
-
 void displayio_area_copy(const displayio_area_t *src, displayio_area_t *dst) {
     dst->x1 = src->x1;
     dst->y1 = src->y1;

@@ -88,7 +88,7 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
         self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
     self->dirty = true;
     // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish,
-    displayio_area_expand(&self->ephemeral_dirty_area, &current_area);
+    displayio_area_union(&self->ephemeral_dirty_area, &current_area, &self->ephemeral_dirty_area);
     VECTORIO_SHAPE_DEBUG(" -> expanded:{(%3d,%3d), (%3d,%3d)}\n", self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
 }
 
