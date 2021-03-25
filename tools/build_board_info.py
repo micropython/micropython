@@ -109,7 +109,7 @@ def get_languages(list_all = False):
             languages.add(f.name[:-3])
     if not list_all:
         languages = languages & language_allow_list
-    return sorted(list(languages))
+    return sorted(list(languages), key = lambda s: s.casefold())
 
 
 def get_board_mapping():
