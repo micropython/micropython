@@ -255,7 +255,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     // The between-transfer-delay must be equal to the SCK low-time.
     // Setting it lower introduces runt pulses, while setting it higher
     // wastes time.
-    config.betweenTransferDelayInNanoSec = 1000000000 / config.baudRate / 2;
+    config.betweenTransferDelayInNanoSec = (1000000000 / config.baudRate) / 2;
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
