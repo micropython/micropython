@@ -195,7 +195,7 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t bufwriter_type = {
+STATIC const mp_obj_type_t mp_type_bufwriter = {
     { &mp_type_type },
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
@@ -270,7 +270,7 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BytesIO), MP_ROM_PTR(&mp_type_bytesio) },
     #endif
     #if MICROPY_PY_IO_BUFFEREDWRITER
-    { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&bufwriter_type) },
+    { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&mp_type_bufwriter) },
     #endif
 };
 

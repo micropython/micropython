@@ -408,8 +408,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dict_update_obj, 1, dict_update);
 /******************************************************************************/
 /* dict views                                                                 */
 
-STATIC const mp_obj_type_t dict_view_type;
-STATIC const mp_obj_type_t dict_view_it_type;
+STATIC const mp_obj_type_t mp_type_dict_view;
+STATIC const mp_obj_type_t mp_type_dict_view_it;
 
 typedef enum _mp_dict_view_kind_t {
     MP_DICT_VIEW_ITEMS,
@@ -433,7 +433,7 @@ typedef struct _mp_obj_dict_view_t {
 } mp_obj_dict_view_t;
 
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
-    mp_check_self(mp_obj_is_type(self_in, &dict_view_it_type));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_dict_view_it));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *next = dict_iter_next(MP_OBJ_TO_PTR(self->dict), &self->cur);
 
@@ -454,7 +454,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t dict_view_it_type = {
+STATIC const mp_obj_type_t mp_type_dict_view_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
@@ -463,10 +463,10 @@ STATIC const mp_obj_type_t dict_view_it_type = {
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_check_self(mp_obj_is_type(view_in, &dict_view_type));
+    mp_check_self(mp_obj_is_type(view_in, &mp_type_dict_view));
     mp_obj_dict_view_t *view = MP_OBJ_TO_PTR(view_in);
     mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t *)iter_buf;
-    o->base.type = &dict_view_it_type;
+    o->base.type = &mp_type_dict_view_it;
     o->kind = view->kind;
     o->dict = view->dict;
     o->cur = 0;
@@ -475,7 +475,7 @@ STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf)
 
 STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_check_self(mp_obj_is_type(self_in, &dict_view_type));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_dict_view));
     mp_obj_dict_view_t *self = MP_OBJ_TO_PTR(self_in);
     bool first = true;
     mp_print_str(print, mp_dict_view_names[self->kind]);
@@ -505,7 +505,7 @@ STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t
     return dict_binary_op(op, o->dict, rhs_in);
 }
 
-STATIC const mp_obj_type_t dict_view_type = {
+STATIC const mp_obj_type_t mp_type_dict_view = {
     { &mp_type_type },
     .name = MP_QSTR_dict_view,
     .print = dict_view_print,
@@ -515,7 +515,7 @@ STATIC const mp_obj_type_t dict_view_type = {
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
     mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
-    o->base.type = &dict_view_type;
+    o->base.type = &mp_type_dict_view;
     o->dict = dict;
     o->kind = kind;
     return MP_OBJ_FROM_PTR(o);
@@ -548,7 +548,7 @@ STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t *)iter_buf;
-    o->base.type = &dict_view_it_type;
+    o->base.type = &mp_type_dict_view_it;
     o->kind = MP_DICT_VIEW_KEYS;
     o->dict = self_in;
     o->cur = 0;
