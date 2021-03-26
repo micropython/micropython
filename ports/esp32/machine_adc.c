@@ -31,10 +31,14 @@
 
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "esp_adc_cal.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
+
+#define DEFAULT_VREF 1100
+#define ADC_CHANNELS_MAX 8
 
 typedef struct _madc_obj_t {
     mp_obj_base_t base;
@@ -52,6 +56,14 @@ STATIC const madc_obj_t madc_obj[] = {
     {{&machine_adc_type}, GPIO_NUM_34, ADC1_CHANNEL_6},
     {{&machine_adc_type}, GPIO_NUM_35, ADC1_CHANNEL_7},
 };
+
+typedef struct _madc_cal_obj_t {
+    adc_atten_t adc_atten;
+    esp_adc_cal_value_t adc_cal_type;
+    esp_adc_cal_characteristics_t adc_cal;
+} madc_cal_obj_t;
+
+STATIC madc_cal_obj_t madc_cal_obj[ADC_CHANNELS_MAX];
 
 STATIC uint8_t adc_bit_width;
 
@@ -77,16 +89,34 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     if (!self) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid Pin for ADC"));
     }
-    esp_err_t err = adc1_config_channel_atten(self->adc1_id, ADC_ATTEN_0db);
+
+    madc_cal_obj[self->adc1_id].adc_atten = ADC_ATTEN_0db;
+    esp_err_t err = adc1_config_channel_atten(self->adc1_id, madc_cal_obj[self->adc1_id].adc_atten);
     if (err == ESP_OK) {
+        // deal with the characteristics
+        madc_cal_obj[self->adc1_id].adc_cal_type = esp_adc_cal_characterize(ADC_UNIT_1,
+            madc_cal_obj[self->adc1_id].adc_atten,
+            ADC_WIDTH_12Bit,
+            DEFAULT_VREF,
+            &madc_cal_obj[self->adc1_id].adc_cal);
         return MP_OBJ_FROM_PTR(self);
     }
     mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
 }
 
+static char *char_val_type(esp_adc_cal_value_t val_type) {
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+        return "Characterized using Two Point Value";
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+        return "Characterized using eFuse Vref";
+    } else {
+        return "Characterized using Default Vref";
+    }
+}
+
 STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     madc_obj_t *self = self_in;
-    mp_printf(print, "ADC(Pin(%u))", self->gpio_id);
+    mp_printf(print, "ADC(Pin(%u)) %s", self->gpio_id, char_val_type(madc_cal_obj[self->adc1_id].adc_cal_type));
 }
 
 // read_u16()
@@ -115,6 +145,27 @@ STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in) {
     adc_atten_t atten = mp_obj_get_int(atten_in);
     esp_err_t err = adc1_config_channel_atten(self->adc1_id, atten);
     if (err == ESP_OK) {
+        madc_cal_obj[self->adc1_id].adc_atten = atten;
+        adc_bits_width_t width = ADC_WIDTH_12Bit;
+        switch (adc_bit_width) {
+            case 9:
+                width = ADC_WIDTH_9Bit;
+                break;
+            case 10:
+                width = ADC_WIDTH_10Bit;
+                break;
+            case 11:
+                width = ADC_WIDTH_11Bit;
+                break;
+            case 12:
+                width = ADC_WIDTH_12Bit;
+                break;
+        }
+        madc_cal_obj[self->adc1_id].adc_cal_type = esp_adc_cal_characterize(ADC_UNIT_1,
+            madc_cal_obj[self->adc1_id].adc_atten,
+            width,
+            DEFAULT_VREF,
+            &madc_cal_obj[self->adc1_id].adc_cal);
         return mp_const_none;
     }
     mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
@@ -127,6 +178,16 @@ STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in) {
     if (err != ESP_OK) {
         mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
     }
+
+    // change them all
+    for (int x = 0; x < ADC_CHANNELS_MAX; x++) {
+        madc_cal_obj[x].adc_cal_type = esp_adc_cal_characterize(ADC_UNIT_1,
+            madc_cal_obj[x].adc_atten,
+            width,
+            DEFAULT_VREF,
+            &madc_cal_obj[x].adc_cal);
+    }
+
     switch (width) {
         case ADC_WIDTH_9Bit:
             adc_bit_width = 9;
@@ -148,12 +209,21 @@ STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(madc_width_fun_obj, madc_width);
 MP_DEFINE_CONST_CLASSMETHOD_OBJ(madc_width_obj, MP_ROM_PTR(&madc_width_fun_obj));
 
+STATIC mp_obj_t madc_raw_to_voltage(mp_obj_t self_in, mp_obj_t raw_in) {
+    madc_obj_t *self = self_in;
+    uint32_t raw = mp_obj_get_int(raw_in);
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(raw, &madc_cal_obj[self->adc1_id].adc_cal);
+    return MP_OBJ_NEW_SMALL_INT(voltage);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(madc_raw_to_voltage_obj, madc_raw_to_voltage);
+
 STATIC const mp_rom_map_elem_t madc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&madc_read_u16_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&madc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_atten), MP_ROM_PTR(&madc_atten_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&madc_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_raw_to_voltage), MP_ROM_PTR(&madc_raw_to_voltage_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ATTN_0DB), MP_ROM_INT(ADC_ATTEN_0db) },
     { MP_ROM_QSTR(MP_QSTR_ATTN_2_5DB), MP_ROM_INT(ADC_ATTEN_2_5db) },
