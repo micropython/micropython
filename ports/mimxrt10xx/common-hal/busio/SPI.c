@@ -234,15 +234,14 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
 
-    LPSPI_Enable(self->spi, false);
-    uint32_t tcrPrescaleValue;
-    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
-    self->spi->TCR = (self->spi->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE(tcrPrescaleValue);
-    LPSPI_Enable(self->spi, true);
+    if (baudrate > 30000000) {
+        baudrate = 30000000; // "Absolute maximum frequency of operation (fop) is 30 MHz" -- IMXRT1010CEC.pdf
+    }
 
     if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
         (phase == common_hal_busio_spi_get_phase(self)) &&
-        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1) {
+        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1 &&
+        (baudrate == common_hal_busio_spi_get_frequency(self))) {
         return true;
     }
 
@@ -253,9 +252,21 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     config.cpol = polarity;
     config.cpha = phase;
     config.bitsPerFrame = bits;
+    // The between-transfer-delay must be equal to the SCK low-time.
+    // Setting it lower introduces runt pulses, while setting it higher
+    // wastes time.
+    config.betweenTransferDelayInNanoSec = (1000000000 / config.baudRate) / 2;
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
+
+    // Recompute the actual baudrate so that we can set the baudrate
+    // (frequency) property.  We don't need to set TCR because it was
+    // established by LPSPI_MasterInit, above
+    uint32_t tcrPrescaleValue;
+    LPSPI_Enable(self->spi, false);
+    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    LPSPI_Enable(self->spi, true);
 
     return true;
 }
@@ -279,6 +290,21 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
     self->has_lock = false;
 }
 
+static status_t transfer_common(busio_spi_obj_t *self, lpspi_transfer_t *xfer) {
+    xfer->configFlags = kLPSPI_MasterPcsContinuous;
+
+    status_t status;
+    int retries = MAX_SPI_BUSY_RETRIES;
+    do {
+        status = LPSPI_MasterTransferBlocking(self->spi, xfer);
+    } while (status == kStatus_LPSPI_Busy && --retries > 0);
+
+    if (status != kStatus_Success) {
+        printf("%s: status %ld\r\n", __func__, status);
+    }
+    return status;
+}
+
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (len == 0) {
@@ -291,17 +317,8 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     lpspi_transfer_t xfer = { 0 };
     xfer.txData = (uint8_t *)data;
     xfer.dataSize = len;
-    xfer.configFlags = kLPSPI_MasterPcs0;
 
-    status_t status;
-    int retries = MAX_SPI_BUSY_RETRIES;
-    do {
-        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy && --retries > 0);
-
-    if (status != kStatus_Success) {
-        printf("%s: status %ld\r\n", __func__, status);
-    }
+    status_t status = transfer_common(self, &xfer);
 
     return status == kStatus_Success;
 }
@@ -321,15 +338,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     xfer.rxData = data;
     xfer.dataSize = len;
 
-    status_t status;
-    int retries = MAX_SPI_BUSY_RETRIES;
-    do {
-        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy && --retries > 0);
-
-    if (status != kStatus_Success) {
-        printf("%s: status %ld\r\n", __func__, status);
-    }
+    status_t status = transfer_common(self, &xfer);
 
     return status == kStatus_Success;
 }
@@ -349,15 +358,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     xfer.rxData = data_in;
     xfer.dataSize = len;
 
-    status_t status;
-    int retries = MAX_SPI_BUSY_RETRIES;
-    do {
-        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    } while (status == kStatus_LPSPI_Busy && --retries > 0);
-
-    if (status != kStatus_Success) {
-        printf("%s: status %ld\r\n", __func__, status);
-    }
+    status_t status = transfer_common(self, &xfer);
 
     return status == kStatus_Success;
 }
