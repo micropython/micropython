@@ -98,7 +98,12 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
     #endif
 
-    // Create a bitbangio.I2C object to do short writes.
+    // Create a bitbangio.I2C object to do 0 byte writes.
+    //
+    // These are used to non-invasively detect I2C devices by sending
+    // the address and confirming an ACK.
+    // They are not supported by the RP2040 hardware.
+    //
     // Must be done before setting up the I2C pins, since they will be
     // set up as GPIO by the bitbangio.I2C object.
     //
@@ -157,9 +162,9 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    if (len <= 2) {
-        // The RP2040 I2C peripheral will not do writes 2 bytes or less long.
+                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    if (len == 0) {
+        // The RP2040 I2C peripheral will not perform 0 byte writes.
         // So use bitbangio.I2C to do the write.
 
         gpio_set_function(self->scl_pin, GPIO_FUNC_SIO);
