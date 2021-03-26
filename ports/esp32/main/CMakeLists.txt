@@ -81,6 +81,7 @@ set(IDF_COMPONENTS
     bt
     driver
     esp32
+    esp_adc_cal
     esp_common
     esp_eth
     esp_event

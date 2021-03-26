@@ -15,6 +15,9 @@ class NeoPixel:
         self.pin.init(pin.OUT)
         self.timing = timing
 
+    def __len__(self):
+        return self.n
+
     def __setitem__(self, index, val):
         offset = index * self.bpp
         for i in range(self.bpp):
