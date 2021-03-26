@@ -31,7 +31,7 @@ def time():
 
 
 # There's currently no timezone support in MicroPython, and the RTC is set in UTC time.
-def settime(tz = None):
+def settime(tz=None):
     if tz is not None:
         timezone(tz)
 
@@ -42,7 +42,7 @@ def settime(tz = None):
     tm = utime.gmtime(t)
     machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
 
-def timezone(offset = None):
+def timezone(offset=None):
     global _local_ntp_delta
 
     if offset is not None:
