@@ -238,15 +238,10 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         baudrate = 30000000; // "Absolute maximum frequency of operation (fop) is 30 MHz" -- IMXRT1010CEC.pdf
     }
 
-    LPSPI_Enable(self->spi, false);
-    uint32_t tcrPrescaleValue;
-    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
-    self->spi->TCR = (self->spi->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE(tcrPrescaleValue);
-    LPSPI_Enable(self->spi, true);
-
     if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
         (phase == common_hal_busio_spi_get_phase(self)) &&
-        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1) {
+        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1 &&
+        (baudrate == common_hal_busio_spi_get_frequency(self))) {
         return true;
     }
 
@@ -257,9 +252,21 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     config.cpol = polarity;
     config.cpha = phase;
     config.bitsPerFrame = bits;
+    // The between-transfer-delay must be equal to the SCK low-time.
+    // Setting it lower introduces runt pulses, while setting it higher
+    // wastes time.
+    config.betweenTransferDelayInNanoSec = 1000000000 / config.baudRate / 2;
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
+
+    // Recompute the actual baudrate so that we can set the baudrate
+    // (frequency) property.  We don't need to set TCR because it was
+    // established by LPSPI_MasterInit, above
+    uint32_t tcrPrescaleValue;
+    LPSPI_Enable(self->spi, false);
+    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    LPSPI_Enable(self->spi, true);
 
     return true;
 }
