@@ -260,7 +260,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
         return mp_const_none;
     }
 
-    bool ok = shared_module_bitbangio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
+    bool ok = shared_module_bitbangio_spi_read(self, ((uint8_t *)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
