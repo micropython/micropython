@@ -176,7 +176,7 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
 }
 
 // Reads in len bytes while outputting zeroes.
-bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len) {
+bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_data) {
     if (len > 0 && !self->has_miso) {
         mp_raise_ValueError(translate("Cannot read without MISO pin."));
     }
@@ -210,8 +210,12 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
         common_hal_digitalio_digitalinout_set_value(&self->mosi, false);
     }
     for (size_t i = 0; i < len; ++i) {
+        uint8_t data_out = write_data;
         uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j) {
+        for (int j = 0; j < 8; ++j, data_out <<= 1) {
+            if (self->has_mosi) {
+                common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
+            }
             if (self->phase == 0) {
                 common_hal_mcu_delay_us(delay_half);
                 common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
