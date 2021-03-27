@@ -5,6 +5,10 @@ get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
 
+if(NOT CMAKE_BUILD_EARLY_EXPANSION)
+    include(${MICROPY_DIR}/py/usermod.cmake)
+endif()
+
 set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_DIR}/qstrdefsport.h
 )
@@ -71,6 +75,7 @@ set(MICROPY_SOURCE_PORT
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
 )
@@ -129,6 +134,7 @@ idf_component_register(
         ${MICROPY_SOURCE_PORT}
     INCLUDE_DIRS
         ${MICROPY_DIR}
+        ${MICROPY_INC_USERMOD}
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
@@ -158,6 +164,10 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-deprecated-declarations
     -Wno-missing-field-initializers
 )
+
+# add usermod
+target_link_libraries(${MICROPY_TARGET} usermod)
+
 
 # Collect all of the include directories and compile definitions for the IDF components.
 foreach(comp ${IDF_COMPONENTS})
