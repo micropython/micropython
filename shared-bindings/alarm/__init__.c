@@ -92,7 +92,7 @@ void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true light sleep.
 //|     Thus, to use light sleep and save significant power,
-//      it may be necessary to disconnect from the host.
+//|     it may be necessary to disconnect from the host.
 //|     """
 //|     ...
 //|
@@ -217,7 +217,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
 // Fetch value from module dict.
-mp_obj_t alarm_get_wake_alarm(void) {
+mp_obj_t shared_alarm_get_wake_alarm(void) {
     mp_map_elem_t *elem =
         mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
     if (elem) {
@@ -228,7 +228,7 @@ mp_obj_t alarm_get_wake_alarm(void) {
 }
 
 // Initialize .wake_alarm value.
-void alarm_save_wake_alarm(void) {
+void shared_alarm_save_wake_alarm(void) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
@@ -242,3 +242,8 @@ const mp_obj_module_t alarm_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&alarm_module_globals,
 };
+
+extern void port_idle_until_interrupt(void);
+MP_WEAK void common_hal_alarm_pretending_deep_sleep(void) {
+    port_idle_until_interrupt();
+}
