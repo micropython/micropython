@@ -273,7 +273,7 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     tile_area->y2 = tile_area->y1 + self->tile_height;
 
     if (self->partial_change) {
-        displayio_area_expand(&self->dirty_area, &temp_area);
+        displayio_area_union(&self->dirty_area, &temp_area, &self->dirty_area);
     }
 
     self->partial_change = true;
