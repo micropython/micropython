@@ -34,6 +34,7 @@
 #include STM32_HAL_H
 
 STATIC volatile bool woke_up;
+STATIC uint32_t deep_sleep_ticks;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     self->monotonic_time = monotonic_time;
@@ -95,7 +96,24 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     uint32_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
     uint32_t wakeup_in_ticks = wakeup_in_secs * 1024;
 
+    // In the deep sleep case, we can't start the timer until the USB delay has finished
+    if (deep_sleep) {
+        deep_sleep_ticks = wakeup_in_ticks;
+    } else {
+        deep_sleep_ticks = 0;
+    }
     // Use alarm B, since port reserves A
+    // If true deep sleep is called, it will either ignore or overwrite this depending on
+    // whether it is shorter or longer than the USB delay
     stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B,timer_callback);
     stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B,wakeup_in_ticks);
+}
+
+void alarm_time_timealarm_prepare_for_deep_sleep(void) {
+    if (deep_sleep_ticks) {
+        // This is used for both fake and real deep sleep, so it still needs the callback
+        stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B,timer_callback);
+        stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B,deep_sleep_ticks);
+        deep_sleep_ticks = 0;
+    }
 }

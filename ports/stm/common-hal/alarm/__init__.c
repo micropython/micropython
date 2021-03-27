@@ -39,70 +39,73 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
 
+#define STM_WAKEUP_UNDEF    0
 #define STM_WAKEUP_GPIO     1
-#define STM_WAKEUP_TIMER    2
+#define STM_WAKEUP_RTC      2
+
+#define STM_ALARM_FLAG      RTC->BKP0R
 
 void common_hal_alarm_reset(void) {
+    // Reset the alarm flag
+    STM_ALARM_FLAG = 0x00;
     // alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
-    // alarm_touch_touchalarm_reset();
     // esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
 STATIC uint8_t _get_wakeup_cause(void) {
+    // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_us_up()) {
         return STM_WAKEUP_GPIO;
     }
     if (alarm_time_timealarm_woke_us_up()) {
-        return STM_WAKEUP_TIMER;
+        return STM_WAKEUP_RTC;
     }
-    return 0;
+    if (RTC->BKP0R & 0x01) {
+        // We've woken from deep sleep. Was it the WKUP pin or the RTC?
+        if (RTC->ISR & RTC_FLAG_ALRBF) {
+            // Alarm B is the deep sleep alarm
+            return STM_WAKEUP_RTC;
+        } else {
+            return STM_WAKEUP_GPIO;
+        }
+    }
+    return STM_WAKEUP_UNDEF;
 }
 
 bool common_hal_alarm_woken_from_sleep(void) {
-    return _get_wakeup_cause() != 0;
+    return _get_wakeup_cause() != STM_WAKEUP_UNDEF;
 }
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     if (alarm_pin_pinalarm_woke_us_up()) {
         return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
     }
-    // esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
-    // switch (cause) {
-    //     case ESP_SLEEP_WAKEUP_TIMER: {
-    //         return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
-    //     }
-
-    //     case ESP_SLEEP_WAKEUP_GPIO:
-    //     case ESP_SLEEP_WAKEUP_EXT0:
-    //     case ESP_SLEEP_WAKEUP_EXT1: {
-    //         return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
-    //     }
-
-    //     case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-    //         return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
-    //     }
-
-    //     case ESP_SLEEP_WAKEUP_UNDEFINED:
-    //     default:
-    //         // Not a deep sleep reset.
-    //         break;
-    // }
-    // return mp_const_none;
+    uint8_t cause = _get_wakeup_cause();
+    switch (cause) {
+        case STM_WAKEUP_RTC: {
+            return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+        }
+        case STM_WAKEUP_GPIO: {
+            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+        }
+        case STM_WAKEUP_UNDEF:
+        default:
+            // Not a deep sleep reset.
+            break;
+    }
     return mp_const_none;
 }
 
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
-    //return _get_wake_alarm(0, NULL);
-    return mp_const_none;
+    return _get_wake_alarm(0, NULL);
 }
 
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
-    // alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
 STATIC void _idle_until_alarm(void) {
@@ -144,16 +147,19 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,1);
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,0);
     alarm_pin_pinalarm_prepare_for_deep_sleep();
+    alarm_time_timealarm_prepare_for_deep_sleep();
     port_disable_tick();
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-    // alarm_touch_touchalarm_prepare_for_deep_sleep();
+
+    // Set a flag in the backup registers to indicate sleep wakeup
+    STM_ALARM_FLAG = 0x01;
     // HAL_PWR_EnableBkUpAccess();
     // __HAL_RCC_BACKUPRESET_FORCE();
     // __HAL_RCC_BACKUPRESET_RELEASE();
 
     HAL_PWR_EnterSTANDBYMode();
 
-    // Should never hit this
+    // The above shuts down RAM, so we should never hit this
     while(1);
 }
 

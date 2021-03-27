@@ -109,6 +109,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
 }
 
 void alarm_pin_pinalarm_reset(void) {
+    HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
     alarm_pin_triggered = 0;
     woke_up = false;
 }
@@ -118,20 +119,18 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
-
             if (deep_sleep) {
                 // Deep sleep only wakes on a rising edge from one pin, WKUP (PA00)
+                // All pin settings are handled automatically.
                 if (alarm->pin != &pin_PA00) {
                     mp_raise_ValueError(translate("Only the WKUP pin can be used to wake from Deep Sleep"));
                 }
-                HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-                __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-                HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-
+                // We can't actually turn WakeUp on here, since enabling it disables EXTI,
+                // so we put it off until right before sleeping.
                 deep_wkup_enabled = true;
-            } else {
-                stm_peripherals_exti_enable(alarm->pin->number);
             }
+
+            stm_peripherals_exti_enable(alarm->pin->number);
         }
     }
 }
@@ -150,7 +149,9 @@ void alarm_pin_pinalarm_reset_alarms(bool deep_sleep, size_t n_alarms, const mp_
 // If we don't have WKUP enabled, ensure it's disabled
 // TODO; is this really required?
 void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
-    if (!deep_wkup_enabled) {
+    if (deep_wkup_enabled) {
         HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+        __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+        HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
     }
 }

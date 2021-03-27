@@ -92,7 +92,7 @@ void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true light sleep.
 //|     Thus, to use light sleep and save significant power,
-//      it may be necessary to disconnect from the host.
+//|     it may be necessary to disconnect from the host.
 //|     """
 //|     ...
 //|

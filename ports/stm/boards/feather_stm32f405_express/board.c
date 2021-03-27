@@ -37,6 +37,3 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
 
 }
-
-void board_deinit(void) {
-}
