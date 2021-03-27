@@ -100,6 +100,8 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
     make ${MAKEOPTS} -C ports/esp32
+    make ${MAKEOPTS} -C ports/esp32 clean
+    make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=/home/runner/work/micropython/micropython/examples/usercmodule/micropython.cmake
 }
 
 ########################################################################################
