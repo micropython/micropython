@@ -4,15 +4,31 @@
 
 #include "re1.5.h"
 
+#if defined(__GNUC__)
+#define constant_p(x) __builtin_constant_p(x)
+#else
+#define constant_p(x) (0)
+#endif
+
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
-#define EMIT(at, byte) (code ? (code[at] = byte) : (at))
+#define EMIT(at, byte) constant_p(byte) && byte == (int8_t) byte \
+    ? (code ? (code[at] = byte) : (at)) \
+    : _emit(at, code, byte, &err)
 #define PC (prog->bytelen)
+
+static void _emit(int at, char *code, int val, bool *err) {
+    *err |= val != (int8_t)val;
+    if (code) {
+        code[at] = val;
+    }
+}
 
 static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
 {
     char *code = sizecode ? NULL : prog->insts;
+    bool err = false;
     int start = PC;
     int term = PC;
     int alt_label = 0;
@@ -162,7 +178,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
     if (alt_label) {
         EMIT(alt_label, REL(alt_label, PC) + 1);
     }
-    return re;
+    return err ? NULL : re;
 }
 
 int re1_5_sizecode(const char *re)
