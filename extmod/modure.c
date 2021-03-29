@@ -18,7 +18,9 @@
 
 #include "re1.5/re1.5.h"
 
+#if CIRCUITPY_RE_DEBUG
 #define FLAG_DEBUG 0x1000
+#endif
 
 typedef struct _mp_obj_re_t {
     mp_obj_base_t base;
@@ -401,18 +403,24 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     }
     mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
     o->base.type = &re_type;
+    #if CIRCUITPY_RE_DEBUG
     int flags = 0;
     if (n_args > 1) {
         flags = mp_obj_get_int(args[1]);
     }
+    #else
+    (void)n_args;
+    #endif
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
     error:
         mp_raise_ValueError(translate("Error in regex"));
     }
+    #if CIRCUITPY_RE_DEBUG
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);
     }
+    #endif
     return MP_OBJ_FROM_PTR(o);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
@@ -456,7 +464,9 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     #if MICROPY_PY_URE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
     #endif
+    #if CIRCUITPY_RE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
@@ -471,7 +481,9 @@ const mp_obj_module_t mp_module_ure = {
 
 #define re1_5_fatal(x) assert(!x)
 #include "re1.5/compilecode.c"
+#if CIRCUITPY_RE_DEBUG
 #include "re1.5/dumpcode.c"
+#endif
 #include "re1.5/recursiveloop.c"
 #include "re1.5/charclass.c"
 
