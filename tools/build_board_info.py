@@ -109,7 +109,7 @@ def get_languages(list_all = False):
             languages.add(f.name[:-3])
     if not list_all:
         languages = languages & language_allow_list
-    return sorted(list(languages), key = lambda s: s.casefold())
+    return sorted(list(languages), key=str.casefold)
 
 
 def get_board_mapping():
@@ -301,6 +301,7 @@ def generate_download_info():
                 board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
+                board_modules = support_matrix.get(board_id, "[]")
 
                 for alias in [board_id] + board_info["aliases"]:
                     alias_info = board_mapping[alias]
@@ -311,7 +312,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix.get(alias, "[]"),
+                        "modules": board_modules,
                         "languages": languages,
                         "extensions": board_info["extensions"],
                     }
