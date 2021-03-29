@@ -313,8 +313,9 @@ void stm32_main(uint32_t reset_mode) {
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 
-    // Check if bootloader should be entered instead of main application
-    powerctrl_check_enter_bootloader();
+    // Hook for a board to run code at start up, for example check if a
+    // bootloader should be entered instead of the main application.
+    MICROPY_BOARD_STARTUP();
 
     // Enable caches and prefetch buffers
 
@@ -531,7 +532,7 @@ soft_reset:
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
     #if MICROPY_HW_FLASH_MOUNT_AT_BOOT
-    mounted_flash = init_flash_fs(reset_mode);
+    mounted_flash = init_flash_fs(state.reset_mode);
     #endif
 
     bool mounted_sdcard = false;

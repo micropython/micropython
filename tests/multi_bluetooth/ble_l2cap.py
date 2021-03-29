@@ -7,6 +7,10 @@
 from micropython import const
 import time, machine, bluetooth, random
 
+if not hasattr(bluetooth.BLE, "l2cap_connect"):
+    print("SKIP")
+    raise SystemExit
+
 TIMEOUT_MS = 1000
 
 _IRQ_CENTRAL_CONNECT = const(1)

@@ -62,6 +62,7 @@
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE              (1)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_STREAMS_NON_BLOCK               (1)
 #define MICROPY_MODULE_BUILTIN_INIT             (1)
 #define MICROPY_MODULE_WEAK_LINKS               (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS           (1)
@@ -70,23 +71,40 @@
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_FUNCTION_ATTRS               (1)
+#define MICROPY_PY_DESCRIPTORS                  (1)
+#define MICROPY_PY_DELATTR_SETATTR              (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE         (1)
+#define MICROPY_PY_BUILTINS_STR_CENTER          (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION       (1)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES      (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW          (1)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS         (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES       (1)
+#define MICROPY_PY_BUILTINS_FROZENSET           (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT           (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS          (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS      (1)
+#define MICROPY_PY_BUILTINS_COMPILE             (1)
 #define MICROPY_PY_BUILTINS_INPUT               (1)
+#define MICROPY_PY_BUILTINS_POW3                (1)
 #define MICROPY_PY_BUILTINS_HELP                (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN           (1)
-#define MICROPY_PY___FILE__                     (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO         (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN           (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE            (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT      (1)
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (1)
+#define MICROPY_PY_MATH_FACTORIAL               (1)
+#define MICROPY_PY_MATH_ISCLOSE                 (1)
+#define MICROPY_PY_CMATH                        (1)
 #define MICROPY_PY_IO_IOBASE                    (1)
 #define MICROPY_PY_IO_FILEIO                    (1)
 #define MICROPY_PY_SYS_MAXSIZE                  (1)
 #define MICROPY_PY_SYS_STDFILES                 (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER             (1)
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
+#define MICROPY_PY_UERRNO                       (1)
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
 
@@ -118,6 +136,12 @@
 #define MICROPY_PY_FRAMEBUF                     (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
+#define MICROPY_VFS_FAT                         (1)
+
+// fatfs configuration
+#define MICROPY_FATFS_ENABLE_LFN                (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_RPATH                     (2)
 
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio

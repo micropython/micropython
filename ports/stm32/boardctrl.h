@@ -28,6 +28,10 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP powerctrl_check_enter_bootloader
+#endif
+
 #ifndef MICROPY_BOARD_EARLY_INIT
 #define MICROPY_BOARD_EARLY_INIT()
 #endif

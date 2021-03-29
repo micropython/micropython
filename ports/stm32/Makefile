@@ -18,8 +18,8 @@ include $(BOARD_DIR)/mpconfigboard.mk
 QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(QSTR_GENERATED_HEADERS)
-QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
+QSTR_DEFS += qstrdefsport.h $(QSTR_GENERATED_HEADERS)
+QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
@@ -145,7 +145,8 @@ endif
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
 CXXFLAGS += $(CXXFLAGS_MOD)
 ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
-LDFLAGS += -L$(dir $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a))
+LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
+LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 # Options for mpy-cross

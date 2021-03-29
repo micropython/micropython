@@ -1,0 +1,7 @@
+MCU_SERIES = MIMXRT1052
+MCU_VARIANT = MIMXRT1052DVL6B
+
+JLINK_PATH ?= /media/RT1050-EVK/
+
+deploy: $(BUILD)/firmware.bin
+	cp $< $(JLINK_PATH)

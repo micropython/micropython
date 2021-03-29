@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
-#define MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
 
-#include <stdint.h>
+#include "lib/oofatfs/ff.h"
+#include "hardware/rtc.h"
 
-#if MICROPY_GCREGS_SETJMP
-#include <setjmp.h>
-typedef jmp_buf gc_helper_regs_t;
-#else
-
-#if defined(__x86_64__)
-typedef uintptr_t gc_helper_regs_t[6];
-#elif defined(__i386__)
-typedef uintptr_t gc_helper_regs_t[4];
-#elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
-typedef uintptr_t gc_helper_regs_t[10];
-#elif defined(__aarch64__)
-typedef uintptr_t gc_helper_regs_t[11]; // x19-x29
-#endif
-
-#endif
-
-void gc_helper_collect_regs_and_stack(void);
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_GCHELPER_H
+MP_WEAK DWORD get_fattime(void) {
+    datetime_t t;
+    rtc_get_datetime(&t);
+    return ((2000 + t.year - 1980) << 25) | ((t.month) << 21) | ((t.day) << 16) | ((t.hour) << 11) | ((t.min) << 5) | (t.sec / 2);
+}

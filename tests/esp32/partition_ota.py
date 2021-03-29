@@ -95,7 +95,7 @@ def copy_partition(src, dest):
         if sz - addr < 4096:
             blk = blk[: sz - addr]
         if addr & 0xFFFF == 0:
-            # need to show progress to run-tests else it times out
+            # need to show progress to run-tests.py else it times out
             print("   ... 0x{:06x}".format(addr))
         src.readblocks(addr >> 12, blk)
         dest.writeblocks(addr >> 12, blk)

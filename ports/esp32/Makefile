@@ -37,7 +37,7 @@ deploy:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) flash
 
 erase:
-	idf.py $(IDFPY_FLAGS) erase_flash
+	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))

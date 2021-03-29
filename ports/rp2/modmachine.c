@@ -30,12 +30,15 @@
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_pulse.h"
+#include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
 
 #include "modmachine.h"
+#include "uart.h"
 #include "hardware/clocks.h"
 #include "hardware/watchdog.h"
 #include "pico/bootrom.h"
+#include "pico/stdlib.h"
 #include "pico/unique_id.h"
 
 #define RP2_RESET_PWRON (1)
@@ -80,10 +83,22 @@ STATIC mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
-STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
+    } else {
+        mp_int_t freq = mp_obj_get_int(args[0]);
+        if (!set_sys_clock_khz(freq / 1000, false)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
+        }
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
+        return mp_const_none;
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_idle(void) {
     best_effort_wfe_or_timeout(make_timeout_time_ms(1));
@@ -149,6 +164,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },

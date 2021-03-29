@@ -21,6 +21,11 @@ of Git for your operating system to follow through the rest of the steps.
    Learn about the basic git commands in this `Git Handbook <https://guides.github.com/introduction/git-handbook/>`_
    or any other sources on the internet.
 
+.. note::
+   A .git-blame-ignore-revs file is included which avoids the output of git blame getting cluttered
+   by commits which are only for formatting code but have no functional changes. See `git blame documentation
+   <https://git-scm.com/docs/git-blame#Documentation/git-blame.txt---ignore-revltrevgt>`_ on how to use this.
+
 Get the code
 ------------
 
@@ -273,7 +278,7 @@ To run a selection of tests on a board/device connected over USB use:
 .. code-block:: bash
 
    $ cd tests
-   $ ./run-tests --target minimal --device /dev/ttyACM0
+   $ ./run-tests.py --target minimal --device /dev/ttyACM0
 
 See also :ref:`writingtests`.
 

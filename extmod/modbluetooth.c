@@ -619,6 +619,11 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
         }
         result->items[i] = MP_OBJ_FROM_PTR(service_handles);
     }
+
+    // Free temporary arrays.
+    m_del(uint16_t *, handles, len);
+    m_del(size_t, num_handles, len);
+
     return MP_OBJ_FROM_PTR(result);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gatts_register_services_obj, bluetooth_ble_gatts_register_services);
