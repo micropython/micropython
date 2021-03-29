@@ -32,6 +32,39 @@ from concurrent.futures import ThreadPoolExecutor
 
 SUPPORTED_PORTS = ['atmel-samd', 'cxd56', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'raspberrypi', 'stm']
 
+aliases_by_board = {
+    "circuitplayground_express": [
+        "circuitplayground_express_4h",
+        "circuitplayground_express_digikey_pycon2019",
+    ],
+    "pybadge": ["edgebadge"],
+    "pyportal": ["pyportal_pynt"],
+    "gemma_m0": ["gemma_m0_pycon2018"],
+    "pewpew10": ["pewpew13"],
+}
+
+aliases_brand_names = {
+    "circuitplayground_express_4h":
+        "Adafruit Circuit Playground Express 4-H",
+    "circuitplayground_express_digikey_pycon2019":
+        "Circuit Playground Express Digi-Key PyCon 2019",
+    "edgebadge":
+        "Adafruit EdgeBadge",
+    "pyportal_pynt":
+        "Adafruit PyPortal Pynt",
+    "gemma_m0_pycon2018":
+        "Adafruit Gemma M0 PyCon 2018",
+    "pewpew13":
+        "PewPew 13",
+}
+
+additional_modules = {
+    "fontio": "CIRCUITPY_DISPLAYIO",
+    "terminalio": "CIRCUITPY_DISPLAYIO",
+    # "socket": "CIRCUITPY_NETWORK",
+    "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
+}
+
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
     """
@@ -71,8 +104,11 @@ def build_module_map():
     full_build = False
     for module in modules:
         full_name = module
-        search_name = module.lstrip("_")
-        re_pattern = "CIRCUITPY_{}\s*\??=\s*(.+)".format(search_name.upper())
+        if module in additional_modules:
+            search_identifier = additional_modules[module]
+        else:
+            search_identifier = 'CIRCUITPY_'+module.lstrip("_").upper()
+        re_pattern = f"{re.escape(search_identifier)}\s*\??=\s*(.+)"
         find_config = re.findall(re_pattern, configs)
         if not find_config:
             continue
@@ -84,11 +120,12 @@ def build_module_map():
         else:
             default_val = "None"
 
-        base[search_name] = {
+        base[module] = {
             "name": full_name,
             "full_build": str(full_build),
             "default_value": default_val,
-            "excluded": {}
+            "excluded": {},
+            "key": search_identifier,
         }
 
     return base
@@ -164,14 +201,28 @@ def support_matrix_by_board(use_branded_name=True):
 
         board_modules = []
         for module in base:
-            key = f'CIRCUITPY_{module.upper()}'
+            key = base[module]['key']
             if int(lookup_setting(settings, key, '0')):
                 board_modules.append(base[module]['name'])
+        board_modules.sort()
 
-        return (board_name, sorted(board_modules))
+        # generate alias boards too
+        board_matrix = [(board_name, board_modules)]
+        if entry.name in aliases_by_board:
+            for alias in aliases_by_board[entry.name]:
+                if use_branded_name:
+                    if alias in aliases_brand_names:
+                        alias = aliases_brand_names[alias]
+                    else:
+                        alias = alias.replace("_"," ").title()
+                board_matrix.append( (alias, board_modules) )
+
+        return board_matrix # this is now a list of (board,modules)
 
     executor = ThreadPoolExecutor(max_workers=os.cpu_count())
-    boards = dict(sorted(executor.map(support_matrix, all_ports_all_boards())))
+    mapped_exec = executor.map(support_matrix, all_ports_all_boards())
+    # flatmap with comprehensions
+    boards = dict(sorted([board for matrix in mapped_exec for board in matrix]))
 
     #print(json.dumps(boards, indent=2))
     return boards
