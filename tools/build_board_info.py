@@ -301,7 +301,6 @@ def generate_download_info():
                 board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
-                board_modules = support_matrix.get(board_id, "[]")
 
                 for alias in [board_id] + board_info["aliases"]:
                     alias_info = board_mapping[alias]
@@ -312,7 +311,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": board_modules,
+                        "modules": support_matrix[board_id],
                         "languages": languages,
                         "extensions": board_info["extensions"],
                     }
