@@ -1,6 +1,6 @@
 # Top-level cmake file for building MicroPython on ESP32.
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.18)
 
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
@@ -40,6 +40,8 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 idf_build_component(${CMAKE_SOURCE_DIR}/../../lib/lv_bindings/lvgl)
 idf_build_set_property(COMPILE_DEFINITIONS "-DLV_KCONFIG_IGNORE" APPEND)
+separate_arguments(LV_CFLAGS UNIX_COMMAND $ENV{LV_CFLAGS})
+idf_build_set_property(COMPILE_DEFINITIONS "${LV_CFLAGS}" APPEND)
 
 project(micropython)
 
