@@ -441,6 +441,7 @@ STATIC mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_
         return 1;
     }
     *bufinfo = self->bufinfo;
+    bufinfo->typecode = 'H';
     return 0;
 }
 
