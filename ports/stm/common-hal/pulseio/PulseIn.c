@@ -46,13 +46,10 @@ STATIC TIM_HandleTypeDef tim_handle;
 STATIC uint32_t overflow_count = 0;
 STATIC uint8_t refcount = 0;
 
-void pulsein_timer_event_handler(void)
-{
+void pulsein_timer_event_handler(void) {
     // Detect TIM Update event
-    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET)
-    {
-        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET)
-        {
+    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET) {
+        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET) {
             __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
             overflow_count++;
         }
@@ -68,12 +65,14 @@ STATIC void pulsein_exti_event_handler(uint8_t num) {
     EXTI->PR = 1 << num;
 
     pulseio_pulsein_obj_t* self = callback_obj_ref[num];
-    if ( !self ) return;
+    if (!self) {
+        return;
+    }
 
     if (self->first_edge) {
         // first pulse is opposite state from idle
         bool state = HAL_GPIO_ReadPin(pin_port(self->pin->port), pin_mask(self->pin->number));
-        if ( self->idle_state != state ) {
+        if (self->idle_state != state) {
             self->first_edge = false;
         }
     } else {
@@ -109,19 +108,19 @@ void pulsein_reset(void) {
     refcount = 0;
 }
 
-void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
-                                             uint16_t maxlen, bool idle_state) {
+void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin,
+    uint16_t maxlen, bool idle_state) {
     // STM32 has one shared EXTI for each pin number, 0-15
     if (!stm_peripherals_exti_is_free(pin->number)) {
         mp_raise_RuntimeError(translate("Pin interrupt already in use"));
     }
 
     // Allocate pulse buffer
-    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         //TODO: free the EXTI here?
         mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"),
-                          maxlen * sizeof(uint16_t));
+            maxlen * sizeof(uint16_t));
     }
 
     // Set internal variables
@@ -137,12 +136,12 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
 
     if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) {
         // Find a suitable timer
-        TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
+        TIM_TypeDef *tim_instance = stm_peripherals_find_timer();
         stm_peripherals_timer_reserve(tim_instance);
 
         // Set ticks to 1us
         uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
-        uint32_t prescaler = source/1000000;
+        uint32_t prescaler = source / 1000000;
 
         // Enable clocks and IRQ, set callback
         stm_peripherals_timer_preinit(tim_instance, 4, pulsein_timer_event_handler);
@@ -150,7 +149,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
         // Set the new period
         tim_handle.Instance = tim_instance;
         tim_handle.Init.Prescaler = prescaler - 1;
-        tim_handle.Init.Period = 0x10000 - 1; //65 ms period (maximum)
+        tim_handle.Init.Period = 0x10000 - 1; // 65 ms period (maximum)
         HAL_TIM_Base_Init(&tim_handle);
 
         // Set registers manually
@@ -182,11 +181,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     common_hal_mcu_pin_claim(pin);
 }
 
-bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
-    return (self->pin == NULL);
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
+    return self->pin == NULL;
 }
 
-void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
@@ -207,9 +206,9 @@ void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
     self->paused = true;
 }
 
-void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t trigger_duration) {
+void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t trigger_duration) {
     // Make sure we're paused.
-    if ( !self->paused ) {
+    if (!self->paused) {
         common_hal_pulseio_pulsein_pause(self);
     }
 
@@ -261,7 +260,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
         mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
@@ -274,14 +273,14 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *self) {
     return self->maxlen;
 }
 
-bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
     return self->paused;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
     return self->len;
 }

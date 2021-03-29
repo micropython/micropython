@@ -80,11 +80,11 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
         static const mp_arg_t allowed_args[] = {
             { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
             { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
-            { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1<<15} },
+            { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 << 15} },
         };
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
         mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-        const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+        const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
         common_hal_pulseio_pulseout_construct(self, NULL, pin, args[ARG_frequency].u_int, args[ARG_frequency].u_int);
     }
     return MP_OBJ_FROM_PTR(self);
@@ -159,5 +159,5 @@ const mp_obj_type_t pulseio_pulseout_type = {
     { &mp_type_type },
     .name = MP_QSTR_PulseOut,
     .make_new = pulseio_pulseout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pulseio_pulseout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pulseio_pulseout_locals_dict,
 };

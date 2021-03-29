@@ -31,7 +31,7 @@
 #include "shared-module/msgpack/__init__.h"
 #include "shared-bindings/msgpack/ExtType.h"
 
-#define MP_OBJ_IS_METH(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_bound_method))
+#define MP_OBJ_IS_METH(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_bound_method))
 
 //| """Pack object in msgpack format
 //|
@@ -158,5 +158,5 @@ STATIC MP_DEFINE_CONST_DICT(msgpack_module_globals, msgpack_module_globals_table
 
 const mp_obj_module_t msgpack_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&msgpack_module_globals,
+    .globals = (mp_obj_dict_t *)&msgpack_module_globals,
 };

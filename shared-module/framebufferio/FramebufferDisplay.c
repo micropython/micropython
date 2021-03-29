@@ -45,10 +45,10 @@
         ? self->framebuffer_protocol->method(self->framebuffer) \
         : (default_value))
 
-void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
-        mp_obj_t framebuffer,
-        uint16_t rotation,
-        bool auto_refresh) {
+void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t *self,
+    mp_obj_t framebuffer,
+    uint16_t rotation,
+    bool auto_refresh) {
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
     self->framebuffer = framebuffer;
@@ -73,12 +73,12 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         fb_getter_default(get_bytes_per_cell, 2),
         fb_getter_default(get_reverse_pixels_in_byte, false),
         fb_getter_default(get_reverse_pixels_in_word, false)
-    );
+        );
 
     self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);
     self->row_stride = fb_getter_default(get_row_stride, 0);
     if (self->row_stride == 0) {
-        self->row_stride = self->core.width * self->core.colorspace.depth/8;
+        self->row_stride = self->core.width * self->core.colorspace.depth / 8;
     }
 
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
@@ -102,40 +102,40 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, auto_refresh);
 }
 
-bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t* self, displayio_group_t* root_group) {
+bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
     return displayio_display_core_show(&self->core, root_group);
 }
 
-uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t* self){
+uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
     return displayio_display_core_get_width(&self->core);
 }
 
-uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_framebufferdisplay_obj_t* self){
+uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_framebufferdisplay_obj_t *self) {
     return displayio_display_core_get_height(&self->core);
 }
 
-bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t* self) {
+bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->framebuffer_protocol->get_auto_brightness) {
         return self->framebuffer_protocol->get_auto_brightness(self->framebuffer);
     }
     return true;
 }
 
-bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t* self, bool auto_brightness) {
+bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t *self, bool auto_brightness) {
     if (self->framebuffer_protocol->set_auto_brightness) {
         return self->framebuffer_protocol->set_auto_brightness(self->framebuffer, auto_brightness);
     }
     return false;
 }
 
-mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t* self) {
+mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->framebuffer_protocol->get_brightness) {
         return self->framebuffer_protocol->get_brightness(self->framebuffer);
     }
     return -1;
 }
 
-bool common_hal_framebufferio_framebufferdisplay_set_brightness(framebufferio_framebufferdisplay_obj_t* self, mp_float_t brightness) {
+bool common_hal_framebufferio_framebufferdisplay_set_brightness(framebufferio_framebufferdisplay_obj_t *self, mp_float_t brightness) {
     bool ok = false;
     if (self->framebuffer_protocol->set_brightness) {
         self->framebuffer_protocol->set_brightness(self->framebuffer, brightness);
@@ -144,11 +144,11 @@ bool common_hal_framebufferio_framebufferdisplay_set_brightness(framebufferio_fr
     return ok;
 }
 
-mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebufferio_framebufferdisplay_obj_t* self) {
+mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebufferio_framebufferdisplay_obj_t *self) {
     return self->framebuffer;
 }
 
-STATIC const displayio_area_t* _get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
+STATIC const displayio_area_t *_get_refresh_areas(framebufferio_framebufferdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -158,8 +158,8 @@ STATIC const displayio_area_t* _get_refresh_areas(framebufferio_framebufferdispl
     return NULL;
 }
 
-#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r/8] |= (1 << (r & 7)))
-STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area, uint8_t *dirty_row_bitmask) {
+#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r / 8] |= (1 << (r & 7)))
+STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t *self, const displayio_area_t *area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -233,11 +233,11 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
         size_t rowstride = self->row_stride;
         uint8_t *dest = buf + subrectangle.y1 * rowstride + subrectangle.x1 * self->core.colorspace.depth / 8;
-        uint8_t *src = (uint8_t*)buffer;
+        uint8_t *src = (uint8_t *)buffer;
         size_t rowsize = (subrectangle.x2 - subrectangle.x1) * self->core.colorspace.depth / 8;
 
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
-            assert(dest >= buf && dest < endbuf && dest+rowsize <= endbuf);
+            assert(dest >= buf && dest < endbuf && dest + rowsize <= endbuf);
             MARK_ROW_DIRTY(i);
             memcpy(dest, src, rowsize);
             dest += rowstride;
@@ -251,13 +251,13 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
     return true;
 }
 
-STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
+STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
-    if(!self->bufinfo.buf) {
+    if (!self->bufinfo.buf) {
         return;
     }
     displayio_display_core_start_refresh(&self->core);
-    const displayio_area_t* current_area = _get_refresh_areas(self);
+    const displayio_area_t *current_area = _get_refresh_areas(self);
     if (current_area) {
         uint8_t dirty_row_bitmask[(self->core.height + 7) / 8];
         memset(dirty_row_bitmask, 0, sizeof(dirty_row_bitmask));
@@ -271,10 +271,10 @@ STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
     displayio_display_core_finish_refresh(&self->core);
 }
 
-void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_framebufferdisplay_obj_t* self, int rotation){
+void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_framebufferdisplay_obj_t *self, int rotation) {
     bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
     bool will_transposed = (rotation == 90 || rotation == 270);
-    if(transposed != will_transposed) {
+    if (transposed != will_transposed) {
         int tmp = self->core.width;
         self->core.width = self->core.height;
         self->core.height = tmp;
@@ -289,12 +289,12 @@ void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_fram
     }
 }
 
-uint16_t common_hal_framebufferio_framebufferdisplay_get_rotation(framebufferio_framebufferdisplay_obj_t* self){
+uint16_t common_hal_framebufferio_framebufferdisplay_get_rotation(framebufferio_framebufferdisplay_obj_t *self) {
     return self->core.rotation;
 }
 
 
-bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebufferdisplay_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
+bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebufferdisplay_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
     if (!self->auto_refresh && !self->first_manual_refresh) {
         uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
@@ -319,12 +319,12 @@ bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebuff
     return true;
 }
 
-bool common_hal_framebufferio_framebufferdisplay_get_auto_refresh(framebufferio_framebufferdisplay_obj_t* self) {
+bool common_hal_framebufferio_framebufferdisplay_get_auto_refresh(framebufferio_framebufferdisplay_obj_t *self) {
     return self->auto_refresh;
 }
 
-void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_framebufferdisplay_obj_t* self,
-                                                   bool auto_refresh) {
+void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_framebufferdisplay_obj_t *self,
+    bool auto_refresh) {
     self->first_manual_refresh = !auto_refresh;
     if (auto_refresh != self->auto_refresh) {
         if (auto_refresh) {
@@ -336,12 +336,12 @@ void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_
     self->auto_refresh = auto_refresh;
 }
 
-STATIC void _update_backlight(framebufferio_framebufferdisplay_obj_t* self) {
+STATIC void _update_backlight(framebufferio_framebufferdisplay_obj_t *self) {
     // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
     // should account for ambient light when possible.
 }
 
-void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self) {
+void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t *self) {
     _update_backlight(self);
 
     if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
@@ -349,21 +349,21 @@ void framebufferio_framebufferdisplay_background(framebufferio_framebufferdispla
     }
 }
 
-void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
+void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t *self) {
     common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, false);
     release_display_core(&self->core);
     self->framebuffer_protocol->deinit(self->framebuffer);
     self->base.type = &mp_type_NoneType;
 }
 
-void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self) {
+void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
     displayio_display_core_collect_ptrs(&self->core);
 }
 
-void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self) {
+void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t *self) {
     mp_obj_type_t *fb_type = mp_obj_get_type(self->framebuffer);
-    if(fb_type != NULL && fb_type != &mp_type_NoneType) {
+    if (fb_type != NULL && fb_type != &mp_type_NoneType) {
         common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
         common_hal_framebufferio_framebufferdisplay_show(self, NULL);
         self->core.full_refresh = true;

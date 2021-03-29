@@ -36,12 +36,12 @@
 
 extern const mp_obj_type_t displayio_fourwire_type;
 
-void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
-    busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
-    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate,
+void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t *self,
+    busio_spi_obj_t *spi, const mcu_pin_obj_t *command,
+    const mcu_pin_obj_t *chip_select, const mcu_pin_obj_t *reset, uint32_t baudrate,
     uint8_t polarity, uint8_t phase);
 
-void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self);
+void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t *self);
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t self);
 bool common_hal_displayio_fourwire_bus_free(mp_obj_t self);

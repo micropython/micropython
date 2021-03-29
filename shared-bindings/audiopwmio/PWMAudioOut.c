@@ -275,5 +275,5 @@ const mp_obj_type_t audiopwmio_pwmaudioout_type = {
     { &mp_type_type },
     .name = MP_QSTR_PWMAudioOut,
     .make_new = audiopwmio_pwmaudioout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiopwmio_pwmaudioout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiopwmio_pwmaudioout_locals_dict,
 };

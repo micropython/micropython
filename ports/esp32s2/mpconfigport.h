@@ -36,7 +36,7 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
-	CIRCUITPY_COMMON_ROOT_POINTERS
+    CIRCUITPY_COMMON_ROOT_POINTERS
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 

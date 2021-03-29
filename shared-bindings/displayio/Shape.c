@@ -84,7 +84,7 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
 //|         ...
 //|
 STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *args) {
-    (void) n_args;
+    (void)n_args;
     displayio_shape_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t y;
     if (!mp_obj_get_int_maybe(args[1], &y)) {
@@ -113,5 +113,5 @@ const mp_obj_type_t displayio_shape_type = {
     { &mp_type_type },
     .name = MP_QSTR_Shape,
     .make_new = displayio_shape_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_shape_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_shape_locals_dict,
 };

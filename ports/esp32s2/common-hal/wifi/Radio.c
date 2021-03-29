@@ -71,7 +71,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
-	// esp_wifi_start() would default to soft-AP, thus setting it to station
+        // esp_wifi_start() would default to soft-AP, thus setting it to station
         start_station(self);
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
@@ -127,7 +127,7 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     esp_netif_set_hostname(self->netif, hostname);
 }
 
-wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
+wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
@@ -149,7 +149,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
     start_station(self);
 
-    wifi_config_t* config = &self->sta_config;
+    wifi_config_t *config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
     config->sta.ssid[ssid_len] = 0;
     memcpy(&config->sta.password, password, password_len);
@@ -158,7 +158,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     // From esp_wifi_types.h:
     //   Generally, station_config.bssid_set needs to be 0; and it needs
     //   to be 1 only when users need to check the MAC address of the AP
-    if (bssid_len > 0){
+    if (bssid_len > 0) {
         memcpy(&config->sta.bssid, bssid, bssid_len);
         config->sta.bssid[bssid_len] = 0;
         config->sta.bssid_set = true;
@@ -202,7 +202,7 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     }
 
     // Make sure the interface is in STA mode
-    if (!self->sta_mode){
+    if (!self->sta_mode) {
         return mp_const_none;
     }
 
@@ -212,7 +212,7 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     //    ESP_OK: succeed
     //    ESP_ERR_WIFI_CONN: The station interface don't initialized
     //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
-    if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
+    if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK) {
         return mp_const_none;
     } else {
         if (strlen(self->ap_info.record.country.cc) == 0) {

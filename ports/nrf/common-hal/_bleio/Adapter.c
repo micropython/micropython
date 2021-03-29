@@ -80,7 +80,7 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
-    .start_address = (uint8_t*) CIRCUITPY_BLE_CONFIG_START_ADDR,
+    .start_address = (uint8_t *)CIRCUITPY_BLE_CONFIG_START_ADDR,
     .len = CIRCUITPY_BLE_CONFIG_SIZE,
 };
 
@@ -94,17 +94,17 @@ bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 extern uint32_t _ram_start;
 STATIC uint32_t ble_stack_enable(void) {
     nrf_clock_lf_cfg_t clock_config = {
-#if BOARD_HAS_32KHZ_XTAL
-        .source       = NRF_CLOCK_LF_SRC_XTAL,
-        .rc_ctiv      = 0,
+        #if BOARD_HAS_32KHZ_XTAL
+        .source = NRF_CLOCK_LF_SRC_XTAL,
+        .rc_ctiv = 0,
         .rc_temp_ctiv = 0,
-        .accuracy     = NRF_CLOCK_LF_ACCURACY_20_PPM,
-#else
-        .source       = NRF_CLOCK_LF_SRC_RC,
-        .rc_ctiv      = 16,
+        .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM,
+        #else
+        .source = NRF_CLOCK_LF_SRC_RC,
+        .rc_ctiv = 16,
         .rc_temp_ctiv = 2,
-        .accuracy     = NRF_CLOCK_LF_ACCURACY_250_PPM,
-#endif
+        .accuracy = NRF_CLOCK_LF_ACCURACY_250_PPM,
+        #endif
     };
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);
@@ -211,20 +211,20 @@ STATIC uint32_t ble_stack_enable(void) {
     ble_gap_conn_params_t gap_conn_params = {
         .min_conn_interval = BLE_MIN_CONN_INTERVAL,
         .max_conn_interval = BLE_MAX_CONN_INTERVAL,
-        .slave_latency     = BLE_SLAVE_LATENCY,
-        .conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT,
+        .slave_latency = BLE_SLAVE_LATENCY,
+        .conn_sup_timeout = BLE_CONN_SUP_TIMEOUT,
     };
-   err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-   if (err_code != NRF_SUCCESS) {
-       return err_code;
-   }
+    err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
 
-   err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
-   return err_code;
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
+    return err_code;
 }
 
 STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
-    bleio_adapter_obj_t *self = (bleio_adapter_obj_t*)self_in;
+    bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
 
     // For debugging.
     // mp_printf(&mp_plat_print, "Adapter event: 0x%04x\n", ble_evt->header.evt_id);
@@ -242,7 +242,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             }
 
             // Central has connected.
-            ble_gap_evt_connected_t* connected = &ble_evt->evt.gap_evt.params.connected;
+            ble_gap_evt_connected_t *connected = &ble_evt->evt.gap_evt.params.connected;
 
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
@@ -284,7 +284,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
             connection->pair_status = PAIR_NOT_PAIRED;
             if (connection->connection_obj != mp_const_none) {
-                bleio_connection_obj_t* obj = connection->connection_obj;
+                bleio_connection_obj_t *obj = connection->connection_obj;
                 obj->connection = NULL;
                 obj->disconnect_reason = ble_evt->evt.gap_evt.params.disconnected.reason;
             }
@@ -310,7 +310,7 @@ STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
     check_nrf_error(sd_ble_gap_addr_get(address));
 }
 
-char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 , 0};
+char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0, 0};
 
 STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     uint8_t len = sizeof(default_ble_name) - 1;
@@ -324,7 +324,7 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     default_ble_name[len - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
     default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-    common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
+    common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
 }
 
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
@@ -401,7 +401,7 @@ bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_addre
     return sd_ble_gap_addr_set(&local_address) == NRF_SUCCESS;
 }
 
-mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
+mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     uint16_t len = 0;
     sd_ble_gap_device_name_get(NULL, &len);
     uint8_t buf[len];
@@ -409,18 +409,18 @@ mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     if (err_code != NRF_SUCCESS) {
         return NULL;
     }
-    return mp_obj_new_str((char*) buf, len);
+    return mp_obj_new_str((char *)buf, len);
 }
 
-void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name) {
+void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {
     ble_gap_conn_sec_mode_t sec;
     sec.lv = 0;
     sec.sm = 0;
-    sd_ble_gap_device_name_set(&sec, (const uint8_t*) name, strlen(name));
+    sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, strlen(name));
 }
 
 STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
-    bleio_scanresults_obj_t *scan_results = (bleio_scanresults_obj_t*)scan_results_in;
+    bleio_scanresults_obj_t *scan_results = (bleio_scanresults_obj_t *)scan_results_in;
 
     if (ble_evt->header.evt_id == BLE_GAP_EVT_TIMEOUT &&
         ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN) {
@@ -435,14 +435,14 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
     ble_gap_evt_adv_report_t *report = &ble_evt->evt.gap_evt.params.adv_report;
 
     shared_module_bleio_scanresults_append(scan_results,
-                                           supervisor_ticks_ms64(),
-                                           report->type.connectable,
-                                           report->type.scan_response,
-                                           report->rssi,
-                                           report->peer_addr.addr,
-                                           report->peer_addr.addr_type,
-                                           report->data.p_data,
-                                           report->data.len);
+        supervisor_ticks_ms64(),
+        report->type.connectable,
+        report->type.scan_response,
+        report->rssi,
+        report->peer_addr.addr,
+        report->peer_addr.addr_type,
+        report->data.p_data,
+        report->data.len);
 
     const uint32_t err_code = sd_ble_gap_scan_start(NULL, scan_results->common_hal_data);
     if (err_code != NRF_SUCCESS) {
@@ -452,7 +452,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
     return true;
 }
 
-mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
+mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t *prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
             mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
@@ -462,7 +462,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
     size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
     uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
-    ble_data_t * sd_data = (ble_data_t *) raw_data;
+    ble_data_t *sd_data = (ble_data_t *)raw_data;
     self->scan_results->common_hal_data = sd_data;
     sd_data->len = max_packet_size;
     sd_data->p_data = raw_data + sizeof(ble_data_t);
@@ -517,7 +517,7 @@ typedef struct {
 } connect_info_t;
 
 STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
-    connect_info_t *info = (connect_info_t*)info_in;
+    connect_info_t *info = (connect_info_t *)info_in;
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
@@ -546,7 +546,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     addr.addr_type = address->type;
     mp_buffer_info_t address_buf_info;
     mp_get_buffer_raise(address->bytes, &address_buf_info, MP_BUFFER_READ);
-    memcpy(addr.addr, (uint8_t *) address_buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
+    memcpy(addr.addr, (uint8_t *)address_buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
 
     ble_gap_scan_params_t scan_params = {
         .interval = MSEC_TO_UNITS(100, UNIT_0_625_MS),
@@ -621,7 +621,7 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 }
 
 STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
-    bleio_adapter_obj_t *self = (bleio_adapter_obj_t*)self_in;
+    bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_ADV_SET_TERMINATED:
@@ -651,7 +651,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 
     uint32_t err_code;
     bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
-                    scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
+        scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
 
     uint8_t adv_type;
     if (extended) {
@@ -749,39 +749,39 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
             uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
             uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
             timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
-        }
-        else {
+        } else {
             timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
         }
     } else {
         if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
             mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
-                                        UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
+                UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
         }
     }
 
     // The advertising data buffers must not move, because the SoftDevice depends on them.
     // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
-        self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->advertising_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
     }
     if (self->scan_response_data == NULL) {
-        self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->scan_response_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
     }
 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
     memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
 
     check_nrf_error(_common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
-                                                                self->advertising_data,
-                                                                advertising_data_bufinfo->len,
-                                                                self->scan_response_data,
-                                                                scan_response_data_bufinfo->len));
+        self->advertising_data,
+        advertising_data_bufinfo->len,
+        self->scan_response_data,
+        scan_response_data_bufinfo->len));
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
-    if (adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
+    if (adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET) {
         return;
+    }
 
     // TODO: Don't actually stop. Switch to advertising CircuitPython if we don't already have a connection.
     const uint32_t err_code = sd_ble_gap_adv_stop(adv_handle);
@@ -830,12 +830,12 @@ void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
     bonding_erase_storage();
 }
 
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
-    gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void**)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
+void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
+    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
+    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
 }
 
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
+void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {
     common_hal_bleio_adapter_stop_scan(adapter);
     if (adapter->current_advertising_data != NULL) {
         common_hal_bleio_adapter_stop_advertising(adapter);

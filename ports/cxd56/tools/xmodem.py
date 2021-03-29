@@ -1,4 +1,4 @@
-'''
+"""
 ===============================
  XMODEM file transfer protocol
 ===============================
@@ -105,13 +105,12 @@ YMODEM Batch Transmission Session (1 file)
                                             <-- ACK
 
 
-'''
+"""
 
-__author__ = 'Wijnand Modderman <maze@pyth0n.org>'
-__copyright__ = ['Copyright (c) 2010 Wijnand Modderman',
-                 'Copyright (c) 1981 Chuck Forsberg']
-__license__ = 'MIT'
-__version__ = '0.3.2'
+__author__ = "Wijnand Modderman <maze@pyth0n.org>"
+__copyright__ = ["Copyright (c) 2010 Wijnand Modderman", "Copyright (c) 1981 Chuck Forsberg"]
+__license__ = "MIT"
+__version__ = "0.3.2"
 
 import logging
 import time
@@ -120,7 +119,7 @@ from functools import partial
 import collections
 
 # Loggerr
-log = logging.getLogger('xmodem')
+log = logging.getLogger("xmodem")
 
 # Protocol bytes
 SOH = bytes([0x01])
@@ -130,11 +129,11 @@ ACK = bytes([0x06])
 DLE = bytes([0x10])
 NAK = bytes([0x15])
 CAN = bytes([0x18])
-CRC = bytes([0x43]) # C
+CRC = bytes([0x43])  # C
 
 
 class XMODEM(object):
-    '''
+    """
     XMODEM Protocol handler, expects an object to read from and an object to
     write to.
 
@@ -156,59 +155,283 @@ class XMODEM(object):
     :param pad: Padding character to make the packets match the packet size
     :type pad: char
 
-    '''
+    """
 
     # crctab calculated by Mark G. Mendel, Network Systems Corporation
     crctable = [
-        0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
-        0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
-        0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
-        0x9339, 0x8318, 0xb37b, 0xa35a, 0xd3bd, 0xc39c, 0xf3ff, 0xe3de,
-        0x2462, 0x3443, 0x0420, 0x1401, 0x64e6, 0x74c7, 0x44a4, 0x5485,
-        0xa56a, 0xb54b, 0x8528, 0x9509, 0xe5ee, 0xf5cf, 0xc5ac, 0xd58d,
-        0x3653, 0x2672, 0x1611, 0x0630, 0x76d7, 0x66f6, 0x5695, 0x46b4,
-        0xb75b, 0xa77a, 0x9719, 0x8738, 0xf7df, 0xe7fe, 0xd79d, 0xc7bc,
-        0x48c4, 0x58e5, 0x6886, 0x78a7, 0x0840, 0x1861, 0x2802, 0x3823,
-        0xc9cc, 0xd9ed, 0xe98e, 0xf9af, 0x8948, 0x9969, 0xa90a, 0xb92b,
-        0x5af5, 0x4ad4, 0x7ab7, 0x6a96, 0x1a71, 0x0a50, 0x3a33, 0x2a12,
-        0xdbfd, 0xcbdc, 0xfbbf, 0xeb9e, 0x9b79, 0x8b58, 0xbb3b, 0xab1a,
-        0x6ca6, 0x7c87, 0x4ce4, 0x5cc5, 0x2c22, 0x3c03, 0x0c60, 0x1c41,
-        0xedae, 0xfd8f, 0xcdec, 0xddcd, 0xad2a, 0xbd0b, 0x8d68, 0x9d49,
-        0x7e97, 0x6eb6, 0x5ed5, 0x4ef4, 0x3e13, 0x2e32, 0x1e51, 0x0e70,
-        0xff9f, 0xefbe, 0xdfdd, 0xcffc, 0xbf1b, 0xaf3a, 0x9f59, 0x8f78,
-        0x9188, 0x81a9, 0xb1ca, 0xa1eb, 0xd10c, 0xc12d, 0xf14e, 0xe16f,
-        0x1080, 0x00a1, 0x30c2, 0x20e3, 0x5004, 0x4025, 0x7046, 0x6067,
-        0x83b9, 0x9398, 0xa3fb, 0xb3da, 0xc33d, 0xd31c, 0xe37f, 0xf35e,
-        0x02b1, 0x1290, 0x22f3, 0x32d2, 0x4235, 0x5214, 0x6277, 0x7256,
-        0xb5ea, 0xa5cb, 0x95a8, 0x8589, 0xf56e, 0xe54f, 0xd52c, 0xc50d,
-        0x34e2, 0x24c3, 0x14a0, 0x0481, 0x7466, 0x6447, 0x5424, 0x4405,
-        0xa7db, 0xb7fa, 0x8799, 0x97b8, 0xe75f, 0xf77e, 0xc71d, 0xd73c,
-        0x26d3, 0x36f2, 0x0691, 0x16b0, 0x6657, 0x7676, 0x4615, 0x5634,
-        0xd94c, 0xc96d, 0xf90e, 0xe92f, 0x99c8, 0x89e9, 0xb98a, 0xa9ab,
-        0x5844, 0x4865, 0x7806, 0x6827, 0x18c0, 0x08e1, 0x3882, 0x28a3,
-        0xcb7d, 0xdb5c, 0xeb3f, 0xfb1e, 0x8bf9, 0x9bd8, 0xabbb, 0xbb9a,
-        0x4a75, 0x5a54, 0x6a37, 0x7a16, 0x0af1, 0x1ad0, 0x2ab3, 0x3a92,
-        0xfd2e, 0xed0f, 0xdd6c, 0xcd4d, 0xbdaa, 0xad8b, 0x9de8, 0x8dc9,
-        0x7c26, 0x6c07, 0x5c64, 0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1,
-        0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8,
-        0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
+        0x0000,
+        0x1021,
+        0x2042,
+        0x3063,
+        0x4084,
+        0x50A5,
+        0x60C6,
+        0x70E7,
+        0x8108,
+        0x9129,
+        0xA14A,
+        0xB16B,
+        0xC18C,
+        0xD1AD,
+        0xE1CE,
+        0xF1EF,
+        0x1231,
+        0x0210,
+        0x3273,
+        0x2252,
+        0x52B5,
+        0x4294,
+        0x72F7,
+        0x62D6,
+        0x9339,
+        0x8318,
+        0xB37B,
+        0xA35A,
+        0xD3BD,
+        0xC39C,
+        0xF3FF,
+        0xE3DE,
+        0x2462,
+        0x3443,
+        0x0420,
+        0x1401,
+        0x64E6,
+        0x74C7,
+        0x44A4,
+        0x5485,
+        0xA56A,
+        0xB54B,
+        0x8528,
+        0x9509,
+        0xE5EE,
+        0xF5CF,
+        0xC5AC,
+        0xD58D,
+        0x3653,
+        0x2672,
+        0x1611,
+        0x0630,
+        0x76D7,
+        0x66F6,
+        0x5695,
+        0x46B4,
+        0xB75B,
+        0xA77A,
+        0x9719,
+        0x8738,
+        0xF7DF,
+        0xE7FE,
+        0xD79D,
+        0xC7BC,
+        0x48C4,
+        0x58E5,
+        0x6886,
+        0x78A7,
+        0x0840,
+        0x1861,
+        0x2802,
+        0x3823,
+        0xC9CC,
+        0xD9ED,
+        0xE98E,
+        0xF9AF,
+        0x8948,
+        0x9969,
+        0xA90A,
+        0xB92B,
+        0x5AF5,
+        0x4AD4,
+        0x7AB7,
+        0x6A96,
+        0x1A71,
+        0x0A50,
+        0x3A33,
+        0x2A12,
+        0xDBFD,
+        0xCBDC,
+        0xFBBF,
+        0xEB9E,
+        0x9B79,
+        0x8B58,
+        0xBB3B,
+        0xAB1A,
+        0x6CA6,
+        0x7C87,
+        0x4CE4,
+        0x5CC5,
+        0x2C22,
+        0x3C03,
+        0x0C60,
+        0x1C41,
+        0xEDAE,
+        0xFD8F,
+        0xCDEC,
+        0xDDCD,
+        0xAD2A,
+        0xBD0B,
+        0x8D68,
+        0x9D49,
+        0x7E97,
+        0x6EB6,
+        0x5ED5,
+        0x4EF4,
+        0x3E13,
+        0x2E32,
+        0x1E51,
+        0x0E70,
+        0xFF9F,
+        0xEFBE,
+        0xDFDD,
+        0xCFFC,
+        0xBF1B,
+        0xAF3A,
+        0x9F59,
+        0x8F78,
+        0x9188,
+        0x81A9,
+        0xB1CA,
+        0xA1EB,
+        0xD10C,
+        0xC12D,
+        0xF14E,
+        0xE16F,
+        0x1080,
+        0x00A1,
+        0x30C2,
+        0x20E3,
+        0x5004,
+        0x4025,
+        0x7046,
+        0x6067,
+        0x83B9,
+        0x9398,
+        0xA3FB,
+        0xB3DA,
+        0xC33D,
+        0xD31C,
+        0xE37F,
+        0xF35E,
+        0x02B1,
+        0x1290,
+        0x22F3,
+        0x32D2,
+        0x4235,
+        0x5214,
+        0x6277,
+        0x7256,
+        0xB5EA,
+        0xA5CB,
+        0x95A8,
+        0x8589,
+        0xF56E,
+        0xE54F,
+        0xD52C,
+        0xC50D,
+        0x34E2,
+        0x24C3,
+        0x14A0,
+        0x0481,
+        0x7466,
+        0x6447,
+        0x5424,
+        0x4405,
+        0xA7DB,
+        0xB7FA,
+        0x8799,
+        0x97B8,
+        0xE75F,
+        0xF77E,
+        0xC71D,
+        0xD73C,
+        0x26D3,
+        0x36F2,
+        0x0691,
+        0x16B0,
+        0x6657,
+        0x7676,
+        0x4615,
+        0x5634,
+        0xD94C,
+        0xC96D,
+        0xF90E,
+        0xE92F,
+        0x99C8,
+        0x89E9,
+        0xB98A,
+        0xA9AB,
+        0x5844,
+        0x4865,
+        0x7806,
+        0x6827,
+        0x18C0,
+        0x08E1,
+        0x3882,
+        0x28A3,
+        0xCB7D,
+        0xDB5C,
+        0xEB3F,
+        0xFB1E,
+        0x8BF9,
+        0x9BD8,
+        0xABBB,
+        0xBB9A,
+        0x4A75,
+        0x5A54,
+        0x6A37,
+        0x7A16,
+        0x0AF1,
+        0x1AD0,
+        0x2AB3,
+        0x3A92,
+        0xFD2E,
+        0xED0F,
+        0xDD6C,
+        0xCD4D,
+        0xBDAA,
+        0xAD8B,
+        0x9DE8,
+        0x8DC9,
+        0x7C26,
+        0x6C07,
+        0x5C64,
+        0x4C45,
+        0x3CA2,
+        0x2C83,
+        0x1CE0,
+        0x0CC1,
+        0xEF1F,
+        0xFF3E,
+        0xCF5D,
+        0xDF7C,
+        0xAF9B,
+        0xBFBA,
+        0x8FD9,
+        0x9FF8,
+        0x6E17,
+        0x7E36,
+        0x4E55,
+        0x5E74,
+        0x2E93,
+        0x3EB2,
+        0x0ED1,
+        0x1EF0,
     ]
 
-    def __init__(self, getc, putc, mode='xmodem', pad=b'\x1a'):
+    def __init__(self, getc, putc, mode="xmodem", pad=b"\x1a"):
         self.getc = getc
         self.putc = putc
         self.mode = mode
         self.pad = pad
 
     def abort(self, count=2, timeout=60):
-        '''
+        """
         Send an abort sequence using CAN bytes.
-        '''
+        """
         for counter in range(0, count):
             self.putc(CAN, timeout)
 
     def send(self, stream, retry=32, timeout=360, quiet=0, callback=None):
-        '''
+        """
         Send a stream via the XMODEM protocol.
 
             >>> stream = file('/etc/issue', 'rb')
@@ -235,14 +458,11 @@ class XMODEM(object):
                          Expected callback signature:
                          def callback(total_packets, success_count, error_count)
         :type callback: callable
-        '''
+        """
 
         # initialize protocol
         try:
-            packet_size = dict(
-                xmodem    = 128,
-                xmodem1k  = 1024,
-            )[self.mode]
+            packet_size = dict(xmodem=128, xmodem1k=1024)[self.mode]
         except AttributeError:
             raise ValueError("An invalid mode was supplied")
 
@@ -260,14 +480,13 @@ class XMODEM(object):
                     break
                 elif char == CAN:
                     if not quiet:
-                        print('received CAN', file=sys.stderr)
+                        print("received CAN", file=sys.stderr)
                     if cancel:
                         return False
                     else:
                         cancel = 1
                 else:
-                    log.error('send ERROR expected NAK/CRC, got %s' % \
-                        (ord(char),))
+                    log.error("send ERROR expected NAK/CRC, got %s" % (ord(char),))
 
             error_count += 1
             if error_count >= retry:
@@ -282,7 +501,7 @@ class XMODEM(object):
         while True:
             data = stream.read(packet_size)
             if not data:
-                log.info('sending EOT')
+                log.info("sending EOT")
                 # end of stream
                 break
             total_packets += 1
@@ -299,11 +518,11 @@ class XMODEM(object):
                 else:  # packet_size == 1024
                     self.putc(STX)
                 self.putc(bytes([sequence]))
-                self.putc(bytes([0xff - sequence]))
+                self.putc(bytes([0xFF - sequence]))
                 self.putc(data)
                 if crc_mode:
                     self.putc(bytes([crc >> 8]))
-                    self.putc(bytes([crc & 0xff]))
+                    self.putc(bytes([crc & 0xFF]))
                 else:
                     self.putc(bytes([crc]))
 
@@ -321,13 +540,13 @@ class XMODEM(object):
                         # excessive amounts of retransmissions requested,
                         # abort transfer
                         self.abort(timeout=timeout)
-                        log.warning('excessive NAKs, transfer aborted')
+                        log.warning("excessive NAKs, transfer aborted")
                         return False
 
                     # return to loop and resend
                     continue
                 else:
-                    log.error('Not ACK, Not NAK')
+                    log.error("Not ACK, Not NAK")
                     error_count += 1
                     if isinstance(callback, collections.Callable):
                         callback(total_packets, success_count, error_count)
@@ -335,7 +554,7 @@ class XMODEM(object):
                         # excessive amounts of retransmissions requested,
                         # abort transfer
                         self.abort(timeout=timeout)
-                        log.warning('excessive protocol errors, transfer aborted')
+                        log.warning("excessive protocol errors, transfer aborted")
                         return False
 
                     # return to loop and resend
@@ -343,7 +562,7 @@ class XMODEM(object):
 
                 # protocol error
                 self.abort(timeout=timeout)
-                log.error('protocol error')
+                log.error("protocol error")
                 return False
 
             # keep track of sequence
@@ -353,7 +572,7 @@ class XMODEM(object):
             # end of transmission
             self.putc(EOT)
 
-            #An ACK should be returned
+            # An ACK should be returned
             char = self.getc(1, timeout)
             if char == ACK:
                 break
@@ -361,13 +580,13 @@ class XMODEM(object):
                 error_count += 1
                 if error_count >= retry:
                     self.abort(timeout=timeout)
-                    log.warning('EOT was not ACKd, transfer aborted')
+                    log.warning("EOT was not ACKd, transfer aborted")
                     return False
 
         return True
 
     def recv(self, stream, crc_mode=1, retry=16, timeout=60, delay=1, quiet=0):
-        '''
+        """
         Receive a stream via the XMODEM protocol.
 
             >>> stream = file('/etc/issue', 'wb')
@@ -376,7 +595,7 @@ class XMODEM(object):
 
         Returns the number of bytes received on success or ``None`` in case of
         failure.
-        '''
+        """
 
         # initiate protocol
         error_count = 0
@@ -403,7 +622,7 @@ class XMODEM(object):
                 error_count += 1
                 continue
             elif char == SOH:
-                #crc_mode = 0
+                # crc_mode = 0
                 break
             elif char == STX:
                 break
@@ -442,7 +661,7 @@ class XMODEM(object):
                         cancel = 1
                 else:
                     if not quiet:
-                        print('recv ERROR expected SOH/EOT, got', ord(char), file=sys.stderr)
+                        print("recv ERROR expected SOH/EOT, got", ord(char), file=sys.stderr)
                     error_count += 1
                     if error_count >= retry:
                         self.abort()
@@ -451,7 +670,7 @@ class XMODEM(object):
             error_count = 0
             cancel = 0
             seq1 = ord(self.getc(1))
-            seq2 = 0xff - ord(self.getc(1))
+            seq2 = 0xFF - ord(self.getc(1))
             if seq1 == sequence and seq2 == sequence:
                 # sequence is ok, read packet
                 # packet_size + checksum
@@ -459,14 +678,14 @@ class XMODEM(object):
                 if crc_mode:
                     csum = (ord(data[-2]) << 8) + ord(data[-1])
                     data = data[:-2]
-                    log.debug('CRC (%04x <> %04x)' % \
-                        (csum, self.calc_crc(data)))
+                    log.debug("CRC (%04x <> %04x)" % (csum, self.calc_crc(data)))
                     valid = csum == self.calc_crc(data)
                 else:
                     csum = data[-1]
                     data = data[:-1]
-                    log.debug('checksum (checksum(%02x <> %02x)' % \
-                        (ord(csum), self.calc_checksum(data)))
+                    log.debug(
+                        "checksum (checksum(%02x <> %02x)" % (ord(csum), self.calc_checksum(data))
+                    )
                     valid = ord(csum) == self.calc_checksum(data)
 
                 # valid data, append chunk
@@ -480,14 +699,13 @@ class XMODEM(object):
             else:
                 # consume data
                 self.getc(packet_size + 1 + crc_mode)
-                self.debug('expecting sequence %d, got %d/%d' % \
-                    (sequence, seq1, seq2))
+                self.debug("expecting sequence %d, got %d/%d" % (sequence, seq1, seq2))
 
             # something went wrong, request retransmission
             self.putc(NAK)
 
     def calc_checksum(self, data, checksum=0):
-        '''
+        """
         Calculate the checksum for a given block of data, can also be used to
         update a checksum.
 
@@ -496,11 +714,11 @@ class XMODEM(object):
             >>> hex(csum)
             '0x3c'
 
-        '''
+        """
         return (sum(map(ord, data)) + checksum) % 256
 
     def calc_crc(self, data, crc=0):
-        '''
+        """
         Calculate the Cyclic Redundancy Check for a given block of data, can
         also be used to update a CRC.
 
@@ -509,51 +727,50 @@ class XMODEM(object):
             >>> hex(crc)
             '0xd5e3'
 
-        '''
+        """
         for char in data:
-            crc = (crc << 8) ^ self.crctable[((crc >> 8) ^ int(char)) & 0xff]
-        return crc & 0xffff
+            crc = (crc << 8) ^ self.crctable[((crc >> 8) ^ int(char)) & 0xFF]
+        return crc & 0xFFFF
 
 
-XMODEM1k  = partial(XMODEM, mode='xmodem1k')
+XMODEM1k = partial(XMODEM, mode="xmodem1k")
 
 
 def run():
     import optparse
     import subprocess
 
-    parser = optparse.OptionParser(usage='%prog [<options>] <send|recv> filename filename')
-    parser.add_option('-m', '--mode', default='xmodem',
-        help='XMODEM mode (xmodem, xmodem1k)')
+    parser = optparse.OptionParser(usage="%prog [<options>] <send|recv> filename filename")
+    parser.add_option("-m", "--mode", default="xmodem", help="XMODEM mode (xmodem, xmodem1k)")
 
     options, args = parser.parse_args()
     if len(args) != 3:
-        parser.error('invalid arguments')
+        parser.error("invalid arguments")
         return 1
 
-    elif args[0] not in ('send', 'recv'):
-        parser.error('invalid mode')
+    elif args[0] not in ("send", "recv"):
+        parser.error("invalid mode")
         return 1
 
     def _func(so, si):
         import select
         import subprocess
 
-        print('si', si)
-        print('so', so)
+        print("si", si)
+        print("so", so)
 
         def getc(size, timeout=3):
-            w,t,f = select.select([so], [], [], timeout)
+            w, t, f = select.select([so], [], [], timeout)
             if w:
                 data = so.read(size)
             else:
                 data = None
 
-            print('getc(', repr(data), ')')
+            print("getc(", repr(data), ")")
             return data
 
         def putc(data, timeout=3):
-            w,t,f = select.select([], [si], [], timeout)
+            w, t, f = select.select([], [si], [], timeout)
             if t:
                 si.write(data)
                 si.flush()
@@ -561,30 +778,31 @@ def run():
             else:
                 size = None
 
-            print('putc(', repr(data), repr(size), ')')
+            print("putc(", repr(data), repr(size), ")")
             return size
 
         return getc, putc
 
     def _pipe(*command):
-        pipe = subprocess.Popen(command,
-            stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        pipe = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         return pipe.stdout, pipe.stdin
 
-    if args[0] == 'recv':
+    if args[0] == "recv":
         import io
-        getc, putc = _func(*_pipe('sz', '--xmodem', args[2]))
-        stream = open(args[1], 'wb')
+
+        getc, putc = _func(*_pipe("sz", "--xmodem", args[2]))
+        stream = open(args[1], "wb")
         xmodem = XMODEM(getc, putc, mode=options.mode)
         status = xmodem.recv(stream, retry=8)
         stream.close()
 
-    elif args[0] == 'send':
-        getc, putc = _func(*_pipe('rz', '--xmodem', args[2]))
-        stream = open(args[1], 'rb')
+    elif args[0] == "send":
+        getc, putc = _func(*_pipe("rz", "--xmodem", args[2]))
+        stream = open(args[1], "rb")
         xmodem = XMODEM(getc, putc, mode=options.mode)
         status = xmodem.send(stream, retry=8)
         stream.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(run())

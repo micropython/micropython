@@ -27,7 +27,7 @@
 #define CONF_TC3_PRESCALER TC_CTRLA_PRESCALER_DIV8_Val
 #endif
 
-//<o> Period Value <0x00000000-0xFFFFFFFF>
+// <o> Period Value <0x00000000-0xFFFFFFFF>
 // <id> tc_per
 #ifndef CONF_TC3_PER
 #define CONF_TC3_PER 0x32
@@ -52,7 +52,7 @@
 /* Caculate pwm ccx register value based on WAVE_PER_VAL and Waveform Duty Value */
 #if CONF_TC3_PRESCALER < TC_CTRLA_PRESCALER_DIV64_Val
 #define CONF_TC3_CC0                                                                                                   \
-	((uint32_t)(((double)CONF_TC3_WAVE_PER_VAL * CONF_GCLK_TC3_FREQUENCY) / 1000000 / (1 << CONF_TC3_PRESCALER) - 1))
+    ((uint32_t)(((double)CONF_TC3_WAVE_PER_VAL * CONF_GCLK_TC3_FREQUENCY) / 1000000 / (1 << CONF_TC3_PRESCALER) - 1))
 #define CONF_TC3_CC1 ((CONF_TC3_CC0 * CONF_TC3_WAVE_DUTY_VAL) / 1000)
 
 #elif CONF_TC3_PRESCALER == TC_CTRLA_PRESCALER_DIV64_Val
@@ -83,7 +83,7 @@
 
 // <h> Advanced settings
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC3_WAVEGEN   TC_CTRLA_WAVEGEN_MFRQ_Val
+// #define CONF_TC3_WAVEGEN   TC_CTRLA_WAVEGEN_MFRQ_Val
 
 // <q> Run in standby
 // <i> Indicates whether the will continue running in standby sleep mode or not
@@ -103,14 +103,14 @@
 #endif
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC3_DIR     0
-//#define CONF_TC3_ONESHOT 0
+// #define CONF_TC3_DIR     0
+// #define CONF_TC3_ONESHOT 0
 
 /* Commented intentionally. Timer uses fixed value. May be used by other abstractions based on TC. */
-//#define CONF_TC3_INVEN0 0
-//#define CONF_TC3_INVEN1 0
-//#define CONF_TC3_CPTEN0 0
-//#define CONF_TC3_CPTEN1 0
+// #define CONF_TC3_INVEN0 0
+// #define CONF_TC3_INVEN1 0
+// #define CONF_TC3_CPTEN0 0
+// #define CONF_TC3_CPTEN1 0
 
 // <q> Debug Running Mode
 // <i> Indicates whether the Debug Running Mode is enabled or not

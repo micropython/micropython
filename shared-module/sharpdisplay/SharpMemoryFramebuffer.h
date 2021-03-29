@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    busio_spi_obj_t* bus;
+    busio_spi_obj_t *bus;
     busio_spi_obj_t inline_bus;
     digitalio_digitalinout_obj_t chip_select;
     mp_buffer_info_t bufinfo;
@@ -41,7 +41,7 @@ typedef struct {
     uint16_t width, height;
     uint32_t baudrate;
 
-    bool full_refresh:1;
+    bool full_refresh : 1;
 } sharpdisplay_framebuffer_obj_t;
 
 void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_t *self, busio_spi_obj_t *spi, mcu_pin_obj_t *chip_select, int baudrate, int width, int height);
@@ -56,4 +56,4 @@ void common_hal_sharpdisplay_framebuffer_reconstruct(sharpdisplay_framebuffer_ob
 
 extern const framebuffer_p_t sharpdisplay_framebuffer_proto;
 
-void common_hal_sharpdisplay_framebuffer_collect_ptrs(sharpdisplay_framebuffer_obj_t*);
+void common_hal_sharpdisplay_framebuffer_collect_ptrs(sharpdisplay_framebuffer_obj_t *);

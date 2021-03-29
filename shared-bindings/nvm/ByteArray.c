@@ -41,7 +41,8 @@
 //|     Usage::
 //|
 //|        import microcontroller
-//|        microcontroller.nvm[0:3] = b\"\xcc\x10\x00\""""
+//|        microcontroller.nvm[0:3] = b"\xcc\x10\x00"
+//|     """
 //|
 
 //|     def __init__(self) -> None:
@@ -60,9 +61,12 @@ STATIC mp_obj_t nvm_bytearray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     nvm_bytearray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_nvm_bytearray_get_length(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -93,7 +97,7 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
     } else {
         nvm_bytearray_obj_t *self = MP_OBJ_TO_PTR(self_in);
         if (0) {
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_nvm_bytearray_get_length(self), index_in, &slice)) {
@@ -103,11 +107,11 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
                 // Assign
                 size_t src_len = slice.stop - slice.start;
-                uint8_t* src_items;
+                uint8_t *src_items;
                 if (MP_OBJ_IS_TYPE(value, &mp_type_array) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_bytearray) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_memoryview) ||
-                        MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
+                    MP_OBJ_IS_TYPE(value, &mp_type_bytearray) ||
+                    MP_OBJ_IS_TYPE(value, &mp_type_memoryview) ||
+                    MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
@@ -136,11 +140,11 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
                 common_hal_nvm_bytearray_get_bytes(self, slice.start, len, items);
                 return mp_obj_new_bytearray_by_ref(len, items);
             }
-#endif
+        #endif
         } else {
             // Single index rather than slice.
             size_t index = mp_get_index(self->base.type, common_hal_nvm_bytearray_get_length(self),
-                    index_in, false);
+                index_in, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 uint8_t value_out;

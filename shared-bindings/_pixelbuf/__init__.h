@@ -31,4 +31,4 @@
 
 const int32_t colorwheel(float pos);
 
-#endif //CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+#endif // CP_SHARED_BINDINGS_PIXELBUF_INIT_H

@@ -48,5 +48,5 @@ const mp_obj_type_t vectorio_rectangle_type = {
     { &mp_type_type },
     .name = MP_QSTR_Rectangle,
     .make_new = vectorio_rectangle_make_new,
-    .locals_dict = (mp_obj_dict_t*)&vectorio_rectangle_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vectorio_rectangle_locals_dict,
 };

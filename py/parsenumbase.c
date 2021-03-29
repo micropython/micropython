@@ -31,7 +31,7 @@
 // find real radix base, and strip preceding '0x', '0o' and '0b'
 // puts base in *base, and returns number of bytes to skip the prefix
 size_t mp_parse_num_base(const char *str, size_t len, int *base) {
-    const byte *p = (const byte*)str;
+    const byte *p = (const byte *)str;
     if (len <= 1) {
         goto no_prefix;
     }
@@ -67,5 +67,5 @@ size_t mp_parse_num_base(const char *str, size_t len, int *base) {
             *base = 10;
         }
     }
-    return p - (const byte*)str;
+    return p - (const byte *)str;
 }

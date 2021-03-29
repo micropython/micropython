@@ -22,7 +22,7 @@ jobs:
         python-version: 3.8
     - name: Install deps
       run: |
-        pip install requests sh click
+        pip install -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version

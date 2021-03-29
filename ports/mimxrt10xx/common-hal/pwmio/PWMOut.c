@@ -41,28 +41,28 @@
 #include <stdio.h>
 
 // TODO
-//#include "samd/pins.h"
+// #include "samd/pins.h"
 
-//#undef ENABLE
+// #undef ENABLE
 //
-//#  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
-//#  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
+// #  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
+// #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
 //
-//static uint32_t tcc_periods[TCC_INST_NUM];
-//static uint32_t tc_periods[TC_INST_NUM];
+// static uint32_t tcc_periods[TCC_INST_NUM];
+// static uint32_t tc_periods[TC_INST_NUM];
 //
-//uint32_t target_tcc_frequencies[TCC_INST_NUM];
-//uint8_t tcc_refcount[TCC_INST_NUM];
+// uint32_t target_tcc_frequencies[TCC_INST_NUM];
+// uint8_t tcc_refcount[TCC_INST_NUM];
 //
 //// This bitmask keeps track of which channels of a TCC are currently claimed.
-//#ifdef SAMD21
-//uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
-//#endif
-//#ifdef SAMD51
-//uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
-//#endif
+// #ifdef SAMD21
+// uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
+// #endif
+// #ifdef SAMD51
+// uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
+// #endif
 //
-//static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
+// static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
 //    if (self->timer->is_tc) {
@@ -119,33 +119,34 @@ void pwmout_reset(void) {
 //    }
 }
 
-//static uint8_t tcc_channel(const pin_timer_t* t) {
+// static uint8_t tcc_channel(const pin_timer_t* t) {
 //    // For the SAMD51 this hardcodes the use of OTMX == 0x0, the output matrix mapping, which uses
 //    // SAMD21-style modulo mapping.
 //    return t->wave_output % tcc_cc_num[t->index];
-//}
+// }
 
-//bool channel_ok(const pin_timer_t* t) {
+// bool channel_ok(const pin_timer_t* t) {
 //    uint8_t channel_bit = 1 << tcc_channel(t);
 //    return (!t->is_tc && ((tcc_channels[t->index] & channel_bit) == 0)) ||
 //            t->is_tc;
-//}
+// }
 
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
 
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
-                                                    const mcu_pin_obj_t *pin,
-                                                    uint16_t duty,
-                                                    uint32_t frequency,
-                                                    bool variable_frequency) {
+    const mcu_pin_obj_t *pin,
+    uint16_t duty,
+    uint32_t frequency,
+    bool variable_frequency) {
     self->pin = pin;
     self->variable_frequency = variable_frequency;
 
     const uint32_t pwm_count = sizeof(mcu_pwm_list) / sizeof(mcu_pwm_obj_t);
 
     for (uint32_t i = 0; i < pwm_count; ++i) {
-        if (mcu_pwm_list[i].pin != pin)
+        if (mcu_pwm_list[i].pin != pin) {
             continue;
+        }
 
         printf("pwm: 0x%p, sum %d, chan %d, mux %d\r\n", mcu_pwm_list[i].pwm, mcu_pwm_list[i].submodule, mcu_pwm_list[i].channel, mcu_pwm_list[i].mux_mode);
 
@@ -161,7 +162,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     CLOCK_SetDiv(kCLOCK_AhbDiv, 0x2); /* Set AHB PODF to 2, divide by 3 */
     CLOCK_SetDiv(kCLOCK_IpgDiv, 0x3); /* Set IPG PODF to 3, divede by 4 */
 
-//TODO re-enable
+// TODO re-enable
 //    IOMUXC_SetPinMux(
 //      IOMUXC_GPIO_SD_02_FLEXPWM1_PWM0_A,         /* GPIO_02 is configured as FLEXPWM1_PWM0_A */
 //      0U);                                       /* Software Input On Field: Input Path is determined by functionality */
@@ -195,7 +196,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
      */
     PWM_GetDefaultConfig(&pwmConfig);
 
-    //pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
+    // pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
     pwmConfig.enableDebugMode = true;
 
     if (PWM_Init(PWM1, self->pwm->submodule, &pwmConfig) == kStatus_Fail) {
@@ -208,10 +209,10 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     /* Set deadtime count, we set this to about 650ns */
     uint16_t deadTimeVal = ((uint64_t)PWM_SRC_CLK_FREQ * 650) / 1000000000;
 
-    pwmSignal.pwmChannel       = self->pwm->channel;
-    pwmSignal.level            = kPWM_HighTrue;
+    pwmSignal.pwmChannel = self->pwm->channel;
+    pwmSignal.level = kPWM_HighTrue;
     pwmSignal.dutyCyclePercent = frequency / 2; /* 1 percent dutycycle */
-    pwmSignal.deadtimeValue    = deadTimeVal;
+    pwmSignal.deadtimeValue = deadTimeVal;
 
     PWM_SetupPwm(PWM1, self->pwm->submodule, &pwmSignal, 1, kPWM_SignedCenterAligned, frequency, PWM_SRC_CLK_FREQ);
 
@@ -364,11 +365,11 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     return PWMOUT_OK;
 }
 
-bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->pin == NULL;
 }
 
-void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
@@ -433,7 +434,7 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
 //    }
 }
 
-uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     return 0;
 //    const pin_timer_t* t = self->timer;
 //    if (t->is_tc) {
@@ -471,8 +472,8 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
 //    }
 }
 
-void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
-                                              uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
+    uint32_t frequency) {
 //    if (frequency == 0 || frequency > 6000000) {
 //        mp_raise_ValueError(translate("Invalid PWM frequency"));
 //    }
@@ -530,7 +531,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
 //    common_hal_pwmio_pwmout_set_duty_cycle(self, old_duty);
 }
 
-uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 //    uint32_t system_clock = common_hal_mcu_processor_get_frequency();
 //    const pin_timer_t* t = self->timer;
 //    uint8_t divisor;
@@ -546,6 +547,6 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
     return 0;
 }
 
-bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
 }

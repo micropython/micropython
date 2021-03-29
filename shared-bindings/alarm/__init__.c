@@ -168,7 +168,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_pin_globals, alarm_pin_globals_table);
 
 STATIC const mp_obj_module_t alarm_pin_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&alarm_pin_globals,
+    .globals = (mp_obj_dict_t *)&alarm_pin_globals,
 };
 
 STATIC const mp_map_elem_t alarm_time_globals_table[] = {
@@ -181,7 +181,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
 
 STATIC const mp_obj_module_t alarm_time_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&alarm_time_globals,
+    .globals = (mp_obj_dict_t *)&alarm_time_globals,
 };
 
 STATIC const mp_map_elem_t alarm_touch_globals_table[] = {
@@ -193,7 +193,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_touch_globals, alarm_touch_globals_table);
 
 STATIC const mp_obj_module_t alarm_touch_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&alarm_touch_globals,
+    .globals = (mp_obj_dict_t *)&alarm_touch_globals,
 };
 
 // The module table is mutable because .wake_alarm is a mutable attribute.
@@ -205,7 +205,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_light_sleep_until_alarms), MP_OBJ_FROM_PTR(&alarm_light_sleep_until_alarms_obj) },
     { MP_ROM_QSTR(MP_QSTR_exit_and_deep_sleep_until_alarms),
-                                               MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
+      MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
@@ -217,7 +217,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
 // Fetch value from module dict.
-mp_obj_t alarm_get_wake_alarm(void) {
+mp_obj_t shared_alarm_get_wake_alarm(void) {
     mp_map_elem_t *elem =
         mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
     if (elem) {
@@ -240,5 +240,10 @@ void shared_alarm_save_wake_alarm(void) {
 
 const mp_obj_module_t alarm_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&alarm_module_globals,
+    .globals = (mp_obj_dict_t *)&alarm_module_globals,
 };
+
+extern void port_idle_until_interrupt(void);
+MP_WEAK void common_hal_alarm_pretending_deep_sleep(void) {
+    port_idle_until_interrupt();
+}

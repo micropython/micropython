@@ -9,11 +9,11 @@ import re
 import sys
 
 # Handle size constants with K or M suffixes (allowed in .ld but not in Python).
-K_PATTERN = re.compile(r'([0-9]+)[kK]')
-K_REPLACE = r'(\1*1024)'
+K_PATTERN = re.compile(r"([0-9]+)[kK]")
+K_REPLACE = r"(\1*1024)"
 
-M_PATTERN = re.compile(r'([0-9]+)[mM]')
-M_REPLACE = r'(\1*1024*1024)'
+M_PATTERN = re.compile(r"([0-9]+)[mM]")
+M_REPLACE = r"(\1*1024*1024)"
 
 print()
 
@@ -51,8 +51,16 @@ used_flash = data + text
 free_flash = firmware_region - used_flash
 used_ram = data + bss
 free_ram = ram_region - used_ram
-print("{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(used_flash, free_flash, firmware_region, firmware_region / 1024))
-print("{} bytes used, {} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(used_ram, free_ram, ram_region, ram_region / 1024))
+print(
+    "{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(
+        used_flash, free_flash, firmware_region, firmware_region / 1024
+    )
+)
+print(
+    "{} bytes used, {} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(
+        used_ram, free_ram, ram_region, ram_region / 1024
+    )
+)
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data

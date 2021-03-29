@@ -37,7 +37,7 @@
 #include "components/lwip/lwip/src/include/lwip/sys.h"
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 
-STATIC socketpool_socket_obj_t * open_socket_handles[CONFIG_LWIP_MAX_SOCKETS];
+STATIC socketpool_socket_obj_t *open_socket_handles[CONFIG_LWIP_MAX_SOCKETS];
 
 void socket_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
@@ -52,7 +52,7 @@ void socket_reset(void) {
     }
 }
 
-bool register_open_socket(socketpool_socket_obj_t* self) {
+bool register_open_socket(socketpool_socket_obj_t *self) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i] == NULL) {
             open_socket_handles[i] = self;
@@ -62,8 +62,8 @@ bool register_open_socket(socketpool_socket_obj_t* self) {
     return false;
 }
 
-socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_obj_t* self,
-                                        uint8_t* ip, uint32_t *port) {
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
+    uint8_t *ip, uint32_t *port) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
     int newsoc = -1;
@@ -87,7 +87,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_o
 
     if (!timed_out) {
         // harmless on failure but avoiding memcpy is faster
-        memcpy((void *)ip, (void*)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
+        memcpy((void *)ip, (void *)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
         *port = accept_addr.sin_port;
     } else {
         mp_raise_OSError(ETIMEDOUT);
@@ -113,8 +113,8 @@ socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t* self,
-                                        const char* host, size_t hostlen, uint32_t port) {
+bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
+    const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
     bind_addr.sin_addr.s_addr = inet_addr(host);
     bind_addr.sin_family = AF_INET;
@@ -129,7 +129,7 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t* self,
     return result;
 }
 
-void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
+void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
     self->connected = false;
     if (self->num >= 0) {
         lwip_shutdown(self->num, 0);
@@ -144,8 +144,8 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
     }
 }
 
-bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self,
-                                            const char* host, size_t hostlen, uint32_t port) {
+bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
+    const char *host, size_t hostlen, uint32_t port) {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_socktype = SOCK_STREAM,
@@ -190,20 +190,20 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self,
     }
 }
 
-bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self) {
+bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t *self) {
     return self->num < 0;
 }
 
-bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self) {
+bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t *self) {
     return self->connected;
 }
 
-bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t* self, int backlog) {
+bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int backlog) {
     return lwip_listen(self->num, backlog) == 0;
 }
 
-mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,
-    uint8_t* buf, uint32_t len, uint8_t* ip, uint *port) {
+mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
+    uint8_t *buf, uint32_t len, uint8_t *ip, uint *port) {
 
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
@@ -213,9 +213,9 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     int received = -1;
     bool timed_out = false;
     while (received == -1 &&
-            !timed_out &&
-            !mp_hal_is_interrupted()) {
-        if (self->timeout_ms != (uint)-1  && self->timeout_ms != 0) {
+           !timed_out &&
+           !mp_hal_is_interrupted()) {
+        if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
@@ -228,8 +228,8 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     }
 
     if (!timed_out) {
-        memcpy((void *)ip, (void*)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
-        *port = source_addr.sin_port;
+        memcpy((void *)ip, (void *)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
+        *port = htons(source_addr.sin_port);
     } else {
         mp_raise_OSError(ETIMEDOUT);
     }
@@ -242,7 +242,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, uint32_t len) {
+mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int received = 0;
     bool timed_out = false;
 
@@ -251,13 +251,13 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
         uint64_t start_ticks = supervisor_ticks_ms64();
         received = -1;
         while (received == -1 &&
-                !timed_out &&
-                !mp_hal_is_interrupted()) {
+               !timed_out &&
+               !mp_hal_is_interrupted()) {
             if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
                 timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
             }
             RUN_BACKGROUND_TASKS;
-            received = lwip_recv(self->num, (void*) buf, len, 0);
+            received = lwip_recv(self->num, (void *)buf, len, 0);
 
             // In non-blocking mode, fail instead of looping
             if (received == -1 && self->timeout_ms == 0) {
@@ -274,7 +274,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, uint32_t len) {
+mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int sent = -1;
     if (self->num != -1) {
         // LWIP Socket
@@ -290,8 +290,8 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
     return sent;
 }
 
-mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
-    const char* host, size_t hostlen, uint32_t port, const uint8_t* buf, uint32_t len) {
+mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
+    const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len) {
 
     // Set parameters
     const struct addrinfo hints = {
@@ -323,6 +323,6 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
     return bytes_sent;
 }
 
-void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, uint32_t timeout_ms) {
+void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms) {
     self->timeout_ms = timeout_ms;
 }

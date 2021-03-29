@@ -43,14 +43,14 @@ STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, siz
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 2000000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
     busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi_bus].u_obj);
 
-    sharpdisplay_framebuffer_obj_t* self = &allocate_display_bus_or_raise()->sharpdisplay;
+    sharpdisplay_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->sharpdisplay;
     self->base.type = &sharpdisplay_framebuffer_type;
 
     common_hal_sharpdisplay_framebuffer_construct(self, spi, chip_select, args[ARG_baudrate].u_int, args[ARG_width].u_int, args[ARG_height].u_int);
@@ -60,7 +60,7 @@ STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, siz
 
 
 STATIC mp_int_t sharpdisplay_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t*)self_in;
+    sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
         return 1;
@@ -70,7 +70,7 @@ STATIC mp_int_t sharpdisplay_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_
 }
 
 STATIC mp_obj_t sharpdisplay_framebuffer_deinit(mp_obj_t self_in) {
-    sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t*)self_in;
+    sharpdisplay_framebuffer_obj_t *self = (sharpdisplay_framebuffer_obj_t *)self_in;
     common_hal_sharpdisplay_framebuffer_deinit(self);
 
     return mp_const_none;
@@ -88,5 +88,5 @@ const mp_obj_type_t sharpdisplay_framebuffer_type = {
     .buffer_p = { .get_buffer = sharpdisplay_framebuffer_get_buffer, },
     .make_new = sharpdisplay_framebuffer_make_new,
     .protocol = &sharpdisplay_framebuffer_proto,
-    .locals_dict = (mp_obj_dict_t*)&sharpdisplay_framebuffer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&sharpdisplay_framebuffer_locals_dict,
 };

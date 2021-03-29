@@ -69,6 +69,19 @@
 #include "shared-bindings/alarm/__init__.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
+#endif
+
+#if CIRCUITPY_CANIO
+#include "common-hal/canio/CAN.h"
+#endif
+
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -81,17 +94,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_BOARD
-#include "shared-module/board/__init__.h"
-#endif
-
-#if CIRCUITPY_BLEIO
-#include "shared-bindings/_bleio/__init__.h"
-#include "supervisor/shared/bluetooth.h"
-#endif
-
-#if CIRCUITPY_CANIO
-#include "common-hal/canio/CAN.h"
+#if CIRCUITPY_USB_CDC
+#include "shared-module/usb_cdc/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -395,9 +399,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // Make sure we have been awake long enough for USB to connect (enumeration delay).
             int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
             // Until it's safe to decide whether we're real/fake sleeping, just run the RGB
-            // if (connecting_delay_ticks > 0) {
-            //     port_interrupt_after_ticks(connecting_delay_ticks);
-            // // } else if (!fake_sleeping) {
             if (connecting_delay_ticks < 0 && !fake_sleeping) {
                 fake_sleeping = true;
                 new_status_color(BLACK);
@@ -422,7 +423,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
-            port_idle_until_interrupt();
+            #if CIRCUITPY_ALARM
+                common_hal_alarm_pretending_deep_sleep();
+            #else
+                port_idle_until_interrupt();
+            #endif
         }
     }
 }

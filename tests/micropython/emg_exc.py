@@ -2,6 +2,7 @@
 
 import micropython
 import sys
+
 try:
     import uio
 except ImportError:
@@ -13,6 +14,7 @@ try:
     micropython.alloc_emergency_exception_buf(256)
 except AttributeError:
     pass
+
 
 def f():
     micropython.heap_lock()
@@ -30,5 +32,6 @@ def f():
             print(l.split('"')[2])
         else:
             print(l)
+
 
 f()

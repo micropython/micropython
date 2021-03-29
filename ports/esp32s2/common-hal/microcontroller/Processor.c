@@ -66,17 +66,21 @@ STATIC uint8_t swap_nibbles(uint8_t v) {
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     memset(raw_id, 0, COMMON_HAL_MCU_PROCESSOR_UID_LENGTH);
 
-    uint8_t *ptr = &raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH-1];
+    uint8_t *ptr = &raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH - 1];
     // MAC address contains 48 bits (6 bytes), 32 in the low order word
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
-    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
-    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
-    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
+    mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
+    mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
+    mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
 
     // and 16 in the high order word
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
-    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
+    mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
 }
 

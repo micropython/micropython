@@ -28,16 +28,16 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/bitbangio/types.h"
+#include "shared-module/bitbangio/OneWire.h"
 
 extern const mp_obj_type_t bitbangio_onewire_type;
 
-extern void shared_module_bitbangio_onewire_construct(bitbangio_onewire_obj_t* self,
-    const mcu_pin_obj_t* pin);
-extern void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t* self);
-extern bool shared_module_bitbangio_onewire_deinited(bitbangio_onewire_obj_t* self);
-extern bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t* self);
-extern bool shared_module_bitbangio_onewire_read_bit(bitbangio_onewire_obj_t* self);
-extern void shared_module_bitbangio_onewire_write_bit(bitbangio_onewire_obj_t* self, bool bit);
+extern void shared_module_bitbangio_onewire_construct(bitbangio_onewire_obj_t *self,
+    const mcu_pin_obj_t *pin);
+extern void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t *self);
+extern bool shared_module_bitbangio_onewire_deinited(bitbangio_onewire_obj_t *self);
+extern bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t *self);
+extern bool shared_module_bitbangio_onewire_read_bit(bitbangio_onewire_obj_t *self);
+extern void shared_module_bitbangio_onewire_write_bit(bitbangio_onewire_obj_t *self, bool bit);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H

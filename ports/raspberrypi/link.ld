@@ -23,7 +23,7 @@
 
 MEMORY
 {
-    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1024k
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1020k
     RAM (rwx) : ORIGIN =  0x20000000, LENGTH = 256k
     SCRATCH_X (rwx) : ORIGIN = 0x20040000, LENGTH = 4k
     SCRATCH_Y (rwx) : ORIGIN = 0x20041000, LENGTH = 4k
@@ -173,6 +173,40 @@ SECTIONS
         /* All data end */
         __data_end__ = .;
     } > RAM AT> FLASH_FIRMWARE
+
+    .itcm :
+    {
+        . = ALIGN(4);
+        *(.itcm.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_itcm_destination = ADDR(.itcm);
+    _ld_itcm_flash_copy = LOADADDR(.itcm);
+    _ld_itcm_size = SIZEOF(.itcm);
+
+    .dtcm_data :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_data.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_dtcm_data_destination = ADDR(.dtcm_data);
+    _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
+    _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    .dtcm_bss :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_bss.*)
+
+        . = ALIGN(4);
+    } > RAM AT> RAM
+    _ld_dtcm_bss_start = ADDR(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
 
     .uninitialized_data (COPY): {
         . = ALIGN(4);

@@ -72,11 +72,11 @@ gpio_isr_handle_t gpio_interrupt_handle;
 static volatile uint32_t pin_31_0_status = 0;
 static volatile uint32_t pin_63_32_status = 0;
 void gpio_interrupt(void *arg) {
-    (void) arg;
+    (void)arg;
 
-    gpio_ll_get_intr_status(&GPIO, xPortGetCoreID(), (uint32_t*) &pin_31_0_status);
+    gpio_ll_get_intr_status(&GPIO, xPortGetCoreID(), (uint32_t *)&pin_31_0_status);
     gpio_ll_clear_intr_status(&GPIO, pin_31_0_status);
-    gpio_ll_get_intr_status_high(&GPIO, xPortGetCoreID(), (uint32_t*) &pin_63_32_status);
+    gpio_ll_get_intr_status_high(&GPIO, xPortGetCoreID(), (uint32_t *)&pin_63_32_status);
     gpio_ll_clear_intr_status_high(&GPIO, pin_63_32_status);
 
     // disable the interrupts that fired, maybe all of them
@@ -107,7 +107,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
         if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
-        alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
         if ((pin_status & (1ull << alarm->pin->number)) != 0) {
             return alarms[i];
         }
@@ -137,8 +137,8 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
     alarm->pin = NULL;
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
-        const mcu_pin_obj_t* pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
-        if ((size_t) pin_obj->number == pin_number) {
+        const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
+        if ((size_t)pin_obj->number == pin_number) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
             break;
         }
@@ -183,7 +183,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
-        alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
 
         gpio_num_t pin_number = alarm->pin->number;
         if (alarm->value) {

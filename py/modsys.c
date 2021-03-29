@@ -69,9 +69,9 @@ STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
     2,
-        MP_ROM_QSTR(MP_QSTR_circuitpython),
-        MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
-);
+    MP_ROM_QSTR(MP_QSTR_circuitpython),
+    MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
+    );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
@@ -207,7 +207,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);
 
 const mp_obj_module_t mp_module_sys = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_sys_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_sys_globals,
 };
 
 #endif

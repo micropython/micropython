@@ -38,7 +38,7 @@ typedef struct {
     displayio_area_t ephemeral_dirty_area;
 } vectorio_vector_shape_t;
 
-displayio_area_t* vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail);
+displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail);
 
 bool vectorio_vector_shape_get_dirty_area(vectorio_vector_shape_t *self, displayio_area_t *current_dirty_area);
 

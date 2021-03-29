@@ -40,10 +40,10 @@
 float common_hal_mcu_processor_get_temperature(void) {
     int32_t temp = 0;
 
-#ifdef BLUETOOTH_SD
+    #ifdef BLUETOOTH_SD
     uint8_t sd_en = 0;
 
-    (void) sd_softdevice_is_enabled(&sd_en);
+    (void)sd_softdevice_is_enabled(&sd_en);
 
     if (sd_en) {
         uint32_t err_code = sd_temp_get(&temp);
@@ -52,9 +52,10 @@ float common_hal_mcu_processor_get_temperature(void) {
         }
         return temp / 4.0f;
     } // Fall through if SD not enabled.
-#endif
+    #endif
     NRF_TEMP->TASKS_START = 1;
-    while (NRF_TEMP->EVENTS_DATARDY == 0) { }
+    while (NRF_TEMP->EVENTS_DATARDY == 0) {
+    }
     NRF_TEMP->EVENTS_DATARDY = 0;
     temp = NRF_TEMP->TEMP;
     NRF_TEMP->TASKS_STOP = 1;
@@ -93,15 +94,18 @@ float common_hal_mcu_processor_get_voltage(void) {
     nrf_saadc_buffer_init(NRF_SAADC, &value, 1);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_START);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STARTED) == 0) { }
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STARTED) == 0) {
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STARTED);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_SAMPLE);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_END) == 0) { }
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_END) == 0) {
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_END);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_STOP);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STOPPED) == 0) { }
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STOPPED) == 0) {
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STOPPED);
 
     nrf_saadc_disable(NRF_SAADC);
@@ -111,14 +115,14 @@ float common_hal_mcu_processor_get_voltage(void) {
     }
 
 // The ADC reading we expect if VDD is 3.3V.
-#define NOMINAL_VALUE_3_3 (((3.3f/6)/0.6f)*16383)
-    return (value/NOMINAL_VALUE_3_3) * 3.3f;
+#define NOMINAL_VALUE_3_3 (((3.3f / 6) / 0.6f) * 16383)
+    return (value / NOMINAL_VALUE_3_3) * 3.3f;
 }
 
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-    for (int i=0; i<2; i++) {
-        ((uint32_t*) raw_id)[i] = NRF_FICR->DEVICEID[i];
+    for (int i = 0; i < 2; i++) {
+        ((uint32_t *)raw_id)[i] = NRF_FICR->DEVICEID[i];
     }
 }
 

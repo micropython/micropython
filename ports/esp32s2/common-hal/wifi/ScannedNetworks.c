@@ -52,10 +52,10 @@ static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
 
 static bool wifi_scannednetworks_wait_for_scan(wifi_scannednetworks_obj_t *self) {
     EventBits_t bits = xEventGroupWaitBits(self->radio_event_group,
-            WIFI_SCAN_DONE_BIT,
-            pdTRUE,
-            pdTRUE,
-            0);
+        WIFI_SCAN_DONE_BIT,
+        pdTRUE,
+        pdTRUE,
+        0);
     while ((bits & WIFI_SCAN_DONE_BIT) == 0 && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         bits = xEventGroupWaitBits(self->radio_event_group,
@@ -94,11 +94,11 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         }
         // If we need more space than we have, realloc.
         if (self->total_results > self->max_results) {
-            wifi_ap_record_t* results = m_renew_maybe(wifi_ap_record_t,
-                                                      self->results,
-                                                      self->max_results,
-                                                      self->total_results,
-                                                      true /* allow move */);
+            wifi_ap_record_t *results = m_renew_maybe(wifi_ap_record_t,
+                self->results,
+                self->max_results,
+                self->total_results,
+                true /* allow move */);
             if (results != NULL) {
                 self->results = results;
                 self->max_results = self->total_results;
@@ -157,7 +157,7 @@ void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
     }
 }
 
-void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t* self) {
+void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t *self) {
     // if a scan is active, make sure and clean up the idf's buffer of results.
     if (self->scanning) {
         esp_wifi_scan_stop();

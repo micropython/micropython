@@ -29,7 +29,7 @@
 
 // This happens in an interrupt so we need to be quick.
 bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
-#if CIRCUITPY_BLE_FILE_SERVICE
+    #if CIRCUITPY_BLE_FILE_SERVICE
     // Catch writes to filename or contents. Length is read-only.
 
     bool done = false;
@@ -49,12 +49,12 @@ bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
             // Event handle must match the handle for my characteristic.
             if (evt_write->handle == supervisor_ble_contents_characteristic.handle) {
                 // Handle events
-                //write_to_ringbuf(self, evt_write->data, evt_write->len);
+                // write_to_ringbuf(self, evt_write->data, evt_write->len);
                 // First packet includes a uint16_t le for length at the start.
-                uint16_t current_length = ((uint16_t*) current_command)[0];
-                memcpy(((uint8_t*) current_command) + current_offset, evt_write->data, evt_write->len);
+                uint16_t current_length = ((uint16_t *)current_command)[0];
+                memcpy(((uint8_t *)current_command) + current_offset, evt_write->data, evt_write->len);
                 current_offset += evt_write->len;
-                current_length = ((uint16_t*) current_command)[0];
+                current_length = ((uint16_t *)current_command)[0];
                 if (current_offset == current_length) {
                     run_ble_background = true;
                     done = true;
@@ -75,7 +75,7 @@ bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
             break;
     }
     return done;
-#else
+    #else
     return false;
-#endif
+    #endif
 }

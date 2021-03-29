@@ -35,7 +35,7 @@
 
 #include "components/log/include/esp_log.h"
 
-static const char* TAG = "board";
+static const char *TAG = "board";
 
 #define DELAY 0x80
 
@@ -115,16 +115,16 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
-#ifdef DEBUG
+    #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-#endif /* DEBUG */
+    #endif /* DEBUG */
 
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -135,7 +135,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
+    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
         display,
@@ -176,7 +176,7 @@ void reset_board(void) {
 }
 
 void board_deinit(void) {
-    displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
+    displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &displayio_epaperdisplay_type) {
         size_t i = 0;
         while (common_hal_displayio_epaperdisplay_get_busy(display)) {

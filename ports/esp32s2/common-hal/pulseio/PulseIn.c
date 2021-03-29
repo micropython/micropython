@@ -29,21 +29,21 @@
 #include "py/runtime.h"
 
 STATIC uint8_t refcount = 0;
-STATIC pulseio_pulsein_obj_t * handles[RMT_CHANNEL_MAX];
+STATIC pulseio_pulsein_obj_t *handles[RMT_CHANNEL_MAX];
 
 // Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
 
-STATIC void update_internal_buffer(pulseio_pulsein_obj_t* self) {
+STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
     uint32_t length = 0;
-    rmt_item32_t *items = (rmt_item32_t *) xRingbufferReceive(self->buf_handle, &length, 0);
+    rmt_item32_t *items = (rmt_item32_t *)xRingbufferReceive(self->buf_handle, &length, 0);
     if (items) {
         length /= 4;
-        for (size_t i=0; i < length; i++) {
+        for (size_t i = 0; i < length; i++) {
             uint16_t pos = (self->start + self->len) % self->maxlen;
             self->buffer[pos] = items[i].duration0 * 3;
             // Check if second item exists before incrementing
             if (items[i].duration1) {
-                self->buffer[pos+1] = items[i].duration1 * 3;
+                self->buffer[pos + 1] = items[i].duration1 * 3;
                 if (self->len < (self->maxlen - 1)) {
                     self->len += 2;
                 } else {
@@ -57,7 +57,7 @@ STATIC void update_internal_buffer(pulseio_pulsein_obj_t* self) {
                 }
             }
         }
-        vRingbufferReturnItem(self->buf_handle, (void *) items);
+        vRingbufferReturnItem(self->buf_handle, (void *)items);
     }
 }
 
@@ -83,9 +83,9 @@ void pulsein_reset(void) {
     refcount = 0;
 }
 
-void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
-                                             uint16_t maxlen, bool idle_state) {
-    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
+void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin,
+    uint16_t maxlen, bool idle_state) {
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
     }
@@ -115,7 +115,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     config.rx_config.idle_threshold = 30000; // 30*3=90ms idle required to register a sequence
     config.clk_div = 240; // All measurements are divided by 3 to accomodate 65ms pulses
     rmt_config(&config);
-    rmt_driver_install(channel, 1000, 0); //TODO: pick a more specific buffer size?
+    rmt_driver_install(channel, 1000, 0); // TODO: pick a more specific buffer size?
 
     // Store this object and the buffer handle for background updates
     self->channel = channel;
@@ -130,11 +130,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     }
 }
 
-bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
     return handles[self->channel] ? false : true;
 }
 
-void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     handles[self->channel] = NULL;
     esp32s2_peripherals_free_rmt(self->channel);
     reset_pin_number(self->pin->number);
@@ -144,14 +144,14 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     }
 }
 
-void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     self->paused = true;
     rmt_rx_stop(self->channel);
 }
 
-void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t trigger_duration) {
+void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t trigger_duration) {
     // Make sure we're paused.
-    if ( !self->paused ) {
+    if (!self->paused) {
         common_hal_pulseio_pulsein_pause(self);
     }
 
@@ -167,13 +167,13 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t tri
     rmt_rx_start(self->channel, false);
 }
 
-void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
     // Buffer only updates in BG tasks or fetches, so no extra protection is needed
     self->start = 0;
     self->len = 0;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_t index) {
+uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index) {
     update_internal_buffer(self);
     if (index < 0) {
         index += self->len;
@@ -185,7 +185,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     update_internal_buffer(self);
 
     if (self->len == 0) {
@@ -199,14 +199,14 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *self) {
     return self->maxlen;
 }
 
-bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
     return self->paused;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
     return self->len;
 }

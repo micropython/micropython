@@ -36,10 +36,10 @@ enum {
 
 // Frozen modules are in a pseudo-directory, so sys.path can control how they're found.
 #define MP_FROZEN_FAKE_DIR ".frozen"
-#define MP_FROZEN_FAKE_DIR_LENGTH (sizeof(MP_FROZEN_FAKE_DIR)-1)
+#define MP_FROZEN_FAKE_DIR_LENGTH (sizeof(MP_FROZEN_FAKE_DIR) - 1)
 
 #define MP_FROZEN_FAKE_DIR_SLASH (MP_FROZEN_FAKE_DIR "/")
-#define MP_FROZEN_FAKE_DIR_SLASH_LENGTH (sizeof(MP_FROZEN_FAKE_DIR_SLASH)-1)
+#define MP_FROZEN_FAKE_DIR_SLASH_LENGTH (sizeof(MP_FROZEN_FAKE_DIR_SLASH) - 1)
 
 // This should match MP_FROZEN_FAKE_DIR.
 #define MP_FROZEN_FAKE_DIR_QSTR MP_QSTR__dot_frozen

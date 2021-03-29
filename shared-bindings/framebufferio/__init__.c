@@ -45,6 +45,6 @@ static const mp_rom_map_elem_t framebufferio_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(framebufferio_module_globals, framebufferio_module_globals_table);
 const mp_obj_module_t framebufferio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&framebufferio_module_globals,
+    .globals = (mp_obj_dict_t *)&framebufferio_module_globals,
 };
 #endif

@@ -38,11 +38,20 @@
 
 static audiobusio_i2sout_obj_t *instance;
 
-struct { int16_t l, r; } static_sample16 = {0x8000, 0x8000};
-struct { uint8_t l1, r1, l2, r2; } static_sample8 = {0x80, 0x80, 0x80, 0x80};
+struct { int16_t l, r;
+} static_sample16 = {0x8000, 0x8000};
+struct { uint8_t l1, r1, l2, r2;
+} static_sample8 = {0x80, 0x80, 0x80, 0x80};
 
-struct frequency_info { uint32_t RATIO; uint32_t MCKFREQ; int sample_rate; float abserr; };
-struct ratio_info { uint32_t RATIO; int16_t divisor; bool can_16bit; };
+struct frequency_info { uint32_t RATIO;
+                        uint32_t MCKFREQ;
+                        int sample_rate;
+                        float abserr;
+};
+struct ratio_info { uint32_t RATIO;
+                    int16_t divisor;
+                    bool can_16bit;
+};
 struct ratio_info ratios[] = {
     { I2S_CONFIG_RATIO_RATIO_32X,   32,  true },
     { I2S_CONFIG_RATIO_RATIO_48X,   48, false },
@@ -55,7 +64,9 @@ struct ratio_info ratios[] = {
     { I2S_CONFIG_RATIO_RATIO_512X, 512,  true },
 };
 
-struct mclk_info { uint32_t MCKFREQ; int divisor; };
+struct mclk_info { uint32_t MCKFREQ;
+                   int divisor;
+};
 struct mclk_info mclks[] = {
     { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV8,     8 },
     { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV10,   10 },
@@ -71,7 +82,7 @@ struct mclk_info mclks[] = {
 };
 
 static void calculate_ratio_info(uint32_t target_sample_rate, struct frequency_info *info,
-        int ratio_index, int mclk_index) {
+    int ratio_index, int mclk_index) {
     info->RATIO = ratios[ratio_index].RATIO;
     info->MCKFREQ = mclks[mclk_index].MCKFREQ;
     info->sample_rate = 32000000
@@ -82,24 +93,24 @@ static void calculate_ratio_info(uint32_t target_sample_rate, struct frequency_i
 
 void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
     struct frequency_info best = {0, 0, 0, 1.0};
-    for (size_t ri=0; ri<sizeof(ratios) / sizeof(ratios[0]); ri++) {
+    for (size_t ri = 0; ri < sizeof(ratios) / sizeof(ratios[0]); ri++) {
         if (NRF_I2S->CONFIG.SWIDTH == I2S_CONFIG_SWIDTH_SWIDTH_16Bit
-                && !ratios[ri].can_16bit) {
+            && !ratios[ri].can_16bit) {
             continue;
         }
 
-        for (size_t mi=0; mi<sizeof(mclks) / sizeof(mclks[0]); mi++) {
+        for (size_t mi = 0; mi < sizeof(mclks) / sizeof(mclks[0]); mi++) {
             struct frequency_info info = {0, 0, 1.0};
             calculate_ratio_info(sample_rate, &info, ri, mi);
             if (info.abserr < best.abserr) {
                 best = info;
             }
-#ifdef DEBUG_CLOCKING
+            #ifdef DEBUG_CLOCKING
             mp_printf(&mp_plat_print,
-                    "RATIO=%3d MCKFREQ=%08x rate=%d abserr=%.4f\n",
-                    info.RATIO, info.MCKFREQ, info.sample_rate,
-                    (double)info.abserr);
-#endif
+                "RATIO=%3d MCKFREQ=%08x rate=%d abserr=%.4f\n",
+                info.RATIO, info.MCKFREQ, info.sample_rate,
+                (double)info.abserr);
+            #endif
         }
     }
     NRF_I2S->CONFIG.RATIO = best.RATIO;
@@ -107,7 +118,7 @@ void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
     self->sample_rate = best.sample_rate;
 }
 
-static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
+static void i2s_buffer_fill(audiobusio_i2sout_obj_t *self) {
     void *buffer = self->buffers[self->next_buffer];
     void *buffer_start = buffer;
     NRF_I2S->TXD.PTR = (uintptr_t)buffer;
@@ -119,7 +130,7 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
             uint32_t sample_buffer_length;
             audioio_get_buffer_result_t get_buffer_result =
                 audiosample_get_buffer(self->sample, false, 0,
-                                       &self->sample_data, &sample_buffer_length);
+                    &self->sample_data, &sample_buffer_length);
             self->sample_end = self->sample_data + sample_buffer_length;
             if (get_buffer_result == GET_BUFFER_DONE) {
                 if (self->loop) {
@@ -138,16 +149,16 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
         if (self->samples_signed) {
             memcpy(buffer, self->sample_data, bytecount);
         } else if (self->bytes_per_sample == 2) {
-            uint16_t *bp = (uint16_t*)buffer;
-            uint16_t *be = (uint16_t*)(buffer + bytecount);
-            uint16_t *sp = (uint16_t*)self->sample_data;
+            uint16_t *bp = (uint16_t *)buffer;
+            uint16_t *be = (uint16_t *)(buffer + bytecount);
+            uint16_t *sp = (uint16_t *)self->sample_data;
             for (; bp < be;) {
                 *bp++ = *sp++ + 0x8000;
             }
         } else {
-            uint8_t *bp = (uint8_t*)buffer;
-            uint8_t *be = (uint8_t*)(buffer + bytecount);
-            uint8_t *sp = (uint8_t*)self->sample_data;
+            uint8_t *bp = (uint8_t *)buffer;
+            uint8_t *be = (uint8_t *)(buffer + bytecount);
+            uint8_t *sp = (uint8_t *)self->sample_data;
             for (; bp < be;) {
                 *bp++ = *sp++ + 0x80;
             }
@@ -162,13 +173,13 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
     if (buffer != buffer_start) {
         if (self->bytes_per_sample == 1 && self->channel_count == 1) {
             // For 8-bit mono, 4 copies of the final sample are required
-            self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
+            self->hold_value = 0x01010101 * *(uint8_t *)(buffer - 1);
         } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
             // For 16-bit stereo, 1 copy of the final sample is required
-            self->hold_value = *(uint32_t*)(buffer-4);
+            self->hold_value = *(uint32_t *)(buffer - 4);
         } else {
             // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
-            self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+            self->hold_value = 0x00010001 * *(uint16_t *)(buffer - 2);
         }
     }
 
@@ -180,19 +191,21 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
             NRF_I2S->TASKS_STOP = 1;
             self->playing = false;
         }
-        uint32_t *bp = (uint32_t*)buffer;
-        uint32_t *be = (uint32_t*)(buffer + bytesleft);
-        for (; bp != be; )
+        uint32_t *bp = (uint32_t *)buffer;
+        uint32_t *be = (uint32_t *)(buffer + bytesleft);
+        for (; bp != be;) {
             *bp++ = self->hold_value;
+        }
         return;
     }
 }
 
-void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
-        const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select,
-        const mcu_pin_obj_t* data, bool left_justified) {
-    if (instance)
+void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
+    const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
+    const mcu_pin_obj_t *data, bool left_justified) {
+    if (instance) {
         mp_raise_RuntimeError(translate("Device in use"));
+    }
     instance = self;
 
     claim_pin(bit_clock);
@@ -216,11 +229,11 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     supervisor_enable_tick();
 }
 
-bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self) {
     return self->data_pin_number == 0xff;
 }
 
-void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
@@ -236,8 +249,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     supervisor_disable_tick();
 }
 
-void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
-                                       mp_obj_t sample, bool loop) {
+void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
+    mp_obj_t sample, bool loop) {
     if (common_hal_audiobusio_i2sout_get_playing(self)) {
         common_hal_audiobusio_i2sout_stop(self);
     }
@@ -271,7 +284,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
      */
     enum { buffer_length_ms = 16 };
     self->buffer_length = sample_rate * buffer_length_ms
-            * self->bytes_per_sample * self->channel_count / 1000;
+        * self->bytes_per_sample * self->channel_count / 1000;
     self->buffer_length = (self->buffer_length + 3) & ~3;
     self->buffers[0] = m_malloc(self->buffer_length, false);
     self->buffers[1] = m_malloc(self->buffer_length, false);
@@ -297,25 +310,25 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     i2s_background();
 }
 
-void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t *self) {
     self->paused = true;
 }
 
-void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t *self) {
     self->paused = false;
 }
 
-bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t *self) {
     return self->paused;
 }
 
-void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
     NRF_I2S->TASKS_STOP = 1;
     self->stopping = true;
     NRF_I2S->INTENCLR = I2S_INTENSET_TXPTRUPD_Msk;
 }
 
-bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t *self) {
     if (NRF_I2S->EVENTS_STOPPED) {
         self->playing = false;
         NRF_I2S->EVENTS_STOPPED = 0;

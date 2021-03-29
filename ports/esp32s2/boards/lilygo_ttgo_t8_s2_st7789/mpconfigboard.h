@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "LILYGO TTGO T8 ESP32-S2 w/Display"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"

@@ -75,14 +75,14 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->data.u_byte.n_raw_code = n_raw_code;
     #endif
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
-#endif
-#if MICROPY_DEBUG_PRINTERS
+    #endif
+    #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag >= 2) {
         mp_bytecode_print(rc, code, len, const_table);
     }
-#endif
+    #endif
 }
 
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
@@ -95,24 +95,24 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->data.u_native.const_table = const_table;
     rc->data.u_native.type_sig = type_sig;
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
         }
-        DEBUG_printf(" %02x", ((byte*)fun_data)[i]);
+        DEBUG_printf(" %02x", ((byte *)fun_data)[i]);
     }
     DEBUG_printf("\n");
 
-#ifdef WRITE_CODE
+    #ifdef WRITE_CODE
     FILE *fp_write_code = fopen("out-code", "wb");
     fwrite(fun_data, fun_len, 1, fp_write_code);
     fclose(fp_write_code);
-#endif
-#else
+    #endif
+    #else
     (void)fun_len;
-#endif
+    #endif
 }
 #endif
 

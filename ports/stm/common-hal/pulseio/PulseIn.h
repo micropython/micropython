@@ -34,12 +34,12 @@
 typedef struct {
     mp_obj_base_t base;
 
-    const mcu_pin_obj_t* pin;
+    const mcu_pin_obj_t *pin;
     bool idle_state;
     bool paused;
     volatile bool first_edge;
 
-    uint16_t* buffer;
+    uint16_t *buffer;
     uint16_t maxlen;
 
     volatile uint16_t start;

@@ -60,7 +60,7 @@
 //|         ...
 //|
 STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset };
+    enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
@@ -68,6 +68,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
         { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_frequency, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 30000000 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -79,10 +80,10 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
     mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
-    displayio_parallelbus_obj_t* self = &allocate_display_bus_or_raise()->parallel_bus;
+    displayio_parallelbus_obj_t *self = &allocate_display_bus_or_raise()->parallel_bus;
     self->base.type = &displayio_parallelbus_type;
 
-    common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);
+    common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset, args[ARG_frequency].u_int);
     return self;
 }
 
@@ -121,7 +122,7 @@ STATIC mp_obj_t displayio_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_o
         RUN_BACKGROUND_TASKS;
     }
     common_hal_displayio_parallelbus_send(self, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, &command, 1);
-    common_hal_displayio_parallelbus_send(self, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    common_hal_displayio_parallelbus_send(self, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, ((uint8_t *)bufinfo.buf), bufinfo.len);
     common_hal_displayio_parallelbus_end_transaction(self);
 
     return mp_const_none;
@@ -138,5 +139,5 @@ const mp_obj_type_t displayio_parallelbus_type = {
     { &mp_type_type },
     .name = MP_QSTR_ParallelBus,
     .make_new = displayio_parallelbus_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_parallelbus_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_parallelbus_locals_dict,
 };

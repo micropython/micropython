@@ -26,6 +26,7 @@ from pyb import LED
 from machine import RTC, Temp
 from ubluepy import Service, Characteristic, UUID, Peripheral, constants
 
+
 def event_handler(id, handle, data):
     global rtc
     global periph
@@ -55,6 +56,7 @@ def event_handler(id, handle, data):
             # stop low power timer
             rtc.stop()
 
+
 def send_temp(timer_id):
     global notif_enabled
     global char_temp
@@ -62,8 +64,9 @@ def send_temp(timer_id):
     if notif_enabled:
         # measure chip temperature
         temp = Temp.read()
-        temp =  temp * 100
+        temp = temp * 100
         char_temp.write(bytearray([temp & 0xFF, temp >> 8]))
+
 
 # start off with LED(1) off
 LED(1).off()
@@ -74,14 +77,14 @@ rtc = RTC(1, period=5, mode=RTC.PERIODIC, callback=send_temp)
 
 notif_enabled = False
 
-uuid_env_sense = UUID("0x181A") # Environmental Sensing service
-uuid_temp = UUID("0x2A6E") # Temperature characteristic
+uuid_env_sense = UUID("0x181A")  # Environmental Sensing service
+uuid_temp = UUID("0x2A6E")  # Temperature characteristic
 
 serv_env_sense = Service(uuid_env_sense)
 
 temp_props = Characteristic.PROP_NOTIFY | Characteristic.PROP_READ
 temp_attrs = Characteristic.ATTR_CCCD
-char_temp = Characteristic(uuid_temp, props = temp_props, attrs = temp_attrs)
+char_temp = Characteristic(uuid_temp, props=temp_props, attrs=temp_attrs)
 
 serv_env_sense.addCharacteristic(char_temp)
 

@@ -25,6 +25,7 @@ CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 CIRCUITPY_SAMD = 0
 CIRCUITPY_TOUCHIO = 0
+CIRCUIPTY_USB_CDC = 0
 CIRCUITPY_USB_HID = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_VECTORIO = 0
@@ -40,12 +41,5 @@ CIRCUITPY_STAGE = 1
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pewpew_m4
 CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
 
-# Tweak inlining depending on language.
-ifeq ($(TRANSLATION), zh_Latn_pinyin)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 45
-else
-CFLAGS_INLINE_LIMIT = 70
-endif
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os

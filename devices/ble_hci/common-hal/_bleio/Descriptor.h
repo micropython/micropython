@@ -47,7 +47,7 @@ typedef struct _bleio_descriptor_obj {
     uint16_t handle;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
-    struct _bleio_descriptor_obj* next;
+    struct _bleio_descriptor_obj *next;
 } bleio_descriptor_obj_t;
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_DESCRIPTOR_H

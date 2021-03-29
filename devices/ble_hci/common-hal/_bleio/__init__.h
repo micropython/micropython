@@ -47,7 +47,7 @@ typedef struct {
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BT_ATT_DEFAULT_LE_MTU - 3)
 
-//FIX
+// FIX
 #define BLE_GATT_HANDLE_INVALID 0x0000
 #define BLE_CONN_HANDLE_INVALID 0xFFFF
 #define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */

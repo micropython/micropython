@@ -42,10 +42,10 @@
 //|     Example usage::
 //|
 //|         import analogio
-//|         from microcontroller import pin
+//|         from board import *
 //|
-//|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
-//|         dac.value = 32768                           # makes PA02 1.65V"""
+//|         dac = analogio.AnalogOut(A2)                # output on pin A2
+//|         dac.value = 32768                           # makes A2 1.65V"""
 //|
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogOut on the given pin.
@@ -104,16 +104,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 //|     resolution, the value is 16-bit."""
 //|
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
-   analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   if (common_hal_analogio_analogout_deinited(self)) {
-       raise_deinited_error();
-   }
-   uint32_t v = mp_obj_get_int(value);
-   if (v >= (1 << 16)) {
-       mp_raise_ValueError(translate("AnalogOut is only 16 bits. Value must be less than 65536."));
-   }
-   common_hal_analogio_analogout_set_value(self, v);
-   return mp_const_none;
+    analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (common_hal_analogio_analogout_deinited(self)) {
+        raise_deinited_error();
+    }
+    uint32_t v = mp_obj_get_int(value);
+    if (v >= (1 << 16)) {
+        mp_raise_ValueError(translate("AnalogOut is only 16 bits. Value must be less than 65536."));
+    }
+    common_hal_analogio_analogout_set_value(self, v);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(analogio_analogout_set_value_obj, analogio_analogout_obj_set_value);
 
