@@ -596,7 +596,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
-                bool subpkg_tried = false;
+
+                // Allocating subpkg_tried on the stack can lead to compiler warnings about this
+                // variable being clobbered when nlr is implemented using setjmp/longjmp.  Its
+                // value must be preserved across calls to setjmp/longjmp.
+                static bool subpkg_tried;
+                subpkg_tried = false;
 
             reimport:
                 if (nlr_push(&nlr) == 0) {
