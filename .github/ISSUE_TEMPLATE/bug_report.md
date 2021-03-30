@@ -52,5 +52,3 @@ TimeoutError: Clock stretch too long
 
 <!-- Optionally, add any other information like hardware connection, scope output etc.
 If you have already done some debugging, mention it here. -->
-
-Removing [this](url) line resolves the issue.
