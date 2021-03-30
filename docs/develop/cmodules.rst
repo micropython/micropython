@@ -149,17 +149,23 @@ applying 2 modifications:
 
 - all modules found in this directory (or added via ``include`` in the top-level
   ``micropython.cmake`` when using CMake) will be compiled, but only those which are
-  explicitly enabled will be available for importing. Enabling a module is done
-  by setting the preprocessor define from its module registration to 1.
+  enabled will be available for importing.  If a module is to always be enabled,
+  which is usually the case for custom modules and custom builds, then it is
+  enough to supply "1" as the third parameter to the registration macro, like:
 
-  For example if the source code defines the module with
+  .. code-block:: c
+
+      MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule, 1);
+
+  Alternatively, to make the module disabled by default but selectable through
+  a preprocessor configuration option, use:
 
   .. code-block:: c
 
       MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule, MODULE_CEXAMPLE_ENABLED);
 
 
-  then ``MODULE_CEXAMPLE_ENABLED`` has to be set to 1 to make the module available.
+  Then ``MODULE_CEXAMPLE_ENABLED`` has to be set to 1 to make the module available.
   This can be done by adding ``CFLAGS_EXTRA=-DMODULE_CEXAMPLE_ENABLED=1`` to
   the ``make`` command, or editing ``mpconfigport.h`` or ``mpconfigboard.h``
   to add
@@ -179,7 +185,7 @@ directory can be built for the unix port:
 .. code-block:: bash
 
     cd micropython/ports/unix
-    make USER_C_MODULES=../../examples/usercmodule CFLAGS_EXTRA=-DMODULE_CEXAMPLE_ENABLED=1 all
+    make USER_C_MODULES=../../examples/usercmodule all
 
 The build output will show the modules found::
 
@@ -205,7 +211,6 @@ The CMake build output lists the modules by name::
     ...
 
 
-Note that the ``micropython.cmake`` files define ``DMODULE_<name>_ENABLED=1`` automatically.
 The top-level ``micropython.cmake`` can be used to control which modules are enabled.
 
 
@@ -215,8 +220,7 @@ including both modules and building the stm32 port for example:
 .. code-block:: bash
 
     cd my_project/micropython/ports/stm32
-    make USER_C_MODULES=../../../modules \
-      CFLAGS_EXTRA="-DMODULE_EXAMPLE1_ENABLED=1 -DMODULE_EXAMPLE2_ENABLED=1" all
+    make USER_C_MODULES=../../../modules all
 
 
 Module usage in MicroPython
