@@ -153,6 +153,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Supply at least one UART pin"));
     }
 
+    if (rx && !self->rx) {
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
+    }
+    if (tx && !self->tx) {
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
+    }
+
     if (uart_taken) {
         mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     }
@@ -188,7 +195,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if (self->rts == NULL) {
-            mp_raise_ValueError(translate("Selected RTS pin not valid"));
+            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
         }
     }
 
@@ -202,15 +209,18 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if (self->cts == NULL) {
-            mp_raise_ValueError(translate("Selected CTS pin not valid"));
+            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
         }
     }
 
     if (self->rx) {
         self->uart = mcu_uart_banks[self->rx->bank_idx - 1];
     } else {
+        assert(self->rx);
         self->uart = mcu_uart_banks[self->tx->bank_idx - 1];
     }
+
+    assert(self->uart);
 
     if (self->rx) {
         config_periph_pin(self->rx);
