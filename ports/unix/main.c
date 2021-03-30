@@ -592,7 +592,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
-                static bool subpkg_tried = false;
+                // Allocating subpkg_tried on stack triggers the following error on ppc64le:
+                // error: variable 'subpkg_tried' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+                static bool subpkg_tried;
+                subpkg_tried = false;
 
             reimport:
                 if (nlr_push(&nlr) == 0) {
