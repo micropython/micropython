@@ -379,6 +379,9 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
     if (res == FR_NO_FILESYSTEM && mp_obj_is_true(mkfs)) {
         uint8_t working_buf[FF_MAX_SS];
         res = f_mkfs(&self->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+        if (res == FR_MKFS_ABORTED) { // Probably doesn't support FAT16
+            res = f_mkfs(&self->fatfs, FM_FAT32, 0, working_buf, sizeof(working_buf));
+        }
     }
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
