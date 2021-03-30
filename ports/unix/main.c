@@ -592,7 +592,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
-                bool subpkg_tried = false;
+                static bool subpkg_tried = false;
 
             reimport:
                 if (nlr_push(&nlr) == 0) {
