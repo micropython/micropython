@@ -87,6 +87,7 @@ aliases_by_board = {
 language_allow_list = set([
     "ID",
     "de_DE",
+    "en_GB",
     "en_US",
     "en_x_pirate",
     "es",
