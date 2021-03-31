@@ -216,7 +216,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (self->rx) {
         self->uart = mcu_uart_banks[self->rx->bank_idx - 1];
     } else {
-        assert(self->rx);
+        assert(self->tx);
         self->uart = mcu_uart_banks[self->tx->bank_idx - 1];
     }
 
