@@ -25,7 +25,6 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
     ${MICROPY_DIR}/lib/timeutils/timeutils.c
     ${MICROPY_DIR}/lib/utils/interrupt_char.c
-    ${MICROPY_DIR}/lib/utils/stdout_helpers.c
     ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
     ${MICROPY_DIR}/lib/utils/pyexec.c
 )
