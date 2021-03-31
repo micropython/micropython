@@ -46,6 +46,9 @@ void check_nrf_error(uint32_t err_code) {
         return;
     }
     switch (err_code) {
+        case NRF_ERROR_NO_MEM:
+            mp_raise_msg(&mp_type_MemoryError, translate("Nordic soft device out of memory"));
+            return;
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
