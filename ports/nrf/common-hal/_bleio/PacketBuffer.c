@@ -106,13 +106,16 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
 
 STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     const uint16_t evt_id = ble_evt->header.evt_id;
+    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
+    if (evt_id == BLE_GAP_EVT_DISCONNECTED && self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
+        self->conn_handle = BLE_CONN_HANDLE_INVALID;
+    }
     // Check if this is a GATTC event so we can make sure the conn_handle is valid.
     if (evt_id < BLE_GATTC_EVT_BASE || evt_id > BLE_GATTC_EVT_LAST) {
         return false;
     }
 
     uint16_t conn_handle = ble_evt->evt.gattc_evt.conn_handle;
-    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     if (conn_handle != self->conn_handle) {
         return false;
     }
@@ -298,11 +301,14 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, u
     if (len + self->pending_size > outgoing_packet_length) {
         // No room to append len bytes to packet. Wait until we get a free buffer,
         // and keep checking that we haven't been disconnected.
-        while (self->pending_size != 0 && self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+        while (self->pending_size != 0 &&
+               self->conn_handle != BLE_CONN_HANDLE_INVALID &&
+               !mp_hal_is_interrupted()) {
             RUN_BACKGROUND_TASKS;
         }
     }
-    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID ||
+        mp_hal_is_interrupted()) {
         return -1;
     }
 
