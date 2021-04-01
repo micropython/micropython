@@ -147,6 +147,8 @@ STATIC uint32_t ble_stack_enable(void) {
     ble_conf.gap_cfg.role_count_cfg.periph_role_count = BLEIO_PERIPH_ROLE_COUNT;
     // central_role_count costs 648 bytes for 1 to 2, then ~1250 for each further increment.
     ble_conf.gap_cfg.role_count_cfg.central_role_count = BLEIO_CENTRAL_ROLE_COUNT;
+    // The number of concurrent pairing processes. Takes 392 bytes.
+    ble_conf.gap_cfg.role_count_cfg.central_sec_count = BLE_GAP_ROLE_COUNT_CENTRAL_SEC_DEFAULT;
     err_code = sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &ble_conf, sd_ram_end);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -283,6 +285,10 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_drv_remove_event_handler(connection_on_ble_evt, connection);
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
             connection->pair_status = PAIR_NOT_PAIRED;
+
+            #if CIRCUITPY_VERBOSE_BLE
+            mp_printf(&mp_plat_print, "disconnected %02x\n", ble_evt->evt.gap_evt.params.disconnected.reason);
+            #endif
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t *obj = connection->connection_obj;
                 obj->connection = NULL;
