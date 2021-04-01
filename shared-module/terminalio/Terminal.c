@@ -117,11 +117,11 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                             }
                             if (c == 'H') {
                                 if (n >= self->tilegrid->height_in_tiles) {
-				    n = self->tilegrid->height_in_tiles - 1;
-				}
+                                    n = self->tilegrid->height_in_tiles - 1;
+                                }
                                 if (m >= self->tilegrid->width_in_tiles) {
-				    m = self->tilegrid->width_in_tiles - 1;
-				}
+                                    m = self->tilegrid->width_in_tiles - 1;
+                                }
                                 n = (n + self->tilegrid->top_left_y) % self->tilegrid->height_in_tiles;
                                 self->cursor_x = m;
                                 self->cursor_y = n;
