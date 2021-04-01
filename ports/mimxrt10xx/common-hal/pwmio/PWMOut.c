@@ -149,6 +149,21 @@ void pwmout_reset(void) {
 
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
 
+static int calculate_pulse_count(uint32_t frequency, uint8_t *prescaler) {
+    if (frequency > PWM_SRC_CLK_FREQ/2) {
+        return 0;
+    }
+    for(int shift = 0; shift<8; shift++) {
+        int pulse_count = PWM_SRC_CLK_FREQ/(1<<shift)/frequency;
+        if (pulse_count >= 65535) {
+            continue;
+        }
+        *prescaler = shift;
+        return pulse_count;
+    }
+    return 0;
+}
+
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint16_t duty,
@@ -196,16 +211,16 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     // pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
     pwmConfig.enableDebugMode = true;
 
+    self->pulse_count = calculate_pulse_count(frequency, &self->prescaler);
+
+    if (self->pulse_count == 0) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+
+    pwmConfig.prescale = self->prescaler;
+
     if (PWM_Init(self->pwm->pwm, self->pwm->submodule, &pwmConfig) == kStatus_Fail) {
         return PWMOUT_INVALID_PIN;
-    }
-
-    if (frequency == 0 || frequency > PWM_SRC_CLK_FREQ/2) {
-        return PWMOUT_INVALID_FREQUENCY;
-    }
-
-    if (PWM_SRC_CLK_FREQ / frequency >= 65536) {
-        return PWMOUT_INVALID_FREQUENCY;
     }
 
     pwm_signal_param_t pwmSignal = {
@@ -228,7 +243,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
     PWM_StartTimer(self->pwm->pwm, 1 << self->pwm->submodule);
 
-    self->pulse_count = PWM_SRC_CLK_FREQ/frequency;
 
     common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
 
@@ -253,7 +267,11 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     //  * it works in integer percents
     //  * it can't set the "X" duty cycle
     self->duty_cycle = duty;
-    self->duty_scaled = ((uint32_t)duty * self->pulse_count + self->pulse_count/2) / 65535;
+    if (duty == 65535) {
+        self->duty_scaled = self->pulse_count + 1;
+    } else {
+        self->duty_scaled = ((uint32_t)duty * self->pulse_count + self->pulse_count/2) / 65535;
+    }
     switch (self->pwm->channel) {
         case kPWM_PwmX:
             self->pwm->pwm->SM[self->pwm->submodule].VAL0 = 0;
@@ -271,27 +289,37 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
 }
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
+    if (self->duty_cycle == 65535) {
+        return 65535;
+    }
     return ((uint32_t)self->duty_scaled * 65535 + 65535/2) / self->pulse_count;
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
     uint32_t frequency) {
 
-    if (frequency > PWM_SRC_CLK_FREQ/2) {
+    int pulse_count = calculate_pulse_count(frequency, &self->prescaler);
+    if (pulse_count == 0) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
 
-    if (PWM_SRC_CLK_FREQ / frequency >= 65536) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
-    }
+    self->pulse_count = pulse_count;
 
-    self->pulse_count = PWM_SRC_CLK_FREQ/frequency;
+    // a small glitch can occur when adjusting the prescaler, from the setting
+    // of CTRL just below to the setting of the Ldok register in
+    // set_duty_cycle.
+    uint32_t reg = self->pwm->pwm->SM[self->pwm->submodule].CTRL;
+    reg &= ~(PWM_CTRL_PRSC_MASK);
+    reg |= PWM_CTRL_PRSC(self->prescaler);
+    self->pwm->pwm->SM[self->pwm->submodule].CTRL = reg;
     self->pwm->pwm->SM[self->pwm->submodule].VAL1 = self->pulse_count;
+
+    // we need to recalculate the duty cycle.  As a side effect of this
     common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
 uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
-    return PWM_SRC_CLK_FREQ/self->pulse_count;
+    return PWM_SRC_CLK_FREQ/self->pulse_count/(1 << self->prescaler);
 }
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
