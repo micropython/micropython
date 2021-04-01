@@ -93,38 +93,38 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                                 self->cursor_x -= n;
                             }
                         }
-			if (c == 'J') {
-			  if (n == 2) {
-			    common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, 0);
-			    self->cursor_x = self->cursor_y = start_y = 0;
-			    n = 0;
-			    for (uint16_t x = 0; x < self->tilegrid->width_in_tiles; x++) {
-			      for (uint16_t y = 0; y < self->tilegrid->height_in_tiles; y++) {
-				common_hal_displayio_tilegrid_set_tile(self->tilegrid, x, y, 0);
-			      }
-			    }
-			  }
-			}
-                        if (c == ';') {
-			  int16_t m = 0;
-			  for(++j; j < 9; j++) {
-                            if ('0' <= i[j] && i[j] <= '9') {
-                                m = m * 10 + (i[j] - '0');
-                            } else {
-                                c = i[j];
-                                break;
+                        if (c == 'J') {
+                            if (n == 2) {
+                                common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, 0);
+                                self->cursor_x = self->cursor_y = start_y = 0;
+                                n = 0;
+                                for (uint16_t x = 0; x < self->tilegrid->width_in_tiles; x++) {
+                                    for (uint16_t y = 0; y < self->tilegrid->height_in_tiles; y++) {
+                                        common_hal_displayio_tilegrid_set_tile(self->tilegrid, x, y, 0);
+                                    }
+                                }
                             }
-			  }
-			  if (c == 'H') {
-			    if (n >= self->tilegrid->height_in_tiles)
-			      n = self->tilegrid->height_in_tiles - 1;
-			    if (m >= self->tilegrid->width_in_tiles)
-			      m = self->tilegrid->width_in_tiles - 1;
-			    n = (n + self->tilegrid->top_left_y) % self->tilegrid->height_in_tiles;
-			    self->cursor_x = m;
-			    self->cursor_y = n;
-			    start_y = self->cursor_y;
-			  }
+                        }
+                        if (c == ';') {
+                            int16_t m = 0;
+                            for(++j; j < 9; j++) {
+                                if ('0' <= i[j] && i[j] <= '9') {
+                                    m = m * 10 + (i[j] - '0');
+                                } else {
+                                    c = i[j];
+                                    break;
+                                }
+                            }
+                            if (c == 'H') {
+                                if (n >= self->tilegrid->height_in_tiles)
+                                  n = self->tilegrid->height_in_tiles - 1;
+                                if (m >= self->tilegrid->width_in_tiles)
+                                  m = self->tilegrid->width_in_tiles - 1;
+                                n = (n + self->tilegrid->top_left_y) % self->tilegrid->height_in_tiles;
+                                self->cursor_x = m;
+                                self->cursor_y = n;
+                                start_y = self->cursor_y;
+                            }
                         }
                         i += j + 1;
                         continue;
@@ -147,14 +147,14 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
             self->cursor_y %= self->tilegrid->height_in_tiles;
         }
         if (self->cursor_y != start_y) {
-	  // clear the new row in case of scroll up
-	  if (self->cursor_y == self->tilegrid->top_left_y) {
-            for (uint16_t j = 0; j < self->tilegrid->width_in_tiles; j++) {
-                common_hal_displayio_tilegrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+            // clear the new row in case of scroll up
+            if (self->cursor_y == self->tilegrid->top_left_y) {
+                for (uint16_t j = 0; j < self->tilegrid->width_in_tiles; j++) {
+                    common_hal_displayio_tilegrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+                }
+                common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, (self->cursor_y + self->tilegrid->height_in_tiles + 1) % self->tilegrid->height_in_tiles);
             }
-            common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, (self->cursor_y + self->tilegrid->height_in_tiles + 1) % self->tilegrid->height_in_tiles);
-	  }
-	  start_y = self->cursor_y;
+            start_y = self->cursor_y;
         }
     }
     return i - data;
