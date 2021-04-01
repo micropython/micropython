@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-21 21:29+0000\n"
+"PO-Revision-Date: 2021-04-01 14:50+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: main.c
 msgid ""
@@ -1217,6 +1217,7 @@ msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
 
@@ -1629,6 +1630,10 @@ msgstr "Aucun minuteur disponible"
 msgid "Nordic Soft Device failure assertion."
 msgstr "Affirmation de défaillance du Nordic Soft Device."
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic soft device out of memory"
+msgstr "Appareil logiciel Nordic hors de mémoire"
+
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr "Chaîne IP non valide"
@@ -1945,7 +1950,7 @@ msgstr "Lecture seule"
 msgid "Read-only filesystem"
 msgstr "Système de fichier en lecture seule"
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Objet en lecture seule"
 
@@ -2019,14 +2024,6 @@ msgstr "Taux d'échantillonage trop élevé. Doit être inférieur à %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "La broche CTS sélectionnée n'est pas valide"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "La broche RTS sélectionnée n'est pas valide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -4357,6 +4354,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "La broche CTS sélectionnée n'est pas valide"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "La broche RTS sélectionnée n'est pas valide"
 
 #~ msgid "Could not initialize channel"
 #~ msgstr "Impossible d'initialiser le canal"

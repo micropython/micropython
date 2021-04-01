@@ -1192,6 +1192,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "%q pada tidak valid"
 
@@ -1602,6 +1603,10 @@ msgstr "Penghitung waktu tidak tersedia"
 msgid "Nordic Soft Device failure assertion."
 msgstr "Pernyataan kegagalan Perangkat Lunak Nordic."
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic soft device out of memory"
+msgstr ""
+
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr ""
@@ -1909,7 +1914,7 @@ msgstr "Baca-saja"
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 #, fuzzy
 msgid "Read-only object"
 msgstr "sistem file (filesystem) bersifat Read-only"
@@ -1984,14 +1989,6 @@ msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Pindai sudah dalam proses. Hentikan dengan stop_scan."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "Pin CTS yang dipilih tidak valid"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "Pin RTS yang dipilih tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -4288,6 +4285,12 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Pin CTS yang dipilih tidak valid"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Pin RTS yang dipilih tidak valid"
 
 #~ msgid "Could not initialize channel"
 #~ msgstr "Tidak dapat menginisialisasi kanal"
