@@ -37,6 +37,7 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     const mcu_pwm_obj_t *pwm;
     bool variable_frequency;
+    uint16_t duty_cycle, duty_scaled, pulse_count;
 } pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
