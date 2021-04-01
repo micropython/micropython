@@ -1171,6 +1171,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr ""
 
@@ -1581,6 +1582,10 @@ msgstr ""
 msgid "Nordic Soft Device failure assertion."
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic soft device out of memory"
+msgstr ""
+
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr ""
@@ -1877,7 +1882,7 @@ msgstr ""
 msgid "Read-only filesystem"
 msgstr ""
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr ""
 
@@ -1950,14 +1955,6 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
-msgstr ""
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr ""
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c

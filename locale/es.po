@@ -1207,6 +1207,7 @@ msgstr "%q inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
 
@@ -1621,6 +1622,10 @@ msgstr "No hay temporizador disponible"
 msgid "Nordic Soft Device failure assertion."
 msgstr "Fallo de aserción de dispositivo Nordic Soft."
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic soft device out of memory"
+msgstr ""
+
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr "No es una cadena de IP válida"
@@ -1935,7 +1940,7 @@ msgstr "Solo-lectura"
 msgid "Read-only filesystem"
 msgstr "Sistema de archivos de solo-Lectura"
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Objeto de solo-lectura"
 
@@ -2009,14 +2014,6 @@ msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Escaneo en progreso. Usa stop_scan para detener."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "Pin CTS seleccionado no válido"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "Pin RTS seleccionado no válido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -4332,6 +4329,12 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Pin CTS seleccionado no válido"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Pin RTS seleccionado no válido"
 
 #~ msgid "Could not initialize channel"
 #~ msgstr "No se pudo inicializar el canal"

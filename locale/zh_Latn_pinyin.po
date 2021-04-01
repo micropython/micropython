@@ -1194,6 +1194,7 @@ msgstr "wú xiào %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Wúxiào de %q yǐn jiǎo"
 
@@ -1605,6 +1606,10 @@ msgstr "Méiyǒu jìshí qì"
 msgid "Nordic Soft Device failure assertion."
 msgstr "Nordic ruǎn shèbèi gùzhàng shēngmíng."
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic soft device out of memory"
+msgstr ""
+
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
@@ -1913,7 +1918,7 @@ msgstr "Zhǐ dú"
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
@@ -1987,14 +1992,6 @@ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "Suǒ xuǎn de CTS yǐn jiǎo wúxiào"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "Suǒ xuǎn de RTS yǐn jiǎo wúxiào"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -4296,6 +4293,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Suǒ xuǎn de CTS yǐn jiǎo wúxiào"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Suǒ xuǎn de RTS yǐn jiǎo wúxiào"
 
 #~ msgid "Could not initialize channel"
 #~ msgstr "Wúfǎ chūshǐhuà píndào"
