@@ -43,7 +43,7 @@
 //| per row is a multiple of 4, then the resulting memoryview will correspond directly with the bitmap's contents. Otherwise,
 //| the bitmap data is packed into the memoryview with unspecified padding.
 //|
-//| A read-only buffer can be used e.g., with `ulab.frombuffer` to efficiently create an array with the same content as a Bitmap;
+//| A read-only buffer can be used e.g., with ``ulab.numpy.frombuffer`` to efficiently create an array with the same content as a Bitmap;
 //| to move data efficiently from ulab back into a Bitmap, use `bitmaptools.arrayblit`.
 //| """
 //|
