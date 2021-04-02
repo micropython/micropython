@@ -164,7 +164,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         "RGB565" means that it is organized as a series of 16-bit numbers
 //|         where the highest 5 bits are interpreted as red, the next 6 as
 //|         green, and the final 5 as blue.  The object can be any buffer, but
-//|         `array.array` and `ulab.array` objects are most often useful.
+//|         `array.array` and ``ulab.ndarray`` objects are most often useful.
 //|         To update the content, modify the framebuffer and call refresh.
 //|
 //|         If a framebuffer is not passed in, one is allocated and initialized
