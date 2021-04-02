@@ -19,16 +19,8 @@ import shared_bindings_matrix
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = [
-    "atmel-samd",
-    "cxd56",
-    "esp32s2",
-    "litex",
-    "mimxrt10xx",
-    "nrf",
-    "raspberrypi",
-    "stm",
-]
+from shared_bindings_matrix import SUPPORTED_PORTS
+from shared_bindings_matrix import aliases_by_board
 
 BIN = ("bin",)
 UF2 = ("uf2",)
@@ -71,17 +63,6 @@ extension_by_board = {
     "electronut_labs_blip": HEX,
     # stm32
     "meowbit_v121": UF2,
-}
-
-aliases_by_board = {
-    "circuitplayground_express": [
-        "circuitplayground_express_4h",
-        "circuitplayground_express_digikey_pycon2019",
-    ],
-    "pybadge": ["edgebadge"],
-    "pyportal": ["pyportal_pynt"],
-    "gemma_m0": ["gemma_m0_pycon2018"],
-    "pewpew10": ["pewpew13"],
 }
 
 language_allow_list = set([
@@ -312,7 +293,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix[board_id],
+                        "modules": support_matrix[alias],
                         "languages": languages,
                         "extensions": board_info["extensions"],
                     }
@@ -325,7 +306,8 @@ def generate_download_info():
         create_pr(changes, current_info, git_info, user)
     else:
         print("No new release to update")
-        # print(create_json(current_info).decode("utf8"))
+        if "DEBUG" in os.environ:
+            print(create_json(current_info).decode("utf8"))
 
 
 if __name__ == "__main__":
