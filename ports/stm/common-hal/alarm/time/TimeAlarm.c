@@ -64,12 +64,10 @@ STATIC void timer_callback(void) {
 }
 
 bool alarm_time_timealarm_woke_us_up(void) {
-    //mp_printf(&mp_plat_print,"Woke Up:%d\n",woke_up);
     return woke_up;
 }
 
 void alarm_time_timealarm_reset(void) {
-    // mp_printf(&mp_plat_print,"timealarm reset");
     woke_up = false;
 }
 

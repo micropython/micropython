@@ -46,10 +46,8 @@ void alarm_reset(void) {
     most_recent_alarm = NULL;
     // Reset the alarm flag
     STM_ALARM_FLAG = 0x00;
-    // alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
-    // esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
 // Kind of a hack, required as RTC is reset in port.c
@@ -134,7 +132,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
 
-    // TODO: make this less roundabout
+    // TODO: make assignment to global array less roundabout
     most_recent_alarm = wake_alarm;
     shared_alarm_save_wake_alarm();
 
@@ -149,10 +147,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
-//#define NORETURN __attribute__((noreturn))
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,1);
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,0);
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
     port_disable_tick();

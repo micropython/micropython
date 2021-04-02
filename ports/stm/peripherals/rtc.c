@@ -164,10 +164,6 @@ void stm32_peripherals_rtc_assign_alarm_callback(uint8_t alarm_idx, void(*callba
 }
 
 void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
-    // TEMP: ping set alarm (called by port_interrupt_after_ticks and alarm_time_timealarm_set_alarms)
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6,1);
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6,0);
-
     uint64_t raw_ticks = stm32_peripherals_rtc_raw_ticks(NULL) + ticks;
 
     RTC_AlarmTypeDef alarm;
@@ -205,8 +201,6 @@ bool stm32_peripherals_rtc_alarm_triggered(uint8_t alarm_idx) {
 }
 
 void RTC_WKUP_IRQHandler(void) {
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,1);
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,0);
     if (wkup_callback) {
         wkup_callback();
     }
@@ -220,10 +214,6 @@ void RTC_Alarm_IRQHandler(void) {
 }
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *_hrtc) {
-    // TEMP
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_3,1);
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_3,0);
-
     if (alarm_callbacks[PERIPHERALS_ALARM_A]) {
         alarm_callbacks[PERIPHERALS_ALARM_A]();
     }
@@ -232,10 +222,6 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *_hrtc) {
 }
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *_hrtc) {
-    //TEMP
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,1);
-    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,0);
-
     if (alarm_callbacks[PERIPHERALS_ALARM_B]) {
         alarm_callbacks[PERIPHERALS_ALARM_B]();
     }
