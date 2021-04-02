@@ -31,14 +31,16 @@ class PIOASMEmit:
         autopush=False,
         autopull=False,
         push_thresh=32,
-        pull_thresh=32
+        pull_thresh=32,
+        fifo_join=0
     ):
         from array import array
 
         self.labels = {}
         execctrl = 0
         shiftctrl = (
-            (pull_thresh & 0x1F) << 25
+            fifo_join << 30
+            | (pull_thresh & 0x1F) << 25
             | (push_thresh & 0x1F) << 20
             | out_shiftdir << 19
             | in_shiftdir << 18
