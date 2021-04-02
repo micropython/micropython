@@ -79,9 +79,6 @@ bool common_hal_alarm_woken_from_sleep(void) {
 }
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    if (alarm_pin_pinalarm_woke_us_up()) {
-        return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
-    }
     uint8_t cause = _get_wakeup_cause();
     switch (cause) {
         case STM_WAKEUP_RTC: {
