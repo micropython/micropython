@@ -43,7 +43,7 @@ void stm32_peripherals_rtc_set_wakeup_mode_tick(void);
 void stm32_peripherals_rtc_enable_wakeup_timer(void);
 void stm32_peripherals_rtc_disable_wakeup_timer(void);
 
-void stm32_peripherals_reset_alarms(void);
+void stm32_peripherals_rtc_reset_alarms(void);
 void stm32_peripherals_rtc_assign_alarm_callback(uint8_t alarm_idx, void(*callback)(void)) ;
 void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks);
 bool stm32_peripherals_rtc_alarm_triggered(uint8_t alarm_idx);

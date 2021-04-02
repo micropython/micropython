@@ -33,14 +33,28 @@
 #include "peripherals/exti.h"
 
 STATIC bool stm_exti_reserved[STM32_GPIO_PORT_SIZE];
+STATIC bool stm_exti_never_reset[STM32_GPIO_PORT_SIZE];
 STATIC void (*stm_exti_callback[STM32_GPIO_PORT_SIZE])(uint8_t num);
 
 void exti_reset(void) {
     for (size_t i = 0;i < STM32_GPIO_PORT_SIZE; i++) {
-        stm_exti_reserved[i] = false;
-        stm_exti_callback[i] = NULL;
-        stm_peripherals_exti_disable(i);
+        if (!stm_exti_never_reset[i]) {
+            stm_exti_reserved[i] = false;
+            stm_exti_callback[i] = NULL;
+            stm_peripherals_exti_disable(i);
+        }
     }
+}
+
+void stm_peripherals_exti_never_reset(uint8_t num) {
+    stm_exti_never_reset[num] = true;
+}
+
+void stm_peripherals_exti_reset_exti(uint8_t num) {
+    stm_peripherals_exti_disable(num);
+    stm_exti_never_reset[num] = false;
+    stm_exti_reserved[num] = false;
+    stm_exti_callback[num] = NULL;
 }
 
 bool stm_peripherals_exti_is_free(uint8_t num) {

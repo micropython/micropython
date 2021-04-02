@@ -39,11 +39,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
 
-#define STM_WAKEUP_UNDEF    0
-#define STM_WAKEUP_GPIO     1
-#define STM_WAKEUP_RTC      2
-
-#define STM_ALARM_FLAG      RTC->BKP0R
+STATIC uint8_t true_deep_wake_reason;
 
 void alarm_reset(void) {
     // Reset the alarm flag
@@ -54,6 +50,12 @@ void alarm_reset(void) {
     // esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
+// Kind of a hack, required as RTC is reset in port.c
+// TODO: in the future, don't reset it at all, just override critical flags
+void alarm_set_wakeup_reason(uint8_t reason) {
+    true_deep_wake_reason = reason;
+}
+
 STATIC uint8_t _get_wakeup_cause(void) {
     // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_us_up()) {
@@ -62,14 +64,9 @@ STATIC uint8_t _get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_us_up()) {
         return STM_WAKEUP_RTC;
     }
-    if (RTC->BKP0R & 0x01) {
-        // We've woken from deep sleep. Was it the WKUP pin or the RTC?
-        if (RTC->ISR & RTC_FLAG_ALRBF) {
-            // Alarm B is the deep sleep alarm
-            return STM_WAKEUP_RTC;
-        } else {
-            return STM_WAKEUP_GPIO;
-        }
+    // Check to see if we woke from deep sleep (reason set in port_init)
+    if (true_deep_wake_reason) {
+        return true_deep_wake_reason;
     }
     return STM_WAKEUP_UNDEF;
 }
@@ -158,6 +155,19 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // The above shuts down RAM, so we should never hit this
     while(1);
+}
+
+void common_hal_alarm_pretending_deep_sleep(void) {
+    // Re-enable the WKUP pin (PA00) since VM cleanup resets it
+    // If there are no PinAlarms, EXTI won't be turned on, and this won't do anything
+    // TODO: replace with `prepare_for_fake_deep_sleep` if other WKUP are added.
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = pin_mask(0);
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    port_idle_until_interrupt();
 }
 
 void common_hal_alarm_gc_collect(void) {

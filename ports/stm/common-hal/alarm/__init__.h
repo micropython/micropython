@@ -31,6 +31,13 @@
 
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
+#define STM_WAKEUP_UNDEF    0
+#define STM_WAKEUP_GPIO     1
+#define STM_WAKEUP_RTC      2
+
+#define STM_ALARM_FLAG      RTC->BKP0R
+
+extern void alarm_set_wakeup_reason(uint8_t reason);
 extern void alarm_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM__INIT__H

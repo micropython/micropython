@@ -32,6 +32,8 @@
 #define STM32_GPIO_PORT_SIZE 16
 
 void exti_reset(void);
+void stm_peripherals_exti_never_reset(uint8_t num);
+void stm_peripherals_exti_reset_exti(uint8_t num);
 bool stm_peripherals_exti_is_free(uint8_t num);
 bool stm_peripherals_exti_reserve(uint8_t num);
 void stm_peripherals_exti_enable(uint8_t num);

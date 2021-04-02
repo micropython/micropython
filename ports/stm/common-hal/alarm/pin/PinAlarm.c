@@ -36,6 +36,7 @@ STATIC bool woke_up;
 
 STATIC uint16_t alarm_pin_triggered;
 STATIC bool deep_wkup_enabled;
+STATIC bool reserved_alarms[STM32_GPIO_PORT_SIZE];
 
 STATIC void pin_alarm_callback(uint8_t num) {
     alarm_pin_triggered |= (1 << num);
@@ -50,7 +51,6 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, con
     if (!stm_peripherals_exti_is_free(pin->number)) {
         mp_raise_RuntimeError(translate("Pin interrupt already in use"));
     }
-    stm_peripherals_exti_reserve(pin->number);
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
     GPIO_InitStruct.Mode = value ? GPIO_MODE_IT_RISING : GPIO_MODE_IT_FALLING;
@@ -63,8 +63,7 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, con
     }
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
 
-    stm_peripherals_exti_set_callback(pin_alarm_callback,pin->number);
-
+    // EXTI is set up and enabled in set_alarm
     self->pin = pin;
     self->value = value;
     self->pull = pull;
@@ -101,10 +100,11 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
         }
     }
 
-    // Placeholder for deep sleep
+    // If the above isn't true, we woke from deep sleep, so create a new alarm
     alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
     alarm->base.type = &alarm_pin_pinalarm_type;
-    alarm->pin = NULL;
+    // TODO: replace this if/when other WKUP pins are supported
+    alarm->pin = &pin_PA00;
     return alarm;
 }
 
@@ -113,6 +113,12 @@ void alarm_pin_pinalarm_reset(void) {
     alarm_pin_triggered = 0;
     woke_up = false;
     deep_wkup_enabled = false;
+    for (uint8_t i = 0; i < STM32_GPIO_PORT_SIZE; i++) {
+        if (reserved_alarms[i]) {
+            stm_peripherals_exti_reset_exti(i);
+            reserved_alarms[i] = false;
+        }
+    }
 }
 
 // Deep sleep alarms don't actually make use of EXTI, but we pretend they're the same.
@@ -124,14 +130,24 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                 // Deep sleep only wakes on a rising edge from one pin, WKUP (PA00)
                 // All pin settings are handled automatically.
                 if (alarm->pin != &pin_PA00) {
-                    mp_raise_ValueError(translate("Only the WKUP pin can be used to wake from Deep Sleep"));
+                    mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
+                }
+                if (alarm->value == false || alarm->pull == false) {
+                    // Enabling WakeUp automatically sets this, but warn anyway to set expectations
+                    mp_raise_ValueError(translate("Deep sleep pins must use a rising edge with pulldown"));
                 }
                 // We can't actually turn WakeUp on here, since enabling it disables EXTI,
                 // so we put it off until right before sleeping.
                 deep_wkup_enabled = true;
+                // EXTI needs to persist past the VM cleanup for fake deep sleep
+                stm_peripherals_exti_never_reset(alarm->pin->number);
             }
-
+            if (!stm_peripherals_exti_reserve(alarm->pin->number)) {
+                mp_raise_RuntimeError(translate("Pin interrupt already in use"));
+            }
+            stm_peripherals_exti_set_callback(pin_alarm_callback,alarm->pin->number);
             stm_peripherals_exti_enable(alarm->pin->number);
+            reserved_alarms[alarm->pin->number] = true;
         }
     }
 }

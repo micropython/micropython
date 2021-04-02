@@ -53,6 +53,9 @@
 #if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
 #include "peripherals/exti.h"
 #endif
+#if CIRCUITPY_ALARM
+#include "common-hal/alarm/__init__.h"
+#endif
 
 #include "peripherals/clocks.h"
 #include "peripherals/gpio.h"
@@ -170,8 +173,18 @@ safe_mode_t port_init(void) {
     __HAL_RCC_SYSCFG_CLK_ENABLE();
 
     __HAL_RCC_PWR_CLK_ENABLE();
-
     HAL_PWR_EnableBkUpAccess();
+
+    // TODO: don't reset RTC entirely and move this back to alarm
+    if (STM_ALARM_FLAG & 0x01) {
+        // We've woken from deep sleep. Was it the WKUP pin or the RTC?
+        if (RTC->ISR & RTC_FLAG_ALRBF) {
+            // Alarm B is the deep sleep alarm
+            alarm_set_wakeup_reason(STM_WAKEUP_RTC);
+        } else {
+            alarm_set_wakeup_reason(STM_WAKEUP_GPIO);
+        }
+    }
     __HAL_RCC_BACKUPRESET_FORCE();
     __HAL_RCC_BACKUPRESET_RELEASE();
 
@@ -180,7 +193,7 @@ safe_mode_t port_init(void) {
     stm32_peripherals_rtc_init();
 
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-    stm32_peripherals_reset_alarms();
+    stm32_peripherals_rtc_reset_alarms();
 
     // Turn off SysTick
     SysTick->CTRL = 0;

@@ -154,7 +154,7 @@ void stm32_peripherals_rtc_disable_wakeup_timer(void) {
     HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 }
 
-void stm32_peripherals_reset_alarms(void) {
+void stm32_peripherals_rtc_reset_alarms(void) {
     HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
     HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
 }
