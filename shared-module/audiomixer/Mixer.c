@@ -110,7 +110,7 @@ static inline uint32_t add16signed(uint32_t a, uint32_t b) {
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = a >> (sizeof(int16_t) * 8 * i);
         int16_t bi = b >> (sizeof(int16_t) * 8 * i);
-        int32_t intermediate = (int32_t)ai + bi / 2;
+        int32_t intermediate = (int32_t)ai + bi;
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {
@@ -139,14 +139,15 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     uint32_t result = 0;
     float mod_mul = (float)mul / (float)((1 << 15) - 1);
     for (int8_t i = 0; i < 2; i++) {
-        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i));
         int32_t intermediate = ai * mod_mul;
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {
             intermediate = SHRT_MIN;
         }
-        result |= (((uint32_t)intermediate) + 0x8000) << (sizeof(int16_t) * 8 * i);
+        intermediate &= 0x0000FFFF;
+        result |= (((uint32_t)intermediate)) << (sizeof(int16_t) * 8 * i);
     }
     return result;
     #endif
