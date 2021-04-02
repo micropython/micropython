@@ -161,5 +161,5 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 }
 
 void common_hal_alarm_gc_collect(void) {
-    gc_collect_ptr(common_hal_alarm_get_wake_alarm());
+    gc_collect_ptr(shared_alarm_get_wake_alarm());
 }

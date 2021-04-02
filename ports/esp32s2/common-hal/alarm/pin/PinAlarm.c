@@ -152,7 +152,7 @@ static uint64_t high_alarms = 0;
 static uint64_t low_alarms = 0;
 static uint64_t pull_pins = 0;
 
-void alarm_pin_pinalarm_reset_alarms(void) {
+void alarm_pin_pinalarm_reset(void) {
     if (gpio_interrupt_handle != NULL) {
         esp_intr_free(gpio_interrupt_handle);
         gpio_interrupt_handle = NULL;
