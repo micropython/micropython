@@ -182,7 +182,7 @@ void print_safe_mode_message(safe_mode_t reason) {
         // defined in ports/nrf/bluetooth/bluetooth_common.mk
         // will print "Unknown reason" if somehow encountered on other ports
         case NORDIC_SOFT_DEVICE_ASSERT:
-            serial_write_compressed(translate("Nordic Soft Device failure assertion."));
+            serial_write_compressed(translate("Nordic system firmware failure assertion."));
             break;
             #endif
         case FLASH_WRITE_FAIL:
