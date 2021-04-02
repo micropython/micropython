@@ -54,7 +54,7 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
-void common_hal_alarm_reset(void) {
+void alarm_reset(void) {
     alarm_sleep_memory_reset();
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
@@ -144,7 +144,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     }
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
-    alarm_pin_pinalarm_reset_alarms(n_alarms, alarms);
+    alarm_reset();
     return wake_alarm;
 }
 

@@ -45,7 +45,7 @@
 
 #define STM_ALARM_FLAG      RTC->BKP0R
 
-void common_hal_alarm_reset(void) {
+void alarm_reset(void) {
     // Reset the alarm flag
     STM_ALARM_FLAG = 0x00;
     // alarm_sleep_memory_reset();
@@ -131,7 +131,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     }
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
-    common_hal_alarm_reset();
+    alarm_reset();
     return wake_alarm;
 }
 

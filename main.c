@@ -163,7 +163,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
     shared_alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
-    common_hal_alarm_reset();
+    alarm_reset();
     #endif
 
     #if CIRCUITPY_NETWORK
@@ -293,9 +293,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
+
+        // Prepare the VM state. Includes an alarm check/reset for sleep.
         start_mp(heap);
 
+        // This is where the user's python code is actually executed:
         found_main = maybe_run_list(supported_filenames, &result);
+        // If that didn't work, double check the extensions
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -305,6 +309,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {

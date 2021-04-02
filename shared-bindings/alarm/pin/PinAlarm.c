@@ -73,7 +73,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(0, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     common_hal_alarm_pin_pinalarm_construct(self,
         pin,
@@ -89,7 +89,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
 //|
 STATIC mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);
+    const mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);
     if (pin == NULL) {
         return mp_const_none;
     }

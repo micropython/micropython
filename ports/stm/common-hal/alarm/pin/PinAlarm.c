@@ -43,7 +43,7 @@ STATIC void pin_alarm_callback(uint8_t num) {
     HAL_GPIO_EXTI_IRQHandler(pin_mask(num));
 }
 
-void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
+void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (!edge) {
         mp_raise_NotImplementedError(translate("Only edge detection is available on this hardware"));
     }
@@ -70,7 +70,7 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu
     self->pull = pull;
 }
 
-mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
+const mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
     return self->pin;
 }
 
@@ -112,6 +112,7 @@ void alarm_pin_pinalarm_reset(void) {
     HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
     alarm_pin_triggered = 0;
     woke_up = false;
+    deep_wkup_enabled = false;
 }
 
 // Deep sleep alarms don't actually make use of EXTI, but we pretend they're the same.
@@ -131,17 +132,6 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             }
 
             stm_peripherals_exti_enable(alarm->pin->number);
-        }
-    }
-}
-
-void alarm_pin_pinalarm_reset_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
-    alarm_pin_triggered = 0;
-    deep_wkup_enabled = false;
-    for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
-            alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
-            stm_peripherals_exti_disable(alarm->pin->number);
         }
     }
 }

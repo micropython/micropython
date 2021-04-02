@@ -31,6 +31,6 @@
 
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
-extern void common_hal_alarm_reset(void);
+extern void alarm_reset(void);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
