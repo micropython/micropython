@@ -40,8 +40,10 @@
 #include "supervisor/shared/workflow.h"
 
 STATIC uint8_t true_deep_wake_reason;
+STATIC mp_obj_t most_recent_alarm;
 
 void alarm_reset(void) {
+    most_recent_alarm = NULL;
     // Reset the alarm flag
     STM_ALARM_FLAG = 0x00;
     // alarm_sleep_memory_reset();
@@ -93,6 +95,10 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
 }
 
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
+    // If we woke from light sleep, override with that alarm
+    if (most_recent_alarm != NULL) {
+        return most_recent_alarm;
+    }
     return _get_wake_alarm(0, NULL);
 }
 
@@ -106,9 +112,8 @@ STATIC void _idle_until_alarm(void) {
     // Poll for alarms.
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
-        // Allow ctrl-C interrupt.
+        // Detect if interrupt was alarm or ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
-            shared_alarm_save_wake_alarm();
             return;
         }
         port_idle_until_interrupt();
@@ -128,11 +133,19 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     }
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
-    alarm_reset();
+
+    // TODO: make this less roundabout
+    most_recent_alarm = wake_alarm;
+    shared_alarm_save_wake_alarm();
+
+    // Can't use alarm_reset since it resets most_recent_alarm
+    alarm_pin_pinalarm_reset();
+    alarm_time_timealarm_reset();
     return wake_alarm;
 }
 
 void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    most_recent_alarm = NULL;
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
@@ -147,9 +160,6 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // Set a flag in the backup registers to indicate sleep wakeup
     STM_ALARM_FLAG = 0x01;
-    // HAL_PWR_EnableBkUpAccess();
-    // __HAL_RCC_BACKUPRESET_FORCE();
-    // __HAL_RCC_BACKUPRESET_RELEASE();
 
     HAL_PWR_EnterSTANDBYMode();
 
