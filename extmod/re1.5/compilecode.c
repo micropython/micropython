@@ -4,21 +4,14 @@
 
 #include "re1.5.h"
 
-#if defined(__GNUC__)
-#define constant_p(x) __builtin_constant_p(x)
-#else
-#define constant_p(x) (0)
-#endif
-
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
-#define EMIT(at, byte) constant_p(byte) && byte == (int8_t) byte \
-    ? (code ? (code[at] = byte) : (at)) \
-    : _emit(at, code, byte, &err)
+#define EMIT(at, byte) (code ? (code[at] = byte) : (at))
+#define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
 
-static void _emit(int at, char *code, int val, bool *err) {
+static void _emit_checked(int at, char *code, int val, bool *err) {
     *err |= val != (int8_t)val;
     if (code) {
         code[at] = val;
@@ -80,7 +73,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                 }
                 EMIT(PC++, *re);
             }
-            EMIT(term + 1, cnt);
+            EMIT_CHECKED(term + 1, cnt);
             break;
         }
         case '(': {
@@ -91,7 +84,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             if (capture) {
                 sub = ++prog->sub;
                 EMIT(PC++, Save);
-                EMIT(PC++, 2 * sub);
+                EMIT_CHECKED(PC++, 2 * sub);
                 prog->len++;
             } else {
                     re += 2;
@@ -102,7 +95,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
 
             if (capture) {
                 EMIT(PC++, Save);
-                EMIT(PC++, 2 * sub + 1);
+                EMIT_CHECKED(PC++, 2 * sub + 1);
                 prog->len++;
             }
 
@@ -117,7 +110,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             } else {
                 EMIT(term, Split);
             }
-            EMIT(term + 1, REL(term, PC));
+            EMIT_CHECKED(term + 1, REL(term, PC));
             prog->len++;
             term = PC;
             break;
@@ -125,7 +118,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             if (PC == term) return NULL; // nothing to repeat
             INSERT_CODE(term, 2, PC);
             EMIT(PC, Jmp);
-            EMIT(PC + 1, REL(PC, term));
+            EMIT_CHECKED(PC + 1, REL(PC, term));
             PC += 2;
             if (re[1] == '?') {
                 EMIT(term, RSplit);
@@ -133,7 +126,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             } else {
                 EMIT(term, Split);
             }
-            EMIT(term + 1, REL(term, PC));
+            EMIT_CHECKED(term + 1, REL(term, PC));
             prog->len += 2;
             term = PC;
             break;
@@ -145,20 +138,20 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             } else {
                 EMIT(PC, RSplit);
             }
-            EMIT(PC + 1, REL(PC, term));
+            EMIT_CHECKED(PC + 1, REL(PC, term));
             PC += 2;
             prog->len++;
             term = PC;
             break;
         case '|':
             if (alt_label) {
-                EMIT(alt_label, REL(alt_label, PC) + 1);
+                EMIT_CHECKED(alt_label, REL(alt_label, PC) + 1);
             }
             INSERT_CODE(start, 2, PC);
             EMIT(PC++, Jmp);
             alt_label = PC++;
             EMIT(start, Split);
-            EMIT(start + 1, REL(start, PC));
+            EMIT_CHECKED(start + 1, REL(start, PC));
             prog->len += 2;
             term = PC;
             break;
@@ -176,7 +169,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
     }
 
     if (alt_label) {
-        EMIT(alt_label, REL(alt_label, PC) + 1);
+        EMIT_CHECKED(alt_label, REL(alt_label, PC) + 1);
     }
     return err ? NULL : re;
 }
