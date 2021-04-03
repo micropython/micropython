@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include "py/obj.h"
+#include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/repl.h"
@@ -143,6 +144,93 @@ bool mp_repl_continue_with_input(const char *input) {
     return false;
 }
 
+STATIC bool test_qstr(mp_obj_t obj, qstr name) {
+    if (obj) {
+        // try object member
+        mp_obj_t dest[2];
+        mp_load_method_protected(obj, name, dest, true);
+        return dest[0] != MP_OBJ_NULL;
+    } else {
+        // try builtin module
+        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+    }
+}
+
+STATIC const char *find_completions(const char *s_start, size_t s_len,
+    mp_obj_t obj, size_t *match_len, qstr *q_first, qstr *q_last) {
+
+    const char *match_str = NULL;
+    *match_len = 0;
+    *q_first = *q_last = 0;
+    size_t nqstr = QSTR_TOTAL();
+    for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
+        size_t d_len;
+        const char *d_str = (const char *)qstr_data(q, &d_len);
+        if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
+            if (test_qstr(obj, q)) {
+                // special case; filter out words that begin with underscore
+                // unless there's already a partial match
+                if (s_len == 0 && d_str[0] == '_') {
+                    continue;
+                }
+                if (match_str == NULL) {
+                    match_str = d_str;
+                    *match_len = d_len;
+                } else {
+                    // search for longest common prefix of match_str and d_str
+                    // (assumes these strings are null-terminated)
+                    for (size_t j = s_len; j <= *match_len && j <= d_len; ++j) {
+                        if (match_str[j] != d_str[j]) {
+                            *match_len = j;
+                            break;
+                        }
+                    }
+                }
+                if (*q_first == 0) {
+                    *q_first = q;
+                }
+                *q_last = q;
+            }
+        }
+    }
+    return match_str;
+}
+
+STATIC void print_completions(const mp_print_t *print,
+    const char *s_start, size_t s_len,
+    mp_obj_t obj, qstr q_first, qstr q_last) {
+
+    #define WORD_SLOT_LEN (16)
+    #define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
+
+    int line_len = MAX_LINE_LEN; // force a newline for first word
+    for (qstr q = q_first; q <= q_last; ++q) {
+        size_t d_len;
+        const char *d_str = (const char *)qstr_data(q, &d_len);
+        if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
+            if (test_qstr(obj, q)) {
+                int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
+                if (gap < 2) {
+                    gap += WORD_SLOT_LEN;
+                }
+                if (line_len + gap + d_len <= MAX_LINE_LEN) {
+                    // TODO optimise printing of gap?
+                    for (int j = 0; j < gap; ++j) {
+                        mp_print_str(print, " ");
+                    }
+                    mp_print_str(print, d_str);
+                    line_len += gap + d_len;
+                } else {
+                    mp_printf(print, "\n%s", d_str);
+                    line_len = d_len;
+                }
+            }
+        }
+    }
+    mp_print_str(print, "\n");
+}
+
 size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print, const char **compl_str) {
     // scan backwards to find start of "a.b.c" chain
     const char *org_str = str;
@@ -155,137 +243,83 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
         }
     }
 
-    size_t nqstr = QSTR_TOTAL();
-
     // begin search in outer global dict which is accessed from __main__
     mp_obj_t obj = MP_OBJ_FROM_PTR(&mp_module___main__);
     mp_obj_t dest[2];
 
+    const char *s_start;
+    size_t s_len;
+
     for (;;) {
         // get next word in string to complete
-        const char *s_start = str;
+        s_start = str;
         while (str < top && *str != '.') {
             ++str;
         }
-        size_t s_len = str - s_start;
+        s_len = str - s_start;
 
-        if (str < top) {
-            // a complete word, lookup in current object
-            qstr q = qstr_find_strn(s_start, s_len);
-            if (q == MP_QSTR_NULL) {
-                // lookup will fail
-                return 0;
-            }
-            mp_load_method_protected(obj, q, dest, true);
-            obj = dest[0]; // attribute, method, or MP_OBJ_NULL if nothing found
-
-            if (obj == MP_OBJ_NULL) {
-                // lookup failed
-                return 0;
-            }
-
-            // skip '.' to move to next word
-            ++str;
-
-        } else {
+        if (str == top) {
             // end of string, do completion on this partial name
+            break;
+        }
 
-            // look for matches
-            const char *match_str = NULL;
-            size_t match_len = 0;
-            qstr q_first = 0, q_last = 0;
-            for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
-                size_t d_len;
-                const char *d_str = (const char *)qstr_data(q, &d_len);
-                if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
-                    mp_load_method_protected(obj, q, dest, true);
-                    if (dest[0] != MP_OBJ_NULL) {
-                        // special case; filter out words that begin with underscore
-                        // unless there's already a partial match
-                        if (s_len == 0 && d_str[0] == '_') {
-                            continue;
-                        }
-                        if (match_str == NULL) {
-                            match_str = d_str;
-                            match_len = d_len;
-                        } else {
-                            // search for longest common prefix of match_str and d_str
-                            // (assumes these strings are null-terminated)
-                            for (size_t j = s_len; j <= match_len && j <= d_len; ++j) {
-                                if (match_str[j] != d_str[j]) {
-                                    match_len = j;
-                                    break;
-                                }
-                            }
-                        }
-                        if (q_first == 0) {
-                            q_first = q;
-                        }
-                        q_last = q;
-                    }
-                }
+        // a complete word, lookup in current object
+        qstr q = qstr_find_strn(s_start, s_len);
+        if (q == MP_QSTR_NULL) {
+            // lookup will fail
+            return 0;
+        }
+        mp_load_method_protected(obj, q, dest, true);
+        obj = dest[0]; // attribute, method, or MP_OBJ_NULL if nothing found
+
+        if (obj == MP_OBJ_NULL) {
+            // lookup failed
+            return 0;
+        }
+
+        // skip '.' to move to next word
+        ++str;
+    }
+
+    // look for matches
+    size_t match_len;
+    qstr q_first, q_last;
+    const char *match_str =
+        find_completions(s_start, s_len, obj, &match_len, &q_first, &q_last);
+
+    // nothing found
+    if (q_first == 0) {
+        // If there're no better alternatives, and if it's first word
+        // in the line, try to complete "import".
+        static const char import_str[] = "import ";
+        if (s_start == org_str && s_len > 0) {
+            if (memcmp(s_start, import_str, s_len) == 0) {
+                *compl_str = import_str + s_len;
+                return sizeof(import_str) - 1 - s_len;
             }
-
-            // nothing found
-            if (q_first == 0) {
-                if (s_len == 0) {
-                    *compl_str = "    ";
-                    return 4;
-                }
-                // If there're no better alternatives, and if it's first word
-                // in the line, try to complete "import".
-                if (s_start == org_str) {
-                    static const char import_str[] = "import ";
-                    if (memcmp(s_start, import_str, s_len) == 0) {
-                        *compl_str = import_str + s_len;
-                        return sizeof(import_str) - 1 - s_len;
-                    }
-                }
-
-                return 0;
-            }
-
-            // 1 match found, or multiple matches with a common prefix
-            if (q_first == q_last || match_len > s_len) {
-                *compl_str = match_str + s_len;
-                return match_len - s_len;
-            }
-
-            // multiple matches found, print them out
-
-            #define WORD_SLOT_LEN (16)
-            #define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
-
-            int line_len = MAX_LINE_LEN; // force a newline for first word
-            for (qstr q = q_first; q <= q_last; ++q) {
-                size_t d_len;
-                const char *d_str = (const char *)qstr_data(q, &d_len);
-                if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
-                    mp_load_method_protected(obj, q, dest, true);
-                    if (dest[0] != MP_OBJ_NULL) {
-                        int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
-                        if (gap < 2) {
-                            gap += WORD_SLOT_LEN;
-                        }
-                        if (line_len + gap + d_len <= MAX_LINE_LEN) {
-                            // TODO optimise printing of gap?
-                            for (int j = 0; j < gap; ++j) {
-                                mp_print_str(print, " ");
-                            }
-                            mp_print_str(print, d_str);
-                            line_len += gap + d_len;
-                        } else {
-                            mp_printf(print, "\n%s", d_str);
-                            line_len = d_len;
-                        }
-                    }
-                }
-            }
-            mp_print_str(print, "\n");
-
-            return (size_t)(-1); // indicate many matches
+        }
+        // after "import", suggest built-in modules
+        if (len >= 7 && !memcmp(org_str, import_str, 7)) {
+            obj = NULL;
+            match_str = find_completions(
+                s_start, s_len, obj, &match_len, &q_first, &q_last);
+        }
+        if (q_first == 0) {
+            *compl_str = "    ";
+            return s_len ? 0 : 4;
         }
     }
+
+    // 1 match found, or multiple matches with a common prefix
+    if (q_first == q_last || match_len > s_len) {
+        *compl_str = match_str + s_len;
+        return match_len - s_len;
+    }
+
+    // multiple matches found, print them out
+    print_completions(print, s_start, s_len, obj, q_first, q_last);
+
+    return (size_t)(-1); // indicate many matches
 }
 
 #endif // MICROPY_HELPER_REPL
