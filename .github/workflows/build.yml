@@ -450,6 +450,7 @@ jobs:
         - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "artisense_rd00"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
