@@ -40,7 +40,8 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 idf_build_component(${CMAKE_SOURCE_DIR}/../../lib/lv_bindings/lvgl)
 idf_build_set_property(COMPILE_DEFINITIONS "-DLV_KCONFIG_IGNORE" APPEND)
-separate_arguments(LV_CFLAGS UNIX_COMMAND $ENV{LV_CFLAGS})
+separate_arguments(LV_CFLAGS_ENV UNIX_COMMAND $ENV{LV_CFLAGS})
+list(APPEND LV_CFLAGS ${LV_CFLAGS_ENV})
 idf_build_set_property(COMPILE_DEFINITIONS "${LV_CFLAGS}" APPEND)
 
 project(micropython)
