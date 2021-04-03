@@ -2453,10 +2453,6 @@ msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr "Cānshù bìxū shì ndarray"
-
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
@@ -2466,8 +2462,8 @@ msgstr "cānshù biānhào/lèixíng bù pǐpèi"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "cānshù yīnggāi shì '%q', 'bùshì '%q'"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
 #: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
 msgstr "cānshù bìxū shì ndarrays"
 
@@ -2496,7 +2492,7 @@ msgstr "shǔxìng shàngwèi zhīchí"
 msgid "axis is out of bounds"
 msgstr "zhóu chāo chū biān jiè"
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr "zhóu bì xū wéi \" wú \" huò zhěng shù"
 
@@ -2536,7 +2532,7 @@ msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
 msgid "branch not in range"
 msgstr "fēnzhī bùzài fànwéi nèi"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "huǎn chōng qū xiǎo yú qǐng qiú de dà xiǎo"
 
@@ -2544,7 +2540,7 @@ msgstr "huǎn chōng qū xiǎo yú qǐng qiú de dà xiǎo"
 msgid "buffer must be a bytes-like object"
 msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "huǎn chōng qū dà xiǎo bì xū shì yuán sù dà xiǎo de bèi shù"
 
@@ -2880,6 +2876,10 @@ msgstr "bùtóng de cānshù bìxū shì ndarray"
 msgid "differentiation order out of range"
 msgstr "chā yì shùn xù fàn wéi"
 
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
+msgstr "chǐ cùn bù pǐ pèi"
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3127,7 +3127,7 @@ msgstr "bù zhèngquè de tiánchōng"
 msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3197,7 +3197,7 @@ msgstr "shū rù bì xū shì ndarray"
 msgid "input must be one-dimensional"
 msgstr "shū rù bì xū shì yì wéi de"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr "shūrù bìxū wèi fāng jǔzhèn"
 
@@ -3380,10 +3380,6 @@ msgid "math domain error"
 msgstr "shùxué yù cuòwù"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "jǔzhèn chǐcùn bù pǐpèi"
-
-#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "jǔzhèn bùshì zhèngdìng de"
 
@@ -3552,10 +3548,6 @@ msgstr "fēi líng chāo shí bì xū > 0.01"
 msgid "non-zero timeout must be >= interval"
 msgstr "fēi líng chāo shí bì xū wéi >= jiàn gé"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr "wéi 1D hé 2D shù zǔ dìng yì guī fàn"
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "bùshì 128 wèi UUID"
@@ -3624,7 +3616,7 @@ msgstr "xūyào huǎnchōng qū xiéyì de duìxiàng"
 msgid "odd-length string"
 msgstr "jīshù zìfú chuàn"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "piān yí tài dà"
 
@@ -3678,6 +3670,14 @@ msgstr "ord yùqí zìfú"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() yùqí zìfú, dàn chángdù zìfú chuàn %d"
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3891,13 +3891,17 @@ msgstr "zhěngshù géshì shuōmíng fú 'c' bù yǔnxǔ shǐyòng fúhào"
 msgid "single '}' encountered in format string"
 msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr "dàxiǎo jǐn wèi ndarrays dìngyì"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "shuìmián chángdù bìxū shìfēi fùshù"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "qiēpiàn bù cháng bùnéng wéi líng"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -4196,10 +4200,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "huàn xǐng chōng tū"
@@ -4237,6 +4237,7 @@ msgstr "cuò wù de zhóu suǒ yǐn"
 msgid "wrong axis specified"
 msgstr "zhǐ dìng de zhóu cuò wù"
 
+#: extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr "shūrù lèixíng cuòwù"
@@ -4289,23 +4290,29 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
+#~ msgid "argument must be ndarray"
+#~ msgstr "Cānshù bìxū shì ndarray"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "jǔzhèn chǐcùn bù pǐpèi"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "wéi 1D hé 2D shù zǔ dìng yì guī fàn"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
+
 #~ msgid "Nordic Soft Device failure assertion."
 #~ msgstr "Nordic ruǎn shèbèi gùzhàng shēngmíng."
 
 #~ msgid "Unknown soft device error: %04x"
 #~ msgstr "Wèizhī de ruǎn shèbèi cuòwù: %04x"
 
-#~ msgid "dimensions do not match"
-#~ msgstr "chǐ cùn bù pǐ pèi"
-
 #~ msgid "first argument must be an iterable"
 #~ msgstr "dì yī gè cānshù bìxū shì kě diédài de"
 
 #~ msgid "iterables are not of the same length"
 #~ msgstr "kě diédài xiàng de chángdù bùtóng"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "qiēpiàn bù cháng bùnéng wéi líng"
 
 #~ msgid "Selected CTS pin not valid"
 #~ msgstr "Suǒ xuǎn de CTS yǐn jiǎo wúxiào"
