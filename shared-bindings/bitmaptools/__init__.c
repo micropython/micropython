@@ -397,8 +397,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
         { MP_QSTR_x2, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_y2, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_skip_index, MP_ARG_OBJ, {.u_obj = mp_const_none } },
-    }
-    ;
+    };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
