@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include "py/obj.h"
+#include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/repl.h"
@@ -144,10 +145,16 @@ bool mp_repl_continue_with_input(const char *input) {
 }
 
 STATIC bool test_qstr(mp_obj_t obj, qstr name) {
-    // try object member
-    mp_obj_t dest[2];
-    mp_load_method_protected(obj, name, dest, true);
-    return dest[0] != MP_OBJ_NULL;
+    if (obj) {
+        // try object member
+        mp_obj_t dest[2];
+        mp_load_method_protected(obj, name, dest, true);
+        return dest[0] != MP_OBJ_NULL;
+    } else {
+        // try builtin module
+        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+    }
 }
 
 STATIC const char *find_completions(const char *s_start, size_t s_len,
@@ -274,6 +281,12 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
         ++str;
     }
 
+    // after "import", suggest built-in modules
+    static const char import_str[] = "import ";
+    if (len >= 7 && !memcmp(org_str, import_str, 7)) {
+        obj = MP_OBJ_NULL;
+    }
+
     // look for matches
     size_t match_len;
     qstr q_first, q_last;
@@ -282,21 +295,18 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
 
     // nothing found
     if (q_first == 0) {
-        if (s_len == 0) {
-            *compl_str = "    ";
-            return 4;
-        }
         // If there're no better alternatives, and if it's first word
         // in the line, try to complete "import".
-        if (s_start == org_str) {
-            static const char import_str[] = "import ";
+        if (s_start == org_str && s_len > 0) {
             if (memcmp(s_start, import_str, s_len) == 0) {
                 *compl_str = import_str + s_len;
                 return sizeof(import_str) - 1 - s_len;
             }
         }
-
-        return 0;
+        if (q_first == 0) {
+            *compl_str = "    ";
+            return s_len ? 0 : 4;
+        }
     }
 
     // 1 match found, or multiple matches with a common prefix
