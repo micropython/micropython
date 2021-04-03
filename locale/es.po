@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-02 19:08+0000\n"
+"PO-Revision-Date: 2021-04-03 21:57+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1622,11 +1622,11 @@ msgstr "No hay temporizador disponible"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
-msgstr ""
+msgstr "Falla en la aserción del firmware del dispositivo Nordic."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr ""
+msgstr "El firmware del sistema Nordic no tiene memoria"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -2305,7 +2305,7 @@ msgstr "Error de seguridad desconocido: 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "Error desconocido en el firmware sistema: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
