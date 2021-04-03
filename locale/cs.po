@@ -1202,7 +1202,9 @@ msgid "Invalid DAC pin supplied"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr ""
@@ -1582,11 +1584,11 @@ msgid "No timer available"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
+msgid "Nordic system firmware failure assertion."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-msgid "Nordic soft device out of memory"
+msgid "Nordic system firmware out of memory"
 msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
@@ -2236,7 +2238,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
+msgid "Unknown system firmware error: %04x"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c

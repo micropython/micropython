@@ -1235,7 +1235,9 @@ msgid "Invalid DAC pin supplied"
 msgstr "Pin suministrado inválido para DAC"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
@@ -1619,12 +1621,12 @@ msgid "No timer available"
 msgstr "No hay temporizador disponible"
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
-msgstr "Fallo de aserción de dispositivo Nordic Soft."
+msgid "Nordic system firmware failure assertion."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-msgid "Nordic soft device out of memory"
-msgstr "El firmaware del sistema no tiene memoria"
+msgid "Nordic system firmware out of memory"
+msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -2302,8 +2304,8 @@ msgstr "Error de seguridad desconocido: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
-msgstr "Error leve desconocido en dispositivo: %04x"
+msgid "Unknown system firmware error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -4322,6 +4324,15 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Fallo de aserción de dispositivo Nordic Soft."
+
+#~ msgid "Nordic soft device out of memory"
+#~ msgstr "El firmaware del sistema no tiene memoria"
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Error leve desconocido en dispositivo: %04x"
 
 #~ msgid "dimensions do not match"
 #~ msgstr "las dimensiones no concuerdan"

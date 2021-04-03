@@ -1220,7 +1220,9 @@ msgid "Invalid DAC pin supplied"
 msgstr "Pin DAC yang diberikan tidak valid"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frekuensi PWM tidak valid"
@@ -1600,11 +1602,11 @@ msgid "No timer available"
 msgstr "Penghitung waktu tidak tersedia"
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
-msgstr "Pernyataan kegagalan Perangkat Lunak Nordic."
+msgid "Nordic system firmware failure assertion."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-msgid "Nordic soft device out of memory"
+msgid "Nordic system firmware out of memory"
 msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
@@ -2274,8 +2276,8 @@ msgstr "Kesalahan keamanan tidak dikenal: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
-msgstr "Kesalahan perangkat lunak tidak dikenal: %04x"
+msgid "Unknown system firmware error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -4278,6 +4280,12 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Pernyataan kegagalan Perangkat Lunak Nordic."
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Kesalahan perangkat lunak tidak dikenal: %04x"
 
 #~ msgid "Selected CTS pin not valid"
 #~ msgstr "Pin CTS yang dipilih tidak valid"
