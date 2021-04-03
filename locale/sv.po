@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-01 14:50+0000\n"
+"PO-Revision-Date: 2021-04-03 21:57+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1604,11 +1604,11 @@ msgstr "Ingen timer tillgänglig"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
-msgstr ""
+msgstr "Felaktigt tillstånd i Nordic systemfirmware."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr ""
+msgstr "Nordic systemfirmware fick slut på minne"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -2282,7 +2282,7 @@ msgstr "Okänt säkerhetsfel: 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "Okänt systemfirmwarefel: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
