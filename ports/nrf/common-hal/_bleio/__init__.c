@@ -47,7 +47,7 @@ void check_nrf_error(uint32_t err_code) {
     }
     switch (err_code) {
         case NRF_ERROR_NO_MEM:
-            mp_raise_msg(&mp_type_MemoryError, translate("Nordic soft device out of memory"));
+            mp_raise_msg(&mp_type_MemoryError, translate("Nordic system firmware out of memory"));
             return;
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
@@ -56,7 +56,7 @@ void check_nrf_error(uint32_t err_code) {
             mp_raise_ConnectionError(translate("Not connected"));
             return;
         default:
-            mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
+            mp_raise_bleio_BluetoothError(translate("Unknown system firmware error: %04x"), err_code);
             break;
     }
 }
