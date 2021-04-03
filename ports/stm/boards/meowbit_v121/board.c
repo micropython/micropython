@@ -27,15 +27,15 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 
+#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/board/__init__.h"
-#include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/busio/SPI.h"
 
 #include "supervisor/spi_flash_api.h"
 
-displayio_fourwire_obj_t board_display_obj;
+audiopwmio_pwmaudioout_obj_t board_buzz_obj;
 
 #define DELAY 0x80
 
@@ -113,6 +113,11 @@ void board_init(void) {
         60, // native_frames_per_second
         true, // backlight_on_high
         false); // SH1107_addressing
+
+    board_buzz_obj.base.type = &audiopwmio_pwmaudioout_type;
+    common_hal_audiopwmio_pwmaudioout_construct(&board_buzz_obj,
+        &pin_PB08, NULL, 0x8000);
+    never_reset_pin_number(pin_PB08.port, pin_PB08.number);
 }
 
 bool board_requests_safe_mode(void) {
