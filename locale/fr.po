@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-01 14:50+0000\n"
+"PO-Revision-Date: 2021-04-03 21:57+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -1630,11 +1630,11 @@ msgstr "Aucun minuteur disponible"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
-msgstr ""
+msgstr "Assertion échouée du logiciel systême Nordic."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr ""
+msgstr "Logiciel systême Nordic hors de mémoire"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -2317,7 +2317,7 @@ msgstr "Erreur de sécurité inconnue : 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "Faute inconnue du logiciel systême : %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
