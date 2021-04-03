@@ -33,7 +33,9 @@ class PIOASMEmit:
         push_thresh=32,
         pull_thresh=32
     ):
-        from array import array
+        # uarray is a built-in module so importing it here won't require
+        # scanning the filesystem.
+        from uarray import array
 
         self.labels = {}
         execctrl = 0
