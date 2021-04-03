@@ -2431,10 +2431,6 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr "may maling type ang argument"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr ""
-
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
@@ -2444,8 +2440,8 @@ msgstr "hindi tugma ang argument num/types"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argument ay dapat na '%q' hindi '%q'"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
 #: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
 msgstr ""
 
@@ -2474,7 +2470,7 @@ msgstr "attributes hindi sinusuportahan"
 msgid "axis is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr ""
 
@@ -2514,7 +2510,7 @@ msgstr "bits_per_sample ay dapat 8 o 16"
 msgid "branch not in range"
 msgstr "branch wala sa range"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr ""
 
@@ -2522,7 +2518,7 @@ msgstr ""
 msgid "buffer must be a bytes-like object"
 msgstr "buffer ay dapat bytes-like object"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
 
@@ -2863,6 +2859,10 @@ msgstr ""
 msgid "differentiation order out of range"
 msgstr ""
 
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3112,7 +3112,7 @@ msgstr "mali ang padding"
 msgid "index is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3182,7 +3182,7 @@ msgstr ""
 msgid "input must be one-dimensional"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr ""
 
@@ -3368,10 +3368,6 @@ msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr ""
-
-#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -3540,10 +3536,6 @@ msgstr ""
 msgid "non-zero timeout must be >= interval"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr ""
@@ -3612,7 +3604,7 @@ msgstr "object na may buffer protocol kinakailangan"
 msgid "odd-length string"
 msgstr "odd-length string"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3667,6 +3659,14 @@ msgstr "ord umaasa ng character"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() umaasa ng character pero string ng %d haba ang nakita"
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3881,13 +3881,17 @@ msgstr "sign hindi maari sa integer format specifier 'c'"
 msgid "single '}' encountered in format string"
 msgstr "isang '}' nasalubong sa format string"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "sleep length ay dapat hindi negatibo"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -4188,10 +4192,6 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -4229,6 +4229,7 @@ msgstr ""
 msgid "wrong axis specified"
 msgstr ""
 
+#: extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr ""

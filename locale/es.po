@@ -2481,10 +2481,6 @@ msgstr "El argot no está implementado para arrays aplanados"
 msgid "argument has wrong type"
 msgstr "el argumento tiene un tipo erroneo"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr "argumento debe ser ndarray"
-
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
@@ -2494,8 +2490,8 @@ msgstr "argumento número/tipos no coinciden"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argumento deberia ser un '%q' no un '%q'"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
 #: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
 msgstr "argumentos deben ser ndarrays"
 
@@ -2524,7 +2520,7 @@ msgstr "atributos aún no soportados"
 msgid "axis is out of bounds"
 msgstr "Eje está fuera de sus límites"
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr "Eje tiene que ser None, o un entero"
 
@@ -2564,7 +2560,7 @@ msgstr "bits_per_sample debe ser 8 ó 16"
 msgid "branch not in range"
 msgstr "la rama no está dentro del rango"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "El buffer es mas pequeño que el requerido"
 
@@ -2572,7 +2568,7 @@ msgstr "El buffer es mas pequeño que el requerido"
 msgid "buffer must be a bytes-like object"
 msgstr "buffer debe de ser un objeto bytes-like"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "El tamaño del buffer debe ser un múltiplo del tamaño del elemento"
 
@@ -2909,6 +2905,10 @@ msgstr "El argumento diff debe ser un ndarray"
 msgid "differentiation order out of range"
 msgstr "Orden de diferenciación fuera de rango"
 
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
+msgstr "las dimensiones no concuerdan"
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3156,7 +3156,7 @@ msgstr "relleno (padding) incorrecto"
 msgid "index is out of bounds"
 msgstr "el índice está fuera de límites"
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3226,7 +3226,7 @@ msgstr "Entrada tiene que ser un ndarray"
 msgid "input must be one-dimensional"
 msgstr "Entrada tiene que ser unidimensional"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr "la entrada debe ser una matriz cuadrada"
 
@@ -3411,10 +3411,6 @@ msgid "math domain error"
 msgstr "error de dominio matemático"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "las dimensiones de la matriz no coinciden"
-
-#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "matrix no es definida positiva"
 
@@ -3586,10 +3582,6 @@ msgstr "el tiempo de espera non-zero deber ser > 0.01"
 msgid "non-zero timeout must be >= interval"
 msgstr "el tiempo de espera non-zero debe ser >= intervalo"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr "norma está definida para arrays 1D y 2D"
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "no es 128-bit UUID"
@@ -3659,7 +3651,7 @@ msgstr "objeto con protocolo de buffer requerido"
 msgid "odd-length string"
 msgstr "string de longitud impar"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "offset es demasiado grande"
 
@@ -3713,6 +3705,14 @@ msgstr "ord espera un carácter"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3926,13 +3926,17 @@ msgstr "signo no permitido con el especificador integer format 'c'"
 msgid "single '}' encountered in format string"
 msgstr "un solo '}' encontrado en format string"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr "el tamaño se define solo para ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "la longitud de sleep no puede ser negativa"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "el tamaño de la división no puede ser cero"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -4232,10 +4236,6 @@ msgstr "el valor debe caber en %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count debe ser > 0"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "los vectores deben tener el mismo tamaño"
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "conflicto de wakeup"
@@ -4273,6 +4273,7 @@ msgstr "indice de eje erróneo"
 msgid "wrong axis specified"
 msgstr "eje especificado erróneo"
 
+#: extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr "tipo de entrada incorrecta"
@@ -4325,6 +4326,18 @@ msgstr "zi debe ser de tipo flotante"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
 
+#~ msgid "argument must be ndarray"
+#~ msgstr "argumento debe ser ndarray"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "las dimensiones de la matriz no coinciden"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "norma está definida para arrays 1D y 2D"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "los vectores deben tener el mismo tamaño"
+
 #~ msgid "Nordic Soft Device failure assertion."
 #~ msgstr "Fallo de aserción de dispositivo Nordic Soft."
 
@@ -4334,17 +4347,11 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgid "Unknown soft device error: %04x"
 #~ msgstr "Error leve desconocido en dispositivo: %04x"
 
-#~ msgid "dimensions do not match"
-#~ msgstr "las dimensiones no concuerdan"
-
 #~ msgid "first argument must be an iterable"
 #~ msgstr "el primer argumento debe ser un iterable"
 
 #~ msgid "iterables are not of the same length"
 #~ msgstr "los iterables no son del mismo tamaño"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "el tamaño de la división no puede ser cero"
 
 #~ msgid "Selected CTS pin not valid"
 #~ msgstr "Pin CTS seleccionado no válido"

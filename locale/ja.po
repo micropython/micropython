@@ -2424,10 +2424,6 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr "引数はndarrayでなければなりません"
-
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
@@ -2437,8 +2433,8 @@ msgstr ""
 msgid "argument should be a '%q' not a '%q'"
 msgstr "引数には '%q' が必要（'%q' ではなく）"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
 #: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
 msgstr "引数はndarrayでなければなりません"
 
@@ -2467,7 +2463,7 @@ msgstr "属性は未対応です"
 msgid "axis is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr ""
 
@@ -2507,7 +2503,7 @@ msgstr "bits_per_sampleは8または16でなければなりません"
 msgid "branch not in range"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr ""
 
@@ -2515,7 +2511,7 @@ msgstr ""
 msgid "buffer must be a bytes-like object"
 msgstr "バッファはbytes-likeオブジェクトでなければなりません"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
 
@@ -2849,6 +2845,10 @@ msgstr "引数はndarrayでなければなりません"
 msgid "differentiation order out of range"
 msgstr ""
 
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -3096,7 +3096,7 @@ msgstr ""
 msgid "index is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3167,7 +3167,7 @@ msgstr ""
 msgid "input must be one-dimensional"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr "入力は正方行列でなければなりません"
 
@@ -3349,10 +3349,6 @@ msgid "math domain error"
 msgstr "定義域エラー"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "行列の次元が一致しません"
-
-#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "正定値行列ではありません"
 
@@ -3521,10 +3517,6 @@ msgstr ""
 msgid "non-zero timeout must be >= interval"
 msgstr ""
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "128ビットのUUIDではありません"
@@ -3593,7 +3585,7 @@ msgstr ""
 msgid "odd-length string"
 msgstr "奇数長の文字列"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3647,6 +3639,14 @@ msgstr "ord()は1文字を受け取ります"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord()は1文字を要求しますが、長さ %d の文字列が与えられました"
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3861,13 +3861,17 @@ msgstr "整数フォーマット指定子'c'で符号は使えません"
 msgid "single '}' encountered in format string"
 msgstr "文字列フォーマット中に孤立した '}' があります"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "sleepの長さは非負数でなければなりません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "スライスのステップは0にできません"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -4166,10 +4170,6 @@ msgstr "値は%dバイトに収まらなければなりません"
 msgid "value_count must be > 0"
 msgstr "value_countは0より大きくなければなりません"
 
-#: extmod/ulab/code/numpy/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -4207,6 +4207,7 @@ msgstr ""
 msgid "wrong axis specified"
 msgstr ""
 
+#: extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr ""
@@ -4259,6 +4260,12 @@ msgstr "ziはfloat値でなければなりません"
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid "argument must be ndarray"
+#~ msgstr "引数はndarrayでなければなりません"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "行列の次元が一致しません"
+
 #~ msgid "Unknown soft device error: %04x"
 #~ msgstr "不明なソフトデバイスエラー: %04x"
 
@@ -4267,9 +4274,6 @@ msgstr ""
 
 #~ msgid "iterables are not of the same length"
 #~ msgstr "iterableが同じ長さではありません"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "スライスのステップは0にできません"
 
 #~ msgid "Selected CTS pin not valid"
 #~ msgstr "選択されたCTSピンが不正"
