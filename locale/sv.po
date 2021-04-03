@@ -946,11 +946,11 @@ msgstr "Förväntad tupel med längd %d, fick %d"
 msgid "Extended advertisements with scan response not supported."
 msgstr "Utökad annonsering i kombination med skanningssvar stöds inte."
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
 msgstr "FFT är enbart definierade för ndarrays"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FTT är enbart implementerad för linjära matriser"
 
@@ -1220,7 +1220,9 @@ msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Ogiltig PWM-frekvens"
@@ -1601,12 +1603,12 @@ msgid "No timer available"
 msgstr "Ingen timer tillgänglig"
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
-msgstr "Påståendet om Nordic Soft Device-fel."
+msgid "Nordic system firmware failure assertion."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-msgid "Nordic soft device out of memory"
-msgstr "Nordic soft-enheten har slut på minne"
+msgid "Nordic system firmware out of memory"
+msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -2279,8 +2281,8 @@ msgstr "Okänt säkerhetsfel: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
-msgstr "Okänt mjukvarufel: %04x"
+msgid "Unknown system firmware error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -2441,11 +2443,11 @@ msgstr "adresserna är tomma"
 msgid "arg is an empty sequence"
 msgstr "arg är en tom sekvens"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "argumentet argsort måste vara en ndarray"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort är inte implementerad för tillplattade matriser"
 
@@ -2453,7 +2455,7 @@ msgstr "argsort är inte implementerad för tillplattade matriser"
 msgid "argument has wrong type"
 msgstr "argumentet har fel typ"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "argument must be ndarray"
 msgstr "argument måste vara ndarray"
 
@@ -2466,7 +2468,8 @@ msgstr "argument antal/typ matchar inte"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argumentet skall vara en '%q', inte en '%q'"
 
-#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "arguments must be ndarrays"
 msgstr "argumenten måste vara ndarray"
 
@@ -2479,11 +2482,11 @@ msgstr "array och indexlängd måste vara lika"
 msgid "array/bytes required on right side"
 msgstr "array/bytes krävs på höger sida"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "försök att läsa (arg)min/(arg)max av tom sekvens"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "försök att få argmin/argmax för en tom sekvens"
 
@@ -2491,15 +2494,15 @@ msgstr "försök att få argmin/argmax för en tom sekvens"
 msgid "attributes not supported yet"
 msgstr "attribut stöds inte än"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis is out of bounds"
 msgstr "axis är utanför gränsen"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis must be None, or an integer"
 msgstr "axis måste vara None eller ett heltal"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis too long"
 msgstr "axis för lång"
 
@@ -2802,19 +2805,19 @@ msgstr "konstant måste vara ett heltal"
 msgid "conversion to object"
 msgstr "konvertering till objekt"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr "Argumenten convolve måste vara linjära matriser"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr "Argumenten convolve måste vara ndarray:er"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr "Argumenten convolve kan inte vara tomma"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "kan inte invertera Vandermonde-matris"
 
@@ -2822,15 +2825,15 @@ msgstr "kan inte invertera Vandermonde-matris"
 msgid "couldn't determine SD card version"
 msgstr "kan inte avgöra SD-kortversion"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
 msgstr "cross är definierad för 1D-matriser med längd 3"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
 msgstr "data måste vara itererbar"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "data måste vara av samma längd"
 
@@ -2870,17 +2873,13 @@ msgstr "destination_length måste vara ett heltal >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "uppdateringssekvensen för dict har fel längd"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr "argumentet diff måste vara en ndarray"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "differentiation order out of range"
 msgstr "differentieringsordning utanför intervallet"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "dimensions do not match"
-msgstr "dimensioner matchar inte"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2997,11 +2996,11 @@ msgstr "filen måste vara en fil som öppnats i byte-läge"
 msgid "filesystem must provide mount method"
 msgstr "filsystemet måste tillhandahålla mount-metod"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be a callable"
 msgstr "första argumentet måste vara en callable"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
 msgstr "första argumentet måste vara en funktion"
 
@@ -3009,11 +3008,7 @@ msgstr "första argumentet måste vara en funktion"
 msgid "first argument must be a tuple of ndarrays"
 msgstr "första argumentet måste vara en tupel av ndarray"
 
-#: extmod/ulab/code/ndarray.c
-msgid "first argument must be an iterable"
-msgstr "första argumentet måste vara en iterable"
-
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be an ndarray"
 msgstr "första argumentet måste vara en ndarray"
 
@@ -3025,7 +3020,7 @@ msgstr "första argumentet till super() måste vara typ"
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "förenklingsordningen måste vara antingen \"C\" eller \"F\""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr "Argumentet flip måste vara en ndarray"
 
@@ -3058,7 +3053,7 @@ msgstr "funktionen förväntar som mest %d argument, fick %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "funktionen fick flera värden för argumentet '%q'"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "function has the same sign at the ends of interval"
 msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 
@@ -3133,7 +3128,7 @@ msgstr "felaktig utfyllnad"
 msgid "index is out of bounds"
 msgstr "index är utanför gränserna"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3147,7 +3142,7 @@ msgstr "index måste vara heltal"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "index måste vara heltal, slices, eller Boolean-listor"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
 msgstr "initialvärden måste vara iterable"
 
@@ -3167,7 +3162,7 @@ msgstr "indata- och utdataformer är inte kompatibla"
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "indataargument måste vara integer, en tuple eller list"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
 msgstr "indataarraylängden måste vara en multipel av 2"
 
@@ -3175,15 +3170,15 @@ msgstr "indataarraylängden måste vara en multipel av 2"
 msgid "input arrays are not compatible"
 msgstr "indatamatriser är inte kompatibla"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input data must be an iterable"
 msgstr "indata måste vara en iterable"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "indatamatrisen är asymmetrisk"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "indatamatrisen är singulär"
 
@@ -3199,23 +3194,23 @@ msgstr "indata måste vara en tensor av rank 2"
 msgid "input must be an ndarray"
 msgstr "indata måste vara en ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
 msgstr "indata måste vara endimensionell"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr "indata måste vara kvadratmatris"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr "indata måste vara tupel, lista, range, eller ndarray"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "indatavektorer måste ha samma längd"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "inputs are not iterable"
 msgstr "indata är inte iterbara"
 
@@ -3227,7 +3222,7 @@ msgstr "int() arg 2 måste vara >= 2 och <= 36"
 msgid "integer required"
 msgstr "heltal krävs"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr "interp är definierad för 1D-matriser med samma längd"
 
@@ -3316,11 +3311,7 @@ msgstr "issubclass() arg 1 måste vara en klass"
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr "issubclass() arg 2 måste vara en klass eller en tupel av klasser"
 
-#: extmod/ulab/code/ndarray.c
-msgid "iterables are not of the same length"
-msgstr "iterables är inte av samma längd"
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr "iterations konvergerar inte"
 
@@ -3391,7 +3382,11 @@ msgstr "map-buffert för liten"
 msgid "math domain error"
 msgstr "matematikdomänfel"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "matrix dimensions do not match"
+msgstr "matrisdimensioner matchar inte"
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "matrisen är inte positiv bestämd"
 
@@ -3413,15 +3408,15 @@ msgstr "maximalt antal dimensioner är 4"
 msgid "maximum recursion depth exceeded"
 msgstr "maximal rekursionsdjup överskriden"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
 msgstr "maxiter måste vara > 0"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
 msgstr "maxiter bör vara > 0"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "median argument must be an ndarray"
 msgstr "argumentet median måste vara en ndarray"
 
@@ -3442,7 +3437,7 @@ msgstr "memoryview: längden är inte en multipel av itemsize"
 msgid "module not found"
 msgstr "modulen hittades inte"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "fler frihetsgrader än datapunkter"
 
@@ -3560,7 +3555,7 @@ msgstr "Icke-noll timeout måste vara > 0.01"
 msgid "non-zero timeout must be >= interval"
 msgstr "Icke-noll timeout måste vara >= intervall"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr "norm är definierad för 1D- och 2D-matriser"
 
@@ -3661,8 +3656,8 @@ msgstr "enbart sample_rate=16000 stöds"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "endast segment med steg=1 (aka Ingen) stöds"
 
-#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
 msgstr "operander kan inte sändas tillsammans"
 
@@ -3670,7 +3665,7 @@ msgstr "operander kan inte sändas tillsammans"
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "operationen är enbart implementerad för 1D Boolean-matriser"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr "åtgärden är inte implementerad för ndarray:er"
 
@@ -3816,7 +3811,7 @@ msgstr "köstorlek överskreds"
 msgid "raw f-strings are not implemented"
 msgstr "råa f-strängar inte implementerade"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
 msgstr "verkliga och imaginära delar måste ha samma längd"
 
@@ -3851,7 +3846,7 @@ msgstr "rgb_pins[%d] duplicerar en annan pinntilldelning"
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr "rgb_pins[%d] är inte på samma port som en klocka"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "roll argument must be an ndarray"
 msgstr "argumentet roll måste vara en ndarray"
 
@@ -3900,17 +3895,13 @@ msgstr "tecken tillåts inte med heltalsformatspecificeraren 'c'"
 msgid "single '}' encountered in format string"
 msgstr "Enkelt '}' påträffades i formatsträngen"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr "storlek är enbart definierad ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "värdet för sleep måste vara positivt"
-
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
-msgstr "segmentsteg kan inte vara noll"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -3924,19 +3915,19 @@ msgstr "värdet för small int överskreds"
 msgid "soft reboot\n"
 msgstr "mjuk omstart\n"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "argumentet sort måste vara en ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
 msgstr "sos array måste ha form (n_section, 6)"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
 msgstr "sos[:, 3] måste vara ettor"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt kräver iterable argument"
 
@@ -4050,7 +4041,7 @@ msgstr "tobyte kan enbart anropas för täta matriser"
 msgid "too many arguments provided with the given format"
 msgstr "för många argument för det givna formatet"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
 msgstr "för många dimensioner"
 
@@ -4063,11 +4054,11 @@ msgstr "för många index"
 msgid "too many values to unpack (expected %d)"
 msgstr "för många värden att packa upp (förväntat %d)"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays"
 msgstr "trapz är definierat för 1D-matriser"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
@@ -4209,6 +4200,10 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
 
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr "vektorer måste ha samma längd"
+
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr "wakeup-konflikt"
@@ -4238,7 +4233,7 @@ msgstr "wifi är inte aktiverat"
 msgid "window must be <= interval"
 msgstr "window måste vara <= interval"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
 msgstr "fel axelindex"
 
@@ -4246,7 +4241,7 @@ msgstr "fel axelindex"
 msgid "wrong axis specified"
 msgstr "fel axel angiven"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr "fel indatatyp"
 
@@ -4262,7 +4257,7 @@ msgstr "fel antal värden för att packa upp"
 msgid "wrong operand type"
 msgstr "fel operandtyp"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr "fel utdatatyp"
 
@@ -4286,17 +4281,38 @@ msgstr "y-värde utanför intervall"
 msgid "zero step"
 msgstr "noll steg"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi måste vara en ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
 msgstr "zi måste vara av typ float"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Påståendet om Nordic Soft Device-fel."
+
+#~ msgid "Nordic soft device out of memory"
+#~ msgstr "Nordic soft-enheten har slut på minne"
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Okänt mjukvarufel: %04x"
+
+#~ msgid "dimensions do not match"
+#~ msgstr "dimensioner matchar inte"
+
+#~ msgid "first argument must be an iterable"
+#~ msgstr "första argumentet måste vara en iterable"
+
+#~ msgid "iterables are not of the same length"
+#~ msgstr "iterables är inte av samma längd"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "segmentsteg kan inte vara noll"
 
 #~ msgid "Selected CTS pin not valid"
 #~ msgstr "Vald CTS-pinne är inte giltig"
@@ -4331,12 +4347,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgstr ""
 #~ "Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
 #~ "programmet"
-
-#~ msgid "matrix dimensions do not match"
-#~ msgstr "matrisdimensioner matchar inte"
-
-#~ msgid "vectors must have same lengths"
-#~ msgstr "vektorer måste ha samma längd"
 
 #~ msgid "Group full"
 #~ msgstr "Gruppen är full"

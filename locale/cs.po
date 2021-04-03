@@ -932,11 +932,11 @@ msgstr ""
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr ""
 
@@ -1202,7 +1202,9 @@ msgid "Invalid DAC pin supplied"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr ""
@@ -1582,11 +1584,11 @@ msgid "No timer available"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
+msgid "Nordic system firmware failure assertion."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-msgid "Nordic soft device out of memory"
+msgid "Nordic system firmware out of memory"
 msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
@@ -2236,7 +2238,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
+msgid "Unknown system firmware error: %04x"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -2390,11 +2392,11 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
@@ -2402,7 +2404,7 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "argument must be ndarray"
 msgstr ""
 
@@ -2415,7 +2417,8 @@ msgstr ""
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "arguments must be ndarrays"
 msgstr ""
 
@@ -2428,11 +2431,11 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr ""
 
@@ -2440,15 +2443,15 @@ msgstr ""
 msgid "attributes not supported yet"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis must be None, or an integer"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis too long"
 msgstr ""
 
@@ -2749,19 +2752,19 @@ msgstr ""
 msgid "conversion to object"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
@@ -2769,15 +2772,15 @@ msgstr ""
 msgid "couldn't determine SD card version"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr ""
 
@@ -2814,16 +2817,12 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "dimensions do not match"
 msgstr ""
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
@@ -2941,11 +2940,11 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be a callable"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
 msgstr ""
 
@@ -2953,11 +2952,7 @@ msgstr ""
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "first argument must be an iterable"
-msgstr ""
-
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -2969,7 +2964,7 @@ msgstr ""
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr ""
 
@@ -3002,7 +2997,7 @@ msgstr ""
 msgid "function got multiple values for argument '%q'"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "function has the same sign at the ends of interval"
 msgstr ""
 
@@ -3077,7 +3072,7 @@ msgstr ""
 msgid "index is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3091,7 +3086,7 @@ msgstr ""
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
 msgstr ""
 
@@ -3111,7 +3106,7 @@ msgstr ""
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
 msgstr ""
 
@@ -3119,15 +3114,15 @@ msgstr ""
 msgid "input arrays are not compatible"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input data must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr ""
 
@@ -3143,23 +3138,23 @@ msgstr ""
 msgid "input must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "inputs are not iterable"
 msgstr ""
 
@@ -3171,7 +3166,7 @@ msgstr ""
 msgid "integer required"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -3260,11 +3255,7 @@ msgstr ""
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "iterables are not of the same length"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr ""
 
@@ -3332,7 +3323,11 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "matrix dimensions do not match"
+msgstr ""
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -3354,15 +3349,15 @@ msgstr ""
 msgid "maximum recursion depth exceeded"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "median argument must be an ndarray"
 msgstr ""
 
@@ -3383,7 +3378,7 @@ msgstr ""
 msgid "module not found"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr ""
 
@@ -3501,7 +3496,7 @@ msgstr ""
 msgid "non-zero timeout must be >= interval"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr ""
 
@@ -3602,8 +3597,8 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
-#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
@@ -3611,7 +3606,7 @@ msgstr ""
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr ""
 
@@ -3756,7 +3751,7 @@ msgstr ""
 msgid "raw f-strings are not implemented"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
 msgstr ""
 
@@ -3791,7 +3786,7 @@ msgstr ""
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "roll argument must be an ndarray"
 msgstr ""
 
@@ -3838,16 +3833,12 @@ msgstr ""
 msgid "single '}' encountered in format string"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
 msgstr ""
 
 #: py/objslice.c py/sequence.c
@@ -3862,19 +3853,19 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
@@ -3988,7 +3979,7 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
 msgstr ""
 
@@ -4001,11 +3992,11 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -4147,6 +4138,10 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -4176,7 +4171,7 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
 msgstr ""
 
@@ -4184,7 +4179,7 @@ msgstr ""
 msgid "wrong axis specified"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr ""
 
@@ -4200,7 +4195,7 @@ msgstr ""
 msgid "wrong operand type"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr ""
 
@@ -4224,15 +4219,15 @@ msgstr ""
 msgid "zero step"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
