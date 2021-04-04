@@ -17,9 +17,11 @@ ALL_DEVICES = "CDC CDC2 MSC AUDIO HID VENDOR"
 ALL_DEVICES_SET = frozenset(ALL_DEVICES.split())
 DEFAULT_DEVICES = "CDC MSC AUDIO HID"
 
+# This list is in preferred order. MacOS does not like GAMEPAD coming before MOUSE.
 ALL_HID_DEVICES = (
     "KEYBOARD MOUSE CONSUMER SYS_CONTROL GAMEPAD DIGITIZER XAC_COMPATIBLE_GAMEPAD RAW"
 )
+ALL_HID_DEVICES_ORDER = dict((name, idx) for (idx, name) in enumerate(ALL_HID_DEVICES.split()))
 ALL_HID_DEVICES_SET = frozenset(ALL_HID_DEVICES.split())
 # Digitizer works on Linux but conflicts with mouse, so omit it.
 DEFAULT_HID_DEVICES = "KEYBOARD MOUSE CONSUMER GAMEPAD"
@@ -352,7 +354,8 @@ if include_hid:
     else:
         report_id = 1
         concatenated_descriptors = bytearray()
-        for name in args.hid_devices:
+        # Sort HID devices by preferred order.
+        for name in sorted(args.hid_devices, key=ALL_HID_DEVICES_ORDER.get):
             concatenated_descriptors.extend(
                 bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id))
             )
