@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-03 21:57+0000\n"
+"PO-Revision-Date: 2021-04-05 22:35+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3676,11 +3676,11 @@ msgstr "ord() förväntade sig ett tecken, men en sträng med längden %d hittad
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "matrisen för out är för liten"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "out måste vara en float dense array"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
