@@ -239,6 +239,7 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
+        - "huntercat_nfc"
         - "ikigaisense_vita"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
