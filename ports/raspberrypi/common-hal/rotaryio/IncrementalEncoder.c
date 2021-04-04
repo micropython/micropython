@@ -101,6 +101,7 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
+    common_hal_rp2pio_statemachine_set_interrupt_handler(&self->state_machine, NULL, NULL, 0);
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
