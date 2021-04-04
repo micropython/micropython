@@ -11,9 +11,6 @@ SPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICES = "W25Q16JVxQ"
 LONGINT_IMPL = MPZ
 
-# A number of modules are removed for HunterCatNFC to make room for frozen libraries.
-# Many I/O functions are not available.
-# math is very large and is also removed.
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_BITBANGIO = 0
 CIRCUITPY_BITMAPTOOLS = 0
