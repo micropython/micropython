@@ -71,7 +71,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         encoder, MP_ARRAY_SIZE(encoder),
         1000000,
         encoder_init, MP_ARRAY_SIZE(encoder_init), // init
-        NULL, 1, 0, 0xffffffff, // out pin
+        NULL, 0, 0, 0, // out pin
         pin_a, 2, // in pins
         3, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
