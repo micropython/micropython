@@ -236,7 +236,7 @@ void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) 
 }
 
 int common_hal_displayio_bitmap_get_buffer(displayio_bitmap_t *self, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (flags & MP_BUFFER_WRITE) {
+    if ((flags & MP_BUFFER_WRITE) && self->read_only) {
         return 1;
     }
     bufinfo->len = self->stride * self->height * sizeof(size_t);
