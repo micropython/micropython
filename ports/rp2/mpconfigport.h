@@ -31,8 +31,9 @@
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 
+#include "mpconfigboard.h"
+
 // Board and hardware specific configuration
-#define MICROPY_HW_BOARD_NAME                   "Raspberry Pi Pico"
 #define MICROPY_HW_MCU_NAME                     "RP2040"
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (1)

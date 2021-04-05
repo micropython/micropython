@@ -2,11 +2,13 @@
 #
 # This is a simple wrapper around cmake
 
-BUILD = build
+BOARD ?= PICO
+ 
+BUILD ?= build-$(BOARD)
 
 $(VERBOSE)MAKESILENT = -s
 
-CMAKE_ARGS =
+CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD)
 
 ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}

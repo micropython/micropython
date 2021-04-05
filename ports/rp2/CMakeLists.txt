@@ -17,6 +17,30 @@ endif()
 # Use the local tinyusb instead of the one in pico-sdk
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
 
+# Set the location of this port's directory.
+set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
+
+# Set the board if it's not already set.
+if(NOT MICROPY_BOARD)
+    set(MICROPY_BOARD PICO)
+endif()
+
+# Set the PICO_BOARD if it's not already set.
+if(NOT PICO_BOARD)
+    string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
+endif()
+
+# Set the board directory and check that it exists.
+if(NOT MICROPY_BOARD_DIR)
+    set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
+endif()
+if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
+    message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
+endif()
+
+# Include board config
+include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake) 
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -150,6 +174,7 @@ target_link_libraries(${MICROPY_TARGET} usermod)
 target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_INC_USERMOD}
+    ${MICROPY_BOARD_DIR}
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}"
 )
