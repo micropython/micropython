@@ -12,13 +12,13 @@
 
 #define BOARD_HAS_CRYSTAL 1
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PA16)
-#define DEFAULT_I2C_BUS_SDA (&pin_PA17)
-#define DEFAULT_UART_BUS_RX (&pin_PB20)
+#define DEFAULT_I2C_BUS_SCL (&pin_PA12)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA13)
 #define DEFAULT_UART_BUS_TX (&pin_PB21)
+#define DEFAULT_UART_BUS_RX (&pin_PB20)
+#define DEFAULT_SPI_BUS_SCK (&pin_PC28)
 #define DEFAULT_SPI_BUS_MISO (&pin_PB23)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PC27)
-#define DEFAULT_SPI_BUS_SCK (&pin_PC28)
 #define MICROPY_HW_LED_STATUS (&pin_PA23)
 #define MICROPY_HW_LED_RX (&pin_PC05)
 #define MICROPY_HW_LED_TX (&pin_PC06)
