@@ -149,6 +149,7 @@ target_link_libraries(${MICROPY_TARGET} usermod)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_USERMOD}
+    ${PROJECT_SOURCE_DIR}/${BOARD_DIR}
     "${PROJECT_SOURCE_DIR}"
     "${MICROPY_DIR}"
     "${CMAKE_BINARY_DIR}"
