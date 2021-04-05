@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-03 21:57+0000\n"
+"PO-Revision-Date: 2021-04-05 22:35+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3708,11 +3708,11 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "La matriz de salida es demasiado pequeña"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "la matriz de salida debe ser densa de números float"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
