@@ -12,7 +12,6 @@ from __future__ import print_function
 import re
 import sys
 
-from math import log
 import collections
 import gettext
 import os.path
@@ -185,7 +184,7 @@ def compute_huffman_coding(translations, compression_filename):
         # Score the candidates we found.  This is an empirical formula only,
         # chosen for its effectiveness.
         scores = sorted(
-            ((s, (len(s) - 1) ** log(max(occ - 2, 1)), occ) for (s, occ) in counter.items()),
+            ((s, (len(s) - 1) ** (occ + 4), occ) for (s, occ) in counter.items()),
             key=lambda x: x[1],
             reverse=True,
         )
