@@ -55,8 +55,7 @@
 //|     This class is designed to facilitate sharing of PIO resources. By default,
 //|     it is assumed that the state machine is used on its own and can be placed
 //|     in either PIO. State machines with the same program will be placed in the
-//|     same PIO if possible. To ensure multiple state machines share a PIO use
-//|     the ``colocate`` kwarg during construction and create them one after another."""
+//|     same PIO if possible."""
 //|
 //|     def __init__(self,
 //|                  program: ReadableBuffer,
@@ -87,7 +86,6 @@
 //|                  auto_push: bool = False,
 //|                  push_threshold : int = 32,
 //|                  in_shift_right : bool = True) -> None:
-// //|                  colocate: Union[int, StateMachine, None] = None
 //|
 //|         """Construct a StateMachine object on the given pins with the given program.
 //|
