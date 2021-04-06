@@ -61,7 +61,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
     mp_obj_t pins[] = {MP_OBJ_FROM_PTR(pin_a), MP_OBJ_FROM_PTR(pin_b)};
     if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
-        mp_raise_RuntimeError(translate("Pins must be sequential"));
+        pins[0] = MP_OBJ_FROM_PTR(pin_b);
+        pins[1] = MP_OBJ_FROM_PTR(pin_a);
+        if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
+            mp_raise_RuntimeError(translate("Pins must be sequential"));
+        }
     }
 
     self->position = 0;
@@ -71,8 +75,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         encoder, MP_ARRAY_SIZE(encoder),
         1000000,
         encoder_init, MP_ARRAY_SIZE(encoder_init), // init
-        NULL, 1, 0, 0xffffffff, // out pin
-        pin_a, 2, // in pins
+        NULL, 0, 0, 0, // out pin
+        pins[0], 2, // in pins
         3, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         NULL, 0, 0, 0x1f, // sideset pins
@@ -101,6 +105,7 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
+    common_hal_rp2pio_statemachine_set_interrupt_handler(&self->state_machine, NULL, NULL, 0);
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
