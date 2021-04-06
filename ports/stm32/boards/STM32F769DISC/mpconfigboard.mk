@@ -22,7 +22,7 @@ ifeq ($(USE_QSPI_XIP),1)
 LD_FILES = boards/STM32F769DISC/f769_qspi.ld
 TEXT0_ADDR = 0x08020000
 TEXT1_ADDR = 0x90000000
-TEXT0_SECTIONS = .isr_vector .text .data
+TEXT0_SECTIONS = .isr_vector .text .data .ARM
 TEXT1_SECTIONS = .text_qspi
 
 else
