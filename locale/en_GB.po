@@ -420,6 +420,10 @@ msgstr "AnalogOut is only 16 bits. Value must be less than 65536."
 msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut not supported on given pin"
 
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Another PWMAudioOut is already active"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
@@ -537,6 +541,7 @@ msgid "Buffer is too small"
 msgstr "Buffer is too small"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Buffer length %d too big. It must be less than %d"
@@ -989,6 +994,10 @@ msgstr "Failed to allocate WiFi memory"
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
 msgstr "Failed to allocate WiFi scan memory"
+
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Failed to buffer the sample"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"

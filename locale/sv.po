@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-03 21:57+0000\n"
+"PO-Revision-Date: 2021-04-06 14:41+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -419,6 +419,10 @@ msgstr "AnalogOut hanterar bara 16 bitar. Värdet måste vara mindre än 65536."
 msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut stöds inte på angiven pinne"
 
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Another PWMAudioOut is already active"
+msgstr "En annan PWMAudioOut är redan aktiv"
+
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
@@ -535,6 +539,7 @@ msgid "Buffer is too small"
 msgstr "Bufferten är för liten"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
@@ -990,6 +995,10 @@ msgstr "Det gick inte att allokera WiFi-minne"
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
 msgstr "Det gick inte att allokera minne för WiFi-scanning"
+
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Failed to buffer the sample"
+msgstr "Det gick inte att buffra samplingen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -3676,11 +3685,11 @@ msgstr "ord() förväntade sig ett tecken, men en sträng med längden %d hittad
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "matrisen för out är för liten"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "out måste vara en float dense array"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
