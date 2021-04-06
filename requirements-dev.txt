@@ -8,7 +8,7 @@ typer
 
 requests
 sh
-click
+click>=7.1.2
 setuptools
 cpp-coveralls
 
@@ -20,14 +20,14 @@ sphinx-autoapi
 sphinxcontrib-svg2pdfconverter
 
 # For translate check
-polib
+polib>=1.1.0
 
 # For pre-commit
 pyyaml
-astroid
-isort
-black
-mypy
+astroid>=2.5.1
+isort>=5.7.0
+black>=20.8b1
+mypy>=0.812
 
 # For uploading artifacts
 awscli
