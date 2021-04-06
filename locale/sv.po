@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-05 22:35+0000\n"
+"PO-Revision-Date: 2021-04-06 14:41+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -421,7 +421,7 @@ msgstr "AnalogOut stöds inte på angiven pinne"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "En annan PWMAudioOut är redan aktiv"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -998,7 +998,7 @@ msgstr "Det gick inte att allokera minne för WiFi-scanning"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Failed to buffer the sample"
-msgstr ""
+msgstr "Det gick inte att buffra samplingen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
