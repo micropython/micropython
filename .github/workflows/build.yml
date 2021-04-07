@@ -190,6 +190,7 @@ jobs:
         - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
+        - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
