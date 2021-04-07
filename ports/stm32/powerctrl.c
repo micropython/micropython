@@ -377,8 +377,8 @@ set_clk:
     RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
     #if defined(STM32H7)
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
+    RCC_ClkInitStruct.APB4CLKDivider = MICROPY_HW_CLK_APB4_DIV;
     #endif
 
     #if MICROPY_HW_CLK_LAST_FREQ
