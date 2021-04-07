@@ -1,8 +1,5 @@
-# More than one revision of this board is available.
-# This board specifies PCB Revision 10
-
 USB_VID = 0x31e2
-USB_PID = 0x2021
+USB_PID = 0x2011
 USB_PRODUCT = "VINA-D51"
 USB_MANUFACTURER = "BDMICRO LLC"
 
