@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-15 19:49+0000\n"
-"Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
+"PO-Revision-Date: 2021-04-07 12:23+0000\n"
+"Last-Translator: Reza Almanda <rezaalmanda27@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: main.c
 msgid ""
@@ -29,6 +29,8 @@ msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"Kode berhenti oleh auto-reload.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -852,9 +854,8 @@ msgid "Data chunk must follow fmt chunk"
 msgstr "Potongan data harus mengikuti fmt chunk"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
+msgstr "Data terlalu besar untuk paket advertisment"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -970,9 +971,9 @@ msgid "Failed sending command."
 msgstr "Gagal mengirim perintah."
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
+msgstr "Gagal memperoleh mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
@@ -1019,9 +1020,9 @@ msgid "Failed to parse MP3 file"
 msgstr "Gagal mengurai file MP3"
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Gagal untuk melepaskan mutex, status: 0x%08lX"
+msgstr "Gagal melepaskan mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
@@ -1624,9 +1625,8 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "Not connected"
-msgstr "Tidak dapat menyambungkan ke AP"
+msgstr "Tidak terhubung"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
@@ -1635,7 +1635,7 @@ msgstr "Tidak berfungsi"
 
 #: main.c
 msgid "Not running saved code.\n"
-msgstr ""
+msgstr "Tidak menjalankan kode yang disimpan.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
@@ -1847,6 +1847,8 @@ msgstr "Buffer awalan harus ada di heap"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Tekan sembarang tombol untuk masuk ke REPL. Tekan CTRL-D untuk memuat ulang."
+"\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
@@ -1926,9 +1928,8 @@ msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
 #: shared-module/displayio/Bitmap.c
-#, fuzzy
 msgid "Read-only object"
-msgstr "sistem file (filesystem) bersifat Read-only"
+msgstr "Objek Read-only"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
@@ -2308,9 +2309,8 @@ msgid "Unsupported baudrate"
 msgstr "Baudrate tidak didukung"
 
 #: shared-module/displayio/display_core.c
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "Baudrate tidak didukung"
+msgstr "Tipe bus tampilan tidak didukung"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
@@ -2552,9 +2552,8 @@ msgid "buffer size must be a multiple of element size"
 msgstr ""
 
 #: shared-module/struct/__init__.c
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "buffers harus mempunyai panjang yang sama"
+msgstr "ukuran buffer harus sesuai dengan format"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
@@ -4018,9 +4017,8 @@ msgid "timeout must be < 655.35 secs"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "bits harus memilki nilai 8"
+msgstr "waktu habis harus >= 0,0"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
@@ -4232,20 +4230,20 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "indeks sumbu salah"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "sumbu yang ditentukan salah"
 
 #: extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
-msgstr ""
+msgstr "tipe input salah"
 
 #: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "jumlah argumen salah"
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
@@ -4281,11 +4279,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi harus ndarray"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi harus berjenis float"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
