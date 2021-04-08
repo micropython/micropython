@@ -3,10 +3,10 @@ get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
 
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
-include(${MICROPY_DIR}/extmod/extmod.cmake)
 
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     include(${MICROPY_DIR}/py/usermod.cmake)
+    include(${MICROPY_DIR}/extmod/extmod.cmake)
 endif()
 
 set(MICROPY_QSTRDEFS_PORT
