@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,9 @@
 
 #pragma once
 
-#include "common-hal/rp2pio/StateMachine.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/rotaryio/IncrementalEncoder.h"
 
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    rp2pio_statemachine_obj_t state_machine;
-    uint8_t state : 4;   // <old A><old B><new A><new B>
-    int8_t quarter_count : 4; // count intermediate transitions between detents
-    mp_int_t position;
-} rotaryio_incrementalencoder_obj_t;
+void shared_module_softencoder_state_init(rotaryio_incrementalencoder_obj_t *self, uint8_t quiescent_state);
+void shared_module_softencoder_state_update(rotaryio_incrementalencoder_obj_t *self, uint8_t new_state);
+mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self);
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self, mp_int_t position);
