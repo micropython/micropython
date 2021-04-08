@@ -252,6 +252,9 @@ void common_hal_bleio_packet_buffer_construct(
 }
 
 mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_ConnectionError(translate("Not connected"));
+    }
     if (ringbuf_num_filled(&self->ringbuf) < 2) {
         return 0;
     }
@@ -357,8 +360,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_
         if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
-                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                    self->characteristic->max_length);
+                return common_hal_bleio_connection_get_max_packet_length(connection);
             }
         }
         // There's no current connection, so we don't know the MTU, and
@@ -395,6 +397,18 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
         // There's no current connection, so we don't know the MTU, and
         // we can't tell what the largest outgoing packet length would be.
         return -1;
+    }
+    // If we are talking to a remote service, we'll be bound by the MTU. (We don't actually
+    // know the max size of the remote characteristic.)
+    if (self->characteristic->service != NULL &&
+        self->characteristic->service->is_remote) {
+        // We are talking to a remote service so we're writing.
+        if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
+            if (connection) {
+                return common_hal_bleio_connection_get_max_packet_length(connection);
+            }
+        }
     }
     return self->characteristic->max_length;
 }
