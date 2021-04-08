@@ -144,9 +144,14 @@ void boardctrl_before_boot_py(boardctrl_state_t *state) {
     state->run_boot_py = state->reset_mode == 1 || state->reset_mode == 3;
 }
 
-void boardctrl_after_boot_py(boardctrl_state_t *state) {
-    if (state->run_boot_py && !state->last_ret) {
-        flash_error(4);
+int boardctrl_after_boot_py(boardctrl_state_t *state) {
+    if (state->run_boot_py) {
+        if (state->last_ret & PYEXEC_FORCED_EXIT) {
+            return BOARDCTRL_GOTO_SOFT_RESET_EXIT;
+        }
+        if (!state->last_ret) {
+            flash_error(4);
+        }
     }
 
     // Turn boot-up LEDs off
@@ -160,6 +165,8 @@ void boardctrl_after_boot_py(boardctrl_state_t *state) {
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
+
+    return BOARDCTRL_CONTINUE;
 }
 
 void boardctrl_before_main_py(boardctrl_state_t *state) {
@@ -167,10 +174,16 @@ void boardctrl_before_main_py(boardctrl_state_t *state) {
         && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL;
 }
 
-void boardctrl_after_main_py(boardctrl_state_t *state) {
-    if (state->run_main_py && !state->last_ret) {
-        flash_error(3);
+int boardctrl_after_main_py(boardctrl_state_t *state) {
+    if (state->run_main_py) {
+        if (state->last_ret & PYEXEC_FORCED_EXIT) {
+            return BOARDCTRL_GOTO_SOFT_RESET_EXIT;
+        }
+        if (!state->last_ret) {
+            flash_error(3);
+        }
     }
+    return BOARDCTRL_CONTINUE;
 }
 
 void boardctrl_start_soft_reset(boardctrl_state_t *state) {

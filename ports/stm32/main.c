@@ -573,12 +573,11 @@ soft_reset:
     if (state.run_boot_py) {
         const char *boot_py = "boot.py";
         state.last_ret = pyexec_file_if_exists(boot_py);
-        if (state.last_ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset_exit;
-        }
     }
 
-    MICROPY_BOARD_AFTER_BOOT_PY(&state);
+    if (MICROPY_BOARD_AFTER_BOOT_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
+        goto soft_reset_exit;
+    }
 
     // Now we initialise sub-systems that need configuration from boot.py,
     // or whose initialisation can be safely deferred until after running
@@ -624,12 +623,11 @@ soft_reset:
             main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
         }
         state.last_ret = pyexec_file_if_exists(main_py);
-        if (state.last_ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset_exit;
-        }
     }
 
-    MICROPY_BOARD_AFTER_MAIN_PY(&state);
+    if (MICROPY_BOARD_AFTER_MAIN_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
+        goto soft_reset_exit;
+    }
 
     #if MICROPY_ENABLE_COMPILER
     // Main script is finished, so now go into REPL mode.
