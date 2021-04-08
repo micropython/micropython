@@ -2,6 +2,8 @@
 
 set(MICROPY_PY_DIR "${MICROPY_DIR}/py")
 
+list(APPEND MICROPY_INC_CORE "${MICROPY_DIR}")
+
 # All py/ source files
 set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/argcheck.c
