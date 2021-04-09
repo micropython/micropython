@@ -26,7 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_MPU_H
 #define MICROPY_INCLUDED_STM32_MPU_H
 
-#if defined(STM32F7) || defined(STM32H7) || defined(MICROPY_HW_ETH_MDC)
+#if defined(STM32F7) || defined(STM32H7) || \
+    defined(STM32F469xx) || defined(MICROPY_HW_ETH_MDC)
 
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER0)
 #define MPU_REGION_QSPI1    (MPU_REGION_NUMBER1)
