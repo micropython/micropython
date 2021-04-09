@@ -28,12 +28,12 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     // UART pins
     { MP_ROM_QSTR(MP_QSTR_UART_PWR), MP_ROM_PTR(&pin_PB02) },
-    { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PA22) },
-    { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA23) },
     { MP_ROM_QSTR(MP_QSTR_TX1), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_PA23) },
     { MP_ROM_QSTR(MP_QSTR_TX2), MP_ROM_PTR(&pin_PB08) },
     { MP_ROM_QSTR(MP_QSTR_RX2), MP_ROM_PTR(&pin_PB09) },
+    { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PA22) }, // alias of TX1
+    { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA23) }, // alias of RX1
 
     // SPI pins
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA16) },
