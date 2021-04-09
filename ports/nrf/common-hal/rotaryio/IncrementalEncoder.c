@@ -41,9 +41,9 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
         return;
     }
 
-    // reads a state 0 .. 3 *in order*.
-    uint8_t new_state = nrf_gpio_pin_read(self->pin_a);
-    new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
+    uint8_t new_state =
+        ((uint8_t) nrf_gpio_pin_read(self->pin_a) << 1) |
+        (uint8_t) nrf_gpio_pin_read(self->pin_b);
 
     shared_module_softencoder_state_update(self, new_state);
 }

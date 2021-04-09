@@ -35,10 +35,10 @@ typedef struct {
     mp_obj_base_t base;
     uint8_t pin_a;
     uint8_t pin_b;
-    uint8_t eic_channel_a:4;
-    uint8_t eic_channel_b:4;
-    uint8_t state:4;   // <old A><old B>
-    int8_t quarter_count:4; // count intermediate transitions between detents
+    uint8_t eic_channel_a;
+    uint8_t eic_channel_b;
+    uint8_t state;        // <old A><old B>
+    int8_t quarter_count; // count intermediate transitions between detents
     mp_int_t position;
 } rotaryio_incrementalencoder_obj_t;
 

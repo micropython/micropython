@@ -34,7 +34,8 @@
 typedef struct {
     mp_obj_base_t base;
     rp2pio_statemachine_obj_t state_machine;
-    uint8_t state : 4;   // <old A><old B><new A><new B>
-    int8_t quarter_count : 4; // count intermediate transitions between detents
+    uint8_t state;        // <old A><old B>
+    int8_t quarter_count; // count intermediate transitions between detents
+    bool swapped;         // Did the pins need to be swapped to be sequential?
     mp_int_t position;
 } rotaryio_incrementalencoder_obj_t;
