@@ -43,7 +43,7 @@
 #define DEFAULT_UART1_TX (4)
 #define DEFAULT_UART1_RX (5)
 #define DEFAULT_BUFFER_SIZE (256)
-#define MIN_BUFFER_SIZE  (128)
+#define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
 
 #define IS_VALID_PERIPH(uart, pin)  (((((pin) + 4) & 8) >> 3) == (uart))
@@ -71,8 +71,6 @@ typedef struct _machine_uart_obj_t {
     bool read_lock;
     ringbuf_t write_buffer;
     bool write_lock;
-    uint8_t irq_nr;
-    irq_handler_t irq_handler;
 } machine_uart_obj_t;
 
 STATIC void uart0_irq_handler();
@@ -80,11 +78,9 @@ STATIC void uart1_irq_handler();
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART0_TX, DEFAULT_UART0_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0,
-     UART0_IRQ, uart0_irq_handler},
+     DEFAULT_UART0_TX, DEFAULT_UART0_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART1_TX, DEFAULT_UART1_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0,
-     UART1_IRQ, uart1_irq_handler},
+     DEFAULT_UART1_TX, DEFAULT_UART1_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0,},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
@@ -109,7 +105,7 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, bool lock) {
     }
 }
 
-// take all bytes from the buffer and put them into the UART FIFO
+// take bytes from the buffer and put them into the UART FIFO
 STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self, bool lock) {
     // Set a lock if called with lock true
     if (lock) {
@@ -314,8 +310,13 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
 
         // set the irq handler
-        irq_set_exclusive_handler(self->irq_nr, self->irq_handler);
-        irq_set_enabled(self->irq_nr, true);
+        if (self->uart_id == 0) {
+            irq_set_exclusive_handler(UART0_IRQ, uart0_irq_handler);
+            irq_set_enabled(UART0_IRQ, true);
+        } else {
+            irq_set_exclusive_handler(UART1_IRQ, uart1_irq_handler);
+            irq_set_enabled(UART1_IRQ, true);
+        }
         // enable the uart irq. this macro sets the rx irq level to 4
         uart_set_irq_enables(self->uart, true, true);
     }
@@ -415,6 +416,8 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         ++i;
         t = time_us_64() + timeout_char_us;
     }
+    // just in case the fifo was drained during refill of the ringbuf
+    uart_fill_tx_fifo(self, true);
     return size;
 }
 
@@ -424,10 +427,10 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && (ringbuf_avail(&self->read_buffer) > 0)) {
+        if ((flags & MP_STREAM_POLL_RD) && ringbuf_avail(&self->read_buffer) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && (ringbuf_free(&self->write_buffer) > 0)) {
+        if ((flags & MP_STREAM_POLL_WR) && ringbuf_free(&self->write_buffer) > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
