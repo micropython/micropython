@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
+#pragma once
 
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/rotaryio/IncrementalEncoder.h"
 
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t pin_a;
-    uint8_t pin_b;
-    uint8_t eic_channel_a;
-    uint8_t eic_channel_b;
-    uint8_t state;        // <old A><old B>
-    int8_t quarter_count; // count intermediate transitions between detents
-    mp_int_t position;
-} rotaryio_incrementalencoder_obj_t;
-
-
-void incrementalencoder_interrupt_handler(uint8_t channel);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
+void shared_module_softencoder_state_init(rotaryio_incrementalencoder_obj_t *self, uint8_t quiescent_state);
+void shared_module_softencoder_state_update(rotaryio_incrementalencoder_obj_t *self, uint8_t new_state);
+mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self);
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self, mp_int_t position);
