@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-module/rotaryio/IncrementalEncoder.h"
 
 #include "atmel_start_pins.h"
 
@@ -68,11 +69,9 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     self->position = 0;
     self->quarter_count = 0;
 
-    // Top two bits of self->last_state don't matter, because they'll be gone as soon as
-    // interrupt handler is called.
-    self->last_state =
+    shared_module_softencoder_state_init(self,
         ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
-        (uint8_t) gpio_get_pin_level(self->pin_b);
+        (uint8_t) gpio_get_pin_level(self->pin_b));
 
     claim_pin(pin_a);
     claim_pin(pin_b);
@@ -106,66 +105,12 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     self->pin_b = NO_PIN;
 }
 
-mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
-    return self->position;
-}
-
-void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
-        mp_int_t new_position) {
-    self->position = new_position;
-}
-
 void incrementalencoder_interrupt_handler(uint8_t channel) {
     rotaryio_incrementalencoder_obj_t* self = get_eic_channel_data(channel);
 
-    // This table also works for detent both at 11 and 00
-    // For 11 at detent:
-    // Turning cw: 11->01->00->10->11
-    // Turning ccw: 11->10->00->01->11
-    // For 00 at detent:
-    // Turning cw: 00->10->11->10->00
-    // Turning ccw: 00->01->11->10->00
-
-    // index table by state <oldA><oldB><newA><newB>
-    #define BAD 7
-    static const int8_t transitions[16] = {
-        0,    // 00 -> 00 no movement
-        -1,   // 00 -> 01 3/4 ccw (11 detent) or 1/4 ccw (00 at detent)
-        +1,   // 00 -> 10 3/4 cw or 1/4 cw
-        BAD,  // 00 -> 11 non-Gray-code transition
-        +1,   // 01 -> 00 2/4 or 4/4 cw
-        0,    // 01 -> 01 no movement
-        BAD,  // 01 -> 10 non-Gray-code transition
-        -1,   // 01 -> 11 4/4 or 2/4 ccw
-        -1,   // 10 -> 00 2/4 or 4/4 ccw
-        BAD,  // 10 -> 01 non-Gray-code transition
-        0,    // 10 -> 10 no movement
-        +1,   // 10 -> 11 4/4 or 2/4 cw
-        BAD,  // 11 -> 00 non-Gray-code transition
-        +1,   // 11 -> 01 1/4 or 3/4 cw
-        -1,   // 11 -> 10 1/4 or 3/4 ccw
-        0,    // 11 -> 11 no movement
-    };
-
-    // Shift the old AB bits to the "old" position, and set the new AB bits.
-    // TODO(tannewt): If we need more speed then read the pin directly. gpio_get_pin_level has
-    // smarts to compensate for pin direction we don't need.
-    self->last_state = (self->last_state & 0x3) << 2 |
+    uint8_t new_state =
         ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
         (uint8_t) gpio_get_pin_level(self->pin_b);
 
-    int8_t quarter_incr = transitions[self->last_state];
-    if (quarter_incr == BAD) {
-        // Missed a transition. We don't know which way we're going, so do nothing.
-        return;
-    }
-
-    self->quarter_count += quarter_incr;
-    if (self->quarter_count >= 4) {
-        self->position += 1;
-        self->quarter_count = 0;
-    } else if (self->quarter_count <= -4) {
-        self->position -= 1;
-        self->quarter_count = 0;
-    }
+    shared_module_softencoder_state_update(self, new_state);
 }

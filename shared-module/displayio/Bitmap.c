@@ -105,41 +105,16 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     return 0;
 }
 
-void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    // Update the bitmap's dirty region with the rectangle bounded by (x1,y1) and (x2, y2)
-
-    // Arrange x1 < x2, y1 < y2
-    if (x1 > x2) {
-        int16_t temp = x1;
-        x1 = x2;
-        x2 = temp;
-    }
-    if (y1 > y2) {
-        int16_t temp = y1;
-        y1 = y2;
-        y2 = temp;
+void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_area_t *dirty_area) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
     }
 
-    // Update the dirty area.
-    if (self->dirty_area.x1 == self->dirty_area.x2) {
-        self->dirty_area.x1 = x1;
-        self->dirty_area.x2 = x2;
-        self->dirty_area.y1 = y1;
-        self->dirty_area.y2 = y2;
-    } else {
-        if (x1 < self->dirty_area.x1) {
-            self->dirty_area.x1 = x1;
-        }
-        if (x2 > self->dirty_area.x2) {
-            self->dirty_area.x2 = x2;
-        }
-        if (y1 < self->dirty_area.y1) {
-            self->dirty_area.y1 = y1;
-        }
-        if (y2 > self->dirty_area.y2) {
-            self->dirty_area.y2 = y2;
-        }
-    }
+    displayio_area_t area = *dirty_area;
+    displayio_area_canon(&area);
+    displayio_area_union(&area, &self->dirty_area, &area);
+    displayio_area_t bitmap_area = {0, 0, self->width, self->height};
+    displayio_area_compute_overlap(&area, &bitmap_area, &self->dirty_area);
 }
 
 void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
@@ -175,10 +150,6 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
     // If skip_value is `None`, then all pixels are copied.
     // This function assumes input checks were performed for pixel index entries.
 
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-
     // Update the dirty area
     int16_t dirty_x_max = (x + (x2 - x1));
     if (dirty_x_max > self->width) {
@@ -189,7 +160,8 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
         dirty_y_max = self->height;
     }
 
-    displayio_bitmap_set_dirty_area(self, x, y, dirty_x_max, dirty_y_max);
+    displayio_area_t a = { x, y, dirty_x_max, dirty_y_max};
+    displayio_bitmap_set_dirty_area(self, &a);
 
     bool x_reverse = false;
     bool y_reverse = false;
@@ -226,12 +198,9 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 }
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-
     // update the dirty region
-    displayio_bitmap_set_dirty_area(self, x, y, x + 1, y + 1);
+    displayio_area_t a = {x, y, x + 1, y + 1};
+    displayio_bitmap_set_dirty_area(self, &a);
 
     // write the pixel
     displayio_bitmap_write_pixel(self, x, y, value);
@@ -252,14 +221,8 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only object"));
-    }
-    // Update the dirty area.
-    self->dirty_area.x1 = 0;
-    self->dirty_area.x2 = self->width;
-    self->dirty_area.y1 = 0;
-    self->dirty_area.y2 = self->height;
+    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_bitmap_set_dirty_area(self, &a);
 
     // build the packed word
     uint32_t word = 0;
@@ -273,7 +236,7 @@ void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) 
 }
 
 int common_hal_displayio_bitmap_get_buffer(displayio_bitmap_t *self, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (flags & MP_BUFFER_WRITE) {
+    if ((flags & MP_BUFFER_WRITE) && self->read_only) {
         return 1;
     }
     bufinfo->len = self->stride * self->height * sizeof(size_t);

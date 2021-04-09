@@ -18,7 +18,7 @@ jobs:
       run: |
         sudo apt-add-repository -y -u ppa:pybricks/ppa
         sudo apt-get install -y black gettext uncrustify
-        pip3 install polib
+        pip3 install -r requirements-dev.txt
     - name: Populate selected submodules
       run: git submodule update --init extmod/ulab
     - name: Set PY

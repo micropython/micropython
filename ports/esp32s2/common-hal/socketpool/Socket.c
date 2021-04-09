@@ -229,7 +229,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *se
 
     if (!timed_out) {
         memcpy((void *)ip, (void *)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
-        *port = source_addr.sin_port;
+        *port = htons(source_addr.sin_port);
     } else {
         mp_raise_OSError(ETIMEDOUT);
     }

@@ -75,7 +75,7 @@ STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     return esp_sleep_get_wakeup_cause();
 }
 
-bool alarm_woken_from_sleep(void) {
+bool common_hal_alarm_woken_from_sleep(void) {
     return _get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED;
 }
 
@@ -120,8 +120,8 @@ STATIC void _idle_until_alarm(void) {
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         // Allow ctrl-C interrupt.
-        if (alarm_woken_from_sleep()) {
-            alarm_save_wake_alarm();
+        if (common_hal_alarm_woken_from_sleep()) {
+            shared_alarm_save_wake_alarm();
             return;
         }
         port_idle_until_interrupt();
@@ -147,7 +147,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
-void NORETURN alarm_enter_deep_sleep(void) {
+void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_touch_touchalarm_prepare_for_deep_sleep();
 
@@ -164,5 +164,5 @@ void NORETURN alarm_enter_deep_sleep(void) {
 }
 
 void common_hal_alarm_gc_collect(void) {
-    gc_collect_ptr(alarm_get_wake_alarm());
+    gc_collect_ptr(shared_alarm_get_wake_alarm());
 }

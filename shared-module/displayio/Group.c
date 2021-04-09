@@ -123,7 +123,7 @@ bool displayio_group_get_previous_area(displayio_group_t *self, displayio_area_t
             displayio_area_copy(&layer_area, area);
             first = false;
         } else {
-            displayio_area_expand(area, &layer_area);
+            displayio_area_union(area, &layer_area, area);
         }
     }
     if (self->item_removed) {
@@ -131,7 +131,7 @@ bool displayio_group_get_previous_area(displayio_group_t *self, displayio_area_t
             displayio_area_copy(&self->dirty_area, area);
             first = false;
         } else {
-            displayio_area_expand(area, &self->dirty_area);
+            displayio_area_union(area, &self->dirty_area, area);
         }
     }
     return !first;
@@ -307,7 +307,7 @@ static void _remove_layer(displayio_group_t *self, size_t index) {
     if (!self->item_removed) {
         displayio_area_copy(&layer_area, &self->dirty_area);
     } else {
-        displayio_area_expand(&self->dirty_area, &layer_area);
+        displayio_area_union(&self->dirty_area, &layer_area, &self->dirty_area);
     }
     self->item_removed = true;
 }

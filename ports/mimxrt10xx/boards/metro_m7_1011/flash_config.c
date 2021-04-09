@@ -36,7 +36,7 @@ const BOOT_DATA_T boot_data = {
     0xFFFFFFFF                /* empty - extra data word */
 };
 
-// Config for W25Q16JV with QSPI routed.
+// Config for W25Q32JV with QSPI routed. (compatible with GD25Q32)
 __attribute__((section(".boot_hdr.conf")))
 const flexspi_nor_config_t qspiflash_config = {
     .pageSize = 256u,

@@ -42,10 +42,12 @@ const external_flash_device *flash_device;
 uint32_t spi_flash_baudrate;
 
 // Enable the flash over SPI.
-static void flash_enable(void) {
-    while (!common_hal_busio_spi_try_lock(&supervisor_flash_spi_bus)) {
+static bool flash_enable(void) {
+    if (common_hal_busio_spi_try_lock(&supervisor_flash_spi_bus)) {
+        common_hal_digitalio_digitalinout_set_value(&cs_pin, false);
+        return true;
     }
-    common_hal_digitalio_digitalinout_set_value(&cs_pin, false);
+    return false;
 }
 
 // Disable the flash over SPI.
@@ -54,8 +56,10 @@ static void flash_disable(void) {
     common_hal_busio_spi_unlock(&supervisor_flash_spi_bus);
 }
 
-static bool transfer(uint8_t *command, uint32_t command_length, uint8_t *data_in, uint8_t *data_out, uint32_t data_length) {
-    flash_enable();
+static bool transfer(uint8_t* command, uint32_t command_length, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+    if (!flash_enable()) {
+        return false;
+    }
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, command, command_length);
     if (status) {
         if (data_in != NULL && data_out != NULL) {
@@ -103,7 +107,9 @@ bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t data_length)
     uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
-    flash_enable();
+    if (!flash_enable()) {
+        return false;
+    }
     common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, request, 4);
     if (status) {
@@ -120,9 +126,11 @@ bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t data_length) 
         request[0] = CMD_FAST_READ_DATA;
         command_length = 5;
     }
-    // Write the SPI flash write address into the bytes following the command byte.
+    // Write the SPI flash read address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
-    flash_enable();
+    if (!flash_enable()) {
+        return false;
+    }
     common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, request, command_length);
     if (status) {

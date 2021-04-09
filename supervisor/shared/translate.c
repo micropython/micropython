@@ -86,7 +86,7 @@ uint16_t decompress_length(const compressed_string_t *compressed) {
 char *decompress(const compressed_string_t *compressed, char *decompressed) {
     uint8_t this_byte = compress_max_length_bits / 8;
     uint8_t this_bit = 7 - compress_max_length_bits % 8;
-    uint8_t b = (&compressed->data)[this_byte];
+    uint8_t b = (&compressed->data)[this_byte] << (compress_max_length_bits % 8);
     uint16_t length = decompress_length(compressed);
 
     // Stop one early because the last byte is always NULL.
