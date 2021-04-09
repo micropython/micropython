@@ -104,43 +104,43 @@ void rgb_led_status_init() {
     rgb_led_status_init_in_progress = true;
 
     #ifdef MICROPY_HW_NEOPIXEL
-        common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
-        // Pretend we aren't using the pins. digitalio.DigitalInOut
-        // will mark them as used.
-        neopixel_in_use = false;
-        common_hal_digitalio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
+    // Pretend we aren't using the pins. digitalio.DigitalInOut
+    // will mark them as used.
+    neopixel_in_use = false;
+    common_hal_digitalio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        #if CIRCUITPY_BITBANG_APA102
-        shared_module_bitbangio_spi_construct(&status_apa102,
-                                              MICROPY_HW_APA102_SCK,
-                                              MICROPY_HW_APA102_MOSI,
-                                              NULL);
-        #else
-        if (!common_hal_busio_spi_deinited(&status_apa102)) {
-            // This may call us recursively if common_hal_reset_pin() is called,
-            // The rgb_led_status_init_in_progress guard will prevent further recursion.
-            common_hal_busio_spi_deinit(&status_apa102);
-        }
-        common_hal_busio_spi_construct(&status_apa102,
-                                      MICROPY_HW_APA102_SCK,
-                                      MICROPY_HW_APA102_MOSI,
-                                      NULL);
-        common_hal_busio_spi_never_reset(&status_apa102);
-        #endif
-        // Pretend we aren't using the pins. bitbangio.SPI will
-        // mark them as used.
-        apa102_mosi_in_use = false;
-        apa102_sck_in_use = false;
-        #if CIRCUITPY_BITBANG_APA102
-        shared_module_bitbangio_spi_try_lock(&status_apa102);
-        // Use 1MHz for clock rate. Some APA102's are spec'd 800kHz-1200kHz,
-        // though many can run much faster. bitbang will probably run slower.
-        shared_module_bitbangio_spi_configure(&status_apa102, 1000000, 0, 0, 8);
-        #else
-        common_hal_busio_spi_try_lock(&status_apa102);
-        common_hal_busio_spi_configure(&status_apa102, 1000000, 0, 0, 8);
-        #endif
+    #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_construct(&status_apa102,
+        MICROPY_HW_APA102_SCK,
+        MICROPY_HW_APA102_MOSI,
+        NULL);
+    #else
+    if (!common_hal_busio_spi_deinited(&status_apa102)) {
+        // This may call us recursively if common_hal_reset_pin() is called,
+        // The rgb_led_status_init_in_progress guard will prevent further recursion.
+        common_hal_busio_spi_deinit(&status_apa102);
+    }
+    common_hal_busio_spi_construct(&status_apa102,
+        MICROPY_HW_APA102_SCK,
+        MICROPY_HW_APA102_MOSI,
+        NULL);
+    common_hal_busio_spi_never_reset(&status_apa102);
+    #endif
+    // Pretend we aren't using the pins. bitbangio.SPI will
+    // mark them as used.
+    apa102_mosi_in_use = false;
+    apa102_sck_in_use = false;
+    #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_try_lock(&status_apa102);
+    // Use 1MHz for clock rate. Some APA102's are spec'd 800kHz-1200kHz,
+    // though many can run much faster. bitbang will probably run slower.
+    shared_module_bitbangio_spi_configure(&status_apa102, 1000000, 0, 0, 8);
+    #else
+    common_hal_busio_spi_try_lock(&status_apa102);
+    common_hal_busio_spi_configure(&status_apa102, 1000000, 0, 0, 8);
+    #endif
     #endif
 
 
@@ -182,14 +182,14 @@ void rgb_led_status_init() {
 
 void reset_status_led() {
     #ifdef MICROPY_HW_NEOPIXEL
-        common_hal_reset_pin(MICROPY_HW_NEOPIXEL);
+    common_hal_reset_pin(MICROPY_HW_NEOPIXEL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        common_hal_reset_pin(MICROPY_HW_APA102_MOSI);
-        common_hal_reset_pin(MICROPY_HW_APA102_SCK);
+    common_hal_reset_pin(MICROPY_HW_APA102_MOSI);
+    common_hal_reset_pin(MICROPY_HW_APA102_SCK);
     #endif
     #if defined(CP_RGB_STATUS_LED)
-        // TODO: Support sharing status LED with user.
+    // TODO: Support sharing status LED with user.
     #endif
 }
 
@@ -203,132 +203,132 @@ void new_status_color(uint32_t rgb) {
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
-        if (neopixel_in_use) {
-            return;
-        }
-        status_neopixel_color[0] = (rgb_adjusted >> 8) & 0xff;
-        status_neopixel_color[1] = (rgb_adjusted >> 16) & 0xff;
-        status_neopixel_color[2] = rgb_adjusted & 0xff;
-        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
+    if (neopixel_in_use) {
+        return;
+    }
+    status_neopixel_color[0] = (rgb_adjusted >> 8) & 0xff;
+    status_neopixel_color[1] = (rgb_adjusted >> 16) & 0xff;
+    status_neopixel_color[2] = rgb_adjusted & 0xff;
+    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        if (apa102_mosi_in_use || apa102_sck_in_use) {
-            return;
-        }
-        status_apa102_color[5] = rgb_adjusted & 0xff;
-        status_apa102_color[6] = (rgb_adjusted >> 8) & 0xff;
-        status_apa102_color[7] = (rgb_adjusted >> 16) & 0xff;
+    if (apa102_mosi_in_use || apa102_sck_in_use) {
+        return;
+    }
+    status_apa102_color[5] = rgb_adjusted & 0xff;
+    status_apa102_color[6] = (rgb_adjusted >> 8) & 0xff;
+    status_apa102_color[7] = (rgb_adjusted >> 16) & 0xff;
 
-        #if CIRCUITPY_BITBANG_APA102
-        shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
-        #else
-        common_hal_busio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
-        #endif
+    #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
+    #else
+    common_hal_busio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
+    #endif
     #endif
 
     #if defined(CP_RGB_STATUS_LED)
-        uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
-        uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
-        uint8_t blue_u8 = rgb_adjusted & 0xFF;
+    uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
+    uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
+    uint8_t blue_u8 = rgb_adjusted & 0xFF;
 
-	#if defined(CP_RGB_STATUS_INVERTED_PWM)
-        status_rgb_color[0] = (1 << 16) - 1 - ((uint16_t) (red_u8 << 8) + red_u8);
-        status_rgb_color[1] = (1 << 16) - 1 - ((uint16_t) (green_u8 << 8) + green_u8);
-        status_rgb_color[2] = (1 << 16) - 1 - ((uint16_t) (blue_u8 << 8) + blue_u8);
+    #if defined(CP_RGB_STATUS_INVERTED_PWM)
+    status_rgb_color[0] = (1 << 16) - 1 - ((uint16_t)(red_u8 << 8) + red_u8);
+    status_rgb_color[1] = (1 << 16) - 1 - ((uint16_t)(green_u8 << 8) + green_u8);
+    status_rgb_color[2] = (1 << 16) - 1 - ((uint16_t)(blue_u8 << 8) + blue_u8);
     #else
-        status_rgb_color[0] = (uint16_t) (red_u8 << 8) + red_u8;
-        status_rgb_color[1] = (uint16_t) (green_u8 << 8) + green_u8;
-        status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
-	#endif
+    status_rgb_color[0] = (uint16_t)(red_u8 << 8) + red_u8;
+    status_rgb_color[1] = (uint16_t)(green_u8 << 8) + green_u8;
+    status_rgb_color[2] = (uint16_t)(blue_u8 << 8) + blue_u8;
+    #endif
 
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
 void temp_status_color(uint32_t rgb) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
-      uint32_t rgb_adjusted = rgb;
-      rgb_adjusted = color_brightness(rgb, rgb_status_brightness);
+    uint32_t rgb_adjusted = rgb;
+    rgb_adjusted = color_brightness(rgb, rgb_status_brightness);
     #endif
     #ifdef MICROPY_HW_NEOPIXEL
-        if (neopixel_in_use) {
-            return;
-        }
-        uint8_t colors[3] = {(rgb_adjusted >> 8) & 0xff, (rgb_adjusted >> 16) & 0xff, rgb_adjusted & 0xff};
-        common_hal_neopixel_write(&status_neopixel, colors, 3);
+    if (neopixel_in_use) {
+        return;
+    }
+    uint8_t colors[3] = {(rgb_adjusted >> 8) & 0xff, (rgb_adjusted >> 16) & 0xff, rgb_adjusted & 0xff};
+    common_hal_neopixel_write(&status_neopixel, colors, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        if (apa102_mosi_in_use || apa102_sck_in_use) {
-            return;
-        }
-        uint8_t colors[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, rgb_adjusted & 0xff, (rgb_adjusted >> 8) & 0xff, (rgb_adjusted >> 16) & 0xff, 0xff, 0xff, 0xff, 0xff};
-        #if CIRCUITPY_BITBANG_APA102
-        shared_module_bitbangio_spi_write(&status_apa102, colors, APA102_BUFFER_LENGTH);
-        #else
-        common_hal_busio_spi_write(&status_apa102, colors, APA102_BUFFER_LENGTH);
-        #endif
+    if (apa102_mosi_in_use || apa102_sck_in_use) {
+        return;
+    }
+    uint8_t colors[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, rgb_adjusted & 0xff, (rgb_adjusted >> 8) & 0xff, (rgb_adjusted >> 16) & 0xff, 0xff, 0xff, 0xff, 0xff};
+    #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_write(&status_apa102, colors, APA102_BUFFER_LENGTH);
+    #else
+    common_hal_busio_spi_write(&status_apa102, colors, APA102_BUFFER_LENGTH);
+    #endif
     #endif
     #if defined(CP_RGB_STATUS_LED)
-        uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
-        uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
-        uint8_t blue_u8 = rgb_adjusted & 0xFF;
+    uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
+    uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
+    uint8_t blue_u8 = rgb_adjusted & 0xFF;
 
-        uint16_t temp_status_color_rgb[3] = {0};
+    uint16_t temp_status_color_rgb[3] = {0};
 
-	#if defined(CP_RGB_STATUS_INVERTED_PWM)
-        temp_status_color_rgb[0] = (1 << 16) - 1 - ((uint16_t) (red_u8 << 8) + red_u8);
-        temp_status_color_rgb[1] = (1 << 16) - 1 - ((uint16_t) (green_u8 << 8) + green_u8);
-        temp_status_color_rgb[2] = (1 << 16) - 1 - ((uint16_t) (blue_u8 << 8) + blue_u8);
-	#else
-        temp_status_color_rgb[0] = (uint16_t) (red_u8 << 8) + red_u8;
-        temp_status_color_rgb[1] = (uint16_t) (green_u8 << 8) + green_u8;
-        temp_status_color_rgb[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
+    #if defined(CP_RGB_STATUS_INVERTED_PWM)
+    temp_status_color_rgb[0] = (1 << 16) - 1 - ((uint16_t)(red_u8 << 8) + red_u8);
+    temp_status_color_rgb[1] = (1 << 16) - 1 - ((uint16_t)(green_u8 << 8) + green_u8);
+    temp_status_color_rgb[2] = (1 << 16) - 1 - ((uint16_t)(blue_u8 << 8) + blue_u8);
+    #else
+    temp_status_color_rgb[0] = (uint16_t)(red_u8 << 8) + red_u8;
+    temp_status_color_rgb[1] = (uint16_t)(green_u8 << 8) + green_u8;
+    temp_status_color_rgb[2] = (uint16_t)(blue_u8 << 8) + blue_u8;
     #endif
 
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
     #endif
 }
 
 void clear_temp_status() {
     #ifdef MICROPY_HW_NEOPIXEL
-        if (neopixel_in_use) {
-            return;
-        }
-        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
+    if (neopixel_in_use) {
+        return;
+    }
+    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        if (apa102_mosi_in_use || apa102_sck_in_use) {
-            return;
-        }
-        #if CIRCUITPY_BITBANG_APA102
-        shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
-        #else
-        common_hal_busio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
-        #endif
+    if (apa102_mosi_in_use || apa102_sck_in_use) {
+        return;
+    }
+    #if CIRCUITPY_BITBANG_APA102
+    shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
+    #else
+    common_hal_busio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
+    #endif
     #endif
     #if defined(CP_RGB_STATUS_LED)
 
-	uint16_t red = 0;
-	uint16_t green = 0;
-	uint16_t blue = 0;
+    uint16_t red = 0;
+    uint16_t green = 0;
+    uint16_t blue = 0;
 
-	#if defined(CP_RGB_STATUS_INVERTED_PWM)
-		red = (1 << 16) - 1 - status_rgb_color[0];
-		green = (1 << 16) - 1 - status_rgb_color[1];
-		blue = (1 << 16) - 1 - status_rgb_color[2];
-	#else
-		red = status_rgb_color[0];
-		green = status_rgb_color[1];
-		blue = status_rgb_color[2];
-	#endif
+    #if defined(CP_RGB_STATUS_INVERTED_PWM)
+    red = (1 << 16) - 1 - status_rgb_color[0];
+    green = (1 << 16) - 1 - status_rgb_color[1];
+    blue = (1 << 16) - 1 - status_rgb_color[2];
+    #else
+    red = status_rgb_color[0];
+    green = status_rgb_color[1];
+    blue = status_rgb_color[2];
+    #endif
 
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, red);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, green);
-        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, blue);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, red);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, green);
+    common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, blue);
     #endif
 }
 
@@ -343,7 +343,7 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
     #endif
 }
 
-void set_rgb_status_brightness(uint8_t level){
+void set_rgb_status_brightness(uint8_t level) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     rgb_status_brightness = level;
     uint32_t current_color = current_status_color;
@@ -355,10 +355,10 @@ void set_rgb_status_brightness(uint8_t level){
     #endif
 }
 
-void prep_rgb_status_animation(const pyexec_result_t* result,
-                               bool found_main,
-                               safe_mode_t safe_mode,
-                               rgb_status_animation_t* status) {
+void prep_rgb_status_animation(const pyexec_result_t *result,
+    bool found_main,
+    safe_mode_t safe_mode,
+    rgb_status_animation_t *status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     new_status_color(ALL_DONE);
     status->pattern_start = supervisor_ticks_ms32();
@@ -410,7 +410,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     #endif
 }
 
-bool tick_rgb_status_animation(rgb_status_animation_t* status) {
+bool tick_rgb_status_animation(rgb_status_animation_t *status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t tick_diff = supervisor_ticks_ms32() - status->pattern_start;
     if (status->ok) {
@@ -442,12 +442,12 @@ bool tick_rgb_status_animation(rgb_status_animation_t* status) {
             } else {
                 new_status_color(BOOT_RUNNING);
             }
-        // Next flash the exception color.
+            // Next flash the exception color.
         } else if (tick_diff < EXCEPTION_TYPE_LENGTH_MS * 2) {
             new_status_color(status->exception_color);
-        // Finally flash the line number digits from highest to lowest.
-        // Zeroes will not produce a flash but can be read by the absence of
-        // a color from the sequence.
+            // Finally flash the line number digits from highest to lowest.
+            // Zeroes will not produce a flash but can be read by the absence of
+            // a color from the sequence.
         } else if (tick_diff < (EXCEPTION_TYPE_LENGTH_MS * 2 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum)) {
             uint32_t digit_diff = tick_diff - EXCEPTION_TYPE_LENGTH_MS * 2;
             if ((digit_diff % LINE_NUMBER_TOGGLE_LENGTH) < (LINE_NUMBER_TOGGLE_LENGTH / 2)) {

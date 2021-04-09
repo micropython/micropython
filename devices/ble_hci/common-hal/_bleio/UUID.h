@@ -33,17 +33,17 @@
 
 // Types returned by attribute table lookups. These are UUIDs.
 typedef enum {
-  BLE_UUID_UNKNOWN               = 0x0000,
-  BLE_UUID_SERVICE_PRIMARY       = 0x2800,
-  BLE_UUID_SERVICE_SECONDARY     = 0x2801,
-  BLE_UUID_SERVICE_INCLUDE       = 0x2802,  // not yet implemented by us
-  BLE_UUID_CHARACTERISTIC        = 0x2803,
-  BLE_UUID_CHAR_EXTENDED_PROPS   = 0x2900,  // not yet implemented by us
-  BLE_UUID_CHAR_USER_DESC        = 0x2901,  // not yet implemented by us
-  BLE_UUID_CCCD                  = 0x2902,
-  BLE_UUID_SCCD                  = 0x2903,  // not yet implemented by us
-  BLE_UUID_CHAR_PRESENTATION_FMT = 0x2904,  // not yet implemented by us
-  BLE_UUID_CHAR_AGGREGATE_FMT    = 0x2905,  // not yet implemented by us
+    BLE_UUID_UNKNOWN               = 0x0000,
+    BLE_UUID_SERVICE_PRIMARY       = 0x2800,
+    BLE_UUID_SERVICE_SECONDARY     = 0x2801,
+    BLE_UUID_SERVICE_INCLUDE       = 0x2802,// not yet implemented by us
+    BLE_UUID_CHARACTERISTIC        = 0x2803,
+    BLE_UUID_CHAR_EXTENDED_PROPS   = 0x2900,// not yet implemented by us
+    BLE_UUID_CHAR_USER_DESC        = 0x2901,// not yet implemented by us
+    BLE_UUID_CCCD                  = 0x2902,
+    BLE_UUID_SCCD                  = 0x2903,// not yet implemented by us
+    BLE_UUID_CHAR_PRESENTATION_FMT = 0x2904, // not yet implemented by us
+    BLE_UUID_CHAR_AGGREGATE_FMT    = 0x2905,// not yet implemented by us
 } ble_standard_uuid;
 
 typedef struct {

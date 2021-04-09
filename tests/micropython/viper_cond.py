@@ -6,6 +6,8 @@ def f():
         pass
     else:
         print("not x", x)
+
+
 f()
 
 # using True as a conditional
@@ -14,6 +16,8 @@ def f():
     x = True
     if x:
         print("x", x)
+
+
 f()
 
 # using an int as a conditional
@@ -22,4 +26,6 @@ def g():
     y = 1
     if y:
         print("y", y)
+
+
 g()

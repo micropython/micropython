@@ -164,5 +164,5 @@ STATIC MP_DEFINE_CONST_DICT(bleio_scanentry_locals_dict, bleio_scanentry_locals_
 const mp_obj_type_t bleio_scanentry_type = {
     { &mp_type_type },
     .name = MP_QSTR_ScanEntry,
-    .locals_dict = (mp_obj_dict_t*)&bleio_scanentry_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_scanentry_locals_dict
 };

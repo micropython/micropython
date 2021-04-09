@@ -26,7 +26,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D8), MP_ROM_PTR(&pin_PA06) },
 
     { MP_ROM_QSTR(MP_QSTR_D9), MP_ROM_PTR(&pin_PA17) }, // MP_QSTR_SDA
-    { MP_ROM_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_PA16) }, //MP_QSTR_SCL
+    { MP_ROM_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_PA16) }, // MP_QSTR_SCL
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA15) }, // MP_QSTR_LED
 
     // UART pins
@@ -60,7 +60,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MOSI),  MP_ROM_PTR(&pin_PC16) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_SCK),  MP_ROM_PTR(&pin_PC17) },
     { MP_ROM_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PC19) },
-    { MP_ROM_QSTR(MP_QSTR_SD_DET),  MP_ROM_PTR(&pin_PC21) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DET),  MP_ROM_PTR(&pin_PD21) },
 
     // Switch
     { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_UP),  MP_ROM_PTR(&pin_PD20) },

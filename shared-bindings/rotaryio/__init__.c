@@ -54,5 +54,5 @@ STATIC MP_DEFINE_CONST_DICT(rotaryio_module_globals, rotaryio_module_globals_tab
 
 const mp_obj_module_t rotaryio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&rotaryio_module_globals,
+    .globals = (mp_obj_dict_t *)&rotaryio_module_globals,
 };

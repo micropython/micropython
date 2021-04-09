@@ -45,13 +45,13 @@ extern const mp_obj_type_t i2cperipheral_i2c_peripheral_request_type;
 extern const mp_obj_type_t i2cperipheral_i2c_peripheral_type;
 
 extern void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
-        uint8_t *addresses, unsigned int num_addresses, bool smbus);
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
+    uint8_t *addresses, unsigned int num_addresses, bool smbus);
 extern void common_hal_i2cperipheral_i2c_peripheral_deinit(i2cperipheral_i2c_peripheral_obj_t *self);
 extern bool common_hal_i2cperipheral_i2c_peripheral_deinited(i2cperipheral_i2c_peripheral_obj_t *self);
 
 extern int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self,
-        uint8_t *address, bool *is_read, bool *is_restart);
+    uint8_t *address, bool *is_read, bool *is_restart);
 extern int common_hal_i2cperipheral_i2c_peripheral_read_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *data);
 extern int common_hal_i2cperipheral_i2c_peripheral_write_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data);
 extern void common_hal_i2cperipheral_i2c_peripheral_ack(i2cperipheral_i2c_peripheral_obj_t *self, bool ack);

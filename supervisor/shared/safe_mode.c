@@ -85,7 +85,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         #endif
         #ifdef CIRCUITPY_BOOT_BUTTON
         if (!common_hal_digitalio_digitalinout_get_value(&boot_button)) {
-           return USER_SAFE_MODE;
+            return USER_SAFE_MODE;
         }
         #endif
         diff = supervisor_ticks_ms64() - start_ticks;
@@ -128,13 +128,13 @@ void print_safe_mode_message(safe_mode_t reason) {
     switch (reason) {
         case USER_SAFE_MODE:
             #ifdef BOARD_USER_SAFE_MODE_ACTION
-                // Output a user safe mode string if it's set.
-                serial_write_compressed(translate("You requested starting safe mode by "));
-                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write_compressed(translate("To exit, please reset the board without "));
-                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
+            // Output a user safe mode string if it's set.
+            serial_write_compressed(translate("You requested starting safe mode by "));
+            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
+            serial_write_compressed(translate("To exit, please reset the board without "));
+            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
             #else
-                break;
+            break;
             #endif
             return;
         case MANUAL_SAFE_MODE:
@@ -178,13 +178,13 @@ void print_safe_mode_message(safe_mode_t reason) {
         case GC_ALLOC_OUTSIDE_VM:
             serial_write_compressed(translate("Attempted heap allocation when MicroPython VM not running."));
             break;
-        #ifdef SOFTDEVICE_PRESENT
+            #ifdef SOFTDEVICE_PRESENT
         // defined in ports/nrf/bluetooth/bluetooth_common.mk
         // will print "Unknown reason" if somehow encountered on other ports
         case NORDIC_SOFT_DEVICE_ASSERT:
-            serial_write_compressed(translate("Nordic Soft Device failure assertion."));
+            serial_write_compressed(translate("Nordic system firmware failure assertion."));
             break;
-        #endif
+            #endif
         case FLASH_WRITE_FAIL:
             serial_write_compressed(translate("Failed to write internal flash."));
             break;

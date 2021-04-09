@@ -56,7 +56,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
@@ -82,10 +82,10 @@ static BYTE random_state[SHA256_BLOCK_SIZE];
 static void seed_random_bits(BYTE out[SHA256_BLOCK_SIZE]) {
     CRYAL_SHA256_CTX context;
     sha256_init(&context);
-    for (int i=0; i<2*RANDOM_SAFETY_MARGIN; i++) {
-        for(int j=0; j<SHA256_BLOCK_SIZE; j++) {
+    for (int i = 0; i < 2 * RANDOM_SAFETY_MARGIN; i++) {
+        for (int j = 0; j < SHA256_BLOCK_SIZE; j++) {
             out[j] = rosc_hw->randombit & 1;
-            for(int k=0; k<8; k++) {
+            for (int k = 0; k < 8; k++) {
                 out[j] = (out[j] << 1) ^ (rosc_hw->randombit & 1);
             }
         }
@@ -104,12 +104,12 @@ static void get_random_bits(BYTE out[SHA256_BLOCK_SIZE]) {
     sha256_final(&context, out);
 }
 
-bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
 #define ROSC_POWER_SAVE (1) // assume ROSC is not necessarily active all the time
-#if ROSC_POWER_SAVE
+    #if ROSC_POWER_SAVE
     uint32_t old_rosc_ctrl = rosc_hw->ctrl;
     rosc_hw->ctrl = (old_rosc_ctrl & ~ROSC_CTRL_ENABLE_BITS) | (ROSC_CTRL_ENABLE_VALUE_ENABLE << 12);
-#endif
+    #endif
     while (length) {
         size_t n = MIN(length, SHA256_BLOCK_SIZE);
         BYTE sha_buf[SHA256_BLOCK_SIZE];
@@ -118,8 +118,8 @@ bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
         buffer += n;
         length -= n;
     }
-#if ROSC_POWER_SAVE
+    #if ROSC_POWER_SAVE
     rosc_hw->ctrl = old_rosc_ctrl;
-#endif
+    #endif
     return true;
 }

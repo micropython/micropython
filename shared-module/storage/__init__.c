@@ -57,7 +57,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
     return mp_call_method_n_kw(n_args, 0, meth);
 }
 
-void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool readonly) {
+void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
     // create new object
     mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
     vfs->str = mount_path;
@@ -94,7 +94,7 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
     }
 
     // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t *)&args);
 
     // Insert the vfs into the mount table by pushing it onto the front of the
     // mount table.
@@ -127,7 +127,7 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj) {
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
 }
 
-STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
+STATIC mp_obj_t storage_object_from_path(const char *mount_path) {
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if (strcmp(mount_path, (*vfsp)->str) == 0) {
             return (*vfsp)->obj;
@@ -136,7 +136,7 @@ STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
     mp_raise_OSError(MP_EINVAL);
 }
 
-void common_hal_storage_umount_path(const char* mount_path) {
+void common_hal_storage_umount_path(const char *mount_path) {
     common_hal_storage_umount_object(storage_object_from_path(mount_path));
 }
 
@@ -149,7 +149,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
         mp_raise_OSError(MP_EINVAL);
     }
 
-    #ifdef USB_AVAILABLE
+    #if CIRCUITPY_USB_MSC
     if (!usb_msc_ejected()) {
         mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
     }

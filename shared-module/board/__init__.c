@@ -60,7 +60,7 @@ mp_obj_t common_hal_board_create_i2c(void) {
     busio_i2c_obj_t *self = &i2c_obj;
     self->base.type = &busio_i2c_type;
 
-    common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 100000, 0);
+    common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 100000, 255);
     i2c_singleton = (mp_obj_t)self;
     return i2c_singleton;
 }
@@ -83,9 +83,9 @@ mp_obj_t common_hal_board_create_spi(void) {
     busio_spi_obj_t *self = &spi_obj;
     self->base.type = &busio_spi_type;
 
-    const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_SCK);
-    const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
-    const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
+    const mcu_pin_obj_t *clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_SCK);
+    const mcu_pin_obj_t *mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
+    const mcu_pin_obj_t *miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
     common_hal_busio_spi_construct(self, clock, mosi, miso);
     spi_singleton = (mp_obj_t)self;
     return spi_singleton;
@@ -101,39 +101,39 @@ mp_obj_t common_hal_board_create_uart(void) {
     busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
 
-    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
-    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
-#ifdef DEFAULT_UART_BUS_RTS
-    const mcu_pin_obj_t* rts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RTS);
-#else
-    const mcu_pin_obj_t* rts = NULL;
-#endif
-#ifdef DEFAULT_UART_BUS_CTS
-    const mcu_pin_obj_t* cts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_CTS);
-#else
-    const mcu_pin_obj_t* cts = NULL;
-#endif
-#ifdef DEFAULT_UART_IS_RS485
-    const mcu_pin_obj_t* rs485_dir = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RS485DIR);
-#ifdef DEFAULT_UART_RS485_INVERT
+    const mcu_pin_obj_t *rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
+    const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
+    #ifdef DEFAULT_UART_BUS_RTS
+    const mcu_pin_obj_t *rts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RTS);
+    #else
+    const mcu_pin_obj_t *rts = NULL;
+    #endif
+    #ifdef DEFAULT_UART_BUS_CTS
+    const mcu_pin_obj_t *cts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_CTS);
+    #else
+    const mcu_pin_obj_t *cts = NULL;
+    #endif
+    #ifdef DEFAULT_UART_IS_RS485
+    const mcu_pin_obj_t *rs485_dir = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RS485DIR);
+    #ifdef DEFAULT_UART_RS485_INVERT
     const bool rs485_invert = true;
-#else
+    #else
     const bool rs485_invert = false;
-#endif
-#else
-    const mcu_pin_obj_t* rs485_dir = NULL;
+    #endif
+    #else
+    const mcu_pin_obj_t *rs485_dir = NULL;
     const bool rs485_invert = false;
-#endif
+    #endif
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
-                                    9600, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, 64, NULL, false);
+        9600, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, 64, NULL, false);
     MP_STATE_VM(shared_uart_bus) = MP_OBJ_FROM_PTR(self);
     return MP_STATE_VM(shared_uart_bus);
 }
 #endif
 
 void reset_board_busses(void) {
-#if BOARD_I2C
+    #if BOARD_I2C
     bool display_using_i2c = false;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
@@ -149,8 +149,8 @@ void reset_board_busses(void) {
             i2c_singleton = NULL;
         }
     }
-#endif
-#if BOARD_SPI
+    #endif
+    #if BOARD_SPI
     bool display_using_spi = false;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
@@ -175,8 +175,8 @@ void reset_board_busses(void) {
             spi_singleton = NULL;
         }
     }
-#endif
-#if BOARD_UART
+    #endif
+    #if BOARD_UART
     MP_STATE_VM(shared_uart_bus) = NULL;
-#endif
+    #endif
 }

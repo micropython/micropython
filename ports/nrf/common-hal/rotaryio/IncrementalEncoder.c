@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-module/rotaryio/IncrementalEncoder.h"
 #include "nrfx_gpiote.h"
 
 #include "py/runtime.h"
@@ -36,32 +37,19 @@ static rotaryio_incrementalencoder_obj_t *_objs[NUMBER_OF_PINS];
 
 static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     rotaryio_incrementalencoder_obj_t *self = _objs[pin];
-    if (!self) return;
-
-    // reads a state 0 .. 3 *in order*.
-    uint8_t new_state = nrf_gpio_pin_read(self->pin_a);
-    new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
-
-    uint8_t change = (new_state - self->state) & 0x03;
-    if (change == 1) self->quarter++;
-    else if (change == 3) self->quarter--;
-    // ignore other state transitions
-
-    self->state = new_state;
-
-    // logic from the atmel-samd port: provides some damping and scales movement
-    // down by 4:1.
-    if (self->quarter >= 4) {
-        self->position++;
-        self->quarter = 0;
-    } else if (self->quarter <= -4) {
-        self->position--;
-        self->quarter = 0;
+    if (!self) {
+        return;
     }
+
+    uint8_t new_state =
+        ((uint8_t) nrf_gpio_pin_read(self->pin_a) << 1) |
+        (uint8_t) nrf_gpio_pin_read(self->pin_b);
+
+    shared_module_softencoder_state_update(self, new_state);
 }
 
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
 
     self->pin_a = pin_a->number;
     self->pin_b = pin_b->number;
@@ -85,11 +73,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_b);
 }
 
-bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
+bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
     return self->pin_a == NO_PIN;
 }
 
-void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
+void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
@@ -104,13 +92,4 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     reset_pin_number(self->pin_b);
     self->pin_a = NO_PIN;
     self->pin_b = NO_PIN;
-}
-
-mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
-    return self->position;
-}
-
-void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
-        mp_int_t new_position) {
-    self->position = new_position;
 }

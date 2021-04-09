@@ -34,13 +34,13 @@
 
 #include "bindings/espidf/__init__.h"
 
-void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t* self, mp_obj_t radio) {
+void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio) {
     if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
         mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio"));
     }
 }
 
-socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
+socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
 
     int addr_family;
@@ -87,8 +87,8 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
 }
 
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t* self,
-    const char* host) {
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
+    const char *host) {
 
     const struct addrinfo hints = {
         .ai_family = AF_INET,

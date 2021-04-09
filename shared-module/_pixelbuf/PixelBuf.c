@@ -34,15 +34,15 @@
 #include <math.h>
 
 // Helper to ensure we have the native super class instead of a subclass.
-static pixelbuf_pixelbuf_obj_t* native_pixelbuf(mp_obj_t pixelbuf_obj) {
+static pixelbuf_pixelbuf_obj_t *native_pixelbuf(mp_obj_t pixelbuf_obj) {
     mp_obj_t native_pixelbuf = mp_instance_cast_to_native_base(pixelbuf_obj, &pixelbuf_pixelbuf_type);
     mp_obj_assert_native_inited(native_pixelbuf);
     return MP_OBJ_TO_PTR(native_pixelbuf);
 }
 
 void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
-        pixelbuf_byteorder_details_t* byteorder, mp_float_t brightness, bool auto_write,
-        uint8_t* header, size_t header_len, uint8_t* trailer, size_t trailer_len) {
+    pixelbuf_byteorder_details_t *byteorder, mp_float_t brightness, bool auto_write,
+    uint8_t *header, size_t header_len, uint8_t *trailer, size_t trailer_len) {
 
     self->pixel_count = n;
     self->byteorder = *byteorder;  // Copied because we modify for dotstar
@@ -56,7 +56,7 @@ void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size
     // Abuse the bytes object a bit by mutating it's data by dropping the const. If the user's
     // Python code holds onto it, they'll find out that it changes. At least this way it isn't
     // mutable by the code itself.
-    uint8_t* transmit_buffer = (uint8_t*) o->data;
+    uint8_t *transmit_buffer = (uint8_t *)o->data;
     memcpy(transmit_buffer, header, header_len);
     memcpy(transmit_buffer + header_len + pixel_len, trailer, trailer_len);
     self->post_brightness_buffer = transmit_buffer + header_len;
@@ -78,37 +78,37 @@ void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size
 }
 
 size_t common_hal__pixelbuf_pixelbuf_get_len(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->pixel_count;
 }
 
 uint8_t common_hal__pixelbuf_pixelbuf_get_bpp(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->byteorder.bpp;
 }
 
 mp_obj_t common_hal__pixelbuf_pixelbuf_get_byteorder_string(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->byteorder.order_string;
 }
 
 bool common_hal__pixelbuf_pixelbuf_get_auto_write(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->auto_write;
 }
 
 void common_hal__pixelbuf_pixelbuf_set_auto_write(mp_obj_t self_in, bool auto_write) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     self->auto_write = auto_write;
 }
 
 mp_float_t common_hal__pixelbuf_pixelbuf_get_brightness(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->brightness;
 }
 
 void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t brightness) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     // Skip out if the brightness is already set. The default of self->brightness is 1.0. So, this
     // also prevents the pre_brightness_buffer allocation when brightness is set to 1.0 again.
     self->brightness = brightness;
@@ -149,10 +149,10 @@ uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
         return (uint8_t)mp_obj_get_float(obj);
     }
     mp_raise_TypeError_varg(
-            translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
+        translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
 }
 
-void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w) {
+void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
     pixelbuf_byteorder_details_t *byteorder = &self->byteorder;
     // w is shared between white in NeoPixels and brightness in dotstars (so that DotStars can have
     // per-pixel brightness). Set the defaults here in case it isn't set below.
@@ -197,7 +197,7 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
     }
 }
 
-void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t* self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
     // DotStars don't have white, instead they have 5 bit brightness so pack it into w. Shift right
     // by three to leave the top five bits.
     if (self->bytes_per_pixel == 4 && self->byteorder.is_dotstar) {
@@ -235,7 +235,7 @@ void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t* self, size_t index, uint
     }
 }
 
-void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t value) {
+void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
     uint8_t r;
     uint8_t g;
     uint8_t b;
@@ -244,26 +244,27 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values,
-    mp_obj_tuple_t *flatten_to)
-{
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t *values,
+    mp_obj_tuple_t *flatten_to) {
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(values, &iter_buf);
     mp_obj_t item;
     size_t i = 0;
     bool flattened = flatten_to != mp_const_none;
-    if (flattened) flatten_to->len = self->bytes_per_pixel;
+    if (flattened) {
+        flatten_to->len = self->bytes_per_pixel;
+    }
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (flattened) {
             flatten_to->items[i % self->bytes_per_pixel] = item;
             if (++i % self->bytes_per_pixel == 0) {
                 _pixelbuf_set_pixel(self, start, flatten_to);
-                start+=step;
+                start += step;
             }
         } else {
             _pixelbuf_set_pixel(self, start, item);
-            start+=step;
+            start += step;
         }
     }
     if (self->auto_write) {
@@ -274,7 +275,7 @@ void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp
 
 
 void common_hal__pixelbuf_pixelbuf_set_pixel(mp_obj_t self_in, size_t index, mp_obj_t value) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     _pixelbuf_set_pixel(self, index, value);
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);
@@ -282,9 +283,9 @@ void common_hal__pixelbuf_pixelbuf_set_pixel(mp_obj_t self_in, size_t index, mp_
 }
 
 mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_t elems[self->byteorder.bpp];
-    uint8_t* pixel_buffer = self->post_brightness_buffer;
+    uint8_t *pixel_buffer = self->post_brightness_buffer;
     if (self->pre_brightness_buffer != NULL) {
         pixel_buffer = self->pre_brightness_buffer;
     }
@@ -307,7 +308,7 @@ mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index)
 }
 
 void common_hal__pixelbuf_pixelbuf_show(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_t dest[2 + 1];
     mp_load_method(self_in, MP_QSTR__transmit, dest);
 
@@ -317,7 +318,7 @@ void common_hal__pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 }
 
 void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
-    pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
 
     uint8_t r;
     uint8_t g;

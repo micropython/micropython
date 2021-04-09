@@ -32,14 +32,14 @@
 static uint8_t pcnt_unit_state[4];
 
 void peripherals_pcnt_reset(void) {
-    for (uint8_t i = 0; i<=3; i++) {
+    for (uint8_t i = 0; i <= 3; i++) {
         pcnt_unit_state[i] = PCNT_UNIT_INACTIVE;
     }
 }
 
 int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
     // Look for available pcnt unit
-    for (uint8_t i = 0; i<=3; i++) {
+    for (uint8_t i = 0; i <= 3; i++) {
         if (pcnt_unit_state[i] == PCNT_UNIT_INACTIVE) {
             pcnt_config.unit = (pcnt_unit_t)i;
             pcnt_unit_state[i] = PCNT_UNIT_ACTIVE;
@@ -62,7 +62,7 @@ int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
     return pcnt_config.unit;
 }
 
-void peripherals_pcnt_deinit(pcnt_unit_t* unit) {
+void peripherals_pcnt_deinit(pcnt_unit_t *unit) {
     pcnt_unit_state[*unit] = PCNT_UNIT_INACTIVE;
     *unit = PCNT_UNIT_MAX;
 }

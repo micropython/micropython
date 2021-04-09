@@ -5,7 +5,7 @@ import micropython
 try:
     micropython.kbd_intr
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 # just check we can actually call it

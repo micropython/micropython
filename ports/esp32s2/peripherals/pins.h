@@ -42,8 +42,8 @@
 typedef struct {
     PIN_PREFIX_FIELDS
     gpio_num_t number;
-    uint8_t adc_index:2;
-    uint8_t adc_channel:6;
+    uint8_t adc_index : 2;
+    uint8_t adc_channel : 6;
     touch_pad_t touch_channel;
 } mcu_pin_obj_t;
 

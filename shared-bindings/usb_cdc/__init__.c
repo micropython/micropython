@@ -55,5 +55,5 @@ static MP_DEFINE_CONST_DICT(usb_cdc_module_globals, usb_cdc_module_globals_table
 
 const mp_obj_module_t usb_cdc_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&usb_cdc_module_globals,
+    .globals = (mp_obj_dict_t *)&usb_cdc_module_globals,
 };

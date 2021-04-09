@@ -64,8 +64,7 @@ extern void dbg_dumpQSPIreg(void);
 #endif
 
 // When USB is disconnected, disable QSPI in sleep mode to save energy
-void qspi_disable(void)
-{
+void qspi_disable(void) {
     // If VBUS is detected, no need to disable QSPI
     if (NRF_QSPI->ENABLE && !(NRF_POWER->USBREGSTATUS & POWER_USBREGSTATUS_VBUSDETECT_Msk)) {
         // Keep CS high when QSPI is diabled
@@ -79,8 +78,7 @@ void qspi_disable(void)
     }
 }
 
-void qspi_enable(void)
-{
+void qspi_enable(void) {
     if (NRF_QSPI->ENABLE) {
         return;
     }
@@ -112,7 +110,7 @@ bool spi_flash_command(uint8_t command) {
     return nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL) == NRFX_SUCCESS;
 }
 
-bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length) {
+bool spi_flash_read_command(uint8_t command, uint8_t *response, uint32_t length) {
     qspi_enable();
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = command,
@@ -126,7 +124,7 @@ bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length)
 
 }
 
-bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
+bool spi_flash_write_command(uint8_t command, uint8_t *data, uint32_t length) {
     qspi_enable();
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = command,
@@ -147,7 +145,7 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
     return nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, address) == NRFX_SUCCESS;
 }
 
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t length) {
     qspi_enable();
     // TODO: In theory, this also needs to handle unaligned data and
     // non-multiple-of-4 length.  (in practice, I don't think the fat layer
@@ -155,17 +153,17 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
     return nrfx_qspi_write(data, length, address) == NRFX_SUCCESS;
 }
 
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t length) {
     qspi_enable();
     int misaligned = ((intptr_t)data) & 3;
     // If the data is misaligned, we need to read 4 bytes
     // into an aligned buffer, and then copy 1, 2, or 3 bytes from the aligned
     // buffer to data.
-    if(misaligned) {
+    if (misaligned) {
         int sz = 4 - misaligned;
         __attribute__((aligned(4))) uint8_t buf[4];
 
-        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+        if (nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
             return false;
         }
         memcpy(data, buf, sz);
@@ -178,7 +176,7 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
     // signal an error if sz is not a multiple of 4.  Read (directly into data)
     // all but the last 1, 2, or 3 bytes depending on the (remaining) length.
     uint32_t sz = length & ~(uint32_t)3;
-    if(nrfx_qspi_read(data, sz, address) != NRFX_SUCCESS) {
+    if (nrfx_qspi_read(data, sz, address) != NRFX_SUCCESS) {
         return false;
     }
     data += sz;
@@ -187,9 +185,9 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
 
     // Now, if we have any bytes left over, we must do a final read of 4
     // bytes and copy 1, 2, or 3 bytes to data.
-    if(length) {
+    if (length) {
         __attribute__((aligned(4))) uint8_t buf[4];
-        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+        if (nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
             return false;
         }
         memcpy(data, buf, length);
@@ -230,17 +228,17 @@ void spi_flash_init(void) {
         .irq_priority = 7,
     };
 
-#if defined(EXTERNAL_FLASH_QSPI_DUAL)
+    #if defined(EXTERNAL_FLASH_QSPI_DUAL)
     qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ2O;
     qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP2O;
-#else
+    #else
     qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
     qspi_cfg.pins.io2_pin = MICROPY_QSPI_DATA2;
     qspi_cfg.pins.io3_pin = MICROPY_QSPI_DATA3;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
     qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
-#endif
+    #endif
 
     // No callback for blocking API
     nrfx_qspi_init(&qspi_cfg, NULL, NULL);
@@ -253,7 +251,7 @@ void spi_flash_init(void) {
 #endif
 }
 
-void spi_flash_init_device(const external_flash_device* device) {
+void spi_flash_init_device(const external_flash_device *device) {
     check_quad_enable(device);
 
     // Switch to single output line if the device doesn't support quad programs.
@@ -272,7 +270,7 @@ void spi_flash_init_device(const external_flash_device* device) {
         sckfreq += 1;
     }
     NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
-    NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
+    NRF_QSPI->IFCONFIG1 |= sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
 }
 
 void qspi_flash_enter_sleep(void) {

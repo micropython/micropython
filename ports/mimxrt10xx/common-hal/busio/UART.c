@@ -40,7 +40,7 @@
 
 #include "fsl_lpuart.h"
 
-//arrays use 0 based numbering: UART1 is stored at index 0
+// arrays use 0 based numbering: UART1 is stored at index 0
 #define MAX_UART 8
 STATIC bool reserved_uart[MAX_UART];
 
@@ -56,18 +56,17 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
         IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(1)
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
-            | IOMUXC_SW_PAD_CTL_PAD_SPEED(1)
-            | IOMUXC_SW_PAD_CTL_PAD_DSE(6)
-            | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
+        | IOMUXC_SW_PAD_CTL_PAD_PUS(1)
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_SPEED(1)
+        | IOMUXC_SW_PAD_CTL_PAD_DSE(6)
+        | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *user_data)
-{
-    busio_uart_obj_t *self = (busio_uart_obj_t*)user_data;
+void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *user_data) {
+    busio_uart_obj_t *self = (busio_uart_obj_t *)user_data;
 
     if (status == kStatus_LPUART_RxIdle) {
         self->rx_ongoing = false;
@@ -75,19 +74,19 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
 }
 
 void uart_reset(void) {
-    for(uint i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
+    for (uint i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
         reserved_uart[i] = false;
         LPUART_Deinit(mcu_uart_banks[i]);
     }
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-        const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
-        const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-        uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
-        mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
-        bool sigint_enabled) {
+    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
+    const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
+    const mcu_pin_obj_t *rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
+    bool sigint_enabled) {
 
     self->baudrate = baudrate;
     self->character_bits = bits;
@@ -154,6 +153,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Supply at least one UART pin"));
     }
 
+    if (rx && !self->rx) {
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
+    }
+    if (tx && !self->tx) {
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
+    }
+
     if (uart_taken) {
         mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     }
@@ -169,8 +175,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
         // For IMXRT the RTS pin is used for RS485 direction
         rts = rs485_dir;
-    }
-    else {
+    } else {
         if (rs485_invert) {
             mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
         }
@@ -181,7 +186,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const uint32_t cts_count = MP_ARRAY_SIZE(mcu_uart_cts_list);
 
     if (rts != NULL) {
-        for (uint32_t i=0; i < rts_count; ++i) {
+        for (uint32_t i = 0; i < rts_count; ++i) {
             if (mcu_uart_rts_list[i].bank_idx == self->rx->bank_idx) {
                 if (mcu_uart_rts_list[i].pin == rts) {
                     self->rts = &mcu_uart_rts_list[i];
@@ -189,13 +194,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
             }
         }
-        if (self->rts == NULL){
-            mp_raise_ValueError(translate("Selected RTS pin not valid"));
+        if (self->rts == NULL) {
+            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
         }
     }
 
     if (cts != NULL) {
-        for (uint32_t i=0; i < cts_count; ++i) {
+        for (uint32_t i = 0; i < cts_count; ++i) {
             if (mcu_uart_cts_list[i].bank_idx == self->rx->bank_idx) {
                 if (mcu_uart_cts_list[i].pin == cts) {
                     self->cts = &mcu_uart_cts_list[i];
@@ -203,16 +208,19 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
             }
         }
-        if (self->cts == NULL){
-            mp_raise_ValueError(translate("Selected CTS pin not valid"));
+        if (self->cts == NULL) {
+            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
         }
     }
 
     if (self->rx) {
         self->uart = mcu_uart_banks[self->rx->bank_idx - 1];
     } else {
+        assert(self->tx);
         self->uart = mcu_uart_banks[self->tx->bank_idx - 1];
     }
+
+    assert(self->uart);
 
     if (self->rx) {
         config_periph_pin(self->rx);
@@ -326,7 +334,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while (self->rx_ongoing && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while (self->rx_ongoing && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
         RUN_BACKGROUND_TASKS;
 
         // Allow user to break out of a timeout with a KeyboardInterrupt.
@@ -372,7 +380,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout_ms / 1000.0f);
+    return (mp_float_t)(self->timeout_ms / 1000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {

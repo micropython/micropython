@@ -35,7 +35,7 @@
 // Flash config
 #define FLASH_SIZE                           (0x80000)
 #define FLASH_PAGE_SIZE                      (0x4000)
-#define BOARD_FLASH_SIZE                     (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
+#define BOARD_FLASH_SIZE                     (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE - 0x2000 - 0xC000)
 #define INTERNAL_FLASH_FILESYSTEM_SIZE       0x8000
 
 // On-board flash

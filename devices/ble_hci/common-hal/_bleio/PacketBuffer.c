@@ -45,13 +45,13 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     // Make room for the new value by dropping the oldest packets first.
     while (ringbuf_capacity(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
-        ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
+        ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
             ringbuf_get(&self->ringbuf);
         }
         // set an overflow flag?
     }
-    ringbuf_put_n(&self->ringbuf, (uint8_t*) &len, sizeof(uint16_t));
+    ringbuf_put_n(&self->ringbuf, (uint8_t *)&len, sizeof(uint16_t));
     ringbuf_put_n(&self->ringbuf, data, len);
 }
 
@@ -80,8 +80,8 @@ void bleio_packet_buffer_update(bleio_packet_buffer_obj_t *self, mp_buffer_info_
 }
 
 void common_hal_bleio_packet_buffer_construct(
-        bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
-        size_t buffer_size) {
+    bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
+    size_t buffer_size) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
@@ -128,7 +128,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     // Copy received data.
     // Get packet length, which is in first two bytes of packet.
     uint16_t packet_length;
-    ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
+    ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
 
     mp_int_t ret;
     if (packet_length > len) {
@@ -136,7 +136,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
         ret = len - packet_length;
         // Discard the packet if it's too large. Don't fill data.
         while (packet_length--) {
-            (void) ringbuf_get(&self->ringbuf);
+            (void)ringbuf_get(&self->ringbuf);
         }
     } else {
         // Read as much as possible, but might be shorter than len.
@@ -147,7 +147,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     return ret;
 }
 
-mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t* header, size_t header_len) {
+mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
     if (self->outgoing[0] == NULL) {
         mp_raise_bleio_BluetoothError(translate("Writes not supported on Characteristic"));
     }
@@ -174,7 +174,7 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, u
 
     size_t num_bytes_written = 0;
 
-    uint8_t* pending = self->outgoing[self->pending_index];
+    uint8_t *pending = self->outgoing[self->pending_index];
 
     if (self->pending_size == 0) {
         memcpy(pending, header, header_len);
@@ -213,7 +213,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
                 return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                           self->characteristic->max_length);
+                    self->characteristic->max_length);
             }
         }
         // There's no current connection, so we don't know the MTU, and
@@ -244,7 +244,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
                 return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                           self->characteristic->max_length);
+                    self->characteristic->max_length);
             }
         }
         // There's no current connection, so we don't know the MTU, and

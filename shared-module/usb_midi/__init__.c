@@ -36,26 +36,26 @@
 #include "supervisor/memory.h"
 #include "tusb.h"
 
-supervisor_allocation* usb_midi_allocation;
+supervisor_allocation *usb_midi_allocation;
 
 void usb_midi_init(void) {
     // TODO(tannewt): Make this dynamic.
-    size_t tuple_size = align32_size(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t*) * 2);
+    size_t tuple_size = align32_size(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t *) * 2);
     size_t portin_size = align32_size(sizeof(usb_midi_portin_obj_t));
     size_t portout_size = align32_size(sizeof(usb_midi_portout_obj_t));
 
     // For each embedded MIDI Jack in the descriptor we create a Port
     usb_midi_allocation = allocate_memory(tuple_size + portin_size + portout_size, false, false);
 
-    mp_obj_tuple_t *ports = (mp_obj_tuple_t *) usb_midi_allocation->ptr;
+    mp_obj_tuple_t *ports = (mp_obj_tuple_t *)usb_midi_allocation->ptr;
     ports->base.type = &mp_type_tuple;
     ports->len = 2;
 
-    usb_midi_portin_obj_t* in = (usb_midi_portin_obj_t *) (usb_midi_allocation->ptr + tuple_size / 4);
+    usb_midi_portin_obj_t *in = (usb_midi_portin_obj_t *)(usb_midi_allocation->ptr + tuple_size / 4);
     in->base.type = &usb_midi_portin_type;
     ports->items[0] = MP_OBJ_FROM_PTR(in);
 
-    usb_midi_portout_obj_t* out = (usb_midi_portout_obj_t *) (usb_midi_allocation->ptr + tuple_size / 4 + portin_size / 4);
+    usb_midi_portout_obj_t *out = (usb_midi_portout_obj_t *)(usb_midi_allocation->ptr + tuple_size / 4 + portin_size / 4);
     out->base.type = &usb_midi_portout_type;
     ports->items[1] = MP_OBJ_FROM_PTR(out);
 

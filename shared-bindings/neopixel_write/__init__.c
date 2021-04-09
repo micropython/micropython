@@ -65,7 +65,7 @@ STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     // Call platform's neopixel write function with provided buffer and options.
-    common_hal_neopixel_write(digitalinout, (uint8_t*)bufinfo.buf, bufinfo.len);
+    common_hal_neopixel_write(digitalinout, (uint8_t *)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(neopixel_write_neopixel_write_obj, neopixel_write_neopixel_write_);
@@ -79,5 +79,5 @@ STATIC MP_DEFINE_CONST_DICT(neopixel_write_module_globals, neopixel_write_module
 
 const mp_obj_module_t neopixel_write_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&neopixel_write_module_globals,
+    .globals = (mp_obj_dict_t *)&neopixel_write_module_globals,
 };

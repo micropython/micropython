@@ -56,7 +56,7 @@
 //|         ...
 //|
 STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check number of arguments
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
@@ -75,9 +75,9 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
 //|         ...
 //|
 STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
-   analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   common_hal_analogio_analogin_deinit(self);
-   return mp_const_none;
+    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_analogio_analogin_deinit(self);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_deinit_obj, analogio_analogin_deinit);
 
@@ -124,7 +124,7 @@ const mp_obj_property_t analogio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     reference_voltage: Optional[float]
+//|     reference_voltage: float
 //|     """The maximum voltage measurable (also known as the reference voltage) as a
 //|     `float` in Volts."""
 //|
@@ -140,7 +140,7 @@ STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,
-                          analogio_analogin_obj_get_reference_voltage);
+    analogio_analogin_obj_get_reference_voltage);
 
 const mp_obj_property_t analogio_analogin_reference_voltage_obj = {
     .base.type = &mp_type_property,

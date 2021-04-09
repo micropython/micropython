@@ -32,6 +32,6 @@
 #include "supervisor/memory.h"
 
 #define _PM_allocate common_hal_rgbmatrix_allocator_impl
-#define _PM_free(x) (common_hal_rgbmatrix_free_impl((x)), (x)=NULL, (void)0)
+#define _PM_free(x) (common_hal_rgbmatrix_free_impl((x)), (x) = NULL, (void)0)
 extern void *common_hal_rgbmatrix_allocator_impl(size_t sz);
 extern void common_hal_rgbmatrix_free_impl(void *);

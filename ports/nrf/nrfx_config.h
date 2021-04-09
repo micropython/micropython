@@ -32,7 +32,7 @@
 #endif
 
 #if CIRCUITPY_NRF_NUM_I2C != 0 && CIRCUITPY_NRF_NUM_I2C != 1 && CIRCUITPY_NRF_NUM_I2C != 2
-# error CIRCUITPY_NRF_NUM_I2C must be 0, 1, or 2
+#error CIRCUITPY_NRF_NUM_I2C must be 0, 1, or 2
 #endif
 
 // Enable SPIM1, SPIM2 and SPIM3 (if available)

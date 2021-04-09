@@ -31,17 +31,17 @@
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
-void common_hal_memorymonitor_allocationalarm_construct(memorymonitor_allocationalarm_obj_t* self, size_t minimum_block_count) {
+void common_hal_memorymonitor_allocationalarm_construct(memorymonitor_allocationalarm_obj_t *self, size_t minimum_block_count) {
     self->minimum_block_count = minimum_block_count;
     self->next = NULL;
     self->previous = NULL;
 }
 
-void common_hal_memorymonitor_allocationalarm_set_ignore(memorymonitor_allocationalarm_obj_t* self, mp_int_t count) {
+void common_hal_memorymonitor_allocationalarm_set_ignore(memorymonitor_allocationalarm_obj_t *self, mp_int_t count) {
     self->count = count;
 }
 
-void common_hal_memorymonitor_allocationalarm_pause(memorymonitor_allocationalarm_obj_t* self) {
+void common_hal_memorymonitor_allocationalarm_pause(memorymonitor_allocationalarm_obj_t *self) {
     // Check to make sure we aren't already paused. We can be if we're exiting from an exception we
     // caused.
     if (self->previous == NULL) {
@@ -52,12 +52,12 @@ void common_hal_memorymonitor_allocationalarm_pause(memorymonitor_allocationalar
     self->previous = NULL;
 }
 
-void common_hal_memorymonitor_allocationalarm_resume(memorymonitor_allocationalarm_obj_t* self) {
+void common_hal_memorymonitor_allocationalarm_resume(memorymonitor_allocationalarm_obj_t *self) {
     if (self->previous != NULL) {
         mp_raise_RuntimeError(translate("Already running"));
     }
     self->next = MP_STATE_VM(active_allocationalarms);
-    self->previous = (memorymonitor_allocationalarm_obj_t**) &MP_STATE_VM(active_allocationalarms);
+    self->previous = (memorymonitor_allocationalarm_obj_t **)&MP_STATE_VM(active_allocationalarms);
     if (self->next != NULL) {
         self->next->previous = &self->next;
     }
@@ -65,11 +65,11 @@ void common_hal_memorymonitor_allocationalarm_resume(memorymonitor_allocationala
 }
 
 void memorymonitor_allocationalarms_allocation(size_t block_count) {
-    memorymonitor_allocationalarm_obj_t* alarm = MP_OBJ_TO_PTR(MP_STATE_VM(active_allocationalarms));
+    memorymonitor_allocationalarm_obj_t *alarm = MP_OBJ_TO_PTR(MP_STATE_VM(active_allocationalarms));
     size_t alert_count = 0;
     while (alarm != NULL) {
         // Hold onto next in case we remove the alarm from the list.
-        memorymonitor_allocationalarm_obj_t* next = alarm->next;
+        memorymonitor_allocationalarm_obj_t *next = alarm->next;
         if (block_count >= alarm->minimum_block_count) {
             if (alarm->count > 0) {
                 alarm->count--;

@@ -36,7 +36,7 @@
 #include "shared-bindings/camera/Camera.h"
 
 typedef struct {
-    const char* devpath;
+    const char *devpath;
     int fd;
 } camera_dev_t;
 

@@ -413,6 +413,14 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// Whether to save trade flash space for speed in MICROPY_OPT_COMPUTED_GOTO.
+// Costs about 3% speed, saves about 1500 bytes space.  In addition to the assumptions
+// of MICROPY_OPT_COMPUTED_GOTO, also assumes that mp_execute_bytecode is less than
+// 32kB in size.
+#ifndef MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (0)
+#endif
+
 // Whether to cache result of map lookups in LOAD_NAME, LOAD_GLOBAL, LOAD_ATTR,
 // STORE_ATTR bytecodes.  Uses 1 byte extra RAM for each of these opcodes and
 // uses a bit of extra code ROM, but greatly improves lookup speed.
@@ -504,9 +512,9 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
 #endif
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-#   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
-#   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
-#   endif
+#ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)      // 0 - implies dynamic allocation
+#endif
 #endif
 
 // Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
@@ -1362,7 +1370,7 @@ typedef double mp_float_t;
 #elif defined(MP_ENDIANNESS_BIG)
 #define MP_ENDIANNESS_LITTLE (!MP_ENDIANNESS_BIG)
 #else
-  // Endianness not defined by port so try to autodetect it.
+// Endianness not defined by port so try to autodetect it.
   #if defined(__BYTE_ORDER__)
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       #define MP_ENDIANNESS_LITTLE (1)
@@ -1425,7 +1433,7 @@ typedef double mp_float_t;
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #endif
-#endif //INT_FMT
+#endif // INT_FMT
 
 // Modifier for function which doesn't return
 #ifndef NORETURN
@@ -1468,21 +1476,21 @@ typedef double mp_float_t;
 
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
-# define MP_BE16TOH(x) MP_HTOBE16(x)
+#define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))
+#define MP_BE16TOH(x) MP_HTOBE16(x)
 #else
-# define MP_HTOBE16(x) (x)
-# define MP_BE16TOH(x) (x)
+#define MP_HTOBE16(x) (x)
+#define MP_BE16TOH(x) (x)
 #endif
 #endif
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
-# define MP_BE32TOH(x) MP_HTOBE32(x)
+#define MP_HTOBE32(x) ((uint32_t)((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff)))
+#define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
-# define MP_HTOBE32(x) (x)
-# define MP_BE32TOH(x) (x)
+#define MP_HTOBE32(x) (x)
+#define MP_BE32TOH(x) (x)
 #endif
 #endif
 

@@ -100,7 +100,7 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
-        overflow_tracker.overflowed_ticks += (1L<< (24 - 5));
+        overflow_tracker.overflowed_ticks += (1L << (24 - 5));
     } else if (int_type == NRFX_RTC_INT_TICK && nrfx_rtc_counter_get(&rtc_instance) % 32 == 0) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();
@@ -171,13 +171,13 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
-#if CIRCUITPY_RTC
+    #if CIRCUITPY_RTC
     common_hal_rtc_init();
-#endif
+    #endif
 
-#if CIRCUITPY_ANALOGIO
+    #if CIRCUITPY_ANALOGIO
     analogin_init();
-#endif
+    #endif
 
     reset_reason_saved = NRF_POWER->RESETREAS;
     // clear all RESET reason bits
@@ -206,51 +206,51 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-#ifdef CIRCUITPY_GAMEPAD_TICKS
+    #ifdef CIRCUITPY_GAMEPAD_TICKS
     gamepad_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_BUSIO
+    #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_NEOPIXEL_WRITE
+    #if CIRCUITPY_NEOPIXEL_WRITE
     neopixel_write_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_AUDIOBUSIO
+    #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_AUDIOPWMIO
+    #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
-#endif
+    #endif
 
 
-#if CIRCUITPY_PULSEIO
+    #if CIRCUITPY_PULSEIO
     pulseout_reset();
     pulsein_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PWMIO
+    #if CIRCUITPY_PWMIO
     pwmout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_RTC
+    #if CIRCUITPY_RTC
     rtc_reset();
-#endif
+    #endif
 
     timers_reset();
 
-#if CIRCUITPY_BLEIO
+    #if CIRCUITPY_BLEIO
     bleio_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_WATCHDOG
+    #if CIRCUITPY_WATCHDOG
     watchdog_reset();
-#endif
+    #endif
 
     reset_all_pins();
 
@@ -311,7 +311,7 @@ uint32_t port_get_saved_word(void) {
     return _saved_word;
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     common_hal_mcu_disable_interrupts();
     uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
     uint64_t overflow_count = overflow_tracker.overflowed_ticks;
@@ -354,14 +354,14 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_idle_until_interrupt(void) {
-#if defined(MICROPY_QSPI_CS)
+    #if defined(MICROPY_QSPI_CS)
     qspi_disable();
-#endif
+    #endif
 
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (NVIC_GetPendingIRQ(FPU_IRQn)) {
-        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
-        (void) __get_FPSCR();
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
         NVIC_ClearPendingIRQ(FPU_IRQn);
     }
     uint8_t sd_enabled;
@@ -398,7 +398,7 @@ void port_idle_until_interrupt(void) {
 void HardFault_Handler(void) {
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }
 

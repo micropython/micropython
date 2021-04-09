@@ -54,8 +54,10 @@ void usb_init(void);
 void usb_disconnect(void);
 
 // Propagate plug/unplug events to the MSC logic.
+#if CIRCUITPY_USB_MSC
 void usb_msc_mount(void);
 void usb_msc_umount(void);
 bool usb_msc_ejected(void);
+#endif
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_USB_H

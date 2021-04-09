@@ -43,7 +43,7 @@
 //|         ...
 //|
 STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     alarm_touch_touchalarm_obj_t *self = m_new_obj(alarm_touch_touchalarm_obj_t);
     self->base.type = &alarm_touch_touchalarm_type;
 

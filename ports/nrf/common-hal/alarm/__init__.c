@@ -106,7 +106,7 @@ void print_wakeup_cause(nrf_sleep_source_t cause) {
 }
 #endif
 
-bool alarm_woken_from_sleep(void) {
+bool common_hal_alarm_woken_from_sleep(void) {
    nrf_sleep_source_t cause = _get_wakeup_cause();
 #ifdef NRF_DEBUG_PRINT
    if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
@@ -317,7 +317,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 #define PRESCALER_VALUE_IN_DEEP_SLEEP (1024)
 
-void NORETURN alarm_enter_deep_sleep(void) {
+void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
 
@@ -365,7 +365,7 @@ void OLD_go_system_off(void) {
 }
 #endif
 
-void alarm_pretending_deep_sleep(void) {
+void common_hal_alarm_pretending_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
 
@@ -394,6 +394,6 @@ void alarm_pretending_deep_sleep(void) {
 }
 
 void common_hal_alarm_gc_collect(void) {
-    void* p = alarm_get_wake_alarm();
+    void* p = shared_alarm_get_wake_alarm();
     gc_collect_ptr(p);
 }

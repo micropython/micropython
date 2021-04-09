@@ -125,22 +125,22 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else if (attr == MP_QSTR_step) {
         dest[0] = self->step;
     } else if (attr == MP_QSTR_indices) {
-        mp_convert_member_lookup(self_in, self->base.type, (mp_obj_t) &slice_indices_obj, dest);
+        mp_convert_member_lookup(self_in, self->base.type, (mp_obj_t)&slice_indices_obj, dest);
     }
 }
 
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
-        size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+    size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 #endif
 
 const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
     .make_new = slice_make_new,
     .attr = slice_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
@@ -219,7 +219,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
 
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
-        size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     if (type != &mp_type_slice) {
         mp_raise_NotImplementedError(translate("Cannot subclass slice"));
     }

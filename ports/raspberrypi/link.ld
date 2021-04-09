@@ -174,6 +174,40 @@ SECTIONS
         __data_end__ = .;
     } > RAM AT> FLASH_FIRMWARE
 
+    .itcm :
+    {
+        . = ALIGN(4);
+        *(.itcm.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_itcm_destination = ADDR(.itcm);
+    _ld_itcm_flash_copy = LOADADDR(.itcm);
+    _ld_itcm_size = SIZEOF(.itcm);
+
+    .dtcm_data :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_data.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_dtcm_data_destination = ADDR(.dtcm_data);
+    _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
+    _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    .dtcm_bss :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_bss.*)
+
+        . = ALIGN(4);
+    } > RAM AT> RAM
+    _ld_dtcm_bss_start = ADDR(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
+
     .uninitialized_data (COPY): {
         . = ALIGN(4);
         *(.uninitialized_data*)
