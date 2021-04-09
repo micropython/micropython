@@ -65,6 +65,8 @@ void shared_module_softencoder_state_update(rotaryio_incrementalencoder_obj_t *s
         return;
     }
 
+    self->quarter_count += quarter_incr;
+
     if (self->quarter_count >= 4) {
         self->position += 1;
         self->quarter_count = 0;
