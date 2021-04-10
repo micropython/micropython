@@ -90,34 +90,18 @@ STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"
 // IRQ and buffer handling
 
 // take all bytes from the fifo and store them, if possible, in the buffer
-STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, bool lock) {
-    // Set a lock if called with lock true
-    if (lock) {
-        self->read_lock = true;
-    }
+STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
     while (uart_is_readable(self->uart)) {
         // try to write the data, ignore the fail
         ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
     }
-    // Release lock
-    if (lock) {
-        self->read_lock = false;
-    }
 }
 
 // take bytes from the buffer and put them into the UART FIFO
-STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self, bool lock) {
-    // Set a lock if called with lock true
-    if (lock) {
-        self->write_lock = true;
-    }
+STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self) {
     while (uart_is_writable(self->uart) && ringbuf_avail(&self->write_buffer) > 0) {
         // get a byte from the buffer and put it into the uart
         uart_get_hw(self->uart)->dr = ringbuf_get(&(self->write_buffer));
-    }
-    // Release lock
-    if (lock) {
-        self->write_lock = false;
     }
 }
 
@@ -126,14 +110,14 @@ STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
         // clear all interrupt bits but tx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
         if (!self->read_lock) {
-            uart_drain_rx_fifo(self, false);
+            uart_drain_rx_fifo(self);
         }
     }
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
         // clear all interrupt bits but rx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_RXIC_BITS);
         if (!self->write_lock) {
-            uart_fill_tx_fifo(self, false);
+            uart_fill_tx_fifo(self);
         }
     }
 }
@@ -327,7 +311,9 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // get all bytes from the fifo first
-    uart_drain_rx_fifo(self, true);
+    self->read_lock = true;
+    uart_drain_rx_fifo(self);
+    self->read_lock = false;
     return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
@@ -376,7 +362,9 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
             }
             MICROPY_EVENT_POLL_HOOK
             // force few incoming bytes to the buffer
-            uart_drain_rx_fifo(self, true);
+            self->read_lock = true;
+            uart_drain_rx_fifo(self);
+            self->read_lock = false;
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         t = time_us_64() + timeout_char_us;
@@ -397,7 +385,9 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         ++i;
     }
     // kickstart UART transmit
-    uart_fill_tx_fifo(self, true);
+    self->write_lock = true;
+    uart_fill_tx_fifo(self);
+    self->write_lock = false;
     // Send the next characters while busy waiting
     while (i < size) {
         // wait for the first/next character to be sent
@@ -417,7 +407,9 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         t = time_us_64() + timeout_char_us;
     }
     // just in case the fifo was drained during refill of the ringbuf
-    uart_fill_tx_fifo(self, true);
+    self->write_lock = true;
+    uart_fill_tx_fifo(self);
+    self->write_lock = false;
     return size;
 }
 
