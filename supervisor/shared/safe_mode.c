@@ -170,13 +170,13 @@ void print_safe_mode_message(safe_mode_t reason) {
             serial_write_compressed(translate("Crash into the HardFault_Handler."));
             return;
         case MICROPY_NLR_JUMP_FAIL:
-            serial_write_compressed(translate("MicroPython NLR jump failed. Likely memory corruption."));
+            serial_write_compressed(translate("NLR jump failed. Likely memory corruption."));
             return;
         case MICROPY_FATAL_ERROR:
-            serial_write_compressed(translate("MicroPython fatal error."));
+            serial_write_compressed(translate("Fatal error."));
             break;
         case GC_ALLOC_OUTSIDE_VM:
-            serial_write_compressed(translate("Attempted heap allocation when MicroPython VM not running."));
+            serial_write_compressed(translate("Attempted heap allocation when VM not running."));
             break;
             #ifdef SOFTDEVICE_PRESENT
         // defined in ports/nrf/bluetooth/bluetooth_common.mk
