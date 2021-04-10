@@ -2,14 +2,13 @@
 #
 # This is a simple wrapper around cmake
 
-BOARD ?= pico
+BOARD ?= PICO
  
 BUILD ?= build-$(BOARD)
-BOARD_DIR ?= boards/$(BOARD) 
 
 $(VERBOSE)MAKESILENT = -s
 
-CMAKE_ARGS = -DPICO_BOARD=$(BOARD) -DBOARD_DIR=$(BOARD_DIR)
+CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD)
 
 ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}

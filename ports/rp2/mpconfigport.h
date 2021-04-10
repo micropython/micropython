@@ -31,7 +31,7 @@
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 
-#include <mpconfigboard.h>
+#include "mpconfigboard.h"
 
 // Board and hardware specific configuration
 #ifndef MICROPY_HW_BOARD_NAME
