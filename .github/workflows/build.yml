@@ -179,7 +179,7 @@ jobs:
         - "adafruit_feather_rp2040"
         - "adafruit_itsybitsy_rp2040"
         - "adafruit_neokey_trinkey_m0"
-        - "adafruit_proxsense_trinkey_m0"
+        - "adafruit_proxlight_trinkey_m0"
         - "adafruit_qtpy_rp2040"
         - "adafruit_rotary_trinkey_m0"
         - "adafruit_slide_trinkey_m0"

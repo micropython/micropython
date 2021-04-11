@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit ProxSense Trinkey M0"
+#define MICROPY_HW_BOARD_NAME "Adafruit ProxLight Trinkey M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA15)

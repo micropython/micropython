@@ -1,6 +1,6 @@
 USB_VID = 0x239A
 USB_PID = 0x8104
-USB_PRODUCT = "ProxSense Trinkey M0"
+USB_PRODUCT = "ProxLight Trinkey M0"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
 CHIP_VARIANT = SAMD21E18A
