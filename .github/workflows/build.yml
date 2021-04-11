@@ -182,7 +182,7 @@ jobs:
         - "adafruit_proxsense_trinkey_m0"
         - "adafruit_qtpy_rp2040"
         - "adafruit_rotary_trinkey_m0"
-        - "adafruit_tslide_trinkey_m0"
+        - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
