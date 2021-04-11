@@ -181,3 +181,6 @@
 	path = data/nvm.toml
 	url = https://github.com/adafruit/nvm.toml.git
 	branch = main
+[submodule "frozen/Adafruit_CircuitPython_MIDI"]
+	path = frozen/Adafruit_CircuitPython_MIDI
+	url = https://github.com/adafruit/Adafruit_CircuitPython_MIDI
