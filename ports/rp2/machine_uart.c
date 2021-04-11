@@ -405,11 +405,11 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         ringbuf_put(&(self->write_buffer), *src++);
         ++i;
         t = time_us_64() + timeout_char_us;
+        self->write_lock = true;
+        uart_fill_tx_fifo(self);
+        self->write_lock = false;
     }
     // just in case the fifo was drained during refill of the ringbuf
-    self->write_lock = true;
-    uart_fill_tx_fifo(self);
-    self->write_lock = false;
     return size;
 }
 
