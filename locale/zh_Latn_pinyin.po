@@ -448,8 +448,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "cháng shì fēn pèi %d kuài"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."
+msgid "Attempted heap allocation when VM not running."
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1024,6 +1024,10 @@ msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Wúfǎ xiě rù nèibù shǎncún."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
@@ -1421,14 +1425,6 @@ msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
 msgid "Messages limited to 8 bytes"
 msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "MicroPython NLR tiào zhuǎn shībài. Kěnéng shì nèicún sǔnhuài."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "MicroPython zhìmìng cuòwù."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
@@ -1480,6 +1476,10 @@ msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "bì xū shǐ yòng 6 RGB yǐn jiǎo de bèi shù, ér bù shì %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -3252,6 +3252,10 @@ msgstr "wú xiào bits_per_pixel %d， bì xū shì, 1, 4, 8, 16, 24, huò 32"
 msgid "invalid cert"
 msgstr "zhèngshū wúxiào"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "dupterm suǒyǐn wúxiào"
@@ -4298,6 +4302,15 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR tiào zhuǎn shībài. Kěnéng shì nèicún sǔnhuài."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython zhìmìng cuòwù."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "Cānshù bìxū shì ndarray"

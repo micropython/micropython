@@ -451,10 +451,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Tratando de localizar %d bloques"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Se intentó asignación del montículo, sin que la VM de MicroPython esté "
-"ejecutando."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1034,6 +1032,10 @@ msgstr "No se puede liberar el mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Error al escribir el flash interno."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "El archivo ya existe"
@@ -1434,14 +1436,6 @@ msgstr "Valor máximo de x cuando se refleja es %d"
 msgid "Messages limited to 8 bytes"
 msgstr "Mensajes limitados a 8 bytes"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "MicroPython NLR jump falló. Probable corrupción de la memoria."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Error fatal de MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
@@ -1496,6 +1490,10 @@ msgstr "Debe proporcionar un pin MISO o MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Debe usar un múltiplo de 6 pines rgb, no %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -3281,6 +3279,10 @@ msgstr "los bits_per_pixel %d no son validos, deben ser 1, 4, 8, 16, 24 o 32"
 msgid "invalid cert"
 msgstr "certificado inválido"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "index dupterm inválido"
@@ -4334,6 +4336,17 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Se intentó asignación del montículo, sin que la VM de MicroPython esté "
+#~ "ejecutando."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR jump falló. Probable corrupción de la memoria."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Error fatal de MicroPython."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "argumento debe ser ndarray"

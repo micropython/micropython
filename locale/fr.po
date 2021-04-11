@@ -451,10 +451,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Tentative d'allocation de %d blocs"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Tentative d'allocation de segments lorsque la machine virtuelle MicroPython "
-"n'est pas en cours d'exécution."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1041,6 +1039,10 @@ msgstr "Impossible de libérer mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Échec de l'écriture vers flash interne."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Le fichier existe"
@@ -1444,14 +1446,6 @@ msgstr "La valeur maximale de x est %d lors d'une opération miroir"
 msgid "Messages limited to 8 bytes"
 msgstr "Messages limités à 8 octets"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "Échec du saut MicroPython NLR. Corruption de la mémoire probable."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Erreur fatale MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
@@ -1504,6 +1498,10 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -3304,6 +3302,10 @@ msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
 msgid "invalid cert"
 msgstr "certificat invalide"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "index invalide pour dupterm"
@@ -4359,6 +4361,17 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Tentative d'allocation de segments lorsque la machine virtuelle "
+#~ "MicroPython n'est pas en cours d'exécution."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "Échec du saut MicroPython NLR. Corruption de la mémoire probable."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Erreur fatale MicroPython."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "l'argument doit être un ndarray"

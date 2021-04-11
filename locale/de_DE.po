@@ -447,10 +447,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Versuche %d Blöcke zu allokieren"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Versuch einer Heap Reservierung, wenn die MicroPython-VM nicht ausgeführt "
-"wird."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1029,6 +1027,10 @@ msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Interner Flash konnte nicht geschrieben werden."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Datei existiert"
@@ -1423,15 +1425,6 @@ msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr ""
-"MicroPython NLR-Sprung fehlgeschlagen. Wahrscheinlich Speicherbeschädigung."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Schwerwiegender MicroPython-Fehler."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1483,6 +1476,10 @@ msgstr "Muss MISO- oder MOSI-Pin bereitstellen"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Muss ein Vielfaches von 6 RGB-Pins verwenden, nicht %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -3275,6 +3272,10 @@ msgstr ""
 msgid "invalid cert"
 msgstr "ungültiges cert"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "ungültiger dupterm index"
@@ -4335,6 +4336,19 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Versuch einer Heap Reservierung, wenn die MicroPython-VM nicht ausgeführt "
+#~ "wird."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr ""
+#~ "MicroPython NLR-Sprung fehlgeschlagen. Wahrscheinlich "
+#~ "Speicherbeschädigung."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Schwerwiegender MicroPython-Fehler."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "Argument muss ein ndarray sein"
