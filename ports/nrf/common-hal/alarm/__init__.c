@@ -346,7 +346,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     while(1) ;
 }
 
-// old version deep sleep code that was used in alarm_enter_deep_sleep()
+// old version deep sleep code that was used in common_hal_alarm_enter_deep_sleep()
 //   for anyone who might want true System OFF sleep ..
 #if 0
 void OLD_go_system_off(void) {
@@ -384,6 +384,7 @@ void common_hal_alarm_pretending_deep_sleep(void) {
 
     alarm_reset();
 
+#if 0
     // if one of Alarm event occurred, reset myself
     if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
 	cause == NRF_SLEEP_WAKEUP_TIMER ||
@@ -391,9 +392,9 @@ void common_hal_alarm_pretending_deep_sleep(void) {
         reset_cpu();
     }
     // else, just return and go into REPL
+#endif
 }
 
 void common_hal_alarm_gc_collect(void) {
-    void* p = shared_alarm_get_wake_alarm();
-    gc_collect_ptr(p);
+    gc_collect_ptr(shared_alarm_get_wake_alarm());
 }
