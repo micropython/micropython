@@ -21,7 +21,7 @@ CIRCUITPY_BUSIO = 1
 CIRCUITPY_STORAGE = 0
 
 CIRCUITPY_MATH = 1
-CIRCUITPY_PIXELBUF = 1
+CIRCUITPY_PIXELBUF = 0
 CIRCUITPY_USB_MIDI = 1
 CIRCUITPY_TOUCHIO = 1
 CIRCUITPY_FULL_BUILD = 0
@@ -30,5 +30,4 @@ SUPEROPT_GC = 0
 SUPEROPT_VM = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
