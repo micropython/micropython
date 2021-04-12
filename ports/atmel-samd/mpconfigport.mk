@@ -87,3 +87,22 @@ CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
 
 endif # samd51
 ######################################################################
+
+######################################################################
+# Put same51-only choices here.
+
+ifeq ($(CHIP_FAMILY),same51)
+
+# No native touchio on SAMD51.
+CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+# The ?='s allow overriding in mpconfigboard.mk.
+
+CIRCUITPY_NETWORK ?= 0
+CIRCUITPY_PS2IO ?= 1
+CIRCUITPY_SAMD ?= 1
+CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
+CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
+
+endif # same51
+######################################################################
