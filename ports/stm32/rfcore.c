@@ -610,6 +610,24 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == HCI_KIND_BT_CMD) {
+        // The STM32WB has a problem when address resolution is enabled: under certain
+        // conditions the MCU can get into a state where it draws an additional 10mA
+        // or so and eventually ends up with a broken BLE RX path in the silicon.  A
+        // simple way to reproduce this is to enable address resolution (which is the
+        // default for NimBLE) and start the device advertising.  If there is enough
+        // BLE activity in the vicinity then the device will at some point enter the
+        // bad state and, if left long enough, will have permanent BLE RX damage.
+        //
+        // STMicroelectronics are aware of this issue.  The only known workaround at
+        // this stage is to not enable address resolution.  We do that here by
+        // intercepting any command that enables address resolution and convert it
+        // into a command that disables address resolution.
+        //
+        // OGF=0x08 OCF=0x002d HCI_LE_Set_Address_Resolution_Enable
+        if (len == 5 && memcmp(src + 1, "\x2d\x20\x01\x01", 4) == 0) {
+            src = (const uint8_t *)"\x01\x2d\x20\x01\x00";
+        }
+
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == HCI_KIND_BT_ACL) {
