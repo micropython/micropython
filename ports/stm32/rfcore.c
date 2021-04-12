@@ -417,6 +417,12 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
 
         // If this node is allocated from the memmgr event pool, then place it into the free buffer.
         if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {
+            // Wait for C2 to indicate that it has finished using the free buffer,
+            // so that we can link the newly-freed memory in to this buffer.
+            // If waiting is needed then it is typically between 5 and 20 microseconds.
+            while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_MM)) {
+            }
+
             // Place memory back in free pool.
             tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
             added_to_free_queue = true;
