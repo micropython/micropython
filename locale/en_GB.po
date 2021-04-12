@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-03-25 23:30+0000\n"
-"Last-Translator: Gareth Coleman <gareth@sublime.org>\n"
+"PO-Revision-Date: 2021-04-11 01:30+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: main.c
 msgid ""
@@ -447,9 +447,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Attempt to allocate %d blocks"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Attempted heap allocation when CircuitPython VM not running."
+msgid "Attempted heap allocation when VM not running."
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1024,6 +1023,10 @@ msgstr "Failed to release mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Failed to write internal flash."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "File exists"
@@ -1416,16 +1419,6 @@ msgstr "Maximum x value when mirrored is %d"
 msgid "Messages limited to 8 bytes"
 msgstr "Messages limited to 8 bytes"
 
-#: supervisor/shared/safe_mode.c
-#, fuzzy
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "CircuitPython NLR jump failed. Likely memory corruption."
-
-#: supervisor/shared/safe_mode.c
-#, fuzzy
-msgid "MicroPython fatal error."
-msgstr "CircuitPython fatal error."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Microphone startup delay must be in range 0.0 to 1.0"
@@ -1476,6 +1469,10 @@ msgstr "Must provide MISO or MOSI pin"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Must use a multiple of 6 rgb pins, not %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -3244,6 +3241,10 @@ msgstr "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgid "invalid cert"
 msgstr "invalid cert"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "invalid dupterm index"
@@ -4290,6 +4291,16 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "Attempted heap allocation when MicroPython VM not running."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR jump failed. Likely memory corruption."
+
+#, fuzzy
+#~ msgid "MicroPython fatal error."
+#~ msgstr "CircuitPython fatal error."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "argument must be ndarray"
