@@ -124,7 +124,7 @@ static inline uint32_t add16signed(uint32_t a, uint32_t b) {
 
 __attribute__((always_inline))
 static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
-    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))  // Cortex-M4 w/FPU
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     mul <<= 16;
     int32_t hi, lo;
     enum { bits = 16 }; // saturate to 16 bits
@@ -154,7 +154,7 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
 }
 
 static inline uint32_t tounsigned8(uint32_t val) {
-    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))  // Cortex-M4 w/FPU
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD8(val, 0x80808080);
     #else
     return val ^ 0x80808080;
@@ -162,7 +162,7 @@ static inline uint32_t tounsigned8(uint32_t val) {
 }
 
 static inline uint32_t tounsigned16(uint32_t val) {
-    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))  // Cortex-M4 w/FPU
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
     #else
     return val ^ 0x80008000;
@@ -170,7 +170,7 @@ static inline uint32_t tounsigned16(uint32_t val) {
 }
 
 static inline uint32_t tosigned16(uint32_t val) {
-    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))  // Cortex-M4 w/FPU
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
     #else
     return val ^ 0x80008000;
