@@ -379,6 +379,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -428,6 +430,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -526,6 +530,8 @@ jobs:
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: |
         source $IDF_PATH/export.sh
