@@ -82,17 +82,25 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_setup {
+function ci_esp32_setup_helper {
     git clone https://github.com/espressif/esp-idf.git
-    git -C esp-idf checkout v4.0.2
+    git -C esp-idf checkout $1
     git -C esp-idf submodule update --init \
         components/bt/controller/lib \
         components/bt/host/nimble/nimble \
-        components/esp_wifi/lib_esp32 \
+        components/esp_wifi \
         components/esptool_py/esptool \
         components/lwip/lwip \
         components/mbedtls/mbedtls
     ./esp-idf/install.sh
+}
+
+function ci_esp32_idf402_setup {
+    ci_esp32_setup_helper v4.0.2
+}
+
+function ci_esp32_idf43_setup {
+    ci_esp32_setup_helper v4.3-beta2
 }
 
 function ci_esp32_build {
@@ -102,6 +110,9 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C ports/esp32
     make ${MAKEOPTS} -C ports/esp32 clean
     make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake
+    if [ -d $IDF_PATH/components/esp32s2 ]; then
+        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
+    fi
 }
 
 ########################################################################################

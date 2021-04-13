@@ -13,11 +13,20 @@ on:
       - 'ports/esp32/**'
 
 jobs:
-  build:
+  build_idf402:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: source tools/ci.sh && ci_esp32_setup
+      run: source tools/ci.sh && ci_esp32_idf402_setup
+    - name: Build
+      run: source tools/ci.sh && ci_esp32_build
+
+  build_idf43:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_esp32_idf43_setup
     - name: Build
       run: source tools/ci.sh && ci_esp32_build
