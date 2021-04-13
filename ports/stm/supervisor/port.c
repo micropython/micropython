@@ -32,6 +32,9 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#ifdef CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
 #if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
@@ -229,6 +232,9 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+    #if CIRCUITPY_AUDIOPWMIO
+    audiopwmout_reset();
+    #endif
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();

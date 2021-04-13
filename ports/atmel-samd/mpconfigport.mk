@@ -25,6 +25,8 @@ USB_SERIAL_NUMBER_LENGTH = 32
 # Number of USB endpoint pairs.
 USB_NUM_EP = 8
 
+CIRCUITPY_ROTARYIO_SOFTENCODER = 1
+
 ######################################################################
 # Put samd21-only choices here.
 

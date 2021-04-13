@@ -155,8 +155,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 
 //|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
-//|         resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
-//|         DAC that ignores the lowest 6 bits when playing 16 bit samples."""
+//|         resolution will use the highest order bits to output."""
 //|         ...
 //|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

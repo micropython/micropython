@@ -768,7 +768,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     }
 
     if (name_len != 2) {
-        compile_syntax_error(comp, name_nodes[0], translate("invalid micropython decorator"));
+        compile_syntax_error(comp, name_nodes[0], translate("invalid decorator"));
         return true;
     }
 

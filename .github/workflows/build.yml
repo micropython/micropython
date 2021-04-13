@@ -38,7 +38,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
+        pip install -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version
@@ -132,15 +132,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install dependencies
-      run: |
-        brew install gettext
-        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
-    - name: Versions
-      run: |
-        gcc --version
-        python3 --version
-        msgfmt --version
     - uses: actions/checkout@v2.2.0
       with:
         submodules: true
@@ -150,6 +141,15 @@ jobs:
       run: |
         git describe --dirty --tags
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Install dependencies
+      run: |
+        brew install gettext
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
@@ -178,6 +178,7 @@ jobs:
         - "TG-Watch"
         - "adafruit_feather_rp2040"
         - "adafruit_itsybitsy_rp2040"
+        - "adafruit_qtpy_rp2040"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -189,6 +190,7 @@ jobs:
         - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
+        - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -238,6 +240,7 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
+        - "huntercat_nfc"
         - "ikigaisense_vita"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
@@ -299,7 +302,6 @@ jobs:
         - "pyruler"
         - "qtpy_m0"
         - "qtpy_m0_haxpress"
-        - "qtpy_rp2040"
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
@@ -308,6 +310,7 @@ jobs:
         - "same54_xplained"
         - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
+        - "sensebox_mcu"
         - "serpente"
         - "shirtty"
         - "silicognition-m4-shim"
@@ -355,10 +358,15 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
@@ -366,11 +374,6 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
@@ -404,6 +407,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -415,11 +423,6 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
@@ -450,6 +453,7 @@ jobs:
         - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "artisense_rd00"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
@@ -500,7 +504,7 @@ jobs:
     - name: Install CircuitPython deps
       run: |
         source $IDF_PATH/export.sh
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
       env:
         IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf

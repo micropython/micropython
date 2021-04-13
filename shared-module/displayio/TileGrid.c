@@ -273,7 +273,7 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     tile_area->y2 = tile_area->y1 + self->tile_height;
 
     if (self->partial_change) {
-        displayio_area_expand(&self->dirty_area, &temp_area);
+        displayio_area_union(&self->dirty_area, &temp_area, &self->dirty_area);
     }
 
     self->partial_change = true;
@@ -583,7 +583,7 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     }
 
     if (self->partial_change) {
-        if (self->absolute_transform->transpose_xy) {
+        if (self->transpose_xy != self->absolute_transform->transpose_xy) {
             int16_t x1 = self->dirty_area.x1;
             self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y1);
             self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x1);

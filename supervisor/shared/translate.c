@@ -86,7 +86,7 @@ uint16_t decompress_length(const compressed_string_t *compressed) {
 char *decompress(const compressed_string_t *compressed, char *decompressed) {
     uint8_t this_byte = compress_max_length_bits / 8;
     uint8_t this_bit = 7 - compress_max_length_bits % 8;
-    uint8_t b = (&compressed->data)[this_byte];
+    uint8_t b = (&compressed->data)[this_byte] << (compress_max_length_bits % 8);
     uint16_t length = decompress_length(compressed);
 
     // Stop one early because the last byte is always NULL.
@@ -129,7 +129,7 @@ __attribute__((always_inline))
 #endif
 const compressed_string_t *translate(const char *original) {
     #ifndef NO_QSTR
-    #define QDEF(id, str)
+    #define QDEF(id, hash, len, str)
     #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
     #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION

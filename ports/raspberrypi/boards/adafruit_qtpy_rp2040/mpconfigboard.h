@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit QTPy RP2040"
+#define MICROPY_HW_BOARD_NAME "Adafruit QT Py RP2040"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO12)
@@ -12,6 +12,3 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_GPIO5)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO20)
-
-// Flash chip is GD25Q64 connected over QSPI
-#define TOTAL_FLASH_SIZE (8 * 1024 * 1024)

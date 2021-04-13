@@ -19,16 +19,8 @@ import shared_bindings_matrix
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = [
-    "atmel-samd",
-    "cxd56",
-    "esp32s2",
-    "litex",
-    "mimxrt10xx",
-    "nrf",
-    "raspberrypi",
-    "stm",
-]
+from shared_bindings_matrix import SUPPORTED_PORTS
+from shared_bindings_matrix import aliases_by_board
 
 BIN = ("bin",)
 UF2 = ("uf2",)
@@ -73,24 +65,33 @@ extension_by_board = {
     "meowbit_v121": UF2,
 }
 
-aliases_by_board = {
-    "circuitplayground_express": [
-        "circuitplayground_express_4h",
-        "circuitplayground_express_digikey_pycon2019",
-    ],
-    "pybadge": ["edgebadge"],
-    "pyportal": ["pyportal_pynt"],
-    "gemma_m0": ["gemma_m0_pycon2018"],
-    "pewpew10": ["pewpew13"],
-}
+language_allow_list = set([
+    "ID",
+    "de_DE",
+    "en_GB",
+    "en_US",
+    "en_x_pirate",
+    "es",
+    "fil",
+    "fr",
+    "it_IT",
+    "ja",
+    "nl",
+    "pl",
+    "pt_BR",
+    "sv",
+    "zh_Latn_pinyin",
+])
 
 
-def get_languages():
-    languages = []
+def get_languages(list_all = False):
+    languages = set()
     for f in os.scandir("../locale"):
         if f.name.endswith(".po"):
-            languages.append(f.name[:-3])
-    return languages
+            languages.add(f.name[:-3])
+    if not list_all:
+        languages = languages & language_allow_list
+    return sorted(list(languages), key=str.casefold)
 
 
 def get_board_mapping():
@@ -163,10 +164,7 @@ def get_current_info():
     return git_info, current_info
 
 
-def create_pr(changes, updated, git_info, user):
-    commit_sha, original_blob_sha = git_info
-    branch_name = "new_release_" + changes["new_release"]
-
+def create_json(updated):
     # Convert the dictionary to a list of boards. Liquid templates only handle arrays.
     updated_list = []
     all_ids = sorted(updated.keys())
@@ -174,9 +172,15 @@ def create_pr(changes, updated, git_info, user):
         info = updated[id]
         info["id"] = id
         updated_list.append(info)
+    return json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
 
-    updated = json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
+
+def create_pr(changes, updated, git_info, user):
+    commit_sha, original_blob_sha = git_info
+    branch_name = "new_release_" + changes["new_release"]
+    updated = create_json(updated)
     # print(updated.decode("utf-8"))
+
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
@@ -262,7 +266,7 @@ def generate_download_info():
     # Delete the release we are replacing
     for board in current_info:
         info = current_info[board]
-        for version in info["versions"]:
+        for version in list(info["versions"]):
             previous_releases.add(version["version"])
             previous_languages.update(version["languages"])
             if version["stable"] == new_stable or (
@@ -289,7 +293,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix.get(alias, "[]"),
+                        "modules": support_matrix[alias],
                         "languages": languages,
                         "extensions": board_info["extensions"],
                     }
@@ -302,6 +306,8 @@ def generate_download_info():
         create_pr(changes, current_info, git_info, user)
     else:
         print("No new release to update")
+        if "DEBUG" in os.environ:
+            print(create_json(current_info).decode("utf8"))
 
 
 if __name__ == "__main__":

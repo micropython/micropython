@@ -55,16 +55,7 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
         out_area->y2 = (out_area->y2 + self->y) * self->absolute_transform->dy + self->absolute_transform->y;
     }
     // We might have mirrored due to dx
-    if (out_area->x2 < out_area->x1) {
-        int16_t swap = out_area->x1;
-        out_area->x1 = out_area->x2;
-        out_area->x2 = swap;
-    }
-    if (out_area->y2 < out_area->y1) {
-        int16_t swap = out_area->y1;
-        out_area->y1 = out_area->y2;
-        out_area->y2 = swap;
-    }
+    displayio_area_canon(out_area);
     VECTORIO_SHAPE_DEBUG(" out:{(%5d,%5d), (%5d,%5d)}\n", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
 }
 
@@ -88,7 +79,7 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
         self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
     self->dirty = true;
     // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish,
-    displayio_area_expand(&self->ephemeral_dirty_area, &current_area);
+    displayio_area_union(&self->ephemeral_dirty_area, &current_area, &self->ephemeral_dirty_area);
     VECTORIO_SHAPE_DEBUG(" -> expanded:{(%3d,%3d), (%3d,%3d)}\n", self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
 }
 
