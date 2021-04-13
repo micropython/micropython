@@ -896,6 +896,11 @@ msgstr "ESP-IDF-minnetilldelning misslyckades"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT-kanalen används redan"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Fel i regex"
@@ -1101,10 +1106,6 @@ msgstr "I2C-enhet används redan"
 msgid "I2SOut not available"
 msgstr "I2SOut är inte tillgängligt"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1231,6 +1232,10 @@ msgstr "Ogiltig BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1623,6 +1628,7 @@ msgstr "Nordic systemfirmware fick slut på minne"
 msgid "Not a valid IP string"
 msgstr "Inte en giltig IP-sträng"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2547,10 +2553,6 @@ msgstr "branch utanför räckvidd"
 msgid "buffer is smaller than requested size"
 msgstr "bufferten är mindre än begärd storlek"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "buffer måste vara en byte-liknande objekt"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "buffertstorlek måste vara en multipel av elementstorlek"
@@ -2997,7 +2999,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: singel '}' är inte tillåten"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
@@ -3311,10 +3313,6 @@ msgstr "ogiltig syntax för heltal med bas %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io måste vara rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3779,6 +3777,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4079,10 +4078,6 @@ msgstr "trapz är definierat för 1D-matriser"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "triggernivå måste vara 0 eller 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupel/lista har fel längd"
@@ -4217,10 +4212,6 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "wakeup-konflikt"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
@@ -4306,6 +4297,21 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer måste vara en byte-liknande objekt"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io måste vara rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggernivå måste vara 0 eller 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "wakeup-konflikt"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "Försökte tilldela heap när MicroPython VM inte körs."

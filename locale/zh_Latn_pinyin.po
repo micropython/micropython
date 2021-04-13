@@ -895,6 +895,11 @@ msgstr "ESP-IDF nèicún fēnpèi shībài"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
@@ -1100,10 +1105,6 @@ msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 msgid "I2SOut not available"
 msgstr "I2SOut bù kě yòng"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1233,6 +1234,10 @@ msgstr "Wúxiào de BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1625,6 +1630,7 @@ msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2545,10 +2551,6 @@ msgstr "fēnzhī bùzài fànwéi nèi"
 msgid "buffer is smaller than requested size"
 msgstr "huǎn chōng qū xiǎo yú qǐng qiú de dà xiǎo"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "huǎn chōng qū dà xiǎo bì xū shì yuán sù dà xiǎo de bèi shù"
@@ -2996,7 +2998,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -3310,10 +3312,6 @@ msgstr "jīshù wèi %d de zhěng shǔ de yǔfǎ wúxiào"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "wúxiào de hàomǎ yǔfǎ"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "IO bì xū shì RTC IO"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3775,6 +3773,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4075,10 +4074,6 @@ msgstr "wéi 1D shù zǔ dìng yì xiàn jǐng"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "chù fā jí bié bì xū wéi 0 huò 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
@@ -4213,10 +4208,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "huàn xǐng chōng tū"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "wèi chū shǐ huà jiān shì qì"
@@ -4302,6 +4293,21 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "IO bì xū shì RTC IO"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "chù fā jí bié bì xū wéi 0 huò 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "huàn xǐng chōng tū"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."
