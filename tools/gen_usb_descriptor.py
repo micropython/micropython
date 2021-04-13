@@ -337,7 +337,7 @@ if include_msc:
 
 if include_hid:
     # When there's only one hid_device, it shouldn't have a report id.
-    # Otherwise, report ids are assigned sequentially:
+    # Otherwise, report ids are assigned sequentially, starting at 1.
     # args.hid_devices[0] has report_id 1
     # args.hid_devices[1] has report_id 2
     # etc.
@@ -346,24 +346,19 @@ if include_hid:
 
     if len(args.hid_devices) == 1:
         name = args.hid_devices[0]
-        combined_hid_report_descriptor = hid.ReportDescriptor(
-            description=name,
-            report_descriptor=bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](0)),
-        )
+        hid_descriptor = hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](None)
+        concatenated_hid_report_descriptors = bytes(
+            hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id=0))
         report_ids[name] = 0
     else:
         report_id = 1
-        concatenated_descriptors = bytearray()
+        concatenated_hid_report_descriptors = bytearray()
         # Sort HID devices by preferred order.
         for name in sorted(args.hid_devices, key=ALL_HID_DEVICES_ORDER.get):
-            concatenated_descriptors.extend(
-                bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id))
-            )
+            hid_report_descriptor = hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id)
+            concatenated_hid_report_descriptors.extend(bytes(hid_report_descriptor))
             report_ids[name] = report_id
             report_id += 1
-        combined_hid_report_descriptor = hid.ReportDescriptor(
-            description="MULTIDEVICE", report_descriptor=bytes(concatenated_descriptors)
-        )
 
     # ASF4 expects keyboard and generic devices to have both in and out endpoints,
     # and will fail (possibly silently) if both are not supplied.
@@ -390,7 +385,7 @@ if include_hid:
             iInterface=StringIndex.index("{} HID".format(args.interface_name)),
             subdescriptors=[
                 hid.HIDDescriptor(
-                    description="HID", wDescriptorLength=len(bytes(combined_hid_report_descriptor))
+                    description="HID", wDescriptorLength=len(concatenated_hid_report_descriptors)
                 ),
                 hid_endpoint_in_descriptor,
                 hid_endpoint_out_descriptor,
@@ -780,9 +775,9 @@ c_file.write(
 c_file.write("\n")
 
 if include_hid:
-    hid_descriptor_length = len(bytes(combined_hid_report_descriptor))
+    hid_report_descriptors_length = len(concatenated_hid_report_descriptors)
 else:
-    hid_descriptor_length = 0
+    hid_report_descriptors_length = 0
 
 # Now the values we need for the .h file.
 h_file.write(
@@ -809,7 +804,7 @@ extern uint16_t const * const string_desc_arr [{string_descriptor_length}];
         serial_number_length=len(bytes(serial_number_descriptor)) // 2,
         device_length=len(bytes(device)),
         configuration_length=descriptor_length,
-        max_configuration_length=max(hid_descriptor_length, descriptor_length),
+        max_configuration_length=max(hid_report_descriptors_length, descriptor_length),
         string_descriptor_length=len(pointers_to_strings),
         rhport0_mode="OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED"
         if args.highspeed
@@ -826,7 +821,7 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
 
 #define USB_HID_NUM_DEVICES         {hid_num_devices}
 """.format(
-            hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
+            hid_report_descriptor_length=len(concatenated_hid_report_descriptors),
             hid_num_devices=len(args.hid_devices),
         )
     )
@@ -859,13 +854,13 @@ if include_hid:
     # Write out the report descriptor and info
     c_file.write(
         """\
-const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
+const uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTORS_LENGTH}] = {{
 """.format(
-            HID_DESCRIPTOR_LENGTH=hid_descriptor_length
+            HID_REPORT_DESCRIPTORS_LENGTH=hid_report_descriptors_length
         )
     )
 
-    for b in bytes(combined_hid_report_descriptor):
+    for b in bytes(concatenated_hid_report_descriptors):
         c_file.write("0x{:02x}, ".format(b))
 
     c_file.write(
