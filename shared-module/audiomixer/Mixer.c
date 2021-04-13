@@ -103,7 +103,7 @@ void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t *self,
 
 __attribute__((always_inline))
 static inline uint32_t add16signed(uint32_t a, uint32_t b) {
-    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))  // Cortex-M4 w/FPU
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __QADD16(a, b);
     #else
     uint32_t result = 0;
