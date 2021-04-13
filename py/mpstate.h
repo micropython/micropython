@@ -197,7 +197,7 @@ typedef struct _mp_state_vm_t {
 
     // pointer and sizes to store interned string data
     // (qstr_last_chunk can be root pointer but is also stored in qstr pool)
-    byte *qstr_last_chunk;
+    char *qstr_last_chunk;
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 

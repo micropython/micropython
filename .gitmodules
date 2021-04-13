@@ -171,6 +171,9 @@
 [submodule "frozen/Adafruit_CircuitPython_LC709203F"]
 	path = frozen/Adafruit_CircuitPython_LC709203F
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LC709203F
+[submodule "frozen/Adafruit_CircuitPython_SimpleMath"]
+	path = frozen/Adafruit_CircuitPython_SimpleMath
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SimpleMath
 [submodule "ports/raspberrypi/sdk"]
 	path = ports/raspberrypi/sdk
 	url = https://github.com/adafruit/pico-sdk.git
@@ -178,3 +181,6 @@
 	path = data/nvm.toml
 	url = https://github.com/adafruit/nvm.toml.git
 	branch = main
+[submodule "frozen/Adafruit_CircuitPython_MIDI"]
+	path = frozen/Adafruit_CircuitPython_MIDI
+	url = https://github.com/adafruit/Adafruit_CircuitPython_MIDI

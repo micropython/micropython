@@ -134,35 +134,35 @@ const mcu_periph_obj_t mcu_uart_cts_list[4] = {
 };
 
 const mcu_pwm_obj_t mcu_pwm_list[20] = {
-    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, 2, &pin_GPIO_02),
-    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, 2, &pin_GPIO_SD_02),
+    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, IOMUXC_GPIO_02_FLEXPWM1_PWM0_A, &pin_GPIO_02),
+    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, IOMUXC_GPIO_SD_02_FLEXPWM1_PWM0_A, &pin_GPIO_SD_02),
 
-    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmB, 2, &pin_GPIO_01),
-    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmB, 2, &pin_GPIO_SD_01),
+    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmB, IOMUXC_GPIO_01_FLEXPWM1_PWM0_B, &pin_GPIO_01),
+    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmB, IOMUXC_GPIO_SD_01_FLEXPWM1_PWM0_B, &pin_GPIO_SD_01),
 
-    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmX, 1, &pin_GPIO_AD_12),
+    PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmX, IOMUXC_GPIO_AD_12_FLEXPWM1_PWM0_X, &pin_GPIO_AD_12),
 
-    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmA, 2, &pin_GPIO_04),
-    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmA, 2, &pin_GPIO_SD_04),
+    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmA, IOMUXC_GPIO_04_FLEXPWM1_PWM1_A, &pin_GPIO_04),
+    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmA, IOMUXC_GPIO_SD_04_FLEXPWM1_PWM1_A, &pin_GPIO_SD_04),
 
-    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmB, 2, &pin_GPIO_03),
-    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmB, 2, &pin_GPIO_SD_03),
+    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmB, IOMUXC_GPIO_03_FLEXPWM1_PWM1_B, &pin_GPIO_03),
+    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmB, IOMUXC_GPIO_SD_03_FLEXPWM1_PWM1_B, &pin_GPIO_SD_03),
 
-    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmX, 1, &pin_GPIO_AD_11),
+    PWM_PIN(PWM1, kPWM_Module_1, kPWM_PwmX, IOMUXC_GPIO_AD_11_FLEXPWM1_PWM1_X, &pin_GPIO_AD_11),
 
-    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmA, 2, &pin_GPIO_06),
-    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmA, 2, &pin_GPIO_AD_04),
+    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmA, IOMUXC_GPIO_06_FLEXPWM1_PWM2_A, &pin_GPIO_06),
+    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmA, IOMUXC_GPIO_AD_04_FLEXPWM1_PWM2_A, &pin_GPIO_AD_04),
 
-    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmB, 2, &pin_GPIO_05),
-    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmB, 2, &pin_GPIO_AD_03),
+    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmB, IOMUXC_GPIO_05_FLEXPWM1_PWM2_B, &pin_GPIO_05),
+    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmB, IOMUXC_GPIO_AD_03_FLEXPWM1_PWM2_B, &pin_GPIO_AD_03),
 
-    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmX, 1, &pin_GPIO_AD_10),
+    PWM_PIN(PWM1, kPWM_Module_2, kPWM_PwmX, IOMUXC_GPIO_AD_10_FLEXPWM1_PWM2_X, &pin_GPIO_AD_10),
 
-    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmA, 2, &pin_GPIO_08),
-    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmA, 2, &pin_GPIO_AD_06),
+    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmA, IOMUXC_GPIO_08_FLEXPWM1_PWM3_A, &pin_GPIO_08),
+    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmA, IOMUXC_GPIO_AD_06_FLEXPWM1_PWM3_A, &pin_GPIO_AD_06),
 
-    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmB, 2, &pin_GPIO_07),
-    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmB, 2, &pin_GPIO_AD_05),
+    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmB, IOMUXC_GPIO_07_FLEXPWM1_PWM3_B, &pin_GPIO_07),
+    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmB, IOMUXC_GPIO_AD_05_FLEXPWM1_PWM3_B, &pin_GPIO_AD_05),
 
-    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmX, 1, &pin_GPIO_AD_09),
+    PWM_PIN(PWM1, kPWM_Module_3, kPWM_PwmX, IOMUXC_GPIO_AD_09_FLEXPWM1_PWM3_X, &pin_GPIO_AD_09),
 };

@@ -325,8 +325,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 }
 
 void bleio_connection_clear(bleio_connection_internal_t *self) {
-    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->remote_service_list));
-
+    self->remote_service_list = NULL;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
     self->is_central = false;

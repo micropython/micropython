@@ -16,6 +16,10 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -27,10 +31,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
