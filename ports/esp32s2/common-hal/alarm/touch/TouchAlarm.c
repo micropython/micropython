@@ -42,14 +42,16 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
     self->pin = pin;
 }
 
-mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
-    // First, check to see if we match any given alarms.
+mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
             return alarms[i];
         }
     }
+    return mp_const_none;
+}
 
+mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
     // Create TouchAlarm object.
     alarm_touch_touchalarm_obj_t *alarm = m_new_obj(alarm_touch_touchalarm_obj_t);
     alarm->base.type = &alarm_touch_touchalarm_type;
@@ -168,7 +170,7 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
 }
 
-bool alarm_touch_touchalarm_woke_us_up(void) {
+bool alarm_touch_touchalarm_woke_this_cycle(void) {
     return woke_up;
 }
 

@@ -63,15 +63,18 @@ void alarm_reset(void) {
 }
 
 STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
-    if (alarm_pin_pinalarm_woke_us_up()) {
+    // First check if the modules remember what last woke up
+    if (alarm_pin_pinalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_GPIO;
     }
-    if (alarm_time_timealarm_woke_us_up()) {
+    if (alarm_time_timealarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_TIMER;
     }
-    if (alarm_touch_touchalarm_woke_us_up()) {
+    if (alarm_touch_touchalarm_woke_this_cycle()) {
         return ESP_SLEEP_WAKEUP_TOUCHPAD;
     }
+    // If waking from true deep sleep, modules will have lost their state,
+    // so check the deep wakeup cause manually
     return esp_sleep_get_wakeup_cause();
 }
 
@@ -79,21 +82,23 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return _get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED;
 }
 
-STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+    // If woken from deep sleep, create a copy alarm similar to what would have
+    // been passed in originally. Otherwise, just return none
     esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
     switch (cause) {
         case ESP_SLEEP_WAKEUP_TIMER: {
-            return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_time_timealarm_create_wakeup_alarm();
         }
 
         case ESP_SLEEP_WAKEUP_GPIO:
         case ESP_SLEEP_WAKEUP_EXT0:
         case ESP_SLEEP_WAKEUP_EXT1: {
-            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_pin_pinalarm_create_wakeup_alarm();
         }
 
         case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-            return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_touch_touchalarm_create_wakeup_alarm();
         }
 
         case ESP_SLEEP_WAKEUP_UNDEFINED:
@@ -104,10 +109,6 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     return mp_const_none;
 }
 
-mp_obj_t common_hal_alarm_get_wake_alarm(void) {
-    return _get_wake_alarm(0, NULL);
-}
-
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
@@ -115,30 +116,44 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
-STATIC void _idle_until_alarm(void) {
-    // Poll for alarms.
-    while (!mp_hal_is_interrupted()) {
-        RUN_BACKGROUND_TASKS;
-        // Allow ctrl-C interrupt.
-        if (common_hal_alarm_woken_from_sleep()) {
-            shared_alarm_save_wake_alarm();
-            return;
-        }
-        port_idle_until_interrupt();
-    }
-}
-
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     _setup_sleep_alarms(false, n_alarms, alarms);
 
+    mp_obj_t wake_alarm = mp_const_none;
+
     // We cannot esp_light_sleep_start() here because it shuts down all non-RTC peripherals.
-    _idle_until_alarm();
+    while (!mp_hal_is_interrupted()) {
+        RUN_BACKGROUND_TASKS;
+        // Detect if interrupt was alarm or ctrl-C interrupt.
+        if (common_hal_alarm_woken_from_sleep()) {
+            esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
+            switch (cause) {
+                case ESP_SLEEP_WAKEUP_TIMER: {
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                case ESP_SLEEP_WAKEUP_GPIO: {
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                case ESP_SLEEP_WAKEUP_TOUCHPAD: {
+                    wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                default:
+                    // Should not reach this, if all light sleep types are covered correctly
+                    break;
+            }
+            shared_alarm_save_wake_alarm(wake_alarm);
+            break;
+        }
+        port_idle_until_interrupt();
+    }
 
     if (mp_hal_is_interrupted()) {
         return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
     }
 
-    mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
     alarm_reset();
     return wake_alarm;
 }

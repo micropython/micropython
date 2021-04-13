@@ -228,13 +228,13 @@ mp_obj_t shared_alarm_get_wake_alarm(void) {
 }
 
 // Initialize .wake_alarm value.
-void shared_alarm_save_wake_alarm(void) {
+void shared_alarm_save_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
         mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
     if (elem) {
-        elem->value = common_hal_alarm_get_wake_alarm();
+        elem->value = alarm;
     }
 }
 

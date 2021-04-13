@@ -42,13 +42,16 @@ mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timeala
     return self->monotonic_time;
 }
 
-mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    // First, check to see if we match
+mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
             return alarms[i];
         }
     }
+    return mp_const_none;
+}
+
+mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
     alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
     timer->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
@@ -66,7 +69,7 @@ void timer_callback(void *arg) {
     xTaskNotifyGive(circuitpython_task);
 }
 
-bool alarm_time_timealarm_woke_us_up(void) {
+bool alarm_time_timealarm_woke_this_cycle(void) {
     return woke_up;
 }
 

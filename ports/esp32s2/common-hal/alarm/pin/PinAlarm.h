@@ -34,8 +34,10 @@ typedef struct {
     bool pull;
 } alarm_pin_pinalarm_obj_t;
 
+mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void);
+
+void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
 void alarm_pin_pinalarm_reset(void);
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_us_up(void);
+bool alarm_pin_pinalarm_woke_this_cycle(void);

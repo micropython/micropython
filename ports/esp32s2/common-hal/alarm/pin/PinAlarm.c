@@ -96,12 +96,11 @@ void gpio_interrupt(void *arg) {
     }
 }
 
-bool alarm_pin_pinalarm_woke_us_up(void) {
+bool alarm_pin_pinalarm_woke_this_cycle(void) {
     return pin_31_0_status != 0 || pin_63_32_status != 0;
 }
 
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    // First, check to see if we match any given alarms.
+mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     uint64_t pin_status = ((uint64_t)pin_63_32_status) << 32 | pin_31_0_status;
     for (size_t i = 0; i < n_alarms; i++) {
         if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
@@ -112,8 +111,16 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
             return alarms[i];
         }
     }
+    return mp_const_none;
+}
+
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+
+    // Pin status will persist into a fake deep sleep
+    uint64_t pin_status = ((uint64_t)pin_63_32_status) << 32 | pin_31_0_status;
     size_t pin_number = 64;
+
     if (cause == ESP_SLEEP_WAKEUP_EXT0) {
         pin_number = REG_GET_FIELD(RTC_IO_EXT_WAKEUP0_REG, RTC_IO_EXT_WAKEUP0_SEL);
     } else {
