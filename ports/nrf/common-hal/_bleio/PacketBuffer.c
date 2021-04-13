@@ -196,18 +196,23 @@ void common_hal_bleio_packet_buffer_construct(
     bleio_characteristic_properties_t incoming = self->characteristic->props & (CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_WRITE);
     bleio_characteristic_properties_t outgoing = self->characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE);
 
+    uint16_t max_packet_size;
     if (self->client) {
         // Swap if we're the client.
         bleio_characteristic_properties_t temp = incoming;
         incoming = outgoing;
         outgoing = temp;
         self->conn_handle = bleio_connection_get_conn_handle(MP_OBJ_TO_PTR(self->characteristic->service->connection));
+        // TODO: We may want to make this variable because our BLE connection may not be able to
+        // negotiate the higher MTU.
+        max_packet_size = BLE_GATTS_VAR_ATTR_LEN_MAX - 3; // 3 for ATT overhead
     } else {
         self->conn_handle = BLE_CONN_HANDLE_INVALID;
+        max_packet_size = characteristic->max_length;
     }
 
     if (incoming) {
-        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + characteristic->max_length), false)) {
+        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + max_packet_size), false)) {
             mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
         }
     }
