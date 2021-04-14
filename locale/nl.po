@@ -890,6 +890,11 @@ msgstr "ESP-IDF geheugen toewijzing mislukt"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT kanaal al in gebruik"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Fout in regex"
@@ -1096,10 +1101,6 @@ msgstr ""
 msgid "I2SOut not available"
 msgstr "I2SOut is niet beschikbaar"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IO's 0, 2 en 4 ondersteunen geen interne pullup in slaapstand"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1224,6 +1225,10 @@ msgstr "Ongeldig BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ongeldige DAC pin opgegeven"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1615,6 +1620,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "Geen geldige IP string"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2544,10 +2550,6 @@ msgstr "pad (branch) niet binnen bereik"
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "buffer moet een byte-achtig object zijn"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -2993,7 +2995,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: enkele '}' is niet toegestaan"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "bestand moet een bestand zijn geopend in byte modus"
 
@@ -3308,10 +3310,6 @@ msgstr "ongeldige syntax voor integer met grondtal %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ongeldige syntax voor nummer"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io moet rtc io zijn"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3776,6 +3774,7 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4076,10 +4075,6 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "triggerniveau moet 0 of 1 zijn"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tuple of lijst heeft onjuiste lengte"
@@ -4214,10 +4209,6 @@ msgstr "waarde moet in %d byte(s) passen"
 msgid "value_count must be > 0"
 msgstr "value_count moet groter dan 0 zijn"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflict bij ontwaken"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog niet geïnitialiseerd"
@@ -4303,6 +4294,21 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO's 0, 2 en 4 ondersteunen geen interne pullup in slaapstand"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer moet een byte-achtig object zijn"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io moet rtc io zijn"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggerniveau moet 0 of 1 zijn"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflict bij ontwaken"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "heap allocatie geprobeerd terwijl MicroPython VM niet draait."

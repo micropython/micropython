@@ -894,6 +894,11 @@ msgstr "ESP-IDF memory allocation failed"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT channel already in use"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Error in regex"
@@ -1099,10 +1104,6 @@ msgstr "I2C peripheral in use"
 msgid "I2SOut not available"
 msgstr "I2SOut not available"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 do not support internal pullup in sleep"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1227,6 +1228,10 @@ msgstr "Invalid BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Invalid DAC pin supplied"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1618,6 +1623,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "Not a valid IP string"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2537,10 +2543,6 @@ msgstr "Branch not in range"
 msgid "buffer is smaller than requested size"
 msgstr "Buffer is smaller than requested size"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "Buffer must be a bytes-like object"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "Buffer size must be a multiple of element size"
@@ -2985,7 +2987,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: single '}' is not allowed"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "file must be a file opened in byte mode"
 
@@ -3300,10 +3302,6 @@ msgstr "invalid syntax for integer with base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "invalid syntax for number"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io must be rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3764,6 +3762,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4064,10 +4063,6 @@ msgstr "trapz is defined for 1D arrays"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz is defined for 1D arrays of equal length"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "trigger level must be 0 or 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tuple/list has wrong length"
@@ -4202,10 +4197,6 @@ msgstr "value must fit in %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count must be > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "wakeup conflict"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "WatchDog not initialised"
@@ -4291,6 +4282,21 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 do not support internal pullup in sleep"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "Buffer must be a bytes-like object"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io must be rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "trigger level must be 0 or 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "wakeup conflict"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "Attempted heap allocation when MicroPython VM not running."

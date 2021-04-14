@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-29 08:26+0000\n"
+"PO-Revision-Date: 2021-04-13 22:09+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -423,7 +423,7 @@ msgstr "Wèi zhīchí zhǐdìng de yǐn jiǎo AnalogOut"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "lìng yí gè PWMAudioOut yǐ jīng chǔ yú huó dòng zhuàng tài"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -449,7 +449,7 @@ msgstr "cháng shì fēn pèi %d kuài"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
-msgstr ""
+msgstr "dāng VM bú yùn xíng shí, cháng shì duī fēn pèi."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -895,6 +895,11 @@ msgstr "ESP-IDF nèicún fēnpèi shībài"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
@@ -997,7 +1002,7 @@ msgstr "Wúfǎ fēnpèi wifi sǎomiáo nèicún"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Failed to buffer the sample"
-msgstr ""
+msgstr "wèi néng huǎn chōng yàng běn"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -1026,7 +1031,7 @@ msgstr "Wúfǎ xiě rù nèibù shǎncún."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "zhì mìng cuò wù."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1099,10 +1104,6 @@ msgstr "I2C wài shè zhèng zài shǐ yòng zhōng"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut bù kě yòng"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1233,6 +1234,10 @@ msgstr "Wúxiào de BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1479,7 +1484,7 @@ msgstr "bì xū shǐ yòng 6 RGB yǐn jiǎo de bèi shù, ér bù shì %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1615,16 +1620,17 @@ msgstr "Méiyǒu jìshí qì"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
-msgstr ""
+msgstr "běi ōu xì tǒng gù jiàn gù zhàng duàn yán."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr ""
+msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2288,7 +2294,7 @@ msgstr "Wèizhī de ānquán cuòwù: 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "wèi zhī xì tǒng gù jiàn cuò wù: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -2544,10 +2550,6 @@ msgstr "fēnzhī bùzài fànwéi nèi"
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "huǎn chōng qū xiǎo yú qǐng qiú de dà xiǎo"
-
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
@@ -2996,7 +2998,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -3254,7 +3256,7 @@ msgstr "zhèngshū wúxiào"
 
 #: py/compile.c
 msgid "invalid decorator"
-msgstr ""
+msgstr "wú xiào zhuāng shì"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -3310,10 +3312,6 @@ msgstr "jīshù wèi %d de zhěng shǔ de yǔfǎ wúxiào"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "wúxiào de hàomǎ yǔfǎ"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "IO bì xū shì RTC IO"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3686,11 +3684,11 @@ msgstr "ord() yùqí zìfú, dàn chángdù zìfú chuàn %d"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "chū zhèn liè tài xiǎo"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "chū bì xū shì yí gè fú dòng mì jí zhèn liè"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3775,6 +3773,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4075,10 +4074,6 @@ msgstr "wéi 1D shù zǔ dìng yì xiàn jǐng"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "chù fā jí bié bì xū wéi 0 huò 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
@@ -4213,10 +4208,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "huàn xǐng chōng tū"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "wèi chū shǐ huà jiān shì qì"
@@ -4302,6 +4293,21 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "IO bì xū shì RTC IO"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "chù fā jí bié bì xū wéi 0 huò 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "huàn xǐng chōng tū"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."

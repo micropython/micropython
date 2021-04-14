@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-11 01:30+0000\n"
+"PO-Revision-Date: 2021-04-13 22:09+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -453,6 +453,8 @@ msgstr "Tentative d'allocation de %d blocs"
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
 msgstr ""
+"Tentative d'allocation à la pile quand la Machine Virtuelle n'est pas en "
+"exécution."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -909,6 +911,11 @@ msgstr "ESP-IDF échec d'allocation de la mémoire"
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
@@ -1041,7 +1048,7 @@ msgstr "Échec de l'écriture vers flash interne."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "Erreurre fatale."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1116,10 +1123,6 @@ msgstr "périphérique I2C utilisé"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1254,6 +1257,10 @@ msgstr "BSSID invalide"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1501,7 +1508,7 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "Saut NLR échoué. Corruption de mémoire probable."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1647,6 +1654,7 @@ msgstr "Logiciel systême Nordic hors de mémoire"
 msgid "Not a valid IP string"
 msgstr "Chaîne IP non valide"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2585,10 +2593,6 @@ msgstr "branche hors-bornes"
 msgid "buffer is smaller than requested size"
 msgstr "tampon est plus petit que la taille demandée"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "le tampon doit être un objet bytes-like"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "taille du tampon doit être un multiple de la taille de l'élement"
@@ -3045,7 +3049,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string : single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -3304,7 +3308,7 @@ msgstr "certificat invalide"
 
 #: py/compile.c
 msgid "invalid decorator"
-msgstr ""
+msgstr "décorateur invalide"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -3360,10 +3364,6 @@ msgstr "syntaxe invalide pour un entier de base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io doit être rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3833,6 +3833,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4134,10 +4135,6 @@ msgstr "trapz est définie pour matrices à une dimension"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz n'est défini que pour des matrices 1D de longueur égales"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "niveau du déclencheur doit être 0 ou 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tuple/liste a une mauvaise longueur"
@@ -4272,10 +4269,6 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflit au réveil"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "chien de garde (watchdog) non initialisé"
@@ -4361,6 +4354,21 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "le tampon doit être un objet bytes-like"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io doit être rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "niveau du déclencheur doit être 0 ou 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflit au réveil"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr ""
