@@ -1,2 +1,2 @@
 # check if set literal syntax is supported
-{1}
+print({1})
