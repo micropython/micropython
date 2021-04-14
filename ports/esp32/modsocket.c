@@ -59,13 +59,19 @@
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
 
+enum {
+    SOCKET_STATE_NEW,
+    SOCKET_STATE_CONNECTED,
+    SOCKET_STATE_PEER_CLOSED,
+};
+
 typedef struct _socket_obj_t {
     mp_obj_base_t base;
     int fd;
     uint8_t domain;
     uint8_t type;
     uint8_t proto;
-    bool peer_closed;
+    uint8_t state;
     unsigned int retries;
     #if MICROPY_PY_USOCKET_EVENTS
     mp_obj_t events_callback;
@@ -254,7 +260,6 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     sock->domain = AF_INET;
     sock->type = SOCK_STREAM;
     sock->proto = 0;
-    sock->peer_closed = false;
     if (n_args > 0) {
         sock->domain = mp_obj_get_int(args[0]);
         if (n_args > 1) {
@@ -264,6 +269,8 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
             }
         }
     }
+
+    sock->state = sock->type == SOCK_STREAM ? SOCKET_STATE_NEW : SOCKET_STATE_CONNECTED;
 
     sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
     if (sock->fd < 0) {
@@ -278,6 +285,7 @@ STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {
     socket_obj_t *self = MP_OBJ_TO_PTR(arg0);
     struct addrinfo *res;
     _socket_getaddrinfo(arg1, &res);
+    self->state = SOCKET_STATE_CONNECTED;
     int r = lwip_bind(self->fd, res->ai_addr, res->ai_addrlen);
     lwip_freeaddrinfo(res);
     if (r < 0) {
@@ -290,6 +298,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(const mp_obj_t arg0, const mp_obj_t arg1) {
     socket_obj_t *self = MP_OBJ_TO_PTR(arg0);
     int backlog = mp_obj_get_int(arg1);
+    self->state = SOCKET_STATE_CONNECTED;
     int r = lwip_listen(self->fd, backlog);
     if (r < 0) {
         mp_raise_OSError(errno);
@@ -332,7 +341,7 @@ STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
     sock->domain = self->domain;
     sock->type = self->type;
     sock->proto = self->proto;
-    sock->peer_closed = false;
+    sock->state = SOCKET_STATE_CONNECTED;
     _socket_settimeout(sock, UINT64_MAX);
 
     // make the return value
@@ -351,6 +360,7 @@ STATIC mp_obj_t socket_connect(const mp_obj_t arg0, const mp_obj_t arg1) {
     struct addrinfo *res;
     _socket_getaddrinfo(arg1, &res);
     MP_THREAD_GIL_EXIT();
+    self->state = SOCKET_STATE_CONNECTED;
     int r = lwip_connect(self->fd, res->ai_addr, res->ai_addrlen);
     MP_THREAD_GIL_ENTER();
     lwip_freeaddrinfo(res);
@@ -471,11 +481,17 @@ STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
     struct sockaddr *from, socklen_t *from_len, int *errcode) {
     socket_obj_t *sock = MP_OBJ_TO_PTR(self_in);
 
+    // A new socket cannot be read from.
+    if (sock->state == SOCKET_STATE_NEW) {
+        *errcode = MP_ENOTCONN;
+        return MP_STREAM_ERROR;
+    }
+
     // If the peer closed the connection then the lwIP socket API will only return "0" once
     // from lwip_recvfrom and then block on subsequent calls.  To emulate POSIX behaviour,
     // which continues to return "0" for each call on a closed socket, we set a flag when
     // the peer closed the socket.
-    if (sock->peer_closed) {
+    if (sock->state == SOCKET_STATE_PEER_CLOSED) {
         return 0;
     }
 
@@ -500,7 +516,7 @@ STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
             MP_THREAD_GIL_ENTER();
         }
         if (r == 0) {
-            sock->peer_closed = true;
+            sock->state = SOCKET_STATE_PEER_CLOSED;
         }
         if (r >= 0) {
             return r;
@@ -702,6 +718,12 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         if (FD_ISSET(socket->fd, &efds)) {
             ret |= MP_STREAM_POLL_HUP;
         }
+
+        // New (unconnected) sockets are writable and have HUP set.
+        if (socket->state == SOCKET_STATE_NEW) {
+            ret |= (arg & MP_STREAM_POLL_WR) | MP_STREAM_POLL_HUP;
+        }
+
         return ret;
     } else if (request == MP_STREAM_CLOSE) {
         if (socket->fd >= 0) {
