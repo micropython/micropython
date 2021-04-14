@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-module/displayio/Bitmap.h"
 
 #include <stdint.h>
 
@@ -37,7 +38,20 @@
 #include "supervisor/shared/translate.h"
 
 //| class Bitmap:
-//|     """Stores values of a certain size in a 2D array"""
+//|     """Stores values of a certain size in a 2D array
+//|
+//| Bitmaps can be treated as read-only buffers. If the number of bits in a pixel is 8, 16, or 32; and the number of bytes
+//| per row is a multiple of 4, then the resulting memoryview will correspond directly with the bitmap's contents. Otherwise,
+//| the bitmap data is packed into the memoryview with unspecified padding.
+//|
+//| A Bitmap can be treated as a buffer, allowing its content to be
+//| viewed and modified using e.g., with ``ulab.numpy.frombuffer``,
+//| but the `displayio.Bitmap.dirty` method must be used to inform
+//| displayio when a bitmap was modified through the buffer interface.
+//|
+//| `bitmaptools.arrayblit` can also be useful to omve data efficiently
+//| into a Bitmap.
+//| """
 //|
 //|     def __init__(self, width: int, height: int, value_count: int) -> None:
 //|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
@@ -291,14 +305,66 @@ STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 
+//|     def dirty(self, x1: int=0, y1: int=0, x2: int=-1, y2:int = -1) -> None:
+//|         """Inform displayio of bitmap updates done via the buffer
+//|         protocol.
+//|
+//|         :param int x1: Minimum x-value for rectangular bounding box to be considered as modified
+//|         :param int y1: Minimum y-value for rectangular bounding box to be considered as modified
+//|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be considered as modified
+//|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be considered as modified
+//|
+//|         If x1 or y1 are not specified, they are taken as 0.  If x2 or y2
+//|         are not specified, or are given as -1, they are taken as the width
+//|         and height of the image.  Thus, calling dirty() with the
+//|         default arguments treats the whole bitmap as modified.
+//|
+//|         When a bitmap is modified through the buffer protocol, the
+//|         display will not be properly updated unless the bitmap is
+//|         notified of the "dirty rectangle" that encloses all modified
+//|         pixels."""
+//|         ...
+//|
+STATIC mp_obj_t displayio_bitmap_obj_dirty(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    enum { ARG_x1, ARG_y1, ARG_x2, ARG_y2 };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_x1, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_y1, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_x2, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_y2, MP_ARG_INT, {.u_int = -1} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_area_t dirty_area = {
+        .x1 = args[ARG_x1].u_int,
+        .y1 = args[ARG_y1].u_int,
+        .x2 = args[ARG_x2].u_int == -1 ? self->width : args[ARG_x2].u_int,
+        .y2 = args[ARG_y2].u_int == -1 ? self->height : args[ARG_y2].u_int,
+    };
+
+    displayio_bitmap_set_dirty_area(self, &dirty_area);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_dirty_obj, 0, displayio_bitmap_obj_dirty);
+
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&displayio_bitmap_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dirty), MP_ROM_PTR(&displayio_bitmap_dirty_obj) },
 
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
+
+// (the get_buffer protocol returns 0 for success, 1 for failure)
+STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
+}
 
 const mp_obj_type_t displayio_bitmap_type = {
     { &mp_type_type },
@@ -306,4 +372,5 @@ const mp_obj_type_t displayio_bitmap_type = {
     .make_new = displayio_bitmap_make_new,
     .subscr = bitmap_subscr,
     .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
+    .buffer_p = { .get_buffer = bitmap_get_buffer },
 };

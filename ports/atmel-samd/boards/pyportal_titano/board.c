@@ -86,7 +86,8 @@ void board_init(void) {
         &pin_PB06, // Chip select
         &pin_PB09, // Write
         &pin_PB04, // Read
-        &pin_PA00); // Reset
+        &pin_PA00, // Reset
+        0); // Frequency
 
     displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;

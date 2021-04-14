@@ -280,6 +280,9 @@ endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
 endif
+ifeq ($(CIRCUITPY_SYNTHIO),1)
+SRC_PATTERNS += synthio/%
+endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
@@ -518,11 +521,14 @@ SRC_SHARED_MODULE_ALL = \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	rotaryio/IncrementalEncoder.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \
 	sharpdisplay/__init__.c \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	synthio/MidiTrack.c \
+	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \

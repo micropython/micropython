@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-15 19:49+0000\n"
-"Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
+"PO-Revision-Date: 2021-04-07 12:23+0000\n"
+"Last-Translator: Reza Almanda <rezaalmanda27@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: main.c
 msgid ""
@@ -29,6 +29,8 @@ msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"Kode berhenti oleh auto-reload.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -78,6 +80,7 @@ msgstr "%q sedang digunakan"
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
@@ -342,6 +345,10 @@ msgstr "Semua perangkat SPI sedang digunakan"
 msgid "All UART peripherals are in use"
 msgstr "Semua perangkat UART sedang digunakan"
 
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Semua channel event sedang digunakan"
@@ -411,6 +418,10 @@ msgstr "AnalogOut hanya 16 bit. Nilai harus kurang dari 65536."
 msgid "AnalogOut not supported on given pin"
 msgstr "pin yang dipakai tidak mendukung AnalogOut"
 
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Another PWMAudioOut is already active"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
@@ -434,8 +445,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Mencoba alokasi heap ketika MicroPython VM tidak berjalan."
+msgid "Attempted heap allocation when VM not running."
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -527,6 +538,7 @@ msgid "Buffer is too small"
 msgstr "Buffer terlalu kecil"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Panjang buffer %d terlalu besar. Itu harus kurang dari %d"
@@ -556,6 +568,7 @@ msgstr "Buffer terlalu pendek untuk %d byte"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Pin bus %d sudah digunakan"
@@ -678,7 +691,7 @@ msgstr "Tidak dapat transfer tanpa pin MOSI dan MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 "Tidak dapat membuat variasi frekuensi pada penghitung waktu yang sudah "
@@ -765,14 +778,6 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Tidak dapat menginisialisasi UART"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Tidak dapat menginisialisasi kanal"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Tidak dapat menginisialisasi timer"
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "Tidak dapat menginisialisasi ulang kanal"
@@ -793,7 +798,7 @@ msgstr ""
 msgid "Could not set address"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Tidak dapat memulai PWM"
 
@@ -849,9 +854,8 @@ msgid "Data chunk must follow fmt chunk"
 msgstr "Potongan data harus mengikuti fmt chunk"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
+msgstr "Data terlalu besar untuk paket advertisment"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -950,11 +954,11 @@ msgstr "Diharapkan tuple dengan panjang %d, didapatkan %d"
 msgid "Extended advertisements with scan response not supported."
 msgstr "Penyebaran yang diperluas dengan respon pindai tidak didukung."
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
 msgstr "FFT didefinisikan hanya untuk ndarrays"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr ""
 
@@ -967,9 +971,9 @@ msgid "Failed sending command."
 msgstr "Gagal mengirim perintah."
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
+msgstr "Gagal memperoleh mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
@@ -981,6 +985,7 @@ msgstr "Gagal untuk mengalokasikan buffer RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -992,6 +997,10 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
+msgstr ""
+
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Failed to buffer the sample"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1011,13 +1020,17 @@ msgid "Failed to parse MP3 file"
 msgstr "Gagal mengurai file MP3"
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Gagal untuk melepaskan mutex, status: 0x%08lX"
+msgstr "Gagal melepaskan mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
 msgstr "Gagal menulis flash internal."
+
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1042,7 +1055,7 @@ msgstr ""
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Frekuensi harus cocok dengan PWMOut yang ada menggunakan timer ini"
 
@@ -1193,6 +1206,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "%q pada tidak valid"
 
@@ -1220,7 +1234,9 @@ msgid "Invalid DAC pin supplied"
 msgstr "Pin DAC yang diberikan tidak valid"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frekuensi PWM tidak valid"
@@ -1268,13 +1284,9 @@ msgstr "File tidak valid"
 msgid "Invalid format chunk size"
 msgstr "Ukuran potongan format tidak valid"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
 msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Frekuensi yang diberikan tidak valid"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
@@ -1320,10 +1332,6 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Pin untuk PWMOut tidak valid"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1416,14 +1424,6 @@ msgstr "Nilai x maksimum ketika dicerminkan adalah %d"
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "Lompatan NLR MicroPython gagal. Kemungkinan kerusakan memori."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Kesalahan fatal MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Penundaan mulai mikrofon harus dalam kisaran 0,0 hingga 1,0"
@@ -1474,6 +1474,10 @@ msgstr "Harus menyediakan pin MISO atau MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Harus menggunakan kelipatan 6 pin rgb, bukan %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1577,18 +1581,6 @@ msgstr "Tidak ada kunci yang ditentukan"
 msgid "No long integer support"
 msgstr "Tidak ada dukungan bilangan bulat yang panjang"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr ""
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Tidak ada lagi penghitung waktu yang tersedia pada pin ini."
-
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr ""
@@ -1620,8 +1612,12 @@ msgid "No timer available"
 msgstr "Penghitung waktu tidak tersedia"
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
-msgstr "Pernyataan kegagalan Perangkat Lunak Nordic."
+msgid "Nordic system firmware failure assertion."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic system firmware out of memory"
+msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -1629,9 +1625,8 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "Not connected"
-msgstr "Tidak dapat menyambungkan ke AP"
+msgstr "Tidak terhubung"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
@@ -1640,7 +1635,7 @@ msgstr "Tidak berfungsi"
 
 #: main.c
 msgid "Not running saved code.\n"
-msgstr ""
+msgstr "Tidak menjalankan kode yang disimpan.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
@@ -1756,7 +1751,6 @@ msgid "PWM slice channel A already in use"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus belum didukung"
@@ -1853,6 +1847,8 @@ msgstr "Buffer awalan harus ada di heap"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Tekan sembarang tombol untuk masuk ke REPL. Tekan CTRL-D untuk memuat "
+"ulang.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
@@ -1931,10 +1927,9 @@ msgstr "Baca-saja"
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
-#: shared-module/bitmaptools/__init__.c shared-module/displayio/Bitmap.c
-#, fuzzy
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
-msgstr "sistem file (filesystem) bersifat Read-only"
+msgstr "Objek Read-only"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
@@ -2006,14 +2001,6 @@ msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Pindai sudah dalam proses. Hentikan dengan stop_scan."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "Pin CTS yang dipilih tidak valid"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "Pin RTS yang dipilih tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2162,11 +2149,6 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Untuk keluar, silahkan reset board tanpa "
@@ -2304,8 +2286,8 @@ msgstr "Kesalahan keamanan tidak dikenal: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
-msgstr "Kesalahan perangkat lunak tidak dikenal: %04x"
+msgid "Unknown system firmware error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -2327,15 +2309,14 @@ msgid "Unsupported baudrate"
 msgstr "Baudrate tidak didukung"
 
 #: shared-module/displayio/display_core.c
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "Baudrate tidak didukung"
+msgstr "Tipe bus tampilan tidak didukung"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Format tidak didukung"
 
-#: py/moduerrno.c
+#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operasi yang tidak didukung"
 
@@ -2467,21 +2448,17 @@ msgstr "alamatnya kosong"
 msgid "arg is an empty sequence"
 msgstr "arg berisi urutan kosong"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "Argumen argsort harus berupa ndarray"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "argumen memiliki tipe yang salah"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2492,7 +2469,8 @@ msgstr "argumen num/types tidak cocok"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argumen harus berupa '%q' bukan '%q'"
 
-#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
 msgstr "argumen harus berupa ndarrays"
 
@@ -2505,11 +2483,11 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "diperlukan array/byte di sisi kanan"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "berusaha mendapatkan argmin/argmax dari urutan kosong"
 
@@ -2517,15 +2495,15 @@ msgstr "berusaha mendapatkan argmin/argmax dari urutan kosong"
 msgid "attributes not supported yet"
 msgstr "atribut belum didukung"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis too long"
 msgstr ""
 
@@ -2561,7 +2539,7 @@ msgstr ""
 msgid "branch not in range"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr ""
 
@@ -2569,14 +2547,13 @@ msgstr ""
 msgid "buffer must be a bytes-like object"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
 
 #: shared-module/struct/__init__.c
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "buffers harus mempunyai panjang yang sama"
+msgstr "ukuran buffer harus sesuai dengan format"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
@@ -2827,19 +2804,19 @@ msgstr ""
 msgid "conversion to object"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
@@ -2847,15 +2824,15 @@ msgstr ""
 msgid "couldn't determine SD card version"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr ""
 
@@ -2892,12 +2869,16 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "differentiation order out of range"
+msgstr ""
+
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
 msgstr ""
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
@@ -3015,11 +2996,11 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be a callable"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
 msgstr ""
 
@@ -3027,11 +3008,7 @@ msgstr ""
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "first argument must be an iterable"
-msgstr ""
-
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -3043,7 +3020,7 @@ msgstr ""
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr ""
 
@@ -3076,7 +3053,7 @@ msgstr "fungsi diharapkan setidaknya %d argumen, hanya mendapatkan %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "fungsi mendapatkan nilai ganda untuk argumen '%q'"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "function has the same sign at the ends of interval"
 msgstr ""
 
@@ -3151,8 +3128,9 @@ msgstr "lapisan (padding) tidak benar"
 msgid "index is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index keluar dari jangkauan"
 
@@ -3164,7 +3142,7 @@ msgstr ""
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
 msgstr ""
 
@@ -3184,7 +3162,7 @@ msgstr ""
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
 msgstr ""
 
@@ -3192,15 +3170,15 @@ msgstr ""
 msgid "input arrays are not compatible"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input data must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr ""
 
@@ -3216,23 +3194,23 @@ msgstr ""
 msgid "input must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr ""
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "inputs are not iterable"
 msgstr ""
 
@@ -3244,7 +3222,7 @@ msgstr ""
 msgid "integer required"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -3257,13 +3235,32 @@ msgstr ""
 msgid "invalid arguments"
 msgstr "argumen-argumen tidak valid"
 
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "cert tidak valid"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "indeks dupterm tidak valid"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr ""
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3318,11 +3315,7 @@ msgstr ""
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "iterables are not of the same length"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr ""
 
@@ -3390,11 +3383,7 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -3416,15 +3405,15 @@ msgstr ""
 msgid "maximum recursion depth exceeded"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "median argument must be an ndarray"
 msgstr ""
 
@@ -3445,7 +3434,7 @@ msgstr ""
 msgid "module not found"
 msgstr "modul tidak ditemukan"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr ""
 
@@ -3563,10 +3552,6 @@ msgstr ""
 msgid "non-zero timeout must be >= interval"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr ""
@@ -3635,7 +3620,7 @@ msgstr ""
 msgid "odd-length string"
 msgstr "panjang data string memiliki keganjilan (odd-length)"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3665,8 +3650,8 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
-#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
@@ -3674,7 +3659,7 @@ msgstr ""
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr ""
 
@@ -3689,6 +3674,14 @@ msgstr ""
 #: py/modbuiltins.c
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr ""
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
@@ -3728,7 +3721,7 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parameter harus menjadi register dalam urutan r0 sampai r3"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
@@ -3751,6 +3744,7 @@ msgstr "Muncul dari PulseIn yang kosong"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
@@ -3770,12 +3764,15 @@ msgstr ""
 
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
@@ -3815,7 +3812,7 @@ msgstr "antrian meluap (overflow)"
 msgid "raw f-strings are not implemented"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
 msgstr ""
 
@@ -3850,7 +3847,7 @@ msgstr ""
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "roll argument must be an ndarray"
 msgstr ""
 
@@ -3897,7 +3894,7 @@ msgstr ""
 msgid "single '}' encountered in format string"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
@@ -3921,19 +3918,19 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "memulai ulang software(soft reboot)\n"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
@@ -4024,9 +4021,8 @@ msgid "timeout must be < 655.35 secs"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "bits harus memilki nilai 8"
+msgstr "waktu habis harus >= 0,0"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
@@ -4048,7 +4044,7 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
 msgstr ""
 
@@ -4061,11 +4057,11 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -4207,10 +4203,6 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -4240,21 +4232,22 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "indeks sumbu salah"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "sumbu yang ditentukan salah"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
-msgstr ""
+msgstr "tipe input salah"
 
 #: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "jumlah argumen salah"
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
@@ -4264,7 +4257,7 @@ msgstr ""
 msgid "wrong operand type"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr ""
 
@@ -4288,17 +4281,53 @@ msgstr ""
 msgid "zero step"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi harus ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi harus berjenis float"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "Mencoba alokasi heap ketika MicroPython VM tidak berjalan."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "Lompatan NLR MicroPython gagal. Kemungkinan kerusakan memori."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Kesalahan fatal MicroPython."
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Pernyataan kegagalan Perangkat Lunak Nordic."
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Kesalahan perangkat lunak tidak dikenal: %04x"
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Pin CTS yang dipilih tidak valid"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Pin RTS yang dipilih tidak valid"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Tidak dapat menginisialisasi kanal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Tidak dapat menginisialisasi timer"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Frekuensi yang diberikan tidak valid"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Pin untuk PWMOut tidak valid"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Tidak ada lagi penghitung waktu yang tersedia pada pin ini."
 
 #~ msgid "Group full"
 #~ msgstr "Grup penuh"

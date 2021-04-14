@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "supervisor/shared/external_flash/devices.h"
+#include "shared/external_flash/device.h"
 
 #include "shared-bindings/busio/SPI.h"
 

@@ -38,5 +38,6 @@ uint32_t common_hal_displayio_palette_get_len(displayio_palette_t *self);
 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t *self, uint32_t palette_index);
 void common_hal_displayio_palette_make_transparent(displayio_palette_t *self, uint32_t palette_index);
+bool common_hal_displayio_palette_is_transparent(displayio_palette_t *self, uint32_t palette_index);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_PALETTE_H

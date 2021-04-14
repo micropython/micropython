@@ -51,17 +51,32 @@
 #define NO_CACHE 0xffffffff
 STATIC uint8_t _cache[SECTOR_SIZE];
 STATIC uint32_t _cache_lba = NO_CACHE;
+STATIC uint32_t _flash_size = 0;
 
 void supervisor_flash_init(void) {
     bi_decl_if_func_used(bi_block_device(
         BINARY_INFO_MAKE_TAG('C', 'P'),
         "CircuitPython",
         RESERVED_FLASH,
-        TOTAL_FLASH_SIZE - RESERVED_FLASH,
+        (1 * 1024 * 1024), // This is a minimum. We can't set it dynamically.
         NULL,
         BINARY_INFO_BLOCK_DEV_FLAG_READ |
         BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
         BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
+
+    // Read the RDID register to get the flash capacity.
+    uint8_t cmd[] = {0x9f, 0, 0, 0};
+    uint8_t data[4];
+    flash_do_cmd(cmd, data, 4);
+    uint8_t power_of_two = 21;
+    // Flash must be at least 2MB (1 << 21) because we use the first 1MB for the
+    // CircuitPython core. We validate the range because Adesto Tech flash chips
+    // don't return the correct value. So, we default to 2MB which will work for
+    // larger chips, it just won't use all of the space.
+    if (data[3] >= 21 && data[3] < 30) {
+        power_of_two = data[3];
+    }
+    _flash_size = 1 << power_of_two;
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -69,7 +84,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return (TOTAL_FLASH_SIZE - RESERVED_FLASH) / FILESYSTEM_BLOCK_SIZE;
+    return (_flash_size - RESERVED_FLASH) / FILESYSTEM_BLOCK_SIZE;
 }
 
 void port_internal_flash_flush(void) {

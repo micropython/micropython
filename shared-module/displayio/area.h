@@ -53,10 +53,12 @@ typedef struct {
 
 extern displayio_buffer_transform_t null_transform;
 
+bool displayio_area_empty(const displayio_area_t *a);
+void displayio_area_copy_coords(const displayio_area_t *src, displayio_area_t *dest);
+void displayio_area_canon(displayio_area_t *a);
 void displayio_area_union(const displayio_area_t *a,
     const displayio_area_t *b,
     displayio_area_t *u);
-void displayio_area_expand(displayio_area_t *original, const displayio_area_t *addition);
 void displayio_area_copy(const displayio_area_t *src, displayio_area_t *dst);
 void displayio_area_scale(displayio_area_t *area, uint16_t scale);
 void displayio_area_shift(displayio_area_t *area, int16_t dx, int16_t dy);

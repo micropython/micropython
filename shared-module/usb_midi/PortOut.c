@@ -29,7 +29,7 @@
 #include "tusb.h"
 
 size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    return tud_midi_write(0, data, len);
+    return tud_midi_stream_write(0, data, len);
 }
 
 bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self) {

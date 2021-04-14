@@ -39,6 +39,8 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate.h"
 
+#define DBL_TAP_REG              SNVS->LPGPR[3]
+
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
 }
@@ -72,10 +74,10 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
         }
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.
-        SNVS->LPGPR[0] = DBL_TAP_MAGIC;
+        DBL_TAP_REG = DBL_TAP_MAGIC;
     } else {
         // Set up the default.
-        SNVS->LPGPR[0] = DBL_TAP_MAGIC_QUICK_BOOT;
+        DBL_TAP_REG = DBL_TAP_MAGIC_QUICK_BOOT;
     }
     if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
