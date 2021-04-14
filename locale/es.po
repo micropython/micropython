@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-13 22:09+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-04-15 14:26+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -906,7 +906,7 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "Error en el flujo MIDI en la posición %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1248,7 +1248,7 @@ msgstr "Pin suministrado inválido para DAC"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
-msgstr ""
+msgstr "Archivo MIDI inválido"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
