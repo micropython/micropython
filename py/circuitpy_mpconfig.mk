@@ -325,10 +325,8 @@ CFLAGS += -DCIRCUITPY_TOUCHIO=$(CIRCUITPY_TOUCHIO)
 CIRCUITPY_UHEAP ?= 0
 CFLAGS += -DCIRCUITPY_UHEAP=$(CIRCUITPY_UHEAP)
 
-# Disable by default for now, until we have dynamic enabling.
-CIRCUITPY_USB_CDC ?= 0
 # Secondary CDC is usually available if there are at least 8 endpoints.
-#CIRCUITPY_USB_CDC ?= $(shell expr $(USB_NUM_EP) '>=' 8)
+CIRCUITPY_USB_CDC ?= $(shell expr $(USB_NUM_EP) '>=' 8)
 CFLAGS += -DCIRCUITPY_USB_CDC=$(CIRCUITPY_USB_CDC)
 
 CIRCUITPY_USB_HID ?= 1

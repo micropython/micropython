@@ -39,6 +39,10 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
+#include "tusb.h"
+
+// Is the MSC device enabled?
+static bool usb_storage_enabled;
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
@@ -55,6 +59,10 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
         memcpy(meth + 2, args, n_args * sizeof(*args));
     }
     return mp_call_method_n_kw(n_args, 0, meth);
+}
+
+void storage_init(void) {
+    usb_storage_enabled = true;
 }
 
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
@@ -165,4 +173,13 @@ void common_hal_storage_erase_filesystem(void) {
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.
+}
+
+bool common_hal_storage_enable_usb(bool enabled) {
+    // We can't change the descriptors once we're connected.
+    if (!tud_connected()) {
+        return false;
+    }
+    usb_storage_enabled = enabled;
+    return true;
 }

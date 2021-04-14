@@ -29,4 +29,7 @@
 
 #include "shared-module/usb_cdc/__init__.h"
 
+bool common_hal_usb_cdc_enable_repl(bool enabled);
+bool common_hal_usb_cdc_enable_data(bool enabled);
+
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC___INIT___H

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
+#ifndef SHARED_MODULE_STORAGE___INIT___H
+#define SHARED_MODULE_STORAGE___INIT___H
 
-#include <stdint.h>
-#include <stdbool.h>
+void storage_init(void);
 
-void common_hal_storage_mount(mp_obj_t vfs_obj, const char *path, bool readonly);
-void common_hal_storage_umount_path(const char *path);
-void common_hal_storage_umount_object(mp_obj_t vfs_obj);
-void common_hal_storage_remount(const char *path, bool readonly, bool disable_concurrent_write_protection);
-mp_obj_t common_hal_storage_getmount(const char *path);
-void common_hal_storage_erase_filesystem(void);
-bool common_hal_storage_enable_usb(bool enabled);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
+#endif // SHARED_MODULE_STORAGE___INIT___H

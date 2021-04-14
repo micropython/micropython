@@ -31,4 +31,6 @@
 
 extern const mp_rom_obj_tuple_t usb_cdc_serials_tuple;
 
+void usb_cdc_init(void);
+
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

@@ -94,7 +94,7 @@ void usb_init(void) {
     #endif
 
     #if CIRCUITPY_USB_MIDI
-    usb_midi_init();
+    usb_midi_usb_init();
     #endif
 }
 

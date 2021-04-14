@@ -94,8 +94,16 @@
 #include "shared-module/network/__init__.h"
 #endif
 
+#if CIRCUITPY_STORAGE
+#include "shared-module/storage/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_CDC
 #include "shared-module/usb_cdc/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_MIDI
+#include "shared-module/usb_midi/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -168,6 +176,20 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_NETWORK
     network_module_init();
+    #endif
+
+    // Do before boot.py.
+
+    #if CIRCUITPY_STORAGE
+    storage_init();
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    usb_cdc_init();
+    #endif
+
+    #if CIRCUITPY_USB_MIDI
+    usb_midi_init();
     #endif
 }
 

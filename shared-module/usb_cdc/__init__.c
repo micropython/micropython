@@ -38,23 +38,46 @@
 #error CFG_TUD_CDC must be exactly 2
 #endif
 
-static usb_cdc_serial_obj_t serial_objs[CFG_TUD_CDC] = {
-    {   .base.type = &usb_cdc_serial_type,
-        .timeout = -1.0f,
-        .write_timeout = -1.0f,
-        .idx = 0,}, {
-        .base.type = &usb_cdc_serial_type,
-        .timeout = -1.0f,
-        .write_timeout = -1.0f,
-        .idx = 1,
-    }
+static bool usb_cdc_repl_enabled;
+static bool usb_cdc_data_enabled;
+
+static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
+    .base.type = &usb_cdc_serial_type,
+    .timeout = -1.0f,
+    .write_timeout = -1.0f,
+    .idx = 0,
 };
 
-const mp_rom_obj_tuple_t usb_cdc_serials_tuple = {
-    .base.type = &mp_type_tuple,
-    .len = CFG_TUD_CDC,
-    .items = {
-        &serial_objs[0],
-        &serial_objs[1],
-    },
+static usb_cdc_serial_obj_t usb_cdc_data_obj = {
+    .base.type = &usb_cdc_serial_type,
+    .timeout = -1.0f,
+    .write_timeout = -1.0f,
+    .idx = 1,
 };
+
+void usb_cdc_init(void) {
+    usb_cdc_repl_enabled = true;
+    usb_cdc_data_enabled = false;
+}
+
+bool common_hal_usb_cdc_enable_repl(bool enabled) {
+    // We can't change the descriptors once we're connected.
+    if (!tud_connected()) {
+        // TODO set entry in dict
+        return false;
+    }
+    usb_cdc_repl_enabled = enabled;
+    // TODO set entry in dict
+    return true;
+}
+
+bool common_hal_usb_cdc_enable_data(bool enabled) {
+    // We can't change the descriptors once we're connected.
+    if (!tud_connected()) {
+        // TODO set entry in dict
+        return false;
+    }
+    usb_cdc_data_enabled = enabled;
+    // TODO set entry in dict
+    return true;
+}
