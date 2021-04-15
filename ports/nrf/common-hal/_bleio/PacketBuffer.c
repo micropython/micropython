@@ -106,13 +106,16 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
 
 STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
     const uint16_t evt_id = ble_evt->header.evt_id;
+    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
+    if (evt_id == BLE_GAP_EVT_DISCONNECTED && self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
+        self->conn_handle = BLE_CONN_HANDLE_INVALID;
+    }
     // Check if this is a GATTC event so we can make sure the conn_handle is valid.
     if (evt_id < BLE_GATTC_EVT_BASE || evt_id > BLE_GATTC_EVT_LAST) {
         return false;
     }
 
     uint16_t conn_handle = ble_evt->evt.gattc_evt.conn_handle;
-    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
     if (conn_handle != self->conn_handle) {
         return false;
     }
@@ -249,6 +252,9 @@ void common_hal_bleio_packet_buffer_construct(
 }
 
 mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_ConnectionError(translate("Not connected"));
+    }
     if (ringbuf_num_filled(&self->ringbuf) < 2) {
         return 0;
     }
@@ -298,11 +304,14 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, u
     if (len + self->pending_size > outgoing_packet_length) {
         // No room to append len bytes to packet. Wait until we get a free buffer,
         // and keep checking that we haven't been disconnected.
-        while (self->pending_size != 0 && self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+        while (self->pending_size != 0 &&
+               self->conn_handle != BLE_CONN_HANDLE_INVALID &&
+               !mp_hal_is_interrupted()) {
             RUN_BACKGROUND_TASKS;
         }
     }
-    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID ||
+        mp_hal_is_interrupted()) {
         return -1;
     }
 
@@ -351,8 +360,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_
         if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
-                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                    self->characteristic->max_length);
+                return common_hal_bleio_connection_get_max_packet_length(connection);
             }
         }
         // There's no current connection, so we don't know the MTU, and
@@ -389,6 +397,18 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
         // There's no current connection, so we don't know the MTU, and
         // we can't tell what the largest outgoing packet length would be.
         return -1;
+    }
+    // If we are talking to a remote service, we'll be bound by the MTU. (We don't actually
+    // know the max size of the remote characteristic.)
+    if (self->characteristic->service != NULL &&
+        self->characteristic->service->is_remote) {
+        // We are talking to a remote service so we're writing.
+        if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
+            if (connection) {
+                return common_hal_bleio_connection_get_max_packet_length(connection);
+            }
+        }
     }
     return self->characteristic->max_length;
 }

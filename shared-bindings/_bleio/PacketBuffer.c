@@ -95,7 +95,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 
 //|     def readinto(self, buf: WriteableBuffer) -> int:
 //|         """Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
-//|         than the given buffer. Use `packet_size` to read the maximum length of a single packet.
+//|         than the given buffer. Use `incoming_packet_length` to read the maximum length of a single packet.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int"""
@@ -179,11 +179,6 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|     packet_size: int
-//|     """`packet_size` is the same as `incoming_packet_length`.
-//|     The name `packet_size` is deprecated and
-//|     will be removed in CircuitPython 6.0.0."""
-//|
 //|     incoming_packet_length: int
 //|     """Maximum length in bytes of a packet we are reading."""
 //|
@@ -233,9 +228,6 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),               MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),                  MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
-    // .packet_size is now an alias for .incoming_packet_length
-    // TODO: Remove in 6.0.0.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size),            MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_incoming_packet_length), MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_outgoing_packet_length), MP_ROM_PTR(&bleio_packet_buffer_outgoing_packet_length_obj) },
 };

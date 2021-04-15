@@ -1,7 +1,10 @@
 #include "shared-bindings/board/__init__.h"
 #include "supervisor/spi_flash_api.h"
 
+#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-module/displayio/__init__.h"
+
+extern audiopwmio_pwmaudioout_obj_t board_buzz_obj;
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LED_RED), MP_ROM_PTR(&pin_PB04) },
@@ -15,7 +18,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DISP_RST), MP_ROM_PTR(&pin_PB10) },
     { MP_ROM_QSTR(MP_QSTR_DISP_BL), MP_ROM_PTR(&pin_PB03) },
 
-    { MP_ROM_QSTR(MP_QSTR_BUZZ), MP_ROM_PTR(&pin_PB08) },
+    { MP_ROM_QSTR(MP_QSTR_BUZZ), MP_ROM_PTR(&board_buzz_obj) },
     { MP_ROM_QSTR(MP_QSTR_BTNA), MP_ROM_PTR(&pin_PB09) },
     { MP_ROM_QSTR(MP_QSTR_BTNB), MP_ROM_PTR(&pin_PC03) },
     { MP_ROM_QSTR(MP_QSTR_RIGHT), MP_ROM_PTR(&pin_PB02) },

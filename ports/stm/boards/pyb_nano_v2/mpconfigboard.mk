@@ -12,3 +12,7 @@ MCU_PACKAGE = UFQFPN48
 
 LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F411_fs.ld
+
+# Too big for the flash
+CIRCUITPY_AUDIOCORE = 0
+CIRCUITPY_AUDIOPWMIO = 0
