@@ -1,15 +1,7 @@
 /*
-    GNU linker script for STM32L451xE, STM32L452xE, STM32L462xE with File System.
-    FLASH 512K with 2K blocks, RAM 160K.
+    GNU linker script for STM32L4xx with contiguous RAM. Not for STM32L47x or STM32L486.
+    MEMORY regions must be defined in the BOARD.
 */
-
-/* Specify the memory areas */
-MEMORY
-{
-    FLASH (rx)      : ORIGIN = 0x08000000,                      LENGTH = 384K
-    FLASH_FS (r)    : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH),   LENGTH = 128K
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 160K /* SRAM1, 128K + SRAM2, 32K */
-}
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
@@ -26,10 +18,10 @@ _ram_fs_cache_end = _ram_end;
 _ram_fs_cache_start = _ram_fs_cache_end - 2K; /* fs cache = 2K */
 
 _estack = _ram_fs_cache_start - _estack_reserve;
-_sstack = _estack - 16K; /* stack = 16K */
+_sstack = _estack - _stack_size;
 
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = _sstack; /* bss + heap = 142K, tunable by adjusting stack size */
+_heap_end = _sstack; /* bss + heap = 52K, tunable by adjusting stack size */
 
 _flash_fs_start = ORIGIN(FLASH_FS);
 _flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);

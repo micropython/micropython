@@ -5,6 +5,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
+#define MICROPY_PY_FRAMEBUF         (1) // 4KB.
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_ONEWIRE          (0)
@@ -13,23 +14,27 @@
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UTIMEQ           (0)
 
+#define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_USB       (0) // requires a custom USB connector on PA11/PA12
+#define MICROPY_HW_ENABLE_USB       (0) // requires a custom USB cable on PA11 & PA12. Approx 10KB.
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
+#define MICROPY_HW_ENABLE_CAN       (0) // Approx 6KB.
 
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)
-#define MICROPY_HW_CLK_PLLN (16)
-#define MICROPY_HW_CLK_PLLR (2)
-#define MICROPY_HW_CLK_PLLP (7)
-#define MICROPY_HW_CLK_PLLQ (2)
+#define MICROPY_HW_CLK_PLLN (16) // Change to 40 for 80MHz.
+#define MICROPY_HW_CLK_PLLR (RCC_PLLR_DIV2) // SYSCLK = 4*1*16/2 = 32MHz.
+#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV7)
+#define MICROPY_HW_CLK_PLLQ (RCC_PLLQ_DIV2)
 
 // The board has an external 32kHz crystal
 #define MICROPY_HW_RTC_USE_LSE      (1)
+
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_B6)
@@ -39,8 +44,6 @@
 
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200
-
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_A9)

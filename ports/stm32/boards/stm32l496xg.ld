@@ -1,12 +1,13 @@
 /*
-    GNU linker script for STM32L496XG
+    GNU linker script for STM32L496xG, STM32L4A6xG with File System.
+    FLASH 1024K with 2K blocks, RAM 320K.
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 612K /* sectors 0-305 */
-    FLASH_FS (r)    : ORIGIN = 0x08099000, LENGTH = 412K /* sectors 306-511 412 KiB */
+    FLASH (rx)      : ORIGIN = 0x08000000,                      LENGTH = 612K
+    FLASH_FS (r)    : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH),   LENGTH = 412K
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 320K /* SRAM1, 256K + SRAM2, 64K */
 }
 
