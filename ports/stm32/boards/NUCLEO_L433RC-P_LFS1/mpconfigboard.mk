@@ -1,0 +1,13 @@
+MCU_SERIES = l4
+CMSIS_MCU = STM32L433xx
+AF_FILE = boards/stm32l433_af.csv
+LD_FILES = boards/NUCLEO_L433RC-P_LFS1/stm32l43x.ld boards/stm32l4xx.ld boards/common_basic.ld
+OPENOCD_CONFIG = boards/openocd_stm32l4.cfg
+
+# MicroPython settings
+MICROPY_VFS_FAT = 0
+MICROPY_VFS_LFS1 = 1
+MICROPY_VFS_LFS2 = 0
+
+# Don't include default frozen modules because MCU is tight on flash space
+FROZEN_MANIFEST ?=
