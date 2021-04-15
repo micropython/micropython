@@ -60,24 +60,17 @@ void usb_cdc_init(void) {
     usb_cdc_data_enabled = false;
 }
 
-bool common_hal_usb_cdc_enable_repl(bool enabled) {
+bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
     // We can't change the descriptors once we're connected.
-    if (!tud_connected()) {
-        // TODO set entry in dict
+    if (tud_connected()) {
         return false;
     }
-    usb_cdc_repl_enabled = enabled;
-    // TODO set entry in dict
-    return true;
-}
 
-bool common_hal_usb_cdc_enable_data(bool enabled) {
-    // We can't change the descriptors once we're connected.
-    if (!tud_connected()) {
-        // TODO set entry in dict
-        return false;
-    }
-    usb_cdc_data_enabled = enabled;
-    // TODO set entry in dict
+    usb_cdc_repl_enabled = repl_enabled;
+    usb_cdc_set_repl(repl_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_repl_obj) : mp_const_none);
+
+    usb_cdc_data_enabled = data_enabled;
+    usb_cdc_set_data(data_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_data_obj) : mp_const_none);
+
     return true;
 }

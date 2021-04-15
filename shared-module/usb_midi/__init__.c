@@ -75,9 +75,9 @@ void usb_midi_usb_init(void) {
     mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value = MP_OBJ_FROM_PTR(ports);
 }
 
-bool common_hal_usb_midi_enable(bool enabled) {
+bool common_hal_usb_midi_configure_usb(bool enabled) {
     // We can't change the descriptors once we're connected.
-    if (!tud_connected()) {
+    if (tud_connected()) {
         return false;
     }
     usb_midi_enabled = enabled;

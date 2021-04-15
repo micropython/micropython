@@ -29,7 +29,10 @@
 
 #include "shared-module/usb_cdc/__init__.h"
 
-bool common_hal_usb_cdc_enable_repl(bool enabled);
-bool common_hal_usb_cdc_enable_data(bool enabled);
+//  Set the module dict entries.
+void usb_cdc_set_repl(mp_obj_t serial_obj);
+void usb_cdc_set_data(mp_obj_t serial_obj);
+
+extern bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_CDC___INIT___H

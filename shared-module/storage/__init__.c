@@ -175,9 +175,9 @@ void common_hal_storage_erase_filesystem(void) {
     // We won't actually get here, since we're resetting.
 }
 
-bool common_hal_storage_enable_usb(bool enabled) {
+bool common_hal_storage_configure_usb(bool enabled) {
     // We can't change the descriptors once we're connected.
-    if (!tud_connected()) {
+    if (tud_connected()) {
         return false;
     }
     usb_storage_enabled = enabled;
