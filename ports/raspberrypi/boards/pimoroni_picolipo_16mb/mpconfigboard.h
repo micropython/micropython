@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Pimoroni Pico Lipo (16MB)"
+#define MICROPY_HW_BOARD_NAME "Pimoroni Pico LiPo (16MB)"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
 #define MICROPY_HW_VBUS_DETECT (&pin_GPIO24)
