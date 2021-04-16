@@ -27,15 +27,6 @@
  */
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/rgb_led_status.h"
-
-#ifdef MICROPY_HW_NEOPIXEL
-bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-bool apa102_sck_in_use;
-bool apa102_mosi_in_use;
-#endif
 
 STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
@@ -54,14 +45,6 @@ void reset_all_pins(void) {
             IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t *)(mcu_pin_globals.map.table[i].value))->pad_reset;
         }
     }
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    neopixel_in_use = false;
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    apa102_sck_in_use = false;
-    apa102_mosi_in_use = false;
-    #endif
 }
 
 // Since i.MX pins need extra register and reset information to reset properly,
@@ -74,25 +57,6 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     claimed_pins[pin->mux_idx] = false;
     *(uint32_t *)pin->mux_reg = pin->mux_reset;
     *(uint32_t *)pin->cfg_reg = pin->pad_reset;
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        neopixel_in_use = false;
-        rgb_led_status_init();
-        return;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin->mux_idx == MICROPY_HW_APA102_MOSI->mux_idx ||
-        pin->mux_idx == MICROPY_HW_APA102_SCK->mux_idx) {
-        apa102_mosi_in_use = apa102_mosi_in_use && pin->mux_idx != MICROPY_HW_APA102_MOSI->mux_idx;
-        apa102_sck_in_use = apa102_sck_in_use && pin->mux_idx != MICROPY_HW_APA102_SCK->mux_idx;
-        if (!apa102_sck_in_use && !apa102_mosi_in_use) {
-            rgb_led_status_init();
-        }
-        return;
-    }
-    #endif
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
@@ -100,20 +64,6 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        return !neopixel_in_use;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI) {
-        return !apa102_mosi_in_use;
-    }
-    if (pin == MICROPY_HW_APA102_SCK) {
-        return !apa102_sck_in_use;
-    }
-    #endif
-
     return !claimed_pins[pin->mux_idx];
 }
 
@@ -123,20 +73,6 @@ uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin) {
 
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
     claimed_pins[pin->mux_idx] = true;
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        neopixel_in_use = true;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI) {
-        apa102_mosi_in_use = true;
-    }
-    if (pin == MICROPY_HW_APA102_SCK) {
-        apa102_sck_in_use = true;
-    }
-    #endif
 }
 
 void claim_pin(const mcu_pin_obj_t *pin) {

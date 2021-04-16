@@ -53,7 +53,6 @@
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
@@ -114,7 +113,6 @@ static void reset_devices(void) {
 }
 
 STATIC void start_mp(supervisor_allocation* heap) {
-    reset_status_led();
     autoreload_stop();
     supervisor_workflow_reset();
 
@@ -251,7 +249,6 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     #endif
     reset_port();
     reset_board();
-    reset_status_led();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
@@ -284,8 +281,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool found_main = false;
 
     if (safe_mode == NO_SAFE_MODE) {
-        new_status_color(MAIN_RUNNING);
-
         static const char * const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -315,6 +310,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        #else
+        (void) found_main;
         #endif
 
         // Finished executing python code. Cleanup includes a board reset.
@@ -332,42 +329,64 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     }
 
     // Program has finished running.
-
     bool printed_press_any_key = false;
     #if CIRCUITPY_DISPLAYIO
-    bool refreshed_epaper_display = false;
+    size_t time_to_epaper_refresh = 1;
     #endif
 
-    rgb_status_animation_t animation;
-    prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
+    // Setup LED blinks.
+    #if CIRCUITPY_STATUS_LED
+    uint32_t color;
+    uint8_t blink_count;
+    #if CIRCUITPY_ALARM
+    if (result.return_code & PYEXEC_DEEP_SLEEP) {
+        color = BLACK;
+        blink_count = 0;
+    } else
+    #endif
+    if (result.return_code != PYEXEC_EXCEPTION) {
+        if (safe_mode == NO_SAFE_MODE) {
+            color = ALL_DONE;
+            blink_count = ALL_DONE_BLINKS;
+        } else {
+            color = SAFE_MODE;
+            blink_count = SAFE_MODE_BLINKS;
+        }
+    } else {
+        color = EXCEPTION;
+        blink_count = EXCEPTION_BLINKS;
+    }
+    size_t pattern_start = supervisor_ticks_ms32();
+    size_t single_blink_time = (OFF_ON_RATIO + 1) * BLINK_TIME_MS;
+    size_t blink_time = single_blink_time * blink_count;
+    size_t total_time = blink_time + LED_SLEEP_TIME_MS;
+    if (blink_count > 0) {
+        status_led_init();
+    }
+    #endif
+
+    #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
+    #endif
+    bool skip_repl = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
 
         // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
-            #if CIRCUITPY_ALARM
-            if (fake_sleeping) {
-                board_init();
-            }
-            #endif
             reload_requested = false;
-            return true;
+            skip_repl = true;
+            break;
         }
 
         // If interrupted by keyboard, return
         if (serial_connected() && serial_bytes_available()) {
-            #if CIRCUITPY_ALARM
-            if (fake_sleeping) {
-                board_init();
-            }
-            #endif
             // Skip REPL if reload was requested.
-            bool ctrl_d = serial_read() == CHAR_CTRL_D;
-            if (ctrl_d) {
+            skip_repl = serial_read() == CHAR_CTRL_D;
+            if (skip_repl) {
                 supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
             }
-            return ctrl_d;
+            break;
         }
 
         // Check for a deep sleep alarm and restart the VM. This can happen if
@@ -376,9 +395,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         #if CIRCUITPY_ALARM
         if (fake_sleeping && common_hal_alarm_woken_from_sleep()) {
             serial_write_compressed(translate("Woken up by alarm.\n"));
-            board_init();
             supervisor_set_run_reason(RUN_REASON_STARTUP);
-            return true;
+            skip_repl = true;
+            break;
         }
         #endif
 
@@ -398,25 +417,21 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             printed_press_any_key = false;
         }
 
-        // Refresh the ePaper display if we have one. That way it'll show an error message.
-        #if CIRCUITPY_DISPLAYIO
-        // Don't refresh the display if we're about to deep sleep.
-        #if CIRCUITPY_ALARM
-        refreshed_epaper_display = refreshed_epaper_display || result.return_code & PYEXEC_DEEP_SLEEP;
-        #endif
-        if (!refreshed_epaper_display) {
-            refreshed_epaper_display = maybe_refresh_epaperdisplay();
-        }
-        #endif
-
         // Sleep until our next interrupt.
         #if CIRCUITPY_ALARM
         if (result.return_code & PYEXEC_DEEP_SLEEP) {
             // Make sure we have been awake long enough for USB to connect (enumeration delay).
             int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-            // Until it's safe to decide whether we're real/fake sleeping, just run the RGB
-            if (connecting_delay_ticks < 0 && !fake_sleeping) {
-                fake_sleeping = true;
+            // Until it's safe to decide whether we're real/fake sleeping
+            if (fake_sleeping) {
+                // This waits until a pretend deep sleep alarm occurs. They are set
+                // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
+                // it may also return due to another interrupt, that's why we check
+                // for deep sleep alarms above. If it wasn't a deep sleep alarm,
+                // then we'll idle here again.
+                common_hal_alarm_pretending_deep_sleep();
+            } else if (connecting_delay_ticks < 0) {
+                // Entering deep sleep (may be fake or real.)
                 new_status_color(BLACK);
                 board_deinit();
                 if (!supervisor_workflow_active()) {
@@ -426,27 +441,71 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                     // Does not return.
                 } else {
                     serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                    fake_sleeping = true;
                 }
+            } else {
+                // Loop while checking the time. We can't idle because we don't want to override a
+                // time alarm set for the deep sleep.
             }
-        }
+        } else
         #endif
+        {
+            // Refresh the ePaper display if we have one. That way it'll show an error message.
+            #if CIRCUITPY_DISPLAYIO
+            if (time_to_epaper_refresh > 0) {
+                time_to_epaper_refresh = maybe_refresh_epaperdisplay();
+            }
 
-        if (!fake_sleeping) {
-            tick_rgb_status_animation(&animation);
-        } else {
-            // This waits until a pretend deep sleep alarm occurs. They are set
-            // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
-            // it may also return due to another interrupt, that's why we check
-            // for deep sleep alarms above. If it wasn't a deep sleep alarm,
-            // then we'll idle here again.
-
-            #if CIRCUITPY_ALARM
-                common_hal_alarm_pretending_deep_sleep();
-            #else
-                port_idle_until_interrupt();
+            #if !CIRCUITPY_STATUS_LED
+                port_interrupt_after_ticks(time_to_epaper_refresh);
             #endif
+            #endif
+
+            #if CIRCUITPY_STATUS_LED
+            uint32_t tick_diff = supervisor_ticks_ms32() - pattern_start;
+
+            // By default, don't sleep.
+            size_t time_to_next_change = 0;
+            if (tick_diff < blink_time) {
+                uint32_t blink_diff = tick_diff % (single_blink_time);
+                if (blink_diff >= BLINK_TIME_MS) {
+                    new_status_color(BLACK);
+                    time_to_next_change = single_blink_time - blink_diff;
+                } else {
+                    new_status_color(color);
+                    time_to_next_change = BLINK_TIME_MS - blink_diff;
+                }
+            } else if (tick_diff > total_time) {
+                pattern_start = supervisor_ticks_ms32();
+            } else {
+                time_to_next_change = total_time - tick_diff;
+            }
+            #if CIRCUITPY_DISPLAYIO
+            if (time_to_epaper_refresh > 0 && time_to_next_change > 0) {
+                time_to_next_change = MIN(time_to_next_change, time_to_epaper_refresh);
+            }
+            #endif
+            if (time_to_next_change > 0) {
+                // time_to_next_change is in ms and ticks are slightly shorter so
+                // we'll undersleep just a little. It shouldn't matter.
+                port_interrupt_after_ticks(time_to_next_change);
+            }
+            #endif
+            port_idle_until_interrupt();
         }
     }
+    // Done waiting, start the board back up.
+    #if CIRCUITPY_STATUS_LED
+    new_status_color(BLACK);
+    status_led_deinit();
+    #endif
+
+    #if CIRCUITPY_ALARM
+    if (fake_sleeping) {
+        board_init();
+    }
+    #endif
+    return skip_repl;
 }
 
 FIL* boot_output_file;
@@ -463,7 +522,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     bool skip_boot_output = false;
 
     if (ok_to_run) {
-        new_status_color(BOOT_RUNNING);
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         FIL file_pointer;
@@ -574,7 +632,16 @@ STATIC int run_repl(void) {
     #endif
 
     autoreload_suspend();
+
+    // Set the status LED to the REPL color before running the REPL. For
+    // NeoPixels and DotStars this will be sticky but for PWM or single LED it
+    // won't. This simplifies pin sharing because they won't be in use when
+    // actually in the REPL.
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
     new_status_color(REPL_RUNNING);
+    status_led_deinit();
+    #endif
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
         exit_code = pyexec_raw_repl();
     } else {
@@ -589,9 +656,8 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
-    // Turn on LEDs
-    init_status_leds();
-    rgb_led_status_init();
+    // Turn on RX and TX LEDs if we have them.
+    init_rxtx_leds();
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {

@@ -29,7 +29,7 @@
 
 #include "lib/utils/interrupt_char.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -79,7 +79,7 @@ STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
     if (brightness_int < 0 || brightness_int > 255) {
         mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
     }
-    set_rgb_status_brightness((uint8_t)brightness_int);
+    set_status_brightness((uint8_t)brightness_int);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
