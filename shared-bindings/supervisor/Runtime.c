@@ -59,7 +59,11 @@ STATIC supervisor_run_reason_t _run_reason;
 //|     """Returns the USB enumeration status (read-only)."""
 //|
 STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
+    #if CIRCUITPY_USB
     return mp_obj_new_bool(tud_ready());
+    #else
+    return mp_const_false;
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_usb_connected_obj, supervisor_runtime_get_usb_connected);
 
