@@ -138,6 +138,18 @@ StateMachine class
     >>> sm.active(0)
     False
 
+.. method:: state_machine.restart()
+
+    Restarts the state machine and jumps to the beginning of the program.
+
+    This method clears the state machine's internal state using the RP2040's ``SM_RESTART`` register. This includes:
+
+     - input and output shift counters
+     - the contents of the input shift register
+     - the delay counter
+     - the waiting-on-IRQ state
+     - a stalled instruction run using `state_machine.exec()`
+
 .. method:: state_machine.exec(instr)
 
     Execute a single PIO instruction. Uses `asm_pio_encode` to encode the instruction from the given string *instr*.
@@ -148,13 +160,29 @@ StateMachine class
 
     Pull a word from the state machine's RX FIFO.
 
+    If the FIFO is empty, it blocks until data arrives (i.e. the state machine pushes a word).
+
     The value is shifted right by *shift* bits before returning, i.e. the return value is ``word >> shift``.
 
 .. method:: state_machine.put(value, shift=0)
 
     Push a word onto the state machine's TX FIFO.
 
+    If the FIFO is full, it blocks until there is space (i.e. the state machine pulls a word).
+
     The value is first shifted left by *shift* bits, i.e. the state machine receives ``value << shift``.
+
+.. method:: state_machine.rx_fifo()
+
+    Returns the number of words in the state machine's RX FIFO. A value of 0 indicates the FIFO is empty.
+
+    Useful for checking if data is waiting to be read, before calling `state_machine.get()`.
+
+.. method:: state_machine.tx_fifo()
+
+    Returns the number of words in the state machine's TX FIFO. A value of 0 indicates the FIFO is empty.
+
+    Useful for checking if there is space to push another word using `state_machine.put()`.
 
 .. method:: state_machine.irq(handler=None, trigger=0|1, hard=False)
 
