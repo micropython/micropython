@@ -44,7 +44,7 @@
 //|     When we're the server, we ignore all connections besides the first to subscribe to
 //|     notifications."""
 //|
-//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int, max_packet_size: int = None) -> None:
+//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int, max_packet_size: Optional[int] = None) -> None:
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
 //|
