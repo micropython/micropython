@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-13 22:09+0000\n"
+"PO-Revision-Date: 2021-04-17 03:26+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -914,7 +914,7 @@ msgstr "Canal EXTINT déjà utilisé"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "Erreur dans le flot MIDI à la position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1260,7 +1260,7 @@ msgstr "Broche DAC non valide fournie"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
-msgstr ""
+msgstr "Fichier MIDI invalide"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
