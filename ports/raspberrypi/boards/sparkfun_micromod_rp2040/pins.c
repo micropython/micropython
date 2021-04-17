@@ -4,7 +4,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // D (Digital only) pins (D0,D1)
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO7) },        // GPIO6 - D0
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO7) },        // GPIO7 - D1
-    
+
     // A (ADC) pins (A0,A1)
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_GPIO26) },       // GPIO26 - A0 | ADC0
     { MP_ROM_QSTR(MP_QSTR_ADC0), MP_ROM_PTR(&pin_GPIO26) },     //              ADC0 alias
@@ -38,28 +38,28 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC_DP), MP_ROM_PTR(&pin_GPIO25) },   //              ADC_DP alias
     { MP_ROM_QSTR(MP_QSTR_CAM_VSYNC), MP_ROM_PTR(&pin_GPIO25) }, //              CAM_VSYNC alias
                                                                 // NC   - G11
-    
+
     // PWM pins (PWM0,PWM1)
     { MP_ROM_QSTR(MP_QSTR_PWM0), MP_ROM_PTR(&pin_GPIO13) },     // GPIO13 - PWM0
     { MP_ROM_QSTR(MP_QSTR_PWM1), MP_ROM_PTR(&pin_GPIO24) },     // GPIO24 - PWM1 | AUD_MCLK
-    
+
     // AUD (audio)
     { MP_ROM_QSTR(MP_QSTR_AUD_MCLK), MP_ROM_PTR(&pin_GPIO24) }, // GPIO24 - AUD_MCLK | PWM1
     { MP_ROM_QSTR(MP_QSTR_AUD_OUT), MP_ROM_PTR(&pin_GPIO10) },  // GPIO10 - AUD_OUT | SDIO_DAT2
     { MP_ROM_QSTR(MP_QSTR_AUD_IN), MP_ROM_PTR(&pin_GPIO11) },   // GPIO11 - AUD_IN | SDIO_DAT1
     { MP_ROM_QSTR(MP_QSTR_AUD_LRCLK), MP_ROM_PTR(&pin_GPIO2) }, // GPIO2 - AUD_LRCLK | CTS1
     { MP_ROM_QSTR(MP_QSTR_AUD_BCLK), MP_ROM_PTR(&pin_GPIO3) },  // GPIO3 - AUD_BCLK | UART_RTS1
-    
+
     // Battery Voltage Monitor
     { MP_ROM_QSTR(MP_QSTR_BATT_VIN3), MP_ROM_PTR(&pin_GPI029) }, // GPIO29 - BATT_VIN/3 (ADC03)
 
-    
+
     // I2C
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO4) },       // GPIO4 - SDA
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO5) },       // GPIO5 - SCL
 
     { MP_ROM_QSTR(MP_QSTR_I2C_INT), MP_ROM_PTR(&pin_GPIO8) },   // GPIO9 - I2C_INT | TX2
-    
+
     // SPI
     { MP_ROM_QSTR(MP_QSTR_CIPO), MP_ROM_PTR(&pin_GPIO20) },     // GPIO20 - CIPO | SPI_CIPO | G4
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO20) },     //              MISO alias
@@ -67,7 +67,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO23) },     //              MOSI alias
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO22) },      // GPIO22 - SCK  | SPI_SCK | G6
     { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO21) },       // GPIO21 - /CS  | SPI_/CS | G5
-    
+
     // SDI/SPI1
     { MP_ROM_QSTR(MP_QSTR_SDIO_CLK), MP_ROM_PTR(&pin_GPIO14) }, // GPI014 - SDIO SCK | SDIO_CLK
     { MP_ROM_QSTR(MP_QSTR_SPI_SCK1), MP_ROM_PTR(&pin_GPIO14) }, //              SPI_SCK1 alias
@@ -79,10 +79,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDIO_DATA2), MP_ROM_PTR(&pin_GPIO10) },// GPIO10 - SDIO DATA2 | SDIO_DATA2 | AUD_OUT
     { MP_ROM_QSTR(MP_QSTR_SDIO_DATA3), MP_ROM_PTR(&pin_GPIO9) },// GPIO9 - SDIO DATA3 | SDIO_DATA3 | SPI_CS1
     { MP_ROM_QSTR(MP_QSTR_SPI_CS1), MP_ROM_PTR(&pin_GPIO9) },   //              SPI_CS1 alias
-        
+
     // Status LED
     { MP_ROM_QSTR(MP_QSTR_LED1), MP_ROM_PTR(&pin_GPIO25)  },    // GPIO25 - LED_BUILTIN | STAT | Blue LED | G10
-    
+
     // UART
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO1) },        // GPIO1 - UART RX | UART_RX1 | RX1
     { MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_GPIO1) },       //              RX1 alias
@@ -95,7 +95,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_RX2), MP_ROM_PTR(&pin_GPIO9) },       // GPIO9 - UART RX | UART_RX2 | RX2 | SDIO_DAT3 | SPI_CS1
     { MP_ROM_QSTR(MP_QSTR_TX2), MP_ROM_PTR(&pin_GPIO8) },       // GPIO8 - UART TX | UART_TX2 | TX2 | I2C_INT
-    
+
     // Board objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
