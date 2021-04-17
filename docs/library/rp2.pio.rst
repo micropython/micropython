@@ -123,9 +123,11 @@ StateMachine class
 
     The program is added to the instruction memory of this PIO instance. If the instruction memory already contains this program, then its offset is re-used so as to save on instruction memory.
 
-    - *freq* is the frequency in Hz to run the state machine at. Defaults to the system clock frequency. 
+    - *freq* is the frequency in Hz to run the state machine at. Defaults to the system clock frequency.
 
       The clock divider is computed as ``system clock frequency / freq``, so there can be slight rounding errors.
+
+      The minimum possible clock divider is one 65536th of the system clock: so at the default system clock frequency of 125MHz, the minimum value of *freq* is ``1908``. To run state machines at slower frequencies, you'll need to reduce the system clock speed with `machine.freq()`.
     - *in_base* is the first pin to use for ``in()`` instructions.
     - *out_base* is the first pin to use for ``out()`` instructions.
     - *set_base* is the first pin to use for ``set()`` instructions.

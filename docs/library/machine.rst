@@ -56,9 +56,11 @@ Interrupt related functions
 Power related functions
 -----------------------
 
-.. function:: freq()
+.. function:: freq([hz])
 
-    Returns CPU frequency in hertz.
+    Returns the CPU frequency in hertz.
+
+    On some ports this can also be used to set the CPU frequency.
 
 .. function:: idle()
 
