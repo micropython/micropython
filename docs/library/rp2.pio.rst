@@ -8,7 +8,7 @@ The :mod:`rp2` module includes functions and classes which give access to the RP
 Assembling PIO programs
 -----------------------
 
-.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, in_shiftdir=0, out_shiftdir=0, autopush=False, autopull=False, push_thresh=32, pull_thresh=32)
+.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, in_shiftdir=0, out_shiftdir=0, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE)
 
     Assemble a PIO program.
 
@@ -29,6 +29,7 @@ Assembling PIO programs
 
     - *autopush* configures whether auto-push is enabled.
     - *autopull* configures whether auto-pull is enabled.
+    - *fifo_join* configures whether the 4-word TX and RX FIFOs should be combined into a single 8-word FIFO for one direction only. The options are `PIO.JOIN_NONE`, `PIO.JOIN_RX` and `PIO.JOIN_TX`.
 
 .. function:: asm_pio_encode(instr, sideset_count)
 
@@ -93,6 +94,12 @@ PIO class
           PIO.SHIFT_RIGHT
 
     These constants are used for the *in_shiftdir* and *out_shiftdir* arguments to `asm_pio` or `state_machine.init`.
+
+.. data:: PIO.JOIN_NONE
+          PIO.JOIN_TX
+          PIO.JOIN_RX
+
+    These constants are used for the *fifo_join* argument to `asm_pio`.
 
 .. data:: PIO.IRQ_SM0
           PIO.IRQ_SM1
