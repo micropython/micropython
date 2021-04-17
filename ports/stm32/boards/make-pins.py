@@ -22,7 +22,7 @@ SUPPORTED_FN = {
 
 CONDITIONAL_VAR = {
     "I2C": "MICROPY_HW_I2C{num}_SCL",
-    "I2S": "MICROPY_HW_ENABLE_I2S{num}",
+    "I2S": "MICROPY_HW_I2S{num}",
     "SPI": "MICROPY_HW_SPI{num}_SCK",
     "UART": "MICROPY_HW_UART{num}_TX",
     "LPUART": "MICROPY_HW_LPUART{num}_TX",

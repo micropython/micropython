@@ -318,6 +318,7 @@ SRC_C += \
 	help.c \
 	machine_adc.c \
 	machine_i2c.c \
+	machine_i2s.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
@@ -425,6 +426,18 @@ else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))
     HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
 endif
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 l0))
+HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_i2s.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
+HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_i2s_ex.c \
+	)
 endif
 
 USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\

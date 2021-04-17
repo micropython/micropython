@@ -40,6 +40,7 @@
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_ENABLE_MMCARD    (1)
 #define MICROPY_HW_ENABLE_RF_SWITCH (1)
+#define MICROPY_HW_ENABLE_I2S       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
@@ -85,7 +86,7 @@ extern struct _spi_bdev_t spi_bdev;
     (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
     spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-)
+    )
 #define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
@@ -145,6 +146,10 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SPI3_SCK         (pyb_pin_W29)
 #define MICROPY_HW_SPI3_MISO        (pyb_pin_W50)
 #define MICROPY_HW_SPI3_MOSI        (pyb_pin_W46)
+
+// I2S buses
+#define MICROPY_HW_I2S1             (1)
+#define MICROPY_HW_I2S2             (1)
 
 // CAN buses
 #define MICROPY_HW_CAN1_NAME        "X"
