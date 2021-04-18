@@ -23,48 +23,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include <stdint.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "pin.h"
 
-
-STATIC void pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    // TODO: implement pin_obj_print
-    return;
+STATIC void pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    (void)kind;
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
+    mp_printf(print, "PIN(%s, %u)", self->name, self->pin);
 }
 
+/**
+ * pin_obj_make_new
+ *
+ *	pin = machine.Pin(id)
+ *
+ *	with id being either:
+ *		int: board pin numbers
+ *		str: board or cpu pin names
+ */
 STATIC mp_obj_t pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-	// TODO: implement pin_obj_make_new
-	return NULL;
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);      // Todo: machine_pin - implement additional arguments!
+
+    const machine_pin_obj_t *pin = pin_find(args[0]);
+
+    // Todo: machine_pin- initialize pin if more arguments are present!
+
+    return (mp_obj_t)pin;
 }
 
-STATIC mp_obj_t pin_obj_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-	// TODO: implement pin_obj_call
-	return NULL;
-}
-
-
-// ================================================================================================================== //
-// ================================================================================================================== //
-
-STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
-	// TODO: implement pin object methods
-};
-STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
-
-// ================================================================================================================== //
 
 const mp_obj_type_t machine_pin_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_PIN,
     .print = pin_obj_print,
     .make_new = pin_obj_make_new,
-    .call = pin_obj_call,
     .locals_dict = (mp_obj_dict_t *)&pin_locals_dict,
-};
-
-const mp_obj_type_t machine_pin_af_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PIN_AF
 };

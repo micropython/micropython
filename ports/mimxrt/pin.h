@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_PIN_H
 #define MICROPY_INCLUDED_MIMXRT_PIN_H
 
+#include <stdint.h>
+
 #include "fsl_gpio.h"
 #include "py/obj.h"
 
@@ -103,30 +105,16 @@ extern const mp_obj_type_t machine_pin_af_type;
 // ------------------------------------------------------------------------------------------------------------------ //
 
 // Include board specific pins
-// TODO: include generated pins.h header file instead
 #include "pins.h"  // pins.h must included at this location
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
-typedef struct {
-    const char *name;
-    const machine_pin_obj_t *pin;
-} pin_named_pin_t;
+// Declaration in generated header file pins.h
+extern const machine_pin_obj_t machine_pin_cpu_pin_obj[];
+extern const uint32_t machine_pin_num_of_cpu_pins;
 
-extern const pin_named_pin_t pin_board_pins[];
-extern const pin_named_pin_t pin_cpu_pins[];
-
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    const pin_named_pin_t *named_pins;
-} pin_named_pins_obj_t;
-
-extern const mp_obj_type_t pin_board_pins_obj_type;
-extern const mp_obj_type_t pin_cpu_pins_obj_type;
-
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

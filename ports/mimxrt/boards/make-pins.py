@@ -10,6 +10,7 @@ import csv
 SUPPORTED_AFS = {"GPIO"}
 MAX_AF = 10  # AF0 .. AF9
 
+
 def parse_pad(pad_str):
     """Parses a string and returns a (port, gpio_bit) tuple."""
     if len(pad_str) < 4:
@@ -30,7 +31,8 @@ def af_supported(af_str):
 class Pin(object):
     """Holds the information associated with a pin."""
 
-    def __init__(self, pad, gpio, pin):
+    def __init__(self, pad, gpio, pin, idx=0):
+        self.idx = idx
         self.name = pad
         self.pad = pad
         self.gpio = gpio
@@ -54,14 +56,26 @@ class Pin(object):
     def add_af(self, af):
         self.alt_fn.append(af)
 
-    def print(self):
+    def print_pin_af(self):
         if self.alt_fn:
-            print("static machine_pin_af_obj_t {0}_af[{1}] = {{".format(self.name, len(self.alt_fn)))
+            print(
+                "static machine_pin_af_obj_t pin_{0}_af[{1}] = {{".format(
+                    self.name, len(self.alt_fn)
+                )
+            )
             for af in self.alt_fn:
                 af.print()
             print("};")
-            print("machine_pin_obj_t {0} = PIN({0}, {1}, {2}, {3});\n".format(self.name, self.gpio, int(self.pin),
-                                                                              self.name + "_af"))
+        else:
+            raise ValueError("Pin '{}' has no alternative functions".format(self.name))
+
+    def print(self):
+        if self.alt_fn:
+            print(
+                "    PIN({0}, {1}, {2}, {3});".format(
+                    self.name, self.gpio, int(self.pin), self.name + "_af"
+                )
+            )
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
@@ -106,10 +120,11 @@ class AlternateFunction(object):
 
     def print(self):
         """Prints the C representation of this AF."""
-        print("    PIN_AF({0}, PIN_AF_MODE_ALT{1}, {2}, {3}),".format(self.af_str,
-                                                       self.idx,
-                                                       self.instance,
-                                                       "0x10B0U"))
+        print(
+            "    PIN_AF({0}, PIN_AF_MODE_ALT{1}, {2}, {3}),".format(
+                self.af_str, self.idx, self.instance, "0x10B0U"
+            )
+        )
         """
         cond_var = None
         if self.supported:
@@ -134,9 +149,10 @@ class AlternateFunction(object):
 
 
 class NamedPin(object):
-    def __init__(self, name, pad):
+    def __init__(self, name, pad, idx):
         self.name = name
         self.pad = pad
+        self.idx = idx
 
 
 class Pins(object):
@@ -152,27 +168,27 @@ class Pins(object):
     def find_pin_by_name(self, pad):
         for pin in self.cpu_pins:
             if pin.pad == pad:
-                return pad
+                return pin
 
     def parse_board_file(self, filename):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
-                pad = self.find_pin_by_name(row[1])  #TODO: create replacement for magic number
-                if pad and row[0]: #TODO: create replacement for magic number
-                    self.board_pins.append(NamedPin(row[0], pad))
+                pin = self.find_pin_by_name(row[1])  # TODO: create replacement for magic number
+                if pin and row[0]:  # TODO: create replacement for magic number
+                    self.board_pins.append(NamedPin(row[0], pin.pad, pin.idx))
 
     def parse_af_file(self, filename, pad_col, af_start_col):
         af_end_col = af_start_col + MAX_AF
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             header = next(rows)
-            for row in rows:
+            for idx, row in enumerate(rows):
                 pad = row[pad_col]
                 gpio, pin = row[6].split("_")
                 pin_number = pin.lstrip("IO")
 
-                pin = Pin(pad, gpio, pin_number)
+                pin = Pin(pad, gpio, pin_number, idx=idx)
 
                 # Parse alternate functions
                 af_idx = 0
@@ -199,20 +215,29 @@ class Pins(object):
         )
         for pin in pins:
             print(
-                "    {{ MP_ROM_QSTR(MP_QSTR_{}), MP_ROM_PTR(&pin_{}) }},".format(
-                    pin.name, pin.pad
+                "    {{ MP_ROM_QSTR(MP_QSTR_{}), MP_ROM_PTR(&machine_pin_cpu_pin_obj[{}]) }},".format(
+                    pin.name, pin.idx
                 )
             )
         print("};")
         print(
-            "MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
+            "MP_DEFINE_CONST_DICT(machine_pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
                 label, label
             )
         )
 
     def print(self):
+        # Print Pin Object declarations
+        for pin in self.cpu_pins:
+            pin.print_pin_af()
+
+        print("")
+        print("const machine_pin_obj_t machine_pin_cpu_pin_obj [] = {{")
         for pin in self.cpu_pins:
             pin.print()
+        print("};")
+        print("const uint32_t machine_pin_num_of_cpu_pins = {:d};".format(len(self.cpu_pins)))
+        # Print Pin mapping dictionaries
         self.print_named("cpu", self.cpu_pins)
         self.print_named("board", self.board_pins)
         print("")
@@ -230,16 +255,25 @@ def main():
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
         default="mimxrt1021.csv",
-    )    
+    )
     parser.add_argument(
-        "-b", "--board", dest="board_filename", help="Specifies the board file",
+        "-b",
+        "--board",
+        dest="board_filename",
+        help="Specifies the board file",
     )
 
     pins = Pins()
 
     # test code
-    args = parser.parse_args(['--board', r'/home/philipp/Projects/micropython/micropython/ports/mimxrt/boards/MIMXRT1020_EVK/pins.csv',
-                                "--af", r'/home/philipp/Projects/micropython/micropython/ports/mimxrt/boards/MIMXRT1020_EVK/mimixrt1021_af.csv'])
+    args = parser.parse_args(
+        [
+            "--board",
+            r"/home/philipp/Projects/micropython/micropython/ports/mimxrt/boards/MIMXRT1020_EVK/pins.csv",
+            "--af",
+            r"/home/philipp/Projects/micropython/micropython/ports/mimxrt/boards/MIMXRT1020_EVK/mimixrt1021_af.csv",
+        ]
+    )
     #
 
     if args.af_filename:

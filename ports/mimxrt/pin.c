@@ -28,11 +28,6 @@
 #include "pin.h"
 
 
-// Declaration in generated header file pins.h
-extern const machine_pin_obj_t machine_board_pin_obj[];
-extern const uint32_t machine_pin_num_of_board_pins;
-
-
 void pin_init(void) {
     return;
 }
@@ -56,11 +51,8 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     // If pin is SMALL_INT
     if (mp_obj_is_small_int(user_obj)) {
         uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
-
-        for (uint8_t i = 0; i < machine_pin_num_of_board_pins; i++) {
-            if (machine_board_pin_obj[i].pin == value) {
-                return &machine_board_pin_obj[i];
-            }
+        if (value < machine_pin_num_of_cpu_pins) {
+            return &machine_pin_cpu_pin_obj[value];
         }
     }
 
@@ -70,48 +62,20 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-
-    #if 0
-    // TODO: Implement support for wrapper classes and dictionaries
-    // If a pin mapper was provided
-    if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
-        pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
-
-        if (pin_obj != mp_const_none) {
-            if (!mp_obj_is_type(pin_obj, &machine_pin_type)) {
-                mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
-            }
-            return pin_obj;
-        }
-        // The pin mapping function returned mp_const_none, fall through to
-        // other lookup methods.
-    }
-
-    // If a pin mapper dictionary was provided
-    if (MP_STATE_PORT(pin_class_map_dict) != mp_const_none) {
-        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_STATE_PORT(pin_class_map_dict));
-        mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
-
-        if (elem != NULL && elem->value != NULL) {
-            pin_obj = elem->value;
-            return pin_obj;
-        }
-    }
-    #endif
-
     // See if the pin name matches a board pin
-    pin_obj = pin_find_named_pin(&pin_board_pins_locals_dict, user_obj);
+    pin_obj = pin_find_named_pin(&machine_pin_board_pins_locals_dict, user_obj);
     if (pin_obj) {
         return pin_obj;
     }
 
     // See if the pin name matches a cpu pin
-    pin_obj = pin_find_named_pin(&pin_cpu_pins_locals_dict, user_obj);
+    pin_obj = pin_find_named_pin(&machine_pin_cpu_pins_locals_dict, user_obj);
     if (pin_obj) {
         return pin_obj;
     }
 
-    mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin identifier"));
+    mp_raise_ValueError(MP_ERROR_TEXT("Pin(%s) doesn't exist"),
+        mp_obj_str_get_str(user_obj));
 }
 
 const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
