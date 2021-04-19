@@ -12,7 +12,6 @@ from __future__ import print_function
 import re
 import sys
 
-from math import log
 import collections
 import gettext
 import os.path
@@ -167,7 +166,7 @@ def compute_huffman_coding(translations, compression_filename):
     sum_len = 0
     while True:
         # Until the dictionary is filled to capacity, use a heuristic to find
-        # the best "word" (2- to 9-gram) to add to it.
+        # the best "word" (3- to 9-gram) to add to it.
         #
         # The TextSplitter allows us to avoid considering parts of the text
         # that are already covered by a previously chosen word, for example
@@ -179,32 +178,25 @@ def compute_huffman_coding(translations, compression_filename):
         for t in texts:
             for (found, word) in extractor.iter_words(t):
                 if not found:
-                    for substr in iter_substrings(word, minlen=2, maxlen=9):
+                    for substr in iter_substrings(word, minlen=3, maxlen=9):
                         counter[substr] += 1
 
         # Score the candidates we found.  This is an empirical formula only,
         # chosen for its effectiveness.
         scores = sorted(
-            ((s, (len(s) - 1) ** log(max(occ - 2, 1)), occ) for (s, occ) in counter.items()),
+            ((s, (len(s) - 1) ** (occ + 4)) for (s, occ) in counter.items() if occ > 4),
             key=lambda x: x[1],
             reverse=True,
         )
 
-        # Do we have a "word" that occurred 5 times and got a score of at least
-        # 5?  Horray.  Pick the one with the highest score.
-        word = None
-        for (s, score, occ) in scores:
-            if occ < 5:
-                continue
-            if score < 5:
-                break
-            word = s
+        # Pick the one with the highest score.
+        if not scores:
             break
+
+        word = scores[0][0]
 
         # If we can successfully add it to the dictionary, do so.  Otherwise,
         # we've filled the dictionary to capacity and are done.
-        if not word:
-            break
         if sum_len + len(word) - 2 > max_words_len:
             break
         if len(words) == max_words:
