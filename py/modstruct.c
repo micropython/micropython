@@ -214,9 +214,11 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
             p += cnt;
         } else {
             while (cnt--) {
-                mp_binary_set_val(fmt_type, *fmt, args[i], &p);
                 // Pad bytes don't have a corresponding argument.
-                if (*fmt != 'x') {
+                if (*fmt == 'x') {
+                    mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), &p);
+                } else {
+                    mp_binary_set_val(fmt_type, *fmt, args[i], &p);
                     i++;
                 }
             }
