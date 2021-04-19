@@ -184,6 +184,7 @@ jobs:
         - "adafruit_rotary_trinkey_m0"
         - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
+        - "aramcon2_badge"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
