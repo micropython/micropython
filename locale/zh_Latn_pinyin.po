@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-13 22:09+0000\n"
+"PO-Revision-Date: 2021-04-19 19:15+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -898,7 +898,7 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "wèi yú %d wèi zhì de MIDI liú zhōng de cuò wù"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1237,7 +1237,7 @@ msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
-msgstr ""
+msgstr "wú xiào de MIDI wén jiàn"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
