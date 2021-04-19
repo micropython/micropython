@@ -30,6 +30,7 @@
 
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
+#include "py/enum.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -49,10 +50,11 @@
 // TODO(tannewt): Add support for other color formats.
 //|
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_dither};
+    enum { ARG_dither, ARG_input_colorspace };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }
+        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_input_colorspace, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (void *)&displayio_colorspace_RGB888_obj} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -60,7 +62,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
 
-    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool);
+    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool, (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_input_colorspace].u_obj));
 
     return MP_OBJ_FROM_PTR(self);
 }

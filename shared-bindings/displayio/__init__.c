@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "py/enum.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
@@ -49,7 +50,6 @@
 //| including synchronizing with refresh rates and partial updating."""
 //|
 
-
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
 //|     release the builtin display on boards that have one. You will need to reinitialize it yourself
@@ -65,10 +65,48 @@ STATIC mp_obj_t displayio_release_displays(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(displayio_release_displays_obj, displayio_release_displays);
 
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB888, DISPLAYIO_COLORSPACE_RGB888);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB565, DISPLAYIO_COLORSPACE_RGB565);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB565_SWAPPED, DISPLAYIO_COLORSPACE_RGB565_SWAPPED);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555, DISPLAYIO_COLORSPACE_RGB555);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555_SWAPPED, DISPLAYIO_COLORSPACE_RGB555_SWAPPED);
+
+//| class Colorspace:
+//|     """The colorspace for a ColorConverter to operate in"""
+//|
+//|     RGB888: object
+//|     """The standard 24-bit colorspace"""
+//|
+//|     RGB565: object
+//|     """The standard 16-bit colorspace"""
+//|
+//|     RGB565_SWAPPED: object
+//|     """The standard 16-bit colorspace, with low and high bytes swapped"""
+//|
+//|     RGB555: object
+//|     """The standard 15-bit colorspace"""
+//|
+//|     RGB555_SWAPPED: object
+//|     """The standard 15-bit colorspace, with low and high bytes swapped"""
+//|
+MAKE_ENUM_MAP(displayio_colorspace) {
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB888),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB565),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB565_SWAPPED),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB555),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB555_SWAPPED),
+};
+STATIC MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
+
+MAKE_PRINTER(displayio, displayio_colorspace);
+MAKE_ENUM_TYPE(displayio, ColorSpace, displayio_colorspace);
+
+
 STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_displayio) },
     { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_ColorConverter), MP_ROM_PTR(&displayio_colorconverter_type) },
+    { MP_ROM_QSTR(MP_QSTR_Colorspace), MP_ROM_PTR(&displayio_colorspace_type) },
     { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&displayio_display_type) },
     { MP_ROM_QSTR(MP_QSTR_EPaperDisplay), MP_ROM_PTR(&displayio_epaperdisplay_type) },
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
