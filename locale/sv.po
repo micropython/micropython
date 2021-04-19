@@ -3803,6 +3803,10 @@ msgstr "trycka på startknappen vid start.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "trycka båda knapparna vid uppstart.\n"
 
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "pull-mask är i konflikt med riktnings-mask"

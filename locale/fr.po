@@ -3859,6 +3859,10 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
 
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "masque pull est en conflit avec les masques de direction"

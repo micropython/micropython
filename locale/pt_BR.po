@@ -3845,6 +3845,10 @@ msgstr "pressionando o botão de boot na inicialização.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "pressionando ambos os botões durante a inicialização.\n"
 
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "puxe as máscaras em conflito com as máscaras de direção"
