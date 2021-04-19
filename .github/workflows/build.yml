@@ -322,6 +322,7 @@ jobs:
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_micromod_rp2040"
         - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
         - "sparkfun_pro_micro_rp2040"
