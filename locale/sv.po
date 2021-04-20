@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-19 21:50+0000\n"
+"PO-Revision-Date: 2021-04-22 17:16+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2179,7 +2179,7 @@ msgstr "För många displayer"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "Totala data att skriva är större än %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
