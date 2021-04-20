@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-15 14:26+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -2199,7 +2199,7 @@ msgstr "Muchos displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "La cantidad total de datos es mas grande que %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -3833,7 +3833,7 @@ msgstr "presionando ambos botones al inicio.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr ""
+msgstr "presione el botón izquierdo al arranque\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
