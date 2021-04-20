@@ -78,6 +78,10 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
     return self->service;
 }
 
+size_t common_hal_bleio_characteristic_get_max_length(bleio_characteristic_obj_t *self) {
+    return self->max_length;
+}
+
 size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t *buf, size_t len) {
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
