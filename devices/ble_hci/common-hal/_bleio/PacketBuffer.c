@@ -81,7 +81,7 @@ void bleio_packet_buffer_update(bleio_packet_buffer_obj_t *self, mp_buffer_info_
 
 void common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
-    size_t buffer_size) {
+    size_t buffer_size, size_t max_packet_size) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
@@ -101,7 +101,7 @@ void common_hal_bleio_packet_buffer_construct(
     }
 
     if (incoming) {
-        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + characteristic->max_length), false)) {
+        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + max_packet_size), false)) {
             mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
         }
     }
@@ -110,12 +110,13 @@ void common_hal_bleio_packet_buffer_construct(
         self->packet_queued = false;
         self->pending_index = 0;
         self->pending_size = 0;
-        self->outgoing[0] = m_malloc(characteristic->max_length, false);
-        self->outgoing[1] = m_malloc(characteristic->max_length, false);
+        self->outgoing[0] = m_malloc(max_packet_size, false);
+        self->outgoing[1] = m_malloc(max_packet_size, false);
     } else {
         self->outgoing[0] = NULL;
         self->outgoing[1] = NULL;
     }
+    self->max_packet_size = max_packet_size;
 
     bleio_characteristic_set_observer(self->characteristic, self);
 }
@@ -243,15 +244,16 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
         if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
-                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                    self->characteristic->max_length);
+                return MIN(MIN(common_hal_bleio_connection_get_max_packet_length(connection),
+                               self->max_packet_size),
+                           self->characteristic->max_length);
             }
         }
         // There's no current connection, so we don't know the MTU, and
         // we can't tell what the largest outgoing packet length would be.
         return -1;
     }
-    return self->characteristic->max_length;
+    return MIN(self->characteristic->max_length, self->max_packet_size);
 }
 
 bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
