@@ -49,7 +49,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     const mcu_pin_obj_t *data0,
     const mcu_pin_obj_t *data_clock,
     const mcu_pin_obj_t *vertical_sync,
-    const mcu_pin_obj_t *horizontal_sync,
+    const mcu_pin_obj_t *horizontal_reference,
     int data_count)
 {
     if (data0->number != PIN_PCC_D0) {
@@ -63,8 +63,8 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     if (vertical_sync && vertical_sync->number != PIN_PCC_DEN1) {
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_vsync);
     }
-    if (horizontal_sync && horizontal_sync->number != PIN_PCC_DEN2) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_hsync);
+    if (horizontal_reference && horizontal_reference->number != PIN_PCC_DEN2) {
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_href);
     }
     if (data_clock->number != PIN_PCC_CLK) {
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data_clock);
@@ -72,7 +72,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     // technically, 0 was validated as free already but check again
     for (int i=0; i<data_count; i++) {
         if (!pin_number_is_free(data0->number + i)) {
-            mp_raise_ValueError_varg(translate("PCC_D%d in use"), i);
+            mp_raise_ValueError_varg(translate("data pin #%d in use"), i);
         }
     }
 
@@ -92,7 +92,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     // Now we know we can allocate all pins
     self->data_count = data_count;
     self->vertical_sync = vertical_sync ? vertical_sync->number : NO_PIN;
-    self->horizontal_sync = horizontal_sync ? vertical_sync->number : NO_PIN;
+    self->horizontal_reference = horizontal_reference ? vertical_sync->number : NO_PIN;
     gpio_set_pin_direction(PIN_PCC_CLK, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(PIN_PCC_CLK, GPIO_PULL_OFF);
     gpio_set_pin_function(PIN_PCC_CLK, GPIO_PIN_FUNCTION_PCC);
@@ -103,7 +103,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         gpio_set_pin_function(PIN_PCC_DEN1, GPIO_PIN_FUNCTION_PCC); // VSYNC
         //claim_pin_number(PIN_PCC_DEN1);
     }
-    if (horizontal_sync) {
+    if (horizontal_reference) {
         gpio_set_pin_direction(PIN_PCC_DEN2, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_DEN2, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_DEN2, GPIO_PIN_FUNCTION_PCC); // HSYNC
@@ -123,7 +123,7 @@ void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelim
         return;
     }
     reset_pin_number(self->vertical_sync);
-    reset_pin_number(self->horizontal_sync);
+    reset_pin_number(self->horizontal_reference);
     reset_pin_number(PIN_PCC_CLK);
     for (int i=0; i<self->data_count; i++) {
         reset_pin_number(PIN_PCC_D0 + i);

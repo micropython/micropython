@@ -1711,11 +1711,6 @@ msgstr ""
 msgid "Oversample must be multiple of 8."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format
-msgid "PCC_D%d in use"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "PDMIn not available"
 msgstr ""
@@ -2805,6 +2800,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c

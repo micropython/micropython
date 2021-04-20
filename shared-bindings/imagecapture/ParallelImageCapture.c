@@ -43,27 +43,26 @@
 //|         data_count: int=8,
 //|         clock: microcontroller.Pin,
 //|         vsync: Optional[microcontroller.Pin],
-//|         hsync: Optional[microcontroller.Pin],
-//|#        clock_invert: bool=False,
-//|#        vsync_invert: bool=False,
-//|#        hsync_invert: bool=False,
+//|         href: Optional[microcontroller.Pin],
 //|     ):
-//|         """Create a parallel image capture object"""
+//|         """Create a parallel image capture object
+//|         :param microcontroller.Pin data0: The first data pin.  Additional data pins are assumed to follow this pin directly in the microcontroller's standard pin ordering.
+//|         :param int data_count: The number of data pins.
+//|         :param microcontroller.Pin clock: The pixel clock input.
+//|         :param microcontroller.Pin vsync: The vertical sync input, which has a negative-going pulse at the beginning of each frame.
+//|         :param microcontroller.Pin href: The horizontal reference input, which is high whenever the camera is transmitting valid pixel information.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data0, ARG_data_count, ARG_clock, ARG_vsync, ARG_hsync,
-           // ARG_clock_invert, ARG_vsync_invert, ARG_hsync_invert,
+    enum { ARG_data0, ARG_data_count, ARG_clock, ARG_vsync, ARG_href,
            NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_data_count, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 8 } },
         { MP_QSTR_clock, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_vsync, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
-        { MP_QSTR_hsync, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
-        // { MP_QSTR_clock_invert, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = False} },
-        // { MP_QSTR_vsync_invert, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = False} },
-        // { MP_QSTR_hsync_invert, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = False} },
+        { MP_QSTR_href, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
@@ -72,12 +71,12 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
     mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
     mcu_pin_obj_t *vsync = validate_obj_is_free_pin_or_none(args[ARG_vsync].u_obj);
-    mcu_pin_obj_t *hsync = validate_obj_is_free_pin_or_none(args[ARG_hsync].u_obj);
+    mcu_pin_obj_t *href = validate_obj_is_free_pin_or_none(args[ARG_href].u_obj);
 
     imagecapture_parallelimagecapture_obj_t *self = m_new_obj(imagecapture_parallelimagecapture_obj_t);
     self->base.type = &imagecapture_parallelimagecapture_type;
 
-    common_hal_imagecapture_parallelimagecapture_construct(self, data0, clock, vsync, hsync, args[ARG_data_count].u_int);
+    common_hal_imagecapture_parallelimagecapture_construct(self, data0, clock, vsync, href, args[ARG_data_count].u_int);
 
     return self;
 }
@@ -108,7 +107,7 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_deinit(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_deinit_obj, imagecapture_parallelimagecapture_deinit);
 
-//|     def __enter__(self) -> ParallelImagecapture:
+//|     def __enter__(self) -> ParallelImageCapture:
 //|         """No-op used in Context Managers."""
 //|         ...
 //|
@@ -140,7 +139,7 @@ STATIC MP_DEFINE_CONST_DICT(imagecapture_parallelimagecapture_locals_dict, image
 
 const mp_obj_type_t imagecapture_parallelimagecapture_type = {
     { &mp_type_type },
-    .name = MP_QSTR_ParallelImagecapture,
+    .name = MP_QSTR_ParallelImageCapture,
     .make_new = imagecapture_parallelimagecapture_make_new,
     .locals_dict = (mp_obj_dict_t *)&imagecapture_parallelimagecapture_locals_dict,
 };
