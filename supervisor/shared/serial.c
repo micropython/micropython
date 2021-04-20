@@ -40,7 +40,7 @@
 #ifdef NRF_DEBUG_PRINT
 // XXX  these functions are in nrf/supervisor/debug_uart.c
 extern void _debug_uart_init(void);
-extern void _debug_print_substr(const char* text, uint32_t length);
+extern void _debug_print_substr(const char *text, uint32_t length);
 #endif
 
 /*
@@ -72,15 +72,15 @@ void serial_early_init(void) {
     #endif
 
     #ifdef NRF_DEBUG_PRINT
-         _debug_uart_init();
+    _debug_uart_init();
     #endif
 }
 
 void serial_init(void) {
     usb_init();
-#ifdef NRF_DEBUG_PRINT
+    #ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
-#endif
+    #endif
 }
 
 bool serial_connected(void) {
@@ -160,7 +160,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     int uart_errcode;
 
-    common_hal_busio_uart_write(&debug_uart, (const uint8_t*) text, length, &uart_errcode);
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
 
     #ifdef NRF_DEBUG_PRINT

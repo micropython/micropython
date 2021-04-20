@@ -309,10 +309,6 @@ msgstr ""
 msgid "Address type out of range"
 msgstr ""
 
-#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
-msgid "Alarm time must be < 512 seconds."
-msgstr ""
-
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr ""
@@ -3722,6 +3718,7 @@ msgstr ""
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
