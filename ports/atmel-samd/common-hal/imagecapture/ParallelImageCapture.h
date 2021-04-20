@@ -30,5 +30,5 @@
 
 struct imagecapture_parallelimagecapture_obj {
     mp_obj_base_t base;
-    uint8_t data_pin, data_clock, vertical_sync, horizontal_sync, data_count;
+    uint8_t data_pin, data_clock, vertical_sync, horizontal_reference, data_count;
 };

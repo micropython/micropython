@@ -92,7 +92,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     // Now we know we can allocate all pins
     self->data_count = data_count;
     self->vertical_sync = vertical_sync ? vertical_sync->number : NO_PIN;
-    self->horizontal_reference = horizontal_reference ? vertical_sync->number : NO_PIN;
+    self->horizontal_reference = horizontal_reference ? horizontal_reference->number : NO_PIN;
     gpio_set_pin_direction(PIN_PCC_CLK, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(PIN_PCC_CLK, GPIO_PULL_OFF);
     gpio_set_pin_function(PIN_PCC_CLK, GPIO_PIN_FUNCTION_PCC);
