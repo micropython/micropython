@@ -2173,9 +2173,8 @@ msgid "Too many displays"
 msgstr "Terlalu banyak tampilan"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
-"Total data yang akan ditulis lebih besar daripada outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -4287,6 +4286,10 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr ""
+#~ "Total data yang akan ditulis lebih besar daripada outgoing_packet_length"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "Mencoba alokasi heap ketika MicroPython VM tidak berjalan."

@@ -2173,7 +2173,7 @@ msgid "Too many displays"
 msgstr "Troppi schermi"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
 
 #: py/obj.c
