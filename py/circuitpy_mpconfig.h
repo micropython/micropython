@@ -728,6 +728,13 @@ extern const struct _mp_obj_module_t supervisor_module;
 #define SUPERVISOR_MODULE
 #endif
 
+#if CIRCUITPY_SYNTHIO
+#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
+extern const struct _mp_obj_module_t synthio_module;
+#else
+#define SYNTHIO_MODULE
+#endif
+
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
@@ -897,6 +904,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
+    SYNTHIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_CDC_MODULE \

@@ -443,8 +443,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "%d個のブロックの確保を試みました"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "MicroPython VMの非実行時にヒープ確保を試みました"
+msgid "Attempted heap allocation when VM not running."
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -890,6 +890,11 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr "EXTINTチャネルはすでに使用されています"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "正規表現にエラーがあります"
@@ -1019,6 +1024,10 @@ msgstr "ミューテックスの開放に失敗。エラー 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "内部フラッシュ書き込みに失敗"
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "ファイルが存在します"
@@ -1090,10 +1099,6 @@ msgstr ""
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOutが利用できません"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1219,6 +1224,10 @@ msgstr "不正なBSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "不正なDACピンが与えられました"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1411,14 +1420,6 @@ msgstr ""
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "MicroPython NLRジャンプ失敗。メモリ破壊の可能性あり"
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "MicroPython致命的エラー"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "マイクのスタートアップディレイは 0.0 から 1.0 の間でなければなりません"
@@ -1469,6 +1470,10 @@ msgstr "MISOピンまたはMOSIピンが必要"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "%d個でなく6の倍数個のrgbピンを使ってください"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1614,6 +1619,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "不正なIP文字列です"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2516,10 +2522,6 @@ msgstr ""
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "バッファはbytes-likeオブジェクトでなければなりません"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -2965,7 +2967,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: 1つだけの'}'は許されません"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "fileはバイトモードで開かれたファイルでなければなりません"
 
@@ -3222,6 +3224,10 @@ msgstr ""
 msgid "invalid cert"
 msgstr "不正な証明書"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "不正なduptermインデクス"
@@ -3276,10 +3282,6 @@ msgstr ""
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "数字として不正な構文"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3742,6 +3744,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3765,6 +3768,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -4041,10 +4048,6 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr ""
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "タプル/リストの長さが正しくありません"
@@ -4179,10 +4182,6 @@ msgstr "値は%dバイトに収まらなければなりません"
 msgid "value_count must be > 0"
 msgstr "value_countは0より大きくなければなりません"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr ""
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
@@ -4268,6 +4267,18 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "バッファはbytes-likeオブジェクトでなければなりません"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "MicroPython VMの非実行時にヒープ確保を試みました"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLRジャンプ失敗。メモリ破壊の可能性あり"
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython致命的エラー"
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "引数はndarrayでなければなりません"

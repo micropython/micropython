@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-06 14:41+0000\n"
+"PO-Revision-Date: 2021-04-19 21:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -446,8 +446,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Försök att tilldela %d block"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Försökte tilldela heap när MicroPython VM inte körs."
+msgid "Attempted heap allocation when VM not running."
+msgstr "Försök till heap-allokering när den virtuella maskinen inte är igång."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -896,6 +896,11 @@ msgstr "ESP-IDF-minnetilldelning misslyckades"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT-kanalen används redan"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Fel i MIDI-ström vid position %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Fel i regex"
@@ -1025,6 +1030,10 @@ msgstr "Det gick inte att frigöra mutex, fel 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Det gick inte att skriva till intern flash."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr "Fatalt fel."
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Filen finns redan"
@@ -1096,10 +1105,6 @@ msgstr "I2C-enhet används redan"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut är inte tillgängligt"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1227,6 +1232,10 @@ msgstr "Ogiltig BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Ogiltig MIDI-fil"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1419,14 +1428,6 @@ msgstr "Maximum x-värde vid spegling är %d"
 msgid "Messages limited to 8 bytes"
 msgstr "Meddelanden begränsad till 8 byte"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "MicroPython NLR jump misslyckades. Troligen korrupt minne."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "MicroPython fatalt fel."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1478,6 +1479,10 @@ msgstr "Måste ange MISO- eller MOSI-pinne"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Måste använda ett multipel av 6 rgb-pinnar, inte %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr "NLR jump misslyckades. Troligen korrupt minne."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1623,6 +1628,7 @@ msgstr "Nordic systemfirmware fick slut på minne"
 msgid "Not a valid IP string"
 msgstr "Inte en giltig IP-sträng"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2547,10 +2553,6 @@ msgstr "branch utanför räckvidd"
 msgid "buffer is smaller than requested size"
 msgstr "bufferten är mindre än begärd storlek"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "buffer måste vara en byte-liknande objekt"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "buffertstorlek måste vara en multipel av elementstorlek"
@@ -2997,7 +2999,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: singel '}' är inte tillåten"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
@@ -3253,6 +3255,10 @@ msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
 msgid "invalid cert"
 msgstr "ogiltigt certifikat"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr "ogiltig dekorator"
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "ogiltigt dupterm index"
@@ -3307,10 +3313,6 @@ msgstr "ogiltig syntax för heltal med bas %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io måste vara rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3775,6 +3777,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3799,6 +3802,10 @@ msgstr "trycka på startknappen vid start.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "trycka båda knapparna vid uppstart.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr "håll ner vänster knapp vid start\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -4075,10 +4082,6 @@ msgstr "trapz är definierat för 1D-matriser"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "triggernivå måste vara 0 eller 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupel/lista har fel längd"
@@ -4213,10 +4216,6 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "wakeup-konflikt"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog är inte initierad"
@@ -4302,6 +4301,30 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer måste vara en byte-liknande objekt"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io måste vara rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggernivå måste vara 0 eller 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "wakeup-konflikt"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "Försökte tilldela heap när MicroPython VM inte körs."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR jump misslyckades. Troligen korrupt minne."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython fatalt fel."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "argument måste vara ndarray"

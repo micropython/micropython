@@ -219,6 +219,23 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     max_length: int
+//|     """The max length of this characteristic."""
+//|
+STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_characteristic_get_max_length(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_max_length_obj, bleio_characteristic_get_max_length);
+
+const mp_obj_property_t bleio_characteristic_max_length_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_characteristic_get_max_length_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|     descriptors: Descriptor
 //|     """A tuple of :py:class:`Descriptor` objects related to this characteristic. (read-only)"""
 //|

@@ -489,6 +489,8 @@ class CoreModuleTransform(SphinxTransform):
 
 def setup(app):
     app.add_css_file("customstyle.css")
+    app.add_css_file("filter.css")
+    app.add_js_file("filter.js")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
     app.add_transform(CoreModuleTransform)

@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 
+#include "supervisor/shared/cpu.h"
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/serial.h"
@@ -149,6 +150,10 @@ void serial_write_substring(const char *text, uint32_t length) {
     uint32_t count = 0;
     while (count < length && tud_cdc_connected()) {
         count += tud_cdc_write(text + count, length - count);
+        // If we're in an interrupt, then don't wait for more room. Queue up what we can.
+        if (cpu_interrupt_active()) {
+            break;
+        }
         usb_background();
     }
 

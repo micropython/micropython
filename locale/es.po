@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-05 22:35+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-04-15 14:26+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -426,7 +426,7 @@ msgstr "El pin proporcionado no soporta AnalogOut"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "Otra salida PWMAudioOut esta ya activada"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -451,10 +451,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Tratando de localizar %d bloques"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr ""
-"Se intentó asignación del montículo, sin que la VM de MicroPython esté "
-"ejecutando."
+msgid "Attempted heap allocation when VM not running."
+msgstr "Asignación del montículo mientras la VM no esta ejecutándose."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -905,6 +903,11 @@ msgstr "Fallo ESP-IDF al tomar la memoria"
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Error en el flujo MIDI en la posición %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Error en regex"
@@ -1007,7 +1010,7 @@ msgstr "Fallo al tomar memoria para búsqueda wifi"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Failed to buffer the sample"
-msgstr ""
+msgstr "Fallo al hacer el búfer de la muestra"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -1033,6 +1036,10 @@ msgstr "No se puede liberar el mutex, err 0x%04x"
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
 msgstr "Error al escribir el flash interno."
+
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr "Error grave."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1106,10 +1113,6 @@ msgstr "Dispositivo I2C en uso"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut no disponible"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 y 4 no soportan pullup interno durante sleep"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1242,6 +1245,10 @@ msgstr "BSSID inválido"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Pin suministrado inválido para DAC"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Archivo MIDI inválido"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1434,14 +1441,6 @@ msgstr "Valor máximo de x cuando se refleja es %d"
 msgid "Messages limited to 8 bytes"
 msgstr "Mensajes limitados a 8 bytes"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "MicroPython NLR jump falló. Probable corrupción de la memoria."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Error fatal de MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
@@ -1496,6 +1495,10 @@ msgstr "Debe proporcionar un pin MISO o MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Debe usar un múltiplo de 6 pines rgb, no %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr "Salto NLR falló. Probablemente corrupción de memoria."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1641,6 +1644,7 @@ msgstr "El firmware del sistema Nordic no tiene memoria"
 msgid "Not a valid IP string"
 msgstr "No es una cadena de IP válida"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2573,10 +2577,6 @@ msgstr "la rama no está dentro del rango"
 msgid "buffer is smaller than requested size"
 msgstr "El buffer es mas pequeño que el requerido"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "buffer debe de ser un objeto bytes-like"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "El tamaño del buffer debe ser un múltiplo del tamaño del elemento"
@@ -3025,7 +3025,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "cadena-f: solo '}' no está permitido"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "el archivo deberia ser una archivo abierto en modo byte"
 
@@ -3281,6 +3281,10 @@ msgstr "los bits_per_pixel %d no son validos, deben ser 1, 4, 8, 16, 24 o 32"
 msgid "invalid cert"
 msgstr "certificado inválido"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr "decorador invalido"
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "index dupterm inválido"
@@ -3335,10 +3339,6 @@ msgstr "sintaxis inválida para entero con base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "sintaxis inválida para número"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io debe ser rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3806,6 +3806,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3830,6 +3831,10 @@ msgstr "presionando botón de arranque al inicio.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "presionando ambos botones al inicio.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -4107,10 +4112,6 @@ msgstr "trapz esta definido para matrices 1D"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "nivel de accionamiento debe ser 0 o 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista tiene una longitud incorrecta"
@@ -4245,10 +4246,6 @@ msgstr "el valor debe caber en %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count debe ser > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflicto de wakeup"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "watchdog no inicializado"
@@ -4334,6 +4331,32 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 y 4 no soportan pullup interno durante sleep"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer debe de ser un objeto bytes-like"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io debe ser rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "nivel de accionamiento debe ser 0 o 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflicto de wakeup"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Se intentó asignación del montículo, sin que la VM de MicroPython esté "
+#~ "ejecutando."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR jump falló. Probable corrupción de la memoria."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Error fatal de MicroPython."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "argumento debe ser ndarray"
