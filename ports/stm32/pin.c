@@ -564,7 +564,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 
-#include "genhdr/pins_af_const.h"
+    #include "genhdr/pins_af_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
@@ -596,7 +596,7 @@ const mp_obj_type_t pin_type = {
     .make_new = mp_pin_make_new,
     .call = pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_locals_dict,
 };
 
 /// \moduleref pyb
@@ -670,5 +670,5 @@ const mp_obj_type_t pin_af_type = {
     { &mp_type_type },
     .name = MP_QSTR_PinAF,
     .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_af_locals_dict,
 };

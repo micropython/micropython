@@ -59,7 +59,7 @@ static inline void pyb_thread_set_local(void *value) {
 }
 
 static inline void *pyb_thread_get_local(void) {
-    return (void*)pyb_thread_cur->local_state;
+    return (void *)pyb_thread_cur->local_state;
 }
 
 static inline void pyb_thread_yield(void) {

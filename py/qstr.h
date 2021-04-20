@@ -37,11 +37,11 @@
 
 // first entry in enum will be MP_QSTR_NULL=0, which indicates invalid/no qstr
 enum {
-#ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QDEF(id, str) id,
-#include "genhdr/qstrdefs.generated.h"
+    #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
-#endif
+    #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 

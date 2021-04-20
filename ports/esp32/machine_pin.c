@@ -179,7 +179,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(args[0]);
     const machine_pin_obj_t *self = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t*)&machine_pin_obj[wanted_pin];
+        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
     }
     if (self == NULL || self->base.type == NULL) {
         mp_raise_ValueError("invalid pin");
@@ -293,7 +293,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
             gpio_isr_handler_remove(self->id);
             MP_STATE_PORT(machine_pin_irq_handler)[self->id] = handler;
             gpio_set_intr_type(self->id, trigger);
-            gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void*)self);
+            gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void *)self);
         }
     }
 
@@ -341,7 +341,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 STATIC const mp_pin_p_t pin_pin_p = {
-  .ioctl = pin_ioctl,
+    .ioctl = pin_ioctl,
 };
 
 const mp_obj_type_t machine_pin_type = {
@@ -405,7 +405,7 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
 STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = self_in;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    machine_pin_isr_handler((void*)&machine_pin_obj[self->id]);
+    machine_pin_isr_handler((void *)&machine_pin_obj[self->id]);
     return mp_const_none;
 }
 
@@ -430,5 +430,5 @@ STATIC const mp_obj_type_t machine_pin_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_IRQ,
     .call = machine_pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&machine_pin_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_pin_irq_locals_dict,
 };

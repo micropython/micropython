@@ -16,15 +16,15 @@ typedef struct _pyb_led_obj_t {
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
     {{&pyb_led_type}, 1, &MICROPY_HW_LED1},
-#if defined(MICROPY_HW_LED2)
+    #if defined(MICROPY_HW_LED2)
     {{&pyb_led_type}, 2, &MICROPY_HW_LED2},
-#if defined(MICROPY_HW_LED3)
+    #if defined(MICROPY_HW_LED3)
     {{&pyb_led_type}, 3, &MICROPY_HW_LED3},
-#if defined(MICROPY_HW_LED4)
+    #if defined(MICROPY_HW_LED4)
     {{&pyb_led_type}, 4, &MICROPY_HW_LED4},
-#endif
-#endif
-#endif
+    #endif
+    #endif
+    #endif
 };
 #define NUM_LEDS MP_ARRAY_SIZE(pyb_led_obj)
 
@@ -51,7 +51,7 @@ void led_state(pyb_led_t led, int state) {
         return;
     }
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
-    //printf("led_state(%d,%d)\n", led, state);
+    // printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
         // turn LED off
         MICROPY_HW_LED_OFF(led_pin);

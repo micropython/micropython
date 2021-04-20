@@ -88,7 +88,7 @@ void pendsv_isr_handler(void) {
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
 
-#if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD
     __asm volatile (
         "ldr r1, pendsv_object_ptr\n"
         "ldr r0, [r1]\n"
@@ -118,28 +118,28 @@ void pendsv_isr_handler(void) {
         ".align 2\n"
         "pendsv_object_ptr: .word pendsv_object\n"
         "nlr_jump_ptr: .word nlr_jump\n"
-    );
-#else
+        );
+    #else
     __asm volatile (
         "ldr r0, pendsv_object_ptr\n"
         "ldr r0, [r0]\n"
-#if defined(PENDSV_DEBUG)
+        #if defined(PENDSV_DEBUG)
         "str r0, [sp, #8]\n"
-#else
+        #else
         "str r0, [sp, #0]\n"
-#endif
+        #endif
         "ldr r0, nlr_jump_ptr\n"
-#if defined(PENDSV_DEBUG)
+        #if defined(PENDSV_DEBUG)
         "str r0, [sp, #32]\n"
-#else
+        #else
         "str r0, [sp, #24]\n"
-#endif
+        #endif
         "bx lr\n"
         ".align 2\n"
         "pendsv_object_ptr: .word pendsv_object\n"
         "nlr_jump_ptr: .word nlr_jump\n"
-    );
-#endif
+        );
+    #endif
 
     /*
     uint32_t x[2] = {0x424242, 0xdeaddead};

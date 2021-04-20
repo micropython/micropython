@@ -47,13 +47,13 @@ STATIC mp_obj_t pyb_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, si
     mp_int_t chn = mp_obj_get_int(args[0]);
 
     switch (chn) {
-    case 0:
-        return &pyb_adc_adc;
-    case 1:
-        return &pyb_adc_vdd3;
-    default:
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "not a valid ADC Channel: %d", chn));
+        case 0:
+            return &pyb_adc_adc;
+        case 1:
+            return &pyb_adc_vdd3;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "not a valid ADC Channel: %d", chn));
     }
 }
 
@@ -77,5 +77,5 @@ const mp_obj_type_t pyb_adc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
     .make_new = pyb_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_adc_locals_dict,
 };

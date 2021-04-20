@@ -51,7 +51,7 @@
         } else { \
             NVIC_EnableIRQ(irq_number); \
         } \
-    } while(0)
+    } while (0)
 #else
 #define NRFX_IRQ_ENABLE(irq_number) sd_nvic_EnableIRQ(irq_number)
 #endif
@@ -65,7 +65,7 @@
         } else { \
             NVIC_DisableIRQ(irq_number); \
         } \
-    } while(0)
+    } while (0)
 #else
 #define NRFX_IRQ_DISABLE(irq_number) sd_nvic_DisableIRQ(irq_number)
 #endif
@@ -79,7 +79,7 @@
         } else { \
             NVIC_SetPriority(irq_number, priority); \
         } \
-    } while(0)
+    } while (0)
 #else
 #define NRFX_IRQ_PRIORITY_SET(irq_number, priority) sd_nvic_SetPriority(irq_number, priority)
 #endif
@@ -93,7 +93,7 @@
         } else { \
             NVIC_SetPendingIRQ(irq_number); \
         } \
-    } while(0)
+    } while (0)
 #else
 #define NRFX_IRQ_PENDING_SET(irq_number) sd_nvic_SetPendingIRQ(irq_number)
 #endif
@@ -107,7 +107,7 @@
         } else { \
             NVIC_ClearPendingIRQ(irq_number)(irq_number); \
         } \
-    } while(0)
+    } while (0)
 #else
 #define NRFX_IRQ_PENDING_CLEAR(irq_number) sd_nvic_ClearPendingIRQ(irq_number)
 #endif
@@ -118,8 +118,8 @@
         sd_nvic_critical_region_enter(&_is_nested_critical_region);
 
 #define NRFX_CRITICAL_SECTION_EXIT() \
-        sd_nvic_critical_region_exit(_is_nested_critical_region); \
-    }
+    sd_nvic_critical_region_exit(_is_nested_critical_region); \
+}
 
 #else // BLUETOOTH_SD
 

@@ -184,7 +184,7 @@ emit_t *emit_native_thumb_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t 
 emit_t *emit_native_arm_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
-void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
+void emit_bc_set_max_num_labels(emit_t *emit, mp_uint_t max_num_labels);
 
 void emit_bc_free(emit_t *emit);
 void emit_native_x64_free(emit_t *emit);

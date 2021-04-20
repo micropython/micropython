@@ -82,8 +82,8 @@ extern const dma_descr_t dma_SDIO_0;
 #endif
 
 typedef union {
-    uint16_t    enabled;    // Used to test if both counters are == 0
-    uint8_t     counter[2];
+    uint16_t enabled;       // Used to test if both counters are == 0
+    uint8_t counter[2];
 } dma_idle_count_t;
 extern volatile dma_idle_count_t dma_idle;
 #define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)

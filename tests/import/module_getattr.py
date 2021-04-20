@@ -10,13 +10,14 @@ except AttributeError:
 
 # define __getattr__
 def __getattr__(attr):
-    if attr == 'does_not_exist':
+    if attr == "does_not_exist":
         return False
     raise AttributeError
 
+
 # do feature test (will also test functionality if the feature exists)
-if not hasattr(this, 'does_not_exist'):
-    print('SKIP')
+if not hasattr(this, "does_not_exist"):
+    print("SKIP")
     raise SystemExit
 
 # check that __getattr__ works as expected

@@ -217,7 +217,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #define MP_SSIZE_MAX (0x7fffffff)
 
@@ -249,7 +249,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
-        asm("waiti 0"); \
+        asm ("waiti 0"); \
     } while (0);
 #endif
 

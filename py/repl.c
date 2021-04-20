@@ -50,7 +50,7 @@ bool mp_repl_continue_with_input(const char *input) {
 
     // check if input starts with a certain keyword
     bool starts_with_compound_keyword =
-           input[0] == '@'
+        input[0] == '@'
         || str_startswith_word(input, "if")
         || str_startswith_word(input, "while")
         || str_startswith_word(input, "for")
@@ -61,7 +61,7 @@ bool mp_repl_continue_with_input(const char *input) {
         #if MICROPY_PY_ASYNC_AWAIT
         || str_startswith_word(input, "async")
         #endif
-        ;
+    ;
 
     // check for unmatched open bracket, quote or escape quote
     #define Q_NONE (0)
@@ -95,13 +95,26 @@ bool mp_repl_continue_with_input(const char *input) {
             }
         } else if (in_quote == Q_NONE) {
             switch (*i) {
-                case '(': n_paren += 1; break;
-                case ')': n_paren -= 1; break;
-                case '[': n_brack += 1; break;
-                case ']': n_brack -= 1; break;
-                case '{': n_brace += 1; break;
-                case '}': n_brace -= 1; break;
-                default: break;
+                case '(':
+                    n_paren += 1;
+                    break;
+                case ')':
+                    n_paren -= 1;
+                    break;
+                case '[':
+                    n_brack += 1;
+                    break;
+                case ']':
+                    n_brack -= 1;
+                    break;
+                case '{':
+                    n_brace += 1;
+                    break;
+                case '}':
+                    n_brace -= 1;
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -183,7 +196,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
             qstr q_first = 0, q_last = 0;
             for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
                 size_t d_len;
-                const char *d_str = (const char*)qstr_data(q, &d_len);
+                const char *d_str = (const char *)qstr_data(q, &d_len);
                 if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                     mp_load_method_protected(obj, q, dest, true);
                     if (dest[0] != MP_OBJ_NULL) {
@@ -237,7 +250,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
             int line_len = MAX_LINE_LEN; // force a newline for first word
             for (qstr q = q_first; q <= q_last; ++q) {
                 size_t d_len;
-                const char *d_str = (const char*)qstr_data(q, &d_len);
+                const char *d_str = (const char *)qstr_data(q, &d_len);
                 if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                     mp_load_method_protected(obj, q, dest, true);
                     if (dest[0] != MP_OBJ_NULL) {

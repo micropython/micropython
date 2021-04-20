@@ -72,7 +72,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     MP_ROM_PTR(&os_uname_info_release_obj),
     MP_ROM_PTR(&os_uname_info_version_obj),
     MP_ROM_PTR(&os_uname_info_machine_obj)
-);
+    );
 
 STATIC mp_obj_t os_uname(void) {
     return MP_OBJ_FROM_PTR(&os_uname_info_obj);
@@ -142,9 +142,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     /// \constant sep - separation character used in paths
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 
-#if MICROPY_HW_ENABLE_RNG
+    #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
-#endif
+    #endif
 
     // these are MicroPython extensions
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&uos_dupterm_obj) },
@@ -159,5 +159,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

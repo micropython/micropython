@@ -48,7 +48,7 @@ STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError("no resources");
     }
-     //nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF"));
+    // nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF"));
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
@@ -164,5 +164,5 @@ STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
 
 const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&esp32_module_globals,
+    .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };

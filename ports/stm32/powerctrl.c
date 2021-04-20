@@ -109,23 +109,39 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 #if !(defined(STM32F0) || defined(STM32L4))
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
-    if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_SYSCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_SYSCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_SYSCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_SYSCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_SYSCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_SYSCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_SYSCLK_DIV256; }
-    else { return RCC_SYSCLK_DIV512; }
+    if (wanted_div <= 1) {
+        return RCC_SYSCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_SYSCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_SYSCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_SYSCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_SYSCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_SYSCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_SYSCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_SYSCLK_DIV256;
+    } else {
+        return RCC_SYSCLK_DIV512;
+    }
 }
 
 STATIC uint32_t calc_apb_div(uint32_t wanted_div) {
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else { return RCC_SYSCLK_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else {
+        return RCC_SYSCLK_DIV16;
+    }
 }
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
@@ -274,9 +290,9 @@ void powerctrl_enter_stop_mode(void) {
     HAL_PWREx_EnableFlashPowerDown();
     #endif
 
-    # if defined(STM32F7)
+    #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
-    # else
+    #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
     #endif
 

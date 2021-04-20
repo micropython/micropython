@@ -71,7 +71,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
     if (self->nic == MP_OBJ_NULL) {
         // select NIC based on IP
         self->nic = mod_network_find_nic(ip);
-        self->nic_type = (mod_network_nic_type_t*)mp_obj_get_type(self->nic);
+        self->nic_type = (mod_network_nic_type_t *)mp_obj_get_type(self->nic);
 
         // call the NIC to open the socket
         int _errno;
@@ -203,7 +203,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);
     int _errno;
-    mp_uint_t ret = self->nic_type->recv(self, (byte*)vstr.buf, len, &_errno);
+    mp_uint_t ret = self->nic_type->recv(self, (byte *)vstr.buf, len, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -253,7 +253,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     byte ip[4];
     mp_uint_t port;
     int _errno;
-    mp_int_t ret = self->nic_type->recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
+    mp_int_t ret = self->nic_type->recvfrom(self, (byte *)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
@@ -377,7 +377,7 @@ STATIC const mp_obj_type_t socket_type = {
     .name = MP_QSTR_socket,
     .make_new = socket_make_new,
     .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&socket_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&socket_locals_dict,
 };
 
 /******************************************************************************/
@@ -407,7 +407,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
         // find a NIC that can do a name lookup
         for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
             mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-            mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+            mod_network_nic_type_t *nic_type = (mod_network_nic_type_t *)mp_obj_get_type(nic);
             if (nic_type->gethostbyname != NULL) {
                 int ret = nic_type->gethostbyname(nic, host, hlen, out_ip);
                 if (ret != 0) {
@@ -429,7 +429,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
-    return mp_obj_new_list(1, (mp_obj_t*)&tuple);
+    return mp_obj_new_list(1, (mp_obj_t *)&tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
 
@@ -462,7 +462,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals
 
 const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
 #endif // MICROPY_PY_USOCKET && !MICROPY_PY_LWIP

@@ -74,9 +74,9 @@ const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
     .attr = slice_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {

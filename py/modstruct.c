@@ -215,7 +215,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);
-    byte *p = (byte*)vstr.buf;
+    byte *p = (byte *)vstr.buf;
     memset(p, 0, size);
     struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
@@ -261,7 +261,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
 #endif

@@ -122,13 +122,13 @@
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
         extern void ets_loop_iter(void); \
         ets_loop_iter(); \
-    }
+}
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
@@ -143,7 +143,7 @@ typedef uint32_t sys_prot_t; // for modlwip
 #include <sys/types.h>
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-void *esp_native_code_commit(void*, size_t);
+void *esp_native_code_commit(void *, size_t);
 #define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 // printer for debugging output, goes to UART only

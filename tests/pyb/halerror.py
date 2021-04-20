@@ -10,6 +10,6 @@ except OSError as e:
 
 can = pyb.CAN(1, pyb.CAN.NORMAL)
 try:
-    can.send('1', 1, timeout=50)
+    can.send("1", 1, timeout=50)
 except OSError as e:
     print(repr(e))

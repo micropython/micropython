@@ -64,7 +64,7 @@ static const int8_t FLASH_STORAGE_Inquirydata[] = { // 36 bytes
     'u', 'P', 'y', ' ', ' ', ' ', ' ', ' ', // Manufacturer : 8 bytes
     'm', 'i', 'c', 'r', 'o', 'S', 'D', ' ', // Product      : 16 Bytes
     'F', 'l', 'a', 's', 'h', ' ', ' ', ' ',
-    '1', '.', '0' ,'0',                     // Version      : 4 Bytes
+    '1', '.', '0','0',                      // Version      : 4 Bytes
 };
 
 /**
@@ -109,7 +109,7 @@ int8_t FLASH_STORAGE_IsReady(uint8_t lun) {
   * @retval Status
   */
 int8_t FLASH_STORAGE_IsWriteProtected(uint8_t lun) {
-    return  0;
+    return 0;
 }
 
 // Remove the lun
@@ -145,7 +145,7 @@ int8_t FLASH_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t
   * @param  blk_len : nmber of blocks to be read
   * @retval Status
   */
-int8_t FLASH_STORAGE_Write (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+int8_t FLASH_STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
     storage_write_blocks(buf, blk_addr, blk_len);
     return 0;
 }
@@ -190,7 +190,7 @@ static const int8_t SDCARD_STORAGE_Inquirydata[] = { // 36 bytes
     'u', 'P', 'y', ' ', ' ', ' ', ' ', ' ', // Manufacturer : 8 bytes
     'm', 'i', 'c', 'r', 'o', 'S', 'D', ' ', // Product      : 16 Bytes
     'S', 'D', ' ', 'c', 'a', 'r', 'd', ' ',
-    '1', '.', '0' ,'0',                     // Version      : 4 Bytes
+    '1', '.', '0','0',                      // Version      : 4 Bytes
 };
 
 /**
@@ -216,7 +216,7 @@ int8_t SDCARD_STORAGE_Init(uint8_t lun) {
   */
 int8_t SDCARD_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
     *block_size = SDCARD_BLOCK_SIZE;
-    *block_num =  sdcard_get_capacity_in_bytes() / SDCARD_BLOCK_SIZE;
+    *block_num = sdcard_get_capacity_in_bytes() / SDCARD_BLOCK_SIZE;
     return 0;
 }
 

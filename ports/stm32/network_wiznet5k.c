@@ -80,7 +80,7 @@ STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t*)buf, len, 5000);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t *)buf, len, 5000);
     (void)status;
 }
 
@@ -142,7 +142,7 @@ STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
     uint8_t ip[4] = {1, 1, 1, 1}; // dummy
-    int ret = WIZCHIP_EXPORT(sendto)(0, (byte*)buf, len, ip, 11); // dummy port
+    int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
     if (ret != len) {
         printf("wiznet5k_send_ethernet: fatal error %d\n", ret);
         netif_set_link_down(&self->netif);
@@ -248,7 +248,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     // Access the existing object, if it has been constructed with the same hardware interface
     if (wiznet5k_obj.base.base.type == &mod_network_nic_type_wiznet5k) {
         if (!(wiznet5k_obj.spi == spi && wiznet5k_obj.cs == cs && wiznet5k_obj.rst == rst
-            && wiznet5k_obj.netif.flags != 0)) {
+              && wiznet5k_obj.netif.flags != 0)) {
             wiznet5k_deinit();
         }
     }
@@ -304,7 +304,7 @@ STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
         wizphy_getphylink() == PHY_LINK_ON
         && (self->netif.flags & NETIF_FLAG_UP)
         && self->netif.ip_addr.addr != 0
-    );
+        );
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
 
@@ -411,7 +411,7 @@ const mp_obj_type_t mod_network_nic_type_wiznet5k = {
     { &mp_type_type },
     .name = MP_QSTR_WIZNET5K,
     .make_new = wiznet5k_make_new,
-    .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
 };
 
 #endif // MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP

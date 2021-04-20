@@ -64,7 +64,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
-void usb_vcp_send_strn(const char* str, int len);
+void usb_vcp_send_strn(const char *str, int len);
 
 void pyb_usb_host_init(void);
 void pyb_usb_host_process(void);

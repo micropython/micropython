@@ -46,8 +46,8 @@ STATIC void assure_stdin_handle() {
 STATIC void assure_conout_handle() {
     if (!con_out) {
         con_out = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE,
-                      NULL, OPEN_EXISTING, 0, 0);
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL, OPEN_EXISTING, 0, 0);
         assert(con_out != INVALID_HANDLE_VALUE);
     }
 }
@@ -139,7 +139,7 @@ STATIC item_t keyCodeMap[] = {
     {VK_HOME, "[H"},
     {VK_END, "[F"},
     {VK_DELETE, "[3~"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
 };
 
 STATIC const char *cur_esc_seq = NULL;
@@ -177,20 +177,20 @@ int mp_hal_stdin_rx_chr(void) {
     DWORD num_read;
     INPUT_RECORD rec;
     for (;;) {
-      if (!ReadConsoleInput(std_in, &rec, 1, &num_read) || !num_read) {
-          return CHAR_CTRL_C; // EOF, ctrl-D
-      }
-      if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
-          continue;
-      }
-      const char c = rec.Event.KeyEvent.uChar.AsciiChar;
-      if (c) { // plain ascii char, return it
-          return c;
-      }
-      const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode);
-      if (ret) {
-          return ret;
-      }
+        if (!ReadConsoleInput(std_in, &rec, 1, &num_read) || !num_read) {
+            return CHAR_CTRL_C; // EOF, ctrl-D
+        }
+        if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
+            continue;
+        }
+        const char c = rec.Event.KeyEvent.uChar.AsciiChar;
+        if (c) { // plain ascii char, return it
+            return c;
+        }
+        const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode);
+        if (ret) {
+            return ret;
+        }
     }
 }
 
@@ -221,9 +221,9 @@ mp_uint_t mp_hal_ticks_us(void) {
 mp_uint_t mp_hal_ticks_cpu(void) {
     LARGE_INTEGER value;
     QueryPerformanceCounter(&value);
-#ifdef _WIN64
+    #ifdef _WIN64
     return value.QuadPart;
-#else
+    #else
     return value.LowPart;
-#endif
+    #endif
 }

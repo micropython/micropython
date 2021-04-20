@@ -72,7 +72,7 @@ STATIC mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errco
 }
 
 STATIC mp_uint_t iobase_write(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode) {
-    return iobase_read_write(obj, (void*)buf, size, errcode, MP_QSTR_write);
+    return iobase_read_write(obj, (void *)buf, size, errcode, MP_QSTR_write);
 }
 
 STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -144,7 +144,7 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         // is word-aligned, to guard against obscure cases when it matters, e.g.
         // https://github.com/micropython/micropython/issues/1863
         memcpy(self->buf + self->len, buf, rem);
-        buf = (byte*)buf + rem;
+        buf = (byte *)buf + rem;
         size -= rem;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->alloc, errcode);
         if (*errcode != 0) {
@@ -193,7 +193,7 @@ STATIC const mp_obj_type_t bufwriter_type = {
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
     .protocol = &bufwriter_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&bufwriter_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
@@ -236,14 +236,14 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
         mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
         o->base.type = &mp_type_bytesio;
         o->vstr = m_new_obj(vstr_t);
-        vstr_init_fixed_buf(o->vstr, len + 1, (char*)data);
+        vstr_init_fixed_buf(o->vstr, len + 1, (char *)data);
         o->vstr->len = len;
         o->pos = 0;
         return MP_OBJ_FROM_PTR(o);
     }
 
     mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len);
-    return mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
+    return mp_builtin_open(1, &path_out, (mp_map_t *)&mp_const_empty_map);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
 #endif
@@ -278,7 +278,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_io_globals, mp_module_io_globals_table);
 
 const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_io_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_io_globals,
 };
 
 #endif

@@ -163,7 +163,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         // D1 D2 D3 D4 D5 D6 D7
-        GPIO_InitStruct.Pin = GPIO_PIN_0  | GPIO_PIN_1  | GPIO_PIN_5 |\
+        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5 | \
             GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -367,7 +367,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
     #if MICROPY_HW_USB_FS
-    if (pdev->id ==  USB_PHY_FS_ID) {
+    if (pdev->id == USB_PHY_FS_ID) {
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB_OTG_FS;
         #if MICROPY_HW_USB_ENABLE_CDC2
@@ -652,7 +652,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   * @param  ep_addr: Endpoint Number
   * @retval Recived Data Size
   */
-uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr) {
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr) {
     return HAL_PCD_EP_GetRxCount(pdev->pData, ep_addr);
 }
 

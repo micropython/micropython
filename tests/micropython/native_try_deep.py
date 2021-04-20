@@ -30,5 +30,7 @@ def f():
         finally:
             print(1)
     except ValueError:
-        print('ValueError')
+        print("ValueError")
+
+
 f()

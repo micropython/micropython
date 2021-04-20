@@ -86,7 +86,7 @@ typedef struct _mp_code_state_t {
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
-    //mp_exc_stack_t exc_state[0];
+    // mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
 
 mp_uint_t mp_decode_uint(const byte **ptr);
@@ -102,10 +102,10 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define mp_bytecode_print_inst(code, const_table) mp_bytecode_print2(code, 1, const_table)
 
 // Helper macros to access pointer with least significant bits holding flags
-#define MP_TAGPTR_PTR(x) ((void*)((uintptr_t)(x) & ~((uintptr_t)3)))
+#define MP_TAGPTR_PTR(x) ((void *)((uintptr_t)(x) & ~((uintptr_t)3)))
 #define MP_TAGPTR_TAG0(x) ((uintptr_t)(x) & 1)
 #define MP_TAGPTR_TAG1(x) ((uintptr_t)(x) & 2)
-#define MP_TAGPTR_MAKE(ptr, tag) ((void*)((uintptr_t)(ptr) | (tag)))
+#define MP_TAGPTR_MAKE(ptr, tag) ((void *)((uintptr_t)(ptr) | (tag)))
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 

@@ -188,7 +188,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             if (cr3 & USART_CR3_RTSE) {
                 mp_print_str(print, "RTS");
                 if (cr3 & USART_CR3_CTSE) {
-                   mp_print_str(print, "|");
+                    mp_print_str(print, "|");
                 }
             }
             if (cr3 & USART_CR3_CTSE) {
@@ -235,7 +235,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     // static UARTs are used for internal purposes and shouldn't be reconfigured
     if (self->is_static) {
@@ -272,8 +272,12 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // stop bits
     uint32_t stop;
     switch (args.stop.u_int) {
-        case 1: stop = UART_STOPBITS_1; break;
-        default: stop = UART_STOPBITS_2; break;
+        case 1:
+            stop = UART_STOPBITS_1;
+            break;
+        default:
+            stop = UART_STOPBITS_2;
+            break;
     }
 
     // flow control
@@ -588,7 +592,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     for (;;) {
         int data = uart_rx_char(self);
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
+            *(uint16_t *)buf = data;
             buf += 2;
         } else {
             *buf++ = data;
@@ -661,5 +665,5 @@ const mp_obj_type_t pyb_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };

@@ -62,7 +62,7 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 machine_rtc_config_t machine_rtc_config = {
     .ext1_pins = 0,
     .ext0_pin = -1
-    };
+};
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -130,7 +130,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         // read RTC memory
         uint32_t len = rtc_user_mem_len;
         uint8_t rtcram[MEM_USER_MAXLEN];
-        memcpy( (char *) rtcram, (char *) rtc_user_mem_data, len);
+        memcpy((char *)rtcram, (char *)rtc_user_mem_data, len);
         return mp_obj_new_bytes(rtcram,  len);
     } else {
         // write RTC memory
@@ -140,7 +140,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         if (bufinfo.len > MEM_USER_MAXLEN) {
             mp_raise_ValueError("buffer too long");
         }
-        memcpy( (char *) rtc_user_mem_data, (char *) bufinfo.buf, bufinfo.len);
+        memcpy((char *)rtc_user_mem_data, (char *)bufinfo.buf, bufinfo.len);
         rtc_user_mem_len = bufinfo.len;
         return mp_const_none;
     }

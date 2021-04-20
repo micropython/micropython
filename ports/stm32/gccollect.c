@@ -50,9 +50,9 @@ void gc_collect(void) {
 
     // trace the stack, including the registers (since they live on the stack in this function)
     #if MICROPY_PY_THREAD
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
     #else
-    gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
     #endif
 
     // trace root pointers from any threads

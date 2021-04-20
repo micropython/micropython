@@ -47,7 +47,7 @@ void qspi_init(void) {
 
     QUADSPI->CR =
         2 << QUADSPI_CR_PRESCALER_Pos // F_CLK = F_AHB/3 (72MHz when CPU is 216MHz)
-        | 3 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
+            | 3 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
         #if defined(QUADSPI_CR_FSEL_Pos)
         | 0 << QUADSPI_CR_FSEL_Pos // FLASH 1 selected
         #endif
@@ -55,15 +55,15 @@ void qspi_init(void) {
         | 0 << QUADSPI_CR_DFM_Pos // dual-flash mode disabled
         #endif
         | 0 << QUADSPI_CR_SSHIFT_Pos // no sample shift
-        | 1 << QUADSPI_CR_TCEN_Pos // timeout counter enabled
-        | 1 << QUADSPI_CR_EN_Pos // enable the peripheral
-        ;
+            | 1 << QUADSPI_CR_TCEN_Pos // timeout counter enabled
+            | 1 << QUADSPI_CR_EN_Pos // enable the peripheral
+    ;
 
     QUADSPI->DCR =
         (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) << QUADSPI_DCR_FSIZE_Pos
-        | 1 << QUADSPI_DCR_CSHT_Pos // nCS stays high for 2 cycles
-        | 0 << QUADSPI_DCR_CKMODE_Pos // CLK idles at low state
-        ;
+            | 1 << QUADSPI_DCR_CSHT_Pos // nCS stays high for 2 cycles
+            | 0 << QUADSPI_DCR_CKMODE_Pos // CLK idles at low state
+    ;
 }
 
 void qspi_memory_map(void) {
@@ -73,17 +73,17 @@ void qspi_memory_map(void) {
     QUADSPI->LPTR = 100; // to tune
     QUADSPI->CCR =
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-        | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-        | 3 << QUADSPI_CCR_FMODE_Pos // memory-mapped mode
-        | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-        | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
-        | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-        | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
-        | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
-        | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
-        | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-        | 0xeb << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
-        ;
+            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+            | 3 << QUADSPI_CCR_FMODE_Pos // memory-mapped mode
+            | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
+            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
+            | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+            | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
+            | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
+            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+            | 0xeb << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
+    ;
 }
 
 STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
@@ -108,32 +108,32 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
     if (len == 0) {
         QUADSPI->CCR =
             0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-            | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
-            | 0 << QUADSPI_CCR_DMODE_Pos // no data
-            | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
-            | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
-            | 0 << QUADSPI_CCR_ADMODE_Pos // no address
-            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
-            ;
+                | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+                | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
+                | 0 << QUADSPI_CCR_DMODE_Pos // no data
+                | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
+                | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
+                | 0 << QUADSPI_CCR_ADMODE_Pos // no address
+                | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+                | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
+        ;
     } else {
         QUADSPI->DLR = len - 1;
 
         QUADSPI->CCR =
             0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-            | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
-            | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
-            | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
-            | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
-            | 0 << QUADSPI_CCR_ADMODE_Pos // no address
-            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
-            ;
+                | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+                | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
+                | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
+                | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
+                | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
+                | 0 << QUADSPI_CCR_ADMODE_Pos // no address
+                | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+                | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
+        ;
 
         // This assumes len==2
-        *(uint16_t*)&QUADSPI->DR = data;
+        *(uint16_t *)&QUADSPI->DR = data;
     }
 
     // Wait for write to finish
@@ -151,16 +151,16 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
     if (len == 0) {
         QUADSPI->CCR =
             0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-            | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
-            | 0 << QUADSPI_CCR_DMODE_Pos // no data
-            | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
-            | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
-            | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
-            | 1 << QUADSPI_CCR_ADMODE_Pos // address on 1 line
-            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
-            ;
+                | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+                | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
+                | 0 << QUADSPI_CCR_DMODE_Pos // no data
+                | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
+                | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
+                | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
+                | 1 << QUADSPI_CCR_ADMODE_Pos // address on 1 line
+                | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+                | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
+        ;
 
         QUADSPI->AR = addr;
     } else {
@@ -168,16 +168,16 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
 
         QUADSPI->CCR =
             0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-            | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
-            | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
-            | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
-            | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
-            | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
-            | 1 << QUADSPI_CCR_ADMODE_Pos // address on 1 line
-            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
-            ;
+                | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+                | 0 << QUADSPI_CCR_FMODE_Pos // indirect write mode
+                | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
+                | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
+                | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
+                | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
+                | 1 << QUADSPI_CCR_ADMODE_Pos // address on 1 line
+                | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+                | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
+        ;
 
         QUADSPI->AR = addr;
 
@@ -185,7 +185,7 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
         while (len) {
             while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
             }
-            *(volatile uint8_t*)&QUADSPI->DR = *src++;
+            *(volatile uint8_t *)&QUADSPI->DR = *src++;
             --len;
         }
     }
@@ -206,15 +206,15 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
 
     QUADSPI->CCR =
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-        | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-        | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
-        | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
-        | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
-        | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
-        | 0 << QUADSPI_CCR_ADMODE_Pos // no address
-        | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-        | cmd << QUADSPI_CCR_INSTRUCTION_Pos // read opcode
-        ;
+            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+            | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
+            | 1 << QUADSPI_CCR_DMODE_Pos // data on 1 line
+            | 0 << QUADSPI_CCR_DCYC_Pos // 0 dummy cycles
+            | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
+            | 0 << QUADSPI_CCR_ADMODE_Pos // no address
+            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // read opcode
+    ;
 
     // Wait for read to finish
     while (!(QUADSPI->SR & QUADSPI_SR_TCF)) {
@@ -234,17 +234,17 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
 
     QUADSPI->CCR =
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
-        | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
-        | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
-        | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-        | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
-        | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-        | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
-        | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
-        | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
-        | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-        | cmd << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
-        ;
+            | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+            | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
+            | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
+            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
+            | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+            | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
+            | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
+            | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+            | cmd << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
+    ;
 
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
     QUADSPI->AR = addr; // addres to read from
@@ -254,7 +254,7 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
         while (len >= 4) {
             while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
             }
-            *(uint32_t*)dest = QUADSPI->DR;
+            *(uint32_t *)dest = QUADSPI->DR;
             dest += 4;
             len -= 4;
         }
@@ -264,7 +264,7 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
     while (len) {
         while (!((QUADSPI->SR >> QUADSPI_SR_FLEVEL_Pos) & 0x3f)) {
         }
-        *dest++ = *(volatile uint8_t*)&QUADSPI->DR;
+        *dest++ = *(volatile uint8_t *)&QUADSPI->DR;
         --len;
     }
 

@@ -35,7 +35,7 @@
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
-            bdev->spiflash.config = (const mp_spiflash_config_t*)arg;
+            bdev->spiflash.config = (const mp_spiflash_config_t *)arg;
             mp_spiflash_init(&bdev->spiflash);
             bdev->flash_tick_counter_last_write = 0;
             return 0;

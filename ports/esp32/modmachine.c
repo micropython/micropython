@@ -108,7 +108,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         }
     }
 
-    switch(wake_type) {
+    switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
             break;
@@ -130,7 +130,7 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    switch(rtc_get_reset_reason(0)) {
+    switch (rtc_get_reset_reason(0)) {
         case POWERON_RESET:
             return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
             break;
@@ -262,7 +262,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

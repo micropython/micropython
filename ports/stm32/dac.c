@@ -187,14 +187,14 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     __HAL_RCC_DMA1_CLK_ENABLE();
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
-    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void*)NULL);
+    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void *)NULL);
     // Need to deinit DMA first
     DMA_Handle.State = HAL_DMA_STATE_READY;
     HAL_DMA_DeInit(&DMA_Handle);
 
     HAL_DAC_Stop(&DAC_Handle, self->dac_channel);
     if ((self->dac_channel == DAC_CHANNEL_1 && DAC_Handle.DMA_Handle1 != NULL)
-            || (self->dac_channel == DAC_CHANNEL_2 && DAC_Handle.DMA_Handle2 != NULL)) {
+        || (self->dac_channel == DAC_CHANNEL_2 && DAC_Handle.DMA_Handle2 != NULL)) {
         HAL_DAC_Stop_DMA(&DAC_Handle, self->dac_channel);
     }
 
@@ -436,7 +436,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
-    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void*)NULL);
+    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void *)NULL);
     /*
     DMA_Cmd(DMA_Handle->Instance, DISABLE);
     while (DMA_GetCmdStatus(DMA_Handle->Instance) != DISABLE) {
@@ -489,10 +489,10 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     if (self->bits == 8) {
         HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel,
-            (uint32_t*)bufinfo.buf, bufinfo.len, DAC_ALIGN_8B_R);
+            (uint32_t *)bufinfo.buf, bufinfo.len, DAC_ALIGN_8B_R);
     } else {
         HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel,
-            (uint32_t*)bufinfo.buf, bufinfo.len / 2, DAC_ALIGN_12B_R);
+            (uint32_t *)bufinfo.buf, bufinfo.len / 2, DAC_ALIGN_12B_R);
     }
 
     /*
@@ -508,7 +508,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     DAC_DMACmd(self->dac_channel, ENABLE);
     */
 
-    //printf("DMA: %p %lu\n", bufinfo.buf, bufinfo.len);
+    // printf("DMA: %p %lu\n", bufinfo.buf, bufinfo.len);
 
     return mp_const_none;
 }
@@ -538,7 +538,7 @@ const mp_obj_type_t pyb_dac_type = {
     .name = MP_QSTR_DAC,
     .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_dac_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_dac_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_DAC

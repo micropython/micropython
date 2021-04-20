@@ -21,15 +21,15 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
 
 MP_WEAK int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-#if 0
-#ifdef USE_HOST_MODE
+        #if 0
+        #ifdef USE_HOST_MODE
         pyb_usb_host_process();
         int c = pyb_usb_host_get_keyboard();
         if (c != 0) {
             return c;
         }
-#endif
-#endif
+        #endif
+        #endif
 
         #if MICROPY_HW_ENABLE_USB
         byte c;
@@ -56,9 +56,9 @@ MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
-#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+    #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
-#endif
+    #endif
     #if MICROPY_HW_ENABLE_USB
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn(str, len);

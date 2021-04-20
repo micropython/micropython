@@ -43,8 +43,8 @@
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
 #define SET_TRIGGER(phys_port, trig) \
     (GPIO_REG_WRITE(GPIO_PIN_ADDR(phys_port), \
-        (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
-        | GPIO_PIN_INT_TYPE_SET(trig))) \
+    (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
+    | GPIO_PIN_INT_TYPE_SET(trig))) \
 
 #define GPIO_MODE_INPUT (0)
 #define GPIO_MODE_OUTPUT (1)
@@ -52,7 +52,7 @@
 #define GPIO_PULL_NONE (0)
 #define GPIO_PULL_UP (1)
 // Removed in SDK 1.1.0
-//#define GPIO_PULL_DOWN (2)
+// #define GPIO_PULL_DOWN (2)
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
@@ -315,7 +315,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(args[0]);
     pyb_pin_obj_t *pin = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(pyb_pin_obj)) {
-        pin = (pyb_pin_obj_t*)&pyb_pin_obj[wanted_pin];
+        pin = (pyb_pin_obj_t *)&pyb_pin_obj[wanted_pin];
     }
     if (pin == NULL || pin->base.type == NULL) {
         mp_raise_ValueError("invalid pin");
@@ -438,7 +438,7 @@ STATIC const mp_rom_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
-    //{ MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    // { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
 
     // IRQ triggers, can be or'd together
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
@@ -458,7 +458,7 @@ const mp_obj_type_t pyb_pin_type = {
     .make_new = mp_pin_make_new,
     .call = pyb_pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_pin_locals_dict,
 };
 
 /******************************************************************************/
@@ -514,5 +514,5 @@ STATIC const mp_obj_type_t pin_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_IRQ,
     .call = pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&pin_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_irq_locals_dict,
 };

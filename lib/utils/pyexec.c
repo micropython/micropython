@@ -84,7 +84,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
                 lex = mp_lexer_new_from_file(source);
             } else {
-                lex = (mp_lexer_t*)source;
+                lex = (mp_lexer_t *)source;
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
@@ -114,7 +114,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         } else {
@@ -132,8 +132,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
             printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
-                   "n_str_data_bytes=%u\n  n_total_bytes=%u\n",
-                   (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
+                "n_str_data_bytes=%u\n  n_total_bytes=%u\n",
+                (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
         }
 
         #if MICROPY_ENABLE_GC
@@ -158,7 +158,7 @@ typedef struct _repl_t {
     // but it was moved to MP_STATE_VM(repl_line) as containing
     // root pointer. Still keep structure in case more state
     // will be added later.
-    //vstr_t line;
+    // vstr_t line;
     bool cont_line;
 } repl_t;
 
@@ -271,10 +271,10 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
     } else {
 
         if (ret == CHAR_CTRL_C) {
-           // cancel everything
-           mp_hal_stdout_tx_str("\r\n");
-           repl.cont_line = false;
-           goto input_restart;
+            // cancel everything
+            mp_hal_stdout_tx_str("\r\n");
+            repl.cont_line = false;
+            goto input_restart;
         } else if (ret == CHAR_CTRL_D) {
             // stop entering compound statement
             goto exec;
@@ -290,13 +290,13 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             return 0;
         }
 
-exec: ;
+    exec:;
         int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
 
-input_restart:
+    input_restart:
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         readline_init(MP_STATE_VM(repl_line), ">>> ");
@@ -373,11 +373,11 @@ int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
 
-#if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+    #if defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     // in host mode, we enable the LCD for the repl
     mp_obj_t lcd_o = mp_call_function_0(mp_load_name(qstr_from_str("LCD")));
     mp_call_function_1(mp_load_attr(lcd_o, qstr_from_str("light")), mp_const_true);
-#endif
+    #endif
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");

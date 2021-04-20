@@ -57,7 +57,7 @@ STATIC void nibble_write(mp_soft_qspi_obj_t *self, uint8_t v) {
 }
 
 STATIC int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd) {
-    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t *)self_in;
 
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
@@ -67,7 +67,7 @@ STATIC int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd) {
             // Configure pins
             mp_hal_pin_write(self->clk, 0);
             mp_hal_pin_output(self->clk);
-            //mp_hal_pin_write(self->clk, 1);
+            // mp_hal_pin_write(self->clk, 1);
             mp_hal_pin_output(self->io0);
             mp_hal_pin_input(self->io1);
             mp_hal_pin_write(self->io2, 1);
@@ -155,19 +155,19 @@ STATIC void mp_soft_qspi_qwrite(mp_soft_qspi_obj_t *self, size_t len, const uint
         SCK_LOW(self);
     }
 
-    //mp_hal_pin_input(self->io1);
+    // mp_hal_pin_input(self->io1);
 }
 
 STATIC void mp_soft_qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
-    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t *)self_in;
     uint32_t cmd_buf = cmd | data << 8;
     CS_LOW(self);
-    mp_soft_qspi_transfer(self, 1 + len, (uint8_t*)&cmd_buf, NULL);
+    mp_soft_qspi_transfer(self, 1 + len, (uint8_t *)&cmd_buf, NULL);
     CS_HIGH(self);
 }
 
 STATIC void mp_soft_qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
-    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t *)self_in;
     uint8_t cmd_buf[4] = {cmd, addr >> 16, addr >> 8, addr};
     CS_LOW(self);
     mp_soft_qspi_transfer(self, 4, cmd_buf, NULL);
@@ -176,16 +176,16 @@ STATIC void mp_soft_qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_
 }
 
 STATIC uint32_t mp_soft_qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
-    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t *)self_in;
     uint32_t cmd_buf = cmd;
     CS_LOW(self);
-    mp_soft_qspi_transfer(self, 1 + len, (uint8_t*)&cmd_buf, (uint8_t*)&cmd_buf);
+    mp_soft_qspi_transfer(self, 1 + len, (uint8_t *)&cmd_buf, (uint8_t *)&cmd_buf);
     CS_HIGH(self);
     return cmd_buf >> 8;
 }
 
 STATIC void mp_soft_qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
-    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
+    mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t *)self_in;
     uint8_t cmd_buf[7] = {cmd, addr >> 16, addr >> 8, addr};
     CS_LOW(self);
     mp_soft_qspi_transfer(self, 1, cmd_buf, NULL);

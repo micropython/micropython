@@ -190,9 +190,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_dump_obj, mod_utimeq_dump);
 STATIC mp_obj_t utimeq_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_utimeq_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -212,7 +215,7 @@ STATIC const mp_obj_type_t utimeq_type = {
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
     .unary_op = utimeq_unary_op,
-    .locals_dict = (void*)&utimeq_locals_dict,
+    .locals_dict = (void *)&utimeq_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {
@@ -224,7 +227,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_utimeq_globals, mp_module_utimeq_globals_t
 
 const mp_obj_module_t mp_module_utimeq = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_utimeq_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_utimeq_globals,
 };
 
-#endif //MICROPY_PY_UTIMEQ
+#endif // MICROPY_PY_UTIMEQ

@@ -17,8 +17,8 @@ uart.init(2400)
 print(uart)
 
 print(uart.any())
-print(uart.write('123'))
-print(uart.write(b'abcd'))
+print(uart.write("123"))
+print(uart.write(b"abcd"))
 print(uart.writechar(1))
 
 # make sure this method exists
@@ -26,8 +26,8 @@ uart.sendbreak()
 
 # non-blocking mode
 uart = UART(1, 9600, timeout=0)
-print(uart.write(b'1'))
-print(uart.write(b'abcd'))
+print(uart.write(b"1"))
+print(uart.write(b"abcd"))
 print(uart.writechar(1))
 print(uart.read(100))
 

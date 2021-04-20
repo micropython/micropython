@@ -24,7 +24,7 @@ int main() {
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
     heap = malloc(HEAP_SIZE);
-    upytest_set_heap(heap, (char*)heap + HEAP_SIZE);
+    upytest_set_heap(heap, (char *)heap + HEAP_SIZE);
     int r = tinytest_main(0, NULL, groups);
     printf("status: %d\n", r);
     return r;
@@ -37,10 +37,10 @@ void gc_collect(void) {
     jmp_buf env;
     setjmp(env);
     volatile mp_uint_t dummy;
-    void *sp = (void*)&dummy;
+    void *sp = (void *)&dummy;
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
 
     gc_collect_end();
 }

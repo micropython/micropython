@@ -222,7 +222,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) is disabled (dedicated to REPL)", uart_num));
     }
 
-     // Defaults
+    // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
@@ -413,5 +413,5 @@ const mp_obj_type_t machine_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
 };

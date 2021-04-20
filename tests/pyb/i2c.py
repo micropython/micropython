@@ -19,7 +19,7 @@ i2c.deinit()
 
 accel_addr = 76
 
-pyb.Accel() # this will init the MMA for us
+pyb.Accel()  # this will init the MMA for us
 i2c.init(I2C.MASTER, baudrate=400000)
 
 print(i2c.scan())

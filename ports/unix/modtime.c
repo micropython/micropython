@@ -66,32 +66,32 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #endif
 
 STATIC mp_obj_t mod_time_time(void) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     gettimeofday(&tv, NULL);
     mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
     return mp_obj_new_float(val);
-#else
+    #else
     return mp_obj_new_int((mp_int_t)time(NULL));
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock(void) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
     // to preserve integer part resolution.
     return mp_obj_new_float((float)(clock() / 1000) / CLOCK_DIV);
-#else
+    #else
     return mp_obj_new_int((mp_int_t)clock());
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
     double ipart;
@@ -109,18 +109,18 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
             break;
         }
         mp_handle_pending();
-        //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
+        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
         #endif
     }
     RAISE_ERRNO(res, errno);
-#else
+    #else
     // TODO: Handle EINTR
     MP_THREAD_GIL_EXIT();
     sleep(mp_obj_get_int(arg));
     MP_THREAD_GIL_ENTER();
-#endif
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
@@ -179,7 +179,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_UTIME

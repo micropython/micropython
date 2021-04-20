@@ -138,20 +138,20 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 #if MICROPY_HW_ENABLE_STORAGE
 static const char fresh_boot_py[] =
-"# boot.py -- run on boot-up\r\n"
-"# can run arbitrary Python, but best to keep it minimal\r\n"
-"\r\n"
-"import machine\r\n"
-"import pyb\r\n"
-"#pyb.main('main.py') # main script to run after this one\r\n"
+    "# boot.py -- run on boot-up\r\n"
+    "# can run arbitrary Python, but best to keep it minimal\r\n"
+    "\r\n"
+    "import machine\r\n"
+    "import pyb\r\n"
+    "#pyb.main('main.py') # main script to run after this one\r\n"
 #if MICROPY_HW_ENABLE_USB
-"#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
-"#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+    "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
+    "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
 #endif
 ;
 
 static const char fresh_main_py[] =
-"# main.py -- put your code here!\r\n"
+    "# main.py -- put your code here!\r\n"
 ;
 
 static const char fresh_pybcdc_inf[] =
@@ -159,18 +159,18 @@ static const char fresh_pybcdc_inf[] =
 ;
 
 static const char fresh_readme_txt[] =
-"This is a MicroPython board\r\n"
-"\r\n"
-"You can get started right away by writing your Python code in 'main.py'.\r\n"
-"\r\n"
-"For a serial prompt:\r\n"
-" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
-"   Then use a terminal program like Hyperterminal or putty.\r\n"
-" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
-" - Linux: use the command: screen /dev/ttyACM0\r\n"
-"\r\n"
-"Please visit http://micropython.org/help/ for further help.\r\n"
+    "This is a MicroPython board\r\n"
+    "\r\n"
+    "You can get started right away by writing your Python code in 'main.py'.\r\n"
+    "\r\n"
+    "For a serial prompt:\r\n"
+    " - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
+    "   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+    "   Then use a terminal program like Hyperterminal or putty.\r\n"
+    " - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
+    " - Linux: use the command: screen /dev/ttyACM0\r\n"
+    "\r\n"
+    "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
 
 // avoid inlining to avoid stack usage within main()
@@ -483,20 +483,20 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
 
-    #if defined(STM32F4) ||  defined(STM32F7)
-        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-        // which behaves more or less like normal SRAM.
-        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #elif defined(CCMDATARAM_BASE)
-        // enable the CCM RAM
-        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
-        #endif
+    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+    #elif defined(CCMDATARAM_BASE)
+    // enable the CCM RAM
+    __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
+    #endif
     #elif defined(STM32H7)
-        // Enable D2 SRAM1/2/3 clocks.
-        __HAL_RCC_D2SRAM1_CLK_ENABLE();
-        __HAL_RCC_D2SRAM2_CLK_ENABLE();
-        __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    // Enable D2 SRAM1/2/3 clocks.
+    __HAL_RCC_D2SRAM1_CLK_ENABLE();
+    __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
 
 
@@ -567,7 +567,7 @@ soft_reset:
     // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above
     mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char*)&_estack - (char*)&_heap_end - 1024);
+    mp_stack_set_limit((char *)&_estack - (char *)&_heap_end - 1024);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);

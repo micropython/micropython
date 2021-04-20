@@ -94,13 +94,13 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
-    
+
 soft_reset:
     mp_stack_set_top(&_ram_end);
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
+    mp_stack_set_limit((char *)&_ram_end - (char *)&_heap_end - 400);
 
     machine_init();
 
@@ -115,35 +115,35 @@ soft_reset:
 
     readline_init0();
 
-#if MICROPY_PY_MACHINE_HW_SPI
+    #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_I2C
+    #if MICROPY_PY_MACHINE_I2C
     i2c_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_ADC
+    #if MICROPY_PY_MACHINE_ADC
     adc_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_HW_PWM
+    #if MICROPY_PY_MACHINE_HW_PWM
     pwm_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_RTCOUNTER
+    #if MICROPY_PY_MACHINE_RTCOUNTER
     rtc_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_TIMER
+    #if MICROPY_PY_MACHINE_TIMER
     timer_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_UART
+    #if MICROPY_PY_MACHINE_UART
     uart_init0();
-#endif
+    #endif
 
-#if (MICROPY_PY_BLE_NUS == 0)
+    #if (MICROPY_PY_BLE_NUS == 0)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(0),
@@ -151,15 +151,15 @@ soft_reset:
         };
         MP_STATE_PORT(board_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
-#endif
+    #endif
 
-pin_init0();
+    pin_init0();
 
-#if MICROPY_MBFS
+    #if MICROPY_MBFS
     microbit_filesystem_init();
-#endif
+    #endif
 
-#if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // create vfs object
@@ -185,47 +185,47 @@ pin_init0();
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
-			// use SD card as current directory
-			f_chdrive("/sd");
+            // use SD card as current directory
+            f_chdrive("/sd");
         }
-        no_mem_for_sd:;
+    no_mem_for_sd:;
     }
-#endif
+    #endif
 
-#if (MICROPY_HW_HAS_LED)
+    #if (MICROPY_HW_HAS_LED)
     led_init();
 
     do_str("import board\r\n" \
-           "board.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
-#endif
+        "board.LED(1).on()",
+        MP_PARSE_FILE_INPUT);
+    #endif
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
 
-#if MICROPY_PY_BLE_NUS
+    #if MICROPY_PY_BLE_NUS
     ble_uart_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     ticker_init0();
     softpwm_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MUSIC
+    #if MICROPY_PY_MUSIC
     microbit_music_init0();
-#endif
-#if BOARD_SPECIFIC_MODULES
+    #endif
+    #if BOARD_SPECIFIC_MODULES
     board_modules_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     ticker_start();
     pwm_start();
-#endif
+    #endif
 
-#if MICROPY_VFS || MICROPY_MBFS
+    #if MICROPY_VFS || MICROPY_MBFS
     // run boot.py and main.py if they exist.
     if (mp_import_stat("boot.py") == MP_IMPORT_STAT_FILE) {
         pyexec_file("boot.py");
@@ -233,7 +233,7 @@ pin_init0();
     if (mp_import_stat("main.py") == MP_IMPORT_STAT_FILE) {
         pyexec_file("main.py");
     }
-#endif
+    #endif
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -252,9 +252,9 @@ pin_init0();
 
     printf("MPY: soft reboot\n");
 
-#if BLUETOOTH_SD
+    #if BLUETOOTH_SD
     sd_softdevice_disable();
-#endif
+    #endif
 
     goto soft_reset;
 
@@ -294,26 +294,27 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
-void HardFault_Handler(void)
-{
-#if defined(NRF52_SERIES)
-	static volatile uint32_t reg;
-	static volatile uint32_t reg2;
-	static volatile uint32_t bfar;
-	reg = SCB->HFSR;
-	reg2 = SCB->CFSR;
-	bfar = SCB->BFAR;
-	for (int i = 0; i < 0; i++)
-	{
-		(void)reg;
-		(void)reg2;
-		(void)bfar;
-	}
-#endif
+void HardFault_Handler(void) {
+    #if defined(NRF52_SERIES)
+    static volatile uint32_t reg;
+    static volatile uint32_t reg2;
+    static volatile uint32_t bfar;
+    reg = SCB->HFSR;
+    reg2 = SCB->CFSR;
+    bfar = SCB->BFAR;
+    for (int i = 0; i < 0; i++)
+    {
+        (void)reg;
+        (void)reg2;
+        (void)bfar;
+    }
+    #endif
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 void nlr_jump_fail(void *val) {
@@ -327,4 +328,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 
-void _start(void) {main(0, NULL);}
+void _start(void) {
+    main(0, NULL);
+}

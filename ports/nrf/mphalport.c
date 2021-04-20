@@ -80,17 +80,16 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_delay_us(mp_uint_t us)
-{
+void mp_hal_delay_us(mp_uint_t us) {
     if (us == 0) {
         return;
     }
 
-    register uint32_t delay __ASM ("r0") = us;
+    register uint32_t delay __ASM("r0") = us;
     __ASM volatile (
-#ifdef NRF51
-            ".syntax unified\n"
-#endif
+        #ifdef NRF51
+        ".syntax unified\n"
+        #endif
         "1:\n"
         " SUBS %0, %0, #1\n"
         " NOP\n"
@@ -105,7 +104,7 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#ifdef NRF52
+        #ifdef NRF52
         " NOP\n"
         " NOP\n"
         " NOP\n"
@@ -152,13 +151,12 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#endif
+        #endif
         " BNE 1b\n"
         : "+r" (delay));
 }
 
-void mp_hal_delay_ms(mp_uint_t ms)
-{
+void mp_hal_delay_ms(mp_uint_t ms) {
     for (mp_uint_t i = 0; i < ms; i++)
     {
         mp_hal_delay_us(999);
@@ -169,21 +167,21 @@ void mp_hal_delay_ms(mp_uint_t ms)
 
 static const char nrfx_error_unknown[1] = "";
 
-static const char nrfx_error_success[]            = "NRFX_SUCCESS";
-static const char nrfx_error_internal[]           = "NRFX_ERROR_INTERNAL";
-static const char nrfx_error_no_mem[]             = "NRFX_ERROR_NO_MEM";
-static const char nrfx_error_not_supported[]      = "NRFX_ERROR_NOT_SUPPORTED";
-static const char nrfx_error_invalid_param[]      = "NRFX_ERROR_INVALID_PARAM";
-static const char nrfx_error_invalid_state[]      = "NRFX_ERROR_INVALID_STATE";
-static const char nrfx_error_invalid_length[]     = "NRFX_ERROR_INVALID_LENGTH";
-static const char nrfx_error_timeout[]            = "NRFX_ERROR_TIMEOUT";
-static const char nrfx_error_forbidden[]          = "NRFX_ERROR_FORBIDDEN";
-static const char nrfx_error_null[]               = "NRFX_ERROR_NULL";
-static const char nrfx_error_invalid_addr[]       = "NRFX_ERROR_INVALID_ADDR";
-static const char nrfx_error_busy[]               = "NRFX_ERROR_BUSY";
+static const char nrfx_error_success[] = "NRFX_SUCCESS";
+static const char nrfx_error_internal[] = "NRFX_ERROR_INTERNAL";
+static const char nrfx_error_no_mem[] = "NRFX_ERROR_NO_MEM";
+static const char nrfx_error_not_supported[] = "NRFX_ERROR_NOT_SUPPORTED";
+static const char nrfx_error_invalid_param[] = "NRFX_ERROR_INVALID_PARAM";
+static const char nrfx_error_invalid_state[] = "NRFX_ERROR_INVALID_STATE";
+static const char nrfx_error_invalid_length[] = "NRFX_ERROR_INVALID_LENGTH";
+static const char nrfx_error_timeout[] = "NRFX_ERROR_TIMEOUT";
+static const char nrfx_error_forbidden[] = "NRFX_ERROR_FORBIDDEN";
+static const char nrfx_error_null[] = "NRFX_ERROR_NULL";
+static const char nrfx_error_invalid_addr[] = "NRFX_ERROR_INVALID_ADDR";
+static const char nrfx_error_busy[] = "NRFX_ERROR_BUSY";
 static const char nrfx_error_already_initalized[] = "NRFX_ERROR_ALREADY_INITIALIZED";
 
-static const char * nrfx_error_strings[13] = {
+static const char *nrfx_error_strings[13] = {
     nrfx_error_success,
     nrfx_error_internal,
     nrfx_error_no_mem,
@@ -200,16 +198,16 @@ static const char * nrfx_error_strings[13] = {
 };
 
 static const char nrfx_drv_error_twi_err_overrun[] = "NRFX_ERROR_DRV_TWI_ERR_OVERRUN";
-static const char nrfx_drv_error_twi_err_anack[]   = "NRFX_ERROR_DRV_TWI_ERR_ANACK";
-static const char nrfx_drv_error_twi_err_dnack[]   = "NRFX_ERROR_DRV_TWI_ERR_DNACK";
+static const char nrfx_drv_error_twi_err_anack[] = "NRFX_ERROR_DRV_TWI_ERR_ANACK";
+static const char nrfx_drv_error_twi_err_dnack[] = "NRFX_ERROR_DRV_TWI_ERR_DNACK";
 
-static const char * nrfx_drv_error_strings[3] = {
+static const char *nrfx_drv_error_strings[3] = {
     nrfx_drv_error_twi_err_overrun,
     nrfx_drv_error_twi_err_anack,
     nrfx_drv_error_twi_err_dnack
 };
 
-const char * nrfx_error_code_lookup(uint32_t err_code) {
+const char *nrfx_error_code_lookup(uint32_t err_code) {
     if (err_code >= NRFX_ERROR_BASE_NUM && err_code <= NRFX_ERROR_BASE_NUM + 13) {
         return nrfx_error_strings[err_code - NRFX_ERROR_BASE_NUM];
     } else if (err_code >= NRFX_ERROR_DRIVERS_BASE_NUM && err_code <= NRFX_ERROR_DRIVERS_BASE_NUM + 3) {

@@ -97,7 +97,7 @@ void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_device_desc;
+    uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t *)pdev->pClassData)->usbd_device_desc;
     *length = USB_LEN_DEV_DESC;
     return dev_desc;
 }
@@ -115,7 +115,7 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
     switch (idx) {
         case USBD_IDX_LANGID_STR:
             *length = sizeof(USBD_LangIDDesc);
-            return (uint8_t*)USBD_LangIDDesc; // the data should only be read from this buf
+            return (uint8_t *)USBD_LangIDDesc; // the data should only be read from this buf
 
         case USBD_IDX_MFC_STR:
             str = USBD_MANUFACTURER_STRING;
@@ -171,8 +171,8 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
             return NULL;
     }
 
-    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
-    USBD_GetString((uint8_t*)str, str_desc, length);
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t *)pdev->pClassData)->usbd_str_desc;
+    USBD_GetString((uint8_t *)str, str_desc, length);
     return str_desc;
 }
 

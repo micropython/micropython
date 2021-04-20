@@ -54,54 +54,56 @@
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
 NORETURN void _esp_exceptions(esp_err_t e) {
-   switch (e) {
-      case ESP_ERR_WIFI_NOT_INIT: 
-        mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
-      case ESP_ERR_WIFI_NOT_STARTED:
-        mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
-      case ESP_ERR_WIFI_NOT_STOPPED:
-        mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
-      case ESP_ERR_WIFI_IF:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
-      case ESP_ERR_WIFI_MODE:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
-      case ESP_ERR_WIFI_STATE:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
-      case ESP_ERR_WIFI_CONN:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
-      case ESP_ERR_WIFI_NVS:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
-      case ESP_ERR_WIFI_MAC:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
-      case ESP_ERR_WIFI_SSID:
-        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
-      case ESP_ERR_WIFI_PASSWORD:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
-      case ESP_ERR_WIFI_TIMEOUT:
-        mp_raise_OSError(MP_ETIMEDOUT);
-      case ESP_ERR_WIFI_WAKE_FAIL:
-        mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
-      case ESP_ERR_WIFI_WOULD_BLOCK:
-        mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
-      case ESP_ERR_WIFI_NOT_CONNECT:
-        mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
-      case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
-        mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
-      case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
-        mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
-      case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
-        mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
-      case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-        mp_raise_OSError(MP_ENOMEM); 
-      default:
-        nlr_raise(mp_obj_new_exception_msg_varg(
-          &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
-        ));
-   }
+    switch (e) {
+        case ESP_ERR_WIFI_NOT_INIT:
+            mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
+        case ESP_ERR_WIFI_NOT_STARTED:
+            mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
+        case ESP_ERR_WIFI_NOT_STOPPED:
+            mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
+        case ESP_ERR_WIFI_IF:
+            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
+        case ESP_ERR_WIFI_MODE:
+            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
+        case ESP_ERR_WIFI_STATE:
+            mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
+        case ESP_ERR_WIFI_CONN:
+            mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
+        case ESP_ERR_WIFI_NVS:
+            mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
+        case ESP_ERR_WIFI_MAC:
+            mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
+        case ESP_ERR_WIFI_SSID:
+            mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
+        case ESP_ERR_WIFI_PASSWORD:
+            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+        case ESP_ERR_WIFI_TIMEOUT:
+            mp_raise_OSError(MP_ETIMEDOUT);
+        case ESP_ERR_WIFI_WAKE_FAIL:
+            mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
+        case ESP_ERR_WIFI_WOULD_BLOCK:
+            mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
+        case ESP_ERR_WIFI_NOT_CONNECT:
+            mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
+        case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
+            mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
+        case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
+            mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
+        case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
+            mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
+        case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
+            mp_raise_OSError(MP_ENOMEM);
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(
+                &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
+                ));
+    }
 }
 
 static inline void esp_exceptions(esp_err_t e) {
-    if (e != ESP_OK) _esp_exceptions(e);
+    if (e != ESP_OK) {
+        _esp_exceptions(e);
+    }
 }
 
 #define ESP_EXCEPTIONS(x) do { esp_exceptions(x); } while (0);
@@ -131,67 +133,67 @@ static uint8_t wifi_sta_disconn_reason = 0;
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
-   switch(event->event_id) {
-    case SYSTEM_EVENT_STA_START:
-        ESP_LOGI("wifi", "STA_START");
-        break;
-    case SYSTEM_EVENT_STA_CONNECTED:
-        ESP_LOGI("network", "CONNECTED");
-        break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-        ESP_LOGI("network", "GOT_IP");
-        wifi_sta_connected = true;
-        wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
-        break;
-    case SYSTEM_EVENT_STA_DISCONNECTED: {
-        // This is a workaround as ESP32 WiFi libs don't currently
-        // auto-reassociate.
-        system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
-        char *message = "";
-        wifi_sta_disconn_reason = disconn->reason;
-        switch (disconn->reason) {
-            case WIFI_REASON_BEACON_TIMEOUT:
-                // AP has dropped out; try to reconnect.
-                message = "\nbeacon timeout";
-                break;
-            case WIFI_REASON_NO_AP_FOUND:
-                // AP may not exist, or it may have momentarily dropped out; try to reconnect.
-                message = "\nno AP found";
-                break;
-            case WIFI_REASON_AUTH_FAIL:
-                message = "\nauthentication failed";
-                wifi_sta_connect_requested = false;
-                break;
-            default:
-                // Let other errors through and try to reconnect.
-                break;
-        }
-        ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
+    switch (event->event_id) {
+        case SYSTEM_EVENT_STA_START:
+            ESP_LOGI("wifi", "STA_START");
+            break;
+        case SYSTEM_EVENT_STA_CONNECTED:
+            ESP_LOGI("network", "CONNECTED");
+            break;
+        case SYSTEM_EVENT_STA_GOT_IP:
+            ESP_LOGI("network", "GOT_IP");
+            wifi_sta_connected = true;
+            wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+            break;
+        case SYSTEM_EVENT_STA_DISCONNECTED: {
+            // This is a workaround as ESP32 WiFi libs don't currently
+            // auto-reassociate.
+            system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
+            char *message = "";
+            wifi_sta_disconn_reason = disconn->reason;
+            switch (disconn->reason) {
+                case WIFI_REASON_BEACON_TIMEOUT:
+                    // AP has dropped out; try to reconnect.
+                    message = "\nbeacon timeout";
+                    break;
+                case WIFI_REASON_NO_AP_FOUND:
+                    // AP may not exist, or it may have momentarily dropped out; try to reconnect.
+                    message = "\nno AP found";
+                    break;
+                case WIFI_REASON_AUTH_FAIL:
+                    message = "\nauthentication failed";
+                    wifi_sta_connect_requested = false;
+                    break;
+                default:
+                    // Let other errors through and try to reconnect.
+                    break;
+            }
+            ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-        bool reconnected = false;
-        if (wifi_sta_connect_requested) {
-            wifi_mode_t mode;
-            if (esp_wifi_get_mode(&mode) == ESP_OK) {
-                if (mode & WIFI_MODE_STA) {
-                    // STA is active so attempt to reconnect.
-                    esp_err_t e = esp_wifi_connect();
-                    if (e != ESP_OK) {
-                        ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
-                    } else {
-                        reconnected = true;
+            bool reconnected = false;
+            if (wifi_sta_connect_requested) {
+                wifi_mode_t mode;
+                if (esp_wifi_get_mode(&mode) == ESP_OK) {
+                    if (mode & WIFI_MODE_STA) {
+                        // STA is active so attempt to reconnect.
+                        esp_err_t e = esp_wifi_connect();
+                        if (e != ESP_OK) {
+                            ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
+                        } else {
+                            reconnected = true;
+                        }
                     }
                 }
             }
+            if (wifi_sta_connected && !reconnected) {
+                // If already connected and we fail to reconnect
+                wifi_sta_connected = false;
+            }
+            break;
         }
-        if (wifi_sta_connected && !reconnected) {
-            // If already connected and we fail to reconnect
-            wifi_sta_connected = false;
-        }
-        break;
-    }
-    default:
-        ESP_LOGI("network", "event %d", event->event_id);
-        break;
+        default:
+            ESP_LOGI("network", "event %d", event->event_id);
+            break;
     }
     return ESP_OK;
 }
@@ -215,8 +217,8 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     if (!initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
-        ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
-        ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+        ESP_EXCEPTIONS(esp_wifi_init(&cfg));
+        ESP_EXCEPTIONS(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
         initialized = 1;
     }
@@ -238,7 +240,7 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");
         tcpip_adapter_init();
         ESP_LOGD("modnetwork", "Initializing Event Loop");
-        ESP_EXCEPTIONS( esp_event_loop_init(event_handler, NULL) );
+        ESP_EXCEPTIONS(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
         initialized = 1;
     }
@@ -318,12 +320,12 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             wifi_sta_config.sta.bssid_set = 1;
             memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
         }
-        ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
+        ESP_EXCEPTIONS(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
-    ESP_EXCEPTIONS( esp_wifi_connect() );
+    ESP_EXCEPTIONS(esp_wifi_connect());
     MP_THREAD_GIL_ENTER();
     wifi_sta_connect_requested = true;
 
@@ -333,7 +335,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
-    ESP_EXCEPTIONS( esp_wifi_disconnect() );
+    ESP_EXCEPTIONS(esp_wifi_disconnect());
     return mp_const_none;
 }
 
@@ -376,7 +378,7 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
             require_if(args[0], WIFI_IF_AP);
             wifi_sta_list_t station_list;
             ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
-            wifi_sta_info_t *stations = (wifi_sta_info_t*)station_list.sta;
+            wifi_sta_info_t *stations = (wifi_sta_info_t *)station_list.sta;
             mp_obj_t list = mp_obj_new_list(0, NULL);
             for (int i = 0; i < station_list.num; ++i) {
                 mp_obj_tuple_t *t = mp_obj_new_tuple(1, NULL);
@@ -410,9 +412,9 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     MP_THREAD_GIL_ENTER();
     if (status == 0) {
         uint16_t count = 0;
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_num(&count) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_records(&count, wifi_ap_records) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
             uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
@@ -453,10 +455,10 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // get
         mp_obj_t tuple[4] = {
-            netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns_info.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&dns_info.ip, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
@@ -464,28 +466,32 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         if (MP_OBJ_IS_TYPE(args[1], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
             mp_obj_t *items;
             mp_obj_get_array_fixed_n(args[1], 4, &items);
-            netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
             if (mp_obj_is_integer(items[1])) {
                 // allow numeric netmask, i.e.:
                 // 24 -> 255.255.255.0
                 // 16 -> 255.255.0.0
                 // etc...
-                uint32_t* m = (uint32_t*)&info.netmask;
+                uint32_t *m = (uint32_t *)&info.netmask;
                 *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
             } else {
-                netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
+                netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
             }
-            netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-            netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[2], (void *)&info.gw, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[3], (void *)&dns_info.ip, NETUTILS_BIG);
             // To set a static IP we have to disable DHCP first
             if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
                 esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
-                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
+                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) {
+                    _esp_exceptions(e);
+                }
                 ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
                 ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
             } else if (self->if_id == WIFI_IF_AP) {
                 esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
-                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
+                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) {
+                    _esp_exceptions(e);
+                }
                 ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
                 ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
                 ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
@@ -573,7 +579,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     default:
                         goto unknown;
                 }
-                #undef QS
+#undef QS
 
                 // We post-check interface requirements to save on code size
                 if (req_if >= 0) {
@@ -605,9 +611,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case QS(MP_QSTR_essid):
             if (self->if_id == WIFI_IF_STA) {
-                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+                val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
             } else {
-                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+                val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);
             }
             break;
         case QS(MP_QSTR_hidden):
@@ -631,7 +637,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         default:
             goto unknown;
     }
-    #undef QS
+#undef QS
 
     // We post-check interface requirements to save on code size
     if (req_if >= 0) {
@@ -679,7 +685,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
-#if MODNETWORK_INCLUDE_CONSTANTS
+    #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
@@ -706,12 +712,12 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
     { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
     { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_network_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };

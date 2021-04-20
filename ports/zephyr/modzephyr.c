@@ -50,7 +50,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_stacks_analyze_obj, mod_stacks_analyze);
 
 #ifdef CONFIG_NET_SHELL
 
-//int net_shell_cmd_iface(int argc, char *argv[]);
+// int net_shell_cmd_iface(int argc, char *argv[]);
 
 STATIC mp_obj_t mod_shell_net_iface(void) {
     net_shell_cmd_iface(0, NULL);
@@ -75,7 +75,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_zephyr = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_ZEPHYR

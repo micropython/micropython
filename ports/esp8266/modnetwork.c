@@ -204,7 +204,7 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
                 // but is present in SDK headers since 1.4.0
                 t->items[0] = mp_obj_new_bytes(bs->ssid, bs->ssid_len);
                 #else
-                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
+                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char *)bs->ssid));
                 #endif
                 t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
                 t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
@@ -281,10 +281,10 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         // get
         dns_addr = dns_getserver(0);
         mp_obj_t tuple[4] = {
-            netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns_addr, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&dns_addr, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
@@ -292,19 +292,19 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         mp_obj_t *items;
         bool restart_dhcp_server = false;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
         if (mp_obj_is_integer(items[1])) {
             // allow numeric netmask, i.e.:
             // 24 -> 255.255.255.0
             // 16 -> 255.255.0.0
             // etc...
-            uint32_t* m = (uint32_t*)&info.netmask;
+            uint32_t *m = (uint32_t *)&info.netmask;
             *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
         } else {
-            netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
         }
-        netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], (void*)&dns_addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], (void *)&info.gw, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], (void *)&dns_addr, NETUTILS_BIG);
         // To set a static IP we have to disable DHCP first
         if (self->if_id == STATION_IF) {
             wifi_station_dhcpc_stop();
@@ -313,8 +313,8 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             wifi_softap_dhcps_stop();
         }
         if (!wifi_set_ip_info(self->if_id, &info)) {
-          nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "wifi_set_ip_info() failed"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                "wifi_set_ip_info() failed"));
         }
         dns_setserver(0, &dns_addr);
         if (restart_dhcp_server) {
@@ -396,14 +396,14 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         req_if = STATION_IF;
                         if (self->if_id == STATION_IF) {
                             const char *s = mp_obj_str_get_str(kwargs->table[i].value);
-                            wifi_station_set_hostname((char*)s);
+                            wifi_station_set_hostname((char *)s);
                         }
                         break;
                     }
                     default:
                         goto unknown;
                 }
-                #undef QS
+#undef QS
             }
         }
 
@@ -438,9 +438,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
-                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+                val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
             } else {
-                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+                val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);
             }
             break;
         case MP_QSTR_hidden:
@@ -457,7 +457,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             break;
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
-            char* s = wifi_station_get_hostname();
+            char *s = wifi_station_get_hostname();
             if (s == NULL) {
                 val = MP_OBJ_NEW_QSTR(MP_QSTR_);
             } else {
@@ -497,7 +497,7 @@ STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 const mp_obj_type_t wlan_if_type = {
     { &mp_type_type },
     .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_dict_t*)&wlan_if_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&wlan_if_locals_dict,
 };
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
@@ -515,7 +515,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
-#if MODNETWORK_INCLUDE_CONSTANTS
+    #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
 
@@ -535,12 +535,12 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t network_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_network_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };

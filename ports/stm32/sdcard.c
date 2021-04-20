@@ -204,14 +204,14 @@ bool sdcard_power_on(void) {
 
     // SD device interface configuration
     sd_handle.Instance = SDIO;
-    sd_handle.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
+    sd_handle.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
     #ifndef STM32H7
-    sd_handle.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
+    sd_handle.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     #endif
-    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_ENABLE;
-    sd_handle.Init.BusWide             = SDIO_BUS_WIDE_1B;
+    sd_handle.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_ENABLE;
+    sd_handle.Init.BusWide = SDIO_BUS_WIDE_1B;
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-    sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
+    sd_handle.Init.ClockDiv = SDIO_TRANSFER_CLK_DIV;
 
     // init the SD interface, with retry if it's not ready yet
     for (int retry = 10; HAL_SD_Init(&sd_handle) != HAL_OK; retry--) {
@@ -337,8 +337,8 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         // bytes at the aligned location should be able to be changed for the
         // duration of this function call.
         orig_dest = dest;
-        dest = (uint8_t*)((uint32_t)dest & ~3);
-        saved_word = *(uint32_t*)dest;
+        dest = (uint8_t *)((uint32_t)dest & ~3);
+        saved_word = *(uint32_t *)dest;
     }
 
     if (query_irq() == IRQ_STATE_ENABLED) {
@@ -423,7 +423,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
 
         sdcard_reset_periph();
-        err = HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t*)src, block_num, num_blocks);
+        err = HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t *)src, block_num, num_blocks);
         if (err == HAL_OK) {
             err = sdcard_wait_finished(&sd_handle, 60000);
         }
@@ -435,7 +435,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 
         restore_irq_pri(basepri);
     } else {
-        err = HAL_SD_WriteBlocks(&sd_handle, (uint8_t*)src, block_num, num_blocks, 60000);
+        err = HAL_SD_WriteBlocks(&sd_handle, (uint8_t *)src, block_num, num_blocks, 60000);
         if (err == HAL_OK) {
             err = sdcard_wait_finished(&sd_handle, 60000);
         }
@@ -588,7 +588,7 @@ const mp_obj_type_t pyb_sdcard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDCard,
     .make_new = pyb_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_sdcard_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_sdcard_locals_dict,
 };
 
 void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {

@@ -3,6 +3,7 @@ try:
 except ImportError:
     try:
         import socket, select, errno
+
         select.poll  # Raises AttributeError for CPython implementations without poll()
     except (ImportError, AttributeError):
         print("SKIP")

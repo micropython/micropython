@@ -43,7 +43,7 @@
 #include "usb.h"
 
 uint8_t *usbd_hid_init(usbd_hid_state_t *hid_in) {
-    usbd_hid_itf_t *hid = (usbd_hid_itf_t*)hid_in;
+    usbd_hid_itf_t *hid = (usbd_hid_itf_t *)hid_in;
 
     hid->current_read_buffer = 0;
     hid->last_read_len = 0;
@@ -57,7 +57,7 @@ uint8_t *usbd_hid_init(usbd_hid_state_t *hid_in) {
 // len: number of bytes received into the buffer we passed to USBD_HID_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
 int8_t usbd_hid_receive(usbd_hid_state_t *hid_in, size_t len) {
-    usbd_hid_itf_t *hid = (usbd_hid_itf_t*)hid_in;
+    usbd_hid_itf_t *hid = (usbd_hid_itf_t *)hid_in;
 
     hid->current_write_buffer = !hid->current_write_buffer;
     hid->last_read_len = len;

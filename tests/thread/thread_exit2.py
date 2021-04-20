@@ -8,12 +8,14 @@ except ImportError:
     import time
 import _thread
 
+
 def thread_entry():
     raise SystemExit
+
 
 _thread.start_new_thread(thread_entry, ())
 _thread.start_new_thread(thread_entry, ())
 
 # wait for threads to finish
 time.sleep(1)
-print('done')
+print("done")

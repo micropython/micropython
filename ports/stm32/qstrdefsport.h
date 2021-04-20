@@ -29,16 +29,16 @@
 Q(boot.py)
 Q(main.py)
 // Entries for sys.path
-Q(/flash)
-Q(/flash/lib)
-Q(/sd)
-Q(/sd/lib)
+Q(/ flash)
+Q(/ flash / lib)
+Q(/ sd)
+Q(/ sd / lib)
 // for usb modes
-Q(MSC+HID)
-Q(VCP+MSC)
-Q(VCP+HID)
-Q(CDC+MSC)
-Q(CDC+HID)
+Q(MSC + HID)
+Q(VCP + MSC)
+Q(VCP + HID)
+Q(CDC + MSC)
+Q(CDC + HID)
 Q(/)
 
 

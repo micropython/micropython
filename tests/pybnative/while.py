@@ -1,5 +1,6 @@
 import pyb
 
+
 @micropython.native
 def f(led, n, d):
     led.off()
@@ -10,6 +11,7 @@ def f(led, n, d):
         pyb.delay(d)
         i += 1
     led.off()
+
 
 f(pyb.LED(1), 2, 150)
 f(pyb.LED(2), 4, 50)

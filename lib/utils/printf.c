@@ -102,7 +102,7 @@ STATIC void strn_print_strn(void *data, const char *str, size_t len) {
 #if defined(__GNUC__) && !defined(__clang__)
 // uClibc requires this alias to be defined, or there may be link errors
 // when linkings against it statically.
-int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias ("vsnprintf")));
+int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias("vsnprintf")));
 #endif
 
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
@@ -128,4 +128,4 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
     return ret;
 }
 
-#endif //MICROPY_USE_INTERNAL_PRINTF
+#endif // MICROPY_USE_INTERNAL_PRINTF
