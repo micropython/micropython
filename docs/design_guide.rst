@@ -18,7 +18,7 @@ Start libraries with the cookiecutter
 Cookiecutter is a tool that lets you bootstrap a new repo based on another repo.
 We've made one `here <https://github.com/adafruit/cookiecutter-adafruit-circuitpython>`_
 for CircuitPython libraries that include configs for Travis CI and ReadTheDocs
-along with a setup.py, license, code of conduct and readme.
+along with a setup.py, license, code of conduct, readme among other files.
 
 .. code-block::sh
 
@@ -252,7 +252,7 @@ At the class level document what class does and how to initialize it::
         """DS3231 real-time clock.
 
            :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
-           :param int address: The I2C address of the device.
+           :param int address: The I2C address of the device. Defaults to :const:`0x40`
         """
 
         def __init__(self, i2c_bus, address=0x40):
@@ -267,7 +267,7 @@ Renders as:
     DS3231 real-time clock.
 
     :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
-    :param int address: The I2C address of the device.
+    :param int address: The I2C address of the device. Defaults to :const:`0x40`
 
 Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -516,6 +516,15 @@ when using ``const()``, keep in mind these general guide lines:
 - If user will not need access to variable, prefix name with a leading
   underscore, ex: ``_SOME_CONST``.
 
+Libraries Examples
+------------------
+When adding examples, cookiecutter will add a ``<name>_simpletest.py`` file in the examples directory for you.
+Be sure to include code with the library minimal functionalities to work on a device.
+You could other examples if needed featuring different
+functionalities of the library.
+If you add additional examples, be sure to include them in the ``examples.rst``. Naming of the examples
+files should use the name of the library followed by a description, using underscore to separate them.
+
 Sensor properties and units
 --------------------------------------------------------------------------------
 
@@ -536,7 +545,7 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``gyro``              | (float, float, float) | x, y, z radians per second                                              |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
-| ``temperature``       | float                 | degrees centigrade                                                      |
+| ``temperature``       | float                 | degrees Celsius                                                         |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``CO2``               | float                 | measured CO2 in ppm                                                     |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
@@ -544,9 +553,9 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``TVOC``              | float                 | Total Volatile Organic Compounds in ppb                                 |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
-| ``distance``          | float                 | centimeters                                                             |
+| ``distance``          | float                 | centimeters (cm)                                                        |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
-| ``proximity``         | int                   | non-unit-specifc proximity values (monotonic but not actual distance)   |
+| ``proximity``         | int                   | non-unit-specific proximity values (monotonic but not actual distance)  |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``light``             | float                 | non-unit-specific light levels (should be monotonic but is not lux)     |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
@@ -568,7 +577,7 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``duty_cycle``        | int                   | 16-bit PWM duty cycle (regardless of output resolution)                 |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
-| ``frequency``         | int                   | Hertz                                                                   |
+| ``frequency``         | int                   | Hertz (Hz)                                                              |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``value``             | bool                  | Digital logic                                                           |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
@@ -592,9 +601,8 @@ mimic the structure in ``shared-bindings``.
 To test your native modules or core enhancements, follow these Adafruit Learning Guides
 for building local firmware to flash onto your device(s):
 
-`SAMD21 - Build Firmware Learning Guide <https://learn.adafruit.com/micropython-for-samd21/build-firmware>`_
+`Build CircuitPython <https://learn.adafruit.com/building-circuitpython>`_
 
-`ESP8266 - Build Firmware Learning Guide <https://learn.adafruit.com/building-and-running-micropython-on-the-esp8266/overview>`_
 
 MicroPython compatibility
 --------------------------------------------------------------------------------
