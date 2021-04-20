@@ -27,7 +27,18 @@
 #ifndef SHARED_MODULE_USB_MIDI___INIT___H
 #define SHARED_MODULE_USB_MIDI___INIT___H
 
+extern bool usb_midi_enabled;
+
 void usb_midi_init(void);
 void usb_midi_usb_init(void);
+size_t usb_midi_desc_length(void);
+size_t usb_midi_add_desc(uint8_t *desc_buf,
+                         uint8_t audio_control_interface_number,
+                         uint8_t midi_streaming_interface_number,
+                         uint8_t midi_streaming_in_endpoint_address,
+                         uint8_t midi_streaming_out_endpoint_address,
+                         uint8_t audio_control_interface_string,
+                         uint8_t midi_streaming_interface_string);
+
 
 #endif /* SHARED_MODULE_USB_MIDI___INIT___H */

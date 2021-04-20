@@ -25,9 +25,28 @@
  */
 
 #include "lib/tinyusb/src/tusb.h"
+
+#if CIRCUITPY_USB_CDC
+#include "shared-module/storage/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_MIDI
+#include "shared-module/usb_midi/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_MSC
+#include "shared-module/storage/__init__.h"
+#endif
+
 #include "shared-module/usb_hid/Device.h"
 
 #include "genhdr/autogen_usb_descriptor.h"
+
+static uint8_t *config_desc;
 
 // Invoked when received GET DEVICE DESCRIPTOR
 // Application return pointer to descriptor
@@ -40,7 +59,100 @@ uint8_t const *tud_descriptor_device_cb(void) {
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;  // for multiple configurations
-    return usb_desc_cfg;
+
+    size_t total_descriptor_length = 0;
+
+    // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
+    // In the past, the order has been CDC, MSC, MIDI, HID, so preserve
+    // that order.
+#if CIRCUITPY_USB_CDC
+    if (usb_cdc_repl_enabled) {
+        total_descriptor_length += usb_cdc_desc_length();
+    }
+    if (usb_cdc_data_enabled) {
+        total_descriptor_length += usb_cdc_desc_length();
+    }
+#endif
+
+#if CIRCUITPY_USB_MSC
+    if (storage_usb_enabled) {
+        total_descriptor_length += storage_usb_desc_length();
+    }
+#endif
+
+#if CIRCUITPY_USB_MIDI
+    if (usb_midi_enabled) {
+        total_descriptor_length += usb_midi_desc_length();
+    }
+#endif
+
+#if CIRCUITPY_USB_HID
+    if (usb_hid_enabled) {
+        total_descriptor_length += usb_hid_desc_length();
+    }
+#endif
+
+    // Now we now how big the configuration descriptor will be.
+    config_desc = m_malloc(total_descriptor_length, false);
+
+    // Number interfaces and endpoints.
+    // Endpoint 0 is already used for USB control
+    uint8_t current_interface = 0;
+    uint8_t current_endpoint = 1;
+    uint16_t current_interface_string = 1;
+
+    uint8_t *desc_buf_remaining = config_desc;
+
+#if CIRCUITPY_USB_CDC
+    if (usb_cdc_repl_enabled) {
+        // Concatenate and fix up the CDC REPL descriptor.
+    }
+    if (usb_cdc_data_enabled) {
+        // Concatenate and fix up the CDC data descriptor.
+    }
+#endif
+
+#if CIRCUITPY_USB_MSC
+    if (storage_usb_enabled) {
+        // Concatenate and fix up the MSC descriptor.
+        desc_buf_remaining += storage_usb_add_desc(
+            desc_buf_remaining, current_interface,
+            current_endpoint,  // in
+            current_endpoint,  // out
+            current_interface_string_index);
+        current_interface++;
+        current_endpoint++;
+        current_interface_string++;
+    }
+#endif
+
+#if CIRCUITPY_USB_MIDI
+    if (usb_midi_enabled) {
+        // Concatenate and fix up the MIDI descriptor.
+        desc_buf_remaining += usb_midi_add_desc(
+            desc_buf_remaining,
+            current_interface,            // audio control
+            current_interface + 1,        // MIDI streaming
+            current_endpoint,             // in
+            current_endpoint,             // out
+            current_interface_string,     // audio control
+            current_interface_string + 1  // MIDI streaming
+            );
+        current_interface += 2;
+        current_endpoint++;
+        current_interface_string += 2;
+
+    }
+#endif
+
+#if CIRCUITPY_USB_HID
+    if (usb_hid_enabled) {
+        // Concatenate and fix up the HID descriptor (not the report descriptors).
+    }
+#endif
+
+
+    return config_desc;
 }
 
 #if CIRCUITPY_USB_HID

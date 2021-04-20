@@ -41,8 +41,56 @@
 #include "supervisor/usb.h"
 #include "tusb.h"
 
+static uint8_t[] storage_usb_msc_descriptor[] = {
+    0x09,        //  0 bLength
+    0x04,        //  1 bDescriptorType (Interface)
+    0xFF,        //  2 bInterfaceNumber [SET AT RUNTIME]
+    0x00,        //  3 bAlternateSetting
+    0x02,        //  4 bNumEndpoints 2
+    0x08,        //  5 bInterfaceClass: MSC
+    0x06,        //  6 bInterfaceSubClass: TRANSPARENT
+    0x50,        //  7 bInterfaceProtocol: BULK
+    0x00,        //  8 iInterface (String Index) [SET AT RUNTIME]
+
+    0x07,        //  9 bLength
+    0x05,        // 10 bDescriptorType (Endpoint)
+    0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0x02,        // 12 bmAttributes (Bulk)
+    0x40, 0x00,  // 13,14 wMaxPacketSize 64
+    0x00,        // 15 bInterval 0 (unit depends on device speed)
+
+    0x07,        // 16 bLength
+    0x05,        // 17 bDescriptorType (Endpoint)
+    0xFF,        // 18 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
+    0x02,        // 19 bmAttributes (Bulk)
+    0x40, 0x00,  // 20 wMaxPacketSize 64
+    0x00,        // 21 bInterval 0 (unit depends on device speed)
+};
+
+// Indices into usb_msc_descriptor for values that must be set at runtime.
+
+#define MSC_INTERFACE_NUMBER_INDEX 2
+#define MSC_INTERFACE_STRING_INDEX 8
+#define MSC_IN_ENDPOINT_INDEX 11
+#define MSC_OUT_ENDPOINT_INDEX 118
+
 // Is the MSC device enabled?
-static bool usb_storage_enabled;
+bool storage_usb_enabled;
+
+size_t storage_usb_desc_length(void) {
+    return sizeof(usb_msc_descriptor);
+}
+
+size_t storage_usb_add_desc(uint8_t *desc_buf, uint8_t interface_number, uint8_t in_endpoint_address,
+                            uint8_t out_endpoint_address, uint8_t interface_string_index) {
+    memcpy(descriptor_buf, storage_usb_msc_descriptor, sizeof(storage_usb_msc_descriptor));
+    desc_buf[MSC_INTERFACE_NUMBER_INDEX] = interface_number;
+    desc_buf[MSC_INTERFACE_STRING_INDEX] = interface_string_index;
+    desc_buf[MSC_IN_ENDPOINT_INDEX] = in_endpoint_address;
+    desc_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | out_endpoint_address;
+    return sizeof(usb_msc_descriptor);
+}
+
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
@@ -62,7 +110,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
 }
 
 void storage_init(void) {
-    usb_storage_enabled = true;
+    storage_usb_enabled = true;
 }
 
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
@@ -180,6 +228,6 @@ bool common_hal_storage_configure_usb(bool enabled) {
     if (tud_connected()) {
         return false;
     }
-    usb_storage_enabled = enabled;
+    storage_usb_enabled = enabled;
     return true;
 }

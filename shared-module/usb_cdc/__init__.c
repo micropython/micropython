@@ -38,8 +38,8 @@
 #error CFG_TUD_CDC must be exactly 2
 #endif
 
-static bool usb_cdc_repl_enabled;
-static bool usb_cdc_data_enabled;
+bool usb_cdc_repl_enabled;
+bool usb_cdc_data_enabled;
 
 static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
     .base.type = &usb_cdc_serial_type,

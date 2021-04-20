@@ -251,9 +251,6 @@ CFLAGS += -DCIRCUITPY_REPL_BLE=$(CIRCUITPY_REPL_BLE)
 CIRCUITPY_REPL_UART ?= 0
 CFLAGS += -DCIRCUITPY_REPL_UART=$(CIRCUITPY_REPL_UART)
 
-CIRCUITPY_REPL_USB ?= 1
-CFLAGS += -DCIRCUITPY_REPL_USB=$(CIRCUITPY_REPL_USB)
-
 # Should busio.I2C() check for pullups?
 # Some boards in combination with certain peripherals may not want this.
 CIRCUITPY_REQUIRE_I2C_PULLUPS ?= 1

@@ -149,57 +149,9 @@ endif
 # It gets added automatically.
 USB_WEBUSB_URL ?= "circuitpython.org"
 
-ifeq ($(CIRCUITPY_REPL_USB),1)
-USB_DEVICES += CDC
-endif
-
-ifeq ($(CIRCUITPY_USB_HID),1)
-USB_DEVICES += HID
-endif
-ifeq ($(CIRCUITPY_USB_MIDI),1)
-USB_DEVICES += AUDIO
-endif
-ifeq ($(CIRCUITPY_USB_MSC),1)
-USB_DEVICES += MSC
-endif
 ifeq ($(CIRCUITPY_USB_CDC),1)
 # Inform TinyUSB there are two CDC devices.
 CFLAGS += -DCFG_TUD_CDC=2
-USB_DEVICES += CDC2
-endif
-ifeq ($(CIRCUITPY_USB_VENDOR),1)
-USB_DEVICES += VENDOR
-endif
-
-USB_HID_DEVICES =
-ifeq ($(CIRCUITPY_USB_HID_CONSUMER),1)
-USB_HID_DEVICES += CONSUMER
-endif
-ifeq ($(CIRCUITPY_USB_HID_DIGITIZER),1)
-USB_HID_DEVICES += DIGITIZER
-endif
-ifeq ($(CIRCUITPY_USB_HID_GAMEPAD),1)
-USB_HID_DEVICES += GAMEPAD
-endif
-ifeq ($(CIRCUITPY_USB_HID_KEYBOARD),1)
-USB_HID_DEVICES += KEYBOARD
-endif
-ifeq ($(CIRCUITPY_USB_HID_MOUSE),1)
-USB_HID_DEVICES += MOUSE
-endif
-ifeq ($(CIRCUITPY_USB_HID_SYS_CONTROL),1)
-USB_HID_DEVICES += SYS_CONTROL
-endif
-ifeq ($(CIRCUITPY_USB_HID_XAC_COMPATIBLE_GAMEPAD),1)
-USB_HID_DEVICES += XAC_COMPATIBLE_GAMEPAD
-endif
-
-# RAW is not compatible with other HID devices.
-ifeq ($(CIRCUITPY_USB_HID_RAW),1)
-  ifneq ($(CIRCUITPY_USB_HID_DEVICES,)
-    $(error HID RAW must not be combined with other HID devices)
-endif
-USB_HID_DEVICES += MOUSE
 endif
 
 USB_HIGHSPEED ?= 0
@@ -221,7 +173,7 @@ USB_DESCRIPTOR_ARGS = \
 	--vid $(USB_VID)\
 	--pid $(USB_PID)\
 	--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
-	--interface_name $(USB_INTERFACE_NAME)\
+	--interface_name_prefix $(USB_INTERFACE_NAME)\
 	--devices "$(USB_DEVICES)"\
 	--hid_devices "$(USB_HID_DEVICES)"\
 	--max_ep $(USB_NUM_EP) \

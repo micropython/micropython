@@ -27,6 +27,12 @@
 #ifndef SHARED_MODULE_STORAGE___INIT___H
 #define SHARED_MODULE_STORAGE___INIT___H
 
+extern bool storage_usb_enabled;
+
 void storage_init(void);
+size_t storage_usb_desc_length(void);
+size_t storage_usb_add_desc(uint8_t *desc_buf, uint8_t interface_number,
+                            uint8_t in_endpoint_address, uint8_t out_endpoint_address,
+                            uint8_t interface_string_index);
 
 #endif // SHARED_MODULE_STORAGE___INIT___H

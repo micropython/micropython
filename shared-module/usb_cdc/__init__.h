@@ -29,6 +29,9 @@
 
 #include "py/objtuple.h"
 
+extern bool usb_cdc_repl_enabled;
+extern bool usb_cdc_data_enabled;
+
 void usb_cdc_init(void);
 
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

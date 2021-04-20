@@ -38,8 +38,113 @@
 
 supervisor_allocation *usb_midi_allocation;
 
+static uint8_t[] usb_midi_descriptor[] = {
+    0x09,        //   0 bLength
+    0x04,        //   1 bDescriptorType (Interface)
+    0xFF,        //   2 bInterfaceNumber [SET AT RUNTIME]
+    0x00,        //   3 bAlternateSetting
+    0x00,        //   4 bNumEndpoints 0
+    0x01,        //   5 bInterfaceClass (Audio)
+    0x01,        //   6 bInterfaceSubClass (Audio Control)
+    0x00,        //   7 bInterfaceProtocol
+    0x00,        //   8 iInterface (String Index) [SET AT RUNTIME]
+
+    0x09,        //   9  bLength
+    0x24,        //  10 bDescriptorType (See Next Line)
+    0x01,        //  11 bDescriptorSubtype (CS_INTERFACE -> HEADER)
+    0x00, 0x01,  //  12,13 bcdADC 1.00
+    0x09, 0x00,  //  14,15 wTotalLength 9
+    0x01,        //  16 binCollection 0x01
+    0xFF,        //  17 baInterfaceNr [SET AT RUNTIME: one-element list: same as 20]
+
+    0x09,        //  18 bLength
+    0x04,        //  19 bDescriptorType (Interface)
+    0xFF,        //  20 bInterfaceNumber [SET AT RUNTIME]
+    0x00,        //  21 bAlternateSetting
+    0x02,        //  22 bNumEndpoints 2
+    0x01,        //  23 bInterfaceClass (Audio)
+    0x03,        //  24 bInterfaceSubClass (MIDI Streaming)
+    0x00,        //  25 bInterfaceProtocol
+    0x0A,        //  26 iInterface (String Index) [SET AT RUNTIME]
+
+    0x07,        //  27 bLength
+    0x24,        //  28 bDescriptorType (See Next Line)
+    0x01, 0x00, 0x01, 0x25, 0x00,  // 29,30,31,32,33
+    0x06,        //  34 bLength
+    0x24,        //  35 bDescriptorType (See Next Line)
+    0x02, 0x01, 0x01, 0x08,  // 36,37,38,39
+    0x06,        // 40 bLength
+    0x24,        // 41 bDescriptorType (See Next Line)
+    0x02, 0x02, 0x02, 0x00,  // 42,43,44,45
+    0x09,        // 46 bLength
+    0x24,        // 47 bDescriptorType (See Next Line)
+    0x03, 0x01, 0x03, 0x01, 0x02, 0x01, 0x09,  // 48,49,50,51,52,53,54
+    0x09,        // 56 bLength
+    0x24,        // 57 bDescriptorType (See Next Line)
+    0x03, 0x02, 0x04, 0x01, 0x01, 0x01, 0x00,  // 58,59,60,61,62,63,64
+    0x07,        // 65 bLength
+    0x05,        // 66 bDescriptorType (See Next Line)
+    0xFF,        // 67 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
+    0x02,        // 68 bmAttributes (Bulk)
+    0x40, 0x00,  // 69,70 wMaxPacketSize 64
+    0x00,        // 71 bInterval 0 (unit depends on device speed)
+
+    0x05,        // 72 bLength
+    0x25,        // 73 bDescriptorType (See Next Line)
+    0x01, 0x01, 0x01,  // 74,75,76
+    0x07,        // 77 bLength
+    0x05,        // 78 bDescriptorType (See Next Line)
+    0xFF,        // 79 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0x02,        // 80 bmAttributes (Bulk)
+    0x40, 0x00,  // 81,82 wMaxPacketSize 64
+    0x00,        // 83 bInterval 0 (unit depends on device speed)
+
+    0x05,        // 84 bLength
+    0x25,        // 85 bDescriptorType (See Next Line)
+    0x01, 0x01, 0x03,  // 86,87,88
+};
+
 // Is the USB MIDI device enabled?
-static bool usb_midi_enabled;
+bool usb_midi_enabled;
+
+// Indices into usb_midi_descriptor for values that must be set at runtime.
+
+#define MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX 2
+#define MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX 8
+
+// These two get the same value.
+#define MIDI_MIDI_STREAMING_INTERFACE_NUMBER_INDEX 20
+#define MIDI_MIDI_STREAMING_INTERFACE_NUMBER_XREF_INDEX 17
+
+#define MIDI_MIDI_STREAMING_INTERFACE_STRING_INDEX 26
+
+#define MIDI_MIDI_STREAMING_OUT_ENDPOINT_INDEX 67
+#define MIDI_MIDI_STREAMING_IN_ENDPOINT_INDEX 79
+
+size_t usb_midi_desc_length(void) {
+    return sizeof(usb_midi_descriptor);
+}
+
+size_t usb_midi_add_desc(uint8_t *desc_buf,
+                         uint8_t audio_control_interface_number,
+                         uint8_t midi_streaming_interface_number,
+                         uint8_t midi_streaming_in_endpoint_address,
+                         uint8_t midi_streaming_out_endpoint_address,
+                         uint8_t audio_control_interface_string,
+                         uint8_t midi_streaming_interface_string) {
+    memcpy(descriptor_buf, usb_midi_descriptor, sizeof(usb_midi_descriptor));
+    desc_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = audio_control_interface_number;
+    desc_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = audio_control_interface_string;
+
+    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = midi_streaming_interface_number;
+    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_NUMBER_XREF_INDEX] = midi_streaming_interface_number;
+    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_STRING_INDEX] = midi_streaming_interface_string;
+
+    desc_buf[MSC_IN_ENDPOINT_INDEX] = midi_streaming_in_endpoint_address;
+    desc_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | midi_streaming_out_endpoint_address;
+    return sizeof(usb_midi_descriptor);
+}
+
 
 void usb_midi_init(void) {
     usb_midi_enabled = true;
