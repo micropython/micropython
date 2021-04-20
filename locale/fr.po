@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-03 21:57+0000\n"
+"PO-Revision-Date: 2021-04-17 03:26+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -426,7 +426,7 @@ msgstr "'AnalogOut' n'est pas supporté sur la broche indiquée"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "Un autre PWMAudioOut est déjà actif"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -435,11 +435,11 @@ msgstr "Un autre envoi est déjà actif"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Le tableau doit contenir des demi-mots (type 'H')"
+msgstr "La matrice doit contenir des demi-mots (type 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Les valeurs du tableau doivent être des octets singuliers."
+msgstr "Les valeurs de la matrice doivent être des octets singuliers."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
@@ -451,10 +451,10 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Tentative d'allocation de %d blocs"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Tentative d'allocation de segments lorsque la machine virtuelle MicroPython "
-"n'est pas en cours d'exécution."
+"Tentative d'allocation à la pile quand la Machine Virtuelle n'est pas en "
+"exécution."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -911,6 +911,11 @@ msgstr "ESP-IDF échec d'allocation de la mémoire"
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Erreur dans le flot MIDI à la position %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
@@ -973,7 +978,7 @@ msgstr "La FFT est définie uniquement pour les ndarrays"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr "FFT n'est implémenté que pour les tableaux linéaires"
+msgstr "FFT n'est implémenté que pour les matrices linéaires"
 
 #: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
@@ -1014,7 +1019,7 @@ msgstr "Impossible d'allouer la mémoire pour le scan wifi"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Failed to buffer the sample"
-msgstr ""
+msgstr "Échec du tamponage de l'échantillon"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -1040,6 +1045,10 @@ msgstr "Impossible de libérer mutex, err 0x%04x"
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
 msgstr "Échec de l'écriture vers flash interne."
+
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr "Erreurre fatale."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1114,10 +1123,6 @@ msgstr "périphérique I2C utilisé"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1252,6 +1257,10 @@ msgstr "BSSID invalide"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Fichier MIDI invalide"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1444,14 +1453,6 @@ msgstr "La valeur maximale de x est %d lors d'une opération miroir"
 msgid "Messages limited to 8 bytes"
 msgstr "Messages limités à 8 octets"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "Échec du saut MicroPython NLR. Corruption de la mémoire probable."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Erreur fatale MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
@@ -1504,6 +1505,10 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr "Saut NLR échoué. Corruption de mémoire probable."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1649,6 +1654,7 @@ msgstr "Logiciel systême Nordic hors de mémoire"
 msgid "Not a valid IP string"
 msgstr "Chaîne IP non valide"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2494,11 +2500,11 @@ msgstr "l'argument est une séquence vide"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr "L'argument argsort doit être un ndarray"
+msgstr "Le paramêtre argsort doit être un ndarray"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr "argsort n'est pas mis en œuvre pour les tableaux aplatis"
+msgstr "argsort n'est pas mis en œuvre pour les matrices aplatis"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2520,12 +2526,12 @@ msgstr "les paramètres doivent être des ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr "la longueur du tableau et de l'index doivent être égaux"
+msgstr "la taille de la matrice et de l'index doivent être égaux"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
-msgstr "tableau/octets requis à droite"
+msgstr "matrice/octets requis à la droite"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2586,10 +2592,6 @@ msgstr "branche hors-bornes"
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "tampon est plus petit que la taille demandée"
-
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "le tampon doit être un objet bytes-like"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
@@ -2828,8 +2830,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"le tampon de couleur doit être un bytearray ou un tableau de type 'b' ou 'B'"
+msgstr "tampon color doit être un bytearray ou une matrice de type 'b' ou 'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2861,11 +2862,11 @@ msgstr "conversion en objet"
 
 #: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr "les arguments convolve doivent être des tableaux linéaires"
+msgstr "les paramêtres pour convolve doivent être des matrices linéaires"
 
 #: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr "les arguments convolve doivent être des ndarrays"
+msgstr "les paramêtres pour convolve doivent être des ndarrays"
 
 #: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must not be empty"
@@ -2881,7 +2882,7 @@ msgstr "impossible de déterminer la version de la carte SD"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr "cross est défini pour les tableaux 1D de longueur 3"
+msgstr "cross est défini pour les matrices 1D de longueur 3"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
@@ -2911,12 +2912,13 @@ msgstr "default n'est pas une fonction"
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"le tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
+"le tampon de destination doit être une matrice de type 'B' pour bit_depth = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
-"le tampon de destination doit être un tableau de type 'H' pour bit_depth = 16"
+"le tampon de destination doit être une matrice de type 'H' pour bit_depth = "
+"16"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
@@ -2928,7 +2930,7 @@ msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr "l'argument diff doit être un ndarray"
+msgstr "le paramêtre diff doit être un ndarray"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "differentiation order out of range"
@@ -3047,7 +3049,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string : single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -3065,11 +3067,11 @@ msgstr "le premier argument doit être une fonction"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr "le premier argument doit être un tuple de ndarrays"
+msgstr "le premier paramêtre doit être un tuple de ndarrays"
 
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be an ndarray"
-msgstr "le premier argument doit être un ndarray"
+msgstr "le premier paramêtre doit être un ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -3081,7 +3083,7 @@ msgstr "l'ordre d'aplatissement doit être «C» ou «F»"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr "l'argument flip doit être un ndarray"
+msgstr "le paramêtre flip doit être un ndarray"
 
 #: py/objint.c
 msgid "float too big"
@@ -3118,7 +3120,7 @@ msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr "La fonction n'est définie que pour les ndarrays"
+msgstr "fonction définie que pour les ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3224,11 +3226,11 @@ msgstr "Paramètre entrant doit être un chiffre entier, un tuple, ou une liste"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
-msgstr "la longueur du tableau d'entrée doit être une puissance de 2"
+msgstr "longueur de la matrice d'entrée doit être une puissance de 2"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr "les tableaux d'entrée ne sont pas compatibles"
+msgstr "les matrices d'entrée ne sont pas compatibles"
 
 #: extmod/ulab/code/numpy/poly/poly.c
 msgid "input data must be an iterable"
@@ -3244,7 +3246,7 @@ msgstr "la matrice d'entrée est singulière"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr "l'entrée doit être un tableau dense"
+msgstr "l'entrée doit être un ndarray dense"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
@@ -3284,7 +3286,7 @@ msgstr "entier requis"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp est défini pour les tableaux 1D de longueur égale"
+msgstr "interp est défini pour les matrices 1D de longueur égale"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3303,6 +3305,10 @@ msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "certificat invalide"
+
+#: py/compile.c
+msgid "invalid decorator"
+msgstr "décorateur invalide"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -3358,10 +3364,6 @@ msgstr "syntaxe invalide pour un entier de base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io doit être rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3718,11 +3720,11 @@ msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr "opération implémentée que pour des tableaux 1D booléennes"
+msgstr "opération implémentée que pour les matrices 1D booléennes"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr "l'opération n'est pas implémentée sur les ndarrays"
+msgstr "l'opération n'est pas implémentée pour les ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
@@ -3741,11 +3743,11 @@ msgstr ""
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "matrice de sortie est trop petite"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "la matrice sortante doit être de type float"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -3831,6 +3833,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3855,6 +3858,10 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -3924,8 +3931,8 @@ msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
-"le tampon de sample_source doit être un bytearray ou un tableau de type "
-"'h','H', 'b' ou 'B'"
+"tampon sample_source doit être un bytearray ou une matrice de type 'h', 'H', "
+"'b' ou 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -3962,7 +3969,7 @@ msgstr "'}' seule rencontrée dans une chaîne de format"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
-msgstr "la taille est définie pour les ndarrays uniquement"
+msgstr "la taille n'est définie que pour les ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
@@ -3986,11 +3993,11 @@ msgstr "redémarrage logiciel\n"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr "l'argument de «sort» doit être un ndarray"
+msgstr "le paramètre de «sort» doit être un ndarray"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr "le tableau sos doit être de forme (n_section, 6)"
+msgstr "la matrice sos doit être de forme (n_section, 6)"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
@@ -4035,7 +4042,7 @@ msgstr "les indices d'une chaîne doivent être des entiers, pas %q"
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
 msgstr ""
-"chaîne de carac. non supportée ; utilisez des bytes ou un tableau de bytes"
+"chaîne de carac. non supportée; utilisez des bytes ou une matrice de bytes"
 
 #: extmod/moductypes.c
 msgid "struct: cannot index"
@@ -4105,7 +4112,7 @@ msgstr "timestamp hors bornes pour 'time_t' de la plateforme"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr "tobytes ne peut être appelé que pour des tableaux dense"
+msgstr "tobytes ne peut être appelée que pour des matrices dense"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -4126,15 +4133,11 @@ msgstr "trop de valeur à dégrouper (%d attendues)"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays"
-msgstr "trapz est défini pour tableaux à une dimension"
+msgstr "trapz est définie pour matrices à une dimension"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr "trapz n'est défini que pour des tableaux 1D de longueur égale"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "niveau du déclencheur doit être 0 ou 1"
+msgstr "trapz n'est défini que pour des matrices 1D de longueur égales"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4270,10 +4273,6 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflit au réveil"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "chien de garde (watchdog) non initialisé"
@@ -4350,7 +4349,7 @@ msgstr "'step' nul"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr "zi doit être ndarray"
+msgstr "zi doit être un ndarray"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
@@ -4359,6 +4358,32 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "le tampon doit être un objet bytes-like"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io doit être rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "niveau du déclencheur doit être 0 ou 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflit au réveil"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Tentative d'allocation de segments lorsque la machine virtuelle "
+#~ "MicroPython n'est pas en cours d'exécution."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "Échec du saut MicroPython NLR. Corruption de la mémoire probable."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Erreur fatale MicroPython."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "l'argument doit être un ndarray"

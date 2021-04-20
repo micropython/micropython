@@ -371,11 +371,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         }
     }
 
-    if (val_type == 'x') {
-        memset(p, 0, 1);
-    } else {
-        mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
-    }
+    mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
 }
 
 void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t val_in) {

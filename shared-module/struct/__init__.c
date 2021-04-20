@@ -153,9 +153,11 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
             p += sz;
         } else {
             while (sz--) {
-                mp_binary_set_val(fmt_type, *fmt, args[i], &p);
                 // Pad bytes don't have a corresponding argument.
-                if (*fmt != 'x') {
+                if (*fmt == 'x') {
+                    mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), &p);
+                } else {
+                    mp_binary_set_val(fmt_type, *fmt, args[i], &p);
                     i++;
                 }
             }

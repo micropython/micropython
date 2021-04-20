@@ -27,7 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
 
-#include "common-hal/microcontroller/Pin.h"
 #include "shared-module/audiocore/RawSample.h"
 
 extern const mp_obj_type_t audioio_rawsample_type;

@@ -4,6 +4,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
+	supervisor/shared/cpu.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
