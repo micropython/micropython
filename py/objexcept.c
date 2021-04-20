@@ -261,7 +261,9 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR_args) {
         decompress_error_text_maybe(self);
         dest[0] = MP_OBJ_FROM_PTR(self->args);
-    } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
+    } else if (attr == MP_QSTR_value || attr == MP_QSTR_errno) {
+        // These are aliases for args[0]: .value for StopIteration and .errno for OSError.
+        // For efficiency let these attributes apply to all exception instances.
         dest[0] = mp_obj_exception_get_value(self_in);
     }
 }
