@@ -141,9 +141,9 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
       r = RESET_REASON_SOFTWARE;
     }
     else if ((reset_reason_saved & POWER_RESETREAS_OFF_Msk) ||
-	     (reset_reason_saved & POWER_RESETREAS_LPCOMP_Msk) ||
-	     (reset_reason_saved & POWER_RESETREAS_NFC_Msk) ||
-	     (reset_reason_saved & POWER_RESETREAS_VBUS_Msk))  {
+         (reset_reason_saved & POWER_RESETREAS_LPCOMP_Msk) ||
+         (reset_reason_saved & POWER_RESETREAS_NFC_Msk) ||
+         (reset_reason_saved & POWER_RESETREAS_VBUS_Msk))  {
       r = RESET_REASON_DEEP_SLEEP_ALARM;
     }
     return r;

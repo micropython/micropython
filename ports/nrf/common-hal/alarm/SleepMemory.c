@@ -57,22 +57,22 @@ void set_memory_retention(void) {
     // nRF52833 has RAM[0..7].Section[0..1] and RAM[8].Section[0,1]
     for(int block = 0; block <= 7; ++block) {
         nrf_power_rampower_mask_on(NRF_POWER, block,
-				   NRF_POWER_RAMPOWER_S0RETENTION_MASK |
-				   NRF_POWER_RAMPOWER_S1RETENTION_MASK);
+                   NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S1RETENTION_MASK);
     };
 #ifdef NRF52840
     nrf_power_rampower_mask_on(NRF_POWER, 8,
-			       NRF_POWER_RAMPOWER_S0RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S1RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S2RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S3RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S4RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S5RETENTION_MASK);
+                   NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S1RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S2RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S3RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S4RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S5RETENTION_MASK);
 #endif
 #ifdef NRF52833
     nrf_power_rampower_mask_on(NRF_POWER, 8,
-			       NRF_POWER_RAMPOWER_S0RETENTION_MASK |
-			       NRF_POWER_RAMPOWER_S1RETENTION_MASK);
+                   NRF_POWER_RAMPOWER_S0RETENTION_MASK |
+                   NRF_POWER_RAMPOWER_S1RETENTION_MASK);
 #endif
 }
 
@@ -93,7 +93,7 @@ void alarm_sleep_memory_reset(void) {
     if (!is_sleep_memory_valid()) {
         initialize_sleep_memory();
 #ifdef NRF_DEBUG_PRINT
-	dbg_printf("sleep memory initialized\r\n");
+    dbg_printf("sleep memory initialized\r\n");
 #endif
     }
 }

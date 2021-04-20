@@ -101,7 +101,7 @@ static const char* cause_str[] = {
 void print_wakeup_cause(nrf_sleep_source_t cause) {
     if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
         dbg_printf("wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
-		   cause_str[(int)cause]);
+           cause_str[(int)cause]);
     }
 }
 #endif
@@ -114,7 +114,7 @@ bool common_hal_alarm_woken_from_sleep(void) {
    }
 #endif
    return (cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
-	   || cause == NRF_SLEEP_WAKEUP_TOUCHPAD);
+       || cause == NRF_SLEEP_WAKEUP_TOUCHPAD);
 }
 
 nrf_sleep_source_t alarm_woken_from_sleep_2(void) {
@@ -125,8 +125,8 @@ nrf_sleep_source_t alarm_woken_from_sleep_2(void) {
     }
 #endif
     if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
-	cause == NRF_SLEEP_WAKEUP_TIMER ||
-	cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
+    cause == NRF_SLEEP_WAKEUP_TIMER ||
+    cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
         return cause;
     }
     else {
@@ -179,22 +179,22 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
     if (timediff_ms != -1) {
         have_timeout = true;
 #if 0
-	int64_t now = common_hal_time_monotonic_ms();
-	dbg_printf("now_ms=%ld timediff_ms=%ld\r\n", (long)now, (long)timediff_ms);
+    int64_t now = common_hal_time_monotonic_ms();
+    dbg_printf("now_ms=%ld timediff_ms=%ld\r\n", (long)now, (long)timediff_ms);
 #endif
-	if (timediff_ms < 0)  timediff_ms = 0;
-	if (prescaler == 0) {
-	    // 1 tick = 1/1024 sec = 1000/1024 ms
-	    // -> 1 ms = 1024/1000 ticks
-	    tickdiff = (mp_uint_t)(timediff_ms * 1024 / 1000); // ms -> ticks
-	}
-	else {
-	    // 1 tick = prescaler/1024 sec = prescaler*1000/1024 ms
-	    // -> 1ms = 1024/(1000*prescaler) ticks
-	    tickdiff = (mp_uint_t)(timediff_ms * 1024 / (1000 * prescaler));
-	}
-	start_tick = port_get_raw_ticks(NULL);
-	end_tick = start_tick + tickdiff;
+    if (timediff_ms < 0)  timediff_ms = 0;
+    if (prescaler == 0) {
+        // 1 tick = 1/1024 sec = 1000/1024 ms
+        // -> 1 ms = 1024/1000 ticks
+        tickdiff = (mp_uint_t)(timediff_ms * 1024 / 1000); // ms -> ticks
+    }
+    else {
+        // 1 tick = prescaler/1024 sec = prescaler*1000/1024 ms
+        // -> 1ms = 1024/(1000*prescaler) ticks
+        tickdiff = (mp_uint_t)(timediff_ms * 1024 / (1000 * prescaler));
+    }
+    start_tick = port_get_raw_ticks(NULL);
+    end_tick = start_tick + tickdiff;
     }
 #if 0
     dbg_printf("start_tick=%ld end_tick=%ld have_timeout=%c\r\n", (long)start_tick, (long)end_tick, have_timeout ? 'T' : 'F');
@@ -214,30 +214,30 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
 #endif
 
     while(1) {
-	if (mp_hal_is_interrupted()) {
-	    WAKEUP_REASON('I');
-	    break;
-	}
+    if (mp_hal_is_interrupted()) {
+        WAKEUP_REASON('I');
+        break;
+    }
         if (serial_connected() && serial_bytes_available()) {
-	    WAKEUP_REASON('S');
-	    break;
-	}
+        WAKEUP_REASON('S');
+        break;
+    }
         RUN_BACKGROUND_TASKS;
-	wakeup_cause = alarm_woken_from_sleep_2();
-	if (wakeup_cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
-	    WAKEUP_REASON('0'+wakeup_cause);
-	    break;
-	}
-	if (have_timeout) {
-	    remaining = end_tick - port_get_raw_ticks(NULL);
-	    // We break a bit early so we don't risk setting the alarm before the time when we call
-	    // sleep.
-	    if (remaining < 1) {
-	        WAKEUP_REASON('t');
-	        break;
-	    }
-	    port_interrupt_after_ticks(remaining);
-	}
+    wakeup_cause = alarm_woken_from_sleep_2();
+    if (wakeup_cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
+        WAKEUP_REASON('0'+wakeup_cause);
+        break;
+    }
+    if (have_timeout) {
+        remaining = end_tick - port_get_raw_ticks(NULL);
+        // We break a bit early so we don't risk setting the alarm before the time when we call
+        // sleep.
+        if (remaining < 1) {
+            WAKEUP_REASON('t');
+            break;
+        }
+        port_interrupt_after_ticks(remaining);
+    }
         // Idle until an interrupt happens.
         port_idle_until_interrupt();
 #ifdef NRF_DEBUG_PRINT
@@ -246,15 +246,15 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
             --ct;
         }
 #endif
-	if (have_timeout) {
-	    remaining = end_tick - port_get_raw_ticks(NULL);
-	    if (remaining <= 0) {
-	        wakeup_cause = NRF_SLEEP_WAKEUP_TIMER;
-		sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
-	        WAKEUP_REASON('T');
-		break;
-	    }
-	}
+    if (have_timeout) {
+        remaining = end_tick - port_get_raw_ticks(NULL);
+        if (remaining <= 0) {
+            wakeup_cause = NRF_SLEEP_WAKEUP_TIMER;
+        sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
+            WAKEUP_REASON('T');
+        break;
+        }
+    }
     }
 #ifdef NRF_DEBUG_PRINT
     dbg_printf("%c\r\n", reason);
@@ -331,7 +331,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 #endif
     nrf_sleep_source_t cause;
     cause = system_on_idle_until_alarm(timediff_ms,
-				       PRESCALER_VALUE_IN_DEEP_SLEEP);
+                       PRESCALER_VALUE_IN_DEEP_SLEEP);
     (void)cause;
 
 #ifdef NRF_DEBUG_PRINT
@@ -387,8 +387,8 @@ void common_hal_alarm_pretending_deep_sleep(void) {
 #if 0
     // if one of Alarm event occurred, reset myself
     if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
-	cause == NRF_SLEEP_WAKEUP_TIMER ||
-	cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
+    cause == NRF_SLEEP_WAKEUP_TIMER ||
+    cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
         reset_cpu();
     }
     // else, just return and go into REPL

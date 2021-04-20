@@ -407,7 +407,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                     // Enter deep sleep. When we wake up we'll return from
                     // this loop.
                     common_hal_alarm_enter_deep_sleep();
-		    // Does not return.
+                    // Does not return.
                 } else {
                     serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                 }
@@ -431,11 +431,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 supervisor_set_run_reason(RUN_REASON_STARTUP);
                 board_init();
                 if (serial_in) {
-		    bool ctrl_d = serial_read() == CHAR_CTRL_D;
-		    if (ctrl_d) {
-		        supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
-		    }
-		    return ctrl_d;
+                    bool ctrl_d = serial_read() == CHAR_CTRL_D;
+                    if (ctrl_d) {
+                        supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
+                    }
+                    return ctrl_d;
                 }
                 return true;
             #else
