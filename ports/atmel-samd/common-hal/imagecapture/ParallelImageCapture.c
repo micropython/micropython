@@ -38,6 +38,10 @@
 #include "hal/include/hal_gpio.h"
 #include "atmel_start_pins.h"
 
+#include "audio_dma.h"
+#include "samd/clocks.h"
+#include "samd/events.h"
+
 #define GPIO_PIN_FUNCTION_PCC (GPIO_PIN_FUNCTION_K)
 
 #define PIN_PCC_D0 (PIN_PA16)
@@ -136,15 +140,37 @@ bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallel
     return self->data_count == 0;
 }
 
+static void setup_dma(DmacDescriptor* descriptor, size_t count, uint32_t *buffer) {
+    descriptor->BTCTRL.reg = DMAC_BTCTRL_VALID |
+                             DMAC_BTCTRL_BLOCKACT_NOACT |
+                             DMAC_BTCTRL_EVOSEL_BLOCK |
+                             DMAC_BTCTRL_DSTINC |
+                             DMAC_BTCTRL_BEATSIZE_WORD;
+    descriptor->BTCNT.reg = count;
+    descriptor->DSTADDR.reg = (uint32_t)buffer + 4*count;
+    descriptor->SRCADDR.reg = (uint32_t)&PCC->RHR.reg;
+    descriptor->DESCADDR.reg = 0;
+}
+
+#include <string.h>
+
 void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize)
 {
+
+    uint8_t dma_channel = audio_dma_allocate_channel();
+
     uint32_t *dest = buffer;
     size_t count = bufsize / 4; // PCC receives 4 bytes (2 pixels) at a time
 
-    const volatile uint32_t *vsync_reg = self->vertical_sync == NO_PIN ? NULL : &PORT->Group[(self->vertical_sync / 32)].IN.reg;
-    uint32_t vsync_bit = 1 << (self->vertical_sync % 32);
+    turn_on_event_system();
 
-    if (vsync_reg) {
+    setup_dma(dma_descriptor(dma_channel), count, dest);
+    dma_configure(dma_channel, PCC_DMAC_ID_RX, true);
+
+    if (self->vertical_sync) {
+        const volatile uint32_t *vsync_reg = &PORT->Group[(self->vertical_sync / 32)].IN.reg;
+        uint32_t vsync_bit = 1 << (self->vertical_sync % 32);
+
         while (*vsync_reg & vsync_bit)
         {
             // Wait for VSYNC low (frame end)
@@ -152,36 +178,21 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
             RUN_BACKGROUND_TASKS;
             // Allow user to break out of a timeout with a KeyboardInterrupt.
             if (mp_hal_is_interrupted()) {
+                audio_dma_free_channel(dma_channel);
                 return;
             }
         }
     }
 
-    common_hal_mcu_disable_interrupts();
+    dma_enable_channel(dma_channel);
 
-    if (vsync_reg) {
-        size_t j = 1000000; // Don't freeze forever (this is ballpark 100ms timeout)
-        while (!(*vsync_reg & vsync_bit)) {
-            // Wait for VSYNC high (frame start)
-            if (!--j) {
-                common_hal_mcu_enable_interrupts();
-                mp_raise_RuntimeError(translate("Timeout waiting for VSYNC"));
-            }
+    while (DMAC->Channel[dma_channel].CHCTRLA.bit.ENABLE) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
         }
     }
 
-    // TODO: use DMA
-    for (size_t i = 0; i<count; i++) {
-        size_t j = 1000000; // Don't freeze forever (this is ballpark 100ms timeout)
-        while (!PCC->ISR.bit.DRDY) {
-            if (!--j) {
-                common_hal_mcu_enable_interrupts();
-                mp_raise_RuntimeError(translate("Timeout waiting for DRDY"));
-            }
-            //    Wait for PCC data ready
-        }
-        *dest++ = PCC->RHR.reg; //    Store 2 pixels
-    }
-
-    common_hal_mcu_enable_interrupts();
+    dma_disable_channel(dma_channel);
+    audio_dma_free_channel(dma_channel);
 }
