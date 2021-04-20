@@ -108,7 +108,9 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
         nrfx_rtc_cc_set(&rtc_instance, 0, 0, false);
     } else if (int_type == NRFX_RTC_INT_COMPARE1) {
         // used in light sleep
+        #if CIRCUITPY_ALARM
         sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
+        #endif
         nrfx_rtc_cc_set(&rtc_instance, 1, 0, false);
     }
 }
@@ -184,7 +186,9 @@ safe_mode_t port_init(void) {
     NRF_POWER->RESETREAS = reset_reason_saved;
     // clear wakeup event/pin when reset by reset-pin
     if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
+        #if CIRCUITPY_ALARM
         sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
+        #endif
     }
 
     // If the board was reset by the WatchDogTimer, we may
