@@ -45,6 +45,14 @@ static volatile bool audio_dma_pending[AUDIO_DMA_CHANNEL_COUNT];
 
 static bool audio_dma_allocated[AUDIO_DMA_CHANNEL_COUNT];
 
+uint8_t find_sync_event_channel_raise() {
+    uint8_t event_channel = find_sync_event_channel();
+    if (event_channel >= EVSYS_SYNCH_NUM) {
+        mp_raise_RuntimeError(translate("All sync event channels in use"));
+    }
+    return event_channel;
+}
+
 uint8_t audio_dma_allocate_channel(void) {
     uint8_t channel;
     for (channel = 0; channel < AUDIO_DMA_CHANNEL_COUNT; channel++) {
@@ -230,11 +238,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
 
         // We're likely double buffering so set up the block interrupts.
         turn_on_event_system();
-        dma->event_channel = find_sync_event_channel();
-
-        if (dma->event_channel >= EVSYS_SYNCH_NUM) {
-            mp_raise_RuntimeError(translate("All sync event channels in use"));
-        }
+        dma->event_channel = find_sync_event_channel_raise();
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it

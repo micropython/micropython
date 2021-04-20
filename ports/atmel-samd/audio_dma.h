@@ -97,4 +97,6 @@ bool audio_dma_get_paused(audio_dma_t *dma);
 
 void audio_dma_background(void);
 
+uint8_t find_sync_event_channel_raise(void);
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H
