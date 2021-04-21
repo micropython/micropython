@@ -122,6 +122,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
     }
+    self->phy_addr = args[ARG_phy_addr].u_int;
 
     if (args[ARG_phy_type].u_int != PHY_LAN8720 &&
         args[ARG_phy_type].u_int != PHY_IP101 &&
@@ -161,8 +162,10 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             self->phy = esp_eth_phy_new_dp83848(&phy_config);
             break;
         case PHY_KSZ8041:
+            #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
             self->phy = esp_eth_phy_new_ksz8041(&phy_config);
             break;
+            #endif
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("Unknown PHY"));
     }
@@ -175,7 +178,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     self->eth_netif = esp_netif_new(&cfg);
 
     if (esp_eth_set_default_handlers(self->eth_netif) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_set_default_handlers() failed."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_set_default_handlers() failed (invalid parameter)."));
     }
 
     if (esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
@@ -188,11 +191,18 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, self->phy);
 
-    if (esp_eth_driver_install(&config, &self->eth_handle) == ESP_OK) {
+    esp_err_t esp_err = esp_eth_driver_install(&config, &self->eth_handle);
+    if (esp_err == ESP_OK) {
         self->active = false;
         self->initialized = true;
     } else {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install() failed."));
+        if (esp_err == ESP_ERR_INVALID_ARG) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because of some invalid argument."));
+        } else if (esp_err == ESP_ERR_NO_MEM) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because there’s no memory for driver."));
+        } else {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because of some unknown error."));
+        }
     }
 
     if (esp_netif_attach(self->eth_netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
