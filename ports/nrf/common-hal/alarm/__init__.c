@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2021 Jun2Sak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -167,6 +166,9 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
     alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
+// TODO: this handles all possible types of wakeup, which is redundant with main.
+// revise to extract all parts essential to enabling sleep wakeup, but leave the
+// alarm/non-alarm sorting to the existing main loop.
 nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
@@ -382,7 +384,7 @@ void common_hal_alarm_pretending_deep_sleep(void) {
     print_wakeup_cause(cause);
 #endif
 
-    alarm_reset();
+    // alarm_reset();
 
 #if 0
     // if one of Alarm event occurred, reset myself

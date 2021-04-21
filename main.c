@@ -404,8 +404,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 new_status_color(BLACK);
                 board_deinit();
                 if (!supervisor_workflow_active()) {
-                    // Enter deep sleep. When we wake up we'll return from
-                    // this loop.
+                    // Enter true deep sleep. When we wake up we'll be back at the
+                    // top of main(), not in this loop.
                     common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
@@ -426,18 +426,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
             #if CIRCUITPY_ALARM
                 common_hal_alarm_pretending_deep_sleep();
-                bool serial_in = (serial_connected() &&
-                                  serial_bytes_available());
-                supervisor_set_run_reason(RUN_REASON_STARTUP);
-                board_init();
-                if (serial_in) {
-                    bool ctrl_d = serial_read() == CHAR_CTRL_D;
-                    if (ctrl_d) {
-                        supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
-                    }
-                    return ctrl_d;
-                }
-                return true;
             #else
                 port_idle_until_interrupt();
             #endif
