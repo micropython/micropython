@@ -35,7 +35,7 @@ def print_exc(e):
 
 # basic exception message
 try:
-    1 / 0
+    raise Exception("msg")
 except Exception as e:
     print("caught")
     print_exc(e)
@@ -46,7 +46,7 @@ def f():
 
 
 def g():
-    2 / 0
+    raise Exception("fail")
 
 
 try:
@@ -58,7 +58,7 @@ except Exception as e:
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.
 def f():
-    f([1, 2], [1, 2], [1, 2], {1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: X})
+    f([1, 2], [1, 2], [1, 2], {1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: f.X})
     return 1
 
 

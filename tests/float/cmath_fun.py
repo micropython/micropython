@@ -22,7 +22,9 @@ for r in base_values:
             test_values_non_zero.append(complex(r, -i))
         if r != 0.0 and i != 0.0:
             test_values_non_zero.append(complex(-r, -i))
-test_values = [complex(0.0, 0.0)] + test_values_non_zero
+test_values = [
+    complex(0.0, 0.0),
+] + test_values_non_zero
 print(test_values)
 
 functions = [
@@ -54,6 +56,6 @@ for f_name, f, test_vals in functions:
         else:
             # some test (eg cmath.sqrt(-0.5)) disagree with CPython with tiny real part
             real = ret.real
-            if abs(real) < 1e15:
+            if abs(real) < 1e-6:
                 real = 0.0
             print("complex(%.5g, %.5g)" % (real, ret.imag))

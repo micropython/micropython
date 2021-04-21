@@ -107,7 +107,7 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 # to build the MicroPython cross compiler
 # Currently not used, because the wrong mpy-cross may be left over from a previous build. Build by hand to make sure.
-$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
+$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/mpy-cross/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).

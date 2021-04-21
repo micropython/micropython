@@ -44,7 +44,7 @@ extern const mp_obj_type_t mp_type_textio;
 
 STATIC const mp_obj_type_t mp_type_iobase;
 
-STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
+STATIC const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
 STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;

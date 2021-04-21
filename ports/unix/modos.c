@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "extmod/vfs.h"
 #include "extmod/misc.h"
 
 #ifdef __ANDROID__
@@ -106,16 +107,21 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_statvfs_obj, mod_os_statvfs);
 #endif
 
-STATIC mp_obj_t mod_os_unlink(mp_obj_t path_in) {
+STATIC mp_obj_t mod_os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
 
+    // Note that POSIX requires remove() to be able to delete a directory
+    // too (act as rmdir()). This is POSIX extenstion to ANSI C semantics
+    // of that function. But Python remove() follows ANSI C, and explicitly
+    // required to raise exception on attempt to remove a directory. Thus,
+    // call POSIX unlink() here.
     int r = unlink(path);
 
     RAISE_ERRNO(r, errno);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_unlink_obj, mod_os_unlink);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_remove_obj, mod_os_remove);
 
 STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
@@ -172,12 +178,24 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
     t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name));
+
     #ifdef _DIRENT_HAVE_D_TYPE
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+    #ifdef DTTOIF
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(DTTOIF(dirent->d_type));
+    #else
+    if (dirent->d_type == DT_DIR) {
+        t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
+    } else if (dirent->d_type == DT_REG) {
+        t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG);
+    } else {
+        t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+    }
+    #endif
     #else
     // DT_UNKNOWN should have 0 value on any reasonable system
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
     #endif
+
     #ifdef _DIRENT_HAVE_D_INO
     t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
     #else
@@ -217,7 +235,7 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mod_os_statvfs_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mod_os_system_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mod_os_unlink_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mod_os_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
