@@ -2198,9 +2198,8 @@ msgid "Too many displays"
 msgstr "Muchos displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
-"Los datos totales a escribir son más grandes que outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -4331,6 +4330,10 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr ""
+#~ "Los datos totales a escribir son más grandes que outgoing_packet_length"
 
 #~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 #~ msgstr "IOs 0, 2 y 4 no soportan pullup interno durante sleep"

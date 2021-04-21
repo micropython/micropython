@@ -2175,8 +2175,8 @@ msgid "Too many displays"
 msgstr "Xiǎnshì tài duō"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
-msgstr "Yào xiě rù de zǒng shùjù dàyú outgoing_packet_length"
+msgid "Total data to write is larger than %q"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -4297,6 +4297,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr "Yào xiě rù de zǒng shùjù dàyú outgoing_packet_length"
 
 #~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 #~ msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
