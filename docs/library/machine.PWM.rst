@@ -61,12 +61,35 @@ Methods
 
    Disable the PWM output.
 
+.. method:: PWM.freq([value])
+
+   Get or set the current frequency of the PWM output.
+
+   With no arguments the frequency in Hz is returned.
+
+   With a single *value* argument the frequency is set to that value in Hz.  The
+   method may raise a ``ValueError`` if the frequency is outside the valid range.
+
 .. method:: PWM.duty_ticks(ticks)
 
    Change the duty cycle of the output, with the argument *ticks* measured in
    ``ticks_hz`` as set by the constructor or ``PWM.init``.  For example, if
    ``ticks_hz`` is 1000 then *ticks* is measured in milliseconds.
 
-.. method:: PWM.duty_u16(u16)
+.. method:: PWM.duty_u16([value])
 
-   Change the duty cycle of the output, measured as the ratio ``u16 / 65535``.
+   Get or set the current duty cycle of the PWM output, as an unsigned 16-bit
+   value in the range 0 to 65535 inclusive.
+
+   With no arguments the duty cycle is returned.
+
+   With a single *value* argument the duty cycle is set to that value, measured
+   as the ratio ``value / 65535``.
+
+.. method:: PWM.duty_ns([value])
+
+   Get or set the current duty cycle of the PWM output, as a value in nanoseconds.
+
+   With no arguments the duty cycle in nanoseconds is returned.
+
+   With a single *value* argument the duty cycle is set to that value.
