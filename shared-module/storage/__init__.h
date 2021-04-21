@@ -30,9 +30,7 @@
 extern bool storage_usb_enabled;
 
 void storage_init(void);
-size_t storage_usb_desc_length(void);
-size_t storage_usb_add_desc(uint8_t *desc_buf, uint8_t interface_number,
-                            uint8_t in_endpoint_address, uint8_t out_endpoint_address,
-                            uint8_t interface_string_index);
+size_t storage_usb_descriptor_length(void);
+size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t interface, uint8_t in_endpoint, uint8_t out_endpoint, uint8_tt interface_string);
 
 #endif // SHARED_MODULE_STORAGE___INIT___H

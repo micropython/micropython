@@ -38,111 +38,148 @@
 
 supervisor_allocation *usb_midi_allocation;
 
-static uint8_t[] usb_midi_descriptor[] = {
-    0x09,        //   0 bLength
-    0x04,        //   1 bDescriptorType (Interface)
-    0xFF,        //   2 bInterfaceNumber [SET AT RUNTIME]
-    0x00,        //   3 bAlternateSetting
-    0x00,        //   4 bNumEndpoints 0
-    0x01,        //   5 bInterfaceClass (Audio)
-    0x01,        //   6 bInterfaceSubClass (Audio Control)
-    0x00,        //   7 bInterfaceProtocol
-    0x00,        //   8 iInterface (String Index) [SET AT RUNTIME]
+static const uint8_t usb_midi_descriptor_template[] = {
+    // Audio Interface Descriptor
+    0x09,        //  0 bLength
+    0x04,        //  1 bDescriptorType (Interface)
+    0xFF,        //  2 bInterfaceNumber [SET AT RUNTIME]
+#define MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX 2
+    0x00,        //  3 bAlternateSetting
+    0x00,        //  4 bNumEndpoints 0
+    0x01,        //  5 bInterfaceClass (Audio)
+    0x01,        //  6 bInterfaceSubClass (Audio Control)
+    0x00,        //  7 bInterfaceProtocol
+    0xFF,        //  8 iInterface (String Index) [SET AT RUNTIME]
+#define MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX 8
 
-    0x09,        //   9  bLength
-    0x24,        //  10 bDescriptorType (See Next Line)
-    0x01,        //  11 bDescriptorSubtype (CS_INTERFACE -> HEADER)
-    0x00, 0x01,  //  12,13 bcdADC 1.00
-    0x09, 0x00,  //  14,15 wTotalLength 9
-    0x01,        //  16 binCollection 0x01
-    0xFF,        //  17 baInterfaceNr [SET AT RUNTIME: one-element list: same as 20]
+    // Audio10 Control Interface Descriptor
+    0x09,        //  9  bLength
+    0x24,        // 10 bDescriptorType (See Next Line)
+    0x01,        // 11 bDescriptorSubtype (CS_INTERFACE -> HEADER)
+    0x00, 0x01,  // 12,13 bcdADC 1.00
+    0x09, 0x00,  // 14,15 wTotalLength 9
+    0x01,        // 16 binCollection 0x01
+    0xFF,        // 17 baInterfaceNr [SET AT RUNTIME: one-element list: same as 20]
+#define MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2 17
 
-    0x09,        //  18 bLength
-    0x04,        //  19 bDescriptorType (Interface)
-    0xFF,        //  20 bInterfaceNumber [SET AT RUNTIME]
-    0x00,        //  21 bAlternateSetting
-    0x02,        //  22 bNumEndpoints 2
-    0x01,        //  23 bInterfaceClass (Audio)
-    0x03,        //  24 bInterfaceSubClass (MIDI Streaming)
-    0x00,        //  25 bInterfaceProtocol
-    0x0A,        //  26 iInterface (String Index) [SET AT RUNTIME]
+    // MIDI Streaming Interface Descriptor
+    0x09,        // 18 bLength
+    0x04,        // 19 bDescriptorType (Interface)
+    0xFF,        // 20 bInterfaceNumber [SET AT RUNTIME]
+#define MIDI_STREAMING_INTERFACE_NUMBER_INDEX 20
+    0x00,        // 21 bAlternateSetting
+    0x02,        // 22 bNumEndpoints 2
+    0x01,        // 23 bInterfaceClass (Audio)
+    0x03,        // 24 bInterfaceSubClass (MIDI Streaming)
+    0x00,        // 25 bInterfaceProtocol
+    0xFF,        //  26 iInterface (String Index) [SET AT RUNTIME]
+#define MIDI_STREAMING_INTERFACE_STRING_INDEX 26
 
-    0x07,        //  27 bLength
-    0x24,        //  28 bDescriptorType (See Next Line)
-    0x01, 0x00, 0x01, 0x25, 0x00,  // 29,30,31,32,33
-    0x06,        //  34 bLength
-    0x24,        //  35 bDescriptorType (See Next Line)
-    0x02, 0x01, 0x01, 0x08,  // 36,37,38,39
+    // MIDI Header Descriptor
+    0x07,        // 27 bLength
+    0x24,        // 28 bDescriptorType: CLASS SPECIFIC INTERFACE
+    0x01,        // 29 bDescriptorSubtype: MIDI STREAMING HEADER
+    0x00, 0x01,  // 30,31 bsdMSC (MIDI STREAMING) version 1.0
+    0x25, 0x00   // 32,33 wLength
+
+    // MIDI Embedded In Jack Descriptor
+    0x06,        // 34 bLength
+    0x24,        // 35 bDescriptorType: CLASS SPECIFIC INTERFACE
+    0x02,        // 36 bDescriptorSubtype: MIDI IN JACK
+    0x01,        // 37 bJackType: EMBEDDED
+    0x01,        // 38 id (always 1)
+    0xFF,        // 39 iJack (String Index)  [SET AT RUNTIME]
+#define MIDI_IN_JACK_STRING_INDEX 39
+
+    // MIDI External In Jack Descriptor
     0x06,        // 40 bLength
-    0x24,        // 41 bDescriptorType (See Next Line)
-    0x02, 0x02, 0x02, 0x00,  // 42,43,44,45
+    0x24,        // 41 bDescriptorType: CLASS SPECIFIC INTERFACE
+    0x02,        // 42 bDescriptorSubtype: MIDI IN JACK
+    0x02,        // 43 bJackType: EXTERNAL
+    0x02,        // 44 bJackId (always 2)
+    0x00,        // 45 iJack (String Index)
+
+    // MIDI Embedded Out Jack Descriptor
     0x09,        // 46 bLength
-    0x24,        // 47 bDescriptorType (See Next Line)
-    0x03, 0x01, 0x03, 0x01, 0x02, 0x01, 0x09,  // 48,49,50,51,52,53,54
-    0x09,        // 56 bLength
-    0x24,        // 57 bDescriptorType (See Next Line)
-    0x03, 0x02, 0x04, 0x01, 0x01, 0x01, 0x00,  // 58,59,60,61,62,63,64
-    0x07,        // 65 bLength
-    0x05,        // 66 bDescriptorType (See Next Line)
-    0xFF,        // 67 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
-    0x02,        // 68 bmAttributes (Bulk)
-    0x40, 0x00,  // 69,70 wMaxPacketSize 64
-    0x00,        // 71 bInterval 0 (unit depends on device speed)
+    0x24,        // 47 bDescriptorType: CLASS SPECIFIC INTERFACE
+    0x03,        // 48 bDescriptorSubtype: MIDI OUT JACK
+    0x01,        // 49 bJackType: EMBEDDED
+    0x03,        // 50 bJackID (always 3)
+    0x01,        // 51 bNrInputPins (always 1)
+    0x02,        // 52 BaSourceID(1) (always 2)
+    0x01,        // 53 BaSourcePin(1) (always 1)
+    0xFF,        // 54 iJack (String Index)  [SET AT RUNTIME]
+#define MIDI_OUT_JACK_STRING_INDEX 54
 
-    0x05,        // 72 bLength
-    0x25,        // 73 bDescriptorType (See Next Line)
-    0x01, 0x01, 0x01,  // 74,75,76
-    0x07,        // 77 bLength
-    0x05,        // 78 bDescriptorType (See Next Line)
-    0xFF,        // 79 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
-    0x02,        // 80 bmAttributes (Bulk)
-    0x40, 0x00,  // 81,82 wMaxPacketSize 64
-    0x00,        // 83 bInterval 0 (unit depends on device speed)
+    // MIDI External Out Jack Descriptor
+    0x09,        // 55 bLength
+    0x24,        // 56 bDescriptorType: CLASS SPECIFIC INTERFACE
+    0x03,        // 57 bDescriptorSubtype: MIDI OUT JACK
+    0x02,        // 58 bJackType: EXTERNAL
+    0x04,        // 59 bJackID (always 4)
+    0x01,        // 60 bNrInputPins (always 1)
+    0x01,        // 61 BaSourceID(1) (always 1)
+    0x01,        // 62 BaSourcePin(1) (always 1)
+    0x00,        // 63 iJack (String Index)
 
-    0x05,        // 84 bLength
-    0x25,        // 85 bDescriptorType (See Next Line)
-    0x01, 0x01, 0x03,  // 86,87,88
+    // MIDI Streaming Endpoint OUT Descriptor
+    0x07,        // 64 bLength
+    0x05,        // 65 bDescriptorType (EndPoint)
+    0xFF,        // 66 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
+#define MIDI_STREAMING_OUT_ENDPOINT_INDEX 66
+    0x02,        // 67 bmAttributes (Bulk)
+    0x40, 0x00,  // 68,69 wMaxPacketSize 64
+    0x00,        // 70 bInterval 0 (unit depends on device speed)
+
+    // MIDI Data Endpoint Descriptor
+    0x05,        // 71 bLength
+    0x25,        // 72 bDescriptorType: CLASS SPECIFIC ENDPOINT
+    0x01,        // 73 bDescriptorSubtype: MIDI STREAMING 1.0
+    0x01,        // 74 bNumGrpTrmBlock (always 1)
+    0x01,        // 75 baAssoGrpTrmBlkID(1) (always 1)
+
+    // MIDI IN Data Endpoint
+    0x07,        // 76 bLength
+    0x05,        // 77 bDescriptorType: Endpoint
+    0xFF,        // 78 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+#define MIDI_STREAMING_IN_ENDPOINT_INDEX 78
+    0x02,        // 79 bmAttributes (Bulk)
+    0x40, 0x00,  // 8081 wMaxPacketSize 64
+    0x00,        // 82 bInterval 0 (unit depends on device speed)
+
+    // MIDI Data Endpoint Descriptor
+    0x05,        // 83 bLength
+    0x25,        // 84 bDescriptorType: CLASS SPECIFIC ENDPOINT
+    0x01,        // 85 bDescriptorSubtype: MIDI STREAMING 1.0
+    0x01,        // 86 bNumGrpTrmBlock (always 1)
+    0x03,        // 87 baAssoGrpTrmBlkID(1) (always 3)
 };
 
 // Is the USB MIDI device enabled?
 bool usb_midi_enabled;
 
-// Indices into usb_midi_descriptor for values that must be set at runtime.
 
-#define MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX 2
-#define MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX 8
-
-// These two get the same value.
-#define MIDI_MIDI_STREAMING_INTERFACE_NUMBER_INDEX 20
-#define MIDI_MIDI_STREAMING_INTERFACE_NUMBER_XREF_INDEX 17
-
-#define MIDI_MIDI_STREAMING_INTERFACE_STRING_INDEX 26
-
-#define MIDI_MIDI_STREAMING_OUT_ENDPOINT_INDEX 67
-#define MIDI_MIDI_STREAMING_IN_ENDPOINT_INDEX 79
-
-size_t usb_midi_desc_length(void) {
-    return sizeof(usb_midi_descriptor);
+size_t usb_midi_descriptor_length(void) {
+    return sizeof(usb_midi_descriptor_template);
 }
 
-size_t usb_midi_add_desc(uint8_t *desc_buf,
-                         uint8_t audio_control_interface_number,
-                         uint8_t midi_streaming_interface_number,
-                         uint8_t midi_streaming_in_endpoint_address,
-                         uint8_t midi_streaming_out_endpoint_address,
-                         uint8_t audio_control_interface_string,
-                         uint8_t midi_streaming_interface_string) {
-    memcpy(descriptor_buf, usb_midi_descriptor, sizeof(usb_midi_descriptor));
-    desc_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = audio_control_interface_number;
-    desc_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = audio_control_interface_string;
+size_t usb_midi_add_descriptor(uint8_t *descriptor_buf,
+                         uint8_t audio_control_interface, uint8_t midi_streaming_interface, uint8_t midi_streaming_in_endpoint, uint8_t midi_streaming_out_endpoint, uint8_t audio_control_interface_string, uint8_t midi_streaming_interface_string, uint8_t in_jack_string, uint8_t out_jack_string) {
+    memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
+    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = audio_control_interface_number;
+    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = audio_control_interface_string;
 
-    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = midi_streaming_interface_number;
-    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_NUMBER_XREF_INDEX] = midi_streaming_interface_number;
-    desc_buf[MIDI_MIDI_STREAMING_INTERFACE_STRING_INDEX] = midi_streaming_interface_string;
+    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = midi_streaming_in_endpoint;
+    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | midi_streaming_out_endpoint;
 
-    desc_buf[MSC_IN_ENDPOINT_INDEX] = midi_streaming_in_endpoint_address;
-    desc_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | midi_streaming_out_endpoint_address;
-    return sizeof(usb_midi_descriptor);
+    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = midi_streaming_interface_number;
+    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2] = midi_streaming_interface_number;
+    descriptor_buf[MIDI_STREAMING_INTERFACE_STRING_INDEX] = midi_streaming_interface_string;
+
+    descriptor_buf[MIDI_IN_JACK_STRING_INDEX] = in_jack_string;
+    descriptor_buf[MIDI_OUT_JACK_STRING_INDEX] = out_jack_string;
+
+    return sizeof(usb_midi_descriptor_template);
 }
 
 
