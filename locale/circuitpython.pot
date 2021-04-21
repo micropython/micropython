@@ -837,6 +837,10 @@ msgstr ""
 msgid "Data too large for advertisement packet"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
@@ -1653,6 +1657,10 @@ msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1665,6 +1673,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1740,6 +1749,10 @@ msgstr ""
 msgid "Permission denied"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
 msgstr ""
@@ -1758,6 +1771,11 @@ msgstr ""
 msgid "Pin does not have ADC capabilities"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
+
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
@@ -1769,10 +1787,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
-msgstr ""
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -1995,6 +2009,10 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
+
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -2133,6 +2151,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
+
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
 msgstr ""
 
 #: py/obj.c

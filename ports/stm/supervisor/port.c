@@ -190,7 +190,7 @@ safe_mode_t port_init(void) {
         }
     }
     #endif
-    
+
     __HAL_RCC_BACKUPRESET_FORCE();
     __HAL_RCC_BACKUPRESET_RELEASE();
 
