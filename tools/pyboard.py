@@ -4,7 +4,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2014-2019 Damien P. George
+# Copyright (c) 2014-2021 Damien P. George
 # Copyright (c) 2017 Paul Sokolovsky
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -252,7 +252,9 @@ class ProcessPtyToTerminal:
 
 
 class Pyboard:
-    def __init__(self, device, baudrate=115200, user="micro", password="python", wait=0):
+    def __init__(
+        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+    ):
         self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
@@ -264,10 +266,15 @@ class Pyboard:
         else:
             import serial
 
+            # Set options, and exclusive if pyserial supports it
+            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            if serial.__version__ >= "3.3":
+                serial_kwargs["exclusive"] = exclusive
+
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    self.serial = serial.Serial(device, **serial_kwargs)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
@@ -650,6 +657,11 @@ def main():
         action="store_true",
         help="Do not follow the output after running the scripts.",
     )
+    group.add_argument(
+        "--no-exclusive",
+        action="store_true",
+        help="Do not try to open the serial device for exclusive access.",
+    )
     cmd_parser.add_argument(
         "-f",
         "--filesystem",
@@ -662,7 +674,9 @@ def main():
 
     # open the connection to the pyboard
     try:
-        pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
+        pyb = Pyboard(
+            args.device, args.baudrate, args.user, args.password, args.wait, not args.no_exclusive
+        )
     except PyboardError as er:
         print(er)
         sys.exit(1)
