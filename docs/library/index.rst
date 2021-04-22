@@ -39,8 +39,6 @@ with the ``u`` prefix dropped:
    sys.rst
    uctypes.rst
    uselect.rst
-   usocket.rst
-   ussl.rst
    uzlib.rst
 
 Omitted functions in the ``string`` library

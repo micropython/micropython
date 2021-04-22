@@ -42,6 +42,7 @@
 #define MP_STREAM_SET_OPTS      (7)  // Set stream options
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
+#define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD  (0x0001)
@@ -121,10 +122,11 @@ mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures
-ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len);
-ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len);
-off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence);
-int mp_stream_posix_fsync(mp_obj_t stream);
+// "stream" is assumed to be a pointer to a concrete object with the stream protocol
+ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len);
+ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len);
+off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence);
+int mp_stream_posix_fsync(void *stream);
 #endif
 
 #if MICROPY_STREAMS_NON_BLOCK

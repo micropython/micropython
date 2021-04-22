@@ -30,6 +30,7 @@
 #include "py/emitglue.h"
 
 enum {
+    ID_INFO_KIND_UNDECIDED,
     ID_INFO_KIND_GLOBAL_IMPLICIT,
     ID_INFO_KIND_GLOBAL_EXPLICIT,
     ID_INFO_KIND_LOCAL, // in a function f, written and only referenced by f
@@ -41,6 +42,7 @@ enum {
     ID_FLAG_IS_PARAM = 0x01,
     ID_FLAG_IS_STAR_PARAM = 0x02,
     ID_FLAG_IS_DBL_STAR_PARAM = 0x04,
+    ID_FLAG_VIPER_TYPE_POS = 4,
 };
 
 typedef struct _id_info_t {
@@ -71,11 +73,11 @@ typedef struct _scope_t {
     struct _scope_t *parent;
     struct _scope_t *next;
     mp_parse_node_t pn;
+    mp_raw_code_t *raw_code;
     uint16_t source_file; // a qstr
     uint16_t simple_name; // a qstr
-    mp_raw_code_t *raw_code;
-    uint8_t scope_flags;  // see runtime0.h
-    uint8_t emit_options; // see compile.h
+    uint16_t scope_flags;  // see runtime0.h
+    uint16_t emit_options; // see emitglue.h
     uint16_t num_pos_args;
     uint16_t num_kwonly_args;
     uint16_t num_def_pos_args;
@@ -89,9 +91,9 @@ typedef struct _scope_t {
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options);
 void scope_free(scope_t *scope);
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added);
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, scope_kind_t kind);
 id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);
-void scope_find_local_and_close_over(scope_t *scope, id_info_t *id, qstr qst);
+void scope_check_to_close_over(scope_t *scope, id_info_t *id);
 
 #endif // MICROPY_INCLUDED_PY_SCOPE_H

@@ -57,6 +57,10 @@
 #define QSTR_EXIT()
 #endif
 
+// Initial number of entries for qstr pool, set so that the first dynamically
+// allocated pool is twice this size.  The value here must be <= MP_QSTRnumber_of.
+#define MICROPY_ALLOC_QSTR_ENTRIES_INIT (10)
+
 // this must match the equivalent function in makeqstrdata.py
 mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
@@ -85,7 +89,7 @@ const qstr_attr_t mp_qstr_const_attr[] = {
 const qstr_pool_t mp_qstr_const_pool = {
     NULL,               // no previous pool
     0,                  // no previous pool
-    10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
+    MICROPY_ALLOC_QSTR_ENTRIES_INIT,
     MP_QSTRnumber_of,   // corresponds to number of strings in array just below
     (qstr_attr_t *)mp_qstr_const_attr,
     {
@@ -138,6 +142,12 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
         if (new_pool_length > MICROPY_QSTR_POOL_MAX_ENTRIES) {
             new_pool_length = MICROPY_QSTR_POOL_MAX_ENTRIES;
         }
+        #ifdef MICROPY_QSTR_EXTRA_POOL
+        // Put a lower bound on the allocation size in case the extra qstr pool has few entries
+        if (new_pool_length < MICROPY_ALLOC_QSTR_ENTRIES_INIT) {
+            new_pool_length = MICROPY_ALLOC_QSTR_ENTRIES_INIT;
+        }
+        #endif
         mp_uint_t pool_size = sizeof(qstr_pool_t) + sizeof(const char *) * new_pool_length;
         void *chunk = m_malloc_maybe(pool_size + sizeof(qstr_attr_t) * new_pool_length, true);
         if (chunk == NULL) {

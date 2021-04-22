@@ -59,9 +59,9 @@ MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
 MP_BC_RAISE_VARARGS = 0x5C
 # extra byte if caching enabled:
-MP_BC_LOAD_NAME = 0x1C
-MP_BC_LOAD_GLOBAL = 0x1D
-MP_BC_LOAD_ATTR = 0x1E
+MP_BC_LOAD_NAME = 0x1B
+MP_BC_LOAD_GLOBAL = 0x1C
+MP_BC_LOAD_ATTR = 0x1D
 MP_BC_STORE_ATTR = 0x26
 
 # load opcode names
@@ -163,6 +163,14 @@ def mp_opcode_format(bytecode, ip, opcode_format=make_opcode_format()):
     ip_start = ip
     f = (opcode_format[opcode >> 2] >> (2 * (opcode & 3))) & 3
     if f == MP_OPCODE_QSTR:
+        if config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
+            if (
+                opcode == MP_BC_LOAD_NAME
+                or opcode == MP_BC_LOAD_GLOBAL
+                or opcode == MP_BC_LOAD_ATTR
+                or opcode == MP_BC_STORE_ATTR
+            ):
+                ip += 1
         ip += 3
     else:
         extra_byte = (
@@ -319,7 +327,8 @@ class RawCode:
                 opcode = "0x%02x" % opcode
             if f == 1:
                 qst = self._unpack_qstr(ip + 1).qstr_id
-                print("    {}, {} & 0xff, {} >> 8,".format(opcode, qst, qst))
+                extra = "" if sz == 3 else " 0x%02x," % self.bytecode[ip + 3]
+                print("    {}, {} & 0xff, {} >> 8,{}".format(opcode, qst, qst, extra))
             else:
                 print(
                     "    {},{}".format(
@@ -419,10 +428,10 @@ class RawCode:
                     n = struct.unpack("<I", struct.pack("<f", self.objs[i]))[0]
                     n = ((n & ~0x3) | 2) + 0x80800000
                     print("    (mp_rom_obj_t)(0x%08x)," % (n,))
-                    print("#else")
-                    print(
-                        '#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"'
-                    )
+                    print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
+                    n = struct.unpack("<Q", struct.pack("<d", self.objs[i]))[0]
+                    n += 0x8004000000000000
+                    print("    (mp_rom_obj_t)(0x%016x)," % (n,))
                     print("#endif")
                 else:
                     print("    MP_ROM_PTR(&const_obj_%s_%u)," % (self.escaped_name, i))
@@ -621,12 +630,16 @@ def freeze_mpy(base_qstrs, raw_codes):
         )
         qstr_size["data"] += len(qbytes)
     print("};")
+
+    # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
+    qstr_pool_alloc = min(len(new), 10)
+
     print()
     print("extern const qstr_pool_t mp_qstr_const_pool;")
     print("const qstr_pool_t mp_qstr_frozen_const_pool = {")
     print("    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool")
     print("    MP_QSTRnumber_of, // previous pool size")
-    print("    %u, // allocated entries" % len(new))
+    print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
     print("    (qstr_attr_t *)mp_qstr_frozen_const_attr,")
     print("    {")
