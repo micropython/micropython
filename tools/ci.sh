@@ -82,17 +82,25 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_setup {
+function ci_esp32_setup_helper {
     git clone https://github.com/espressif/esp-idf.git
-    git -C esp-idf checkout v4.0.2
+    git -C esp-idf checkout $1
     git -C esp-idf submodule update --init \
         components/bt/controller/lib \
         components/bt/host/nimble/nimble \
-        components/esp_wifi/lib_esp32 \
+        components/esp_wifi \
         components/esptool_py/esptool \
         components/lwip/lwip \
         components/mbedtls/mbedtls
     ./esp-idf/install.sh
+}
+
+function ci_esp32_idf402_setup {
+    ci_esp32_setup_helper v4.0.2
+}
+
+function ci_esp32_idf43_setup {
+    ci_esp32_setup_helper v4.3-beta2
 }
 
 function ci_esp32_build {
@@ -100,6 +108,11 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
     make ${MAKEOPTS} -C ports/esp32
+    make ${MAKEOPTS} -C ports/esp32 clean
+    make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake
+    if [ -d $IDF_PATH/components/esp32s2 ]; then
+        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
+    fi
 }
 
 ########################################################################################
@@ -181,6 +194,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     git submodule update --init lib/pico-sdk lib/tinyusb
     make ${MAKEOPTS} -C ports/rp2
+    make ${MAKEOPTS} -C ports/rp2 clean
+    make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
 }
 
 ########################################################################################
@@ -207,7 +222,7 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 submodules
     git submodule update --init lib/btstack
-    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1 USER_C_MODULES=../../examples/usercmodule CFLAGS_EXTRA="-DMODULE_CEXAMPLE_ENABLED=1 -DMODULE_CPPEXAMPLE_ENABLED=1"
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'

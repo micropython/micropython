@@ -22,4 +22,7 @@ const mp_obj_module_t cppexample_user_cmodule = {
 };
 
 // Register the module to make it available in Python.
-MP_REGISTER_MODULE(MP_QSTR_cppexample, cppexample_user_cmodule, MODULE_CPPEXAMPLE_ENABLED);
+// Note: the "1" in the third argument means this module is always enabled.
+// This "1" can be optionally replaced with a macro like MODULE_CPPEXAMPLE_ENABLED
+// which can then be used to conditionally enable this module.
+MP_REGISTER_MODULE(MP_QSTR_cppexample, cppexample_user_cmodule, 1);

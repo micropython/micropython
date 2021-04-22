@@ -240,7 +240,7 @@ def main():
     argv = sys.argv[1:]
 
     c_table = False
-    mcu_series = "f4"
+    mcu_series = "stm32f4"
     hse = None
     hsi = None
 
@@ -271,13 +271,13 @@ def main():
         hse = int(argv[0])
 
     # Select MCU parameters
-    if mcu_series == "h7":
+    if mcu_series.startswith("stm32h7"):
         mcu = mcu_h7
     else:
         mcu = mcu_default
 
-    # Relax constraight on PLLQ being 48MHz on F7 and H7 MCUs, which have separate PLLs for 48MHz
-    relax_pll48 = mcu_series in ("f7", "h7")
+    # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
+    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h7"))
 
     hse_valid_plls = compute_pll_table(hse, relax_pll48)
     if hsi is not None:

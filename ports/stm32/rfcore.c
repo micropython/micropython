@@ -417,6 +417,12 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
 
         // If this node is allocated from the memmgr event pool, then place it into the free buffer.
         if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {
+            // Wait for C2 to indicate that it has finished using the free buffer,
+            // so that we can link the newly-freed memory in to this buffer.
+            // If waiting is needed then it is typically between 5 and 20 microseconds.
+            while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_MM)) {
+            }
+
             // Place memory back in free pool.
             tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
             added_to_free_queue = true;
@@ -604,6 +610,24 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == HCI_KIND_BT_CMD) {
+        // The STM32WB has a problem when address resolution is enabled: under certain
+        // conditions the MCU can get into a state where it draws an additional 10mA
+        // or so and eventually ends up with a broken BLE RX path in the silicon.  A
+        // simple way to reproduce this is to enable address resolution (which is the
+        // default for NimBLE) and start the device advertising.  If there is enough
+        // BLE activity in the vicinity then the device will at some point enter the
+        // bad state and, if left long enough, will have permanent BLE RX damage.
+        //
+        // STMicroelectronics are aware of this issue.  The only known workaround at
+        // this stage is to not enable address resolution.  We do that here by
+        // intercepting any command that enables address resolution and convert it
+        // into a command that disables address resolution.
+        //
+        // OGF=0x08 OCF=0x002d HCI_LE_Set_Address_Resolution_Enable
+        if (len == 5 && memcmp(src + 1, "\x2d\x20\x01\x01", 4) == 0) {
+            src = (const uint8_t *)"\x01\x2d\x20\x01\x00";
+        }
+
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == HCI_KIND_BT_ACL) {

@@ -85,7 +85,7 @@ set(MICROPY_CPP_FLAGS_EXTRA ${includes} ${system_includes} ${definitions} ${opti
 zephyr_library_named(${MICROPY_TARGET})
 
 zephyr_library_include_directories(
-    ${MICROPY_DIR}
+    ${MICROPY_INC_CORE}
     ${MICROPY_PORT_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
 )

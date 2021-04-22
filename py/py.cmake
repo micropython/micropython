@@ -2,6 +2,8 @@
 
 set(MICROPY_PY_DIR "${MICROPY_DIR}/py")
 
+list(APPEND MICROPY_INC_CORE "${MICROPY_DIR}")
+
 # All py/ source files
 set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/argcheck.c
@@ -122,3 +124,25 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/vstr.c
     ${MICROPY_PY_DIR}/warning.c
 )
+
+# Helper macro to collect include directories and compile definitions for qstr processing.
+macro(micropy_gather_target_properties targ)
+    if(TARGET ${targ})
+        get_target_property(type ${targ} TYPE)
+        set(_inc OFF)
+        set(_def OFF)
+        if(${type} STREQUAL STATIC_LIBRARY)
+            get_target_property(_inc ${targ} INCLUDE_DIRECTORIES)
+            get_target_property(_def ${targ} COMPILE_DEFINITIONS)
+        elseif(${type} STREQUAL INTERFACE_LIBRARY)
+            get_target_property(_inc ${targ} INTERFACE_INCLUDE_DIRECTORIES)
+            get_target_property(_def ${targ} INTERFACE_COMPILE_DEFINITIONS)
+        endif()
+        if(_inc)
+            list(APPEND MICROPY_CPP_INC_EXTRA ${_inc})
+        endif()
+        if(_def)
+            list(APPEND MICROPY_CPP_DEF_EXTRA ${_def})
+        endif()
+    endif()
+endmacro()

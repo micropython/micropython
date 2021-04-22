@@ -6,7 +6,7 @@ AF_FILE = boards/stm32f722_af.csv
 LD_FILES = boards/PYBD_SF2/f722_qspi.ld
 TEXT0_ADDR = 0x08008000
 TEXT1_ADDR = 0x90000000
-TEXT0_SECTIONS = .isr_vector .text .data
+TEXT0_SECTIONS = .isr_vector .text .data .ARM
 TEXT1_SECTIONS = .text_ext
 
 # MicroPython settings

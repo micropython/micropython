@@ -184,8 +184,12 @@ STATIC void machine_hw_spi_init_internal(
         changed = true;
     }
 
-    if (self->host != HSPI_HOST && self->host != VSPI_HOST) {
-        mp_raise_ValueError(MP_ERROR_TEXT("SPI ID must be either HSPI(1) or VSPI(2)"));
+    if (self->host != HSPI_HOST
+        #ifdef VSPI_HOST
+        && self->host != VSPI_HOST
+        #endif
+        ) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), self->host);
     }
 
     if (changed) {
@@ -220,8 +224,10 @@ STATIC void machine_hw_spi_init_internal(
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
         dma_chan = 1;
+    #ifdef VSPI_HOST
     } else if (self->host == VSPI_HOST) {
         dma_chan = 2;
+    #endif
     }
 
     ret = spi_bus_initialize(self->host, &buscfg, dma_chan);

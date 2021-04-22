@@ -279,7 +279,7 @@ def run_tests(pyb, tests, args, result_dir):
 
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "native_check.py")
-        if output == b"CRASH":
+        if output != b"native\n":
             skip_native = True
 
         # Check if arbitrary-precision integers are supported, and skip such tests if it's not
@@ -294,7 +294,7 @@ def run_tests(pyb, tests, args, result_dir):
 
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "set_check.py")
-        if output == b"CRASH":
+        if output != b"{1}\n":
             skip_set_type = True
 
         # Check if slice is supported, and skip such tests if it's not
@@ -304,12 +304,12 @@ def run_tests(pyb, tests, args, result_dir):
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "async_check.py")
-        if output == b"CRASH":
+        if output != b"async\n":
             skip_async = True
 
         # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "const.py")
-        if output == b"CRASH":
+        if output != b"1\n":
             skip_const = True
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
@@ -334,10 +334,10 @@ def run_tests(pyb, tests, args, result_dir):
 
         upy_byteorder = run_feature_check(pyb, args, base_path, "byteorder.py")
         upy_float_precision = run_feature_check(pyb, args, base_path, "float.py")
-        if upy_float_precision == b"CRASH":
-            upy_float_precision = 0
-        else:
+        try:
             upy_float_precision = int(upy_float_precision)
+        except ValueError:
+            upy_float_precision = 0
         has_complex = run_feature_check(pyb, args, base_path, "complex.py") == b"complex\n"
         has_coverage = run_feature_check(pyb, args, base_path, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(

@@ -43,8 +43,13 @@ typedef struct _mdac_obj_t {
 } mdac_obj_t;
 
 STATIC const mdac_obj_t mdac_obj[] = {
+    #if CONFIG_IDF_TARGET_ESP32
     {{&machine_dac_type}, GPIO_NUM_25, DAC_CHANNEL_1},
     {{&machine_dac_type}, GPIO_NUM_26, DAC_CHANNEL_2},
+    #else
+    {{&machine_dac_type}, GPIO_NUM_17, DAC_CHANNEL_1},
+    {{&machine_dac_type}, GPIO_NUM_18, DAC_CHANNEL_2},
+    #endif
 };
 
 STATIC mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,

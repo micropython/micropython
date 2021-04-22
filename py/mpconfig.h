@@ -28,7 +28,7 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 14
+#define MICROPY_VERSION_MINOR 15
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
@@ -227,6 +227,11 @@
 // Initial size of module dict
 #ifndef MICROPY_MODULE_DICT_SIZE
 #define MICROPY_MODULE_DICT_SIZE (1)
+#endif
+
+// Initial size of sys.modules dict
+#ifndef MICROPY_LOADED_MODULES_DICT_SIZE
+#define MICROPY_LOADED_MODULES_DICT_SIZE (3)
 #endif
 
 // Whether realloc/free should be passed allocated memory region size

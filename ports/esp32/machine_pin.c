@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "driver/gpio.h"
+#include "driver/rtc_io.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -77,10 +78,17 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, GPIO_NUM_19},
     {{NULL}, -1},
     {{&machine_pin_type}, GPIO_NUM_21},
+    #if CONFIG_IDF_TARGET_ESP32
     {{&machine_pin_type}, GPIO_NUM_22},
     {{&machine_pin_type}, GPIO_NUM_23},
     {{NULL}, -1},
     {{&machine_pin_type}, GPIO_NUM_25},
+    #else
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    #endif
     {{&machine_pin_type}, GPIO_NUM_26},
     {{&machine_pin_type}, GPIO_NUM_27},
     {{NULL}, -1},
@@ -150,9 +158,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // reset the pin first if this is a mode-setting init (grab it back from ADC)
+    // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
-        gpio_reset_pin(self->id);
+        if (rtc_gpio_is_valid_gpio(self->id)) {
+            rtc_gpio_deinit(self->id);
+        }
     }
 
     // configure the pin for gpio
@@ -411,10 +421,17 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{&machine_pin_irq_type}, GPIO_NUM_19},
     {{NULL}, -1},
     {{&machine_pin_irq_type}, GPIO_NUM_21},
+    #if CONFIG_IDF_TARGET_ESP32
     {{&machine_pin_irq_type}, GPIO_NUM_22},
     {{&machine_pin_irq_type}, GPIO_NUM_23},
     {{NULL}, -1},
     {{&machine_pin_irq_type}, GPIO_NUM_25},
+    #else
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    {{NULL}, -1},
+    #endif
     {{&machine_pin_irq_type}, GPIO_NUM_26},
     {{&machine_pin_irq_type}, GPIO_NUM_27},
     {{NULL}, -1},

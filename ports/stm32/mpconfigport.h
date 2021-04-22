@@ -399,6 +399,10 @@ struct _mp_bluetooth_btstack_root_pointers_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK
 #endif
 
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
     void *mp_lv_user_data; \
@@ -433,9 +437,13 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
     \
+    /* root pointers for sub-systems */ \
     MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
-        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK \
+    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK \
+    \
+    /* root pointers defined by a board */ \
+        MICROPY_BOARD_ROOT_POINTERS \
 
 // type definitions for the specific machine
 
