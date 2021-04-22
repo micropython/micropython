@@ -100,7 +100,7 @@ mp_printf(&mp_plat_print, "[%2d]  %04x\n", i, imagecapture_code[i]);
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // wait for txstall
-        true, 16, true); // in settings
+        true, 32, true); // in settings
 
     PIO pio = self->state_machine.pio;
     uint8_t pio_index = pio_get_index(pio);
@@ -134,7 +134,7 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, buffer, bufsize, 2);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, buffer, bufsize, 4);
 
     pio_sm_set_enabled(pio, sm, false);
 }
