@@ -84,8 +84,7 @@ mp_printf(&mp_plat_print, "[%2d]  %04x\n", i, imagecapture_code[i]);
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         imagecapture_code, MP_ARRAY_SIZE(imagecapture_code),
-        // common_hal_mcu_processor_get_frequency(), // full speed (4 instructions per loop -> max pclk 30MHz @ 120MHz)
-        12000000, // 12MHz -> fine for pixel clock 1MHz
+        common_hal_mcu_processor_get_frequency(), // full speed (4 instructions per loop -> max pclk 30MHz @ 120MHz)
         0, 0, // init
         NULL, 0, 0, 0, // out pins
         data0, data_count, // in pins
