@@ -243,6 +243,10 @@ function ci_stm32_nucleo_build {
     BUILD_WB55=ports/stm32/build-NUCLEO_WB55
     python3 ports/stm32/mboot/mboot_pack_dfu.py -k $BOARD_WB55/mboot_keys.h unpack-dfu $BUILD_WB55/firmware.pack.dfu $BUILD_WB55/firmware.unpack.dfu
     diff $BUILD_WB55/firmware.unpack.dfu $BUILD_WB55/firmware.dfu
+    # Test unpack-dfu command works without a secret key
+    tail -n +2 $BOARD_WB55/mboot_keys.h > $BOARD_WB55/mboot_keys_no_sk.h
+    python3 ports/stm32/mboot/mboot_pack_dfu.py -k $BOARD_WB55/mboot_keys_no_sk.h unpack-dfu $BUILD_WB55/firmware.pack.dfu $BUILD_WB55/firmware.unpack_no_sk.dfu
+    diff $BUILD_WB55/firmware.unpack.dfu $BUILD_WB55/firmware.unpack_no_sk.dfu
 }
 
 ########################################################################################

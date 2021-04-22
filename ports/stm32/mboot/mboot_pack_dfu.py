@@ -86,9 +86,14 @@ class Keys:
 
     def load(self):
         with open(self.filename) as f:
-            self.sign_sk = self._load_data("mboot_pack_sign_secret_key", f.readline())
-            self.sign_pk = self._load_data("mboot_pack_sign_public_key", f.readline())
-            self.secretbox = self._load_data("mboot_pack_secretbox_key", f.readline())
+            for line in f:
+                for key, attr in (
+                    ("mboot_pack_sign_secret_key", "sign_sk"),
+                    ("mboot_pack_sign_public_key", "sign_pk"),
+                    ("mboot_pack_secretbox_key", "secretbox"),
+                ):
+                    if key in line:
+                        setattr(self, attr, self._load_data(key, line))
 
 
 def dfu_read(filename):
@@ -135,6 +140,8 @@ def encrypt(keys, data):
 
 
 def sign(keys, data):
+    if not hasattr(keys, "sign_sk"):
+        raise Exception("packing a dfu requires a secret key")
     return pyhy.hydro_sign_create(data, MBOOT_PACK_HYDRO_CONTEXT, keys.sign_sk)
 
 
