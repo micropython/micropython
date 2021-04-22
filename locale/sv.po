@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"PO-Revision-Date: 2021-04-23 12:37+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2447,7 +2447,7 @@ msgstr "adresserna är tomma"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "Annoteringen måste vara en identifierare"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2633,7 +2633,7 @@ msgstr "kan inte konvertera %q till %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "kan inte konvertera %q till int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -3056,7 +3056,7 @@ msgstr "full"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "funktionen tar inte nyckelordsargument"
 
 #: py/argcheck.c
 #, c-format
@@ -3112,7 +3112,7 @@ msgstr "generatorn ignorerade GeneratorExit"
 
 #: py/objgenerator.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "generator kastade StopIteration"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3498,7 +3498,7 @@ msgstr "behöver mer än %d värden för att packa upp"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "negativ faktoriell"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
