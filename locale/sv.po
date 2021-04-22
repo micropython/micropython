@@ -2352,10 +2352,6 @@ msgstr "Värdets längd > max_length"
 msgid "Version was invalid"
 msgstr "Versionen var ogiltig"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Avläsning av spänning tog för lång tid"
@@ -2441,11 +2437,6 @@ msgstr "ett bytesliknande objekt krävs"
 msgid "abort() called"
 msgstr "abort() anropad"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "adressen %08x är inte justerad till %d byte"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adress utanför gränsen"
@@ -2453,6 +2444,10 @@ msgstr "adress utanför gränsen"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adresserna är tomma"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2636,6 +2631,10 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan inte konvertera '%q' objekt implicit till %q"
@@ -2643,6 +2642,10 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "kan inte konvertera till %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "kan inte konvertera till int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3052,8 +3055,8 @@ msgid "full"
 msgstr "full"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "funktionen tar inte nyckelordsargument"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3106,6 +3109,10 @@ msgstr "generatorn kör redan"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generatorn ignorerade GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3489,6 +3496,10 @@ msgstr "native yield"
 msgid "need more than %d values to unpack"
 msgstr "behöver mer än %d värden för att packa upp"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "negativ exponent utan stöd för flyttal"
@@ -3718,10 +3729,6 @@ msgstr "palette måste vara 32 bytes lång"
 msgid "palette_index should be an int"
 msgstr "palette_index ska vara en int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "parametern annotation måste vara en identifierare"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametrarna måste registreras i följd a2-a5"
@@ -3778,6 +3785,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4163,7 +4171,7 @@ msgstr "okänd formatkod '%c' för objekt av typ '%q'"
 msgid "unknown type"
 msgstr "okänd typ"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "okänd typ '%q'"
 
@@ -4301,6 +4309,18 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adressen %08x är inte justerad till %d byte"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "funktionen tar inte nyckelordsargument"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parametern annotation måste vara en identifierare"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr "Total data som ska skrivas är större än outgoing_packet_length"
@@ -4603,9 +4623,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "kan inte konvertera till float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "kan inte konvertera till int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "objektet '%s' är inte en tupel eller lista"

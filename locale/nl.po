@@ -2346,10 +2346,6 @@ msgstr "Waarde length > max_length"
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Voltage lees time-out"
@@ -2438,11 +2434,6 @@ msgstr "een bytes-achtig object is vereist"
 msgid "abort() called"
 msgstr "abort() aangeroepen"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "adres %08x is niet afgestemd op %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres buiten bereik"
@@ -2450,6 +2441,10 @@ msgstr "adres buiten bereik"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adressen zijn leeg"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2634,6 +2629,10 @@ msgstr "kan niet toewijzen aan expressie"
 msgid "can't convert %q to %q"
 msgstr "kan %q niet naar %q converteren"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan '%q' object niet omzetten naar %q impliciet"
@@ -2641,6 +2640,10 @@ msgstr "kan '%q' object niet omzetten naar %q impliciet"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "kan niet naar %q converteren"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "kan niet omzetten naar int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3048,8 +3051,8 @@ msgid "full"
 msgstr "vol"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "functie accepteert geen keyword argumenten"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3103,6 +3106,10 @@ msgstr "generator wordt al uitgevoerd"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generator negeerde GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3486,6 +3493,10 @@ msgstr "natuurlijke opbrengst (native yield)"
 msgid "need more than %d values to unpack"
 msgstr "Om uit te pakken zijn meer dan %d waarden vereist"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "negatieve macht terwijl er geen ondersteuning is voor float"
@@ -3715,10 +3726,6 @@ msgstr "palette moet 32 bytes lang zijn"
 msgid "palette_index should be an int"
 msgstr "palette_index moet een int zijn"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "parameter annotatie moet een identifier zijn"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parameters moeten registers zijn in de volgorde a2 tot a5"
@@ -3775,6 +3782,7 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4160,7 +4168,7 @@ msgstr "onbekende formaatcode '%c' voor object van type '%q'"
 msgid "unknown type"
 msgstr "onbekend type"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "onbekend type '%q'"
 
@@ -4298,6 +4306,18 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adres %08x is niet afgestemd op %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "functie accepteert geen keyword argumenten"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parameter annotatie moet een identifier zijn"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr "Totale data om te schrijven is groter dan outgoing_packet_length"
@@ -4568,9 +4588,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "can't convert to float"
 #~ msgstr "kan niet omzetten naar float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "kan niet omzetten naar int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "object '%s' is geen tuple of lijst"

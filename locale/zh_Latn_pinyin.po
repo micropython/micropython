@@ -2349,10 +2349,6 @@ msgstr "Zhí chángdù > zuìdà chángdù"
 msgid "Version was invalid"
 msgstr "bǎn běn wú xiào"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Diànyā dòu qǔ chāoshí"
@@ -2439,11 +2435,6 @@ msgstr "xūyào yīgè zì jié lèi duìxiàng"
 msgid "abort() called"
 msgstr "zhōngzhǐ () diàoyòng"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "dìzhǐ chāochū biānjiè"
@@ -2451,6 +2442,10 @@ msgstr "dìzhǐ chāochū biānjiè"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "dìzhǐ wèi kōng"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2634,6 +2629,10 @@ msgstr "bùnéng fēnpèi dào biǎodá shì"
 msgid "can't convert %q to %q"
 msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
@@ -2641,6 +2640,10 @@ msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "wúfǎ zhuǎnhuàn wèi %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "bùnéng zhuǎnhuàn wèi int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3051,8 +3054,8 @@ msgid "full"
 msgstr "chōngfèn"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "hánshù méiyǒu guānjiàn cí cānshù"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3105,6 +3108,10 @@ msgstr "shēngchéng qì yǐjīng zhíxíng"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "shēngchéng qì hūlüè shēngchéng qì tuìchū"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3486,6 +3493,10 @@ msgstr "yuán chǎn"
 msgid "need more than %d values to unpack"
 msgstr "xūyào chāoguò%d de zhí cáinéng jiědú"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "méiyǒu fú diǎn zhīchí de xiāojí gōnglǜ"
@@ -3715,10 +3726,6 @@ msgstr "yánsè bìxū shì 32 gè zì jié"
 msgid "palette_index should be an int"
 msgstr "yánsè suǒyǐn yīnggāi shì yīgè zhěngshù"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "cānshù zhùshì bìxū shì biāozhì fú"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
@@ -3774,6 +3781,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4159,7 +4167,7 @@ msgstr "lèixíng '%q' de duìxiàng de wèizhī géshì dàimǎ '%c'"
 msgid "unknown type"
 msgstr "wèizhī lèixíng"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "wèizhī lèixíng '%q'"
 
@@ -4297,6 +4305,18 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "hánshù méiyǒu guānjiàn cí cānshù"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "cānshù zhùshì bìxū shì biāozhì fú"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr "Yào xiě rù de zǒng shùjù dàyú outgoing_packet_length"
@@ -4573,9 +4593,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "bùnéng zhuǎnhuàn wèi fú diǎn"
-
-#~ msgid "can't convert to int"
-#~ msgstr "bùnéng zhuǎnhuàn wèi int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"

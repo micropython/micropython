@@ -2317,10 +2317,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
@@ -2406,11 +2402,6 @@ msgstr "wymagany obiekt typu bytes"
 msgid "abort() called"
 msgstr "Wywołano abort()"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "adres %08x nie jest wyrównany do %d bajtów"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres poza zakresem"
@@ -2418,6 +2409,10 @@ msgstr "adres poza zakresem"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adres jest pusty"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2601,6 +2596,10 @@ msgstr "przypisanie do wyrażenia"
 msgid "can't convert %q to %q"
 msgstr "nie można dokonać konwersji %q na %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "nie można automatycznie skonwertować '%q' do '%q'"
@@ -2608,6 +2607,10 @@ msgstr "nie można automatycznie skonwertować '%q' do '%q'"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "nie można skonwertować do int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3013,8 +3016,8 @@ msgid "full"
 msgstr "pełny"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "funkcja nie bierze argumentów nazwanych"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3067,6 +3070,10 @@ msgstr "generator już się wykonuje"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generator zignorował GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3447,6 +3454,10 @@ msgstr "natywny yield"
 msgid "need more than %d values to unpack"
 msgstr "potrzeba więcej niż %d do rozpakowania"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "ujemna potęga, ale brak obsługi liczb zmiennoprzecinkowych"
@@ -3676,10 +3687,6 @@ msgstr "paleta musi mieć 32 bajty długości"
 msgid "palette_index should be an int"
 msgstr "palette_index powinien być całkowity"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "anotacja parametru musi być identyfikatorem"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametry muszą być rejestrami w kolejności a2 do a5"
@@ -3736,6 +3743,7 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4120,7 +4128,7 @@ msgstr ""
 msgid "unknown type"
 msgstr "zły typ"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "zły typ '%q'"
 
@@ -4258,6 +4266,18 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adres %08x nie jest wyrównany do %d bajtów"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "funkcja nie bierze argumentów nazwanych"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "anotacja parametru musi być identyfikatorem"
 
 #~ msgid "buffer must be a bytes-like object"
 #~ msgstr "bufor mysi być typu bytes"
@@ -4399,9 +4419,6 @@ msgstr ""
 
 #~ msgid "can't convert to float"
 #~ msgstr "nie można skonwertować do float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "nie można skonwertować do int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "obiekt '%s' nie jest krotką ani listą"

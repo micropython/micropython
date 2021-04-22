@@ -2343,10 +2343,6 @@ msgstr "Value length > max_length"
 msgid "Version was invalid"
 msgstr "Version was invalid"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Viper functions don't currently support more than 4 arguments"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Voltage read timed out"
@@ -2431,11 +2427,6 @@ msgstr "a bytes-like object is required"
 msgid "abort() called"
 msgstr "abort() called"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "address %08x is not aligned to %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "address out of bounds"
@@ -2443,6 +2434,10 @@ msgstr "address out of bounds"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "addresses is empty"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2626,6 +2621,10 @@ msgstr "Can't assign to expression"
 msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "Can't convert '%q' object to %q implicitly"
@@ -2633,6 +2632,10 @@ msgstr "Can't convert '%q' object to %q implicitly"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "Can't convert to %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3040,8 +3043,8 @@ msgid "full"
 msgstr "full"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "function does not take keyword arguments"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3094,6 +3097,10 @@ msgstr "generator already executing"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generator ignored GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3475,6 +3482,10 @@ msgstr "native yield"
 msgid "need more than %d values to unpack"
 msgstr "need more than %d values to unpack"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "negative power with no float support"
@@ -3704,10 +3715,6 @@ msgstr "palette must be 32 bytes long"
 msgid "palette_index should be an int"
 msgstr "palette_index should be an int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "parameter annotation must be an identifier"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parameters must be registers in sequence a2 to a5"
@@ -3763,6 +3770,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4148,7 +4156,7 @@ msgstr "unknown format code '%c' for object of type '%q'"
 msgid "unknown type"
 msgstr "unknown type"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "unknown type '%q'"
 
@@ -4286,6 +4294,18 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper functions don't currently support more than 4 arguments"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "address %08x is not aligned to %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "function does not take keyword arguments"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parameter annotation must be an identifier"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr "Total data to write is larger than outgoing_packet_length"
