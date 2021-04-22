@@ -95,7 +95,6 @@ SRC_C = \
 	usb.c \
 
 STM_SRC_C = $(addprefix ports/stm32/,\
-	gccollect.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
