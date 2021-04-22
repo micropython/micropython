@@ -2,9 +2,9 @@ name: Build lv_micropython unix port
 
 on:
   push:
-    branches: [ master, lvgl_javascript ]
+    branches: [ master, lvgl_javascript, dev-8.0 ]
   pull_request:
-    branches: [ master, lvgl_javascript ]
+    branches: [ master, lvgl_javascript, dev-8.0 ]
 
 jobs:
   build:
