@@ -76,7 +76,6 @@ else
     supervisor/usb.c \
     supervisor/shared/usb/usb_desc.c \
     supervisor/shared/usb/usb.c \
-    $(BUILD)/autogen_usb_descriptor.c \
 
   ifeq ($(CIRCUITPY_USB_CDC), 1)
     SRC_SUPERVISOR += \
@@ -159,60 +158,23 @@ USB_HIGHSPEED ?= 0
 USB_CDC_EP_NUM_NOTIFICATION ?= 0
 USB_CDC_EP_NUM_DATA_OUT ?= 0
 USB_CDC_EP_NUM_DATA_IN ?= 0
+
+USB_CDC2_EP_NUM_NOTIFICATION ?= 0
+USB_CDC2_EP_NUM_DATA_OUT ?= 0
+USB_CDC2_EP_NUM_DATA_IN ?= 0
+
 USB_MSC_EP_NUM_OUT ?= 0
 USB_MSC_EP_NUM_IN ?= 0
+
 USB_HID_EP_NUM_OUT ?= 0
 USB_HID_EP_NUM_IN ?= 0
+
 USB_MIDI_EP_NUM_OUT ?= 0
 USB_MIDI_EP_NUM_IN ?= 0
+
 USB_NUM_EP ?= 0
 
-USB_DESCRIPTOR_ARGS = \
-	--manufacturer $(USB_MANUFACTURER)\
-	--product $(USB_PRODUCT)\
-	--vid $(USB_VID)\
-	--pid $(USB_PID)\
-	--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
-	--interface_name_prefix $(USB_INTERFACE_NAME)\
-	--devices "$(USB_DEVICES)"\
-	--hid_devices "$(USB_HID_DEVICES)"\
-	--max_ep $(USB_NUM_EP) \
-	--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
-	--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
-	--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
-	--msc_ep_num_out $(USB_MSC_EP_NUM_OUT)\
-	--msc_ep_num_in $(USB_MSC_EP_NUM_IN)\
-	--hid_ep_num_out $(USB_HID_EP_NUM_OUT)\
-	--hid_ep_num_in $(USB_HID_EP_NUM_IN)\
-	--midi_ep_num_out $(USB_MIDI_EP_NUM_OUT)\
-	--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
-	--output_c_file $(BUILD)/autogen_usb_descriptor.c\
-	--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
-
-ifeq ($(CIRCUITPY_USB_VENDOR), 1)
-USB_DESCRIPTOR_ARGS += \
-        --vendor_ep_num_out 0 --vendor_ep_num_in 0 \
-        --webusb_url $(USB_WEBUSB_URL)
-endif
-
-ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
-USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
-endif
-
-ifeq ($(USB_HIGHSPEED), 1)
-USB_DESCRIPTOR_ARGS += --highspeed
-endif
-
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
-
-$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
-
-.INTERMEDIATE: autogen_usb_descriptor.intermediate
-
-autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
-	$(STEPECHO) "GEN $@"
-	$(Q)install -d $(BUILD)/genhdr
-	$(Q)$(PYTHON3) ../../tools/gen_usb_descriptor.py $(USB_DESCRIPTOR_ARGS)
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

@@ -33,6 +33,6 @@ void usb_midi_init(void);
 void usb_midi_usb_init(void);
 
 size_t usb_midi_descriptor_length(void);
-size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t audio_control_interface, uint8_t midi_streaming_interface, uint8_t midi_streaming_in_endpoint, uint8_t midi_streaming_out_endpoint, uint8_t audio_control_interface_string, uint8_t midi_streaming_interface_string, uint8_t in_jack_string, uint8_t out_jack_string);
+size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string);
 
 #endif /* SHARED_MODULE_USB_MIDI___INIT___H */

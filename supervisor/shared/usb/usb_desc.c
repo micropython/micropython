@@ -46,8 +46,21 @@
 
 #include "genhdr/autogen_usb_descriptor.h"
 
+// ******* TODO PROTECT AGAINST GC.
 static uint8_t *device_descriptor;
 static uint8_t *config_descriptor;
+
+// Table for collecting interface strings (interface names) as descriptor is built.
+#define MAX_INTERFACE_STRINGS 16
+// slot 0 is not used.
+static char * collected_interface_strings[];
+static uint16_t current_interface_string;
+
+static const char[] manufacturer_name = USB_MANUFACTURER;
+static const char[] product_name = USB_PRODUCT;
+
+// Serial number string is UID length * 2 (2 nibbles per byte) + 1 byte for null termination.
+static char serial_number_hex_string[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2 + 1];
 
 static const uint8_t device_descriptor_template[] = {
     0x12,        //  0 bLength
@@ -87,8 +100,27 @@ static const uint8_t configuration_descriptor_template[] = {
     0x32,        // 8 bMaxPower 100mA
 };
 
-void build_usb_device_descriptor(uint16_t vid, uint16_t pid, uint8_t manufacturer_string_index, uint8_t product_string_index, uint8_t serial_number_string_index) {
+void usb_desc_init(void) {
+    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+    common_hal_mcu_processor_get_uid(raw_id);
 
+    for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+        for (int j = 0; j < 2; j++) {
+            uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
+            serial_number_hex_string[i * 2 + (1 - j)] = nibble_to_hex_upper[nibble];
+        }
+    }
+
+    // Null-terminate the string.
+    serial_number_hex_string[sizeof(serial_number_hex_string)] = '\0';
+
+    // Set to zero when allocated; we depend on that.
+    collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
+    current_interface_string = 1;
+}
+
+
+void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string) {
     device_descriptor = m_malloc(sizeof(device_descriptor_template), false);
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
@@ -96,12 +128,21 @@ void build_usb_device_descriptor(uint16_t vid, uint16_t pid, uint8_t manufacture
     device_descriptor[DEVICE_VID_HI_INDEX] = vid >> 8;
     device_descriptor[DEVICE_PID_LO_INDEX] = pid & 0xFF;
     device_descriptor[DEVICE_PID_HI_INDEX] = pid >> 8;
-    device_descriptor[DEVICE_MANUFACTURER_STRING_INDEX] = manufacturer_string_index;
-    device_descriptor[DEVICE_PRODUCT_STRING_INDEX] = product_string_index;
-    device_descriptor[DEVICE_SERIAL_NUMBER_STRING_INDEX] = serial_number_string_index;
+
+    usb_add_interface_string(*current_interface_string, manufacturer_name);
+    device_descriptor[DEVICE_MANUFACTURER_STRING_INDEX] = *current_interface_string;
+    (*current_interface_string)++;
+
+    usb_add_interface_string(*current_interface_string, product_name);
+    device_descriptor[DEVICE_PRODUCT_STRING_INDEX] = *current_interface_string;
+    (*current_interface_string)++;
+
+    usb_add_interface_string(*current_interface_string, serial_number_hex_string);
+    device_descriptor[DEVICE_SERIAL_NUMBER_STRING_INDEX] = *current_interface_string;
+    (*current_interface_string)++;
 }
 
-void build_usb_configuration_descriptor(uint16_t total_length, uint8_t num_interfaces) {
+void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_interfaces) {
     size_t total_descriptor_length = sizeof(configuration_descriptor_template);
 
     // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
@@ -143,19 +184,22 @@ void build_usb_configuration_descriptor(uint16_t total_length, uint8_t num_inter
     configuration_descriptor[CONFIG_TOTAL_LENGTH_HI_INDEX] = (total_descriptor_length >> 8) & 0xFF;
 
     // Number interfaces and endpoints.
-    // Endpoint 0 is already used for USB control.
+    // Endpoint 0 is already used for USB control, so start with 1.
     uint8_t current_interface = 0;
     uint8_t current_endpoint = 1;
-    uint16_t current_interface_string = 1;
 
     uint8_t *descriptor_buf_remaining = configuration_descriptor + sizeof(configuration_descriptor_template);
 
 #if CIRCUITPY_USB_CDC
     if (usb_cdc_repl_enabled) {
         // Concatenate and fix up the CDC REPL descriptor.
+        descriptor_buf_remaining += usb_cdc_add_descriptor(
+            descriptor_buf_remaining, *current_interface, *current_endpoint, *current_interface_string, true);
     }
     if (usb_cdc_data_enabled) {
         // Concatenate and fix up the CDC data descriptor.
+        descriptor_buf_remaining += usb_cdc_add_descriptor(
+            descriptor_buf_remaining, *current_interface, *current_endpoint, *current_interface_string, false);
     }
 #endif
 
@@ -163,13 +207,7 @@ void build_usb_configuration_descriptor(uint16_t total_length, uint8_t num_inter
     if (storage_usb_enabled) {
         // Concatenate and fix up the MSC descriptor.
         descriptor_buf_remaining += storage_usb_add_descriptor(
-            descriptor_buf_remaining, current_interface,
-            current_endpoint,  // in
-            current_endpoint,  // out
-            current_interface_string_index);
-        current_interface++;
-        current_endpoint++;
-        current_interface_string++;
+            descriptor_buf_remaining, *current_interface, *current_endpoint, *current_interface_string);
     }
 #endif
 
@@ -177,26 +215,14 @@ void build_usb_configuration_descriptor(uint16_t total_length, uint8_t num_inter
     if (usb_midi_enabled) {
         // Concatenate and fix up the MIDI descriptor.
         descriptor_buf_remaining += usb_midi_add_descriptor(
-            descriptor_buf_remaining,
-            current_interface,            // audio control
-            current_interface + 1,        // MIDI streaming
-            current_endpoint,             // in
-            current_endpoint,             // out
-            current_interface_string,     // audio control
-            current_interface_string + 1  // MIDI streaming
-            current_interface_string + 2  // in jack
-            current_interface_string + 3  // out jack
-            );
-        current_interface += 2;           // two interfaces: audio control and MIDI streaming
-        current_endpoint++;               // MIDI streaming only (no audio data)
-        current_interface_string += 4;    // two interface names: audio control and MIDI streaming
-
+            descriptor_buf_remaining, *current_interface, *current_endpoint, *current_interface_string);
     }
 #endif
 
 #if CIRCUITPY_USB_HID
     if (usb_hid_enabled) {
-        // Concatenate and fix up the HID descriptor (not the report descriptors).
+        descriptor_buf_remaining += usb_hid_add_descriptor(
+            descriptor_buf_remaining, *current_interface, *current_endpoint, *current_interface_string);
     }
 #endif
 
@@ -210,13 +236,33 @@ void build_usb_configuration_descriptor(uint16_t total_length, uint8_t num_inter
 
 }
 
-// Invoked when received GET DEVICE DESCRIPTOR
+void usb_add_interface_string(uint8_t interface_string_index, const char[] str) {
+    if (interface_string_index > MAX_INTERFACE_STRINGS) {
+        mp_raise_SystemError("Too many USB interface names");
+    }
+    // 2 bytes for String Descriptor header, then 2 bytes for each character
+    const size_t str_len = strlen(str);
+    uint8_t descriptor_size  = 2 + (str_len * 2);
+    uint16_t *string_descriptor = (uint16_t *) m_malloc(descriptor_size, false);
+    string_descriptor[0] = 0x0300 | descriptor_size;
+    // Convert to le16
+    for (i = 0; i <= str_len; i++) {
+        string_descriptor[i + 1] = str[i];
+    }
+
+    collected_interface_strings[interface_string_index] = string_descriptor;
+}
+
+
+void usb_
+
+// Invoked when GET DEVICE DESCRIPTOR is received.
 // Application return pointer to descriptor
 uint8_t const *tud_descriptor_device_cb(void) {
     return usb_descriptor_dev;
 }
 
-// Invoked when received GET CONFIGURATION DESCRIPTOR
+// Invoked when GET CONFIGURATION DESCRIPTOR is received.
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
@@ -225,7 +271,7 @@ uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
 }
 
 #if CIRCUITPY_USB_HID
-// Invoked when received GET HID REPORT DESCRIPTOR
+// Invoked when GET HID REPORT DESCRIPTOR is received.
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
@@ -234,9 +280,11 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
 }
 #endif
 
-// Invoked when received GET STRING DESCRIPTOR request
+// Invoked when GET STRING DESCRIPTOR request is received.
 // Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
 uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
-    uint8_t const max_index = sizeof(string_descriptor_arr) / sizeof(string_descriptor_arr[0]);
-    return (index < max_index) ? string_descriptor_arr[index] : NULL;
+    if (index > MAX_INTERFACE_STRINGS) {
+        return NULL;
+    }
+    return collected_interface_strings[index];
 }

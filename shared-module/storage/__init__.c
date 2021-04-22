@@ -58,7 +58,7 @@ static const uint8_t storage_usb_msc_descriptor_template[] = {
     // MSC Endpoint IN Descriptor
     0x07,        //  9 bLength
     0x05,        // 10 bDescriptorType (Endpoint)
-    0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define MSC_IN_ENDPOINT_INDEX 11
     0x02,        // 12 bmAttributes (Bulk)
     0x40, 0x00,  // 13,14 wMaxPacketSize 64
@@ -81,12 +81,21 @@ size_t storage_usb_descriptor_length(void) {
     return sizeof(usb_msc_descriptor);
 }
 
-size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t interface_number, uint8_t in_endpoint, uint8_t out_endpoint, uint8_t interface_string) {
+static const char[] storage_interface_name =  USB_INTERFACE_NAME " Mass Storage";
+
+size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
     memcpy(descriptor_buf, storage_usb_msc_descriptor_template, sizeof(storage_usb_msc_descriptor_template));
-    descriptor_buf[MSC_INTERFACE_INDEX] = interface_number;
-    descriptor_buf[MSC_INTERFACE_STRING_INDEX] = interface_string;
-    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = in_endpoint_address;
-    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | out_endpoint_address;
+    descriptor_buf[MSC_INTERFACE_INDEX] = *current_interface;
+    (*current_interface)++;
+
+    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : *current_endpoint;
+    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | (USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : *current_endpoint);
+    (*current_endpoint)++:
+
+    usb_add_interface_string(*current_interface_string,);
+    descriptor_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
+    (*current_interface_string)++;
+
     return sizeof(storage_usb_msc_descriptor_template);
 }
 

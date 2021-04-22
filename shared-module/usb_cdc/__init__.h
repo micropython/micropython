@@ -34,6 +34,6 @@ extern bool usb_cdc_data_enabled;
 
 void usb_cdc_init(void);
 size_t usb_cdc_descriptor_length(void);
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8 comm_interface, uint8_t data_interface, uint8_t control_in_endpoint, uint8_t data_in_endpoint, uint8_t data_out_endpoint, uint8_t comm_interface_string, uint8_t data_interface_string);
+size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, bool repl);
 
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

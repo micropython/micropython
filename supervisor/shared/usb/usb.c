@@ -51,27 +51,6 @@ extern const tusb_desc_webusb_url_t desc_webusb_url;
 static bool web_serial_connected = false;
 #endif
 
-
-
-// Serial number as hex characters. This writes directly to the USB
-// descriptor.
-extern uint16_t usb_serial_number[1 + COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2];
-
-void load_serial_number(void) {
-    // create serial number based on device unique id
-    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
-    common_hal_mcu_processor_get_uid(raw_id);
-
-    usb_serial_number[0] = 0x300 | sizeof(usb_serial_number);
-    for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-        for (int j = 0; j < 2; j++) {
-            uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
-            // Strings are UTF-16-LE encoded.
-            usb_serial_number[1 + i * 2 + j] = nibble_to_hex_upper[nibble];
-        }
-    }
-}
-
 bool usb_enabled(void) {
     return tusb_inited();
 }
@@ -80,8 +59,13 @@ MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
+    usb_build_device_descriptor();
+    usb_build_configuration_descriptor();
+    usb_build_hid_descriptor();
+    usb_build_string_descriptors();
+
+
     init_usb_hardware();
-    load_serial_number();
 
     tusb_init();
 

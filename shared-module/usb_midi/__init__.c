@@ -163,21 +163,41 @@ size_t usb_midi_descriptor_length(void) {
     return sizeof(usb_midi_descriptor_template);
 }
 
-size_t usb_midi_add_descriptor(uint8_t *descriptor_buf,
-                         uint8_t audio_control_interface, uint8_t midi_streaming_interface, uint8_t midi_streaming_in_endpoint, uint8_t midi_streaming_out_endpoint, uint8_t audio_control_interface_string, uint8_t midi_streaming_interface_string, uint8_t in_jack_string, uint8_t out_jack_string) {
+static const char[] midi_streaming_interface_name =  USB_INTERFACE_NAME " MIDI";
+static const char[] midi_audio_control_interface_name = USB_INTERFACE_NAME " Audio";
+static const char[] midi_in_jack_name =  USB_INTERFACE_NAME " usb_midi.ports[0]";
+static const char[] midi_out_jack_name =  USB_INTERFACE_NAME " usb_midi.ports[0]";
+
+size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
     memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
-    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = audio_control_interface_number;
-    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = audio_control_interface_string;
 
-    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = midi_streaming_in_endpoint;
-    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | midi_streaming_out_endpoint;
+    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = *current_interface;
+    (*current_interface)++;
 
-    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = midi_streaming_interface_number;
-    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2] = midi_streaming_interface_number;
-    descriptor_buf[MIDI_STREAMING_INTERFACE_STRING_INDEX] = midi_streaming_interface_string;
+    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = USB_MIDI_EP_NUM_IN ? USB_MIDI_EP_NUM_IN : *current_endpoint;
+    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] =
+        0x80 | (USB_MIDI_EP_NUM_OUT ? USB_MIDI_EP_NUM_OUT : *current_endpoint);
+    (*current_endpoint)++;
 
-    descriptor_buf[MIDI_IN_JACK_STRING_INDEX] = in_jack_string;
-    descriptor_buf[MIDI_OUT_JACK_STRING_INDEX] = out_jack_string;
+    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = *current_interface;
+    descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2] = *current_interface;
+    (*current_interface)++;
+
+    usb_add_interface_string(*current_interface, midi_streaming_interface_name);
+    descriptor_buf[MIDI_STREAMING_INTERFACE_STRING_INDEX] = *current_interface;
+    (*current_interface_string)++;
+
+    usb_add_interface_string(*current_interface, midi_audio_control_interface_name);
+    descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = *current_interface;
+    (*current_interface_string)++;
+
+    usb_add_interface_string(*current_interface, midi_in_jack_name);
+    descriptor_buf[MIDI_IN_JACK_STRING_INDEX] = *current_interface;
+    (*current_interface_string)++;
+
+    usb_add_interface_string(*current_interface, midi_out_jack_name);
+    descriptor_buf[MIDI_OUT_JACK_STRING_INDEX] = *current_interface;
+    (*current_interface_string)++;
 
     return sizeof(usb_midi_descriptor_template);
 }

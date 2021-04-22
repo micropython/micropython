@@ -24,4 +24,51 @@
  * THE SOFTWARE.
  */
 
-// Nothing needed here. Tables of HID devices are generated in autogen_usb_descriptor.c at compile-time.
+static const uint8_t usb_hid_descriptor_template[] = {
+    0x09,        //  0 bLength
+    0x21,        //  1 bDescriptorType (HID)
+    0x11, 0x01,  //  2 bcdHID 1.11
+    0x00,        //  3 bCountryCode
+    0x01,        //  4 bNumDescriptors
+    0x22,        //  5 bDescriptorType[0] (HID)
+    0xFF, 0xFF,  //  6,7 wDescriptorLength[0]   [SET AT RUNTIME: lo, hi]
+#define HID_DESCRIPTOR_LENGTH_INDEX 6
+
+    0x07,        //  8 bLength
+    0x05,        //  9 bDescriptorType (Endpoint)
+    0xFF,        // 10 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | endpoint]
+#define HID_IN_ENDPOINT_INDEX 10
+    0x03,        // 11 bmAttributes (Interrupt)
+    0x40, 0x00,  // 12,13  wMaxPacketSize 64
+    0x08,        // 14 bInterval 8 (unit depends on device speed)
+
+    0x07,        // 15 bLength
+    0x05,        // 16 bDescriptorType (Endpoint)
+    0xFF,        // 17 bEndpointAddress (OUT/H2D)  [SET AT RUNTIME]
+#define HID_OUT_ENDPOINT_INDEX 17
+    0x03,        // 18 bmAttributes (Interrupt)
+    0x40, 0x00,  // 19,20 wMaxPacketSize 64
+    0x08,        // 21 bInterval 8 (unit depends on device speed)
+};
+
+// Is the HID device enabled?
+bool usb_hid_enabled;
+
+size_t usb_hid_descriptor_length(void) {
+    return sizeof(usb_hid_descriptor);
+}
+
+static const char[] usb_hid_interface_name =  USB_INTERFACE_NAME " Mass Storage";
+
+size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length) {
+    memcpy(descriptor_buf, usb_hid_descriptor_template, sizeof(usb_hid_descriptor_template));
+
+    descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX] = report_descriptor_length & 0xFF;
+    descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX + 1] = (report_descriptor_length >> 8);
+
+    descriptor_buf[HID_IN_ENDPOINT_INDEX] = USB_HID_EP_NUM_IN ? USB_HID_EP_NUM_IN : *current_endpoint;
+    descriptor_buf[HID_OUT_ENDPOINT_INDEX] = 0x80 | (USB_HID_EP_NUM_OUT ? USB_HID_EP_NUM_OUT : *current_endpoint);
+    (*current_endpoint)++:
+
+    return sizeof(usb_hid_descriptor_template);
+}

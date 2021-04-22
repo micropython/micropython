@@ -346,7 +346,7 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 
     for (int i=0; i<4; i++) {
         for (int k=0; k<4; k++) {
-            raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
+            raw_id[4 * i + (3 -k)] = (*(id_addresses[i]) >> k * 8) & 0xff;
         }
     }
 }
