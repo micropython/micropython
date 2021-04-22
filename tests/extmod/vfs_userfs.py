@@ -1,9 +1,11 @@
 # test VFS functionality with a user-defined filesystem
 # also tests parts of uio.IOBase implementation
 
-import sys, uio
+import sys
 
 try:
+    import uio
+
     uio.IOBase
     import uos
 

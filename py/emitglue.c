@@ -76,6 +76,9 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
 
     #ifdef DEBUG_PRINT
+    #if !MICROPY_DEBUG_PRINTERS
+    const size_t len = 0;
+    #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
     #endif
     #if MICROPY_DEBUG_PRINTERS
@@ -131,10 +134,8 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
-            break;
         case MP_CODE_NATIVE_VIPER:
-            fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
+            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM
