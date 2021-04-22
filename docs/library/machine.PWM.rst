@@ -13,46 +13,36 @@ Example usage::
     pwm = PWM(pin)          # create a PWM object on a pin
     pwm.duty_u16(32768)     # set duty to 50%
 
-    # reinitialise with a period of 20ms, duty of 2ms
-    pwm.init(period=20, tick_hz=1000, duty_ticks=2)
+    # reinitialise with a period of 200us, duty of 5us
+    pwm.init(freq=5000, duty_ns=5000)
 
-    pwm.duty_ticks(3)       # set duty to 3ms
+    pwm.duty_ns(3000)       # set duty to 3us
 
     pwm.deinit()
 
 Constructors
 ------------
 
-.. class:: PWM.init(dest, \*, freq, period, tick_hz, duty_ticks, duty_u16, block)
+.. class:: PWM(dest, \*, freq, duty_u16, duty_ns)
 
    Construct and return a new PWM object using the following parameters:
 
       - *dest* is the entity on which the PWM is output, which is usually a
-        `machine.Pin <machine.Pin>` object, but a port may allow other values,
+        :ref:`machine.Pin <machine.Pin>` object, but a port may allow other values,
         like integers.
-      - *freq* should be an integer which sets the frequency in Hz for the 
+      - *freq* should be an integer which sets the frequency in Hz for the
         PWM cycle.
-      - *period* should be an integer which sets the period of the PWM cycle.
-        The units of this are given by *tick_hz*.
-      - *tick_hz* gives the base unit by which *period* and *duty_ticks*
-        are measured.
-      - *duty_ticks* sets the duty cycle in ticks.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65535``.
-      - *block* allows for finer control over the underlying PWM generator
-        that is used for this PWM object, and the values it takes are port
-        specific (this parameter may or may not be supported by a port).
+      - *duty_ns* sets the duty cycle in nanoseconds.
 
-   Only one of *freq* and *period* should be specified at a time.  Setting these
-   values may affect other PWM objects if the objects share the same underlying
-   PWM generator (this is hardware specific).
-
-   The value of *tick_hz* will be saved and reused by the ``PWM.duty_ticks``
-   method.  This value is unique to each PWM object.
+   Setting *freq* may affect other PWM objects if the objects share the same
+   underlying PWM generator (this is hardware specific).
+   Only one of *duty_u16* and *duty_ns* should be specified at a time.
 
 Methods
 -------
 
-.. method:: PWM.init(\*, freq, period, tick_hz, duty_ticks, duty_u16)
+.. method:: PWM.init(\*, freq, duty_u16, duty_ns)
 
    Modify settings for the PWM object.  See the above constructor for details
    about the parameters.
@@ -69,12 +59,6 @@ Methods
 
    With a single *value* argument the frequency is set to that value in Hz.  The
    method may raise a ``ValueError`` if the frequency is outside the valid range.
-
-.. method:: PWM.duty_ticks(ticks)
-
-   Change the duty cycle of the output, with the argument *ticks* measured in
-   ``ticks_hz`` as set by the constructor or ``PWM.init``.  For example, if
-   ``ticks_hz`` is 1000 then *ticks* is measured in milliseconds.
 
 .. method:: PWM.duty_u16([value])
 
