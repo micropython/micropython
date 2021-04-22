@@ -17,7 +17,7 @@ def instance0():
     try:
         print("recv", s.recv(10))  # should raise Errno 107 ENOTCONN
     except OSError as er:
-        print(er.args[0])
+        print(er.errno)
     s.close()
 
 
