@@ -264,6 +264,10 @@ typedef union _mp_float_union_t {
 
 #if MICROPY_ROM_TEXT_COMPRESSION
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+#error "MICROPY_ERROR_REPORTING_NONE requires MICROPY_ROM_TEXT_COMPRESSION disabled"
+#endif
+
 #ifdef NO_QSTR
 
 // Compression enabled but doing QSTR extraction.

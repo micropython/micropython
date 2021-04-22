@@ -359,7 +359,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     mp_float_t val;
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
@@ -399,7 +399,7 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (!mp_obj_get_complex_maybe(arg, real, imag)) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
@@ -417,7 +417,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
     } else if (mp_obj_is_type(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
     } else {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("expected tuple/list"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
@@ -431,7 +431,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
         #else
         mp_raise_msg_varg(&mp_type_ValueError,
@@ -446,7 +446,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
@@ -466,7 +466,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         }
     } else {
         if (i < 0 || (mp_uint_t)i >= len) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("index out of range"));
             #else
             mp_raise_msg_varg(&mp_type_IndexError, MP_ERROR_TEXT("%q index out of range"), type->name);
@@ -500,7 +500,7 @@ mp_obj_t mp_obj_id(mp_obj_t o_in) {
 mp_obj_t mp_obj_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == MP_OBJ_NULL) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object has no len"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
@@ -541,21 +541,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         // TODO: call base classes here?
     }
     if (value == MP_OBJ_NULL) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item deletion"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("'%s' object doesn't support item deletion"), mp_obj_get_type_str(base));
         #endif
     } else if (value == MP_OBJ_SENTINEL) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object isn't subscriptable"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("'%s' object isn't subscriptable"), mp_obj_get_type_str(base));
         #endif
     } else {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item assignment"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
