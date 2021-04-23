@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-15 14:26+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -2199,7 +2199,7 @@ msgstr "Muchos displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "La cantidad total de datos es mas grande que %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2372,10 +2372,6 @@ msgstr "Tamaño de valor > max_length"
 msgid "Version was invalid"
 msgstr "La versión era invalida"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "funciones Viper no soportan por el momento, más de 4 argumentos"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Tiempo de espera agotado para lectura de voltaje"
@@ -2464,11 +2460,6 @@ msgstr "se requiere un objeto bytes-like"
 msgid "abort() called"
 msgstr "se llamó abort()"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "la dirección %08x no esta alineada a %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "address fuera de límites"
@@ -2476,6 +2467,10 @@ msgstr "address fuera de límites"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "addresses esta vacío"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2659,6 +2654,10 @@ msgstr "no se puede asignar a la expresión"
 msgid "can't convert %q to %q"
 msgstr "no puede convertir %q a %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
@@ -2666,6 +2665,10 @@ msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "no puede convertir a %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "no se puede convertir a int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3077,8 +3080,8 @@ msgid "full"
 msgstr "lleno"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "la función no tiene argumentos por palabra clave"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3131,6 +3134,10 @@ msgstr "generador ya se esta ejecutando"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generador ignorado GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3515,6 +3522,10 @@ msgstr "yield nativo"
 msgid "need more than %d values to unpack"
 msgstr "necesita más de %d valores para descomprimir"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "potencia negativa sin float support"
@@ -3747,10 +3758,6 @@ msgstr "palette debe ser 32 bytes de largo"
 msgid "palette_index should be an int"
 msgstr "palette_index deberia ser un int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "parámetro de anotación debe ser un identificador"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "los parámetros deben ser registros en secuencia de a2 a a5"
@@ -3806,6 +3813,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3833,7 +3841,7 @@ msgstr "presionando ambos botones al inicio.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr ""
+msgstr "presione el botón izquierdo al arranque\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -4192,7 +4200,7 @@ msgstr "formato de código desconocicdo '%c' para objeto de tipo '%q'"
 msgid "unknown type"
 msgstr "tipo desconocido"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "tipo desconocido '%q'"
 
@@ -4330,6 +4338,18 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "funciones Viper no soportan por el momento, más de 4 argumentos"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "la dirección %08x no esta alineada a %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "la función no tiene argumentos por palabra clave"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parámetro de anotación debe ser un identificador"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr ""
@@ -4625,9 +4645,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "no se puede convertir a float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "no se puede convertir a int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "el objeto '%s' no es una tupla o lista"

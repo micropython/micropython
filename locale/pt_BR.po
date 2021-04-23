@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-19 21:50+0000\n"
+"PO-Revision-Date: 2021-04-22 17:16+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2205,7 +2205,7 @@ msgstr "Exibições demais"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "O total dos dados que serão escritos é maior do que %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2378,10 +2378,6 @@ msgstr "O comprimento do valor é > max_length"
 msgid "Version was invalid"
 msgstr "A versão era inválida"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Atualmente, as funções do Viper não suportam mais de 4 argumentos"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "O tempo limite de leitura da tensão expirou"
@@ -2471,11 +2467,6 @@ msgstr "é necessário objetos tipo bytes"
 msgid "abort() called"
 msgstr "abort() chamado"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "endereço %08x não está alinhado com %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "endereço fora dos limites"
@@ -2483,6 +2474,10 @@ msgstr "endereço fora dos limites"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "os endereços estão vazios"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2666,6 +2661,10 @@ msgstr "a expressão não pode ser atribuída"
 msgid "can't convert %q to %q"
 msgstr "não é possível converter %q para %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "não é possível converter implicitamente o objeto '%q' para %q"
@@ -2673,6 +2672,10 @@ msgstr "não é possível converter implicitamente o objeto '%q' para %q"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "não é possível converter para %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "não é possível converter para int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -3086,8 +3089,8 @@ msgid "full"
 msgstr "cheio"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "função não aceita argumentos de palavras-chave"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3140,6 +3143,10 @@ msgstr "o gerador já está em execução"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "ignorando o gerador GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3526,6 +3533,10 @@ msgstr "rendimento nativo"
 msgid "need more than %d values to unpack"
 msgstr "precisa de mais de %d valores para desempacotar"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "potência negativa sem suporte de flutuação"
@@ -3760,10 +3771,6 @@ msgstr "a paleta deve ter 32 bytes de comprimento"
 msgid "palette_index should be an int"
 msgstr "palette_index deve ser um int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "a anotação do parâmetro deve ser um identificador"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "os parâmetros devem ser registradores na sequência a2 até a5"
@@ -3819,6 +3826,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4204,7 +4212,7 @@ msgstr "o formato do código '%c' é desconhecido para o objeto do tipo '%q'"
 msgid "unknown type"
 msgstr "tipo desconhecido"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "tipo desconhecido '%q'"
 
@@ -4342,6 +4350,18 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Atualmente, as funções do Viper não suportam mais de 4 argumentos"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "endereço %08x não está alinhado com %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "função não aceita argumentos de palavras-chave"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "a anotação do parâmetro deve ser um identificador"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr ""
@@ -4664,9 +4684,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "não é possível converter para float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "não é possível converter para int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "o objeto '%s' não é uma tupla ou uma lista"

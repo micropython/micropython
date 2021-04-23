@@ -2347,10 +2347,6 @@ msgstr "Panjang nilai > max_length"
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Fungsi Viper saat ini tidak mendukung lebih dari 4 argumen"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Tegangan baca habis waktu"
@@ -2436,11 +2432,6 @@ msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
 msgid "abort() called"
 msgstr "abort() dipanggil"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "alamat %08x tidak selaras dengan %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "alamat di luar batas"
@@ -2448,6 +2439,10 @@ msgstr "alamat di luar batas"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "alamatnya kosong"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2631,12 +2626,20 @@ msgstr "tidak dapat menetapkan ke ekspresi"
 msgid "can't convert %q to %q"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
 msgstr ""
 
 #: py/objstr.c
@@ -3042,8 +3045,8 @@ msgid "full"
 msgstr ""
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "fungsi tidak dapat mengambil argumen keyword"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3095,6 +3098,10 @@ msgstr ""
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c
@@ -3476,6 +3483,10 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr ""
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr ""
@@ -3706,10 +3717,6 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "anotasi parameter haruse sebuah identifier"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3765,6 +3772,7 @@ msgstr ""
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4148,7 +4156,7 @@ msgstr ""
 msgid "unknown type"
 msgstr "tipe tidak diketahui"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr ""
 
@@ -4286,6 +4294,18 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Fungsi Viper saat ini tidak mendukung lebih dari 4 argumen"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "alamat %08x tidak selaras dengan %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "fungsi tidak dapat mengambil argumen keyword"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "anotasi parameter haruse sebuah identifier"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr ""
