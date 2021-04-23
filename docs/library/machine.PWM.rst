@@ -16,7 +16,7 @@ Example usage::
     # reinitialise with a period of 200us, duty of 5us
     pwm.init(freq=5000, duty_ns=5000)
 
-    pwm.duty_ns(3000)       # set duty to 3us
+    pwm.duty_ns(3000)       # set pulse width to 3us
 
     pwm.deinit()
 
@@ -33,7 +33,7 @@ Constructors
       - *freq* should be an integer which sets the frequency in Hz for the
         PWM cycle.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65535``.
-      - *duty_ns* sets the duty cycle in nanoseconds.
+      - *duty_ns* sets the pulse width in nanoseconds.
 
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
@@ -72,8 +72,8 @@ Methods
 
 .. method:: PWM.duty_ns([value])
 
-   Get or set the current duty cycle of the PWM output, as a value in nanoseconds.
+   Get or set the current pulse width of the PWM output, as a value in nanoseconds.
 
-   With no arguments the duty cycle in nanoseconds is returned.
+   With no arguments the pulse width in nanoseconds is returned.
 
-   With a single *value* argument the duty cycle is set to that value.
+   With a single *value* argument the pulse width is set to that value.
