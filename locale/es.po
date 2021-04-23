@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"PO-Revision-Date: 2021-04-23 20:32+0000\n"
 "Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2470,7 +2470,7 @@ msgstr "addresses esta vacío"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "la anotación debe ser un identificador"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2656,7 +2656,7 @@ msgstr "no puede convertir %q a %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "no se puede convertir %q a int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -3081,7 +3081,7 @@ msgstr "lleno"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "la función no toma argumentos de tipo keyword"
 
 #: py/argcheck.c
 #, c-format
@@ -3137,7 +3137,7 @@ msgstr "generador ignorado GeneratorExit"
 
 #: py/objgenerator.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "el generador genero StopIteration"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3199,7 +3199,7 @@ msgstr "ensamblador en línea debe ser una función"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr "Formas de entrada y salida no son compactibles"
+msgstr "Formas de entrada y salida no son compatibles"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3524,7 +3524,7 @@ msgstr "necesita más de %d valores para descomprimir"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "factorial negativo"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
