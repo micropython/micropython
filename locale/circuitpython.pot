@@ -87,6 +87,14 @@ msgstr ""
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be > 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
@@ -97,6 +105,14 @@ msgstr ""
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or > 1-255"
 msgstr ""
 
 #: shared-module/vectorio/Polygon.c
@@ -600,7 +616,8 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
-#: shared-bindings/usb_cdc/__init__.c shared-bindings/usb_midi/__init__.c
+#: shared-bindings/usb_cdc/__init__.c shared-bindings/usb_hid/__init__.c
+#: shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
 msgstr ""
 
@@ -3468,6 +3485,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "no such attribute"
+msgstr ""
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c

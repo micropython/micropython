@@ -46,20 +46,20 @@ static const uint8_t storage_usb_msc_descriptor_template[] = {
     0x09,        //  0 bLength
     0x04,        //  1 bDescriptorType (Interface)
     0xFF,        //  2 bInterfaceNumber [SET AT RUNTIME]
-#define MSC_INTERFACE_INDEX 2
+#define MSC_INTERFACE_INDEX (2)
     0x00,        //  3 bAlternateSetting
     0x02,        //  4 bNumEndpoints 2
     0x08,        //  5 bInterfaceClass: MSC
     0x06,        //  6 bInterfaceSubClass: TRANSPARENT
     0x50,        //  7 bInterfaceProtocol: BULK
     0xFF,        //  8 iInterface (String Index) [SET AT RUNTIME]
-#define MSC_INTERFACE_STRING_INDEX 8
+#define MSC_INTERFACE_STRING_INDEX (8)
 
     // MSC Endpoint IN Descriptor
     0x07,        //  9 bLength
     0x05,        // 10 bDescriptorType (Endpoint)
     0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
-#define MSC_IN_ENDPOINT_INDEX 11
+#define MSC_IN_ENDPOINT_INDEX (11)
     0x02,        // 12 bmAttributes (Bulk)
     0x40, 0x00,  // 13,14 wMaxPacketSize 64
     0x00,        // 15 bInterval 0 (unit depends on device speed)
@@ -68,7 +68,7 @@ static const uint8_t storage_usb_msc_descriptor_template[] = {
     0x07,        // 16 bLength
     0x05,        // 17 bDescriptorType (Endpoint)
     0xFF,        // 18 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
-#define MSC_OUT_ENDPOINT_INDEX 18
+#define MSC_OUT_ENDPOINT_INDEX (18)
     0x02,        // 19 bmAttributes (Bulk)
     0x40, 0x00,  // 20,21 wMaxPacketSize 64
     0x00,        // 22 bInterval 0 (unit depends on device speed)

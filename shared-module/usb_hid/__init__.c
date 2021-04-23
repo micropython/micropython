@@ -32,12 +32,12 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x01,        //  4 bNumDescriptors
     0x22,        //  5 bDescriptorType[0] (HID)
     0xFF, 0xFF,  //  6,7 wDescriptorLength[0]   [SET AT RUNTIME: lo, hi]
-#define HID_DESCRIPTOR_LENGTH_INDEX 6
+#define HID_DESCRIPTOR_LENGTH_INDEX (6)
 
     0x07,        //  8 bLength
     0x05,        //  9 bDescriptorType (Endpoint)
     0xFF,        // 10 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | endpoint]
-#define HID_IN_ENDPOINT_INDEX 10
+#define HID_IN_ENDPOINT_INDEX (10)
     0x03,        // 11 bmAttributes (Interrupt)
     0x40, 0x00,  // 12,13  wMaxPacketSize 64
     0x08,        // 14 bInterval 8 (unit depends on device speed)
@@ -45,7 +45,7 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x07,        // 15 bLength
     0x05,        // 16 bDescriptorType (Endpoint)
     0xFF,        // 17 bEndpointAddress (OUT/H2D)  [SET AT RUNTIME]
-#define HID_OUT_ENDPOINT_INDEX 17
+#define HID_OUT_ENDPOINT_INDEX (17)
     0x03,        // 18 bmAttributes (Interrupt)
     0x40, 0x00,  // 19,20 wMaxPacketSize 64
     0x08,        // 21 bInterval 8 (unit depends on device speed)
@@ -53,6 +53,7 @@ static const uint8_t usb_hid_descriptor_template[] = {
 
 // Is the HID device enabled?
 bool usb_hid_enabled;
+mp_obj_t usb_hid_devices;
 
 size_t usb_hid_descriptor_length(void) {
     return sizeof(usb_hid_descriptor);
@@ -71,4 +72,32 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     (*current_endpoint)++:
 
     return sizeof(usb_hid_descriptor_template);
+}
+
+void usb_hid_build_report_descriptor() {
+}
+
+bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
+    // We can't change the devices once we're connected.
+    if (tud_connected()) {
+        return false;
+    }
+
+    // Assume no devices to start.
+    usb_hid_enabled = false;
+    if (devices == mp_const_none) {
+        return true;
+    }
+}
+
+void usb_hid_build_report
+
+void usb_hid_gc_collect(void) {
+    // Once tud_mounted() is true, we're done with the constructed descriptors.
+    if (tud_mounted()) {
+        // GC will pick up the inaccessible blocks.
+        usb_hid_devices_to_configure = NULL;
+    } else {
+        gc_collect_ptr(usb_hid_devices);
+    }
 }

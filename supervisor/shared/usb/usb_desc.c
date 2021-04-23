@@ -46,9 +46,9 @@
 
 #include "genhdr/autogen_usb_descriptor.h"
 
-// ******* TODO PROTECT AGAINST GC.
 static uint8_t *device_descriptor;
 static uint8_t *config_descriptor;
+static uint8_t *hid_report_descriptor;
 
 // Table for collecting interface strings (interface names) as descriptor is built.
 #define MAX_INTERFACE_STRINGS 16
@@ -71,18 +71,18 @@ static const uint8_t device_descriptor_template[] = {
     0x00,        //  6 bDeviceProtocol
     0x40,        //  7 bMaxPacketSize0 64
     0x9A, 0x23,  //  8,9 idVendor [SET AT RUNTIME: lo,hi]
-#define DEVICE_VID_LO_INDEX 8
-#define DEVICE_VID_HI_INDEX 9
+#define DEVICE_VID_LO_INDEX (8)
+#define DEVICE_VID_HI_INDEX (9)
     0x, 0xFF,  // 10,11 idProduct [SET AT RUNTIME: lo,hi]
-#define DEVICE PID_LO_INDEX 10
-#define DEVICE PID_HI_INDEX 11
+#define DEVICE PID_LO_INDEX (10)
+#define DEVICE PID_HI_INDEX (11)
     0x00, 0x01,  // 12,13 bcdDevice 2.00
     0x02,        // 14 iManufacturer (String Index) [SET AT RUNTIME]
-#define DEVICE_MANUFACTURER_STRING_INDEX 14
+#define DEVICE_MANUFACTURER_STRING_INDEX (14)
     0x03,        // 15 iProduct (String Index) [SET AT RUNTIME]
-#define DEVICE_PRODUCT_STRING_INDEX 15
+#define DEVICE_PRODUCT_STRING_INDEX (15)
     0x01,        // 16 iSerialNumber (String Index)  [SET AT RUNTIME]
-#define DEVICE_SERIAL_NUMBER_STRING_INDEX 16
+#define DEVICE_SERIAL_NUMBER_STRING_INDEX (16)
     0x01,        // 17 bNumConfigurations 1
 };
 
@@ -90,10 +90,10 @@ static const uint8_t configuration_descriptor_template[] = {
     0x09,        // 0 bLength
     0x02,        // 1 bDescriptorType (Configuration)
     0xFF, 0xFF,  // 2,3 wTotalLength  [SET AT RUNTIME: lo, hi]
-#define CONFIG_TOTAL_LENGTH_LO_INDEX 2
-#define CONFIG_TOTAL_LENGTH_HI_INDEX 3
+#define CONFIG_TOTAL_LENGTH_LO_INDEX (2)
+#define CONFIG_TOTAL_LENGTH_HI_INDEX (3)
     0xFF,        // 4 bNumInterfaces  [SET AT RUNTIME]
-#define CONFIG_NUM_INTERFACES_INDEX 4
+#define CONFIG_NUM_INTERFACES_INDEX (4)
     0x01,        // 5 bConfigurationValue
     0x00,        // 6 iConfiguration (String Index)
     0x80,        // 7 bmAttributes
@@ -254,7 +254,20 @@ void usb_add_interface_string(uint8_t interface_string_index, const char[] str) 
 }
 
 
-void usb_
+void usb_desc_gc_collect(void) {
+    // Once tud_mounted() is true, we're done with the constructed descriptors.
+    if (tud_mounted()) {
+        // GC will pick up the inaccessible blocks.
+        device_descriptor = NULL;
+        configuration_descriptor = NULL;
+        hid_report_descriptors = NULL;
+    } else {
+        gc_collect_ptr(device_descriptor);
+        gc_collect_ptr(configuration_descriptor);
+        gc_collect_ptr(hid_report_descriptors);  // Collects children too.
+    }
+}
+
 
 // Invoked when GET DEVICE DESCRIPTOR is received.
 // Application return pointer to descriptor
@@ -275,7 +288,6 @@ uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
-    (void)itf;
     return hid_report_descriptor;
 }
 #endif

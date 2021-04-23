@@ -109,6 +109,11 @@ void usb_irq_handler(void) {
     usb_background_schedule();
 }
 
+void usb_gc_collect(void) {
+    usb_desc_gc_collect();
+    usb_hid_gc_collect();
+}
+
 // --------------------------------------------------------------------+
 // tinyusb callbacks
 // --------------------------------------------------------------------+

@@ -39,10 +39,88 @@
 //|        mouse.send_report()"""
 //|
 
-//|     def __init__(self) -> None:
-//|         """Not currently dynamically supported."""
+//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: Optional[int], , report_id_index: Optional[int]) -> None:
+//|         """Create a description of a USB HID device. To create an actual device,
+//|         pass a `Device` to `usb_hid.configure_usb()`.
+//|
+//|         :param ReadableBuffer descriptor: The USB HID Report descriptor bytes. The descriptor is not
+//|         not verified for correctness; it is up to you to make sure it is not malformed.
+//|         :param int usage_page: The Usage Page value from the descriptor. Must match what is in the descriptor.
+//|         :param int usage: The Usage value from the descriptor. Must match what is in the descriptor.
+//|         :param int in_report_length: Size in bytes of the HID report sent to the host.
+//|            "In" is with respect to the host.
+//|         :param int out_report_length: Size in bytes of the HID report received from the host.
+//|            "Out" is with respect to the host. If no reports are expected, use ``None``.
+//|         :param int report_id_index: position of byte in descriptor that contains the Report ID.
+//|            A Report ID will be assigned when the device is created. If there is no
+//|            Report ID, use ``None``.
 //|         ...
 //|
+STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
+    self->base.type = &usb_hid_device_type;
+    enum { ARG_descriptor, ARG_usage, ARG_usage_page, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT } ,
+        { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+        { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(descriptor, &bufinfo, MP_BUFFER_READ);
+
+    bytearray_obj_t descriptor = mp_obj_array_t new_bytearray(bufinfo.len, bufinfo.buf);
+
+    const mp_int_t usage_page_arg = args[ARG_usage_page].u_int;
+    if (usage_page_arg <= 0 || usage_arg > 255) {
+        mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_usage_page);
+    }
+    const uint8_t usage_page = usage_page_arg;
+
+    const mp_int_t usage_arg = args[ARG_usage].u_int;
+    if (usage_arg <= 0 || usage_arg > 255) {
+        mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_usage);
+    }
+    const uint8_t usage = usage_arg;
+
+    const mp_int_t in_report_length_arg = args[ARG_in_report_length].u_int;
+    if (in_report_length_arg <= 0 || in_report_length_arg > 255) {
+        mp_raise_ValueError_varg(translate("%q must be > 1-255"), MP_QSTR_in_report_length);
+    }
+    const uint8_t in_report_length = in_report_length_arg;
+
+    const mp_obj_t out_report_length_arg = args[ARG_out_report_length].u_obj;
+    if (out_report_length_arg == mp_const_none) {
+        self->out_report_length = 0;
+    }
+    else if (!MP_OBJ_IS_SMALL_INT(out_report_length_arg) ||
+             MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
+             MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
+        mp_raise_ValueError_varg(translate("%q must be None or > 1-255"), MP_QSTR_out_report_length);
+    }
+    uint8_t out_report_length = MP_OBJ_SMALL_INT_VALUE(out_report_length_arg);
+
+    const mp_obj_t report_id_index_arg = args[ARG_report_id_index].u_obj;
+    if (report_id_index_arg == mp_const_none) {
+        self->report_id_index = 0;
+    }
+    else if (!MP_OBJ_IS_SMALL_INT(report_id_index_arg) ||
+             MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) <= 0 ||
+             MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) > 255 ) {
+        mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);
+    }
+    uint8_t report_id_index = MP_OBJ_SMALL_INT_VALUE(report_id_index_arg);
+
+    common_hal_usb_hid_device_construct(self, descriptor, usage_page, usage, in_report_length, out_report_length, report_id_index);
+}
+
+
 //|     def send_report(self, buf: ReadableBuffer) -> None:
 //|         """Send a HID report."""
 //|         ...
@@ -116,8 +194,11 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),          MP_ROM_PTR(&usb_hid_device_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_last_received_report), MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_usage_page),           MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
-    { MP_ROM_QSTR(MP_QSTR_usage),                MP_ROM_PTR(&usb_hid_device_usage_obj)},
+    { MP_ROM_QSTR(MP_QSTR_usage_page),           MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
+    { MP_ROM_QSTR(MP_QSTR_usage),                MP_ROM_PTR(&usb_hid_device_usage_obj) },
+    { MP_ROM_QSTR(MP_QSTR_KEYBOARD),             MP_ROM_PTR(&usb_hid_device_keyboard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_MOUSE),                MP_ROM_PTR(&usb_hid_device_mouse_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL),     MP_ROM_PTR(&usb_hid_device_consumer_control_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
@@ -125,5 +206,6 @@ STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_di
 const mp_obj_type_t usb_hid_device_type = {
     { &mp_type_type },
     .name = MP_QSTR_Device,
+    .make_new = usb_hid_device_make_new,
     .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
 };

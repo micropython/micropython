@@ -39,10 +39,42 @@
 //| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces."""
 //|
+
+//| def configure_usb(devices: Sequence[Device, ...]=) -> None:
+//|     """Configure the USB HID devices that will be available.
+//|     Can be called in ``boot.py``, before USB is connected.
+//|
+//|     :param Sequence devices: `Device` objects.
+//|       If `devices` is empty, HID is disabled. The order of the ``Devices``
+//|       may matter to the host. For instance, for MacOS, put the mouse device
+//|       before any Gamepad or Digitizer HID device.
+//|     ...
+//|
+STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
+
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(devices, &iter_buf);
+    mp_obj_t device;
+    while ((device = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (!MP_OBJ_IS_TYPE(item, &usb_hid_device_type)) {
+            mp_raise_ValueError_varg(translate("non-Device in %q", MP_QSTR_devices));
+        }
+    }
+
+    if (!common_hal_usb_hid_configure_usb(descriptors)) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_configure_usb_obj, usb_hid_configure_usb);
+
+
 STATIC const mp_rom_map_elem_t usb_hid_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
-    { MP_ROM_QSTR(MP_QSTR_devices), MP_ROM_PTR(&common_hal_usb_hid_devices) },
-    { MP_ROM_QSTR(MP_QSTR_Device),   MP_ROM_PTR(&usb_hid_device_type) },
+    { MP_ROM_QSTR(MP_QSTR___name__),      MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
+    { MP_ROM_QSTR(MP_QSTR_configure_usb), MP_OBJ_FROM_PTR(&usb_midi_configure_usb_obj) },
+    { MP_ROM_QSTR(MP_QSTR_devices),       MP_ROM_PTR(&common_hal_usb_hid_devices) },
+    { MP_ROM_QSTR(MP_QSTR_Device),        MP_ROM_PTR(&usb_hid_device_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_module_globals, usb_hid_module_globals_table);

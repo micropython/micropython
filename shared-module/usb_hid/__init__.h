@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_USB_HID_DEVICE_H
-#define SHARED_MODULE_USB_HID_DEVICE_H
+#ifndef SHARED_MODULE_USB_HID___INIT___H
+#define SHARED_MODULE_USB_HID___INIT___H
 
-#include <stdint.h>
-#include <stdbool.h>
+extern bool usb_hid_enabled;
+extern usb_hid_device_obj_t usb_hid_devices[];
 
-#include "py/obj.h"
+void usb_hid_gc_collect(void);
 
-typedef struct  {
-    mp_obj_base_t base;
-    uint8_t *in_report_buffer;
-    uint8_t *out_report_buffer;
-    uint8_t *descriptor;
-    uint16_t descriptor_length;
-    uint8_t usage_page;
-    uint8_t usage;
-    uint8_t report_id;
-    uint8_t in_report_length;
-    uint8_t out_report_length;
-} usb_hid_device_obj_t;
 
-extern usb_hid_device_obj_t usb_hid_device_keyboard_obj;
-extern usb_hid_device_obj_t usb_hid_device_mouse_obj;
-extern usb_hid_device_mouse_obj usb_hid_device_consumer_control_obj;
-
-#endif /* SHARED_MODULE_USB_HID_DEVICE_H */
+#endif // SHARED_MODULE_USB_HID___INIT___H
