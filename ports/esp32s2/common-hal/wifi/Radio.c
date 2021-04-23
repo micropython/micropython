@@ -57,6 +57,15 @@ static void start_station(wifi_radio_obj_t *self) {
     self->sta_mode = 1;
 }
 
+static void start_ap(wifi_radio_obj_t *self) {
+    if (self->ap_mode) {
+        return;
+    }
+    esp_wifi_set_mode(WIFI_MODE_APSTA);
+
+    self->ap_mode = 1;
+}
+
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
     return self->started;
 }
@@ -82,6 +91,12 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+    return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
+}
+
+mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
+    uint8_t mac[MAC_ADDRESS_LENGTH];
+    esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
     return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
 }
 
@@ -125,6 +140,25 @@ mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
     esp_netif_set_hostname(self->netif, hostname);
+}
+
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len) {
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+
+    start_ap(self);
+
+    wifi_config_t *config = &self->ap_config;
+    memcpy(&config->ap.ssid, ssid, ssid_len);
+    config->ap.ssid[ssid_len] = 0;
+    memcpy(&config->ap.password, password, password_len);
+    config->ap.password[password_len] = 0;
+    config->ap.authmode = WIFI_AUTH_WPA2_PSK;
+    esp_wifi_set_config(ESP_IF_WIFI_AP, config);
+
+    // common_hal_wifi_radio_set_enabled(self, false);
+    common_hal_wifi_radio_set_enabled(self, true);
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
