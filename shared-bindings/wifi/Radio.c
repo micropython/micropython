@@ -74,7 +74,7 @@ const mp_obj_property_t wifi_radio_enabled_obj = {
 };
 
 //|     mac_address: bytes
-//|     """MAC address of the wifi radio. (read-only)"""
+//|     """MAC address of the wifi radio station. (read-only)"""
 //|
 STATIC mp_obj_t wifi_radio_get_mac_address(mp_obj_t self) {
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address(self));
@@ -85,6 +85,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_obj, wifi_radio_get_mac_add
 const mp_obj_property_t wifi_radio_mac_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
+//|     mac_address_ap: bytes
+//|     """MAC address of the wifi radio access point. (read-only)"""
+//|
+STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self) {
+    return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address_ap(self));
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_address_ap);
+
+const mp_obj_property_t wifi_radio_mac_address_ap_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
@@ -152,6 +169,41 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
               (mp_obj_t)&wifi_radio_set_hostname_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
+
+//|     def start_ap(self,
+//|                  ssid: ReadableBuffer,
+//|                  password: ReadableBuffer = b"",
+//|                  *,
+//|         """Starts an Access Point with the specified ssid and password."""
+//|         ...
+//|
+STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_buffer_info_t ssid;
+    mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
+
+    mp_buffer_info_t password;
+    password.len = 0;
+    if (args[ARG_password].u_obj != MP_OBJ_NULL) {
+        mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
+        if (password.len > 0 && (password.len < 8 || password.len > 63)) {
+            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters"));
+        }
+    }
+
+    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
 
 //|     def connect(self,
 //|                 ssid: ReadableBuffer,
@@ -343,12 +395,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_mac_address), MP_ROM_PTR(&wifi_radio_mac_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mac_address_ap), MP_ROM_PTR(&wifi_radio_mac_address_ap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_scanning_networks),    MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_scanning_networks),    MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_hostname),    MP_ROM_PTR(&wifi_radio_hostname_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_start_ap),    MP_ROM_PTR(&wifi_radio_start_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
 
