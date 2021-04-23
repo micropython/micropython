@@ -28,34 +28,8 @@
 #define MICROPY_INCLUDED_MIMXRT_PIN_H
 
 #include <stdint.h>
-
 #include "fsl_gpio.h"
 #include "py/obj.h"
-
-// ------------------------------------------------------------------------------------------------------------------ //
-
-#define PIN_AF(_name, _af_mode, _instance, _pad_config) \
-    { \
-        .base = { &machine_pin_af_type }, \
-        .name = MP_QSTR_##_name, \
-        .af_mode = (uint32_t)(_af_mode), \
-        .instance = (void *)(_instance), \
-        .pad_config = (uint32_t)(_pad_config), \
-    } \
-
-#define PIN(_name, _gpio, _pin, _af_list) \
-    { \
-        .base = { &machine_pin_type }, \
-        .name = MP_QSTR_##_name, \
-        .gpio = (_gpio), \
-        .pin = (uint32_t)(_pin), \
-        .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
-        .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
-        .mode = PIN_MODE_IN, \
-        .af_mode = PIN_AF_MODE_ALT5, \
-        .af_list_len = (size_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
-        .af_list = (_af_list), \
-    } \
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
@@ -75,6 +49,8 @@ enum {
     PIN_AF_MODE_ALT7,
     PIN_AF_MODE_ALT8,
 };
+
+// ------------------------------------------------------------------------------------------------------------------ //
 
 typedef struct {
     mp_obj_base_t base;
@@ -105,16 +81,7 @@ extern const mp_obj_type_t machine_pin_af_type;
 // ------------------------------------------------------------------------------------------------------------------ //
 
 // Include board specific pins
-#include "pins.h"  // pins.h must included at this location
-
-// ------------------------------------------------------------------------------------------------------------------ //
-
-// Declaration in generated header file pins.h
-extern const machine_pin_obj_t machine_pin_cpu_pin_obj[];
-extern const uint32_t machine_pin_num_of_cpu_pins;
-
-extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
-extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
+#include "genhdr/pins.h"  // pins.h must included at this location
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

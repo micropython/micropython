@@ -29,7 +29,7 @@
 #include "py/mphal.h"
 #include "pin.h"
 
-STATIC void pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
     mp_printf(print, "PIN(%s, %u)", self->name, self->pin);
@@ -44,7 +44,7 @@ STATIC void pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t k
  *		int: board pin numbers
  *		str: board or cpu pin names
  */
-STATIC mp_obj_t pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);      // Todo: machine_pin - implement additional arguments!
 
     const machine_pin_obj_t *pin = pin_find(args[0]);
@@ -55,10 +55,27 @@ STATIC mp_obj_t pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 
+STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+    // instance methods
+    // class constants
+};
+STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+
+
 const mp_obj_type_t machine_pin_type = {
     {&mp_type_type},
     .name = MP_QSTR_PIN,
-    .print = pin_obj_print,
-    .make_new = pin_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pin_locals_dict,
+    .print = machine_pin_obj_print,
+    .make_new = machine_pin_obj_make_new,
+    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
+
+// FIXME: Create actual pin_af type!!!
+const mp_obj_type_t machine_pin_af_type = {
+    {&mp_type_type},
+    .name = MP_QSTR_PIN,
+    .print = machine_pin_obj_print,
+    .make_new = machine_pin_obj_make_new,
+    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
+};
+

@@ -52,7 +52,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     if (mp_obj_is_small_int(user_obj)) {
         uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
         if (value < machine_pin_num_of_cpu_pins) {
-            return &machine_pin_cpu_pin_obj[value];
+            return machine_pin_cpu_pin_obj[value];
         }
     }
 
@@ -74,8 +74,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    mp_raise_ValueError(MP_ERROR_TEXT("Pin(%s) doesn't exist"),
-        mp_obj_str_get_str(user_obj));
+    mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't exist"));
 }
 
 const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {

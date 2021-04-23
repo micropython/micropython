@@ -23,6 +23,16 @@ GIT_SUBMODULES = lib/tinyusb lib/nxp_driver
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
 LD_FILES = boards/$(MCU_SERIES).ld $(TOP)/$(MCU_DIR)/gcc/$(MCU_SERIES)xxxxx_flexspi_nor.ld
 
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+AF_FILE = $(BOARD_DIR)/$(MCU_SERIES)_af.csv
+PREFIX_FILE = boards/mimxrt_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_gen.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
 # mcu driver cause following warnings
 #CFLAGS += -Wno-error=float-equal -Wno-error=nested-externs
 CFLAGS += -Wno-error=unused-parameter
@@ -94,7 +104,6 @@ SRC_C = \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
-	$(BOARD_DIR)/pins.c \
 	machine_led.c \
 	machine_pin.c \
 	modutime.c \
@@ -120,12 +129,13 @@ SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
 	pin.c \
-	$(BOARD_DIR)/pins.c \
+	$(GEN_PINS_SRC) \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
+OBJ += $(BUILD)/pins_gen.o
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
 $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
@@ -142,5 +152,26 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+# Making OBJ use an order-only depenedency on the generated pins.h file
+# has the side effect of making the pins.h file before we actually compile
+# any of the objects. The normal dependency generation will deal with the
+# case when pins.h is modified. But when it doesn't exist, we don't know
+# which source files might need it.
+$(OBJ): | $(GEN_PINS_HDR)
+
+# With conditional pins, we may need to regenerate qstrdefs.h when config
+# options change.
+$(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
+
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_gen.c and pins.h
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
+		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
+
+$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+	$(call compile_c)
 
 include $(TOP)/py/mkrules.mk
