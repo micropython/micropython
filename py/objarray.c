@@ -572,7 +572,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     if ((mp_uint_t)len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
-                        o->free = 0;
+                        o->free = len_adj;
                         dest_items = o->items;
                     }
                     mp_seq_replace_slice_grow_inplace(dest_items, o->len,
@@ -587,6 +587,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     #endif
                     // TODO: alloc policy after shrinking
                 }
+                o->free -= len_adj;
                 o->len += len_adj;
                 return mp_const_none;
                 #else

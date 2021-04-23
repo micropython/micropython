@@ -96,7 +96,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
 
     int res = cfsetispeed(&term, mp_obj_get_int(attrs->items[4]));
     RAISE_ERRNO(res, errno);
-    res = cfsetispeed(&term, mp_obj_get_int(attrs->items[5]));
+    res = cfsetospeed(&term, mp_obj_get_int(attrs->items[5]));
     RAISE_ERRNO(res, errno);
 
     res = tcsetattr(fd, when, &term);

@@ -485,7 +485,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 // Binary-op enum values not listed here will have the default value of 0 in the
-// table, corresponding to MP_QSTR_NULL, and are therefore unsupported (a lookup will
+// table, corresponding to MP_QSTRnull, and are therefore unsupported (a lookup will
 // fail).  They can be added at the expense of code size for the qstr.
 // Qstrs for special methods are guaranteed to have a small value, so we use byte
 // type to represent them.
@@ -503,6 +503,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
     #if MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
     [MP_BINARY_OP_INPLACE_MULTIPLY] = MP_QSTR___imul__,
+    [MP_BINARY_OP_INPLACE_MAT_MULTIPLY] = MP_QSTR___imatmul__,
     [MP_BINARY_OP_INPLACE_FLOOR_DIVIDE] = MP_QSTR___ifloordiv__,
     [MP_BINARY_OP_INPLACE_TRUE_DIVIDE] = MP_QSTR___itruediv__,
     [MP_BINARY_OP_INPLACE_MODULO] = MP_QSTR___imod__,
@@ -518,6 +519,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_SUBTRACT] = MP_QSTR___sub__,
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_BINARY_OP_MULTIPLY] = MP_QSTR___mul__,
+    [MP_BINARY_OP_MAT_MULTIPLY] = MP_QSTR___matmul__,
     [MP_BINARY_OP_FLOOR_DIVIDE] = MP_QSTR___floordiv__,
     [MP_BINARY_OP_TRUE_DIVIDE] = MP_QSTR___truediv__,
     [MP_BINARY_OP_MODULO] = MP_QSTR___mod__,
@@ -535,6 +537,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_REVERSE_SUBTRACT] = MP_QSTR___rsub__,
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_BINARY_OP_REVERSE_MULTIPLY] = MP_QSTR___rmul__,
+    [MP_BINARY_OP_REVERSE_MAT_MULTIPLY] = MP_QSTR___rmatmul__,
     [MP_BINARY_OP_REVERSE_FLOOR_DIVIDE] = MP_QSTR___rfloordiv__,
     [MP_BINARY_OP_REVERSE_TRUE_DIVIDE] = MP_QSTR___rtruediv__,
     [MP_BINARY_OP_REVERSE_MODULO] = MP_QSTR___rmod__,
@@ -1055,6 +1058,21 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         #if MICROPY_CPYTHON_COMPAT
         if (attr == MP_QSTR___name__) {
             dest[0] = MP_OBJ_NEW_QSTR(self->name);
+            return;
+        }
+        if (attr == MP_QSTR___bases__) {
+            if (self == &mp_type_object) {
+                dest[0] = mp_const_empty_tuple;
+                return;
+            }
+            mp_obj_t parent_obj = self->parent ? MP_OBJ_FROM_PTR(self->parent) : MP_OBJ_FROM_PTR(&mp_type_object);
+            #if MICROPY_MULTIPLE_INHERITANCE
+            if (mp_obj_is_type(parent_obj, &mp_type_tuple)) {
+                dest[0] = parent_obj;
+                return;
+            }
+            #endif
+            dest[0] = mp_obj_new_tuple(1, &parent_obj);
             return;
         }
         #endif

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+#include "py/profile.h"
 
 #include "supervisor/linker.h"
 
@@ -110,6 +111,87 @@
     exc_sp--; /* pop back to previous exception handler */ \
     CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
+#define CANCEL_ACTIVE_FINALLY(sp) do { \
+        if (mp_obj_is_small_int(sp[-1])) { \
+            /* Stack: (..., prev_dest_ip, prev_cause, dest_ip) */ \
+            /* Cancel the unwind through the previous finally, replace with current one */ \
+            sp[-2] = sp[0]; \
+            sp -= 2; \
+        } else { \
+            assert(sp[-1] == mp_const_none || mp_obj_is_exception_instance(sp[-1])); \
+            /* Stack: (..., None/exception, dest_ip) */ \
+            /* Silence the finally's exception value (may be None or an exception) */ \
+            sp[-1] = sp[0]; \
+            --sp; \
+        } \
+} while (0)
+
+#if MICROPY_PY_SYS_SETTRACE
+
+#define FRAME_SETUP() do { \
+        assert(code_state != code_state->prev_state); \
+        MP_STATE_THREAD(current_code_state) = code_state; \
+        assert(code_state != code_state->prev_state); \
+} while (0)
+
+#define FRAME_ENTER() do { \
+        assert(code_state != code_state->prev_state); \
+        code_state->prev_state = MP_STATE_THREAD(current_code_state); \
+        assert(code_state != code_state->prev_state); \
+        if (!mp_prof_is_executing) { \
+            mp_prof_frame_enter(code_state); \
+        } \
+} while (0)
+
+#define FRAME_LEAVE() do { \
+        assert(code_state != code_state->prev_state); \
+        MP_STATE_THREAD(current_code_state) = code_state->prev_state; \
+        assert(code_state != code_state->prev_state); \
+} while (0)
+
+#define FRAME_UPDATE() do { \
+        assert(MP_STATE_THREAD(current_code_state) == code_state); \
+        if (!mp_prof_is_executing) { \
+            code_state->frame = MP_OBJ_TO_PTR(mp_prof_frame_update(code_state)); \
+        } \
+} while (0)
+
+#define TRACE_TICK(current_ip, current_sp, is_exception) do { \
+        assert(code_state != code_state->prev_state); \
+        assert(MP_STATE_THREAD(current_code_state) == code_state); \
+        if (!mp_prof_is_executing && code_state->frame && MP_STATE_THREAD(prof_trace_callback)) { \
+            MP_PROF_INSTR_DEBUG_PRINT(code_state->ip); \
+        } \
+        if (!mp_prof_is_executing && code_state->frame && code_state->frame->callback) { \
+            mp_prof_instr_tick(code_state, is_exception); \
+        } \
+} while (0)
+
+#else // MICROPY_PY_SYS_SETTRACE
+#define FRAME_SETUP()
+#define FRAME_ENTER()
+#define FRAME_LEAVE()
+#define FRAME_UPDATE()
+#define TRACE_TICK(current_ip, current_sp, is_exception)
+#endif // MICROPY_PY_SYS_SETTRACE
+
+#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
+static inline mp_map_elem_t *mp_map_cached_lookup(mp_map_t *map, qstr qst, uint8_t *idx_cache) {
+    size_t idx = *idx_cache;
+    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+    mp_map_elem_t *elem = NULL;
+    if (idx < map->alloc && map->table[idx].key == key) {
+        elem = &map->table[idx];
+    } else {
+        elem = mp_map_lookup(map, key, MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            *idx_cache = (elem - &map->table[0]) & 0xff;
+        }
+    }
+    return elem;
+}
+#endif
+
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
@@ -139,6 +221,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
     #define DISPATCH() do { \
         TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
+        TRACE_TICK(ip, sp, false); \
         goto *entry_table[*ip++]; \
 } while (0)
     #endif
@@ -162,17 +245,24 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
     run_code_state:
     ;
     #endif
+    FRAME_ENTER();
+
+    #if MICROPY_STACKLESS
+run_code_state_from_return:;
+    #endif
+    FRAME_SETUP();
+
     // Pointers which are constant for particular invocation of mp_execute_bytecode()
     mp_obj_t * /*const*/ fastn;
     mp_exc_stack_t * /*const*/ exc_stack;
     {
-        size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
+        size_t n_state = code_state->n_state;
         fastn = &code_state->state[n_state - 1];
         exc_stack = (mp_exc_stack_t *)(code_state->state + n_state);
     }
 
     // variables that are visible to the exception handler (declared volatile)
-    mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
+    mp_exc_stack_t *volatile exc_sp = MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, code_state->exc_sp_idx); // stack grows up, exc_sp points to top of stack
 
     #if MICROPY_PY_THREAD_GIL && MICROPY_PY_THREAD_GIL_VM_DIVISOR
     // This needs to be volatile and outside the VM loop so it persists across handling
@@ -192,7 +282,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
             MICROPY_VM_HOOK_INIT
 
             // If we have exception to inject, now that we finish setting up
-            // execution context, raise it. This works as if RAISE_VARARGS
+            // execution context, raise it. This works as if MP_BC_RAISE_OBJ
             // bytecode was executed.
             // Injecting exc into yield from generator is a special case,
             // handled by MP_BC_YIELD_FROM itself
@@ -211,6 +301,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
+                TRACE_TICK(ip, sp, false);
                 switch (*ip++) {
                 #endif
 
@@ -287,19 +378,14 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 ENTRY(MP_BC_LOAD_NAME) : {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                    mp_uint_t x = *ip;
-                    if (x < mp_locals_get()->map.alloc && mp_locals_get()->map.table[x].key == key) {
-                        PUSH(mp_locals_get()->map.table[x].value);
+                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_locals_get()->map, qst, (uint8_t *)ip);
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&mp_locals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
-                        if (elem != NULL) {
-                            *(byte *)ip = (elem - &mp_locals_get()->map.table[0]) & 0xff;
-                            PUSH(elem->value);
-                        } else {
-                            PUSH(mp_load_name(MP_OBJ_QSTR_VALUE(key)));
-                        }
+                        obj = mp_load_name(qst);
                     }
+                    PUSH(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -316,19 +402,14 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 ENTRY(MP_BC_LOAD_GLOBAL) : {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                    mp_uint_t x = *ip;
-                    if (x < mp_globals_get()->map.alloc && mp_globals_get()->map.table[x].key == key) {
-                        PUSH(mp_globals_get()->map.table[x].value);
+                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_globals_get()->map, qst, (uint8_t *)ip);
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
-                        if (elem != NULL) {
-                            *(byte *)ip = (elem - &mp_globals_get()->map.table[0]) & 0xff;
-                            PUSH(elem->value);
-                        } else {
-                            PUSH(mp_load_global(MP_OBJ_QSTR_VALUE(key)));
-                        }
+                        obj = mp_load_global(qst);
                     }
+                    PUSH(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -336,6 +417,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
 
                 #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
                 ENTRY(MP_BC_LOAD_ATTR) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     SET_TOP(mp_load_attr(TOP(), qst));
@@ -343,30 +425,22 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
                 #else
                 ENTRY(MP_BC_LOAD_ATTR) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
+                    mp_map_elem_t *elem = NULL;
                     if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        mp_uint_t x = *ip;
-                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                        mp_map_elem_t *elem;
-                        if (x < self->members.alloc && self->members.table[x].key == key) {
-                            elem = &self->members.table[x];
-                        } else {
-                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
-                            if (elem != NULL) {
-                                *(byte *)ip = elem - &self->members.table[0];
-                            } else {
-                                goto load_attr_cache_fail;
-                            }
-                        }
-                        SET_TOP(elem->value);
-                        ip++;
-                        DISPATCH();
+                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t *)ip);
                     }
-                load_attr_cache_fail:
-                    SET_TOP(mp_load_attr(top, qst));
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
+                    } else {
+                        obj = mp_load_attr(top, qst);
+                    }
+                    SET_TOP(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -428,6 +502,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
 
                 #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
                 ENTRY(MP_BC_STORE_ATTR) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_store_attr(sp[0], qst, sp[-1]);
@@ -441,31 +516,20 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 // consequence of this is that we can't use MP_MAP_LOOKUP_ADD_IF_NOT_FOUND
                 // in the fast-path below, because that store could override a property.
                 ENTRY(MP_BC_STORE_ATTR) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
+                    mp_map_elem_t *elem = NULL;
                     mp_obj_t top = TOP();
                     if (mp_obj_is_instance_type(mp_obj_get_type(top)) && sp[-1] != MP_OBJ_NULL) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        mp_uint_t x = *ip;
-                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                        mp_map_elem_t *elem;
-                        if (x < self->members.alloc && self->members.table[x].key == key) {
-                            elem = &self->members.table[x];
-                        } else {
-                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
-                            if (elem != NULL) {
-                                *(byte *)ip = elem - &self->members.table[0];
-                            } else {
-                                goto store_attr_cache_fail;
-                            }
-                        }
-                        elem->value = sp[-1];
-                        sp -= 2;
-                        ip++;
-                        DISPATCH();
+                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t *)ip);
                     }
-                store_attr_cache_fail:
-                    mp_store_attr(sp[0], qst, sp[-1]);
+                    if (elem != NULL) {
+                        elem->value = sp[-1];
+                    } else {
+                        mp_store_attr(sp[0], qst, sp[-1]);
+                    }
                     sp -= 2;
                     ip++;
                     DISPATCH();
@@ -662,21 +726,28 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
-                        if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
-                            // Getting here the stack looks like:
-                            //     (..., X, dest_ip)
-                            // where X is pointed to by exc_sp->val_sp and in the case
-                            // of a "with" block contains the context manager info.
-                            // We're going to run "finally" code as a coroutine
-                            // (not calling it recursively). Set up a sentinel
-                            // on the stack so it can return back to us when it is
-                            // done (when WITH_CLEANUP or END_FINALLY reached).
-                            // The sentinel is the number of exception handlers left to
-                            // unwind, which is a non-negative integer.
-                            PUSH(MP_OBJ_NEW_SMALL_INT(unum));
-                            ip = exc_sp->handler; // get exception handler byte code address
-                            exc_sp--; // pop exception handler
-                            goto dispatch_loop; // run the exception handler
+
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                            if (exc_sp->handler > ip) {
+                                // Found a finally handler that isn't active; run it.
+                                // Getting here the stack looks like:
+                                //     (..., X, dest_ip)
+                                // where X is pointed to by exc_sp->val_sp and in the case
+                                // of a "with" block contains the context manager info.
+                                assert(&sp[-1] == MP_TAGPTR_PTR(exc_sp->val_sp));
+                                // We're going to run "finally" code as a coroutine
+                                // (not calling it recursively). Set up a sentinel
+                                // on the stack so it can return back to us when it is
+                                // done (when WITH_CLEANUP or END_FINALLY reached).
+                                // The sentinel is the number of exception handlers left to
+                                // unwind, which is a non-negative integer.
+                                PUSH(MP_OBJ_NEW_SMALL_INT(unum));
+                                ip = exc_sp->handler;
+                                goto dispatch_loop;
+                            } else {
+                                // Found a finally handler that is already active; cancel it.
+                                CANCEL_ACTIVE_FINALLY(sp);
+                            }
                         }
                         POP_EXC_BLOCK();
                     }
@@ -704,9 +775,9 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 // if TOS is None, just pops it and continues
                 // if TOS is an integer, finishes coroutine and returns control to caller
                 // if TOS is an exception, reraises the exception
+                assert(exc_sp >= exc_stack);
+                POP_EXC_BLOCK();
                 if (TOP() == mp_const_none) {
-                    assert(exc_sp >= exc_stack);
-                    POP_EXC_BLOCK();
                     sp--;
                 } else if (mp_obj_is_small_int(TOP())) {
                     // We finished "finally" coroutine and now dispatch back
@@ -751,6 +822,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_FOR_ITER) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     code_state->sp = sp;
@@ -766,6 +838,12 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                         ip += ulab; // jump to after for-block
                     } else {
                         PUSH(value); // push the next iteration value
+                        #if MICROPY_PY_SYS_SETTRACE
+                        // LINE event should trigger for every iteration so invalidate last trigger
+                        if (code_state->frame) {
+                            code_state->frame->lineno = 0;
+                        }
+                        #endif
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
                 }
@@ -900,6 +978,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -909,7 +988,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
+                        code_state->exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp);
                         mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
                         #if !MICROPY_ENABLE_PYSTACK
                         if (new_state == NULL) {
@@ -934,6 +1013,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION_VAR_KW) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -945,7 +1025,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
+                        code_state->exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp);
 
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(false, unum, sp, &out_args);
@@ -979,6 +1059,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_CALL_METHOD) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -988,7 +1069,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
+                        code_state->exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp);
 
                         size_t n_args = unum & 0xff;
                         size_t n_kw = (unum >> 8) & 0xff;
@@ -1017,6 +1098,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
@@ -1028,7 +1110,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
+                        code_state->exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp);
 
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(true, unum, sp, &out_args);
@@ -1066,28 +1148,32 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
             unwind_return:
                 // Search for and execute finally handlers that aren't already active
                 while (exc_sp >= exc_stack) {
-                    if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
-                        // Found a finally handler that isn't active.
-                        // Getting here the stack looks like:
-                        //     (..., X, [iter0, iter1, ...,] ret_val)
-                        // where X is pointed to by exc_sp->val_sp and in the case
-                        // of a "with" block contains the context manager info.
-                        // There may be 0 or more for-iterators between X and the
-                        // return value, and these must be removed before control can
-                        // pass to the finally code.  We simply copy the ret_value down
-                        // over these iterators, if they exist.  If they don't then the
-                        // following is a null operation.
-                        mp_obj_t *finally_sp = MP_TAGPTR_PTR(exc_sp->val_sp);
-                        finally_sp[1] = sp[0];
-                        sp = &finally_sp[1];
-                        // We're going to run "finally" code as a coroutine
-                        // (not calling it recursively). Set up a sentinel
-                        // on a stack so it can return back to us when it is
-                        // done (when WITH_CLEANUP or END_FINALLY reached).
-                        PUSH(MP_OBJ_NEW_SMALL_INT(-1));
-                        ip = exc_sp->handler;
-                        POP_EXC_BLOCK();
-                        goto dispatch_loop;
+                    if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                        if (exc_sp->handler > ip) {
+                            // Found a finally handler that isn't active; run it.
+                            // Getting here the stack looks like:
+                            //     (..., X, [iter0, iter1, ...,] ret_val)
+                            // where X is pointed to by exc_sp->val_sp and in the case
+                            // of a "with" block contains the context manager info.
+                            // There may be 0 or more for-iterators between X and the
+                            // return value, and these must be removed before control can
+                            // pass to the finally code.  We simply copy the ret_value down
+                            // over these iterators, if they exist.  If they don't then the
+                            // following is a null operation.
+                            mp_obj_t *finally_sp = MP_TAGPTR_PTR(exc_sp->val_sp);
+                            finally_sp[1] = sp[0];
+                            sp = &finally_sp[1];
+                            // We're going to run "finally" code as a coroutine
+                            // (not calling it recursively). Set up a sentinel
+                            // on a stack so it can return back to us when it is
+                            // done (when WITH_CLEANUP or END_FINALLY reached).
+                            PUSH(MP_OBJ_NEW_SMALL_INT(-1));
+                            ip = exc_sp->handler;
+                            goto dispatch_loop;
+                        } else {
+                            // Found a finally handler that is already active; cancel it.
+                            CANCEL_ACTIVE_FINALLY(sp);
+                        }
                     }
                     POP_EXC_BLOCK();
                 }
@@ -1109,37 +1195,39 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     #endif
                     code_state = new_code_state;
                     *code_state->sp = res;
-                    goto run_code_state;
+                    goto run_code_state_from_return;
                 }
                 #endif
+                FRAME_LEAVE();
                 return MP_VM_RETURN_NORMAL;
 
-                ENTRY(MP_BC_RAISE_VARARGS) : {
+                ENTRY(MP_BC_RAISE_LAST) : {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_uint_t unum = *ip;
-                    mp_obj_t obj;
-                    if (unum == 2) {
-                        mp_warning(NULL, "exception chaining not supported");
-                        // ignore (pop) "from" argument
-                        sp--;
-                    }
-                    if (unum == 0) {
-                        // search for the inner-most previous exception, to reraise it
-                        obj = MP_OBJ_NULL;
-                        for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; e--) {
-                            if (e->prev_exc != NULL) {
-                                obj = MP_OBJ_FROM_PTR(e->prev_exc);
-                                break;
-                            }
+                    // search for the inner-most previous exception, to reraise it
+                    mp_obj_t obj = MP_OBJ_NULL;
+                    for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; --e) {
+                        if (e->prev_exc != NULL) {
+                            obj = MP_OBJ_FROM_PTR(e->prev_exc);
+                            break;
                         }
-                        if (obj == MP_OBJ_NULL) {
-                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, translate("no active exception to reraise"));
-                            RAISE(obj);
-                        }
-                    } else {
-                        obj = TOP();
                     }
-                    obj = mp_make_raise_obj(obj);
+                    if (obj == MP_OBJ_NULL) {
+                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, translate("no active exception to reraise"));
+                    }
+                    RAISE(obj);
+                }
+
+                ENTRY(MP_BC_RAISE_OBJ) : {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_obj_t obj = mp_make_raise_obj(TOP());
+                    RAISE(obj);
+                }
+
+                ENTRY(MP_BC_RAISE_FROM) : {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_warning(NULL, "exception chaining not supported");
+                    sp--; // ignore (pop) "from" argument
+                    mp_obj_t obj = mp_make_raise_obj(TOP());
                     RAISE(obj);
                 }
 
@@ -1148,7 +1236,8 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                     nlr_pop();
                 code_state->ip = ip;
                 code_state->sp = sp;
-                code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
+                code_state->exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp);
+                FRAME_LEAVE();
                 return MP_VM_RETURN_YIELD;
 
                 ENTRY(MP_BC_YIELD_FROM) : {
@@ -1191,21 +1280,15 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                         DISPATCH();
                     } else {
                         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
+                        assert(!EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
                         // Pop exhausted gen
                         sp--;
-                        if (EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                            PUSH(mp_obj_exception_get_value(ret_value));
-                            // If we injected GeneratorExit downstream, then even
-                            // if it was swallowed, we re-raise GeneratorExit
-                            GENERATOR_EXIT_IF_NEEDED(t_exc);
-                            DISPATCH();
-                        } else {
-                            RAISE(ret_value);
-                        }
+                        RAISE(ret_value);
                     }
                 }
 
                 ENTRY(MP_BC_IMPORT_NAME) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t obj = POP();
@@ -1214,6 +1297,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
 
                 ENTRY(MP_BC_IMPORT_FROM) : {
+                    FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t obj = mp_import_from(TOP(), qst);
@@ -1228,7 +1312,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
 
                 #if MICROPY_OPT_COMPUTED_GOTO
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT_MULTI) :
-                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16));
+                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
                 DISPATCH();
 
                 ENTRY(MP_BC_LOAD_FAST_MULTI) :
@@ -1256,19 +1340,19 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 MARK_EXC_IP_SELECTIVE();
                 #else
             ENTRY_DEFAULT:
-                if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + 64) {
-                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16));
+                if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM) {
+                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
                     DISPATCH();
-                } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + 16) {
+                } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + MP_BC_LOAD_FAST_MULTI_NUM) {
                     obj_shared = fastn[MP_BC_LOAD_FAST_MULTI - (mp_int_t)ip[-1]];
                     goto load_check;
-                } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
+                } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + MP_BC_STORE_FAST_MULTI_NUM) {
                     fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
                     DISPATCH();
-                } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
+                } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_BC_UNARY_OP_MULTI_NUM) {
                     SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
                     DISPATCH();
-                } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
+                } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BC_BINARY_OP_MULTI_NUM) {
                     mp_obj_t rhs = POP();
                     mp_obj_t lhs = TOP();
                     SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
@@ -1276,9 +1360,11 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 } else
                 #endif
                 {
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, translate("byte code not implemented"));
+
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, translate("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
+                    FRAME_LEAVE();
                     return MP_VM_RETURN_EXCEPTION;
                 }
 
@@ -1369,24 +1455,32 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 }
             }
 
+            #if MICROPY_PY_SYS_SETTRACE
+            // Exceptions are traced here
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_Exception))) {
+                TRACE_TICK(code_state->ip, code_state->sp, true /* yes, it's an exception */);
+            }
+            #endif
+
             #if MICROPY_STACKLESS
         unwind_loop:
             #endif
-            // set file and line number that the exception occurred at
-            // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
-            // But consider how to handle nested exceptions.
-            if (nlr.ret_val != &mp_const_GeneratorExit_obj) {
+            // Set traceback info (file and line number) where the exception occurred, but not for:
+            // - constant GeneratorExit object, because it's const
+            // - exceptions re-raised by END_FINALLY
+            // - exceptions re-raised explicitly by "raise"
+            if (nlr.ret_val != &mp_const_GeneratorExit_obj
+                && *code_state->ip != MP_BC_END_FINALLY
+                && *code_state->ip != MP_BC_RAISE_LAST) {
                 const byte *ip = code_state->fun_bc->bytecode;
-                ip = mp_decode_uint_skip(ip); // skip n_state
-                ip = mp_decode_uint_skip(ip); // skip n_exc_stack
-                ip++; // skip scope_params
-                ip++; // skip n_pos_args
-                ip++; // skip n_kwonly_args
-                ip++; // skip n_def_pos_args
-                size_t bc = code_state->ip - ip;
-                size_t code_info_size = mp_decode_uint_value(ip);
-                ip = mp_decode_uint_skip(ip); // skip code_info_size
-                bc -= code_info_size;
+                MP_BC_PRELUDE_SIG_DECODE(ip);
+                MP_BC_PRELUDE_SIZE_DECODE(ip);
+                const byte *bytecode_start = ip + n_info + n_cell;
+                #if !MICROPY_PERSISTENT_CODE
+                // so bytecode is aligned
+                bytecode_start = MP_ALIGN(bytecode_start, sizeof(mp_uint_t));
+                #endif
+                size_t bc = code_state->ip - bytecode_start;
                 #if MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);
@@ -1397,29 +1491,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 qstr source_file = mp_decode_uint_value(ip);
                 ip = mp_decode_uint_skip(ip);
                 #endif
-                size_t source_line = 1;
-                size_t c;
-                while ((c = *ip)) {
-                    size_t b, l;
-                    if ((c & 0x80) == 0) {
-                        // 0b0LLBBBBB encoding
-                        b = c & 0x1f;
-                        l = c >> 5;
-                        ip += 1;
-                    } else {
-                        // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-                        b = c & 0xf;
-                        l = ((c << 4) & 0x700) | ip[1];
-                        ip += 2;
-                    }
-                    if (bc >= b) {
-                        bc -= b;
-                        source_line += l;
-                    } else {
-                        // found source line corresponding to bytecode offset
-                        break;
-                    }
-                }
+                size_t source_line = mp_bytecode_get_source_line(ip, bc);
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
             }
 
@@ -1458,11 +1530,11 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
                 #endif
                 code_state = new_code_state;
-                size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
+                size_t n_state = code_state->n_state;
                 fastn = &code_state->state[n_state - 1];
                 exc_stack = (mp_exc_stack_t *)(code_state->state + n_state);
                 // variables that are visible to the exception handler (declared volatile)
-                exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
+                exc_sp = MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, code_state->exc_sp_idx); // stack grows up, exc_sp points to top of stack
                 goto unwind_loop;
 
             #endif
@@ -1470,6 +1542,7 @@ mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t * code_st
                 // propagate exception to higher level
                 // Note: ip and sp don't have usable values at this point
                 code_state->state[0] = MP_OBJ_FROM_PTR(nlr.ret_val); // put exception here because sp is invalid
+                FRAME_LEAVE();
                 return MP_VM_RETURN_EXCEPTION;
             }
         }

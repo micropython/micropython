@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -154,9 +154,10 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *filename) {
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *source_name) {
+    (void)source_name;
     #if MICROPY_PY___FILE__
-    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(filename)));
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
     #endif
 
     // execute the module in its context
@@ -350,6 +351,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         mod_len = new_mod_l;
     }
 
+    if (mod_len == 0) {
+        mp_raise_ValueError(NULL);
+    }
+
     // check if module already exists
     qstr module_name_qstr = mp_obj_str_get_qstr(module_name);
     mp_obj_t module_obj = mp_module_get(module_name_qstr);
@@ -405,14 +410,6 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     el = mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
                         MP_OBJ_NEW_QSTR(current_module_name),
                         MP_MAP_LOOKUP);
-                    #if MICROPY_MODULE_WEAK_LINKS
-                    // check if there is a weak link to this module
-                    if (el == NULL) {
-                        el = mp_map_lookup((mp_map_t *)&mp_builtin_module_weak_links_map,
-                            MP_OBJ_NEW_QSTR(current_module_name),
-                            MP_MAP_LOOKUP);
-                    }
-                    #endif
                 } else {
                     el = mp_map_lookup(&((mp_obj_module_t *)outer_module_obj)->globals->map,
                         MP_OBJ_NEW_QSTR(current_module_name),
@@ -527,11 +524,11 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
-    mp_map_elem_t *el = mp_map_lookup((mp_map_t *)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
-    if (el != NULL) {
+    module_obj = mp_module_search_umodule(qstr_str(module_name_qstr));
+    if (module_obj != MP_OBJ_NULL) {
         // Found weak-linked module
-        mp_module_call_init(module_name_qstr, el->value);
-        return el->value;
+        mp_module_call_init(module_name_qstr, module_obj);
+        return module_obj;
     }
     #endif
 

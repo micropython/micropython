@@ -11,7 +11,7 @@ class Awaitable:
 
     def __await__(self):
         print('wait value:', self.value)
-        msg = yield 'message from wait(%u)' % self.value
+        msg = yield 'message from wait({})'.format(self.value)
         print('wait got back:', msg)
         return 10
 

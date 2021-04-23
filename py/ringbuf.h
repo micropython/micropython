@@ -28,6 +28,7 @@
 
 #include "py/gc.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct _ringbuf_t {
@@ -54,5 +55,10 @@ size_t ringbuf_num_empty(ringbuf_t *r);
 size_t ringbuf_num_filled(ringbuf_t *r);
 size_t ringbuf_put_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
 size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
+
+// Note: big-endian. No-op if not enough room available for both bytes.
+int ringbuf_get16(ringbuf_t *r);
+int ringbuf_peek16(ringbuf_t *r);
+int ringbuf_put16(ringbuf_t *r, uint16_t v);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

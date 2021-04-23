@@ -48,15 +48,19 @@ print(buf.write(bytearray(16)))
 
 # test basic import of frozen scripts
 import frzstr1
+
+print(frzstr1.__file__)
 import frzmpy1
+
+print(frzmpy1.__file__)
 
 # test import of frozen packages with __init__.py
 import frzstr_pkg1
 
-print(frzstr_pkg1.x)
+print(frzstr_pkg1.__file__, frzstr_pkg1.x)
 import frzmpy_pkg1
 
-print(frzmpy_pkg1.x)
+print(frzmpy_pkg1.__file__, frzmpy_pkg1.x)
 
 # test import of frozen packages without __init__.py
 from frzstr_pkg2.mod import Foo
@@ -77,3 +81,8 @@ import uio
 
 buf = uio.resource_stream("frzstr_pkg2", "mod.py")
 print(buf.read(21))
+
+# test for MP_QSTR_NULL regression
+from frzqstr import returns_NULL
+
+print(returns_NULL())

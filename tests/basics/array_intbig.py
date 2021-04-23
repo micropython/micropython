@@ -3,10 +3,13 @@ import skip_if
 skip_if.no_bigint()
 
 try:
-    from array import array
+    from uarray import array
 except ImportError:
-    print("SKIP")
-    raise SystemExit
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 print(array('L', [0, 2**32-1]))
 print(array('l', [-2**31, 0, 2**31-1]))

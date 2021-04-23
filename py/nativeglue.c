@@ -24,14 +24,15 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
 #include "py/runtime.h"
 #include "py/smallint.h"
-#include "py/emitglue.h"
-#include "py/bc.h"
+#include "py/nativeglue.h"
+#include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -77,7 +78,7 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
             return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
             mp_buffer_info_t bufinfo;
-            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_RW)) {
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
                 return (mp_uint_t)bufinfo.buf;
             } else {
                 // assume obj is an integer that represents an address
@@ -89,7 +90,7 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 
 // convert a native value to a MicroPython object based on type
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
@@ -111,9 +112,32 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
-mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+#if !MICROPY_PY_BUILTINS_SET
+mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
+    (void)n_args;
+    (void)items;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+
+void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
+    (void)self_in;
+    (void)item;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+#endif
+
+#if !MICROPY_PY_BUILTINS_SLICE
+mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
+    (void)ostart;
+    (void)ostop;
+    (void)ostep;
+    mp_raise_msg(&mp_type_RuntimeError, "slice unsupported");
+}
+#endif
+
+STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
         return NULL;
@@ -129,13 +153,13 @@ mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
     return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
 }
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-void mp_native_raise(mp_obj_t o) {
+STATIC void mp_native_raise(mp_obj_t o) {
     if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
@@ -203,8 +227,50 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     return false;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    return mp_obj_new_float((mp_float_t)f);
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    return mp_obj_new_float((mp_float_t)d);
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    return (float)mp_obj_get_float(o);
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    return (double)mp_obj_get_float(o);
+}
+
+#else
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    (void)f;
+    mp_raise_msg(&mp_type_RuntimeError, translate("float unsupported"));
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    (void)d;
+    mp_raise_msg(&mp_type_RuntimeError, translate("float unsupported"));
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, translate("float unsupported"));
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, translate("float unsupported"));
+}
+
+#endif
+
 // these must correspond to the respective enum in runtime0.h
-const void *const mp_fun_table[MP_F_NUMBER_OF] = {
+const mp_fun_table_t mp_fun_table = {
     &mp_const_none_obj,
     &mp_const_false_obj,
     &mp_const_true_obj,
@@ -226,45 +292,74 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_binary_op,
     mp_obj_new_tuple,
     mp_obj_new_list,
-    mp_obj_list_append,
     mp_obj_new_dict,
-    mp_obj_dict_store,
-    #if MICROPY_PY_BUILTINS_SET
-    mp_obj_set_store,
     mp_obj_new_set,
-    #endif
+    mp_obj_set_store,
+    mp_obj_list_append,
+    mp_obj_dict_store,
     mp_make_function_from_raw_code,
     mp_native_call_function_n_kw,
     mp_call_method_n_kw,
     mp_call_method_n_kw_var,
     mp_native_getiter,
     mp_native_iternext,
+    #if MICROPY_NLR_SETJMP
+    nlr_push_tail,
+    #else
     nlr_push,
+    #endif
     nlr_pop,
     mp_native_raise,
     mp_import_name,
     mp_import_from,
     mp_import_all,
-    #if MICROPY_PY_BUILTINS_SLICE
     mp_obj_new_slice,
-    #endif
     mp_unpack_sequence,
     mp_unpack_ex,
     mp_delete_name,
     mp_delete_global,
-    mp_obj_new_cell,
     mp_make_closure_from_raw_code,
     mp_arg_check_num_sig,
     mp_setup_code_state,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
     mp_native_yield_from,
+    #if MICROPY_NLR_SETJMP
+    setjmp,
+    #else
+    NULL,
+    #endif
+    // Additional entries for dynamic runtime, starts at index 50
+    memset,
+    memmove,
+    gc_realloc,
+    mp_printf,
+    mp_vprintf,
+    mp_raise_msg_str,
+    mp_obj_get_type,
+    mp_obj_new_str,
+    mp_obj_new_bytes,
+    mp_obj_new_bytearray_by_ref,
+    mp_obj_new_float_from_f,
+    mp_obj_new_float_from_d,
+    mp_obj_get_float_to_f,
+    mp_obj_get_float_to_d,
+    mp_get_buffer_raise,
+    mp_get_stream_raise,
+    &mp_plat_print,
+    &mp_type_type,
+    &mp_type_str,
+    &mp_type_list,
+    &mp_type_dict,
+    &mp_type_fun_builtin_0,
+    &mp_type_fun_builtin_1,
+    &mp_type_fun_builtin_2,
+    &mp_type_fun_builtin_3,
+    &mp_type_fun_builtin_var,
+    &mp_stream_read_obj,
+    &mp_stream_readinto_obj,
+    &mp_stream_unbuffered_readline_obj,
+    &mp_stream_write_obj,
 };
-
-/*
-void mp_f_vector(mp_fun_kind_t fun_kind) {
-    (mp_f_table[fun_kind])();
-}
-*/
 
 #endif // MICROPY_EMIT_NATIVE

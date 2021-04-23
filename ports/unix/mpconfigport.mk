@@ -30,8 +30,7 @@ MICROPY_PY_USSL = 0
 # problems with some servers.
 MICROPY_SSL_AXTLS = 0
 # mbedTLS is more up to date and complete implementation, but also
-# more bloated. Configuring and building of mbedTLS should be done
-# outside of MicroPython, it can just link with mbedTLS library.
+# more bloated.
 MICROPY_SSL_MBEDTLS = 0
 
 # jni module requires JVM/JNI

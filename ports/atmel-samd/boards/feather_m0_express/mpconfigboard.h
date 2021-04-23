@@ -41,3 +41,10 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// USBHOSTEN on the schematic but not connected.
+#define IGNORE_PIN_PA28     1
+
+// SWD pins
+#define IGNORE_PIN_PA30     1
+#define IGNORE_PIN_PA31     1

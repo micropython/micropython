@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objtype.h"
+#include "py/objstr.h"
 
 #include "supervisor/linker.h"
 #include "supervisor/shared/translate.h"
@@ -62,7 +63,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     }
-    if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
+    if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict && kind != PRINT_JSON) {
         mp_printf(print, "%q(", self->base.type->name);
     }
     mp_print_str(print, "{");
@@ -73,12 +74,19 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, ", ");
         }
         first = false;
+        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        if (add_quote) {
+            mp_print_str(print, "\"");
+        }
         mp_obj_print_helper(print, next->key, kind);
+        if (add_quote) {
+            mp_print_str(print, "\"");
+        }
         mp_print_str(print, ": ");
         mp_obj_print_helper(print, next->value, kind);
     }
     mp_print_str(print, "}");
-    if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
+    if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict && kind != PRINT_JSON) {
         mp_print_str(print, ")");
     }
 }
