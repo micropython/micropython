@@ -40,15 +40,14 @@
 //| class ColorConverter:
 //|     """Converts one color format to another."""
 //|
-//|     def __init__(self, *, dither: bool = False) -> None:
-//|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
-//|         currently.
+//|     def __init__(self, *, colorspace: Colorspace=Colorspace.RGB888, dither: bool = False) -> None:
+//|         """Create a ColorConverter object to convert color formats.
+//|
+//|         :param Colorspace colorspace: The source colorspace, one of the Colorspace constants
 //|         :param bool dither: Adds random noise to dither the output image"""
 //|         ...
 //|
 
-// TODO(tannewt): Add support for other color formats.
-//|
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_dither, ARG_input_colorspace };
 
@@ -68,7 +67,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
 }
 
 //|     def convert(self, color: int) -> int:
-//|         """Converts the given RGB888 color to RGB565"""
+//|         """Converts the given color to RGB565 according to the Colorspace"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {

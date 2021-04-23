@@ -72,22 +72,22 @@ MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555, DISPLAY
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555_SWAPPED, DISPLAYIO_COLORSPACE_RGB555_SWAPPED);
 
 //| class Colorspace:
-//|     """The colorspace for a ColorConverter to operate in"""
+//|     """The colorspace for a `ColorConverter` to operate in"""
 //|
 //|     RGB888: object
-//|     """The standard 24-bit colorspace"""
+//|     """The standard 24-bit colorspace.  Bits 0-7 are blue, 8-15 are green, and 16-24 are red. (0xRRGGBB)"""
 //|
 //|     RGB565: object
-//|     """The standard 16-bit colorspace"""
+//|     """The standard 16-bit colorspace.  Bits 0-4 are blue, bits 5-10 are green, and 11-15 are red (0bRRRRRGGGGGGBBBBB)"""
 //|
 //|     RGB565_SWAPPED: object
-//|     """The standard 16-bit colorspace, with low and high bytes swapped"""
+//|     """The swapped 16-bit colorspace.  First, the high and low 8 bits of the number are swapped, then they are interpreted as for RGB565"""
 //|
 //|     RGB555: object
-//|     """The standard 15-bit colorspace"""
+//|     """The standard 15-bit colorspace.  Bits 0-4 are blue, bits 5-9 are green, and 11-14 are red.  The top bit is ignored. (0bxRRRRRGGGGGBBBBB)"""
 //|
 //|     RGB555_SWAPPED: object
-//|     """The standard 15-bit colorspace, with low and high bytes swapped"""
+//|     """The swapped 15-bit colorspace.  First, the high and low 8 bits of the number are swapped, then they are interpreted as for RGB555"""
 //|
 MAKE_ENUM_MAP(displayio_colorspace) {
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB888),
