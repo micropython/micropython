@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"PO-Revision-Date: 2021-04-23 20:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2477,7 +2477,7 @@ msgstr "os endereços estão vazios"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "a anotação deve ser um identificador"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2663,7 +2663,7 @@ msgstr "não é possível converter %q para %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "Não é possível converter %q para int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -3090,7 +3090,7 @@ msgstr "cheio"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "a função não aceita palavras-chave como argumentos"
 
 #: py/argcheck.c
 #, c-format
@@ -3146,7 +3146,7 @@ msgstr "ignorando o gerador GeneratorExit"
 
 #: py/objgenerator.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "gerador StopIteration elevado"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3535,7 +3535,7 @@ msgstr "precisa de mais de %d valores para desempacotar"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "fatorial negativo"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
