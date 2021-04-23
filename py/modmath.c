@@ -171,7 +171,7 @@ MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
-// TODO: factorial, fsum
+// TODO: fsum
 
 // Function that takes a variable number of arguments
 

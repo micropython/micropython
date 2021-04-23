@@ -89,12 +89,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t service_obj = args[ARG_service].u_obj;
-    if (!MP_OBJ_IS_TYPE(service_obj, &bleio_service_type)) {
+    if (!mp_obj_is_type(service_obj, &bleio_service_type)) {
         mp_raise_TypeError(translate("Expected a Service"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 

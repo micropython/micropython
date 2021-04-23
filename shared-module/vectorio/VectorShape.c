@@ -217,9 +217,9 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             output_pixel.opaque = true;
             if (self->pixel_shader == mp_const_none) {
                 output_pixel.pixel = input_pixel.pixel;
-            } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+            } else if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
                 output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
-            } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+            } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
                 displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
             }
             if (!output_pixel.opaque) {
@@ -281,9 +281,9 @@ void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
     self->ephemeral_dirty_area.next = NULL;
     VECTORIO_SHAPE_DEBUG("%p finish_refresh now:{(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
 
-    if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+    if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
         displayio_palette_finish_refresh(self->pixel_shader);
-    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+    } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
         displayio_colorconverter_finish_refresh(self->pixel_shader);
     }
 }
@@ -292,8 +292,8 @@ void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
 // Assembles a singly linked list of dirty areas from all components on the display.
 displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail) {
     if (self->dirty
-        || (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) && displayio_palette_needs_refresh(self->pixel_shader))
-        || (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) && displayio_colorconverter_needs_refresh(self->pixel_shader))
+        || (mp_obj_is_type(self->pixel_shader, &displayio_palette_type) && displayio_palette_needs_refresh(self->pixel_shader))
+        || (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type) && displayio_colorconverter_needs_refresh(self->pixel_shader))
         ) {
         VECTORIO_SHAPE_DEBUG("%p get_refresh_area dirty:%d {(%3d,%3d), (%3d,%3d)}", self, self->dirty, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
         common_hal_vectorio_vector_shape_set_dirty(self);

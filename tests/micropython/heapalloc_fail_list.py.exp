@@ -1,0 +1,4 @@
+MemoryError: list index
+MemoryError: list get slice
+MemoryError: list extend slice
+[1, 2]

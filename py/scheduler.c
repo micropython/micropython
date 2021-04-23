@@ -30,6 +30,19 @@
 
 #if MICROPY_ENABLE_SCHEDULER
 
+#define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
+
+static inline bool mp_sched_full(void) {
+    MP_STATIC_ASSERT(MICROPY_SCHEDULER_DEPTH <= 255); // MICROPY_SCHEDULER_DEPTH must fit in 8 bits
+    MP_STATIC_ASSERT((IDX_MASK(MICROPY_SCHEDULER_DEPTH) == 0)); // MICROPY_SCHEDULER_DEPTH must be a power of 2
+
+    return mp_sched_num_pending() == MICROPY_SCHEDULER_DEPTH;
+}
+
+static inline bool mp_sched_empty(void) {
+    return mp_sched_num_pending() == 0;
+}
+
 // A variant of this is inlined in the VM at the pending exception check
 void mp_handle_pending(void) {
     if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
@@ -51,8 +64,10 @@ void mp_handle_pending(void) {
 // or by the VM's inlined version of that function.
 void mp_handle_pending_tail(mp_uint_t atomic_state) {
     MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
-    if (MP_STATE_VM(sched_sp) > 0) {
-        mp_sched_item_t item = MP_STATE_VM(sched_stack)[--MP_STATE_VM(sched_sp)];
+    if (!mp_sched_empty()) {
+        mp_sched_item_t item = MP_STATE_VM(sched_stack)[MP_STATE_VM(sched_idx)];
+        MP_STATE_VM(sched_idx) = IDX_MASK(MP_STATE_VM(sched_idx) + 1);
+        --MP_STATE_VM(sched_len);
         MICROPY_END_ATOMIC_SECTION(atomic_state);
         mp_call_function_1_protected(item.func, item.arg);
     } else {
@@ -87,13 +102,13 @@ void mp_sched_unlock(void) {
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     bool ret;
-    if (MP_STATE_VM(sched_sp) < MICROPY_SCHEDULER_DEPTH) {
+    if (!mp_sched_full()) {
         if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         }
-        MP_STATE_VM(sched_stack)[MP_STATE_VM(sched_sp)].func = function;
-        MP_STATE_VM(sched_stack)[MP_STATE_VM(sched_sp)].arg = arg;
-        ++MP_STATE_VM(sched_sp);
+        uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
+        MP_STATE_VM(sched_stack)[iput].func = function;
+        MP_STATE_VM(sched_stack)[iput].arg = arg;
         ret = true;
     } else {
         // schedule stack is full

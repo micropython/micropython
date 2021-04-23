@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +74,7 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
         case 1:
         default: {
             // 1 argument, an iterable from which we make a new tuple
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_tuple)) {
+            if (mp_obj_is_type(args[0], &mp_type_tuple)) {
                 return args[0];
             }
 
@@ -191,7 +192,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         }
 
         #if MICROPY_PY_BUILTINS_SLICE
-        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
                 mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
@@ -209,14 +210,14 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_seq_count_obj(self->items, self->len, value);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
 STATIC mp_obj_t tuple_index(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
+    mp_check_self(mp_obj_is_type(args[0], &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(args[0]);
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
@@ -268,7 +269,7 @@ void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
 }
 
 void mp_obj_tuple_del(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
+    assert(mp_obj_is_type(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
 }

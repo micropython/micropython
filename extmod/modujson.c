@@ -243,7 +243,7 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
                     cur = S_CUR(s);
                     if (cur == '.' || cur == 'E' || cur == 'e') {
                         flt = true;
-                    } else if (cur == '-' || unichar_isdigit(cur)) {
+                    } else if (cur == '+' || cur == '-' || unichar_isdigit(cur)) {
                         // pass
                     } else {
                         break;
