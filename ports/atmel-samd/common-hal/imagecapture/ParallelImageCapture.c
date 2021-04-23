@@ -157,7 +157,7 @@ static void setup_dma(DmacDescriptor* descriptor, size_t count, uint32_t *buffer
 void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize)
 {
 
-    uint8_t dma_channel = audio_dma_allocate_channel();
+    uint8_t dma_channel = dma_allocate_channel();
 
     uint32_t *dest = buffer;
     size_t count = bufsize / 4; // PCC receives 4 bytes (2 pixels) at a time
@@ -178,7 +178,7 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
             RUN_BACKGROUND_TASKS;
             // Allow user to break out of a timeout with a KeyboardInterrupt.
             if (mp_hal_is_interrupted()) {
-                audio_dma_free_channel(dma_channel);
+                dma_free_channel(dma_channel);
                 return;
             }
         }
@@ -194,5 +194,5 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
     }
 
     dma_disable_channel(dma_channel);
-    audio_dma_free_channel(dma_channel);
+    dma_free_channel(dma_channel);
 }

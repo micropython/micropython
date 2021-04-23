@@ -367,7 +367,7 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
 // output_buffer_length is the number of slots, not the number of bytes.
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
         uint16_t* output_buffer, uint32_t output_buffer_length) {
-    uint8_t dma_channel = audio_dma_allocate_channel();
+    uint8_t dma_channel = dma_allocate_channel();
     uint8_t event_channel = find_sync_event_channel_raise();
 
     // We allocate two buffers on the stack to use for double buffering.
@@ -473,7 +473,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     }
 
     disable_event_channel(event_channel);
-    audio_dma_free_channel(dma_channel);
+    dma_free_channel(dma_channel);
     // Turn off serializer, but leave clock on, to avoid mic startup delay.
     i2s_set_serializer_enable(self->serializer, false);
 
