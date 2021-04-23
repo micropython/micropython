@@ -78,10 +78,6 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
 
     uint16_t imagecapture_code[] = IMAGECAPTURE_CODE(data_count, data_clock->number, vertical_sync->number, horizontal_reference->number);
 
-for(size_t i=0; i<MP_ARRAY_SIZE(imagecapture_code); i++) {
-mp_printf(&mp_plat_print, "[%2d]  %04x\n", i, imagecapture_code[i]);
-}
-
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         imagecapture_code, MP_ARRAY_SIZE(imagecapture_code),
         common_hal_mcu_processor_get_frequency(), // full speed (4 instructions per loop -> max pclk 30MHz @ 120MHz)

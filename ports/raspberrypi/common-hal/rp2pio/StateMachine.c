@@ -248,7 +248,6 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
             if (claim_pins) {
                 claim_pin(pin);
             }
-mp_printf(&mp_plat_print, "pio_gpio_init %d\n", pin_number);
             pio_gpio_init(self->pio, pin_number);
         }
     }
@@ -371,7 +370,6 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         if (instruction == pio_instr_bits_wait) {
             uint16_t wait_source = (full_instruction & 0x0060) >> 5;
             uint16_t wait_index = full_instruction & 0x001f;
-mp_printf(&mp_plat_print, "checking wait@%d source=%d index=%d\n", i, wait_source, wait_index);
             if (wait_source == 0 && (pins_we_use & (1 << wait_index)) == 0) { // GPIO
                 mp_raise_ValueError_varg(translate("Instruction %d uses extra pin"), i);
             }
