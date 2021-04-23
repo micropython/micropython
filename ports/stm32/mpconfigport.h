@@ -363,10 +363,10 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #if MICROPY_PY_LVGL
 #ifndef MICROPY_INCLUDED_PY_MPSTATE_H
 #define MICROPY_INCLUDED_PY_MPSTATE_H
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
 #undef MICROPY_INCLUDED_PY_MPSTATE_H
 #else
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
 #endif
 #else
 #define LV_ROOTS
