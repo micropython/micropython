@@ -57,6 +57,9 @@ typedef struct {
     uint8_t retries_left;
     uint8_t starting_retries;
     uint8_t last_disconnect_reason;
+
+    wifi_config_t ap_config;
+    esp_netif_t *ap_netif;
 } wifi_radio_obj_t;
 
 extern void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self);
