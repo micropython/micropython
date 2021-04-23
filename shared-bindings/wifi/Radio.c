@@ -172,7 +172,7 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
 
 //|     def start_ap(self,
 //|                  ssid: ReadableBuffer,
-//|                  password: ReadableBuffer = b"") -> None
+//|                  password: ReadableBuffer = b"") -> None:
 //|         """Starts an Access Point with the specified ssid and password."""
 //|         ...
 //|
