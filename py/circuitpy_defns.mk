@@ -319,6 +319,9 @@ endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
+endif
 ifeq ($(CIRCUITPY_MSGPACK),1)
 SRC_PATTERNS += msgpack/%
 endif
@@ -367,8 +370,11 @@ SRC_COMMON_HAL_ALL = \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
+	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
+	imagecapture/ParallelImageCapture.c \
+	imagecapture/__init__.c \
 	gnss/__init__.c \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
@@ -382,7 +388,6 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
