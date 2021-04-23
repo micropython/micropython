@@ -156,7 +156,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
         return PWMOUT_INVALID_PIN;
     }
 
-    if (frequency == 0 || frequency > 6000000) {
+    uint32_t system_clock = common_hal_mcu_processor_get_frequency();
+    if (frequency == 0 || frequency > system_clock/2) {
         return PWMOUT_INVALID_FREQUENCY;
     }
 
@@ -237,7 +238,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
             resolution = tcc_sizes[timer->index];
         }
         // First determine the divisor that gets us the highest resolution.
-        uint32_t system_clock = common_hal_mcu_processor_get_frequency();
         uint32_t top;
         uint8_t divisor;
         for (divisor = 0; divisor < 8; divisor++) {
@@ -413,7 +413,8 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
                                               uint32_t frequency) {
-    if (frequency == 0 || frequency > 6000000) {
+    uint32_t system_clock = common_hal_mcu_processor_get_frequency();
+    if (frequency == 0 || frequency > system_clock/2) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
     const pin_timer_t* t = self->timer;
@@ -424,7 +425,6 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
         // TCC resolution varies so look it up.
         resolution = tcc_sizes[t->index];
     }
-    uint32_t system_clock = common_hal_mcu_processor_get_frequency();
     uint32_t new_top;
     uint8_t new_divisor;
     for (new_divisor = 0; new_divisor < 8; new_divisor++) {

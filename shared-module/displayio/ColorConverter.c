@@ -41,9 +41,10 @@ uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y) {
     return displayio_colorconverter_dither_noise_1(x + y * 0xFFFF);
 }
 
-void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t *self, bool dither) {
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t *self, bool dither, displayio_colorspace_t input_colorspace) {
     self->dither = dither;
     self->transparent_color = NO_TRANSPARENT_COLOR;
+    self->input_colorspace = input_colorspace;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
@@ -150,6 +151,33 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     if (self->transparent_color == pixel) {
         output_color->opaque = false;
         return;
+    }
+
+    switch (self->input_colorspace) {
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+            pixel = __builtin_bswap16(pixel);
+            FALLTHROUGH;
+        case DISPLAYIO_COLORSPACE_RGB565: {
+            uint32_t r8 = (pixel >> 11) << 3;
+            uint32_t g8 = ((pixel >> 5) << 2) & 0xff;
+            uint32_t b8 = (pixel << 3) & 0xff;
+            pixel = (r8 << 16) | (g8 << 8) | b8;
+        }
+        break;
+
+        case DISPLAYIO_COLORSPACE_RGB555_SWAPPED:
+            pixel = __builtin_bswap16(pixel);
+            FALLTHROUGH;
+        case DISPLAYIO_COLORSPACE_RGB555: {
+            uint32_t r8 = (pixel >> 10) << 3;
+            uint32_t g8 = ((pixel >> 5) << 3) & 0xff;
+            uint32_t b8 = (pixel << 3) & 0xff;
+            pixel = (r8 << 16) | (g8 << 8) | b8;
+        }
+        break;
+
+        case DISPLAYIO_COLORSPACE_RGB888:
+            break;
     }
 
     if (self->dither) {
