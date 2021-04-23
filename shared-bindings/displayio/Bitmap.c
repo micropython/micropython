@@ -45,11 +45,11 @@
 //| the bitmap data is packed into the memoryview with unspecified padding.
 //|
 //| A Bitmap can be treated as a buffer, allowing its content to be
-//| viewed and modified using e.g., with ``ulab.numpy.frombuffer``,
+//| viewed and modified using e.g., with `ulab.numpy.frombuffer`,
 //| but the `displayio.Bitmap.dirty` method must be used to inform
 //| displayio when a bitmap was modified through the buffer interface.
 //|
-//| `bitmaptools.arrayblit` can also be useful to omve data efficiently
+//| `bitmaptools.arrayblit` can also be useful to move data efficiently
 //| into a Bitmap.
 //| """
 //|
@@ -125,7 +125,7 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
 
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the value at the given index. The index can either be an x,y tuple or an int equal
-//|         to ``y * width + x``.
+//|         to `y * width + x`.
 //|
 //|         This allows you to::
 //|
@@ -134,7 +134,7 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
 //|
 //|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the value at the given index. The index can either be an x,y tuple or an int equal
-//|         to ``y * width + x``.
+//|         to `y * width + x`.
 //|
 //|         This allows you to::
 //|
