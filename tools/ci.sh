@@ -141,6 +141,23 @@ function ci_esp8266_build {
 ########################################################################################
 # ports/nrf
 
+function ci_mimxrt_setup {
+    ci_gcc_arm_setup
+}
+
+function ci_mimxrt_build {
+    make ${MAKEOPTS} -C ports/mimxrt submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1010_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1050_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1064_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
+}
+
+########################################################################################
+# ports/nrf
+
 function ci_nrf_setup {
     ci_gcc_arm_setup
 }
