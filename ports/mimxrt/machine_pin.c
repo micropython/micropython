@@ -37,10 +37,10 @@
 STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         // TODO: Implement additional arguments
         /*{ MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},*/
     };
 
@@ -58,11 +58,11 @@ STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
         gpio_pin_config_t pin_config;
         const machine_pin_af_obj_t *af_obj;
 
-        pin_config.outputLogic = 0U;
+        pin_config.outputLogic = args[1].u_int;
         pin_config.direction = mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput;
         pin_config.interruptMode = kGPIO_NoIntmode;
 
-        af_obj = pin_find_af(self, PIN_AF_MODE_ALT5);
+        af_obj = pin_find_af(self, PIN_AF_MODE_ALT5);  // GPIO is always ALT5
 
         if (af_obj == NULL) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("requested AF %d not available for pin %d"), PIN_AF_MODE_ALT5, mode);
@@ -161,7 +161,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_tab
 
 const mp_obj_type_t machine_pin_type = {
     {&mp_type_type},
-    .name = MP_QSTR_PIN,
+    .name = MP_QSTR_Pin,
     .print = machine_pin_obj_print,
     .make_new = machine_pin_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
@@ -170,7 +170,7 @@ const mp_obj_type_t machine_pin_type = {
 // FIXME: Create actual pin_af type!!!
 const mp_obj_type_t machine_pin_af_type = {
     {&mp_type_type},
-    .name = MP_QSTR_PIN,
+    .name = MP_QSTR_PinAF,
     .print = machine_pin_obj_print,
     .make_new = machine_pin_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
