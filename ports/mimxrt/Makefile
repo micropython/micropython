@@ -111,10 +111,11 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/class/vendor/vendor_device.c \
 	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c
 
-SRC_TINYUSB_IMX_C += \
+SRC_HAL_IMX_C += \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 	$(MCU_DIR)/project_template/clock_config.c \
+	$(MCU_DIR)/drivers/fsl_adc.c \
 	$(MCU_DIR)/drivers/fsl_clock.c \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
@@ -134,6 +135,7 @@ SRC_C = \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
+	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
@@ -155,7 +157,7 @@ SRC_C = \
 	drivers/bus/softspi.c \
 	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
-	$(SRC_TINYUSB_IMX_C) \
+	$(SRC_HAL_IMX_C) \
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
@@ -256,6 +258,7 @@ SRC_S = lib/utils/gchelper_m3.s \
 
 # List of sources for qstr extraction
 SRC_QSTR += \
+	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \

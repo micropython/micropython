@@ -29,9 +29,11 @@
 
 #include "py/obj.h"
 
+extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_rtc_type;
 
+void machine_adc_init(void);
 void machine_timer_init_PIT(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H

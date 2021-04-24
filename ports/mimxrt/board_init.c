@@ -80,6 +80,9 @@ void board_init(void) {
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
 
+    // ADC
+    machine_adc_init();
+
     // PIT
     machine_timer_init_PIT();
 }
