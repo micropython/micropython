@@ -66,6 +66,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 ifeq ($(DEBUG),1)
 CFLAGS += -O0 -ggdb
 LDFLAGS += --gc-sections
+CFLAGS += -fdata-sections -ffunction-sections
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
