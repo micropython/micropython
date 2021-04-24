@@ -359,12 +359,9 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     mp_float_t val;
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
-        #else
-        mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("can't convert %s to float"), mp_obj_get_type_str(arg));
-        #endif
+        arg = mp_unary_op(MP_UNARY_OP_FLOAT, arg);
+        // This can be unchecked because mp_unary_op() requires the return of a float
+         mp_obj_get_float_maybe(arg, &val);
     }
 
     return val;
@@ -399,12 +396,21 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (!mp_obj_get_complex_maybe(arg, real, imag)) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
-        #else
-        mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
-        #endif
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            // This can go unchecked because mp_unary_op() would have raised a TypeError already
+            mp_obj_get_complex_maybe(mp_unary_op(MP_UNARY_OP_COMPLEX, arg), real, imag);
+            nlr_pop();
+            return;
+        } else {
+            // If the cast raised anything othher than a TypeError, re-raise it.
+            if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_TypeError))) {
+                nlr_jump(nlr.ret_val);
+            }
+        }
+        // Still failed; try to turn it into a float
+        *imag = 0.0;
+        *real = mp_obj_get_float(arg);
     }
 }
 #endif

@@ -89,7 +89,9 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 return args[0];
             } else {
                 // something else, try to cast it to a complex
-                return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
+                mp_float_t real, imag;
+                mp_obj_get_complex(args[0], &real, &imag);
+                return mp_obj_new_complex(real, imag);
             }
 
         case 2:

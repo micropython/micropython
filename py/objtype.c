@@ -379,6 +379,12 @@ const byte mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
     [MP_UNARY_OP_ABS] = MP_QSTR___abs__,
     #endif
+    #if MICROPY_PY_BUILTINS_FLOAT
+    [MP_UNARY_OP_FLOAT] = MP_QSTR___float__,
+    #endif
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    [MP_UNARY_OP_COMPLEX] = MP_QSTR___complex__,
+    #endif
     #if MICROPY_PY_SYS_GETSIZEOF
     [MP_UNARY_OP_SIZEOF] = MP_QSTR___sizeof__,
     #endif
@@ -430,6 +436,22 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     mp_raise_TypeError(NULL);
                 }
                 break;
+            #if MICROPY_PY_BUILTINS_FLOAT
+            case MP_UNARY_OP_FLOAT:
+                // Must return float
+                if (!mp_obj_is_type(val, &mp_type_float)) {
+                    mp_raise_TypeError(NULL);
+                }
+                break;
+            #endif
+            #if MICROPY_PY_BUILTINS_COMPLEX
+            case MP_UNARY_OP_COMPLEX:
+                // Must return complex
+                if (!mp_obj_is_type(val, &mp_type_complex)) {
+                    mp_raise_TypeError(NULL);
+                }
+                break;
+            #endif
             default:
                 // No need to do anything
                 ;

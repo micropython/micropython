@@ -267,6 +267,14 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 } else {
                     return MP_OBJ_NEW_SMALL_INT(-val);
                 }
+            #if MICROPY_PY_BUILTINS_FLOAT
+            case MP_UNARY_OP_FLOAT:
+            #if MICROPY_PY_BUILTINS_COMPLEX
+            case MP_UNARY_OP_COMPLEX:
+            #endif
+                // These are handled in obj.c
+                return MP_OBJ_NULL;
+            #endif
             default:
                 assert(op == MP_UNARY_OP_INVERT);
                 return MP_OBJ_NEW_SMALL_INT(~val);
