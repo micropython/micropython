@@ -83,6 +83,12 @@ extern const mp_obj_type_t machine_pin_af_type;
 // Include board specific pins
 #include "genhdr/pins.h"  // pins.h must included at this location
 
+extern const mp_obj_type_t machine_pin_board_pins_obj_type;
+extern const mp_obj_type_t machine_pin_cpu_pins_obj_type;
+
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 void pin_init(void);
