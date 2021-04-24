@@ -329,6 +329,22 @@ const mp_obj_property_t wifi_radio_ipv4_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     ipv4_address_ap: Optional[ipaddress.IPv4Address]
+//|     """IP v4 Address of the radio access point, when enabled. None otherwise."""
+//|
+STATIC mp_obj_t wifi_radio_get_ipv4_address_ap(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv4_address_ap(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_ap_obj, wifi_radio_get_ipv4_address_ap);
+
+const mp_obj_property_t wifi_radio_ipv4_address_ap_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_address_ap_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|     ipv4_dns: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the DNS server in use when connected to an access point. None otherwise."""
 //|
@@ -410,6 +426,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ipv4_gateway),    MP_ROM_PTR(&wifi_radio_ipv4_gateway_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_subnet),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv4_address_ap),    MP_ROM_PTR(&wifi_radio_ipv4_address_ap_obj) },
 
     // { MP_ROM_QSTR(MP_QSTR_access_point_active),   MP_ROM_PTR(&wifi_radio_access_point_active_obj) },
     // { MP_ROM_QSTR(MP_QSTR_start_access_point), MP_ROM_PTR(&wifi_radio_start_access_point_obj) },

@@ -289,6 +289,14 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
