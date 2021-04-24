@@ -156,7 +156,13 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 
 void common_hal_usb_hid_device_construct(usb_hid_dev_obj_t *self, mp_obj_array_t *descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
     // report buffer pointers are NULL at start, and are created on demand.
-    self->descriptor = descriptor;
+    self->descriptor_obj = descriptor;
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(descriptor, &bufinfo, MP_BUFFER_READ);
+    self->descriptor = bufinfo.buf;
+    self->descriptor_length = bufinfo.len;
+
     self->usage_page = usage_page;
     self->usage = usage;
     self->in_report_length = in_report_length;

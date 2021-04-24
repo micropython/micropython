@@ -40,14 +40,14 @@
 //| """Tuple of all active HID device interfaces."""
 //|
 
-//| def configure_usb(devices: Sequence[Device, ...]=) -> None:
+//| def configure_usb(devices: Optional[Sequence[Device, ...]]) -> None:
 //|     """Configure the USB HID devices that will be available.
 //|     Can be called in ``boot.py``, before USB is connected.
 //|
 //|     :param Sequence devices: `Device` objects.
 //|       If `devices` is empty, HID is disabled. The order of the ``Devices``
 //|       may matter to the host. For instance, for MacOS, put the mouse device
-//|       before any Gamepad or Digitizer HID device.
+//|       before any Gamepad or Digitizer HID device or else it will not work.
 //|     ...
 //|
 STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
@@ -61,10 +61,15 @@ STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
         }
     }
 
-    if (!common_hal_usb_hid_configure_usb(descriptors)) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    switch (common_hal_usb_hid_configure_usb(descriptors)) {
+        case USB_CONFIG_TOO_LATE:
+            mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+            break;
+        case USB_CONFIG_NON_DEVICE:
+            mp_raise_ValueError_varg(translate("non-Device in %q", MP_QSTR_devices));
+            break;
+        default:
     }
-
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_configure_usb_obj, usb_hid_configure_usb);

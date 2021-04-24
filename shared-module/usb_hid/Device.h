@@ -34,9 +34,12 @@
 
 typedef struct  {
     mp_obj_base_t base;
+    // If not MP_OBJ_NULL, points to Python array object whose contents are the descriptor.
+    mp_obj_t descriptor_obj;
+    // If not NULL, points to raw bytes that are the descriptor.
+    uint8_t *descriptor;
     uint8_t *in_report_buffer;
     uint8_t *out_report_buffer;
-    uint8_t *descriptor;
     uint16_t descriptor_length;
     uint8_t usage_page;
     uint8_t usage;

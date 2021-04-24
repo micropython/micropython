@@ -45,6 +45,9 @@ enum {
     ,
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
         0
+        #if CIRCUITPY_USB_HID
+        + 2
+        #endif
         #if CIRCUITPY_DISPLAYIO
         #if CIRCUITPY_TERMINALIO
         + 1
@@ -308,9 +311,11 @@ void supervisor_move_memory(void) {
 
     // Notify clients that their movable allocations may have moved.
     old_allocations = &old_allocations_array[0];
+
     #if CIRCUITPY_DISPLAYIO
     supervisor_display_move_memory();
     #endif
+
     // Add calls to further clients here.
     old_allocations = NULL;
 }
