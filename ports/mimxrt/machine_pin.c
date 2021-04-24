@@ -25,9 +25,33 @@
  */
 #include <stdint.h>
 
+#include "fsl_gpio.h"
+#include "fsl_iomuxc.h"
+
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "pin.h"
+
+
+STATIC void machine_pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_pin_obj_t *self = self_in;
+    mp_printf(print, "<Pin.%q>", self->name);
+}
+
+const mp_obj_type_t machine_pin_cpu_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_cpu,
+    .print = machine_pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&machine_pin_cpu_pins_locals_dict,
+};
+
+const mp_obj_type_t machine_pin_board_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_board,
+    .print = machine_pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
+};
+
 
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
@@ -51,12 +75,45 @@ STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_arg
 
     // Todo: machine_pin- initialize pin if more arguments are present!
 
+    gpio_pin_config_t pin_config = {
+        .outputLogic = 0U,
+        .direction = kGPIO_DigitalOutput,
+        .interruptMode = kGPIO_NoIntmode,
+    };
+
+    GPIO_PinInit(pin->gpio, pin->pin, &pin_config);
+    IOMUXC_SetPinMux(pin->muxRegister, PIN_AF_MODE_ALT5, 0, 0, pin->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
+    IOMUXC_SetPinConfig(pin->muxRegister, PIN_AF_MODE_ALT5, 0, 0, pin->configRegister, 0x10B0U);  // TODO: use correct AF settings from AF list
+
     return (mp_obj_t)pin;
 }
 
+STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    mp_hal_pin_low(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
+
+STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    mp_hal_pin_high(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
+
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+    // TODO: Implement class locals dictionary
     // instance methods
+    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&machine_pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
+    // class attributes
+    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
+
     // class constants
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
@@ -78,4 +135,3 @@ const mp_obj_type_t machine_pin_af_type = {
     .make_new = machine_pin_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
-
