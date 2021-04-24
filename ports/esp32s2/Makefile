@@ -201,7 +201,7 @@ SRC_C += \
 	peripherals/rmt.c \
 	supervisor/shared/memory.c
 
-ifneq ($(USB),FALSE)
+ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32s2/dcd_esp32s2.c
 endif
 

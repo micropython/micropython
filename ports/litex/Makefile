@@ -136,7 +136,7 @@ SRC_C += \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c
 
-ifneq ($(USB),FALSE)
+ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/valentyusb/eptri/dcd_eptri.c
 endif
 
