@@ -86,8 +86,16 @@ const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_
     return NULL;
 }
 
-const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn, uint8_t unit) {
-    // TODO: Implement pin_find_af function
+const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn) {
+    const machine_pin_af_obj_t *af_obj = NULL;
+
+    for (int i = 0; i < pin->af_list_len; ++i) {
+        af_obj = &pin->af_list[i];
+        if (af_obj->af_mode == fn) {
+            return af_obj;
+        }
+    }
+
     return NULL;
 }
 

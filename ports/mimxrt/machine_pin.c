@@ -33,6 +33,50 @@
 #include "pin.h"
 
 
+// Helper Functions
+STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        // TODO: Implement additional arguments
+        /*{ MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},*/
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // get io mode
+    uint mode = args[0].u_int;
+    if (!IS_GPIO_MODE(mode)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
+    }
+
+    if ((mode == PIN_MODE_IN) || (mode == PIN_MODE_OUT)) {
+        gpio_pin_config_t pin_config;
+        const machine_pin_af_obj_t *af_obj;
+
+        pin_config.outputLogic = 0U;
+        pin_config.direction = mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput;
+        pin_config.interruptMode = kGPIO_NoIntmode;
+
+        af_obj = pin_find_af(self, PIN_AF_MODE_ALT5);
+
+        if (af_obj == NULL) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("requested AF %d not available for pin %d"), PIN_AF_MODE_ALT5, mode);
+        }
+
+        GPIO_PinInit(self->gpio, self->pin, &pin_config);
+        IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
+        IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, af_obj->pad_config);  // TODO: use correct AF settings from AF list
+    }
+
+    return mp_const_none;
+}
+
+
 STATIC void machine_pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     mp_printf(print, "<Pin.%q>", self->name);
@@ -56,7 +100,7 @@ const mp_obj_type_t machine_pin_board_pins_obj_type = {
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
-    mp_printf(print, "PIN(%s, %u)", self->name, self->pin);
+    mp_printf(print, "PIN(%s)", qstr_str(self->name));
 }
 
 /**
@@ -69,21 +113,16 @@ STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_
  *		str: board or cpu pin names
  */
 STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);      // Todo: machine_pin - implement additional arguments!
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     const machine_pin_obj_t *pin = pin_find(args[0]);
 
-    // Todo: machine_pin- initialize pin if more arguments are present!
-
-    gpio_pin_config_t pin_config = {
-        .outputLogic = 0U,
-        .direction = kGPIO_DigitalOutput,
-        .interruptMode = kGPIO_NoIntmode,
-    };
-
-    GPIO_PinInit(pin->gpio, pin->pin, &pin_config);
-    IOMUXC_SetPinMux(pin->muxRegister, PIN_AF_MODE_ALT5, 0, 0, pin->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
-    IOMUXC_SetPinConfig(pin->muxRegister, PIN_AF_MODE_ALT5, 0, 0, pin->configRegister, 0x10B0U);  // TODO: use correct AF settings from AF list
+    if (n_args > 1 || n_kw > 0) {
+        // pin mode given, so configure this GPIO
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        pin_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
+    }
 
     return (mp_obj_t)pin;
 }
@@ -113,8 +152,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
-
     // class constants
+    { MP_ROM_QSTR(MP_QSTR_IN),      MP_ROM_INT(PIN_MODE_IN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),     MP_ROM_INT(PIN_MODE_OUT) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
