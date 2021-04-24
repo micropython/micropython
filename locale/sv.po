@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-23 12:37+0000\n"
+"PO-Revision-Date: 2021-04-24 14:29+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1280,7 +1280,7 @@ msgstr "Ogiltigt kanalantal"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_count %d"
-msgstr ""
+msgstr "Ogiltig data_count %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2168,11 +2168,11 @@ msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Timeout waiting for DRDY"
-msgstr ""
+msgstr "Timeout i väntan på DRDY"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Timeout waiting for VSYNC"
-msgstr ""
+msgstr "Timeout i väntan på VSYNC"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -2864,7 +2864,7 @@ msgstr "data måste vara av samma längd"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "data pin #%d används redan"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
