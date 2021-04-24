@@ -42,28 +42,44 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
-static void start_station(wifi_radio_obj_t *self) {
-    if (self->sta_mode) {
-        return;
-    }
+static void set_mode_station(wifi_radio_obj_t *self, bool state) {
     wifi_mode_t next_mode;
-    if (self->ap_mode) {
-        next_mode = WIFI_MODE_APSTA;
-    } else {
-        next_mode = WIFI_MODE_STA;
-    }
-    esp_wifi_set_mode(next_mode);
+    if (state) {
+        if (self->ap_mode) {
+            next_mode = WIFI_MODE_APSTA;
+        } else {
+            next_mode = WIFI_MODE_STA;
+        }
+     } else {
+        if (self->ap_mode) {
+            next_mode = WIFI_MODE_AP;
+        } else {
+            next_mode = WIFI_MODE_NULL;
+        }
+     }
 
-    self->sta_mode = 1;
+    esp_wifi_set_mode(next_mode);
+    self->sta_mode = state;
 }
 
-static void start_ap(wifi_radio_obj_t *self) {
-    if (self->ap_mode) {
-        return;
-    }
-    esp_wifi_set_mode(WIFI_MODE_APSTA);
+static void set_mode_ap(wifi_radio_obj_t *self, bool state) {
+    wifi_mode_t next_mode;
+    if (state) {
+        if (self->sta_mode) {
+            next_mode = WIFI_MODE_APSTA;
+        } else {
+            next_mode = WIFI_MODE_AP;
+        }
+     } else {
+        if (self->sta_mode) {
+            next_mode = WIFI_MODE_STA;
+        } else {
+            next_mode = WIFI_MODE_NULL;
+        }
+     }
 
-    self->ap_mode = 1;
+    esp_wifi_set_mode(next_mode);
+    self->ap_mode = state;
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -80,8 +96,6 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
-        // esp_wifi_start() would default to soft-AP, thus setting it to station
-        start_station(self);
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
@@ -107,7 +121,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
-    start_station(self);
+    set_mode_station(self, true);
 
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
@@ -142,12 +156,28 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     esp_netif_set_hostname(self->netif, hostname);
 }
 
+void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+
+    set_mode_station(self, true);
+}
+
+void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+
+    set_mode_station(self, false);
+}
+
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
 
-    start_ap(self);
+    set_mode_ap(self, true);
 
     wifi_config_t *config = &self->ap_config;
     memcpy(&config->ap.ssid, ssid, ssid_len);
@@ -155,10 +185,16 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     memcpy(&config->ap.password, password, password_len);
     config->ap.password[password_len] = 0;
     config->ap.authmode = WIFI_AUTH_WPA2_PSK;
-    esp_wifi_set_config(ESP_IF_WIFI_AP, config);
+    config->ap.max_connection = 4;
+    esp_wifi_set_config(WIFI_IF_AP, config);
+}
 
-    // common_hal_wifi_radio_set_enabled(self, false);
-    common_hal_wifi_radio_set_enabled(self, true);
+void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
+
+    set_mode_ap(self, false);
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
@@ -181,7 +217,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     // explicitly clear bits since xEventGroupWaitBits may have timed out
     xEventGroupClearBits(self->event_group_handle, WIFI_CONNECTED_BIT);
     xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
-    start_station(self);
+    set_mode_station(self, true);
 
     wifi_config_t *config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);

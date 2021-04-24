@@ -150,6 +150,9 @@ void common_hal_wifi_init(void) {
     } else if (result != ESP_OK) {
         mp_raise_RuntimeError(translate("Failed to init wifi"));
     }
+    // set station mode to avoid the default SoftAP
+    esp_wifi_set_mode(WIFI_MODE_STA);
+    // start wifi
     common_hal_wifi_radio_set_enabled(self, true);
 }
 

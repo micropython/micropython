@@ -170,14 +170,32 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     def start_station(self) -> None:
+//|     """Starts a Wi-Fi Station"""
+//|     ...
+//|
+STATIC mp_obj_t wifi_radio_start_station(mp_obj_t self) {
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_station_obj, wifi_radio_start_station);
+
+//|     def stop_station(self) -> None:
+//|     """Stops the Wi-Fi Station"""
+//|     ...
+//|
+STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
+
 //|     def start_ap(self,
 //|                  ssid: ReadableBuffer,
 //|                  password: ReadableBuffer = b"") -> None:
-//|         """Starts an Access Point with the specified ssid and password."""
+//|         """Starts a Wi-Fi Access Point with the specified ssid and password."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -203,6 +221,15 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
+
+//|     def stop_ap(self) -> None:
+//|     """Stops the Wi-Fi Access Point"""
+//|     ...
+//|
+STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 
 //|     def connect(self,
 //|                 ssid: ReadableBuffer,
@@ -417,7 +444,10 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_hostname),    MP_ROM_PTR(&wifi_radio_hostname_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_start_station),    MP_ROM_PTR(&wifi_radio_start_station_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_station),    MP_ROM_PTR(&wifi_radio_stop_station_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_ap),    MP_ROM_PTR(&wifi_radio_start_ap_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_ap),    MP_ROM_PTR(&wifi_radio_stop_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
 
