@@ -177,6 +177,7 @@ SRC_C += \
 	sd_mutex.c \
 	supervisor/shared/memory.c
 
+ifneq ($(CIRCUITPY_USB),0)
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
@@ -187,6 +188,7 @@ ifeq ($(MCU_SUB_VARIANT),nrf52833)
 SRC_C += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
+endif # CIRCUITPY_USB
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1
