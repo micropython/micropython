@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-23 20:32+0000\n"
+"PO-Revision-Date: 2021-04-25 18:43+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1296,7 +1296,7 @@ msgstr "A contagem do canal é inválido"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_count %d"
-msgstr ""
+msgstr "data_count %d inválido"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2194,11 +2194,11 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Timeout waiting for DRDY"
-msgstr ""
+msgstr "Esgotou-se o tempo limite de espera pelo DRDY"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Timeout waiting for VSYNC"
-msgstr ""
+msgstr "Esgotou-se o tempo de espera pelo VSYNC"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -2898,7 +2898,7 @@ msgstr "os dados devem ser de igual comprimento"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "o pino de dados #%d está em uso"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
