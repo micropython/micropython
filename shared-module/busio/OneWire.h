@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_ONEWIRE_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_ONEWIRE_H
 
-#include "shared-module/bitbangio/types.h"
+#include "shared-module/bitbangio/OneWire.h"
 
 #include "py/obj.h"
 

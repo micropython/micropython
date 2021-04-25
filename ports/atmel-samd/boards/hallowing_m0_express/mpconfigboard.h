@@ -11,10 +11,10 @@
 
 // These are pins not to reset.
 // NeoPixel and for the display: Reset, Command or data, and Chip select
-#define MICROPY_PORT_A        ( PORT_PA01 | PORT_PA12 | PORT_PA27 | PORT_PA28)
+#define MICROPY_PORT_A        (PORT_PA01 | PORT_PA12 | PORT_PA27 | PORT_PA28)
 // Data and Clock for the display
-#define MICROPY_PORT_B        ( PORT_PB22 | PORT_PB23 )
-#define MICROPY_PORT_C        ( 0 )
+#define MICROPY_PORT_B        (PORT_PB22 | PORT_PB23)
+#define MICROPY_PORT_C        (0)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA17)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA16)

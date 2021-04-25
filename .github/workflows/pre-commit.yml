@@ -7,7 +7,6 @@ name: pre-commit
 on:
   pull_request:
   push:
-    branches: [main]
 
 jobs:
   pre-commit:
@@ -16,10 +15,13 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
     - name: Install deps
-      run: sudo apt-get update && sudo apt-get install -y gettext
+      run: |
+        sudo apt-add-repository -y -u ppa:pybricks/ppa
+        sudo apt-get install -y black gettext uncrustify
+        pip3 install -r requirements-dev.txt
     - name: Populate selected submodules
       run: git submodule update --init extmod/ulab
-    - name: set PY
+    - name: Set PY
       run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
     - uses: actions/cache@v2
       with:

@@ -43,13 +43,24 @@
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
 
-// Number of traceback entries to reserve in the emergency exception buffer
-#define EMG_TRACEBACK_ALLOC (2 * TRACEBACK_ENTRY_LEN)
-
-// Optionally allocated buffer for storing the first argument of an exception
-// allocated when the heap is locked.
+// Optionally allocated buffer for storing some traceback, the tuple argument,
+// and possible string object and data, for when the heap is locked.
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-#   if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+
+// When used the layout of the emergency exception buffer is:
+//  - traceback entry (file, line, block)
+//  - traceback entry (file, line, block)
+//  - mp_obj_tuple_t object
+//  - n_args * mp_obj_t for tuple
+//  - mp_obj_str_t object
+//  - string data
+#define EMG_BUF_TRACEBACK_OFFSET    (0)
+#define EMG_BUF_TRACEBACK_SIZE      (2 * TRACEBACK_ENTRY_LEN * sizeof(size_t))
+#define EMG_BUF_TUPLE_OFFSET        (EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE)
+#define EMG_BUF_TUPLE_SIZE(n_args)  (sizeof(mp_obj_tuple_t) + n_args * sizeof(mp_obj_t))
+#define EMG_BUF_STR_OFFSET          (EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(1))
+
+#if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
 #define mp_emergency_exception_buf_size MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 
 void mp_init_emergency_exception_buf(void) {
@@ -94,7 +105,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
 
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
@@ -152,7 +163,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, con
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
         // No args, can use the empty tuple straightaway
-        o_tuple = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
+        o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args
         o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, mp_obj_t, n_args);
@@ -162,15 +173,15 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, con
         // reserved room (after the traceback data) for a tuple with 1 element.
         // Otherwise we are free to use the whole buffer after the traceback data.
         if (o_tuple == NULL && mp_emergency_exception_buf_size >=
-            EMG_TRACEBACK_ALLOC * sizeof(size_t) + sizeof(mp_obj_tuple_t) + n_args * sizeof(mp_obj_t)) {
-            o_tuple = (mp_obj_tuple_t*)
-                ((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf) + EMG_TRACEBACK_ALLOC * sizeof(size_t));
+            EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(n_args)) {
+            o_tuple = (mp_obj_tuple_t *)
+                ((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_TUPLE_OFFSET);
         }
         #endif
 
         if (o_tuple == NULL) {
             // No memory for a tuple, fallback to an empty tuple
-            o_tuple = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
+            o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
         } else {
             // Have memory for a tuple so populate it
             o_tuple->base.type = &mp_type_tuple;
@@ -235,7 +246,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             }
         } else if (attr == MP_QSTR_filename) {
             dest[0] = self->args->len > 2 ? self->args->items[2] : mp_const_none;
-        // skip winerror
+            // skip winerror
         } else if (attr == MP_QSTR_filename2) {
             dest[0] = self->args->len > 4 ? self->args->items[4] : mp_const_none;
         }
@@ -259,38 +270,38 @@ MP_DEFINE_EXCEPTION(ReloadException, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   #if MICROPY_PY_ASYNC_AWAIT
-  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
+MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
   #endif
-  MP_DEFINE_EXCEPTION(StopIteration, Exception)
-  MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
-    //MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
-    MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
-    MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
-  MP_DEFINE_EXCEPTION(AssertionError, Exception)
-  MP_DEFINE_EXCEPTION(AttributeError, Exception)
-  //MP_DEFINE_EXCEPTION(BufferError, Exception)
-  //MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
-  MP_DEFINE_EXCEPTION(EOFError, Exception)
-  MP_DEFINE_EXCEPTION(ImportError, Exception)
-  //MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
-  MP_DEFINE_EXCEPTION(LookupError, Exception)
-    MP_DEFINE_EXCEPTION(IndexError, LookupError)
-    MP_DEFINE_EXCEPTION(KeyError, LookupError)
-  MP_DEFINE_EXCEPTION(MemoryError, Exception)
-  MP_DEFINE_EXCEPTION(NameError, Exception)
-    /*
+MP_DEFINE_EXCEPTION(StopIteration, Exception)
+MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
+// MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
+MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
+MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
+MP_DEFINE_EXCEPTION(AssertionError, Exception)
+MP_DEFINE_EXCEPTION(AttributeError, Exception)
+// MP_DEFINE_EXCEPTION(BufferError, Exception)
+// MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
+MP_DEFINE_EXCEPTION(EOFError, Exception)
+MP_DEFINE_EXCEPTION(ImportError, Exception)
+// MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
+MP_DEFINE_EXCEPTION(LookupError, Exception)
+MP_DEFINE_EXCEPTION(IndexError, LookupError)
+MP_DEFINE_EXCEPTION(KeyError, LookupError)
+MP_DEFINE_EXCEPTION(MemoryError, Exception)
+MP_DEFINE_EXCEPTION(NameError, Exception)
+/*
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
-  MP_DEFINE_EXCEPTION(OSError, Exception)
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-    MP_DEFINE_EXCEPTION(ConnectionError, OSError)
-      MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
-      /*
+MP_DEFINE_EXCEPTION(OSError, Exception)
+MP_DEFINE_EXCEPTION(TimeoutError, OSError)
+MP_DEFINE_EXCEPTION(ConnectionError, OSError)
+MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
+/*
       MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
       */
-    /*
+/*
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(InterruptedError, OSError)
@@ -302,28 +313,28 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
     MP_DEFINE_EXCEPTION(ReferenceError, Exception)
     */
-  MP_DEFINE_EXCEPTION(RuntimeError, Exception)
-    MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
-  MP_DEFINE_EXCEPTION(SyntaxError, Exception)
-    MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
-    /*
+MP_DEFINE_EXCEPTION(RuntimeError, Exception)
+MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
+MP_DEFINE_EXCEPTION(SyntaxError, Exception)
+MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
+/*
       MP_DEFINE_EXCEPTION(TabError, IndentationError)
       */
-  //MP_DEFINE_EXCEPTION(SystemError, Exception)
-  MP_DEFINE_EXCEPTION(TypeError, Exception)
+// MP_DEFINE_EXCEPTION(SystemError, Exception)
+MP_DEFINE_EXCEPTION(TypeError, Exception)
 #if MICROPY_EMIT_NATIVE
-    MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
 #endif
-  MP_DEFINE_EXCEPTION(ValueError, Exception)
+MP_DEFINE_EXCEPTION(ValueError, Exception)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-    MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
-    //TODO: Implement more UnicodeError subclasses which take arguments
+MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
+// TODO: Implement more UnicodeError subclasses which take arguments
 #endif
 #if CIRCUITPY_ALARM
-    MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
+MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
 #endif
-    MP_DEFINE_EXCEPTION(MpyError, ValueError)
-  /*
+MP_DEFINE_EXCEPTION(MpyError, ValueError)
+/*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
     MP_DEFINE_EXCEPTION(PendingDeprecationWarning, Warning)
@@ -414,13 +425,12 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
     // that buffer to store the string object and its data (at least 16 bytes for
     // the string data), reserving room at the start for the traceback and 1-tuple.
     if ((o_str == NULL || o_str_buf == NULL)
-        && mp_emergency_exception_buf_size >= EMG_TRACEBACK_ALLOC * sizeof(size_t)
-            + sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) + sizeof(mp_obj_str_t) + 16) {
+        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
         used_emg_buf = true;
-        o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_TRACEBACK_ALLOC * sizeof(size_t) + sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t));
-        o_str_buf = (byte*)&o_str[1];
-        o_str_alloc = (uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
+        o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
+            + EMG_BUF_STR_OFFSET);
+        o_str_buf = (byte *)&o_str[1];
+        o_str_alloc = (uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
             + mp_emergency_exception_buf_size - o_str_buf;
     }
     #endif
@@ -490,7 +500,7 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
     if (mp_obj_is_native_exception_instance(self_in)) { \
         self = MP_OBJ_TO_PTR(self_in); \
     } else { \
-        self = MP_OBJ_TO_PTR(((mp_obj_instance_t*)MP_OBJ_TO_PTR(self_in))->subobj[0]); \
+        self = MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]); \
     }
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
@@ -510,11 +520,12 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         self->traceback_data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
         if (self->traceback_data == NULL) {
             #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-            if (mp_emergency_exception_buf_size >= EMG_TRACEBACK_ALLOC * sizeof(size_t)) {
+            if (mp_emergency_exception_buf_size >= EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE) {
                 // There is room in the emergency buffer for traceback data
-                size_t *tb = (size_t*)MP_STATE_VM(mp_emergency_exception_buf);
+                size_t *tb = (size_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
+                    + EMG_BUF_TRACEBACK_OFFSET);
                 self->traceback_data = tb;
-                self->traceback_alloc = EMG_TRACEBACK_ALLOC;
+                self->traceback_alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
             } else {
                 // Can't allocate and no room in emergency buffer
                 return;
@@ -530,7 +541,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         self->traceback_len = 0;
     } else if (self->traceback_len + TRACEBACK_ENTRY_LEN > self->traceback_alloc) {
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-        if (self->traceback_data == (size_t*)MP_STATE_VM(mp_emergency_exception_buf)) {
+        if (self->traceback_data == (size_t *)MP_STATE_VM(mp_emergency_exception_buf)) {
             // Can't resize the emergency buffer
             return;
         }
@@ -619,7 +630,7 @@ STATIC mp_obj_t code_make_new(qstr file, qstr block) {
         mp_obj_new_bytearray(0, NULL), // co_lnotab
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&code_type_obj, 15, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&code_type_obj, 15, elems, NULL);
 }
 
 STATIC const mp_obj_namedtuple_type_t frame_type_obj = {
@@ -662,7 +673,7 @@ STATIC mp_obj_t frame_make_new(mp_obj_t f_code, int f_lineno) {
         mp_const_none,             // f_trace
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&frame_type_obj, 8, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&frame_type_obj, 8, elems, NULL);
 }
 
 STATIC const mp_obj_namedtuple_type_t traceback_type_obj = {
@@ -699,7 +710,7 @@ STATIC mp_obj_t traceback_from_values(size_t *values, mp_obj_t tb_next) {
         tb_next,
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&traceback_type_obj, 4, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&traceback_type_obj, 4, elems, NULL);
 };
 
 mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in) {

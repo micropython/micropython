@@ -30,27 +30,27 @@
 #define MICROPY_HW_BOARD_NAME       "TG-Watch"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
-#define MICROPY_HW_LED_STATUS       (&pin_P1_15)
-
-// TG-Gui requires a deeper call stack than normal CircuitPython
+// TG-Gui requires a deeper call stack than normal CircuitPython, this is intentional overkill
 #define CIRCUITPY_PYSTACK_SIZE 8192 // 1536 is the normal size, (32 bytes/frame * 48 frames)
-#define BOARD_HAS_CRYSTAL 0
+
+// the board has a 32mhz crystal but NOT a 32khz one
+#define BOARD_HAS_32KHZ_XTAL 0
+#define BOARD_HAS_CRYSTAL 1
 
 #if QSPI_FLASH_FILESYSTEM
-#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 17)
-#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 22)
-#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 23)
-#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 21)
-#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 19)
-#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 20)
+    #define MICROPY_QSPI_DATA0  NRF_GPIO_PIN_MAP(0, 17)
+    #define MICROPY_QSPI_DATA1  NRF_GPIO_PIN_MAP(0, 22)
+    #define MICROPY_QSPI_DATA2  NRF_GPIO_PIN_MAP(0, 23)
+    #define MICROPY_QSPI_DATA3  NRF_GPIO_PIN_MAP(0, 21)
+    #define MICROPY_QSPI_SCK    NRF_GPIO_PIN_MAP(0, 19)
+    #define MICROPY_QSPI_CS     NRF_GPIO_PIN_MAP(0, 20)
 #endif
 
 #if SPI_FLASH_FILESYSTEM
-#define SPI_FLASH_MOSI_PIN &pin_P0_17
-#define SPI_FLASH_MISO_PIN &pin_P0_22
-#define SPI_FLASH_SCK_PIN &pin_P0_19
-#define SPI_FLASH_CS_PIN &pin_P0_20
+    #define SPI_FLASH_MOSI_PIN  &pin_P0_17
+    #define SPI_FLASH_MISO_PIN  &pin_P0_22
+    #define SPI_FLASH_SCK_PIN   &pin_P0_19
+    #define SPI_FLASH_CS_PIN    &pin_P0_20
 #endif
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)

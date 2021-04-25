@@ -34,8 +34,8 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/_bleio/ScanResults.h"
 
-bleio_scanresults_obj_t* shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t* prefixes, size_t prefixes_len, mp_int_t minimum_rssi) {
-    bleio_scanresults_obj_t* self = m_new_obj(bleio_scanresults_obj_t);
+bleio_scanresults_obj_t *shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t *prefixes, size_t prefixes_len, mp_int_t minimum_rssi) {
+    bleio_scanresults_obj_t *self = m_new_obj(bleio_scanresults_obj_t);
     self->base.type = &bleio_scanresults_type;
     ringbuf_alloc(&self->buf, buffer_size, false);
     self->prefixes = prefixes;
@@ -57,16 +57,16 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     bool connectable = (type & (1 << 0)) != 0;
     bool scan_response = (type & (1 << 1)) != 0;
     uint64_t ticks_ms;
-    ringbuf_get_n(&self->buf, (uint8_t*) &ticks_ms, sizeof(ticks_ms));
+    ringbuf_get_n(&self->buf, (uint8_t *)&ticks_ms, sizeof(ticks_ms));
     uint8_t rssi = ringbuf_get(&self->buf);
     uint8_t peer_addr[NUM_BLEIO_ADDRESS_BYTES];
     ringbuf_get_n(&self->buf, peer_addr, sizeof(peer_addr));
     uint8_t addr_type = ringbuf_get(&self->buf);
     uint16_t len;
-    ringbuf_get_n(&self->buf, (uint8_t*) &len, sizeof(len));
+    ringbuf_get_n(&self->buf, (uint8_t *)&len, sizeof(len));
 
     mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(len));
-    ringbuf_get_n(&self->buf, (uint8_t*) o->data, len);
+    ringbuf_get_n(&self->buf, (uint8_t *)o->data, len);
 
     bleio_scanentry_obj_t *entry = m_new_obj(bleio_scanentry_obj_t);
     entry->base.type = &bleio_scanentry_type;
@@ -86,15 +86,15 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
 }
 
 
-void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t* self,
-                                            uint64_t ticks_ms,
-                                            bool connectable,
-                                            bool scan_response,
-                                            int8_t rssi,
-                                            uint8_t *peer_addr,
-                                            uint8_t addr_type,
-                                            uint8_t *data,
-                                            uint16_t len) {
+void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t *self,
+    uint64_t ticks_ms,
+    bool connectable,
+    bool scan_response,
+    int8_t rssi,
+    uint8_t *peer_addr,
+    uint8_t addr_type,
+    uint8_t *data,
+    uint16_t len) {
     int32_t packet_size = sizeof(uint8_t) + sizeof(ticks_ms) + sizeof(rssi) + NUM_BLEIO_ADDRESS_BYTES +
         sizeof(addr_type) + sizeof(len) + len;
     int32_t empty_space = self->buf.size - ringbuf_num_filled(&self->buf);
@@ -121,19 +121,19 @@ void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t* self,
 
     // Add the packet to the buffer.
     ringbuf_put(&self->buf, type);
-    ringbuf_put_n(&self->buf, (uint8_t*) &ticks_ms, sizeof(ticks_ms));
+    ringbuf_put_n(&self->buf, (uint8_t *)&ticks_ms, sizeof(ticks_ms));
     ringbuf_put(&self->buf, rssi);
     ringbuf_put_n(&self->buf, peer_addr, NUM_BLEIO_ADDRESS_BYTES);
     ringbuf_put(&self->buf, addr_type);
-    ringbuf_put_n(&self->buf, (uint8_t*) &len, sizeof(len));
+    ringbuf_put_n(&self->buf, (uint8_t *)&len, sizeof(len));
     ringbuf_put_n(&self->buf, data, len);
 }
 
-bool shared_module_bleio_scanresults_get_done(bleio_scanresults_obj_t* self) {
+bool shared_module_bleio_scanresults_get_done(bleio_scanresults_obj_t *self) {
     return self->done;
 }
 
-void shared_module_bleio_scanresults_set_done(bleio_scanresults_obj_t* self, bool done) {
+void shared_module_bleio_scanresults_set_done(bleio_scanresults_obj_t *self, bool done) {
     self->done = done;
     self->common_hal_data = NULL;
 }

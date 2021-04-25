@@ -38,13 +38,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
+        pip install -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version
         python3 --version
-    - name: Translations
-      run: make check-translate
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
@@ -81,6 +79,7 @@ jobs:
       working-directory: tests
     - name: Print failure info
       run: |
+        shopt -s nullglob;
         for exp in *.exp;
         do testbase=$(basename $exp .exp);
         echo -e "\nFAILURE $testbase";
@@ -133,15 +132,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install dependencies
-      run: |
-        brew install gettext
-        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
-    - name: Versions
-      run: |
-        gcc --version
-        python3 --version
-        msgfmt --version
     - uses: actions/checkout@v2.2.0
       with:
         submodules: true
@@ -151,6 +141,15 @@ jobs:
       run: |
         git describe --dirty --tags
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Install dependencies
+      run: |
+        brew install gettext
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
@@ -178,7 +177,14 @@ jobs:
         - "ADM_B_NRF52840_1"
         - "TG-Watch"
         - "adafruit_feather_rp2040"
+        - "adafruit_itsybitsy_rp2040"
+        - "adafruit_neokey_trinkey_m0"
+        - "adafruit_proxlight_trinkey_m0"
+        - "adafruit_qtpy_rp2040"
+        - "adafruit_rotary_trinkey_m0"
+        - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
+        - "aramcon2_badge"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -189,6 +195,7 @@ jobs:
         - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
+        - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -208,6 +215,7 @@ jobs:
         - "datum_imu"
         - "datum_light"
         - "datum_weather"
+        - "dynalora_usb"
         - "dynossat_edu_eps"
         - "dynossat_edu_obc"
         - "electronut_labs_blip"
@@ -237,6 +245,7 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
+        - "huntercat_nfc"
         - "ikigaisense_vita"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
@@ -280,6 +289,11 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "picoplanet"
+        - "pimoroni_keybow2040"
+        - "pimoroni_picolipo_16mb"
+        - "pimoroni_picolipo_4mb"
+        - "pimoroni_picosystem"
+        - "pimoroni_tiny2040"
         - "pirkey_m0"
         - "pitaya_go"
         - "pyb_nano_v2"
@@ -302,19 +316,24 @@ jobs:
         - "same54_xplained"
         - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
+        - "sensebox_mcu"
         - "serpente"
         - "shirtty"
         - "silicognition-m4-shim"
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_micromod_rp2040"
+        - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_pro_micro_rp2040"
         - "sparkfun_qwiic_micro_no_flash"
         - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_thing_plus"
+        - "sparkfun_thing_plus_rp2040"
         - "spresense"
         - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
@@ -346,10 +365,15 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
@@ -357,13 +381,10 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -395,6 +416,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -406,13 +432,10 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -438,12 +461,17 @@ jobs:
         board:
         - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_feather_esp32s2_tftback_nopsram"
+        - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "artisense_rd00"
+        - "atmegazero_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "franzininho_wifi_wroom"
+        - "franzininho_wifi_wrover"
         - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
@@ -451,6 +479,7 @@ jobs:
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
+        - "unexpectedmaker_tinys2"
 
     steps:
     - name: Set up Python 3.8
@@ -469,7 +498,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210128
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210422
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
@@ -487,7 +516,7 @@ jobs:
     - name: Install CircuitPython deps
       run: |
         source $IDF_PATH/export.sh
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
       env:
         IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
@@ -506,6 +535,8 @@ jobs:
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: |
         source $IDF_PATH/export.sh

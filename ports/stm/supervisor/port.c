@@ -32,6 +32,9 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#ifdef CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
 #if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
@@ -98,14 +101,14 @@ extern void SystemInit(void);
 // This replaces the Reset_Handler in gcc/startup_*.s, calls SystemInit from system_*.c
 __attribute__((used, naked)) void Reset_Handler(void) {
     __disable_irq();
-    __set_MSP((uint32_t) &_ld_stack_top);
+    __set_MSP((uint32_t)&_ld_stack_top);
 
     /* Disable MPU */
     ARM_MPU_Disable();
 
     // Copy all of the itcm code to run from ITCM. Do this while the MPU is disabled because we write
     // protect it.
-    for (uint32_t i = 0; i < ((size_t) &_ld_itcm_size) / 4; i++) {
+    for (uint32_t i = 0; i < ((size_t)&_ld_itcm_size) / 4; i++) {
         (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
     }
 
@@ -133,22 +136,22 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
 
     // Copy all of the data to run from DTCM.
-    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_data_size) / 4; i++) {
+    for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_data_size) / 4; i++) {
         (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
     }
 
     // Clear DTCM bss.
-    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_bss_size) / 4; i++) {
+    for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_bss_size) / 4; i++) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
 
     // Copy all of the data to run from D1 RAM.
-    for (uint32_t i = 0; i < ((size_t) &_ld_d1_ram_data_size) / 4; i++) {
+    for (uint32_t i = 0; i < ((size_t)&_ld_d1_ram_data_size) / 4; i++) {
         (&_ld_d1_ram_data_destination)[i] = (&_ld_d1_ram_data_flash_copy)[i];
     }
 
     // Clear D1 RAM bss.
-    for (uint32_t i = 0; i < ((size_t) &_ld_d1_ram_bss_size) / 4; i++) {
+    for (uint32_t i = 0; i < ((size_t)&_ld_d1_ram_bss_size) / 4; i++) {
         (&_ld_d1_ram_bss_start)[i] = 0;
     }
 
@@ -156,7 +159,7 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     __enable_irq();
     main();
 }
-#endif //end H7 specific code
+#endif // end H7 specific code
 
 // Low power clock variables
 static volatile uint32_t systick_ms;
@@ -173,7 +176,7 @@ safe_mode_t port_init(void) {
     __HAL_RCC_SYSCFG_CLK_ENABLE();
 
     #if (CPY_STM32F4)
-        __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
     #endif
 
     stm32_peripherals_clocks_init();
@@ -229,24 +232,27 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
-#if CIRCUITPY_BUSIO
+    #if CIRCUITPY_AUDIOPWMIO
+    audiopwmout_reset();
+    #endif
+    #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
-#endif
-#if CIRCUITPY_SDIOIO
+    #endif
+    #if CIRCUITPY_SDIOIO
     sdioio_reset();
-#endif
-#if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
+    #endif
+    #if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
     timers_reset();
-#endif
-#if CIRCUITPY_PULSEIO
+    #endif
+    #if CIRCUITPY_PULSEIO
     pulseout_reset();
     pulsein_reset();
-#endif
-#if CIRCUITPY_PWMIO
+    #endif
+    #if CIRCUITPY_PWMIO
     pwmout_reset();
-#endif
+    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -290,35 +296,31 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-__attribute__((used)) void MemManage_Handler(void)
-{
+__attribute__((used)) void MemManage_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }
 
-__attribute__((used)) void BusFault_Handler(void)
-{
+__attribute__((used)) void BusFault_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }
 
-__attribute__((used)) void UsageFault_Handler(void)
-{
+__attribute__((used)) void UsageFault_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }
 
-__attribute__((used)) void HardFault_Handler(void)
-{
+__attribute__((used)) void HardFault_Handler(void) {
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }
 
@@ -328,7 +330,7 @@ volatile uint32_t seconds_to_date = 0;
 volatile uint32_t cached_date = 0;
 volatile uint32_t seconds_to_minute = 0;
 volatile uint32_t cached_hours_minutes = 0;
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     // Disable IRQs to ensure we read all of the RTC registers as close in time as possible. Read
     // SSR twice to make sure we didn't read across a tick.
     __disable_irq();
@@ -372,7 +374,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
         *subticks = subseconds % 32;
     }
 
-    uint64_t raw_ticks = ((uint64_t) 1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
+    uint64_t raw_ticks = ((uint64_t)1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
     return raw_ticks;
 }
 
@@ -424,7 +426,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     }
 
     alarm.AlarmTime.SubSeconds = rtc_clock_frequency - 1 -
-                                 ((raw_ticks % 1024) * 32);
+        ((raw_ticks % 1024) * 32);
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
     // Masking here means that the bits are ignored so we set none of them.
@@ -438,9 +440,9 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     // Clear the FPU interrupt because it can prevent us from sleeping.
-    if (__get_FPSCR()  & ~(0x9f)) {
-        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
-        (void) __get_FPSCR();
+    if (__get_FPSCR() & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
     }
     if (alarmed_already) {
         return;
@@ -450,7 +452,6 @@ void port_idle_until_interrupt(void) {
 
 // Required by __libc_init_array in startup code if we are compiling using
 // -nostdlib/-nostartfiles.
-void _init(void)
-{
+void _init(void) {
 
 }

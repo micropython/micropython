@@ -32,7 +32,7 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
-uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary, mp_obj_list_t * characteristic_list) {
+uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary, mp_obj_list_t *characteristic_list) {
     self->uuid = uuid;
     self->characteristic_list = characteristic_list;
     self->is_remote = false;
@@ -52,7 +52,7 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
     if (_common_hal_bleio_service_construct(self, uuid, is_secondary,
-                                            mp_obj_new_list(0, NULL)) != 0) {
+        mp_obj_new_list(0, NULL)) != 0) {
         mp_raise_RuntimeError(translate("Failed to add service"));
     }
 }
@@ -83,8 +83,8 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
 }
 
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
-                                                 bleio_characteristic_obj_t *characteristic,
-                                                 mp_buffer_info_t *initial_value_bufinfo) {
+    bleio_characteristic_obj_t *characteristic,
+    mp_buffer_info_t *initial_value_bufinfo) {
 
     if (self->handle != common_hal_bleio_adapter_obj.last_added_service_handle) {
         mp_raise_bleio_BluetoothError(

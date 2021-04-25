@@ -83,11 +83,11 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
         return namedtuple_make_new(type, n_args, args, kw_args);
     }
-    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t *)MP_OBJ_TO_PTR(args[0]))->len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
-    mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0]);
     return namedtuple_make_new(type, 9, tuple->items, NULL);
 }
 
@@ -140,7 +140,7 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
 mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
     timeutils_struct_time_t tmp;
     mp_uint_t secs = timeutils_seconds_since_epoch(tm->tm_year, tm->tm_mon, tm->tm_mday,
-                                                  tm->tm_hour, tm->tm_min, tm->tm_sec);
+        tm->tm_hour, tm->tm_min, tm->tm_sec);
     timeutils_seconds_since_epoch_to_struct_time(secs, &tmp);
     tm->tm_wday = tmp.tm_wday;
     tm->tm_yday = tmp.tm_yday;
@@ -157,7 +157,7 @@ mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
         mp_obj_new_int(-1), // tm_isdst is not supported
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&struct_time_type_obj, 9, elems, NULL);
 };
 
 void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
@@ -208,7 +208,7 @@ STATIC mp_obj_t time_time(void) {
     timeutils_struct_time_t tm;
     struct_time_to_tm(rtc_get_time_source_time(), &tm);
     mp_uint_t secs = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday,
-                                                  tm.tm_hour, tm.tm_min, tm.tm_sec);
+        tm.tm_hour, tm.tm_min, tm.tm_sec);
     return mp_obj_new_int_from_uint(secs);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
@@ -222,7 +222,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //|
 STATIC mp_obj_t time_monotonic_ns(void) {
     uint64_t time64 = common_hal_time_monotonic_ns();
-    return mp_obj_new_int_from_ll((long long) time64);
+    return mp_obj_new_int_from_ll((long long)time64);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 
@@ -279,7 +279,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
 
     mp_obj_tuple_get(t, &len, &elem);
     if (len != 9) {
-        mp_raise_TypeError_varg(translate("function takes %d positional arguments but %d were given"), 9);
+        mp_raise_TypeError_varg(translate("function takes %d positional arguments but %d were given"), 9, len);
     }
 
     if (mp_obj_get_int(elem[0]) < 2000) {
@@ -287,7 +287,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
-                                      mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
+        mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
     return mp_obj_new_int_from_uint(secs);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
@@ -322,5 +322,5 @@ STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
 
 const mp_obj_module_t time_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&time_module_globals,
+    .globals = (mp_obj_dict_t *)&time_module_globals,
 };

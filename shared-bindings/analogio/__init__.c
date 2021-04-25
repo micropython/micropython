@@ -70,5 +70,5 @@ STATIC MP_DEFINE_CONST_DICT(analogio_module_globals, analogio_module_globals_tab
 
 const mp_obj_module_t analogio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&analogio_module_globals,
+    .globals = (mp_obj_dict_t *)&analogio_module_globals,
 };

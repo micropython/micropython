@@ -35,13 +35,13 @@
 #include "shared-module/audiocore/__init__.h"
 #include "shared-module/audiocore/RawSample.h"
 
-void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t* self,
-                                           uint8_t voice_count,
-                                           uint32_t buffer_size,
-                                           uint8_t bits_per_sample,
-                                           bool samples_signed,
-                                           uint8_t channel_count,
-                                           uint32_t sample_rate) {
+void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t *self,
+    uint8_t voice_count,
+    uint32_t buffer_size,
+    uint8_t bits_per_sample,
+    bool samples_signed,
+    uint8_t channel_count,
+    uint32_t sample_rate) {
     self->len = buffer_size / 2 / sizeof(uint32_t) * sizeof(uint32_t);
 
     self->first_buffer = m_malloc(self->len, false);
@@ -63,28 +63,28 @@ void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t* self,
     self->voice_count = voice_count;
 }
 
-void common_hal_audiomixer_mixer_deinit(audiomixer_mixer_obj_t* self) {
+void common_hal_audiomixer_mixer_deinit(audiomixer_mixer_obj_t *self) {
     self->first_buffer = NULL;
     self->second_buffer = NULL;
 }
 
-bool common_hal_audiomixer_mixer_deinited(audiomixer_mixer_obj_t* self) {
+bool common_hal_audiomixer_mixer_deinited(audiomixer_mixer_obj_t *self) {
     return self->first_buffer == NULL;
 }
 
-uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t* self) {
+uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t *self) {
     return self->sample_rate;
 }
 
-uint8_t common_hal_audiomixer_mixer_get_channel_count(audiomixer_mixer_obj_t* self) {
+uint8_t common_hal_audiomixer_mixer_get_channel_count(audiomixer_mixer_obj_t *self) {
     return self->channel_count;
 }
 
-uint8_t common_hal_audiomixer_mixer_get_bits_per_sample(audiomixer_mixer_obj_t* self) {
+uint8_t common_hal_audiomixer_mixer_get_bits_per_sample(audiomixer_mixer_obj_t *self) {
     return self->bits_per_sample;
 }
 
-bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
+bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t *self) {
     for (uint8_t v = 0; v < self->voice_count; v++) {
         if (common_hal_audiomixer_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
             return true;
@@ -93,9 +93,9 @@ bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
     return false;
 }
 
-void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
-                                   bool single_channel,
-                                   uint8_t channel) {
+void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t *self,
+    bool single_channel,
+    uint8_t channel) {
     for (uint8_t i = 0; i < self->voice_count; i++) {
         common_hal_audiomixer_mixervoice_stop(self->voice[i]);
     }
@@ -103,33 +103,78 @@ void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
 
 __attribute__((always_inline))
 static inline uint32_t add16signed(uint32_t a, uint32_t b) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __QADD16(a, b);
+    #else
+    uint32_t result = 0;
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = a >> (sizeof(int16_t) * 8 * i);
+        int16_t bi = b >> (sizeof(int16_t) * 8 * i);
+        int32_t intermediate = (int32_t)ai + bi;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t)intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 __attribute__((always_inline))
 static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     mul <<= 16;
     int32_t hi, lo;
     enum { bits = 16 }; // saturate to 16 bits
     enum { shift = 15 }; // shift is done automatically
-    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
-    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
-    asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    asm volatile ("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+    asm volatile ("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+    asm volatile ("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+    asm volatile ("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+    asm volatile ("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1 << 15) - 1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i));
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        intermediate &= 0x0000FFFF;
+        result |= (((uint32_t)intermediate)) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 static inline uint32_t tounsigned8(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD8(val, 0x80808080);
+    #else
+    return val ^ 0x80808080;
+    #endif
 }
 
 static inline uint32_t tounsigned16(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
+    #else
+    return val ^ 0x80008000;
+    #endif
 }
 
 static inline uint32_t tosigned16(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
+    #else
+    return val ^ 0x80008000;
+    #endif
 }
 
 static inline uint32_t unpack8(uint16_t val) {
@@ -140,9 +185,9 @@ static inline uint32_t pack8(uint32_t val) {
     return ((val & 0xff000000) >> 16) | ((val & 0xff00) >> 8);
 }
 
-static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
-        audiomixer_mixervoice_obj_t* voice, bool voices_active,
-        uint32_t* word_buffer, uint32_t length) {
+static void mix_down_one_voice(audiomixer_mixer_obj_t *self,
+    audiomixer_mixervoice_obj_t *voice, bool voices_active,
+    uint32_t *word_buffer, uint32_t length) {
     while (length != 0) {
         if (voice->buffer_length == 0) {
             if (!voice->more_data) {
@@ -155,7 +200,7 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
             }
             if (voice->sample) {
                 // Load another buffer
-                audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
+                audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t **)&voice->remaining_buffer, &voice->buffer_length);
                 // Track length in terms of words.
                 voice->buffer_length /= sizeof(uint32_t);
                 voice->more_data = result == GET_BUFFER_MORE_DATA;
@@ -170,21 +215,21 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
         if (!voices_active) {
             if (MP_LIKELY(self->bits_per_sample == 16)) {
                 if (MP_LIKELY(self->samples_signed)) {
-                    for (uint32_t i = 0; i<n; i++) {
+                    for (uint32_t i = 0; i < n; i++) {
                         uint32_t v = src[i];
                         word_buffer[i] = mult16signed(v, level);
                     }
                 } else {
-                    for (uint32_t i = 0; i<n; i++) {
+                    for (uint32_t i = 0; i < n; i++) {
                         uint32_t v = src[i];
                         v = tosigned16(v);
                         word_buffer[i] = mult16signed(v, level);
                     }
                 }
             } else {
-                uint16_t *hword_buffer = (uint16_t*)word_buffer;
-                uint16_t *hsrc = (uint16_t*)src;
-                for (uint32_t i = 0; i<n*2; i++) {
+                uint16_t *hword_buffer = (uint16_t *)word_buffer;
+                uint16_t *hsrc = (uint16_t *)src;
+                for (uint32_t i = 0; i < n * 2; i++) {
                     uint32_t word = unpack8(hsrc[i]);
                     if (MP_LIKELY(!self->samples_signed)) {
                         word = tosigned16(word);
@@ -196,21 +241,21 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
         } else {
             if (MP_LIKELY(self->bits_per_sample == 16)) {
                 if (MP_LIKELY(self->samples_signed)) {
-                    for (uint32_t i = 0; i<n; i++) {
+                    for (uint32_t i = 0; i < n; i++) {
                         uint32_t word = src[i];
                         word_buffer[i] = add16signed(mult16signed(word, level), word_buffer[i]);
                     }
                 } else {
-                    for (uint32_t i = 0; i<n; i++) {
+                    for (uint32_t i = 0; i < n; i++) {
                         uint32_t word = src[i];
                         word = tosigned16(word);
                         word_buffer[i] = add16signed(mult16signed(word, level), word_buffer[i]);
-                        }
+                    }
                 }
             } else {
-                uint16_t *hword_buffer = (uint16_t*)word_buffer;
-                uint16_t *hsrc = (uint16_t*)src;
-                for (uint32_t i = 0; i<n*2; i++) {
+                uint16_t *hword_buffer = (uint16_t *)word_buffer;
+                uint16_t *hsrc = (uint16_t *)src;
+                for (uint32_t i = 0; i < n * 2; i++) {
                     uint32_t word = unpack8(hsrc[i]);
                     if (MP_LIKELY(!self->samples_signed)) {
                         word = tosigned16(word);
@@ -228,17 +273,17 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
     }
 
     if (length && !voices_active) {
-        for (uint32_t i = 0; i<length; i++) {
+        for (uint32_t i = 0; i < length; i++) {
             word_buffer[i] = 0;
         }
     }
 }
 
-audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
-                                                        bool single_channel,
-                                                        uint8_t channel,
-                                                        uint8_t** buffer,
-                                                        uint32_t* buffer_length) {
+audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t *self,
+    bool single_channel,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length) {
     if (!single_channel) {
         channel = 0;
     }
@@ -251,12 +296,12 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
 
     bool need_more_data = self->read_count == channel_read_count;
     if (need_more_data) {
-        uint32_t* word_buffer;
+        uint32_t *word_buffer;
         if (self->use_first_buffer) {
-            *buffer = (uint8_t*) self->first_buffer;
+            *buffer = (uint8_t *)self->first_buffer;
             word_buffer = self->first_buffer;
         } else {
-            *buffer = (uint8_t*) self->second_buffer;
+            *buffer = (uint8_t *)self->second_buffer;
             word_buffer = self->second_buffer;
         }
         self->use_first_buffer = !self->use_first_buffer;
@@ -264,15 +309,15 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
         uint32_t length = self->len / sizeof(uint32_t);
 
         for (int32_t v = 0; v < self->voice_count; v++) {
-            audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
-            if(voice->sample) {
+            audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
+            if (voice->sample) {
                 mix_down_one_voice(self, voice, voices_active, word_buffer, length);
                 voices_active = true;
             }
         }
 
         if (!voices_active) {
-            for (uint32_t i = 0; i<length; i++) {
+            for (uint32_t i = 0; i < length; i++) {
                 word_buffer[i] = 0;
             }
         }
@@ -291,9 +336,9 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
 
         self->read_count += 1;
     } else if (!self->use_first_buffer) {
-        *buffer = (uint8_t*) self->first_buffer;
+        *buffer = (uint8_t *)self->first_buffer;
     } else {
-        *buffer = (uint8_t*) self->second_buffer;
+        *buffer = (uint8_t *)self->second_buffer;
     }
 
 
@@ -306,9 +351,9 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
     return GET_BUFFER_MORE_DATA;
 }
 
-void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t* self, bool single_channel,
-                                        bool* single_buffer, bool* samples_signed,
-                                        uint32_t* max_buffer_length, uint8_t* spacing) {
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t *self, bool single_channel,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = false;
     *samples_signed = self->samples_signed;
     *max_buffer_length = self->len;

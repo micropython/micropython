@@ -32,11 +32,15 @@
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "genhdr/mpversion.h"
+#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
+
+#include "common-hal/rtc/RTC.h"
+#include "common-hal/busio/UART.h"
 
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
@@ -52,6 +56,8 @@
 
 #include "tusb.h"
 
+#include "pico/bootrom.h"
+#include "hardware/watchdog.h"
 
 extern volatile bool mp_msc_enabled;
 
@@ -68,12 +74,47 @@ STATIC void _binary_info(void) {
     // TODO: Add build attribute for debug builds. Needs newer CircuitPython with CIRCUITPY_DEBUG.
 }
 
+extern uint32_t _ld_dtcm_bss_start;
+extern uint32_t _ld_dtcm_bss_size;
+extern uint32_t _ld_dtcm_data_destination;
+extern uint32_t _ld_dtcm_data_size;
+extern uint32_t _ld_dtcm_data_flash_copy;
+extern uint32_t _ld_itcm_destination;
+extern uint32_t _ld_itcm_size;
+extern uint32_t _ld_itcm_flash_copy;
+
 safe_mode_t port_init(void) {
     _binary_info();
     // Set brown out.
 
+    // Copy all of the "tightly coupled memory" code and data to run from RAM.
+    // This lets us use the 16k cache for dynamically used data and code.
+    // We must do this before we try and call any of its code or load the data.
+    for (uint32_t i = 0; i < ((size_t)&_ld_itcm_size) / 4; i++) {
+        (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
+        // Now zero it out to evict the line from the XIP cache. Without this,
+        // it'll stay in the XIP cache anyway.
+        (&_ld_itcm_flash_copy)[i] = 0x0;
+    }
+
+    // Copy all of the data to run from DTCM.
+    for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_data_size) / 4; i++) {
+        (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
+        // Now zero it out to evict the line from the XIP cache. Without this,
+        // it'll stay in the XIP cache anyway.
+        (&_ld_dtcm_data_flash_copy)[i] = 0x0;
+    }
+
+    // Clear DTCM bss.
+    for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_bss_size) / 4; i++) {
+        (&_ld_dtcm_bss_start)[i] = 0;
+    }
+
     // Reset everything into a known state before board_init.
     reset_port();
+
+    // Initialize RTC
+    common_hal_rtc_init();
 
     // For the tick.
     hardware_alarm_claim(0);
@@ -92,6 +133,7 @@ void reset_port(void) {
     #if CIRCUITPY_BUSIO
     reset_i2c();
     reset_spi();
+    reset_uart();
     #endif
 
     #if CIRCUITPY_PWMIO
@@ -106,17 +148,29 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
+    #if CIRCUITPY_AUDIOPWMIO
+    audiopwmout_reset();
+    #endif
+    #if CIRCUITPY_AUDIOCORE
+    audio_dma_reset();
+    #endif
+
     reset_all_pins();
 }
 
 void reset_to_bootloader(void) {
-    // reset();
-    while (true) {}
+    reset_usb_boot(0, 0);
+    while (true) {
+    }
 }
 
 void reset_cpu(void) {
-    // reset();
-    while (true) {}
+    watchdog_reboot(0, SRAM_END, 0);
+    watchdog_start_tick(12);
+
+    while (true) {
+        __wfi();
+    }
 }
 
 bool port_has_fixed_stack(void) {
@@ -151,7 +205,7 @@ uint32_t port_get_saved_word(void) {
     return watchdog_hw->scratch[0];
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
     return 1024 * (microseconds / 1000000) + (microseconds % 1000000) / 977;
 }
@@ -189,16 +243,15 @@ void port_idle_until_interrupt(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
-__attribute__((used)) void HardFault_Handler(void)
-{
-#ifdef ENABLE_MICRO_TRACE_BUFFER
+__attribute__((used)) void HardFault_Handler(void) {
+    #ifdef ENABLE_MICRO_TRACE_BUFFER
     // Turn off the micro trace buffer so we don't fill it up in the infinite
     // loop below.
     REG_MTB_MASTER = 0x00000000 + 6;
-#endif
+    #endif
 
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }

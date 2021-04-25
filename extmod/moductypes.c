@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Paul Sokolovsky
+// Copyright (c) 2014-2018 Paul Sokolovsky
 // SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 //
 // SPDX-License-Identifier: MIT
@@ -73,7 +73,7 @@ enum {
 #define AGG_TYPE_BITS 2
 
 enum {
-    STRUCT, PTR, ARRAY, BITFIELD,
+    STRUCT, PTR, ARRAY,
 };
 
 // Here we need to set sign bit right
@@ -105,7 +105,7 @@ STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_check_num(n_args, kw_args, 2, 3, false);
     mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
     o->base.type = type;
-    o->addr = (void*)(uintptr_t)mp_obj_int_get_truncated(args[0]);
+    o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
     if (n_args == 3) {
@@ -118,15 +118,23 @@ STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     (void)kind;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typen = "unk";
-    if (MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {
+    if (MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)
+        #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        || MP_OBJ_IS_TYPE(self->desc, &mp_type_ordereddict)
+        #endif
+        ) {
         typen = "STRUCT";
     } else if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
         uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
         switch (agg_type) {
-            case PTR: typen = "PTR"; break;
-            case ARRAY: typen = "ARRAY"; break;
+            case PTR:
+                typen = "PTR";
+                break;
+            case ARRAY:
+                typen = "ARRAY";
+                break;
         }
     } else {
         typen = "ERROR";
@@ -157,10 +165,10 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
         case STRUCT:
             return uctypes_struct_size(t->items[1], layout_type, max_field_size);
         case PTR:
-            if (sizeof(void*) > *max_field_size) {
-                *max_field_size = sizeof(void*);
+            if (sizeof(void *) > *max_field_size) {
+                *max_field_size = sizeof(void *);
             }
-            return sizeof(void*);
+            return sizeof(void *);
         case ARRAY: {
             mp_int_t arr_sz = MP_OBJ_SMALL_INT_VALUE(t->items[1]);
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
@@ -187,9 +195,13 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 }
 
 STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
-    if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)) {
+    if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)
+        #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        && !MP_OBJ_IS_TYPE(desc_in, &mp_type_ordereddict)
+        #endif
+        ) {
         if (MP_OBJ_IS_TYPE(desc_in, &mp_type_tuple)) {
-            return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
+            return uctypes_struct_agg_size((mp_obj_tuple_t *)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
         } else if (MP_OBJ_IS_SMALL_INT(desc_in)) {
             // We allow sizeof on both type definitions and structures/structure fields,
             // but scalar structure field is lowered into native Python int, so all
@@ -242,7 +254,8 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
     return total_size;
 }
 
-STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
+STATIC mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t obj_in = args[0];
     mp_uint_t max_field_size = 0;
     if (MP_OBJ_IS_TYPE(obj_in, &mp_type_bytearray)) {
         return mp_obj_len(obj_in);
@@ -251,15 +264,22 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     // We can apply sizeof either to structure definition (a dict)
     // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
+        if (n_args != 1) {
+            mp_raise_TypeError(NULL);
+        }
         // Extract structure definition
         mp_obj_uctypes_struct_t *obj = MP_OBJ_TO_PTR(obj_in);
         obj_in = obj->desc;
         layout_type = obj->flags;
+    } else {
+        if (n_args == 2) {
+            layout_type = mp_obj_get_int(args[1]);
+        }
     }
     mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_field_size);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
@@ -276,11 +296,11 @@ static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_
 static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
     switch (val_type) {
         case UINT8:
-            return *(uint8_t*)p;
+            return *(uint8_t *)p;
         case UINT16:
-            return *(uint16_t*)p;
+            return *(uint16_t *)p;
         case UINT32:
-            return *(uint32_t*)p;
+            return *(uint32_t *)p;
     }
     assert(0);
     return 0;
@@ -289,11 +309,14 @@ static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
 static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
     switch (val_type) {
         case UINT8:
-            *(uint8_t*)p = (uint8_t)v; return;
+            *(uint8_t *)p = (uint8_t)v;
+            return;
         case UINT16:
-            *(uint16_t*)p = (uint16_t)v; return;
+            *(uint16_t *)p = (uint16_t)v;
+            return;
         case UINT32:
-            *(uint32_t*)p = (uint32_t)v; return;
+            *(uint32_t *)p = (uint32_t)v;
+            return;
     }
     assert(0);
 }
@@ -301,26 +324,26 @@ static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
 STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
     switch (val_type) {
         case UINT8:
-            return MP_OBJ_NEW_SMALL_INT(((uint8_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((uint8_t *)p)[index]);
         case INT8:
-            return MP_OBJ_NEW_SMALL_INT(((int8_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((int8_t *)p)[index]);
         case UINT16:
-            return MP_OBJ_NEW_SMALL_INT(((uint16_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((uint16_t *)p)[index]);
         case INT16:
-            return MP_OBJ_NEW_SMALL_INT(((int16_t*)p)[index]);
+            return MP_OBJ_NEW_SMALL_INT(((int16_t *)p)[index]);
         case UINT32:
-            return mp_obj_new_int_from_uint(((uint32_t*)p)[index]);
+            return mp_obj_new_int_from_uint(((uint32_t *)p)[index]);
         case INT32:
-            return mp_obj_new_int(((int32_t*)p)[index]);
+            return mp_obj_new_int(((int32_t *)p)[index]);
         case UINT64:
-            return mp_obj_new_int_from_ull(((uint64_t*)p)[index]);
+            return mp_obj_new_int_from_ull(((uint64_t *)p)[index]);
         case INT64:
-            return mp_obj_new_int_from_ll(((int64_t*)p)[index]);
+            return mp_obj_new_int_from_ll(((int64_t *)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
         case FLOAT32:
-            return mp_obj_new_float((mp_float_t)((float*)p)[index]);
+            return mp_obj_new_float(((float *)p)[index]);
         case FLOAT64:
-            return mp_obj_new_float(((double*)p)[index]);
+            return mp_obj_new_float(((double *)p)[index]);
         #endif
         default:
             assert(0);
@@ -333,9 +356,9 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
     if (val_type == FLOAT32 || val_type == FLOAT64) {
         mp_float_t v = mp_obj_get_float(val);
         if (val_type == FLOAT32) {
-            ((float*)p)[index] = v;
+            ((float *)p)[index] = v;
         } else {
-            ((double*)p)[index] = v;
+            ((double *)p)[index] = v;
         }
         return;
     }
@@ -343,21 +366,27 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
     mp_int_t v = mp_obj_get_int_truncated(val);
     switch (val_type) {
         case UINT8:
-            ((uint8_t*)p)[index] = (uint8_t)v; return;
+            ((uint8_t *)p)[index] = (uint8_t)v;
+            return;
         case INT8:
-            ((int8_t*)p)[index] = (int8_t)v; return;
+            ((int8_t *)p)[index] = (int8_t)v;
+            return;
         case UINT16:
-            ((uint16_t*)p)[index] = (uint16_t)v; return;
+            ((uint16_t *)p)[index] = (uint16_t)v;
+            return;
         case INT16:
-            ((int16_t*)p)[index] = (int16_t)v; return;
+            ((int16_t *)p)[index] = (int16_t)v;
+            return;
         case UINT32:
-            ((uint32_t*)p)[index] = (uint32_t)v; return;
+            ((uint32_t *)p)[index] = (uint32_t)v;
+            return;
         case INT32:
-            ((int32_t*)p)[index] = (int32_t)v; return;
+            ((int32_t *)p)[index] = (int32_t)v;
+            return;
         case INT64:
         case UINT64:
             if (sizeof(mp_int_t) == 8) {
-                ((uint64_t*)p)[index] = (uint64_t)v;
+                ((uint64_t *)p)[index] = (uint64_t)v;
             } else {
                 // TODO: Doesn't offer atomic store semantics, but should at least try
                 set_unaligned(val_type, p, MP_ENDIANNESS_BIG, val);
@@ -371,9 +400,12 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
 STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // TODO: Support at least OrderedDict in addition
-    if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {
-            mp_raise_TypeError(translate("struct: no fields"));
+    if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)
+        #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        && !MP_OBJ_IS_TYPE(self->desc, &mp_type_ordereddict)
+        #endif
+        ) {
+        mp_raise_TypeError(translate("struct: no fields"));
     }
 
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
@@ -381,7 +413,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
-//printf("scalar type=%d offset=%x\n", val_type, offset);
+// printf("scalar type=%d offset=%x\n", val_type, offset);
 
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
 //            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
@@ -451,7 +483,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
-//printf("agg type=%d offset=%x\n", agg_type, offset);
+// printf("agg type=%d offset=%x\n", agg_type, offset);
 
     switch (agg_type) {
         case STRUCT: {
@@ -475,7 +507,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
-//printf("PTR/ARR base addr=%p\n", o->addr);
+// printf("PTR/ARR base addr=%p\n", o->addr);
             return MP_OBJ_FROM_PTR(o);
         }
     }
@@ -555,7 +587,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             }
 
         } else if (agg_type == PTR) {
-            byte *p = *(void**)self->addr;
+            byte *p = *(void **)self->addr;
             if (MP_OBJ_IS_SMALL_INT(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
                 return get_aligned(val_type, p, index);
@@ -573,6 +605,26 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
 
         assert(0);
         return MP_OBJ_NULL;
+    }
+}
+
+STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_INT:
+            if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
+                mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
+                mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+                uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+                if (agg_type == PTR) {
+                    byte *p = *(void **)self->addr;
+                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
+                }
+            }
+        /* fallthru */
+
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -603,7 +655,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof
 /// captured by reference (and thus memory pointed by bytearray may change
 /// or become invalid at later time). Use bytes_at() to capture by value.
 STATIC mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void*)(uintptr_t)mp_obj_int_get_truncated(ptr));
+    return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void *)(uintptr_t)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
 
@@ -612,7 +664,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytear
 /// captured by value, i.e. copied. Use bytearray_at() to capture by reference
 /// ("zero copy").
 STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytes((void*)(uintptr_t)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
+    return mp_obj_new_bytes((void *)(uintptr_t)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
@@ -624,6 +676,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .make_new = uctypes_struct_make_new,
     .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
+    .unary_op = uctypes_struct_unary_op,
     .buffer_p = { .get_buffer = uctypes_get_buffer },
 };
 
@@ -682,6 +735,30 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FLOAT64), MP_ROM_INT(TYPE2SMALLINT(FLOAT64, 4)) },
     #endif
 
+    #if MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+    // C native type aliases. These depend on GCC-compatible predefined
+    // preprocessor macros.
+    #if __SIZEOF_SHORT__ == 2
+    { MP_ROM_QSTR(MP_QSTR_SHORT), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_USHORT), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
+    #endif
+    #if __SIZEOF_INT__ == 4
+    { MP_ROM_QSTR(MP_QSTR_INT), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #endif
+    #if __SIZEOF_LONG__ == 4
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #elif __SIZEOF_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #if __SIZEOF_LONG_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONGLONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONGLONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #endif // MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+
     { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
     { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },
 };
@@ -690,7 +767,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_uctypes_globals, mp_module_uctypes_globals
 
 const mp_obj_module_t mp_module_uctypes = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_uctypes_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_uctypes_globals,
 };
 
 #endif

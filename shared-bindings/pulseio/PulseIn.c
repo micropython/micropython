@@ -85,7 +85,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     pulseio_pulsein_obj_t *self = m_new_obj(pulseio_pulsein_obj_t);
     self->base.type = &pulseio_pulsein_type;
@@ -250,9 +250,12 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     check_for_deinit(self);
     uint16_t len = common_hal_pulseio_pulsein_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -310,5 +313,5 @@ const mp_obj_type_t pulseio_pulsein_type = {
     .make_new = pulseio_pulsein_make_new,
     .subscr = pulsein_subscr,
     .unary_op = pulsein_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&pulseio_pulsein_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pulseio_pulsein_locals_dict,
 };

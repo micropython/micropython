@@ -53,9 +53,9 @@ enum pin {
 
 #define NO_CACHE        0xffffffff
 
-static uint8_t  _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
+static uint8_t _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
 static uint32_t _flash_page_addr = NO_CACHE;
-static bool     _flash_cache_dirty;
+static bool _flash_cache_dirty;
 // -------------------------------------------------------------------------
 // When performing SPI operations, the flash cannot be accessed.  Since we
 // normally execute directly from SPI, this can cause problems.
@@ -65,14 +65,12 @@ static bool     _flash_cache_dirty;
 // Therefore, we must re-implement these functions here and explicitly mark
 // them as being in `.ramtext`, even though they really ought to be inlined.
 __attribute__((section(".ramtext")))
-static inline void spi_writel(uint32_t value, uint32_t addr)
-{
+static inline void spi_writel(uint32_t value, uint32_t addr) {
     *((volatile uint32_t *)addr) = value;
 }
 
 __attribute__((section(".ramtext")))
-static inline uint32_t spi_readl(uint32_t addr)
-{
+static inline uint32_t spi_readl(uint32_t addr) {
     return *(volatile uint32_t *)addr;
 }
 
@@ -92,9 +90,12 @@ static inline void bb_spi_en(unsigned int en) {
 }
 
 __attribute__((section(".ramtext")))
-static inline void bb_spi_irq_setie(unsigned int ie)
-{
-    if(ie) csrs(mstatus,CSR_MSTATUS_MIE); else csrc(mstatus,CSR_MSTATUS_MIE);
+static inline void bb_spi_irq_setie(unsigned int ie) {
+    if (ie) {
+        csrs(mstatus,CSR_MSTATUS_MIE);
+    } else {
+        csrc(mstatus,CSR_MSTATUS_MIE);
+    }
 }
 
 __attribute__((section(".ramtext")))
@@ -162,14 +163,14 @@ static int bb_spi_beginWrite(uint32_t addr, const void *v_data, unsigned int cou
     const uint8_t *data = v_data;
     unsigned int i;
 
-#ifdef NDEBUG
+    #ifdef NDEBUG
     if (v_data < (const void *)_flash_cache) {
-        asm("ebreak");
+        asm ("ebreak");
     }
-    if ((v_data+count) > (const void *)&_flash_cache[4096]) {
-        asm("ebreak");
+    if ((v_data + count) > (const void *)&_flash_cache[4096]) {
+        asm ("ebreak");
     }
-#endif
+    #endif
 
     // Enable Write-Enable Latch (WEL)
     bb_spi_begin();
@@ -181,8 +182,9 @@ static int bb_spi_beginWrite(uint32_t addr, const void *v_data, unsigned int cou
     spi_single_tx(addr >> 16);
     spi_single_tx(addr >> 8);
     spi_single_tx(addr >> 0);
-    for (i = 0; (i < count) && (i < 256); i++)
+    for (i = 0; (i < count) && (i < 256); i++) {
         spi_single_tx(*data++);
+    }
     bb_spi_end();
 
     return 0;
@@ -215,41 +217,46 @@ static void bb_spi_write_page(uint32_t flash_address, const uint8_t *data) {
 
     // Ensure we're within the target flash address range.
     if ((flash_address - FLASH_PARTITION_OFFSET_BYTES) > FLASH_SIZE) {
-        asm("ebreak");
+        asm ("ebreak");
         return;
     }
     if (flash_address < FLASH_PARTITION_OFFSET_BYTES) {
-        asm("ebreak");
+        asm ("ebreak");
         return;
     }
 
     if ((flash_address_end - FLASH_PARTITION_OFFSET_BYTES) > FLASH_SIZE) {
-        asm("ebreak");
+        asm ("ebreak");
         return;
     }
     if (flash_address_end < FLASH_PARTITION_OFFSET_BYTES) {
-        asm("ebreak");
+        asm ("ebreak");
         return;
     }
 
     // Ensure we're not erasing the middle of a flash bank
     if ((flash_address & 0xfff) != 0) {
-        asm("ebreak");
+        asm ("ebreak");
         return;
     }
 
     page_write_log[page_write_log_offset++] = flash_address;
-    if (page_write_log_offset > sizeof(page_write_log)/sizeof(*page_write_log)) page_write_log_offset=0;
+    if (page_write_log_offset > sizeof(page_write_log) / sizeof(*page_write_log)) {
+        page_write_log_offset = 0;
+    }
 
-    while (bb_spi_is_busy())
+    while (bb_spi_is_busy()) {
         ; // relax
+    }
     bb_spi_beginErase4(flash_address);
-    while (bb_spi_is_busy())
+    while (bb_spi_is_busy()) {
         ; // relax
+    }
     while (flash_address < flash_address_end) {
         bb_spi_beginWrite(flash_address, data, 256);
-        while (bb_spi_is_busy())
+        while (bb_spi_is_busy()) {
             ; // relax
+        }
         flash_address += 256;
         data += 256;
     }
@@ -267,16 +274,18 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return FLASH_SIZE/FILESYSTEM_BLOCK_SIZE;
+    return FLASH_SIZE / FILESYSTEM_BLOCK_SIZE;
 }
 
 __attribute__((section(".ramtext")))
 void port_internal_flash_flush(void) {
     // Skip if data is the same, or if there is no data in the cache
-    if (_flash_page_addr == NO_CACHE)
+    if (_flash_page_addr == NO_CACHE) {
         return;
-    if (!_flash_cache_dirty)
+    }
+    if (!_flash_cache_dirty) {
         return;
+    }
 
     // Disable interrupts and enable bit-bang mode on the SPI flash.
     // This function is running from RAM -- otherwise enabling bitbang mode
@@ -291,7 +300,7 @@ void port_internal_flash_flush(void) {
     bb_spi_en(0);
     bb_spi_irq_setie(1);
 
-   _flash_cache_dirty = false;
+    _flash_cache_dirty = false;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
@@ -299,9 +308,9 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     supervisor_flash_flush();
 
     uint32_t src = lba2addr(block);
-    memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
+    memcpy(dest, (uint8_t *)src, FILESYSTEM_BLOCK_SIZE * num_blocks);
 
-    #if USB_AVAILABLE
+    #if CIRCUITPY_USB
     usb_background();
     #endif
 
@@ -310,7 +319,7 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
     while (num_blocks) {
-        uint32_t const addr      = lba2addr(lba);
+        uint32_t const addr = lba2addr(lba);
         uint32_t const page_addr = addr & ~(FLASH_PAGE_SIZE - 1);
 
         uint32_t count = 8 - (lba % 8); // up to page boundary
@@ -334,11 +343,11 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         }
 
         // adjust for next run
-        lba        += count;
-        src        += count * FILESYSTEM_BLOCK_SIZE;
+        lba += count;
+        src += count * FILESYSTEM_BLOCK_SIZE;
         num_blocks -= count;
 
-        #if USB_AVAILABLE
+        #if CIRCUITPY_USB
         usb_background();
         #endif
     }

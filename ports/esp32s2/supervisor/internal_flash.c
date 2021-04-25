@@ -41,7 +41,7 @@
 
 #include "supervisor/usb.h"
 
-STATIC const esp_partition_t * _partition;
+STATIC const esp_partition_t *_partition;
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
@@ -50,8 +50,8 @@ STATIC uint32_t _cache_lba = 0xffffffff;
 
 void supervisor_flash_init(void) {
     _partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
-                                          ESP_PARTITION_SUBTYPE_DATA_FAT,
-                                          NULL);
+        ESP_PARTITION_SUBTYPE_DATA_FAT,
+        NULL);
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -68,9 +68,9 @@ void port_internal_flash_flush(void) {
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     esp_partition_read(_partition,
-                       block * FILESYSTEM_BLOCK_SIZE,
-                       dest,
-                       num_blocks * FILESYSTEM_BLOCK_SIZE);
+        block * FILESYSTEM_BLOCK_SIZE,
+        dest,
+        num_blocks * FILESYSTEM_BLOCK_SIZE);
     return 0;
 }
 
@@ -84,26 +84,26 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
         if (_cache_lba != block_address) {
             esp_partition_read(_partition,
-                               sector_offset,
-                               _cache,
-                               SECTOR_SIZE);
+                sector_offset,
+                _cache,
+                SECTOR_SIZE);
             _cache_lba = sector_offset;
         }
         for (uint8_t b = block_offset; b < blocks_per_sector; b++) {
             // Stop copying after the last block.
             if (block >= num_blocks) {
-              break;
+                break;
             }
             memcpy(_cache + b * FILESYSTEM_BLOCK_SIZE,
-                   src + block * FILESYSTEM_BLOCK_SIZE,
-                   FILESYSTEM_BLOCK_SIZE);
+                src + block * FILESYSTEM_BLOCK_SIZE,
+                FILESYSTEM_BLOCK_SIZE);
             block++;
         }
         esp_partition_erase_range(_partition, sector_offset, SECTOR_SIZE);
         esp_partition_write(_partition,
-                            sector_offset,
-                            _cache,
-                            SECTOR_SIZE);
+            sector_offset,
+            _cache,
+            SECTOR_SIZE);
     }
 
     return 0; // success

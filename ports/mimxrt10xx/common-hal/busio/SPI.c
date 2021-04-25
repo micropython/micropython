@@ -38,7 +38,9 @@
 
 #define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
 
-//arrays use 0 based numbering: SPI1 is stored at index 0
+#define MAX_SPI_BUSY_RETRIES 100
+
+// arrays use 0 based numbering: SPI1 is stored at index 0
 #define MAX_SPI 4
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
@@ -53,13 +55,13 @@ STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
         IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
-            | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
-            | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
-            | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
+        | IOMUXC_SW_PAD_CTL_PAD_PUS(0)
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
+        | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
 void spi_reset(void) {
@@ -72,8 +74,8 @@ void spi_reset(void) {
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-        const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-        const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso) {
 
     const uint32_t sck_count = MP_ARRAY_SIZE(mcu_spi_sck_list);
     const uint32_t miso_count = MP_ARRAY_SIZE(mcu_spi_miso_list);
@@ -84,15 +86,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         if (mcu_spi_sck_list[i].pin != clock) {
             continue;
         }
-        //if both MOSI and MISO exist, loop search normally
+        // if both MOSI and MISO exist, loop search normally
         if ((mosi != NULL) && (miso != NULL)) {
             for (uint j = 0; j < mosi_count; j++) {
                 if ((mcu_spi_mosi_list[i].pin != mosi)
-                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)){
+                    || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)) {
                     continue;
                 }
                 for (uint k = 0; k < miso_count; k++) {
-                    if ((mcu_spi_miso_list[k].pin != miso) //everything needs the same index
+                    if ((mcu_spi_miso_list[k].pin != miso) // everything needs the same index
                         || (mcu_spi_sck_list[i].bank_idx != mcu_spi_miso_list[k].bank_idx)) {
                         continue;
                     }
@@ -101,7 +103,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         spi_taken = true;
                         break;
                     }
-                    //store pins if not
+                    // store pins if not
                     self->clock = &mcu_spi_sck_list[i];
                     self->mosi = &mcu_spi_mosi_list[j];
                     self->miso = &mcu_spi_miso_list[k];
@@ -114,10 +116,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             if (self->clock != NULL || spi_taken) {
                 break;
             }
-        // if just MISO, reduce search
+            // if just MISO, reduce search
         } else if (miso != NULL) {
             for (uint j = 0; j < miso_count; j++) {
-                if ((mcu_spi_miso_list[j].pin != miso) //only SCK and MISO need the same index
+                if ((mcu_spi_miso_list[j].pin != miso) // only SCK and MISO need the same index
                     || (mcu_spi_sck_list[i].bank_idx != mcu_spi_miso_list[j].bank_idx)) {
                     continue;
                 }
@@ -132,10 +134,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             if (self->clock != NULL || spi_taken) {
                 break;
             }
-        // if just MOSI, reduce search
+            // if just MOSI, reduce search
         } else if (mosi != NULL) {
             for (uint j = 0; j < mosi_count; j++) {
-                if ((mcu_spi_mosi_list[j].pin != mosi) //only SCK and MOSI need the same index
+                if ((mcu_spi_mosi_list[j].pin != mosi) // only SCK and MOSI need the same index
                     || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)) {
                     continue;
                 }
@@ -151,7 +153,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 break;
             }
         } else {
-            //throw an error immediately
+            // throw an error immediately
             mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
         }
     }
@@ -185,6 +187,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     LPSPI_Enable(self->spi, false);
     uint32_t tcrPrescaleValue;
     self->baudrate = LPSPI_MasterSetBaudRate(self->spi, config.baudRate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    self->spi->TCR = (self->spi->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE(tcrPrescaleValue);
     LPSPI_Enable(self->spi, true);
 
     claim_pin(self->clock->pin);
@@ -229,16 +232,16 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
 
-    LPSPI_Enable(self->spi, false);
-    uint32_t tcrPrescaleValue;
-    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
-    LPSPI_Enable(self->spi, true);
+    if (baudrate > 30000000) {
+        baudrate = 30000000; // "Absolute maximum frequency of operation (fop) is 30 MHz" -- IMXRT1010CEC.pdf
+    }
 
     if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
         (phase == common_hal_busio_spi_get_phase(self)) &&
-        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1) {
+        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1 &&
+        (baudrate == common_hal_busio_spi_get_frequency(self))) {
         return true;
     }
 
@@ -249,9 +252,21 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     config.cpol = polarity;
     config.cpha = phase;
     config.bitsPerFrame = bits;
+    // The between-transfer-delay must be equal to the SCK low-time.
+    // Setting it lower introduces runt pulses, while setting it higher
+    // wastes time.
+    config.betweenTransferDelayInNanoSec = (1000000000 / config.baudRate) / 2;
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
+
+    // Recompute the actual baudrate so that we can set the baudrate
+    // (frequency) property.  We don't need to set TCR because it was
+    // established by LPSPI_MasterInit, above
+    uint32_t tcrPrescaleValue;
+    LPSPI_Enable(self->spi, false);
+    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    LPSPI_Enable(self->spi, true);
 
     return true;
 }
@@ -275,8 +290,23 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
     self->has_lock = false;
 }
 
+static status_t transfer_common(busio_spi_obj_t *self, lpspi_transfer_t *xfer) {
+    xfer->configFlags = kLPSPI_MasterPcsContinuous;
+
+    status_t status;
+    int retries = MAX_SPI_BUSY_RETRIES;
+    do {
+        status = LPSPI_MasterTransferBlocking(self->spi, xfer);
+    } while (status == kStatus_LPSPI_Busy && --retries > 0);
+
+    if (status != kStatus_Success) {
+        printf("%s: status %ld\r\n", __func__, status);
+    }
+    return status;
+}
+
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
-        const uint8_t *data, size_t len) {
+    const uint8_t *data, size_t len) {
     if (len == 0) {
         return true;
     }
@@ -285,19 +315,16 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     }
 
     lpspi_transfer_t xfer = { 0 };
-    xfer.txData = (uint8_t*)data;
+    xfer.txData = (uint8_t *)data;
     xfer.dataSize = len;
-    xfer.configFlags = kLPSPI_MasterPcs0;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    if (status != kStatus_Success)
-        printf("%s: status %ld\r\n", __func__, status);
+    status_t status = transfer_common(self, &xfer);
 
-    return (status == kStatus_Success);
+    return status == kStatus_Success;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
-        uint8_t *data, size_t len, uint8_t write_value) {
+    uint8_t *data, size_t len, uint8_t write_value) {
     if (len == 0) {
         return true;
     }
@@ -311,11 +338,9 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     xfer.rxData = data;
     xfer.dataSize = len;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    if (status != kStatus_Success)
-        printf("%s: status %ld\r\n", __func__, status);
+    status_t status = transfer_common(self, &xfer);
 
-    return (status == kStatus_Success);
+    return status == kStatus_Success;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
@@ -333,21 +358,19 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     xfer.rxData = data_in;
     xfer.dataSize = len;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
-    if (status != kStatus_Success)
-        printf("%s: status %ld\r\n", __func__, status);
+    status_t status = transfer_common(self, &xfer);
 
-    return (status == kStatus_Success);
+    return status == kStatus_Success;
 }
 
-uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     return self->baudrate;
 }
 
-uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
-    return ((self->spi->TCR & LPSPI_TCR_CPHA_MASK) == LPSPI_TCR_CPHA_MASK);
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t *self) {
+    return (self->spi->TCR & LPSPI_TCR_CPHA_MASK) == LPSPI_TCR_CPHA_MASK;
 }
 
-uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
-    return ((self->spi->TCR & LPSPI_TCR_CPOL_MASK) == LPSPI_TCR_CPOL_MASK);
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self) {
+    return (self->spi->TCR & LPSPI_TCR_CPOL_MASK) == LPSPI_TCR_CPOL_MASK;
 }

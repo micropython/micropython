@@ -53,7 +53,7 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
 
-    common_hal_usb_hid_device_send_report(self, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    common_hal_usb_hid_device_send_report(self, ((uint8_t *)bufinfo.buf), bufinfo.len);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
@@ -104,7 +104,7 @@ STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
-                          usb_hid_device_obj_get_usage);
+    usb_hid_device_obj_get_usage);
 
 const mp_obj_property_t usb_hid_device_usage_obj = {
     .base.type = &mp_type_property,

@@ -58,6 +58,10 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
 
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
+#ifdef SAM_D5X_E5X
+    sercom->I2CS.CTRLC.bit.SDASETUP = 0x08;
+#endif
+
     sercom->I2CS.CTRLA.bit.SWRST = 1;
     while (sercom->I2CS.CTRLA.bit.SWRST || sercom->I2CS.SYNCBUSY.bit.SWRST) {}
 

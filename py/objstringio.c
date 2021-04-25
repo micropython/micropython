@@ -116,7 +116,7 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     switch (request) {
         case MP_STREAM_SEEK: {
-            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             mp_uint_t ref = 0;
             switch (s->whence) {
                 case MP_SEEK_CUR:
@@ -168,7 +168,7 @@ STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
     mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
     check_stringio_is_open(self);
     // TODO: Try to avoid copying string
-    return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte*)self->vstr->buf, self->vstr->len);
+    return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte *)self->vstr->buf, self->vstr->len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
@@ -196,22 +196,18 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, c
     mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {
-        if (MP_OBJ_IS_INT(args[0])) {
-            sz = mp_obj_get_int(args[0]);
-        } else {
-            mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
-            if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
-                o->vstr = m_new_obj(vstr_t);
-                vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
-                o->vstr->len = bufinfo.len;
-                o->ref_obj = args[0];
-                return MP_OBJ_FROM_PTR(o);
-            }
-
-            sz = bufinfo.len;
-            initdata = true;
+        if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
+            o->vstr = m_new_obj(vstr_t);
+            vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
+            o->vstr->len = bufinfo.len;
+            o->ref_obj = args[0];
+            return MP_OBJ_FROM_PTR(o);
         }
+
+        sz = bufinfo.len;
+        initdata = true;
     }
 
     o->vstr = vstr_new(sz);
@@ -262,7 +258,7 @@ const mp_obj_type_t mp_type_stringio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stringio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
 };
 
 #if MICROPY_PY_IO_BYTESIO
@@ -274,7 +270,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &bytesio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
 };
 #endif
 

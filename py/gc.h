@@ -37,9 +37,9 @@
 
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
+    ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
     )
 
 void gc_init(void *start, void *end);
@@ -60,11 +60,15 @@ void gc_collect_end(void);
 
 // Is the gc heap available?
 bool gc_alloc_possible(void);
-void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived);
 
 // Use this function to sweep the whole heap and run all finalisers
 void gc_sweep_all(void);
 
+enum {
+    GC_ALLOC_FLAG_HAS_FINALISER = 1,
+};
+
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived);
 void gc_free(void *ptr); // does not call finaliser
 size_t gc_nbytes(const void *ptr);
 bool gc_has_finaliser(const void *ptr);

@@ -25,15 +25,18 @@
  */
 #ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
 #define MICROPY_INCLUDED_PY_RUNTIME0_H
-
 #include "mpconfig.h"
 
-// These must fit in 8 bits; see scope.h
+// The first four must fit in 8 bits, see emitbc.c
+// The remaining must fit in 16 bits, see scope.h
 #define MP_SCOPE_FLAG_VARARGS      (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_GENERATOR    (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
 #define MP_SCOPE_FLAG_ASYNC        (0x10)
+#define MP_SCOPE_FLAG_REFGLOBALS   (0x20) // used only if native emitter enabled
+#define MP_SCOPE_FLAG_HASCONSTS    (0x40) // used only if native emitter enabled
+#define MP_SCOPE_FLAG_VIPERRET_POS    (7) // 3 bits used for viper return type
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)
@@ -60,6 +63,7 @@ typedef enum {
     MP_UNARY_OP_LEN, // __len__
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
+    MP_UNARY_OP_INT, // __int__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 
     MP_UNARY_OP_NUM_RUNTIME,
@@ -112,7 +116,7 @@ typedef enum {
     MP_BINARY_OP_NUM_BYTECODE,
 
     // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
-#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    #if MICROPY_PY_REVERSE_SPECIAL_METHODS
     MP_BINARY_OP_REVERSE_OR = MP_BINARY_OP_NUM_BYTECODE,
     MP_BINARY_OP_REVERSE_XOR,
     MP_BINARY_OP_REVERSE_AND,
@@ -125,13 +129,13 @@ typedef enum {
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
     MP_BINARY_OP_REVERSE_POWER,
-#endif
+    #endif
 
     // This is not emitted by the compiler but is supported by the runtime
     MP_BINARY_OP_DIVMOD
-        #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
+    #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
         = MP_BINARY_OP_NUM_BYTECODE
-        #endif
+    #endif
     ,
 
     // The runtime will convert MP_BINARY_OP_IN to this operator with swapped args.
@@ -146,8 +150,12 @@ typedef enum {
 } mp_binary_op_t;
 
 typedef enum {
-    MP_F_CONVERT_OBJ_TO_NATIVE = 0,
+    MP_F_CONST_NONE_OBJ = 0,
+    MP_F_CONST_FALSE_OBJ,
+    MP_F_CONST_TRUE_OBJ,
+    MP_F_CONVERT_OBJ_TO_NATIVE,
     MP_F_CONVERT_NATIVE_TO_OBJ,
+    MP_F_NATIVE_SWAP_GLOBALS,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
     MP_F_LOAD_BUILD_CLASS,
@@ -166,10 +174,10 @@ typedef enum {
     MP_F_LIST_APPEND,
     MP_F_BUILD_MAP,
     MP_F_STORE_MAP,
-#if MICROPY_PY_BUILTINS_SET
+    #if MICROPY_PY_BUILTINS_SET
     MP_F_STORE_SET,
     MP_F_BUILD_SET,
-#endif
+    #endif
     MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
@@ -182,21 +190,23 @@ typedef enum {
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,
-#if MICROPY_PY_BUILTINS_SLICE
+    #if MICROPY_PY_BUILTINS_SLICE
     MP_F_NEW_SLICE,
-#endif
+    #endif
     MP_F_UNPACK_SEQUENCE,
     MP_F_UNPACK_EX,
     MP_F_DELETE_NAME,
     MP_F_DELETE_GLOBAL,
     MP_F_NEW_CELL,
     MP_F_MAKE_CLOSURE_FROM_RAW_CODE,
+    MP_F_ARG_CHECK_NUM_SIG,
     MP_F_SETUP_CODE_STATE,
     MP_F_SMALL_INT_FLOOR_DIVIDE,
     MP_F_SMALL_INT_MODULO,
+    MP_F_NATIVE_YIELD_FROM,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 
-extern void *const mp_fun_table[MP_F_NUMBER_OF];
+extern const void *const mp_fun_table[MP_F_NUMBER_OF];
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME0_H

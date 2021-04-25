@@ -35,18 +35,18 @@
 #if MICROPY_PY_BUILTINS_HELP
 
 const char mp_help_default_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online docs please visit http://docs.micropython.org/\n"
-"\n"
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-C        -- interrupt a running program\n"
-"  CTRL-D        -- on a blank line, exit or do a soft reset\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
+    "Control commands:\n"
+    "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
+    "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
+    "  CTRL-C        -- interrupt a running program\n"
+    "  CTRL-D        -- on a blank line, exit or do a soft reset\n"
+    "  CTRL-E        -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
 ;
 
 STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
@@ -105,7 +105,7 @@ STATIC void mp_help_print_modules(void) {
     #endif
 
     // sort the list so it's printed in alphabetical order
-    mp_obj_list_sort(1, &list, (mp_map_t*)&mp_const_empty_map);
+    mp_obj_list_sort(1, &list, (mp_map_t *)&mp_const_empty_map);
 
     // print the list of modules in a column-first order
     #define NUM_COLUMNS (4)
@@ -134,7 +134,7 @@ STATIC void mp_help_print_modules(void) {
     }
 
     // let the user know there may be other modules available from the filesystem
-    const compressed_string_t* compressed = translate("Plus any modules on the filesystem\n");
+    const compressed_string_t *compressed = translate("Plus any modules on the filesystem\n");
     char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     mp_print_str(MP_PYTHON_PRINTER, decompressed);
@@ -152,7 +152,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
-    const compressed_string_t* compressed = translate("object ");
+    const compressed_string_t *compressed = translate("object ");
     char decompressed_object[decompress_length(compressed)];
     decompress(compressed, decompressed_object);
 
@@ -167,13 +167,13 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
-        map = mp_obj_dict_get_map(mp_obj_module_get_globals(obj));
+        map = &mp_obj_module_get_globals(obj)->map;
     } else {
         if (type == &mp_type_type) {
             type = MP_OBJ_TO_PTR(obj);
         }
-        if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
+        if (type->locals_dict != NULL) {
+            map = &type->locals_dict->map;
         }
     }
     if (map != NULL) {
@@ -188,7 +188,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message. Translate only works on single strings on one line.
-        const compressed_string_t* compressed =
+        const compressed_string_t *compressed =
             translate("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n");
         char decompressed[decompress_length(compressed)];
         decompress(compressed, decompressed);

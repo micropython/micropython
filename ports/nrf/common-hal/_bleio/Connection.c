@@ -63,8 +63,8 @@ static const ble_gap_sec_params_t pairing_sec_params = {
     .io_caps = BLE_GAP_IO_CAPS_NONE,
     .min_key_size = 7,
     .max_key_size = 16,
-    .kdist_own    = { .enc = 1, .id = 1},
-    .kdist_peer   = { .enc = 1, .id = 1},
+    .kdist_own = { .enc = 1, .id = 1},
+    .kdist_peer = { .enc = 1, .id = 1},
 };
 
 #define CONNECTION_DEBUG (1)
@@ -81,7 +81,7 @@ static bleio_service_obj_t *m_char_discovery_service;
 static bleio_characteristic_obj_t *m_desc_discovery_characteristic;
 
 bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
-    bleio_connection_internal_t *self = (bleio_connection_internal_t*)self_in;
+    bleio_connection_internal_t *self = (bleio_connection_internal_t *)self_in;
 
     if (BLE_GAP_EVT_BASE <= ble_evt->header.evt_id && ble_evt->header.evt_id <= BLE_GAP_EVT_LAST &&
         ble_evt->evt.gap_evt.conn_handle != self->conn_handle) {
@@ -121,7 +121,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
             ble_gatts_evt_exchange_mtu_request_t *request =
-                    &ble_evt->evt.gatts_evt.params.exchange_mtu_request;
+                &ble_evt->evt.gatts_evt.params.exchange_mtu_request;
 
             uint16_t new_mtu = BLE_GATTS_VAR_ATTR_LEN_MAX;
             if (request->client_rx_mtu < new_mtu) {
@@ -142,7 +142,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GATTC_EVT_EXCHANGE_MTU_RSP: {
             ble_gattc_evt_exchange_mtu_rsp_t *response =
-                    &ble_evt->evt.gattc_evt.params.exchange_mtu_rsp;
+                &ble_evt->evt.gattc_evt.params.exchange_mtu_rsp;
 
             self->mtu = response->server_rx_mtu;
             break;
@@ -169,12 +169,12 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
             break;
 
-        #if CIRCUITPY_VERBOSE_BLE
+            #if CIRCUITPY_VERBOSE_BLE
         // Use read authorization to snoop on all reads when doing verbose debugging.
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST: {
 
             ble_gatts_evt_rw_authorize_request_t *request =
-                    &ble_evt->evt.gatts_evt.params.authorize_request;
+                &ble_evt->evt.gatts_evt.params.authorize_request;
 
             mp_printf(&mp_plat_print, "Read %x offset %d ", request->request.read.handle, request->request.read.offset);
             uint8_t value_bytes[22];
@@ -200,20 +200,20 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             sd_ble_gatts_rw_authorize_reply(self->conn_handle, &reply);
             break;
         }
-        #endif
+            #endif
 
         case BLE_GATTS_EVT_HVN_TX_COMPLETE: // Capture this for now. 0x55
             break;
         case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
             self->conn_params_updating = true;
             ble_gap_evt_conn_param_update_request_t *request =
-                    &ble_evt->evt.gap_evt.params.conn_param_update_request;
+                &ble_evt->evt.gap_evt.params.conn_param_update_request;
             sd_ble_gap_conn_param_update(self->conn_handle, &request->conn_params);
             break;
         }
         case BLE_GAP_EVT_CONN_PARAM_UPDATE: { // 0x12
             ble_gap_evt_conn_param_update_t *result =
-                    &ble_evt->evt.gap_evt.params.conn_param_update;
+                &ble_evt->evt.gap_evt.params.conn_param_update;
 
             #if CIRCUITPY_VERBOSE_BLE
             ble_gap_conn_params_t *cp = &ble_evt->evt.gap_evt.params.conn_param_update.conn_params;
@@ -236,23 +236,23 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             self->ediv = EDIV_INVALID;
             ble_gap_sec_keyset_t keyset = {
                 .keys_own = {
-                    .p_enc_key  = &self->bonding_keys.own_enc,
-                    .p_id_key   = NULL,
+                    .p_enc_key = &self->bonding_keys.own_enc,
+                    .p_id_key = NULL,
                     .p_sign_key = NULL,
-                    .p_pk       = NULL
+                    .p_pk = NULL
                 },
 
                 .keys_peer = {
-                    .p_enc_key  = &self->bonding_keys.peer_enc,
-                    .p_id_key   = &self->bonding_keys.peer_id,
+                    .p_enc_key = &self->bonding_keys.peer_enc,
+                    .p_id_key = &self->bonding_keys.peer_id,
                     .p_sign_key = NULL,
-                    .p_pk       = NULL
+                    .p_pk = NULL
                 }
             };
 
             sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS,
-                                        self->is_central ? NULL : &pairing_sec_params,
-                                        &keyset);
+                self->is_central ? NULL : &pairing_sec_params,
+                &keyset);
             break;
         }
 
@@ -263,7 +263,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
             // Key exchange completed.
-            ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
+            ble_gap_evt_auth_status_t *status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
                 self->ediv = self->bonding_keys.own_enc.master_id.ediv;
@@ -281,9 +281,9 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // Peer asks for the stored keys.
             // - load key and return if bonded previously.
             // - Else return NULL --> Initiate key exchange
-            ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
-            (void) sec_info_request;
-            if ( bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys) ) {
+            ble_gap_evt_sec_info_request_t *sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
+            (void)sec_info_request;
+            if (bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys)) {
                 sd_ble_gap_sec_info_reply(
                     self->conn_handle,
                     &self->bonding_keys.own_enc.enc_info,
@@ -299,7 +299,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
             // We get this both on first-time pairing and on subsequent pairings using stored keys.
-            ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+            ble_gap_conn_sec_t *conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
                 // Security setup did not succeed:
                 // mode 0, level 0 means no access
@@ -325,8 +325,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 }
 
 void bleio_connection_clear(bleio_connection_internal_t *self) {
-    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->remote_service_list));
-
+    self->remote_service_list = NULL;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
     self->is_central = false;
@@ -391,7 +390,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 }
 
 // service_uuid may be NULL, to discover all services.
-STATIC bool discover_next_services(bleio_connection_internal_t* connection, uint16_t start_handle, ble_uuid_t *service_uuid) {
+STATIC bool discover_next_services(bleio_connection_internal_t *connection, uint16_t start_handle, ble_uuid_t *service_uuid) {
     m_discovery_successful = false;
     m_discovery_in_process = true;
 
@@ -408,7 +407,7 @@ STATIC bool discover_next_services(bleio_connection_internal_t* connection, uint
     return m_discovery_successful;
 }
 
-STATIC bool discover_next_characteristics(bleio_connection_internal_t* connection, bleio_service_obj_t *service, uint16_t start_handle) {
+STATIC bool discover_next_characteristics(bleio_connection_internal_t *connection, bleio_service_obj_t *service, uint16_t start_handle) {
     m_char_discovery_service = service;
 
     ble_gattc_handle_range_t handle_range;
@@ -430,7 +429,7 @@ STATIC bool discover_next_characteristics(bleio_connection_internal_t* connectio
     return m_discovery_successful;
 }
 
-STATIC bool discover_next_descriptors(bleio_connection_internal_t* connection, bleio_characteristic_obj_t *characteristic, uint16_t start_handle, uint16_t end_handle) {
+STATIC bool discover_next_descriptors(bleio_connection_internal_t *connection, bleio_characteristic_obj_t *characteristic, uint16_t start_handle, uint16_t end_handle) {
     m_desc_discovery_characteristic = characteristic;
 
     ble_gattc_handle_range_t handle_range;
@@ -452,7 +451,7 @@ STATIC bool discover_next_descriptors(bleio_connection_internal_t* connection, b
     return m_discovery_successful;
 }
 
-STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t* connection) {
+STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_service_t *gattc_service = &response->services[i];
 
@@ -481,7 +480,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
         }
 
         mp_obj_list_append(MP_OBJ_FROM_PTR(connection->remote_service_list),
-                           MP_OBJ_FROM_PTR(service));
+            MP_OBJ_FROM_PTR(service));
     }
 
     if (response->count > 0) {
@@ -490,7 +489,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
     m_discovery_in_process = false;
 }
 
-STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio_connection_internal_t* connection) {
+STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_char_t *gattc_char = &response->chars[i];
 
@@ -526,7 +525,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
             mp_const_empty_bytes);
 
         mp_obj_list_append(MP_OBJ_FROM_PTR(m_char_discovery_service->characteristic_list),
-                           MP_OBJ_FROM_PTR(characteristic));
+            MP_OBJ_FROM_PTR(characteristic));
     }
 
     if (response->count > 0) {
@@ -535,7 +534,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
     m_discovery_in_process = false;
 }
 
-STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio_connection_internal_t* connection) {
+STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio_connection_internal_t *connection) {
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_desc_t *gattc_desc = &response->descs[i];
 
@@ -583,7 +582,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
         descriptor->handle = gattc_desc->handle;
 
         mp_obj_list_append(MP_OBJ_FROM_PTR(m_desc_discovery_characteristic->descriptor_list),
-                           MP_OBJ_FROM_PTR(descriptor));
+            MP_OBJ_FROM_PTR(descriptor));
     }
 
     if (response->count > 0) {
@@ -593,7 +592,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
 }
 
 STATIC bool discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t payload) {
-    bleio_connection_internal_t* connection = MP_OBJ_TO_PTR(payload);
+    bleio_connection_internal_t *connection = MP_OBJ_TO_PTR(payload);
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_DISCONNECTED:
             m_discovery_successful = false;
@@ -714,7 +713,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
             while (next_desc_start_handle <= service->end_handle &&
                    next_desc_start_handle <= next_desc_end_handle &&
                    discover_next_descriptors(self, characteristic,
-                                             next_desc_start_handle, next_desc_end_handle)) {
+                       next_desc_start_handle, next_desc_end_handle)) {
                 // Get the most recently discovered descriptor, and then ask for descriptors
                 // whose handles start after that descriptor's handle.
                 // There must be at least one if discover_next_descriptors() returned true.
@@ -735,7 +734,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_conne
     // Convert to a tuple and then clear the list so the callee will take ownership.
     mp_obj_tuple_t *services_tuple =
         mp_obj_new_tuple(self->connection->remote_service_list->len,
-                         self->connection->remote_service_list->items);
+            self->connection->remote_service_list->items);
     mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
 
     return services_tuple;
@@ -748,7 +747,7 @@ uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self) {
     return self->connection->conn_handle;
 }
 
-mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* internal) {
+mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *internal) {
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }

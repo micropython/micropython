@@ -60,6 +60,7 @@
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
+#include "supervisor/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -67,6 +68,19 @@
 
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
+#endif
+
+#if CIRCUITPY_CANIO
+#include "common-hal/canio/CAN.h"
 #endif
 
 #if CIRCUITPY_DISPLAYIO
@@ -81,17 +95,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_BOARD
-#include "shared-module/board/__init__.h"
-#endif
-
-#if CIRCUITPY_BLEIO
-#include "shared-bindings/_bleio/__init__.h"
-#include "supervisor/shared/bluetooth.h"
-#endif
-
-#if CIRCUITPY_CANIO
-#include "common-hal/canio/CAN.h"
+#if CIRCUITPY_USB_CDC
+#include "shared-module/usb_cdc/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -157,7 +162,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    alarm_save_wake_alarm();
+    shared_alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif
@@ -184,6 +189,10 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
+
+    #if CIRCUITPY_USB
+    usb_background();
+    #endif
 
     gc_deinit();
 }
@@ -300,8 +309,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        // TODO: on deep sleep, make sure display is refreshed before sleeping (for e-ink).
-
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -324,12 +331,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
-    bool asleep = false;
+    bool fake_sleeping = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
         if (reload_requested) {
             #if CIRCUITPY_ALARM
-            if (asleep) {
+            if (fake_sleeping) {
                 board_init();
             }
             #endif
@@ -340,7 +347,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
         if (serial_connected() && serial_bytes_available()) {
             #if CIRCUITPY_ALARM
-            if (asleep) {
+            if (fake_sleeping) {
                 board_init();
             }
             #endif
@@ -356,7 +363,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         // an alarm alerts faster than our USB delay or if we pretended to deep
         // sleep.
         #if CIRCUITPY_ALARM
-        if (asleep && alarm_woken_from_sleep()) {
+        if (fake_sleeping && common_hal_alarm_woken_from_sleep()) {
             serial_write_compressed(translate("Woken up by alarm.\n"));
             board_init();
             supervisor_set_run_reason(RUN_REASON_STARTUP);
@@ -395,20 +402,15 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_DEEP_SLEEP) {
             // Make sure we have been awake long enough for USB to connect (enumeration delay).
             int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-            if (connecting_delay_ticks > 0) {
-                // Set when we've waited long enough so that we wake up from the
-                // port_idle_until_interrupt below and loop around to the real deep
-                // sleep in the else clause.
-                port_interrupt_after_ticks(connecting_delay_ticks);
-            // Deep sleep if we're not connected to a host.
-            } else if (!asleep) {
-                asleep = true;
+            // Until it's safe to decide whether we're real/fake sleeping, just run the RGB
+            if (connecting_delay_ticks < 0 && !fake_sleeping) {
+                fake_sleeping = true;
                 new_status_color(BLACK);
                 board_deinit();
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
-                    alarm_enter_deep_sleep();
+                    common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
                     serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
@@ -417,7 +419,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        if (!asleep) {
+        if (!fake_sleeping) {
             tick_rgb_status_animation(&animation);
         } else {
             // This waits until a pretend deep sleep alarm occurs. They are set
@@ -425,7 +427,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
-            port_idle_until_interrupt();
+            #if CIRCUITPY_ALARM
+                common_hal_alarm_pretending_deep_sleep();
+            #else
+                port_idle_until_interrupt();
+            #endif
         }
     }
 }

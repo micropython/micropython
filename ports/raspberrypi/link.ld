@@ -23,7 +23,7 @@
 
 MEMORY
 {
-    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1024k
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1020k
     RAM (rwx) : ORIGIN =  0x20000000, LENGTH = 256k
     SCRATCH_X (rwx) : ORIGIN = 0x20040000, LENGTH = 4k
     SCRATCH_Y (rwx) : ORIGIN = 0x20041000, LENGTH = 4k
@@ -59,12 +59,11 @@ SECTIONS
     */
 
     .text : {
-        __reset_start = .;
-        KEEP (*(.reset))
-        . = ALIGN(256);
-        __reset_end = .;
-        ASSERT(__reset_end - __reset_start == 256, "ERROR: reset section should only be 256 bytes");
+        __logical_binary_start = .;
         KEEP (*(.vectors))
+        KEEP (*(.binary_info_header))
+        __binary_info_header_end = .;
+        KEEP (*(.reset))
         /* TODO revisit this now memset/memcpy/float in ROM */
         /* bit of a hack right now to exclude all floating point and time critical (e.g. memset, memcpy) code from
          * FLASH ... we will include any thing excluded here in .data below by default */
@@ -175,6 +174,40 @@ SECTIONS
         __data_end__ = .;
     } > RAM AT> FLASH_FIRMWARE
 
+    .itcm :
+    {
+        . = ALIGN(4);
+        *(.itcm.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_itcm_destination = ADDR(.itcm);
+    _ld_itcm_flash_copy = LOADADDR(.itcm);
+    _ld_itcm_size = SIZEOF(.itcm);
+
+    .dtcm_data :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_data.*)
+
+        . = ALIGN(4);
+    } > RAM AT> FLASH_FIRMWARE
+    _ld_dtcm_data_destination = ADDR(.dtcm_data);
+    _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
+    _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    .dtcm_bss :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_bss.*)
+
+        . = ALIGN(4);
+    } > RAM AT> RAM
+    _ld_dtcm_bss_start = ADDR(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
+
     .uninitialized_data (COPY): {
         . = ALIGN(4);
         *(.uninitialized_data*)
@@ -246,5 +279,7 @@ SECTIONS
 
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed")
+
+    ASSERT( __binary_info_header_end - __logical_binary_start <= 256, "Binary info must be in first 256 bytes of the binary")
     /* todo assert on extra code */
 }

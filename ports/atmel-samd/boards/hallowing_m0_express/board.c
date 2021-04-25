@@ -55,13 +55,13 @@ uint8_t display_init_sequence[] = {
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
     0xe0, 16, 0x02, 0x1c, 0x07, 0x12, // _GMCTRP1 Gamma
-              0x37, 0x32, 0x29, 0x2d,
-              0x29, 0x25, 0x2B, 0x39,
-              0x00, 0x01, 0x03, 0x10,
+    0x37, 0x32, 0x29, 0x2d,
+    0x29, 0x25, 0x2B, 0x39,
+    0x00, 0x01, 0x03, 0x10,
     0xe1, 16, 0x03, 0x1d, 0x07, 0x06, // _GMCTRN1
-              0x2E, 0x2C, 0x29, 0x2D,
-              0x2E, 0x2E, 0x37, 0x3F,
-              0x00, 0x00, 0x02, 0x10,
+    0x2E, 0x2C, 0x29, 0x2D,
+    0x2E, 0x2E, 0x37, 0x3F,
+    0x00, 0x00, 0x02, 0x10,
     0x2a, 3, 0x02, 0x00, 0x81, // _CASET XSTART = 2, XEND = 129
     0x2b, 3, 0x02, 0x00, 0x81, // _RASET XSTART = 2, XEND = 129
     0x13, 0 | DELAY, 10, // _NORON
@@ -69,7 +69,7 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     busio_spi_obj_t *spi = common_hal_board_create_spi();
     common_hal_displayio_fourwire_construct(bus,
@@ -81,7 +81,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

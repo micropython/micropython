@@ -50,13 +50,13 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t* buffer, mp_uint_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
     uint32_t i = 0;
 
     while (i < length) {

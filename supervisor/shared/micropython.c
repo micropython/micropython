@@ -44,7 +44,7 @@
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP
         #endif
         mp_handle_pending();
         if (serial_bytes_available()) {

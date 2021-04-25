@@ -31,11 +31,11 @@
 
 // Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pwmio_pwmout_obj_t* carrier,
-                                            const mcu_pin_obj_t* pin,
-                                            uint32_t frequency,
-                                            uint16_t duty_cycle) {
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
+    const pwmio_pwmout_obj_t *carrier,
+    const mcu_pin_obj_t *pin,
+    uint32_t frequency,
+    uint16_t duty_cycle) {
     if (carrier || !pin || !frequency) {
         mp_raise_NotImplementedError(translate("Port does not accept PWM carrier. Pass a pin, frequency and duty cycle instead"));
     }
@@ -48,7 +48,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     // Configure Channel
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin->number, channel);
     config.tx_config.carrier_en = true;
-    config.tx_config.carrier_duty_percent = (duty_cycle * 100) / (1<<16);
+    config.tx_config.carrier_duty_percent = (duty_cycle * 100) / (1 << 16);
     config.tx_config.carrier_freq_hz = frequency;
     config.clk_div = 80;
 
@@ -58,17 +58,17 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     self->channel = channel;
 }
 
-bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
-    return (self->channel == RMT_CHANNEL_MAX);
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
+    return self->channel == RMT_CHANNEL_MAX;
 }
 
-void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     esp32s2_peripherals_free_rmt(self->channel);
     self->channel = RMT_CHANNEL_MAX;
 
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
     rmt_item32_t items[length];
 
     // Circuitpython allows 16 bit pulse values, while ESP32 only allows 15 bits

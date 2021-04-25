@@ -139,6 +139,12 @@ endif
 ifeq ($(CIRCUITPY_BITBANG_APA102),1)
 SRC_PATTERNS += bitbangio/SPI%
 endif
+ifeq ($(CIRCUITPY_BITMAPTOOLS),1)
+SRC_PATTERNS += bitmaptools/%
+endif
+ifeq ($(CIRCUITPY_BITOPS),1)
+SRC_PATTERNS += bitops/%
+endif
 ifeq ($(CIRCUITPY_BLEIO),1)
 SRC_PATTERNS += _bleio/%
 endif
@@ -274,6 +280,9 @@ endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
 endif
+ifeq ($(CIRCUITPY_SYNTHIO),1)
+SRC_PATTERNS += synthio/%
+endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
@@ -286,11 +295,17 @@ endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
 endif
+ifeq ($(CIRCUITPY_USB_CDC),1)
+SRC_PATTERNS += usb_cdc/%
+endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
+endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+SRC_PATTERNS += usb_vendor/%
 endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
@@ -303,6 +318,9 @@ SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
+endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
 endif
 ifeq ($(CIRCUITPY_MSGPACK),1)
 SRC_PATTERNS += msgpack/%
@@ -352,8 +370,11 @@ SRC_COMMON_HAL_ALL = \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
+	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
+	imagecapture/ParallelImageCapture.c \
+	imagecapture/__init__.c \
 	gnss/__init__.c \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
@@ -367,7 +388,6 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -388,6 +408,7 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/Socket.c \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
+	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
@@ -462,6 +483,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
+	bitmaptools/__init__.c \
+	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/I2CDevice.c \
@@ -503,11 +526,14 @@ SRC_SHARED_MODULE_ALL = \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	rotaryio/IncrementalEncoder.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \
 	sharpdisplay/__init__.c \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	synthio/MidiTrack.c \
+	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \

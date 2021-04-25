@@ -44,7 +44,7 @@
 //|     When we're the server, we ignore all connections besides the first to subscribe to
 //|     notifications."""
 //|
-//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int) -> None:
+//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int, max_packet_size: Optional[int] = None) -> None:
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
 //|
@@ -55,14 +55,17 @@
 //|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
 //|           in a remote Service that a Central has connected to.
 //|         :param int buffer_size: Size of ring buffer (in packets of the Characteristic's maximum
-//|           length) that stores incoming packets coming from the peer."""
+//|           length) that stores incoming packets coming from the peer.
+//|         :param int max_packet_size: Maximum size of packets. Overrides value from the characteristic.
+//|           (Remote characteristics may not have the correct length.)"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_characteristic, ARG_buffer_size };
+    enum { ARG_characteristic, ARG_buffer_size, ARG_max_packet_size };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_characteristic,  MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_max_packet_size, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -79,10 +82,15 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
+    size_t max_packet_size = common_hal_bleio_characteristic_get_max_length(characteristic);
+    if (args[ARG_max_packet_size].u_obj != mp_const_none) {
+        max_packet_size = mp_obj_get_int(args[ARG_max_packet_size].u_obj);
+    }
+
     bleio_packet_buffer_obj_t *self = m_new_obj(bleio_packet_buffer_obj_t);
     self->base.type = &bleio_packet_buffer_type;
 
-    common_hal_bleio_packet_buffer_construct(self, MP_OBJ_TO_PTR(characteristic), buffer_size);
+    common_hal_bleio_packet_buffer_construct(self, MP_OBJ_TO_PTR(characteristic), buffer_size, max_packet_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -95,7 +103,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 
 //|     def readinto(self, buf: WriteableBuffer) -> int:
 //|         """Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
-//|         than the given buffer. Use `packet_size` to read the maximum length of a single packet.
+//|         than the given buffer. Use `incoming_packet_length` to read the maximum length of a single packet.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int"""
@@ -133,7 +141,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
     enum { ARG_data, ARG_header };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data,  MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_header, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_header, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -147,7 +155,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
 
     mp_buffer_info_t header_bufinfo;
     header_bufinfo.len = 0;
-    if (args[ARG_header].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_header].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_header].u_obj, &header_bufinfo, MP_BUFFER_READ);
     }
 
@@ -179,11 +187,6 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|     packet_size: int
-//|     """`packet_size` is the same as `incoming_packet_length`.
-//|     The name `packet_size` is deprecated and
-//|     will be removed in CircuitPython 6.0.0."""
-//|
 //|     incoming_packet_length: int
 //|     """Maximum length in bytes of a packet we are reading."""
 //|
@@ -233,9 +236,6 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),               MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),                  MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
-    // .packet_size is now an alias for .incoming_packet_length
-    // TODO: Remove in 6.0.0.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size),            MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_incoming_packet_length), MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_outgoing_packet_length), MP_ROM_PTR(&bleio_packet_buffer_outgoing_packet_length_obj) },
 };
@@ -247,5 +247,5 @@ const mp_obj_type_t bleio_packet_buffer_type = {
     { &mp_type_type },
     .name = MP_QSTR_PacketBuffer,
     .make_new = bleio_packet_buffer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&bleio_packet_buffer_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_packet_buffer_locals_dict
 };

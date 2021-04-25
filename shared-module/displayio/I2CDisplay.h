@@ -32,7 +32,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    busio_i2c_obj_t* bus;
+    busio_i2c_obj_t *bus;
     busio_i2c_obj_t inline_bus;
     digitalio_digitalinout_obj_t reset;
     uint16_t address;

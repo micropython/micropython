@@ -39,8 +39,8 @@ typedef struct {
     TIM_HandleTypeDef handle;
     TIM_OC_InitTypeDef chan_handle;
     const mcu_tim_pin_obj_t *tim;
-    uint8_t channel: 7;
-    bool variable_frequency: 1;
+    uint8_t channel : 7;
+    bool variable_frequency : 1;
     uint16_t duty_cycle;
     uint32_t frequency;
     uint32_t period;

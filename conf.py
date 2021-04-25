@@ -150,9 +150,11 @@ version = release = final_version
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
                     ".git",
+                    ".github",
                     ".env",
                     ".venv",
                     ".direnv",
+                    "data",
                     "docs/autoapi",
                     "docs/README.md",
                     "drivers",
@@ -178,6 +180,7 @@ exclude_patterns = ["**/build*",
                     "ports/cxd56/spresense-exported-sdk",
                     "ports/esp32s2/certificates",
                     "ports/esp32s2/esp-idf",
+                    "ports/esp32s2/.idf_tools",
                     "ports/esp32s2/peripherals",
                     "ports/litex/hw",
                     "ports/minimal",
@@ -281,7 +284,7 @@ html_static_path = ['docs/static']
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-html_extra_path = ["docs/robots.txt"]
+#html_extra_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -486,6 +489,8 @@ class CoreModuleTransform(SphinxTransform):
 
 def setup(app):
     app.add_css_file("customstyle.css")
+    app.add_css_file("filter.css")
+    app.add_js_file("filter.js")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
     app.add_transform(CoreModuleTransform)

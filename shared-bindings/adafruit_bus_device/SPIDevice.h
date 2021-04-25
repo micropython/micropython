@@ -44,7 +44,7 @@ extern const mp_obj_type_t adafruit_bus_device_spidevice_type;
 // Initializes the hardware peripheral.
 extern void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_device_spidevice_obj_t *self, busio_spi_obj_t *spi,  digitalio_digitalinout_obj_t *cs,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t extra_clocks);
-extern void common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self);
+extern mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self);
 extern void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_SPIDEVICE_H

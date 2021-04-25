@@ -71,7 +71,9 @@ STATIC const uint8_t attr[] = {
 
 unichar utf8_get_char(const byte *s) {
     unichar ord = *s++;
-    if (!UTF8_IS_NONASCII(ord)) return ord;
+    if (!UTF8_IS_NONASCII(ord)) {
+        return ord;
+    }
     ord &= 0x7F;
     for (unichar mask = 0x40; ord & mask; mask >>= 1) {
         ord &= ~mask;
@@ -180,7 +182,7 @@ bool utf8_check(const byte *p, size_t len) {
     for (; p < end; p++) {
         byte c = *p;
         if (need) {
-            if (c >= 0x80) {
+            if (UTF8_IS_CONT(c)) {
                 need--;
             } else {
                 // mismatch

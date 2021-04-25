@@ -25,17 +25,36 @@
  */
 
 #include "shared-bindings/ssl/SSLContext.h"
+#include "shared-bindings/ssl/SSLSocket.h"
+
+#include "bindings/espidf/__init__.h"
 
 #include "py/runtime.h"
 
-void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self) {
+void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
 
 }
 
-socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
-    socketpool_socket_obj_t* socket, bool server_side, const char* server_hostname) {
+ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t *self,
+    socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
 
-    socket->ssl_context = self;
+    if (socket->type != SOCK_STREAM) {
+        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
+    }
+
+    ssl_sslsocket_obj_t *sock = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);
+    sock->base.type = &ssl_sslsocket_type;
+    sock->ssl_context = self;
+    sock->sock = socket;
+
+    esp_tls_t *tls_handle = esp_tls_init();
+    if (tls_handle == NULL) {
+        mp_raise_espidf_MemoryError();
+    }
+    sock->tls = tls_handle;
+
+    // TODO: do something with the original socket? Don't call a close on the internal LWIP.
+
     // Should we store server hostname on the socket in case connect is called with an ip?
-    return socket;
+    return sock;
 }

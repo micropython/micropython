@@ -11,14 +11,7 @@ LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
 
 SUPEROPT_GC = 0
-
-CFLAGS_BOARD = --param max-inline-insns-auto=15
-ifeq ($(TRANSLATION), zh_Latn_pinyin)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 35
-endif
-ifeq ($(TRANSLATION), de_DE)
-RELEASE_NEEDS_CLEAN_BUILD = 1
-CFLAGS_INLINE_LIMIT = 35
 SUPEROPT_VM = 0
-endif
+
+# On this particular board, these save about 180 bytes. On other boards, they may -increase- space used.
+CFLAGS_BOARD = -fweb -frename-registers

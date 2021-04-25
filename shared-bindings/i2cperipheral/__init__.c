@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-//#include "shared-bindings/i2cperipheral/__init__.h"
+// #include "shared-bindings/i2cperipheral/__init__.h"
 #include "shared-bindings/i2cperipheral/I2CPeripheral.h"
 
 #include "py/runtime.h"
@@ -102,5 +102,5 @@ STATIC MP_DEFINE_CONST_DICT(i2cperipheral_module_globals, i2cperipheral_module_g
 
 const mp_obj_module_t i2cperipheral_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&i2cperipheral_module_globals,
+    .globals = (mp_obj_dict_t *)&i2cperipheral_module_globals,
 };

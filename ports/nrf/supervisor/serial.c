@@ -28,15 +28,15 @@
 
 #include "supervisor/serial.h"
 
-#if CIRCUITPY_SERIAL_BLE
+#if CIRCUITPY_REPL_BLE
 #include "ble_uart.h"
-#elif CIRCUITPY_SERIAL_UART
+#elif CIRCUITPY_REPL_UART
 #include <string.h>
 #include "nrf_gpio.h"
 #include "nrfx_uarte.h"
 #endif
 
-#if CIRCUITPY_SERIAL_BLE
+#if CIRCUITPY_REPL_BLE
 
 void serial_init(void) {
     ble_uart_init();
@@ -47,7 +47,7 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
-    return (char) ble_uart_rx_chr();
+    return (char)ble_uart_rx_chr();
 }
 
 bool serial_bytes_available(void) {
@@ -58,7 +58,7 @@ void serial_write(const char *text) {
     ble_uart_stdout_tx_str(text);
 }
 
-#elif CIRCUITPY_SERIAL_UART
+#elif CIRCUITPY_REPL_UART
 
 uint8_t serial_received_char;
 nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
@@ -101,7 +101,7 @@ bool serial_bytes_available(void) {
     return nrf_uarte_event_check(serial_instance.p_reg, NRF_UARTE_EVENT_RXDRDY);
 }
 
-void serial_write(const char* text) {
+void serial_write(const char *text) {
     serial_write_substring(text, strlen(text));
 }
 
@@ -111,17 +111,17 @@ void serial_write_substring(const char *text, uint32_t len) {
     }
 
     // EasyDMA can only access SRAM
-    uint8_t * tx_buf = (uint8_t*) text;
-    if ( !nrfx_is_in_ram(text) ) {
-        tx_buf = (uint8_t *) m_malloc(len, false);
+    uint8_t *tx_buf = (uint8_t *)text;
+    if (!nrfx_is_in_ram(text)) {
+        tx_buf = (uint8_t *)m_malloc(len, false);
         memcpy(tx_buf, text, len);
     }
 
     nrfx_uarte_tx(&serial_instance, tx_buf, len);
 
-    if ( !nrfx_is_in_ram(text) ) {
+    if (!nrfx_is_in_ram(text)) {
         m_free(tx_buf);
     }
 }
 
-#endif  // CIRCUITPY_SERIAL_UART
+#endif  // CIRCUITPY_REPL_UART

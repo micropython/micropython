@@ -7,7 +7,7 @@ arg names:
 (N_EXC_STACK 0)
   bc=-1 line=1
 ########
-  bc=\\d\+ line=155
+  bc=\\d\+ line=164
 00 MAKE_FUNCTION \.\+
 \\d\+ STORE_NAME f
 \\d\+ MAKE_FUNCTION \.\+
@@ -40,7 +40,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 (INIT_CELL 16)
   bc=-4 line=1
 ########
-  bc=\\d\+ line=126
+  bc=\\d\+ line=130
 00 LOAD_CONST_NONE
 01 LOAD_CONST_FALSE
 02 BINARY_OP 26 __add__
@@ -326,7 +326,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 (N_EXC_STACK 0)
   bc=-1 line=1
 ########
-  bc=\\d\+ line=132
+  bc=\\d\+ line=137
 00 LOAD_CONST_SMALL_INT 1
 01 DUP_TOP
 02 STORE_FAST 0
@@ -382,7 +382,7 @@ arg names: a
 (N_EXC_STACK 0)
 (INIT_CELL 0)
 ########
-  bc=\\d\+ line=138
+  bc=\\d\+ line=144
 00 LOAD_CONST_SMALL_INT 2
 01 BUILD_TUPLE 1
 03 LOAD_NULL
@@ -399,9 +399,9 @@ arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
   bc=-1 line=1
-  bc=0 line=143
-  bc=3 line=144
-  bc=6 line=145
+  bc=0 line=150
+  bc=3 line=151
+  bc=6 line=152
 00 LOAD_CONST_NONE
 01 YIELD_VALUE
 02 POP_TOP
@@ -423,7 +423,7 @@ arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
   bc=-1 line=1
-  bc=13 line=149
+  bc=13 line=157
 00 LOAD_NAME __name__ (cache=0)
 04 STORE_NAME __module__
 07 LOAD_CONST_STRING 'Class'
@@ -438,7 +438,7 @@ arg names: self
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=-1 line=1
-  bc=0 line=156
+  bc=0 line=165
 00 LOAD_GLOBAL super (cache=0)
 \\d\+ LOAD_GLOBAL __class__ (cache=0)
 \\d\+ LOAD_FAST 0
@@ -518,7 +518,7 @@ arg names: *
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 ########
-  bc=\\d\+ line=113
+  bc=\\d\+ line=117
 00 LOAD_DEREF 0
 02 LOAD_CONST_SMALL_INT 1
 03 BINARY_OP 26 __add__
@@ -537,7 +537,7 @@ arg names: * b
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 ########
-  bc=\\d\+ line=139
+  bc=\\d\+ line=145
 00 LOAD_FAST 1
 01 LOAD_DEREF 0
 03 BINARY_OP 26 __add__

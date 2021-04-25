@@ -75,6 +75,7 @@
 #define MICROPY_MODULE_BUILTIN_INIT      (1)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
 #define MICROPY_PY_ARRAY                 (1)
@@ -147,7 +148,7 @@
 
 #define BYTES_PER_WORD (4)
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // Track stack usage. Expose results via ustack module.
 #define MICROPY_MAX_STACK_USAGE       (0)
@@ -306,6 +307,20 @@ extern const struct _mp_obj_module_t bitbangio_module;
 #define BITBANGIO_MODULE
 #endif
 
+#if CIRCUITPY_BITMAPTOOLS
+#define BITMAPTOOLS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bitmaptools), (mp_obj_t)&bitmaptools_module },
+extern const struct _mp_obj_module_t bitmaptools_module;
+#else
+#define BITMAPTOOLS_MODULE
+#endif
+
+#if CIRCUITPY_BITOPS
+extern const struct _mp_obj_module_t bitops_module;
+#define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
+#else
+#define BITOPS_MODULE
+#endif
+
 #if CIRCUITPY_BLEIO
 #define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
 extern const struct _mp_obj_module_t bleio_module;
@@ -397,6 +412,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
 #if CIRCUITPY_ERRNO
 #define MICROPY_PY_UERRNO (1)
 // Uses about 80 bytes.
@@ -405,7 +427,7 @@ extern const struct _mp_obj_module_t terminalio_module;
 #else
 #define ERRNO_MODULE
 #
-#endif
+ #endif
 
 #if CIRCUITPY_ESPIDF
 extern const struct _mp_obj_module_t espidf_module;
@@ -471,6 +493,13 @@ extern const struct _mp_obj_module_t i2cperipheral_module;
 #define I2CPERIPHERAL_MODULE
 #endif
 
+#if CIRCUITPY_IMAGECAPTURE
+extern const struct _mp_obj_module_t imagecapture_module;
+#define IMAGECAPTURE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_imagecapture), (mp_obj_t)&imagecapture_module },
+#else
+#define IMAGECAPTURE_MODULE
+#endif
+
 #if CIRCUITPY_IPADDRESS
 extern const struct _mp_obj_module_t ipaddress_module;
 #define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
@@ -508,7 +537,7 @@ extern const struct _mp_obj_module_t _eve_module;
 extern const struct _mp_obj_module_t memorymonitor_module;
 #define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
 #define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
-                                    mp_obj_t active_allocationalarms;
+    mp_obj_t active_allocationalarms;
 #else
 #define MEMORYMONITOR_MODULE
 #define MEMORYMONITOR_ROOT_POINTERS
@@ -535,7 +564,7 @@ extern const struct _mp_obj_module_t socket_module;
 #define SOCKET_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
 #define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
 #if MICROPY_PY_WIZNET5K
-    extern const struct _mp_obj_module_t wiznet_module;
+extern const struct _mp_obj_module_t wiznet_module;
     #define WIZNET_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
 #endif
 #else
@@ -557,13 +586,6 @@ extern const struct _mp_obj_module_t os_module;
 #else
 #define OS_MODULE
 #define OS_MODULE_ALT_NAME
-#endif
-
-#if CIRCUITPY_DUALBANK
-extern const struct _mp_obj_module_t dualbank_module;
-#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
-#else
-#define DUALBANK_MODULE
 #endif
 
 #if CIRCUITPY_PEW
@@ -713,6 +735,13 @@ extern const struct _mp_obj_module_t supervisor_module;
 #define SUPERVISOR_MODULE
 #endif
 
+#if CIRCUITPY_SYNTHIO
+#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
+extern const struct _mp_obj_module_t synthio_module;
+#else
+#define SYNTHIO_MODULE
+#endif
+
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
@@ -734,6 +763,13 @@ extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module },
 #else
 #define UHEAP_MODULE
+#endif
+
+#if CIRCUITPY_USB_CDC
+extern const struct _mp_obj_module_t usb_cdc_module;
+#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
+#else
+#define USB_CDC_MODULE
 #endif
 
 #if CIRCUITPY_USB_HID
@@ -820,6 +856,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
     BITBANGIO_MODULE \
+    BITMAPTOOLS_MODULE \
+    BITOPS_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
     BUSDEVICE_MODULE \
@@ -829,9 +867,10 @@ extern const struct _mp_obj_module_t msgpack_module;
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
-      FONTIO_MODULE \
-      TERMINALIO_MODULE \
-      VECTORIO_MODULE \
+    DUALBANK_MODULE \
+    FONTIO_MODULE \
+    TERMINALIO_MODULE \
+    VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
     FRAMEBUFFERIO_MODULE \
@@ -841,6 +880,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
+    IMAGECAPTURE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
@@ -849,9 +889,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
-      SOCKET_MODULE \
-      WIZNET_MODULE \
-    DUALBANK_MODULE \
+    SOCKET_MODULE \
+    WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -873,8 +912,10 @@ extern const struct _mp_obj_module_t msgpack_module;
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
+    SYNTHIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
+    USB_CDC_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
@@ -913,8 +954,8 @@ struct _supervisor_allocation_node;
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
-    NETWORK_ROOT_POINTERS \
-    struct _supervisor_allocation_node* first_embedded_allocation; \
+        NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())

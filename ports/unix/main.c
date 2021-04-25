@@ -59,7 +59,7 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
+long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
@@ -114,7 +114,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             const vstr_t *vstr = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
         } else if (source_kind == LEX_SRC_FILENAME) {
-            lex = mp_lexer_new_from_file((const char*)source);
+            lex = mp_lexer_new_from_file((const char *)source);
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -303,25 +303,25 @@ STATIC int do_str(const char *str) {
 
 STATIC int usage(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
-"Options:\n"
-"-v : verbose (trace various operations); can be multiple\n"
-"-O[N] : apply bytecode optimizations of level N\n"
-"\n"
-"Implementation specific options (-X):\n", argv[0]
-);
+        "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+        "Options:\n"
+        "-v : verbose (trace various operations); can be multiple\n"
+        "-O[N] : apply bytecode optimizations of level N\n"
+        "\n"
+        "Implementation specific options (-X):\n", argv[0]
+        );
     int impl_opts_cnt = 0;
     printf(
-"  compile-only                 -- parse and compile only\n"
-"  emit={bytecode,native,viper} -- set the default code emitter\n"
-);
+        "  compile-only                 -- parse and compile only\n"
+        "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        );
     impl_opts_cnt++;
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
-, heap_size);
+        "  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
+        , heap_size);
     impl_opts_cnt++;
-#endif
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -347,7 +347,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
-#if MICROPY_ENABLE_GC
+                #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
@@ -380,9 +380,9 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
-#endif
+                #endif
                 } else {
-invalid_arg:
+                invalid_arg:
                     printf("Invalid option\n");
                     exit(usage(argv));
                 }
@@ -438,10 +438,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     pre_process_options(argc, argv);
 
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
-#endif
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[1024];
@@ -457,7 +457,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
-        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
         MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
     }
     #endif
@@ -490,29 +490,26 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
     path_items[1] = MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR);
     {
-    char *p = path;
-    for (mp_uint_t i = builtin_path_count; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-        if (p1 == NULL) {
-            p1 = p + strlen(p);
+        char *p = path;
+        for (mp_uint_t i = builtin_path_count; i < path_num; i++) {
+            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+            if (p1 == NULL) {
+                p1 = p + strlen(p);
+            }
+            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+                // Expand standalone ~ to $HOME
+                int home_l = strlen(home);
+                vstr_t vstr;
+                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_add_strn(&vstr, home, home_l);
+                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            } else {
+                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+            }
+            p = p1 + 1;
         }
-        if (p[0] == '~' && p[1] == '/' && home != NULL) {
-            // Expand standalone ~ to $HOME
-            int home_l = strlen(home);
-            vstr_t vstr;
-            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
-            vstr_add_strn(&vstr, home, home_l);
-            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
-        } else {
-            path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
-        }
-        p = p1 + 1;
     }
-    }
-
-
-
 
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
@@ -613,7 +610,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
                     MP_STATE_VM(mp_optimise_value) = 0;
-                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++) {;
+                    }
                 }
             } else {
                 return usage(argv);
@@ -661,13 +659,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_deinit();
 
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.
     free(heap);
-#endif
+    #endif
 
-    //printf("total bytes = %d\n", m_get_total_bytes_allocated());
+    // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
 

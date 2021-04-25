@@ -73,21 +73,21 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
 }
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
-#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
     (void)expected;
     (void)given;
     mp_arg_error_terse_mismatch();
-#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
+    #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
     mp_raise_TypeError_varg(
         translate("function takes %d positional arguments but %d were given"), expected, given);
-#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_TypeError_varg(
         translate("%q() takes %d positional arguments but %d were given"),
         mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
-#endif
+    #endif
 }
 
 #if DEBUG_PRINT
@@ -130,7 +130,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     size_t n_def_pos_args = *code_state->ip++;
 
     code_state->sp = &code_state->state[0] - 1;
-    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->exc_sp = (mp_exc_stack_t *)(code_state->state + n_state) - 1;
 
     // zero out the local stack to begin with
     memset(code_state->state, 0, n_state * sizeof(*code_state->state));
@@ -187,16 +187,16 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         }
 
         // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t*)self->const_table;
+        const mp_obj_t *arg_names = (const mp_obj_t *)self->const_table;
 
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
-            if(MP_UNLIKELY(!MP_OBJ_IS_QSTR(wanted_arg_name))) {
+            if (MP_UNLIKELY(!MP_OBJ_IS_QSTR(wanted_arg_name))) {
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                    mp_raise_TypeError(translate("unexpected keyword argument"));
+                mp_raise_TypeError(translate("unexpected keyword argument"));
                 #else
-                    mp_raise_TypeError(translate("keywords must be strings"));
+                mp_raise_TypeError(translate("keywords must be strings"));
                 #endif
             }
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
@@ -212,14 +212,14 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                    mp_raise_TypeError(translate("unexpected keyword argument"));
+                mp_raise_TypeError(translate("unexpected keyword argument"));
                 #else
-                    mp_raise_TypeError_varg(
-                        translate("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
+                mp_raise_TypeError_varg(
+                    translate("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                 #endif
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
-continue2:;
+        continue2:;
         }
 
         DEBUG_printf("Args with kws flattened: ");
@@ -251,7 +251,7 @@ continue2:;
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
@@ -302,7 +302,7 @@ continue2:;
 //     MP_BC_MAKE_CLOSURE_DEFARGS
 //     MP_BC_RAISE_VARARGS
 // There are 4 special opcodes that have an extra byte only when
-// MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled:
+// MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled (and they take a qstr):
 //     MP_BC_LOAD_NAME
 //     MP_BC_LOAD_GLOBAL
 //     MP_BC_LOAD_ATTR
@@ -396,19 +396,21 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size) {
     uint f = (opcode_format_table[*ip >> 2] >> (2 * (*ip & 3))) & 3;
     const byte *ip_start = ip;
     if (f == MP_OPCODE_QSTR) {
+        if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
+            if (*ip == MP_BC_LOAD_NAME
+                || *ip == MP_BC_LOAD_GLOBAL
+                || *ip == MP_BC_LOAD_ATTR
+                || *ip == MP_BC_STORE_ATTR) {
+                ip += 1;
+            }
+        }
         ip += 3;
     } else {
         int extra_byte = (
             *ip == MP_BC_RAISE_VARARGS
             || *ip == MP_BC_MAKE_CLOSURE
             || *ip == MP_BC_MAKE_CLOSURE_DEFARGS
-            #if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-            || *ip == MP_BC_LOAD_NAME
-            || *ip == MP_BC_LOAD_GLOBAL
-            || *ip == MP_BC_LOAD_ATTR
-            || *ip == MP_BC_STORE_ATTR
-            #endif
-        );
+            );
         ip += 1;
         if (f == MP_OPCODE_VAR_UINT) {
             while ((*ip++ & 0x80) != 0) {

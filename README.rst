@@ -51,6 +51,10 @@ Specifically useful documentation when starting out:
 - `CircuitPython Essentials <https://learn.adafruit.com/circuitpython-essentials>`__
 - `Example Code <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/CircuitPython_Essentials>`__
 
+Code Search
+------------
+GitHub doesn't currently support code search on forks. Therefore, CircuitPython doesn't have code search through GitHub because it is a fork of MicroPython. Luckily, `SourceGraph <https://sourcegraph.com/github.com/adafruit/circuitpython>`_ has free code search for public repos like CircuitPython. So, visit `sourcegraph.com/github.com/adafruit/circuitpython <https://sourcegraph.com/github.com/adafruit/circuitpython>`_ to search the CircuitPython codebase online.
+
 Contributing
 ------------
 
@@ -113,10 +117,9 @@ Behavior
 -  ``code.py`` (or ``main.py``) is run after every reload until it
    finishes or is interrupted. After it is done running, the vm and
    hardware is reinitialized. **This means you cannot read state from**
-   ``code.py`` **in the REPL anymore.** CircuitPython's goal for this
+   ``code.py`` **in the REPL anymore, as the REPL is a fresh vm.** CircuitPython's goal for this
    change includes reducing confusion about pins and memory being used.
--  After ``code.py`` the REPL can be entered by pressing any key. It no
-   longer shares state with ``code.py`` so it is a fresh vm.
+-  After the main code is finished the REPL can be entered by pressing any key.
 -  Autoreload state will be maintained across reload.
 -  Adds a safe mode that does not run user code after a hard crash or
    brown out. The hope is that this will make it easier to fix code that
@@ -126,8 +129,7 @@ Behavior
 -  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
 -  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
    ``supervisor.disable_autoreload()``)
--  Entering the REPL after the main code is finished requires a key press which enters the REPL and
-   disables autoreload.
+-  Autoreload is disabled while the REPL is active.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
 -  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
@@ -209,6 +211,7 @@ esp32s2           beta
 litex             alpha
 mimxrt10xx        alpha
 nrf               stable
+raspberrypi       beta
 stm               ``F4`` stable | ``others`` beta
 unix              alpha
 ================  ============================================================

@@ -32,9 +32,9 @@
 #include "shared-bindings/watchdog/WatchDogTimer.h"
 
 struct _watchdog_watchdogtimer_obj_t {
-  mp_obj_base_t base;
-  mp_float_t timeout;
-  watchdog_watchdogmode_t mode;
+    mp_obj_base_t base;
+    mp_float_t timeout;
+    watchdog_watchdogmode_t mode;
 };
 
 // This needs to be called in order to disable the watchdog if it's set to

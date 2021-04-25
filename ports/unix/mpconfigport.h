@@ -36,7 +36,7 @@
 #endif
 #if !defined(MICROPY_EMIT_THUMB) && defined(__thumb2__)
     #define MICROPY_EMIT_THUMB      (1)
-    #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+    #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #endif
 // Some compilers define __thumb2__ and __arm__ at the same time, let
 // autodetected thumb2 emitter have priority.
@@ -54,7 +54,7 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 // Printing debug to stderr may give tests which
 // check stdout a chance to pass, etc.
-#define MICROPY_DEBUG_PRINTER_DEST  mp_stderr_print
+#define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -125,7 +125,9 @@
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #if MICROPY_PY_USSL
+#define MICROPY_PY_UHASHLIB_MD5     (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
+#define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UBINASCII_CRC32  (1)
@@ -133,9 +135,9 @@
 #ifndef MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_POSIX    (1)
 #endif
-#define MICROPY_PY_WEBSOCKET        (1)
-#define MICROPY_PY_MACHINE          (1)
-#define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_WEBSOCKET        (0)
+#define MICROPY_PY_MACHINE          (0)
+#define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
@@ -189,6 +191,11 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #else
 #define MICROPY_PY_FFI_DEF
 #endif
+#if MICROPY_PY_MACHINE
+#define MICROPY_PY_MACHINE_DEF { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) },
+#else
+#define MICROPY_PY_MACHINE_DEF
+#endif
 #if MICROPY_PY_JNI
 #define MICROPY_PY_JNI_DEF { MP_ROM_QSTR(MP_QSTR_jni), MP_ROM_PTR(&mp_module_jni) },
 #else
@@ -220,7 +227,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_JNI_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    MICROPY_PY_MACHINE_DEF \
     MICROPY_PY_UOS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
@@ -250,7 +257,7 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-void mp_unix_alloc_exec(size_t min_size, void** ptr, size_t *size);
+void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size);
 void mp_unix_free_exec(void *ptr, size_t size);
 void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
@@ -325,3 +332,4 @@ void mp_unix_mark_exec(void);
 
 #define MICROPY_PY_BUILTINS_HELP (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
+#define CIRCUITPY_RE_DEBUG (1)

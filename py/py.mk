@@ -79,7 +79,7 @@ endif
 
 ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ -Dvirt_fd_t=mp_obj_t "-DVIRT_FD_T_HEADER=<py/obj.h>" $(BTREE_DEFS_EXTRA)
+BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
 INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
 SRC_MOD += extmod/modbtree.c
 SRC_MOD += $(addprefix $(BTREE_DIR)/,\
@@ -106,9 +106,9 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 ifeq ($(CIRCUITPY_ULAB),1)
-SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*.c))
-SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*/*.c))
-CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
+ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
+SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
+CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/ulab/code
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 endif
 
@@ -261,12 +261,8 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduhashlib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
-	extmod/modussl_axtls.o \
-	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
-	extmod/modwebsocket.o \
-	extmod/modwebrepl.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
 	extmod/vfs_reader.o \
@@ -379,7 +375,7 @@ endif
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch
 # branch predictor efficiency.
-# http://article.gmane.org/gmane.comp.lang.lua.general/75426
+# https://marc.info/?l=lua-l&m=129778596120851
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping

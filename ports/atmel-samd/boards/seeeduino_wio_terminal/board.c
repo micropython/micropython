@@ -65,11 +65,11 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB20, &pin_PB19, NULL);
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
@@ -80,7 +80,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
@@ -112,23 +112,23 @@ void board_init(void) {
         true, // backlight_on_high
         false); // SH1107_addressing
 
-        // Enabling the Power of the 40-pin at the back
-        CTR_5V.base.type = &digitalio_digitalinout_type;
-        CTR_3V3.base.type = &digitalio_digitalinout_type;
-        USB_HOST_ENABLE.base.type = &digitalio_digitalinout_type;
+    // Enabling the Power of the 40-pin at the back
+    CTR_5V.base.type = &digitalio_digitalinout_type;
+    CTR_3V3.base.type = &digitalio_digitalinout_type;
+    USB_HOST_ENABLE.base.type = &digitalio_digitalinout_type;
 
-        common_hal_digitalio_digitalinout_construct(&CTR_5V, PIN_CTR_5V);
-        common_hal_digitalio_digitalinout_construct(&CTR_3V3, PIN_CTR_3V3);
-        common_hal_digitalio_digitalinout_construct(&USB_HOST_ENABLE, PIN_USB_HOST_ENABLE);
+    common_hal_digitalio_digitalinout_construct(&CTR_5V, PIN_CTR_5V);
+    common_hal_digitalio_digitalinout_construct(&CTR_3V3, PIN_CTR_3V3);
+    common_hal_digitalio_digitalinout_construct(&USB_HOST_ENABLE, PIN_USB_HOST_ENABLE);
 
-        common_hal_digitalio_digitalinout_set_value(&CTR_5V, true);
-        common_hal_digitalio_digitalinout_set_value(&CTR_3V3, false);
-        common_hal_digitalio_digitalinout_set_value(&USB_HOST_ENABLE, false);
+    common_hal_digitalio_digitalinout_set_value(&CTR_5V, true);
+    common_hal_digitalio_digitalinout_set_value(&CTR_3V3, false);
+    common_hal_digitalio_digitalinout_set_value(&USB_HOST_ENABLE, false);
 
-        // Never reset
-        common_hal_digitalio_digitalinout_never_reset(&CTR_5V);
-        common_hal_digitalio_digitalinout_never_reset(&CTR_3V3);
-        common_hal_digitalio_digitalinout_never_reset(&USB_HOST_ENABLE);
+    // Never reset
+    common_hal_digitalio_digitalinout_never_reset(&CTR_5V);
+    common_hal_digitalio_digitalinout_never_reset(&CTR_3V3);
+    common_hal_digitalio_digitalinout_never_reset(&USB_HOST_ENABLE);
 
 }
 

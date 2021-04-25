@@ -74,7 +74,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, con
         { MP_QSTR_auto_restart, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -244,7 +244,7 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
         { MP_QSTR_timeout, MP_ARG_OBJ, {.u_obj = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -256,7 +256,7 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
     }
 
     canio_match_obj_t *matches[nmatch];
-    for (size_t i=0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         mp_obj_type_t *type = mp_obj_get_type(match_objects[i]);
         if (type != &canio_match_type) {
             mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Match, type->name);

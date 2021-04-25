@@ -1,7 +1,9 @@
 # Extended float comparisons
 
+
 class Foo:
     pass
+
 
 foo = Foo()
 

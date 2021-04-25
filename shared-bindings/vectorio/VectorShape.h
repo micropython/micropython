@@ -7,8 +7,8 @@
 extern const mp_obj_type_t vectorio_vector_shape_type;
 
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
-        vectorio_ishape_t ishape,
-        mp_obj_t pixel_shader, uint16_t x, uint16_t y);
+    vectorio_ishape_t ishape,
+    mp_obj_t pixel_shader, uint16_t x, uint16_t y);
 
 void common_hal_vectorio_vector_shape_set_dirty(void *self);
 

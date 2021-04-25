@@ -37,17 +37,17 @@
 #include "py/misc.h"
 #include "supervisor/serial.h"
 
-void serial_write_compressed(const compressed_string_t* compressed) {
+void serial_write_compressed(const compressed_string_t *compressed) {
     char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     serial_write(decompressed);
 }
 
 STATIC int put_utf8(char *buf, int u) {
-    if(u <= 0x7f) {
+    if (u <= 0x7f) {
         *buf = u;
         return 1;
-    } else if(word_start <= u && u <= word_end) {
+    } else if (word_start <= u && u <= word_end) {
         uint n = (u - word_start);
         size_t pos = 0;
         if (n > 0) {
@@ -57,25 +57,25 @@ STATIC int put_utf8(char *buf, int u) {
         // note that at present, entries in the words table are
         // guaranteed not to represent words themselves, so this adds
         // at most 1 level of recursive call
-        for(; pos < wends[n] + (n + 1) * 2; pos++) {
+        for (; pos < wends[n] + (n + 1) * 2; pos++) {
             int len = put_utf8(buf, words[pos]);
             buf += len;
             ret += len;
         }
         return ret;
-    } else if(u <= 0x07ff) {
+    } else if (u <= 0x07ff) {
         *buf++ = 0b11000000 | (u >> 6);
-        *buf   = 0b10000000 | (u & 0b00111111);
+        *buf = 0b10000000 | (u & 0b00111111);
         return 2;
     } else { // u <= 0xffff
         *buf++ = 0b11100000 | (u >> 12);
         *buf++ = 0b10000000 | ((u >> 6) & 0b00111111);
-        *buf   = 0b10000000 | (u & 0b00111111);
+        *buf = 0b10000000 | (u & 0b00111111);
         return 3;
     }
 }
 
-uint16_t decompress_length(const compressed_string_t* compressed) {
+uint16_t decompress_length(const compressed_string_t *compressed) {
     if (compress_max_length_bits <= 8) {
         return 1 + (compressed->data >> (8 - compress_max_length_bits));
     } else {
@@ -83,10 +83,10 @@ uint16_t decompress_length(const compressed_string_t* compressed) {
     }
 }
 
-char* decompress(const compressed_string_t* compressed, char* decompressed) {
+char *decompress(const compressed_string_t *compressed, char *decompressed) {
     uint8_t this_byte = compress_max_length_bits / 8;
     uint8_t this_bit = 7 - compress_max_length_bits % 8;
-    uint8_t b = (&compressed->data)[this_byte];
+    uint8_t b = (&compressed->data)[this_byte] << (compress_max_length_bits % 8);
     uint16_t length = decompress_length(compressed);
 
     // Stop one early because the last byte is always NULL.
@@ -118,22 +118,22 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
         i += put_utf8(decompressed + i, values[searched_length + bits - max_code]);
     }
 
-    decompressed[length-1] = '\0';
+    decompressed[length - 1] = '\0';
     return decompressed;
 }
 
 inline
 // gcc10 -flto has issues with this being always_inline for debug builds.
 #if CIRCUITPY_DEBUG < 1
- __attribute__((always_inline))
+__attribute__((always_inline))
 #endif
-const compressed_string_t* translate(const char* original) {
+const compressed_string_t *translate(const char *original) {
     #ifndef NO_QSTR
-    #define QDEF(id, str)
+    #define QDEF(id, hash, len, str)
     #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
     #include "genhdr/qstrdefs.generated.h"
-    #undef TRANSLATION
-    #undef QDEF
+#undef TRANSLATION
+#undef QDEF
     #endif
     return NULL;
 }

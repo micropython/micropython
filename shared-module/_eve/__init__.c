@@ -42,25 +42,28 @@ void common_hal__eve_flush(common_hal__eve_t *eve) {
 }
 
 static void *append(common_hal__eve_t *eve, size_t m) {
-    if ((eve->n + m) > sizeof(eve->buf))
+    if ((eve->n + m) > sizeof(eve->buf)) {
         common_hal__eve_flush(eve);
+    }
     uint8_t *r = eve->buf + eve->n;
     eve->n += m;
-    return (void*)r;
+    return (void *)r;
 }
 
 void common_hal__eve_add(common_hal__eve_t *eve, size_t len, void *buf) {
     if (len <= sizeof(eve->buf)) {
-      uint8_t *p = (uint8_t*)append(eve, len);
-      // memcpy(p, buffer_info.buf, buffer_info.len);
-      uint8_t *s = buf; for (size_t i = 0; i < len; i++) *p++ = *s++;
+        uint8_t *p = (uint8_t *)append(eve, len);
+        // memcpy(p, buffer_info.buf, buffer_info.len);
+        uint8_t *s = buf;
+        for (size_t i = 0; i < len; i++) { *p++ = *s++;
+        }
     } else {
-      common_hal__eve_flush(eve);
-      write(eve, len, buf);
+        common_hal__eve_flush(eve);
+        write(eve, len, buf);
     }
 }
 
-#define C4(eve, u) (*(uint32_t*)append((eve), sizeof(uint32_t)) = (u))
+#define C4(eve, u) (*(uint32_t *)append((eve), sizeof(uint32_t)) = (u))
 
 void common_hal__eve_Vertex2f(common_hal__eve_t *eve, mp_float_t x, mp_float_t y) {
     int16_t ix = (int)(eve->vscale * x);
@@ -68,8 +71,7 @@ void common_hal__eve_Vertex2f(common_hal__eve_t *eve, mp_float_t x, mp_float_t y
     C4(eve, (1 << 30) | ((ix & 32767) << 15) | (iy & 32767));
 }
 
-void common_hal__eve_VertexFormat(common_hal__eve_t *eve, uint32_t frac)
-{
+void common_hal__eve_VertexFormat(common_hal__eve_t *eve, uint32_t frac) {
     C4(eve, ((39 << 24) | ((frac & 7))));
     eve->vscale = 1 << frac;
 }

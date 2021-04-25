@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 
 static void IRAM_ATTR pcnt_overflow_handler(void *self_in) {
-    frequencyio_frequencyin_obj_t * self = self_in;
+    frequencyio_frequencyin_obj_t *self = self_in;
     // reset counter
     pcnt_counter_clear(self->unit);
 
@@ -41,7 +41,7 @@ static void IRAM_ATTR pcnt_overflow_handler(void *self_in) {
 }
 
 static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
-    frequencyio_frequencyin_obj_t * self = self_in;
+    frequencyio_frequencyin_obj_t *self = self_in;
     // get counter value
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
@@ -63,7 +63,7 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
     device->hw_timer[self->timer.idx].config.alarm_en = 1;
 }
 
-static void init_pcnt(frequencyio_frequencyin_obj_t* self) {
+static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     // Prepare configuration for the PCNT unit
     const pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
@@ -95,7 +95,7 @@ static void init_pcnt(frequencyio_frequencyin_obj_t* self) {
     pcnt_intr_enable(self->unit);
 }
 
-static void init_timer(frequencyio_frequencyin_obj_t* self) {
+static void init_timer(frequencyio_frequencyin_obj_t *self) {
     // Prepare configuration for the timer module
     const timer_config_t config = {
         .alarm_en = true,
@@ -124,8 +124,8 @@ static void init_timer(frequencyio_frequencyin_obj_t* self) {
     timer_start(self->timer.group, self->timer.idx);
 }
 
-void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t* self,
-        const mcu_pin_obj_t* pin, const uint16_t capture_period) {
+void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t *self,
+    const mcu_pin_obj_t *pin, const uint16_t capture_period) {
     if ((capture_period == 0) || (capture_period > 500)) {
         mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
     }
@@ -142,11 +142,11 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     claim_pin(pin);
 }
 
-bool common_hal_frequencyio_frequencyin_deinited(frequencyio_frequencyin_obj_t* self) {
+bool common_hal_frequencyio_frequencyin_deinited(frequencyio_frequencyin_obj_t *self) {
     return self->unit == PCNT_UNIT_MAX;
 }
 
-void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* self) {
+void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t *self) {
     if (common_hal_frequencyio_frequencyin_deinited(self)) {
         return;
     }
@@ -159,21 +159,21 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
     }
 }
 
-uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t* self) {
+uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t *self) {
     return self->frequency;
 }
 
-void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t* self) {
+void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t *self) {
     pcnt_counter_pause(self->unit);
     timer_pause(self->timer.group, self->timer.idx);
 }
 
-void common_hal_frequencyio_frequencyin_resume(frequencyio_frequencyin_obj_t* self) {
+void common_hal_frequencyio_frequencyin_resume(frequencyio_frequencyin_obj_t *self) {
     pcnt_counter_resume(self->unit);
     timer_start(self->timer.group, self->timer.idx);
 }
 
-void common_hal_frequencyio_frequencyin_clear(frequencyio_frequencyin_obj_t* self) {
+void common_hal_frequencyio_frequencyin_clear(frequencyio_frequencyin_obj_t *self) {
     self->frequency = 0;
     pcnt_counter_clear(self->unit);
     timer_set_counter_value(self->timer.group, self->timer.idx, 0);

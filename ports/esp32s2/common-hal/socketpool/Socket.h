@@ -41,13 +41,11 @@ typedef struct {
     int family;
     int ipproto;
     bool connected;
-    esp_tls_t* tls;
-    ssl_sslcontext_obj_t* ssl_context;
-    socketpool_socketpool_obj_t* pool;
+    socketpool_socketpool_obj_t *pool;
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
 void socket_reset(void);
-bool register_open_socket(socketpool_socket_obj_t* self);
+bool register_open_socket(socketpool_socket_obj_t *self);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKET_H

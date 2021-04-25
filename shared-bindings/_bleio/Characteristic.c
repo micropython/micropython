@@ -77,12 +77,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_service,  MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_max_length, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 20} },
-        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_initial_value, MP_ARG_KW_ONLY| MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_properties, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
+        { MP_QSTR_max_length, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 20} },
+        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_initial_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -113,8 +113,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     if (max_length_int < 0) {
         mp_raise_ValueError(translate("max_length must be >= 0"));
     }
-    const size_t max_length = (size_t) max_length_int;
-    const bool fixed_length =  args[ARG_fixed_length].u_bool;
+    const size_t max_length = (size_t)max_length_int;
+    const bool fixed_length = args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
 
     mp_buffer_info_t initial_value_bufinfo;
@@ -129,7 +129,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-            mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError(translate("initial_value length is wrong"));
     }
 
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
@@ -216,6 +216,23 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_value_obj,
                (mp_obj_t)&bleio_characteristic_set_value_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|     max_length: int
+//|     """The max length of this characteristic."""
+//|
+STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_characteristic_get_max_length(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_max_length_obj, bleio_characteristic_get_max_length);
+
+const mp_obj_property_t bleio_characteristic_max_length_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_characteristic_get_max_length_obj,
+               (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 
@@ -330,5 +347,5 @@ const mp_obj_type_t bleio_characteristic_type = {
     { &mp_type_type },
     .name = MP_QSTR_Characteristic,
     .print = bleio_characteristic_print,
-    .locals_dict = (mp_obj_dict_t*)&bleio_characteristic_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_locals_dict,
 };

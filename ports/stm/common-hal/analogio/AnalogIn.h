@@ -34,7 +34,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
+    const mcu_pin_obj_t *pin;
 } analogio_analogin_obj_t;
 
 static inline uint8_t stm32_adc_units(uint8_t adc_packed) {

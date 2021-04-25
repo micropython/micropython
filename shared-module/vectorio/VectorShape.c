@@ -38,16 +38,16 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
     VECTORIO_SHAPE_DEBUG("%p get_screen_area tform:{x:%d y:%d dx:%d dy:%d scl:%d w:%d h:%d mx:%d my:%d tr:%d}", self,
         self->absolute_transform->x, self->absolute_transform->y, self->absolute_transform->dx, self->absolute_transform->dy, self->absolute_transform->scale,
         self->absolute_transform->width, self->absolute_transform->height, self->absolute_transform->mirror_x, self->absolute_transform->mirror_y, self->absolute_transform->transpose_xy
-    );
+        );
     self->ishape.get_area(self->ishape.shape, out_area);
     VECTORIO_SHAPE_DEBUG(" in:{(%5d,%5d), (%5d,%5d)}", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
     if (self->absolute_transform->transpose_xy) {
         int16_t swap = out_area->x1;
         out_area->x1 = (out_area->y1 + self->y) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y1 = (swap         + self->x) * self->absolute_transform->dy + self->absolute_transform->y;
+        out_area->y1 = (swap + self->x) * self->absolute_transform->dy + self->absolute_transform->y;
         swap = out_area->x2;
         out_area->x2 = (out_area->y2 + self->y) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y2 = (swap +         self->x) * self->absolute_transform->dy + self->absolute_transform->y;
+        out_area->y2 = (swap + self->x) * self->absolute_transform->dy + self->absolute_transform->y;
     } else {
         out_area->x1 = (out_area->x1 + self->x) * self->absolute_transform->dx + self->absolute_transform->x;
         out_area->y1 = (out_area->y1 + self->y) * self->absolute_transform->dy + self->absolute_transform->y;
@@ -55,16 +55,7 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
         out_area->y2 = (out_area->y2 + self->y) * self->absolute_transform->dy + self->absolute_transform->y;
     }
     // We might have mirrored due to dx
-    if (out_area->x2 < out_area->x1) {
-        int16_t swap = out_area->x1;
-        out_area->x1 = out_area->x2;
-        out_area->x2 = swap;
-    }
-    if (out_area->y2 < out_area->y1) {
-        int16_t swap = out_area->y1;
-        out_area->y1 = out_area->y2;
-        out_area->y2 = swap;
-    }
+    displayio_area_canon(out_area);
     VECTORIO_SHAPE_DEBUG(" out:{(%5d,%5d), (%5d,%5d)}\n", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
 }
 
@@ -88,28 +79,14 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
         self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
     self->dirty = true;
     // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish,
-    displayio_area_expand(&self->ephemeral_dirty_area, &current_area);
+    displayio_area_union(&self->ephemeral_dirty_area, &current_area, &self->ephemeral_dirty_area);
     VECTORIO_SHAPE_DEBUG(" -> expanded:{(%3d,%3d), (%3d,%3d)}\n", self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
 }
 
 
-static displayio_buffer_transform_t null_transform = {
-    .x = 0,
-    .y = 0,
-    .dx = 1,
-    .dy = 1,
-    .scale = 1,
-    .width = 0,
-    .height = 0,
-    .mirror_x = false,
-    .mirror_y = false,
-    .transpose_xy = false
-};
-
-
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
-        vectorio_ishape_t ishape,
-        mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
+    vectorio_ishape_t ishape,
+    mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
     VECTORIO_SHAPE_DEBUG("%p vector_shape_construct x:%3d, y:%3d\n", self, x, y);
     self->x = x;
     self->y = y;
@@ -166,22 +143,22 @@ void common_hal_vectorio_vector_shape_set_pixel_shader(vectorio_vector_shape_t *
 }
 
 
-bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
+bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     // Shape areas are relative to 0,0.  This will allow rotation about a known axis.
     //   The consequence is that the area reported by the shape itself is _relative_ to 0,0.
     //   To make it relative to the VectorShape position, we must shift it.
     // Pixels are drawn on the screen_area (shifted) coordinate space, while pixels are _determined_ from
     //   the shape_area (unshifted) space.
-#ifdef VECTORIO_PERF
+    #ifdef VECTORIO_PERF
     uint64_t start = common_hal_time_monotonic_ns();
     uint64_t pixel_time = 0;
-#endif
+    #endif
     displayio_area_t overlap;
     VECTORIO_SHAPE_DEBUG("%p fill_area dirty:%d fill: {(%5d,%5d), (%5d,%5d)} dirty: {(%5d,%5d), (%5d,%5d)}",
         self, self->dirty,
         area->x1, area->y1, area->x2, area->y2,
         self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2
-    );
+        );
     if (!displayio_area_compute_overlap(area, &self->ephemeral_dirty_area, &overlap)) {
         VECTORIO_SHAPE_DEBUG(" no overlap\n");
         return false;
@@ -208,7 +185,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             // Check the mask first to see if the pixel has already been set.
             uint32_t pixel_index = mask_start_px + (input_pixel.x - overlap.x1);
             uint32_t *mask_doubleword = &(mask[pixel_index / 32]);
-            uint8_t mask_bit          =        pixel_index % 32;
+            uint8_t mask_bit = pixel_index % 32;
             VECTORIO_SHAPE_PIXEL_DEBUG("%p pixel_index: %5u mask_bit: %2u", self, pixel_index, mask_bit);
             if ((*mask_doubleword & (1u << mask_bit)) != 0) {
                 VECTORIO_SHAPE_PIXEL_DEBUG(" masked\n");
@@ -227,14 +204,14 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 pixel_to_get_y = (input_pixel.y - self->absolute_transform->dy * self->y - self->absolute_transform->y) / self->absolute_transform->dy;
             }
             VECTORIO_SHAPE_PIXEL_DEBUG(" get_pixel %p (%3d, %3d) -> ( %3d, %3d )", self->ishape.shape, input_pixel.x, input_pixel.y, pixel_to_get_x, pixel_to_get_y);
-#ifdef VECTORIO_PERF
+            #ifdef VECTORIO_PERF
             uint64_t pre_pixel = common_hal_time_monotonic_ns();
-#endif
+            #endif
             input_pixel.pixel = self->ishape.get_pixel(self->ishape.shape, pixel_to_get_x, pixel_to_get_y);
-#ifdef VECTORIO_PERF
+            #ifdef VECTORIO_PERF
             uint64_t post_pixel = common_hal_time_monotonic_ns();
             pixel_time += post_pixel - pre_pixel;
-#endif
+            #endif
             VECTORIO_SHAPE_PIXEL_DEBUG(" -> %d", input_pixel.pixel);
 
             output_pixel.opaque = true;
@@ -252,10 +229,10 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 *mask_doubleword |= 1u << mask_bit;
                 if (colorspace->depth == 16) {
                     VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %04x 16\n", output_pixel.pixel);
-                    *(((uint16_t*) buffer) + pixel_index) = output_pixel.pixel;
+                    *(((uint16_t *)buffer) + pixel_index) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
                     VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %02x 8\n", output_pixel.pixel);
-                    *(((uint8_t*) buffer) + pixel_index) = output_pixel.pixel;
+                    *(((uint8_t *)buffer) + pixel_index) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {
                     // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
                     if (!colorspace->pixels_in_byte_share_row) {
@@ -270,13 +247,13 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
                     VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %2d %d\n", output_pixel.pixel, colorspace->depth);
-                    ((uint8_t*)buffer)[pixel_index / pixels_per_byte] |= output_pixel.pixel << shift;
+                    ((uint8_t *)buffer)[pixel_index / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
         }
         mask_start_px += linestride_px - column_dirty_offset_px;
     }
-#ifdef VECTORIO_PERF
+    #ifdef VECTORIO_PERF
     uint64_t end = common_hal_time_monotonic_ns();
     uint32_t pixels = (overlap.x2 - overlap.x1) * (overlap.y2 - overlap.y1);
     VECTORIO_PERF("draw %16s -> shape:{%4dpx, %4.1fms,%9.1fpps fill}  shape_pixels:{%6.1fus total, %4.1fus/px}\n",
@@ -286,15 +263,15 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
         (double)(max(1, pixels * (1000000000.0 / (end - start)))),
         (double)(pixel_time / 1000.0),
         (double)(pixel_time / 1000.0 / pixels)
-    );
-#endif
+        );
+    #endif
     VECTORIO_SHAPE_DEBUG(" -> pixels:%4d\n");
     return full_coverage;
 }
 
 
 void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
-    if ( !self->dirty ) {
+    if (!self->dirty) {
         return;
     }
     VECTORIO_SHAPE_DEBUG("%p finish_refresh was:{(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
@@ -313,7 +290,7 @@ void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
 
 
 // Assembles a singly linked list of dirty areas from all components on the display.
-displayio_area_t* vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t* tail) {
+displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail) {
     if (self->dirty
         || (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) && displayio_palette_needs_refresh(self->pixel_shader))
         || (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) && displayio_colorconverter_needs_refresh(self->pixel_shader))

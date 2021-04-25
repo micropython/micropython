@@ -31,7 +31,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint32_t* bus; // pointer where 8 bits of data are written to the display
+    uint32_t *bus; // pointer where 8 bits of data are written to the display
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
@@ -39,8 +39,8 @@ typedef struct {
     digitalio_digitalinout_obj_t read;
     uint8_t data0_pin; // pin number for the lowest number data pin.  Must be 8-bit aligned
     bool data_write_same_register; // if data and write pins are in the sare
-    uint32_t* write_set_register; // pointer to the write group for setting the write bit to latch the data on the LCD
-    uint32_t* write_clear_register; // pointer to the write group for clearing the write bit to latch the data on the LCD
+    uint32_t *write_set_register; // pointer to the write group for setting the write bit to latch the data on the LCD
+    uint32_t *write_clear_register; // pointer to the write group for clearing the write bit to latch the data on the LCD
     uint32_t write_mask; // bit mask for the single bit for the write pin register
 } displayio_parallelbus_obj_t;
 

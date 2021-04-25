@@ -37,22 +37,40 @@
 
 // first entry in enum will be MP_QSTR_NULL=0, which indicates invalid/no qstr
 enum {
-#ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QENUM(id) id,
-#include "genhdr/qstrdefs.enum.h"
+    #include "genhdr/qstrdefs.enum.h"
 #undef QENUM
-#endif
+    #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 
 typedef size_t qstr;
+
+typedef struct _qstr_attr_t {
+    #if MICROPY_QSTR_BYTES_IN_HASH == 1
+    uint8_t hash;
+    #elif MICROPY_QSTR_BYTES_IN_HASH == 2
+    uint16_t hash;
+    #else
+    #error unimplemented qstr hash decoding
+    #endif
+    #if MICROPY_QSTR_BYTES_IN_LEN == 1
+    uint8_t len;
+    #elif MICROPY_QSTR_BYTES_IN_LEN == 2
+    uint16_t len;
+    #else
+    #error unimplemented qstr length decoding
+    #endif
+} qstr_attr_t;
 
 typedef struct _qstr_pool_t {
     struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;
-    const byte *qstrs[];
+    qstr_attr_t *attrs;
+    const char *qstrs[];
 } qstr_pool_t;
 
 #define QSTR_FROM_STR_STATIC(s) (qstr_from_strn((s), strlen(s)))

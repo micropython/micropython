@@ -37,16 +37,16 @@
 #include "fsl_lpi2c.h"
 #include "fsl_gpio.h"
 
-#define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (1+CLOCK_GetDiv(kCLOCK_Lpi2cDiv)))
+#define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (1 + CLOCK_GetDiv(kCLOCK_Lpi2cDiv)))
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
 
-//arrays use 0 based numbering: I2C1 is stored at index 0
+// arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 4
 STATIC bool reserved_i2c[MAX_I2C];
 STATIC bool never_reset_i2c[MAX_I2C];
 
 void i2c_reset(void) {
-    for(uint i = 0; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
+    for (uint i = 0; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
         if (!never_reset_i2c[i]) {
             reserved_i2c[i] = false;
             LPI2C_MasterDeinit(mcu_i2c_banks[i]);
@@ -64,30 +64,29 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
         IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(3)
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_ODE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
-            | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
-            | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
+        | IOMUXC_SW_PAD_CTL_PAD_PUS(3)
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        | IOMUXC_SW_PAD_CTL_PAD_DSE(4)
+        | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-static void i2c_check_pin_config(const mcu_pin_obj_t *pin, uint32_t pull)
-{
+static void i2c_check_pin_config(const mcu_pin_obj_t *pin, uint32_t pull) {
     IOMUXC_SetPinConfig(0, 0, 0, 0, pin->cfg_reg,
         IOMUXC_SW_PAD_CTL_PAD_HYS(1)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(0) // Pulldown
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(pull) // 0=nopull (keeper), 1=pull
-            | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
-            | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
-            | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
-            | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
+        | IOMUXC_SW_PAD_CTL_PAD_PUS(0)     // Pulldown
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull)     // 0=nopull (keeper), 1=pull
+        | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
+        | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
+        | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
@@ -107,10 +106,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // We must pull up within 3us to achieve 400khz.
     common_hal_mcu_delay_us(3);
 
-    if( !GPIO_PinRead(sda->gpio, sda->number) || !GPIO_PinRead(scl->gpio, scl->number)) {
+    if (!GPIO_PinRead(sda->gpio, sda->number) || !GPIO_PinRead(scl->gpio, scl->number)) {
         common_hal_reset_pin(sda);
         common_hal_reset_pin(scl);
-        mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
+        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 
@@ -118,15 +117,18 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const uint32_t scl_count = MP_ARRAY_SIZE(mcu_i2c_scl_list);
 
     for (uint32_t i = 0; i < sda_count; ++i) {
-        if (mcu_i2c_sda_list[i].pin != sda)
+        if (mcu_i2c_sda_list[i].pin != sda) {
             continue;
+        }
 
         for (uint32_t j = 0; j < scl_count; ++j) {
-            if (mcu_i2c_scl_list[j].pin != scl)
+            if (mcu_i2c_scl_list[j].pin != scl) {
                 continue;
+            }
 
-            if (mcu_i2c_scl_list[j].bank_idx != mcu_i2c_sda_list[i].bank_idx)
+            if (mcu_i2c_scl_list[j].bank_idx != mcu_i2c_sda_list[i].bank_idx) {
                 continue;
+            }
 
             self->sda = &mcu_i2c_sda_list[i];
             self->scl = &mcu_i2c_scl_list[j];
@@ -135,7 +137,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         }
     }
 
-    if(self->sda == NULL || self->scl == NULL) {
+    if (self->sda == NULL || self->scl == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));
     } else {
         self->i2c = mcu_i2c_banks[self->sda->bank_idx - 1];
@@ -209,23 +211,24 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
 
     lpi2c_master_transfer_t xfer = { 0 };
     xfer.flags = transmit_stop_bit ? kLPI2C_TransferDefaultFlag : kLPI2C_TransferNoStopFlag;
     xfer.slaveAddress = addr;
-    xfer.data = (uint8_t*)data;
+    xfer.data = (uint8_t *)data;
     xfer.dataSize = len;
 
     const status_t status = LPI2C_MasterTransferBlocking(self->i2c, &xfer);
-    if (status == kStatus_Success)
+    if (status == kStatus_Success) {
         return 0;
+    }
 
     return MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-        uint8_t *data, size_t len) {
+    uint8_t *data, size_t len) {
 
     lpi2c_master_transfer_t xfer = { 0 };
     xfer.direction = kLPI2C_Read;
@@ -234,8 +237,9 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     xfer.dataSize = len;
 
     const status_t status = LPI2C_MasterTransferBlocking(self->i2c, &xfer);
-    if (status == kStatus_Success)
+    if (status == kStatus_Success) {
         return 0;
+    }
 
     return MP_EIO;
 }

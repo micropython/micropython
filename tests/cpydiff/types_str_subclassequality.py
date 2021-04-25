@@ -4,8 +4,11 @@ description: Instance of a subclass of str cannot be compared for equality with 
 cause: Unknown
 workaround: Unknown
 """
+
+
 class S(str):
     pass
 
-s = S('hello')
-print(s == 'hello')
+
+s = S("hello")
+print(s == "hello")

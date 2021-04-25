@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 #include "py/mpconfig.h"
 
 // All the qstr definitions in this file are available as constants.
@@ -37,8 +39,13 @@ Q()
 Q(*)
 Q(_)
 Q(/)
+#if MICROPY_PY_BUILTINS_STR_OP_MODULO
 Q(%#o)
 Q(%#x)
+#else
+Q({:#o})
+Q({:#x})
+#endif
 Q({:#b})
 Q( )
 Q(\n)
