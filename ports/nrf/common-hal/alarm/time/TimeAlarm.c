@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2021 Junji Sakai
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +25,7 @@
  * THE SOFTWARE.
  */
 
-//#include "esp_sleep.h"
-
 #include "py/runtime.h"
-//#include "supervisor/esp_port.h"
 #include <stdio.h>
 
 #include "common-hal/alarm/__init__.h"

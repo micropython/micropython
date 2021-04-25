@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2021 Junji Sakai
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,11 +120,6 @@ bool common_hal_alarm_woken_from_sleep(void) {
 
 nrf_sleep_source_t alarm_woken_from_sleep_2(void) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
-#ifdef NRF_DEBUG_PRINT
-    if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
-        //print_wakeup_cause(cause);
-    }
-#endif
     if (cause == NRF_SLEEP_WAKEUP_GPIO  ||
 	cause == NRF_SLEEP_WAKEUP_TIMER ||
 	cause == NRF_SLEEP_WAKEUP_TOUCHPAD) {
@@ -136,9 +132,6 @@ nrf_sleep_source_t alarm_woken_from_sleep_2(void) {
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
-#ifdef NRF_DEBUG_PRINT
-    //print_wakeup_cause(cause);
-#endif
     switch (cause) {
       case NRF_SLEEP_WAKEUP_TIMER: {
         return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
@@ -264,16 +257,16 @@ nrf_sleep_source_t system_on_idle_until_alarm(int64_t timediff_ms, uint32_t pres
     qspi_flash_exit_sleep();
 #endif
 
+#ifdef NRF_DEBUG_PRINT
     tickdiff = port_get_raw_ticks(NULL) - start_tick;
+    double sec;
     if (prescaler == 0) {
-        timediff_ms = tickdiff / 1024;
+        sec = (double)tickdiff / 1024;
     }
     else {
-        timediff_ms = tickdiff * prescaler / 1024;
+        sec = (double)(tickdiff * prescaler) / 1024;
     }
-    (void)timediff_ms;
-#ifdef NRF_DEBUG_PRINT
-    dbg_printf("lapse %6.1f sec\r\n", (double)(timediff_ms));
+    dbg_printf("lapse %6.1f sec\r\n", sec);
 #endif
 
     return wakeup_cause;
