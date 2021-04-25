@@ -22,6 +22,8 @@
 
 extern int mp_interrupt_char;
 void mp_sched_keyboard_interrupt(void);
+void mp_hal_signal_event(void);
+void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
 
 static struct k_sem uart_sem;
 #define UART_BUFSIZE 256
@@ -36,6 +38,7 @@ static int console_irq_input_hook(uint8_t ch)
         return 1;
     }
     if (ch == mp_interrupt_char) {
+        mp_hal_signal_event();
         mp_sched_keyboard_interrupt();
         return 1;
     } else {
@@ -49,6 +52,7 @@ static int console_irq_input_hook(uint8_t ch)
 }
 
 uint8_t zephyr_getchar(void) {
+    mp_hal_wait_sem(&uart_sem, -1);
     k_sem_take(&uart_sem, K_FOREVER);
     unsigned int key = irq_lock();
     uint8_t c = uart_ringbuf[i_get++];

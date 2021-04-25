@@ -46,6 +46,7 @@ set(MICROPY_SOURCE_PORT
     modutime.c
     modzephyr.c
     modzsensor.c
+    mphalport.c
     uart_core.c
     zephyr_storage.c
 )
