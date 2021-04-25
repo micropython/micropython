@@ -192,8 +192,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 
 //|     def start_ap(self,
 //|                  ssid: ReadableBuffer,
-//|                  password: ReadableBuffer = b"") -> None:
-//|         """Starts an Access Point with the specified ssid and password."""
+//|                  password: ReadableBuffer = b"",
+//|                  *,
+//|                  channel: Optional[int] = 1) -> None:
+//|         """Starts an Access Point with the specified ssid and password.
+//|
+//|            If ``channel`` is given, the access point will use that channel unless
+//|            wifi is already operating on a different channel due to an active station."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -201,7 +206,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
