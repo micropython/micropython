@@ -27,6 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 
+#include "py/enum.h"
 #include "py/obj.h"
 
 typedef enum {
@@ -39,6 +40,14 @@ typedef enum {
     CHIP_SELECT_TOGGLE_EVERY_BYTE
 } display_chip_select_behavior_t;
 
+typedef enum {
+    DISPLAYIO_COLORSPACE_RGB888,
+    DISPLAYIO_COLORSPACE_RGB565,
+    DISPLAYIO_COLORSPACE_RGB555,
+    DISPLAYIO_COLORSPACE_RGB565_SWAPPED,
+    DISPLAYIO_COLORSPACE_RGB555_SWAPPED,
+} displayio_colorspace_t;
+
 typedef bool (*display_bus_bus_reset)(mp_obj_t bus);
 typedef bool (*display_bus_bus_free)(mp_obj_t bus);
 typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
@@ -47,5 +56,8 @@ typedef void (*display_bus_send)(mp_obj_t bus, display_byte_type_t byte_type,
 typedef void (*display_bus_end_transaction)(mp_obj_t bus);
 
 void common_hal_displayio_release_displays(void);
+
+extern const mp_obj_type_t displayio_colorspace_type;
+extern const cp_enum_obj_t displayio_colorspace_RGB888_obj;
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

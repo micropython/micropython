@@ -32,23 +32,32 @@
 
 #include <mpconfigport.h>
 
+#define MICROPY_OPT_MATH_FACTORIAL     (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ENABLE_SCHEDULER       (1)
 #define MICROPY_READER_VFS             (1)
+#define MICROPY_MODULE_GETATTR         (1)
 #define MICROPY_PY_DELATTR_SETATTR     (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (1)
 #define MICROPY_PY_BUILTINS_HELP       (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_SYS_GETSIZEOF       (1)
+#define MICROPY_PY_MATH_FACTORIAL      (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
 #define MICROPY_PY_IO_RESOURCE_STREAM (1)
+#define MICROPY_PY_URE_MATCH_GROUPS    (1)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
+#define MICROPY_PY_URE_SUB             (1)
 #define MICROPY_VFS_POSIX              (1)
 #undef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_PY_FRAMEBUF            (1)
+#define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
+#define MICROPY_PY_UCRYPTOLIB          (1)
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio mp_type_vfs_posix_fileio

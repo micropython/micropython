@@ -60,6 +60,7 @@
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
+#include "supervisor/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -210,7 +211,10 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
+
+    #if CIRCUITPY_USB
     usb_background();
+    #endif
 
     gc_deinit();
 }

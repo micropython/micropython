@@ -172,7 +172,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_t)&stdio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
 };
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused

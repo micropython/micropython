@@ -439,7 +439,7 @@ msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -882,6 +882,11 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr ""
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Regex에 오류가 있습니다."
@@ -1011,6 +1016,10 @@ msgstr ""
 msgid "Failed to write internal flash."
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr ""
@@ -1081,10 +1090,6 @@ msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -1208,6 +1213,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
+msgstr ""
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
@@ -1401,14 +1410,6 @@ msgstr ""
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1458,6 +1459,10 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
 msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
@@ -1604,6 +1609,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2129,7 +2135,7 @@ msgid "Too many displays"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
 
 #: py/obj.c
@@ -2302,10 +2308,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
@@ -2385,17 +2387,16 @@ msgstr ""
 msgid "abort() called"
 msgstr ""
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr ""
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
+msgstr ""
+
+#: py/compile.c
+msgid "annotation must be an identifier"
 msgstr ""
 
 #: py/modbuiltins.c
@@ -2497,10 +2498,6 @@ msgstr ""
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr ""
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -2584,12 +2581,20 @@ msgstr ""
 msgid "can't convert %q to %q"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
 msgstr ""
 
 #: py/objstr.c
@@ -2942,7 +2947,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2995,7 +3000,7 @@ msgid "full"
 msgstr "완전한(full)"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
+msgid "function doesn't take keyword arguments"
 msgstr ""
 
 #: py/argcheck.c
@@ -3048,6 +3053,10 @@ msgstr ""
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c
@@ -3198,6 +3207,10 @@ msgstr ""
 msgid "invalid cert"
 msgstr "cert가 유효하지 않습니다"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "Dupterm index가 유효하지 않습니다"
@@ -3252,10 +3265,6 @@ msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3427,6 +3436,10 @@ msgstr ""
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
+msgstr ""
+
+#: py/modmath.c
+msgid "negative factorial"
 msgstr ""
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
@@ -3658,10 +3671,6 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr ""
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3716,6 +3725,8 @@ msgstr ""
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3739,6 +3750,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -4014,10 +4029,6 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr ""
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr ""
@@ -4099,7 +4110,7 @@ msgstr ""
 msgid "unknown type"
 msgstr ""
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr ""
 
@@ -4150,10 +4161,6 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
 msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c

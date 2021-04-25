@@ -511,9 +511,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
-
-
-
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
     #if defined(MICROPY_UNIX_COVERAGE)

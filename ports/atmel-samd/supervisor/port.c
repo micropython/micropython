@@ -102,12 +102,12 @@ static void rtc_set_continuous(bool continuous) {
     while (RTC->MODE0.STATUS.bit.SYNCBUSY);
 }
 
-void rtc_start_pulsein(void) {
+void rtc_start_pulse(void) {
     rtc_set_continuous(true);
     hold_interrupt = true;
 }
 
-void rtc_end_pulsein(void) {
+void rtc_end_pulse(void) {
     hold_interrupt = false;
     rtc_set_continuous(false);
 }

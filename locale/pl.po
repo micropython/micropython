@@ -443,8 +443,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Próba przydzielenia %d bloków"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Próba przydziału sterty, gdy MicroPython VM nie działa."
+msgid "Attempted heap allocation when VM not running."
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -890,6 +890,11 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr "Kanał EXTINT w użyciu"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Błąd w regex"
@@ -1019,6 +1024,10 @@ msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Nie udało się zapisać wewnętrznej pamięci flash."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Plik istnieje"
@@ -1090,10 +1099,6 @@ msgstr ""
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut niedostępne"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1218,6 +1223,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
+msgstr ""
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
@@ -1411,15 +1420,6 @@ msgstr "Największa wartość x przy odwróceniu to %d"
 msgid "Messages limited to 8 bytes"
 msgstr "Wiadomości ograniczone do 8 bajtów"
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr ""
-"Skok MicroRython NLR nie powiódł się. Prawdopodobne uszkodzenie pamięci."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Błąd krytyczny MicroPython."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
@@ -1469,6 +1469,10 @@ msgstr "Należy podać pin MISO lub MOSI"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
 msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
@@ -1615,6 +1619,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2140,7 +2145,7 @@ msgid "Too many displays"
 msgstr "Zbyt wiele wyświetlaczy"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
 
 #: py/obj.c
@@ -2312,10 +2317,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
@@ -2401,11 +2402,6 @@ msgstr "wymagany obiekt typu bytes"
 msgid "abort() called"
 msgstr "Wywołano abort()"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "adres %08x nie jest wyrównany do %d bajtów"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres poza zakresem"
@@ -2413,6 +2409,10 @@ msgstr "adres poza zakresem"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adres jest pusty"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2513,10 +2513,6 @@ msgstr "skok poza zakres"
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "bufor mysi być typu bytes"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -2600,6 +2596,10 @@ msgstr "przypisanie do wyrażenia"
 msgid "can't convert %q to %q"
 msgstr "nie można dokonać konwersji %q na %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "nie można automatycznie skonwertować '%q' do '%q'"
@@ -2607,6 +2607,10 @@ msgstr "nie można automatycznie skonwertować '%q' do '%q'"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "nie można skonwertować do int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2959,7 +2963,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"
 
@@ -3012,8 +3016,8 @@ msgid "full"
 msgstr "pełny"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "funkcja nie bierze argumentów nazwanych"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3066,6 +3070,10 @@ msgstr "generator już się wykonuje"
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
 msgstr "generator zignorował GeneratorExit"
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3215,6 +3223,10 @@ msgstr ""
 msgid "invalid cert"
 msgstr "zły ceryfikat"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "zły indeks dupterm"
@@ -3269,10 +3281,6 @@ msgstr "zła składnia dla liczby całkowitej w bazie %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "zła składnia dla liczby"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3445,6 +3453,10 @@ msgstr "natywny yield"
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "potrzeba więcej niż %d do rozpakowania"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3675,10 +3687,6 @@ msgstr "paleta musi mieć 32 bajty długości"
 msgid "palette_index should be an int"
 msgstr "palette_index powinien być całkowity"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "anotacja parametru musi być identyfikatorem"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametry muszą być rejestrami w kolejności a2 do a5"
@@ -3734,6 +3742,8 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3757,6 +3767,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -4033,10 +4047,6 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr ""
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "krotka/lista ma złą długość"
@@ -4118,7 +4128,7 @@ msgstr ""
 msgid "unknown type"
 msgstr "zły typ"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "zły typ '%q'"
 
@@ -4170,10 +4180,6 @@ msgstr "wartość musi mieścić się w %d bajtach"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count musi być > 0"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -4260,6 +4266,31 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adres %08x nie jest wyrównany do %d bajtów"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "funkcja nie bierze argumentów nazwanych"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "anotacja parametru musi być identyfikatorem"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "bufor mysi być typu bytes"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "Próba przydziału sterty, gdy MicroPython VM nie działa."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr ""
+#~ "Skok MicroRython NLR nie powiódł się. Prawdopodobne uszkodzenie pamięci."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Błąd krytyczny MicroPython."
 
 #~ msgid "vectors must have same lengths"
 #~ msgstr "wektory muszą mieć identyczną długość"
@@ -4388,9 +4419,6 @@ msgstr ""
 
 #~ msgid "can't convert to float"
 #~ msgstr "nie można skonwertować do float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "nie można skonwertować do int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "obiekt '%s' nie jest krotką ani listą"

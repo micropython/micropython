@@ -284,7 +284,7 @@ html_static_path = ['docs/static']
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-html_extra_path = ["docs/robots.txt"]
+#html_extra_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -489,6 +489,8 @@ class CoreModuleTransform(SphinxTransform):
 
 def setup(app):
     app.add_css_file("customstyle.css")
+    app.add_css_file("filter.css")
+    app.add_js_file("filter.js")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
     app.add_transform(CoreModuleTransform)

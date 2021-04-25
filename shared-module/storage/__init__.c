@@ -224,7 +224,9 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 }
 
 void common_hal_storage_erase_filesystem(void) {
+    #if CIRCUITPY_USB
     usb_disconnect();
+    #endif
     mp_hal_delay_ms(1000);
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();

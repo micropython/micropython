@@ -178,8 +178,13 @@ jobs:
         - "TG-Watch"
         - "adafruit_feather_rp2040"
         - "adafruit_itsybitsy_rp2040"
+        - "adafruit_neokey_trinkey_m0"
+        - "adafruit_proxlight_trinkey_m0"
         - "adafruit_qtpy_rp2040"
+        - "adafruit_rotary_trinkey_m0"
+        - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
+        - "aramcon2_badge"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -190,6 +195,7 @@ jobs:
         - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
+        - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -284,6 +290,8 @@ jobs:
         - "pewpew_m4"
         - "picoplanet"
         - "pimoroni_keybow2040"
+        - "pimoroni_picolipo_16mb"
+        - "pimoroni_picolipo_4mb"
         - "pimoroni_picosystem"
         - "pimoroni_tiny2040"
         - "pirkey_m0"
@@ -304,17 +312,18 @@ jobs:
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
-        - "rotary_trinkey_m0"
         - "sam32"
         - "same54_xplained"
         - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
+        - "sensebox_mcu"
         - "serpente"
         - "shirtty"
         - "silicognition-m4-shim"
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_micromod_rp2040"
         - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
         - "sparkfun_pro_micro_rp2040"
@@ -374,6 +383,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -423,6 +434,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -452,6 +465,7 @@ jobs:
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "artisense_rd00"
+        - "atmegazero_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
@@ -484,7 +498,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210304
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210422
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
@@ -521,6 +535,8 @@ jobs:
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: |
         source $IDF_PATH/export.sh

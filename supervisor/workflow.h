@@ -26,5 +26,7 @@
 
 #pragma once
 
+void supervisor_workflow_reset(void);
+
 // True when the user could be actively iterating on their code.
 bool workflow_active(void);

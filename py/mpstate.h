@@ -79,7 +79,7 @@ typedef struct _mp_state_mem_t {
     void *gc_lowest_long_lived_ptr;
 
     int gc_stack_overflow;
-    size_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
     uint16_t gc_lock_depth;
 
     // This variable controls auto garbage collection.  If set to false then the
@@ -197,7 +197,7 @@ typedef struct _mp_state_vm_t {
 
     // pointer and sizes to store interned string data
     // (qstr_last_chunk can be root pointer but is also stored in qstr pool)
-    byte *qstr_last_chunk;
+    char *qstr_last_chunk;
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 

@@ -172,6 +172,9 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         }
 
         #ifdef _DIRENT_HAVE_D_TYPE
+        #ifdef DTTOIF
+        t->items[1] = MP_OBJ_NEW_SMALL_INT(DTTOIF(dirent->d_type));
+        #else
         if (dirent->d_type == DT_DIR) {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
         } else if (dirent->d_type == DT_REG) {
@@ -179,10 +182,12 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         } else {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
         }
+        #endif
         #else
         // DT_UNKNOWN should have 0 value on any reasonable system
         t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
         #endif
+
         #ifdef _DIRENT_HAVE_D_INO
         t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
         #else
@@ -200,6 +205,9 @@ STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     iter->iternext = vfs_posix_ilistdir_it_iternext;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);
+    if (path[0] == '\0') {
+        path = ".";
+    }
     iter->dir = opendir(path);
     if (iter->dir == NULL) {
         mp_raise_OSError(errno);

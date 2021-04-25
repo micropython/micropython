@@ -64,14 +64,12 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
             #endif
             } else {
-                // try to convert to small int (eg from bool)
-                return MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(args[0]));
+                return mp_unary_op(MP_UNARY_OP_INT, args[0]);
             }
 
         case 2:
         default: {
             // should be a string, parse it
-            // TODO proper error checking of argument types
             size_t l;
             const char *s = mp_obj_str_get_data(args[0], &l);
             return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]), NULL);

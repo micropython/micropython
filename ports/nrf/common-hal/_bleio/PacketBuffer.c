@@ -42,7 +42,8 @@
 
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
-        // This shouldn't happen.
+        // This shouldn't happen but can if our buffer size was much smaller than
+        // the writes the client actually makes.
         return;
     }
     // Push all the data onto the ring buffer.
@@ -189,7 +190,7 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
 
 void common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
-    size_t buffer_size) {
+    size_t buffer_size, size_t max_packet_size) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
@@ -206,8 +207,11 @@ void common_hal_bleio_packet_buffer_construct(
         self->conn_handle = BLE_CONN_HANDLE_INVALID;
     }
 
+    // Cap the packet size to our implementation limits.
+    self->max_packet_size = MIN(max_packet_size, BLE_GATTS_VAR_ATTR_LEN_MAX - 3);
+
     if (incoming) {
-        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + characteristic->max_length), false)) {
+        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + self->max_packet_size), false)) {
             mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
         }
     }
@@ -216,8 +220,8 @@ void common_hal_bleio_packet_buffer_construct(
         self->packet_queued = false;
         self->pending_index = 0;
         self->pending_size = 0;
-        self->outgoing[0] = m_malloc(characteristic->max_length, false);
-        self->outgoing[1] = m_malloc(characteristic->max_length, false);
+        self->outgoing[0] = m_malloc(self->max_packet_size, false);
+        self->outgoing[1] = m_malloc(self->max_packet_size, false);
     } else {
         self->outgoing[0] = NULL;
         self->outgoing[1] = NULL;
@@ -252,6 +256,9 @@ void common_hal_bleio_packet_buffer_construct(
 }
 
 mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_ConnectionError(translate("Not connected"));
+    }
     if (ringbuf_num_filled(&self->ringbuf) < 2) {
         return 0;
     }
@@ -293,10 +300,16 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, u
     }
     uint16_t outgoing_packet_length = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
 
-    if (len + header_len > outgoing_packet_length) {
+    uint16_t total_len = len + header_len;
+    if (total_len > outgoing_packet_length) {
         // Supplied data will not fit in a single BLE packet.
-        mp_raise_ValueError(translate("Total data to write is larger than outgoing_packet_length"));
+        mp_raise_ValueError_varg(translate("Total data to write is larger than %q"), MP_QSTR_outgoing_packet_length);
     }
+    if (total_len > self->max_packet_size) {
+        // Supplied data will not fit in a single BLE packet.
+        mp_raise_ValueError_varg(translate("Total data to write is larger than %q"), MP_QSTR_max_packet_size);
+    }
+    outgoing_packet_length = MIN(outgoing_packet_length, self->max_packet_size);
 
     if (len + self->pending_size > outgoing_packet_length) {
         // No room to append len bytes to packet. Wait until we get a free buffer,
@@ -357,8 +370,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_
         if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
-                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                    self->characteristic->max_length);
+                return common_hal_bleio_connection_get_max_packet_length(connection);
             }
         }
         // There's no current connection, so we don't know the MTU, and
@@ -388,15 +400,29 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
         if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
-                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                    self->characteristic->max_length);
+                return MIN(MIN(common_hal_bleio_connection_get_max_packet_length(connection),
+                               self->max_packet_size),
+                           self->characteristic->max_length);
             }
         }
         // There's no current connection, so we don't know the MTU, and
         // we can't tell what the largest outgoing packet length would be.
         return -1;
     }
-    return self->characteristic->max_length;
+    // If we are talking to a remote service, we'll be bound by the MTU. (We don't actually
+    // know the max size of the remote characteristic.)
+    if (self->characteristic->service != NULL &&
+        self->characteristic->service->is_remote) {
+        // We are talking to a remote service so we're writing.
+        if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
+            if (connection) {
+                return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
+                           self->max_packet_size);
+            }
+        }
+    }
+    return MIN(self->characteristic->max_length, self->max_packet_size);
 }
 
 bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
