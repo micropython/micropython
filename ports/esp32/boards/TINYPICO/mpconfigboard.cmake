@@ -6,4 +6,6 @@ set(SDKCONFIG_DEFAULTS
     boards/TINYPICO/sdkconfig.board
 )
 
-set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
+if(NOT MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
+endif()

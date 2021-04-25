@@ -26,6 +26,10 @@ endif
 
 IDFPY_FLAGS += -D MICROPY_BOARD=$(BOARD) -B $(BUILD) $(CMAKE_ARGS)
 
+ifdef FROZEN_MANIFEST
+       IDFPY_FLAGS += -D MICROPY_FROZEN_MANIFEST=$(FROZEN_MANIFEST)
+endif
+
 all:
 	idf.py $(IDFPY_FLAGS) build
 	@$(PYTHON) makeimg.py \
