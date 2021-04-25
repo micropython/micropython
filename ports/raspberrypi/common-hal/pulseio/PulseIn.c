@@ -180,6 +180,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
     self->start = 0;
     self->len = 0;
+    buf_index = 0;
 }
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
