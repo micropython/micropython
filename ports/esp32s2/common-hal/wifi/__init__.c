@@ -56,12 +56,12 @@ static void event_handler(void *arg, esp_event_base_t event_base,
             case WIFI_EVENT_AP_STOP:
                 ESP_LOGW(TAG, "ap stop");
                 break;
-            case WIFI_EVENT_AP_STACONNECTED:
-                ESP_LOGW(TAG, "ap sta connected");
+            case WIFI_EVENT_AP_STACONNECTED: {
                 break;
-            case WIFI_EVENT_AP_STADISCONNECTED:
-                ESP_LOGW(TAG, "ap sta disconnected");
+            }
+            case WIFI_EVENT_AP_STADISCONNECTED: {
                 break;
+            }
             case WIFI_EVENT_STA_START:
                 ESP_LOGW(TAG, "sta start");
                 break;
