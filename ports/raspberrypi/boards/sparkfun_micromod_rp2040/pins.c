@@ -2,7 +2,7 @@
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // D (Digital only) pins (D0,D1)
-    { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO7) },        // GPIO6 - D0
+    { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO6) },        // GPIO6 - D0
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO7) },        // GPIO7 - D1
 
     // A (ADC) pins (A0,A1)
