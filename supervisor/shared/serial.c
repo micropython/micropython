@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 
+#include "supervisor/shared/cpu.h"
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/serial.h"
@@ -77,9 +78,9 @@ void serial_early_init(void) {
 
 void serial_init(void) {
     usb_init();
-#ifdef NRF_DEBUG_PRINT
+    #ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
-#endif
+    #endif
 }
 
 bool serial_connected(void) {
@@ -149,13 +150,17 @@ void serial_write_substring(const char *text, uint32_t length) {
     uint32_t count = 0;
     while (count < length && tud_cdc_connected()) {
         count += tud_cdc_write(text + count, length - count);
+        // If we're in an interrupt, then don't wait for more room. Queue up what we can.
+        if (cpu_interrupt_active()) {
+            break;
+        }
         usb_background();
     }
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     int uart_errcode;
 
-    common_hal_busio_uart_write(&debug_uart, (const uint8_t *) text, length, &uart_errcode);
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
 
     #ifdef NRF_DEBUG_PRINT

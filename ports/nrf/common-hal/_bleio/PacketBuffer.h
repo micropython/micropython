@@ -44,6 +44,7 @@ typedef struct {
     // We remember the conn_handle so we can do a NOTIFY/INDICATE to a client.
     // We can find out the conn_handle on a Characteristic write or a CCCD write (but not a read).
     volatile uint16_t conn_handle;
+    uint16_t max_packet_size;
     uint8_t pending_index;
     uint8_t write_type;
     bool client;

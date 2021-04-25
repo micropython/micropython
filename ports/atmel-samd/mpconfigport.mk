@@ -41,6 +41,7 @@ CIRCUITPY_BUILTINS_POW3 ?= 0
 CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
 CIRCUITPY_FREQUENCYIO ?= 0
 CIRCUITPY_JSON ?= 0
+CIRCUITPY_SYNTHIO ?= 0
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 
 # No room for HCI _bleio on SAMD21.
@@ -86,4 +87,23 @@ CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
 
 endif # samd51
+######################################################################
+
+######################################################################
+# Put same51-only choices here.
+
+ifeq ($(CHIP_FAMILY),same51)
+
+# No native touchio on SAMD51.
+CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+# The ?='s allow overriding in mpconfigboard.mk.
+
+CIRCUITPY_NETWORK ?= 0
+CIRCUITPY_PS2IO ?= 1
+CIRCUITPY_SAMD ?= 1
+CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
+CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
+
+endif # same51
 ######################################################################

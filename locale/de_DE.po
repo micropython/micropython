@@ -447,10 +447,8 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Versuche %d Blöcke zu allokieren"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Versuch einer Heap Reservierung, wenn die MicroPython-VM nicht ausgeführt "
-"wird."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -899,6 +897,11 @@ msgstr "ESP-IDF Speicherallozierung fehlgeschlagen"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT Kanal ist schon in Benutzung"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Fehler in regex"
@@ -1029,6 +1032,10 @@ msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Interner Flash konnte nicht geschrieben werden."
 
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Datei existiert"
@@ -1102,10 +1109,6 @@ msgstr "I2C Peripherie in Verwendung"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut nicht verfügbar"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 unterstützen keinen internen Pull up im sleep-Modus"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1231,6 +1234,10 @@ msgstr "Ungültige BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ungültiger DAC-Pin angegeben"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1423,15 +1430,6 @@ msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr ""
-"MicroPython NLR-Sprung fehlgeschlagen. Wahrscheinlich Speicherbeschädigung."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Schwerwiegender MicroPython-Fehler."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
@@ -1483,6 +1481,10 @@ msgstr "Muss MISO- oder MOSI-Pin bereitstellen"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Muss ein Vielfaches von 6 RGB-Pins verwenden, nicht %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1628,6 +1630,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2560,10 +2563,6 @@ msgstr "Zweig ist außerhalb der Reichweite"
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "Puffer muss ein bytes-artiges Objekt sein"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
@@ -3017,7 +3016,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: einzelne '}' nicht erlaubt"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "Die Datei muss eine im Byte-Modus geöffnete Datei sein"
 
@@ -3275,6 +3274,10 @@ msgstr ""
 msgid "invalid cert"
 msgstr "ungültiges cert"
 
+#: py/compile.c
+msgid "invalid decorator"
+msgstr ""
+
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
 msgstr "ungültiger dupterm index"
@@ -3329,10 +3332,6 @@ msgstr "ungültige Syntax für integer mit Basis %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ungültige Syntax für number"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3803,6 +3802,7 @@ msgstr "pow () mit 3 Argumenten erfordert Integer"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3826,6 +3826,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -4104,10 +4108,6 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr ""
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupel/list hat falsche Länge"
@@ -4246,10 +4246,6 @@ msgstr "Wert muss in %d Byte(s) passen"
 msgid "value_count must be > 0"
 msgstr "value_count muss größer als 0 sein"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr ""
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
@@ -4335,6 +4331,25 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 unterstützen keinen internen Pull up im sleep-Modus"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "Puffer muss ein bytes-artiges Objekt sein"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Versuch einer Heap Reservierung, wenn die MicroPython-VM nicht ausgeführt "
+#~ "wird."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr ""
+#~ "MicroPython NLR-Sprung fehlgeschlagen. Wahrscheinlich "
+#~ "Speicherbeschädigung."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Schwerwiegender MicroPython-Fehler."
 
 #~ msgid "argument must be ndarray"
 #~ msgstr "Argument muss ein ndarray sein"

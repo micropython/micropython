@@ -87,7 +87,7 @@ static void pinalarm_gpiote_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t
 
 bool alarm_pin_pinalarm_woke_us_up(void) {
     return (sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_PIN &&
-	    sleepmem_wakeup_pin != WAKEUP_PIN_UNDEF);
+        sleepmem_wakeup_pin != WAKEUP_PIN_UNDEF);
 }
 
 mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
@@ -97,7 +97,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
-	if (alarm->pin->number == sleepmem_wakeup_pin) {
+    if (alarm->pin->number == sleepmem_wakeup_pin) {
             return alarms[i];
         }
     }
@@ -130,8 +130,8 @@ void alarm_pin_pinalarm_reset(void) {
             continue;
         }
         reset_pin_number(i);
-	nrfx_gpiote_in_event_disable((nrfx_gpiote_pin_t)i);
-	nrfx_gpiote_in_uninit((nrfx_gpiote_pin_t)i);
+    nrfx_gpiote_in_event_disable((nrfx_gpiote_pin_t)i);
+    nrfx_gpiote_in_uninit((nrfx_gpiote_pin_t)i);
     }
 
     high_alarms = 0;
@@ -178,15 +178,15 @@ static void configure_pins_for_sleep(void) {
             cfg.pull = NRF_GPIO_PIN_NOPULL;
         }
         err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
-				  pinalarm_gpiote_handler);
-	assert(err == NRFX_SUCCESS);
+                  pinalarm_gpiote_handler);
+    assert(err == NRFX_SUCCESS);
         nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
         if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
-	}
+    }
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_LOW);
-	}
+    }
     }
 }
 
@@ -203,7 +203,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
 
         pin_number = alarm->pin->number;
-	//dbg_printf("alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
+    //dbg_printf("alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
         if (alarm->value) {
             high_alarms |= 1ull << pin_number;
             high_count++;
@@ -222,8 +222,8 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         else {
             // we don't setup gpio HW here but do them in
             // alarm_pin_pinalarm_prepare_for_deep_sleep() below
-	    reset_reason_saved = 0;
-	    pins_configured = false;
+        reset_reason_saved = 0;
+        pins_configured = false;
         }
     }
     else {
@@ -234,9 +234,9 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
 void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
     if (!pins_configured) {
         configure_pins_for_sleep();
-	pins_configured = true;
+    pins_configured = true;
 #ifdef NRF_DEBUG_PRINT
-	//dbg_dump_GPIOregs();
+    //dbg_dump_GPIOregs();
 #endif
     }
 }

@@ -266,7 +266,7 @@ def generate_download_info():
     # Delete the release we are replacing
     for board in current_info:
         info = current_info[board]
-        for version in info["versions"]:
+        for version in list(info["versions"]):
             previous_releases.add(version["version"])
             previous_languages.update(version["languages"])
             if version["stable"] == new_stable or (

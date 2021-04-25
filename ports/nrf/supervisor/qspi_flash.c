@@ -281,7 +281,7 @@ void qspi_flash_enter_sleep(void) {
     // set sck_delay tempolarily
     r = NRF_QSPI->IFCONFIG1;
     sck_delay_saved = (r & QSPI_IFCONFIG1_SCKDELAY_Msk)
-				>> QSPI_IFCONFIG1_SCKDELAY_Pos;
+                >> QSPI_IFCONFIG1_SCKDELAY_Pos;
     NRF_QSPI->IFCONFIG1
         = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
         | (SCK_DELAY << QSPI_IFCONFIG1_SCKDELAY_Pos);
@@ -312,20 +312,20 @@ void qspi_flash_exit_sleep(void) {
     if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
         // exit deep power-down mode
         NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_DPMEN_Msk;
-	NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
+    NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
 
-	if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
+    if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
 #ifdef NRF_DEBUG_PRINT
-	    dbg_printf("qspi flash: exiting DPM failed\r\n");
+        dbg_printf("qspi flash: exiting DPM failed\r\n");
 #endif
-	}
-	// restore sck_delay
-	if (sck_delay_saved == 0) {
-	    sck_delay_saved = 10; // default
-	}
-	NRF_QSPI->IFCONFIG1
-	    = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
-	    | (sck_delay_saved << QSPI_IFCONFIG1_SCKDELAY_Pos);
+    }
+    // restore sck_delay
+    if (sck_delay_saved == 0) {
+        sck_delay_saved = 10; // default
+    }
+    NRF_QSPI->IFCONFIG1
+        = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
+        | (sck_delay_saved << QSPI_IFCONFIG1_SCKDELAY_Pos);
     }
     //dbg_dumpQSPIreg();
 #endif
