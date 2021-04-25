@@ -134,6 +134,7 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
         MP_STATE_VM(sched_queue)[iput].func = function;
         MP_STATE_VM(sched_queue)[iput].arg = arg;
+        MICROPY_SCHED_HOOK_SCHEDULED;
         ret = true;
     } else {
         // schedule queue is full
