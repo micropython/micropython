@@ -159,7 +159,7 @@ Signed and encrypted DFU support
 --------------------------------
 
 Mboot optionally supports signing and encrypting the binary firmware in the DFU file.
-In general this is refered to as a packed DFU file.  This requires additional settings
+In general this is referred to as a packed DFU file.  This requires additional settings
 in the board config and requires the `pyhy` Python module to be installed for `python3`
 to be used when building packed firmware, eg:
 
