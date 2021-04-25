@@ -53,8 +53,8 @@ static const uint8_t usb_hid_descriptor_template[] = {
 
 // Is the HID device enabled?
 bool usb_hid_enabled;
-supervisor_allocation *combined_hid_report_descriptor_allocation;
-supervisor_allocation *devices_allocation;
+supervisor_allocation *hid_report_descriptor_allocation;
+supervisor_allocation *hid_devices_allocation;
 
 
 // This is the interface descriptor, not the report descriptor.
@@ -64,7 +64,7 @@ size_t usb_hid_descriptor_length(void) {
 
 static const char[] usb_hid_interface_name =  USB_INTERFACE_NAME " HID";
 
-// This is the interface descriptor, nto the report descriptor.
+// This is the interface descriptor, not the report descriptor.
 size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length) {
     memcpy(descriptor_buf, usb_hid_descriptor_template, sizeof(usb_hid_descriptor_template));
 
@@ -78,7 +78,7 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_hid_descriptor_template);
 }
 
-usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
+usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seq) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
         return USB_CONFIG_TOO_LATE;
@@ -86,7 +86,7 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
 
     // Assume no devices to start.
     usb_hid_enabled = false;
-    if (devices == mp_const_none) {
+    if (devices_seq == mp_const_none) {
         return USB_CONFIG_OK;
     }
 
@@ -94,11 +94,11 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
 
     // Build a combined report descriptor
 
-    mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
+    mp_int_t len = mp_obj_get_int(mp_obj_len(devices_seq));
 
     // First get the total size.
     for (size_t i = 0; i < len; i++) {
-        mp_obj_t item = mp_obj_subscr(devices, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
+        mp_obj_t item = mp_obj_subscr(devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
         if (!MP_OBJ_IS_TYPE(item, &usb_hid_device_type)) {
             return USB_CONFIG_NON_DEVICE;    for (size_t i = 0; i < len; i++) {
         mp_obj_t item = (devices, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
@@ -119,16 +119,16 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
     // Allocate storage that persists across VMs to build the combined descriptor
     // and to remember the device details.
 
-    // allocate_memory(length, highaddress=false, movable=true)
-    combined_hid_report_descriptor_allocation = allocate_memory(total_report_descriptors_length, false, true);
+    hid_report_descriptor_allocation =
+        allocate_memory(total_report_descriptors_length, false /*highaddress*/, true /*movable*/);
 
-    devices_allocation = allocate_memory(sizeof(usb_hid_device_obj_t) * len);
-    usb_hid_device_obj_t devices[] = (devices[]) device_details_allocation->ptr;
+    hid_devices_allocation = allocate_memory(sizeof(usb_hid_device_obj_t) * len);
+    usb_hid_device_obj_t hid_devices[] = (usb_hid_device_obj_t[]) hid_devices_allocation->ptr;
 
-    uint8_t *descriptor_start = combined_hid_report_descriptor_allocation->ptr;
+    uint8_t *descriptor_start = (uint8_t *) hid_report_descriptor_allocation->ptr;
 
     for (size_t i = 0; i < len; i++) {
-        usb_hid_device_obj_t *device = MP_OBJ_TO_PTR(devices, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
+        usb_hid_device_obj_t *device = MP_OBJ_TO_PTR(devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
 
         // Copy the report descriptor for this device.
         if (len == 1) {
@@ -146,8 +146,8 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
         }
 
         // Copy the device data and discard any descriptor-bytes object pointer.
-        memcpy(&devices[i], device, sizeof(usb_hid_device_obj_t));
-        devices[i].descriptor_obj = mp_const_none;
+        memcpy(&hid_devices[i], device, sizeof(usb_hid_device_obj_t));
+        hid_devices[i].descriptor_obj = mp_const_none;
     }
 
 }
@@ -155,9 +155,10 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices) {
 void usb_hid_gc_collect(void) {
     // Once tud_mounted() is true, we're done with the constructed descriptors.
     if (tud_mounted()) {
-        // GC will pick up the inaccessible blocks.
-        usb_hid_devices_to_configure = NULL;
+        free_memory(hid_report_descriptor_allocation);
+        free_memory(usb_hid_devices_allocation);
     } else {
-        gc_collect_ptr(usb_hid_devices);
+        gc_collect_ptr(hid_report_descriptor_allocation->ptr);
+        gc_collect_ptr(usb_hid_devices_allocation);
     }
 }

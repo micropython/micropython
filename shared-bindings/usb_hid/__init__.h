@@ -38,6 +38,4 @@ typedef enum {
     USB_CONFIG_NON_DEVICE = 2,
 } usb_hid_configure_status;
 
-usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices);
-
-#endif  // SHARED_BINDINGS_USB_HID_H
+usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seqf  // SHARED_BINDINGS_USB_HID_H

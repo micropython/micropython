@@ -46,9 +46,8 @@
 
 #include "genhdr/autogen_usb_descriptor.h"
 
-static uint8_t *device_descriptor;
-static uint8_t *config_descriptor;
-static uint8_t *hid_report_descriptor;
+supervisor_allocation *device_descriptor_allocation;
+supervisor_allocation *config_descriptor_allocation;
 
 // Table for collecting interface strings (interface names) as descriptor is built.
 #define MAX_INTERFACE_STRINGS 16
@@ -114,14 +113,17 @@ void usb_desc_init(void) {
     // Null-terminate the string.
     serial_number_hex_string[sizeof(serial_number_hex_string)] = '\0';
 
-    // Set to zero when allocated; we depend on that.
+    // Memory is cleared to zero when allocated; we depend on that.
     collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
     current_interface_string = 1;
 }
 
 
 void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string) {
-    device_descriptor = m_malloc(sizeof(device_descriptor_template), false);
+    device_descriptor_allocation =
+        allocate_memory(sizeof(device_descriptor_template), false /*highaddress*/, true /*movable*/);
+    uint8_t *device_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
+
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
     device_descriptor[DEVICE_VID_LO_INDEX] = vid & 0xFF;
@@ -176,7 +178,10 @@ void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_inter
 #endif
 
     // Now we now how big the configuration descriptor will be.
-    configuration_descriptor = m_malloc(total_descriptor_length, false);
+
+    configuration_descriptor_allocation =
+        allocate_memory(sizeof(configuration_descriptor_template), false /*highaddress*/, true /*movable*/);
+    uint8_t *configuration_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
 
     // Copy the top-level template, and fix up its length.
     memcpy(config_descriptor, configuration_descriptor_template, sizeof(configuration_descriptor_template));
@@ -258,13 +263,11 @@ void usb_desc_gc_collect(void) {
     // Once tud_mounted() is true, we're done with the constructed descriptors.
     if (tud_mounted()) {
         // GC will pick up the inaccessible blocks.
-        device_descriptor = NULL;
-        configuration_descriptor = NULL;
-        hid_report_descriptors = NULL;
+        free_memory(device_descriptor_allocation);
+        free_memory(configuration_descriptor_allocation);
     } else {
-        gc_collect_ptr(device_descriptor);
-        gc_collect_ptr(configuration_descriptor);
-        gc_collect_ptr(hid_report_descriptors);  // Collects children too.
+        gc_collect_ptr(device_descriptor_allocation->ptr);
+        gc_collect_ptr(configuration_descriptor_allocation->ptr);
     }
 }
 

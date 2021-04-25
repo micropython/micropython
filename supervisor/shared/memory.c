@@ -34,7 +34,7 @@
 
 enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
-        // stack + heap
+    // stack + heap
         2
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
@@ -45,8 +45,13 @@ enum {
     ,
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
         0
+        #if CIRCUITPY_USB
+        + 1   // device_descriptor_allocation
+        + 1   // config_descriptor_allocation
+        #endif
         #if CIRCUITPY_USB_HID
-        + 2
+        + 1   // hid_report_descriptor_allocation
+        + 1   // hid_devices_allocation
         #endif
         #if CIRCUITPY_DISPLAYIO
         #if CIRCUITPY_TERMINALIO
