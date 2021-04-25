@@ -49,6 +49,7 @@
 #include "py/stackctrl.h"
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
+#include "extmod/modbluetooth.h"
 
 #if MICROPY_VFS
 #include "extmod/vfs.h"
@@ -168,6 +169,9 @@ soft_reset:
 
     printf("soft reboot\n");
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_deinit();
+    #endif
     #if MICROPY_PY_MACHINE
     machine_pin_deinit();
     #endif

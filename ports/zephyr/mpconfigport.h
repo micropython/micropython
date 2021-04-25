@@ -52,6 +52,7 @@
 #define MICROPY_PY_BUILTINS_REVERSED (0)
 #define MICROPY_PY_BUILTINS_SET     (0)
 #define MICROPY_PY_BUILTINS_STR_COUNT (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
 #define MICROPY_PY_ARRAY            (0)
@@ -68,6 +69,13 @@
 // If we have networking, we likely want errno comfort
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_USOCKET          (1)
+#endif
+#ifdef CONFIG_BT
+#define MICROPY_PY_BLUETOOTH        (1)
+#ifdef CONFIG_BT_CENTRAL
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+#define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (0)
 #endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UHASHLIB         (1)
@@ -123,7 +131,8 @@ typedef long mp_off_t;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
-    void *machine_pin_irq_list; /* Linked list of pin irq objects */
+    void *machine_pin_irq_list; /* Linked list of pin irq objects */ \
+    struct _mp_bluetooth_zephyr_root_pointers_t *bluetooth_zephyr_root_pointers;
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_time;
