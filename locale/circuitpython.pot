@@ -2344,6 +2344,10 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
+msgid "WiFi password is not used with OPEN authentication"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
