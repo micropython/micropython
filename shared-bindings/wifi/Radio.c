@@ -175,6 +175,7 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_station(mp_obj_t self) {
+    common_hal_wifi_radio_start_station(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_station_obj, wifi_radio_start_station);
@@ -184,6 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_station_obj, wifi_radio_start_station
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
+    common_hal_wifi_radio_stop_station(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
@@ -227,6 +229,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_a
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
+    common_hal_wifi_radio_stop_ap(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
