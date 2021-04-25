@@ -157,26 +157,14 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
 }
 
 void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
-    if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
-    }
-
     set_mode_station(self, true);
 }
 
 void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
-    if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
-    }
-
     set_mode_station(self, false);
 }
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel) {
-    if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
-    }
-
     set_mode_ap(self, true);
 
     wifi_config_t *config = &self->ap_config;
@@ -191,10 +179,6 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
 }
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
-    if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
-    }
-
     set_mode_ap(self, false);
 }
 
