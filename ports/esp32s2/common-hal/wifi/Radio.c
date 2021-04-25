@@ -164,7 +164,7 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     set_mode_station(self, false);
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel) {
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode) {
     set_mode_ap(self, true);
 
     wifi_config_t *config = &self->ap_config;
@@ -173,7 +173,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     memcpy(&config->ap.password, password, password_len);
     config->ap.password[password_len] = 0;
     config->ap.channel = channel;
-    config->ap.authmode = WIFI_AUTH_WPA2_PSK;
+    config->ap.authmode = authmode;
     config->ap.max_connection = 4;
     esp_wifi_set_config(WIFI_IF_AP, config);
 }
