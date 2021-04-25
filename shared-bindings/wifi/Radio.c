@@ -171,8 +171,8 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
 };
 
 //|     def start_station(self) -> None:
-//|     """Starts a Wi-Fi Station"""
-//|     ...
+//|         """Starts a Station."""
+//|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_station(mp_obj_t self) {
     return mp_const_none;
@@ -180,8 +180,8 @@ STATIC mp_obj_t wifi_radio_start_station(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_station_obj, wifi_radio_start_station);
 
 //|     def stop_station(self) -> None:
-//|     """Stops the Wi-Fi Station"""
-//|     ...
+//|         """Stops the Station."""
+//|         ...
 //|
 STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
     return mp_const_none;
@@ -191,7 +191,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|     def start_ap(self,
 //|                  ssid: ReadableBuffer,
 //|                  password: ReadableBuffer = b"") -> None:
-//|         """Starts a Wi-Fi Access Point with the specified ssid and password."""
+//|         """Starts an Access Point with the specified ssid and password."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -223,8 +223,8 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
 
 //|     def stop_ap(self) -> None:
-//|     """Stops the Wi-Fi Access Point"""
-//|     ...
+//|         """Stops the Access Point."""
+//|         ...
 //|
 STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
     return mp_const_none;

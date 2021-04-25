@@ -50,7 +50,7 @@ static void set_mode_station(wifi_radio_obj_t *self, bool state) {
         } else {
             next_mode = WIFI_MODE_STA;
         }
-     } else {
+    } else {
         if (self->ap_mode) {
             next_mode = WIFI_MODE_AP;
         } else {
@@ -70,7 +70,7 @@ static void set_mode_ap(wifi_radio_obj_t *self, bool state) {
         } else {
             next_mode = WIFI_MODE_AP;
         }
-     } else {
+    } else {
         if (self->sta_mode) {
             next_mode = WIFI_MODE_STA;
         } else {
