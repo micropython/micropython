@@ -51,6 +51,9 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x08,        // 21 bInterval 8 (unit depends on device speed)
 };
 
+// Sequence of devices to configure.
+static mp_obj_t hid_devices_seq;
+
 // Is the HID device enabled?
 bool usb_hid_enabled;
 supervisor_allocation *hid_report_descriptor_allocation;
@@ -78,23 +81,35 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_hid_descriptor_template);
 }
 
-usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seq) {
+static mp_obj_t default_hid_devices[] = {
+    MP_OBJ_FROM_PTR(usb_hid_device_keyboard_obj),
+    MP_OBJ_FROM_PTR(usb_hid_device_mouse_obj),
+};
+
+// Set the default list of devices that will be included. Called before boot.py runs, in the boot.py VM.
+void common_hal_usb_hid_configure_usb_defaults(void) {
+    common_hal_usb_hid_configure_usb(mp_obj_new_tuple(sizeof(default_hid_devices), default_hid_devices));
+}
+
+bool common_hal_usb_hid_configure_usb(mp_obj_t devices_seq) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
-        return USB_CONFIG_TOO_LATE;
+        return false;
     }
 
-    // Assume no devices to start.
-    usb_hid_enabled = false;
-    if (devices_seq == mp_const_none) {
-        return USB_CONFIG_OK;
-    }
+    // Remember the devices for use in usb_hid_post_boot_py.
+    hid_devices_seq = devices_seq;
+    return true;
+}
 
+// Build the combined HID report descriptor and save the chosen devices.
+// Both are saved in supervisor allocations.
+void usb_hid_post_boot_py(void) {
     size_t total_report_descriptors_length = 0;
 
     // Build a combined report descriptor
 
-    mp_int_t len = mp_obj_get_int(mp_obj_len(devices_seq));
+    mp_int_t len = mp_obj_get_int(mp_obj_len(hid_devices_seq));
 
     // First get the total size.
     for (size_t i = 0; i < len; i++) {
@@ -128,7 +143,7 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seq) 
     uint8_t *descriptor_start = (uint8_t *) hid_report_descriptor_allocation->ptr;
 
     for (size_t i = 0; i < len; i++) {
-        usb_hid_device_obj_t *device = MP_OBJ_TO_PTR(devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
+        usb_hid_device_obj_t *device = MP_OBJ_TO_PTR(hid_devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
 
         // Copy the report descriptor for this device.
         if (len == 1) {
@@ -150,6 +165,8 @@ usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seq) 
         hid_devices[i].descriptor_obj = mp_const_none;
     }
 
+    // No longer keeping the Python object of devices to configure.
+    hid_devices_seq = MP_OBJ_NULL;
 }
 
 void usb_hid_gc_collect(void) {
@@ -158,7 +175,8 @@ void usb_hid_gc_collect(void) {
         free_memory(hid_report_descriptor_allocation);
         free_memory(usb_hid_devices_allocation);
     } else {
+        gc_collect_ptr(hid_devices_seq);
         gc_collect_ptr(hid_report_descriptor_allocation->ptr);
-        gc_collect_ptr(usb_hid_devices_allocation);
+        gc_collect_ptr(usb_hid_devices_allocation_ptr);
     }
 }

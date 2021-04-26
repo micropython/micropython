@@ -38,8 +38,6 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
-#include "genhdr/autogen_usb_descriptor.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

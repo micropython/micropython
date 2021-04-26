@@ -41,7 +41,6 @@
 #include "tusb.h"
 
 #if CIRCUITPY_USB_VENDOR
-#include "genhdr/autogen_usb_descriptor.h"
 
 // The WebUSB support being conditionally added to this file is based on the
 // tinyusb demo examples/device/webusb_serial.
@@ -55,15 +54,17 @@ bool usb_enabled(void) {
     return tusb_inited();
 }
 
+// Initialization done only once, before boot.py is run.
+void reset_usb(void) {
+    reset_usb_desc();
+}
+
+
 MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
-    usb_build_device_descriptor();
-    usb_build_configuration_descriptor();
-    usb_build_hid_descriptor();
-    usb_build_string_descriptors();
-
+    usb_desc_init();
 
     init_usb_hardware();
 
@@ -81,6 +82,13 @@ void usb_init(void) {
     usb_midi_usb_init();
     #endif
 }
+
+// Remember USB settings done during boot.py.
+// The boot.py heap is still valid at this point.
+void usb_post_boot_py(void) {
+    usb_desc_post_boot_py();
+}
+
 
 void usb_disconnect(void) {
     tud_disconnect();

@@ -2,60 +2,29 @@
 #ifndef HPL_USB_CONFIG_H
 #define HPL_USB_CONFIG_H
 
-// CIRCUITPY:
+// CIRCUITPY: Since we have dynamic USB descriptors, we may end up using all endpoints.
+// So provide cache space for all of them.
 
-// Use 64-byte USB buffers for endpoint directions that are in use. They're set to 0 below otherwise.
-
-#include "genhdr/autogen_usb_descriptor.h"
-
-#if defined(USB_ENDPOINT_1_OUT_USED) && USB_ENDPOINT_1_OUT_USED
 #define CONF_USB_EP1_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_1_IN_USED) && USB_ENDPOINT_1_IN_USED
 #define CONF_USB_EP1_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_2_OUT_USED) && USB_ENDPOINT_2_OUT_USED
 #define CONF_USB_EP2_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_2_IN_USED) && USB_ENDPOINT_2_IN_USED
 #define CONF_USB_EP2_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_3_OUT_USED) && USB_ENDPOINT_3_OUT_USED
 #define CONF_USB_EP3_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_3_IN_USED) && USB_ENDPOINT_3_IN_USED
 #define CONF_USB_EP3_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_4_OUT_USED) && USB_ENDPOINT_4_OUT_USED
 #define CONF_USB_EP4_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_4_IN_USED) && USB_ENDPOINT_4_IN_USED
 #define CONF_USB_EP4_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_5_OUT_USED) && USB_ENDPOINT_5_OUT_USED
 #define CONF_USB_EP5_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_5_IN_USED) && USB_ENDPOINT_5_IN_USED
 #define CONF_USB_EP5_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_6_OUT_USED) && USB_ENDPOINT_6_OUT_USED
 #define CONF_USB_EP6_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_6_IN_USED) && USB_ENDPOINT_6_IN_USED
 #define CONF_USB_EP6_I_CACHE 64
-#endif
 
-#if defined(USB_ENDPOINT_7_OUT_USED) && USB_ENDPOINT_7_OUT_USED
 #define CONF_USB_EP7_CACHE 64
-#endif
-#if defined(USB_ENDPOINT_7_IN_USED) && USB_ENDPOINT_7_IN_USED
 #define CONF_USB_EP7_I_CACHE 64
-#endif
 
 
 // <<< Use Configuration Wizard in Context Menu >>>

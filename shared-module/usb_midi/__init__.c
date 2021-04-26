@@ -26,7 +26,6 @@
 
 #include "shared-bindings/usb_midi/__init__.h"
 
-#include "genhdr/autogen_usb_descriptor.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "py/runtime.h"

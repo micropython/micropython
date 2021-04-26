@@ -62,33 +62,4 @@ The tinyusb examples already include a "WebUSB serial" example.
 Basically, this feature was ported into CircuitPython by pulling code snippets out of the
 tinyusb example, and putting them where they best belonged in the CircuitPython codebase.
 
-There was one complication:
-
-tinyusb uses C preprocessor macros to define things like USB descriptors.
-
-CircuitPython uses a Python program (tools/gen_usb_descriptor.py) to create USB descriptors (etc.)
-using "helper objects" from another repo (adafruit_usb_descriptor). This means some of the example
-code had to be adapted to the new programing model, and gen_usb_descriptor gained new command-line
-options to control the generated code.
-
-The generated files go into the "build" directory, look for autogen_usb_descriptor.c and
-genhdr/autogen_usb_descriptor.h.
-
-
-Also worth pointing out - the re-use of the CDC connect/disconnect mechanism is not actually part
-of the WebUSB standard, it's more of "common idiom". We make use of it here because we need to know
-when we should be paying attention to the WebUSB serial interface, and when we should ignore it..
-
-## Possible future work areas
-
-The current code uses the existing Python infrastructure to create the Interface descriptor, but
-simply outputs the code snippets from the original tinyusb demo code to create the WEBUSB_URL,
-BOS, and MS_OS_20 descriptors. I suppose additional work could be done to add these to the
-adafruit_usb_descriptor project, and then gen_usb_descriptor.py could be modified to make use
-of them.
-
-Program gen_usb_descriptor.py creates objects for most interface types, regardless of whether or
-not they are actually enabled. This increases the size of a generated string table. I made the
-new vendor-interface-related code not do this (because some of the ARM platforms would no longer
-build), but I did not go back and do this for the other interface types (CDC, MIDI, HID, etc.)
-Some FLASH savings are probably possible if this is done.
+### TODO: This needs to be reworked for dynamic USB descriptors.

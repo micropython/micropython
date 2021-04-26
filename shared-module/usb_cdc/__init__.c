@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "genhdr/autogen_usb_descriptor.h"
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/mphal.h"

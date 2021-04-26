@@ -44,10 +44,8 @@
 
 #include "shared-module/usb_hid/Device.h"
 
-#include "genhdr/autogen_usb_descriptor.h"
-
-supervisor_allocation *device_descriptor_allocation;
-supervisor_allocation *config_descriptor_allocation;
+uint8_t *device_descriptor;
+uint8_t *config_descriptor;
 
 // Table for collecting interface strings (interface names) as descriptor is built.
 #define MAX_INTERFACE_STRINGS 16
@@ -99,31 +97,31 @@ static const uint8_t configuration_descriptor_template[] = {
     0x32,        // 8 bMaxPower 100mA
 };
 
-void usb_desc_init(void) {
-    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
-    common_hal_mcu_processor_get_uid(raw_id);
+// Initialization done before boot.py is run.
+// Turn on or off various USB devices. On devices with limited endpoints,
+// some may be off by default.
+void reset_usb_desc(void) {
+    // Set defaults for enabling/disabling of various USB devices.
+#if CIRCUITPY_USB_CDC
+    common_hal_usb_cdc_configure_usb(
+        (bool) CIRCUITPY_USB_CDC_REPL_ENABLED_DEFAULT,
+        (bool) CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT);
+#endif
 
-    for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-        for (int j = 0; j < 2; j++) {
-            uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
-            serial_number_hex_string[i * 2 + (1 - j)] = nibble_to_hex_upper[nibble];
-        }
-    }
+#if CIRCUITPY_USB_MSC
+    common_hal_storage_configure_usb((bool) CIRCUITPY_USB_MSC_ENABLED_DEFAULT);
+#endif
 
-    // Null-terminate the string.
-    serial_number_hex_string[sizeof(serial_number_hex_string)] = '\0';
+#if CIRCUITPY_USB_MIDI
+    common_hal_usb_midi_configure_usb((bool) CIRCUITPY_USB_MIDI_ENABLED_DEFAULT);
+#endif
 
-    // Memory is cleared to zero when allocated; we depend on that.
-    collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
-    current_interface_string = 1;
+#if CIRCUITPY_USB_HID
+    common_hal_usb_hid_configure_usb_default();
+#endif
 }
 
-
-void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string) {
-    device_descriptor_allocation =
-        allocate_memory(sizeof(device_descriptor_template), false /*highaddress*/, true /*movable*/);
-    uint8_t *device_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
-
+static void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string) {
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
     device_descriptor[DEVICE_VID_LO_INDEX] = vid & 0xFF;
@@ -144,7 +142,7 @@ void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_in
     (*current_interface_string)++;
 }
 
-void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_interfaces) {
+static void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_interfaces) {
     size_t total_descriptor_length = sizeof(configuration_descriptor_template);
 
     // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
@@ -178,11 +176,6 @@ void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_inter
 #endif
 
     // Now we now how big the configuration descriptor will be.
-
-    configuration_descriptor_allocation =
-        allocate_memory(sizeof(configuration_descriptor_template), false /*highaddress*/, true /*movable*/);
-    uint8_t *configuration_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
-
     // Copy the top-level template, and fix up its length.
     memcpy(config_descriptor, configuration_descriptor_template, sizeof(configuration_descriptor_template));
     configuration_descriptor[CONFIG_TOTAL_LENGTH_LO_INDEX] = total_descriptor_length & 0xFF;
@@ -241,7 +234,7 @@ void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_inter
 
 }
 
-void usb_add_interface_string(uint8_t interface_string_index, const char[] str) {
+static void usb_add_interface_string(uint8_t interface_string_index, const char[] str) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
         mp_raise_SystemError("Too many USB interface names");
     }
@@ -259,15 +252,45 @@ void usb_add_interface_string(uint8_t interface_string_index, const char[] str) 
 }
 
 
+// Remember USB information that must persist from the boot.py VM to the next VM.
+// Some of this is already remembered in globals, for example, usb_midi_enabled and similar bools.
+void usb_desc_post_boot_py(void) {
+    usb_hid_post_boot_py();
+}
+
+// Called in a the new VM created after boot.py is run. The USB devices to be used are now chosen.
+static void usb_desc_init(void) {
+    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+    common_hal_mcu_processor_get_uid(raw_id);
+
+    for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+        for (int j = 0; j < 2; j++) {
+            uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
+            serial_number_hex_string[i * 2 + (1 - j)] = nibble_to_hex_upper[nibble];
+        }
+    }
+
+    // Null-terminate the string.
+    serial_number_hex_string[sizeof(serial_number_hex_string)] = '\0';
+
+    // Memory is cleared to zero when allocated; we depend on that.
+    collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
+    current_interface_string = 1;
+
+    usb_build_device_descriptor();
+    usb_build_configuration_descriptor();
+    usb_build_hid_descriptor();
+    usb_build_string_descriptors();
+}
+
 void usb_desc_gc_collect(void) {
     // Once tud_mounted() is true, we're done with the constructed descriptors.
     if (tud_mounted()) {
-        // GC will pick up the inaccessible blocks.
-        free_memory(device_descriptor_allocation);
-        free_memory(configuration_descriptor_allocation);
+        gc_free(device_descriptor_allocation);
+        gc_free(configuration_descriptor);
     } else {
-        gc_collect_ptr(device_descriptor_allocation->ptr);
-        gc_collect_ptr(configuration_descriptor_allocation->ptr);
+        gc_collect_ptr(device_descriptor);
+        gc_collect_ptr(configuration_descriptor);
     }
 }
 

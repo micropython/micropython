@@ -53,23 +53,19 @@
 STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
 
     mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(devices, &iter_buf);
-    mp_obj_t device;
-    while ((device = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+
+    const mp_int_t len = mp_obj_get_int(mp_obj_len(devices_seq));
+    for (size_t i = 0; i < len; i++) {
+        mp_obj_t item = mp_obj_subscr(devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
         if (!MP_OBJ_IS_TYPE(item, &usb_hid_device_type)) {
             mp_raise_ValueError_varg(translate("non-Device in %q", MP_QSTR_devices));
         }
     }
 
-    switch (common_hal_usb_hid_configure_usb(descriptors)) {
-        case USB_CONFIG_TOO_LATE:
-            mp_raise_RuntimeError(translate("Cannot change USB devices now"));
-            break;
-        case USB_CONFIG_NON_DEVICE:
-            mp_raise_ValueError_varg(translate("non-Device in %q", MP_QSTR_devices));
-            break;
-        default:
+    if (!common_hal_usb_hid_configure_usb(descriptors)) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_configure_usb_obj, usb_hid_configure_usb);

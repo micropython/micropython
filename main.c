@@ -518,7 +518,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
@@ -533,6 +532,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             filesystem_flush();
         }
         boot_output_file = NULL;
+        #endif
+
+        #if CIRCUITPY_USB
+        // Remember USB settings done during boot.py.
+        // Call this before the boot.py heap is destroyed.
+        usb_post_boot_py();
         #endif
 
         cleanup_after_vm(heap);
@@ -588,6 +593,7 @@ int __attribute__((used)) main(void) {
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+    reset_usb();
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
