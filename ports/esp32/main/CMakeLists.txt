@@ -128,6 +128,9 @@ if(IDF_TARGET STREQUAL "esp32")
 elseif(IDF_TARGET STREQUAL "esp32s2")
     list(APPEND IDF_COMPONENTS esp32s2)
     list(APPEND IDF_COMPONENTS tinyusb)
+elseif(IDF_TARGET STREQUAL "esp32s3")
+    list(APPEND IDF_COMPONENTS esp32s3)
+    list(APPEND IDF_COMPONENTS tinyusb)
 endif()
 
 # Register the main IDF component.
