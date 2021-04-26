@@ -56,8 +56,7 @@ static void set_mode_station(wifi_radio_obj_t *self, bool state) {
         } else {
             next_mode = WIFI_MODE_NULL;
         }
-     }
-
+    }
     esp_wifi_set_mode(next_mode);
     self->sta_mode = state;
 }
@@ -76,8 +75,7 @@ static void set_mode_ap(wifi_radio_obj_t *self, bool state) {
         } else {
             next_mode = WIFI_MODE_NULL;
         }
-     }
-
+    }
     esp_wifi_set_mode(next_mode);
     self->ap_mode = state;
 }
@@ -174,7 +172,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     config->ap.password[password_len] = 0;
     config->ap.channel = channel;
     config->ap.authmode = authmode;
-    config->ap.max_connection = 4;
+    config->ap.max_connection = 4; // kwarg?
     esp_wifi_set_config(WIFI_IF_AP, config);
 }
 
@@ -294,12 +292,28 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ip_info.gw.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv4_gateway_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.gw.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
     esp_netif_get_ip_info(self->netif, &self->ip_info);
     return common_hal_ipaddress_new_ipv4address(self->ip_info.netmask.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
@@ -314,8 +328,8 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->ap_netif)) {
         return mp_const_none;
     }
-    esp_netif_get_ip_info(self->ap_netif, &self->ip_info);
-    return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.ip.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
