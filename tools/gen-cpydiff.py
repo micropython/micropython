@@ -74,7 +74,7 @@ Output = namedtuple(
 
 
 def readfiles():
-    """ Reads test files """
+    """Reads test files"""
     tests = list(filter(lambda x: x.endswith(".py"), os.listdir(TESTPATH)))
     tests.sort()
     files = []
@@ -95,7 +95,7 @@ def readfiles():
 
 
 def uimports(code):
-    """ converts CPython module names into MicroPython equivalents """
+    """converts CPython module names into MicroPython equivalents"""
     for uimport in UIMPORTLIST:
         uimport = bytes(uimport, "utf8")
         code = code.replace(uimport, b"u" + uimport)
@@ -103,7 +103,7 @@ def uimports(code):
 
 
 def run_tests(tests):
-    """ executes all tests """
+    """executes all tests"""
     results = []
     for test in tests:
         with open(TESTPATH + test.name, "rb") as f:
@@ -152,7 +152,7 @@ def run_tests(tests):
 
 
 def indent(block, spaces):
-    """ indents paragraphs of text for rst formatting """
+    """indents paragraphs of text for rst formatting"""
     new_block = ""
     for line in block.split("\n"):
         new_block += spaces + line + "\n"
@@ -160,7 +160,7 @@ def indent(block, spaces):
 
 
 def gen_table(contents):
-    """ creates a table given any set of columns """
+    """creates a table given any set of columns"""
     xlengths = []
     ylengths = []
     for column in contents:
@@ -194,7 +194,7 @@ def gen_table(contents):
 
 
 def gen_rst(results):
-    """ creates restructured text documents to display tests """
+    """creates restructured text documents to display tests"""
 
     # make sure the destination directory exists
     try:
@@ -254,7 +254,7 @@ def gen_rst(results):
 
 
 def main():
-    """ Main function """
+    """Main function"""
 
     # set search path so that test scripts find the test modules (and no other ones)
     os.environ["PYTHONPATH"] = TESTPATH
