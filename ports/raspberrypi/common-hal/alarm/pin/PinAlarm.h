@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+    bool value;
+    bool pull;
+    bool edge;
+} alarm_pin_pinalarm_obj_t;
 
-void board_init(void) {
-    common_hal_never_reset_pin(&pin_GPIO16);
-    gpio_init(16);
-    gpio_set_dir(16, GPIO_OUT);
-    gpio_put(16, true);
-}
+mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void);
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
-}
+void alarm_pin_pinalarm_reset(void);
+void alarm_pin_pinalarm_light_reset(void);
+void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
+bool alarm_pin_pinalarm_woke_this_cycle(void);

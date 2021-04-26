@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#include "shared-bindings/alarm/touch/TouchAlarm.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-
-void board_init(void) {
-    common_hal_never_reset_pin(&pin_GPIO16);
-    gpio_init(16);
-    gpio_set_dir(16, GPIO_OUT);
-    gpio_put(16, true);
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
-
-void board_deinit(void) {
+void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin) {
+    mp_raise_NotImplementedError(translate("Touch alarms not available"));
 }

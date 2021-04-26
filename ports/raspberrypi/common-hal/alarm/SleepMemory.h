@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,30 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-#include "shared-bindings/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+#include "py/obj.h"
 
-void board_init(void) {
-    common_hal_never_reset_pin(&pin_GPIO16);
-    gpio_init(16);
-    gpio_set_dir(16, GPIO_OUT);
-    gpio_put(16, true);
-}
+// There are several places we could store persistent data for SleepMemory:
+//
+// RTC registers: There are a few 32-bit registers maintained during deep sleep.
+// We are already using one for saving sleep information during deep sleep.
+//
+// RTC Fast Memory: 8kB, also used for deep-sleep power-on stub.
+// RTC Slow Memory: 8kB, also used for the ULP (tiny co-processor available during sleep).
+//
+// The ESP-IDF build system takes care of the power management of these regions.
+// RTC_DATA_ATTR will allocate storage in RTC_SLOW_MEM unless CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM
+// is set. Any memory not allocated by us can be used by the ESP-IDF for heap or other purposes.
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+// Use half of RTC_SLOW_MEM or RTC_FAST_MEM.
+#define SLEEP_MEMORY_LENGTH (4096)
 
-void reset_board(void) {
-}
+typedef struct {
+    mp_obj_base_t base;
+} alarm_sleep_memory_obj_t;
 
-void board_deinit(void) {
-}
+extern void alarm_sleep_memory_reset(void);
+
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
