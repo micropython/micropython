@@ -121,16 +121,16 @@ bool common_hal_alarm_woken_from_sleep(void) {
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
     switch (cause) {
-      case NRF_SLEEP_WAKEUP_TIMER: {
-        return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
-      }
-      case NRF_SLEEP_WAKEUP_TOUCHPAD: {
-        return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
-      }
-      case NRF_SLEEP_WAKEUP_GPIO: {
-        return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
-      }
-      default:
+        case NRF_SLEEP_WAKEUP_TIMER: {
+            return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+        }
+        case NRF_SLEEP_WAKEUP_TOUCHPAD: {
+            return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
+        }
+        case NRF_SLEEP_WAKEUP_GPIO: {
+            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+        }
+        default:
         break;
     }
     return mp_const_none;
