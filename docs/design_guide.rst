@@ -241,7 +241,7 @@ After the license comment::
     `<module name>`
     =================================================
 
-    <Longer description.>
+    <Longer description>
 
     * Author(s):
 
