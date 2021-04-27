@@ -238,10 +238,33 @@ Module description
 After the license comment::
 
     """
-    `<module name>` - <Short description>
+    `<module name>`
     =================================================
+
     <Longer description.>
+
+    * Author(s):
+
+    Implementation Notes
+    --------------------
+
+
+    **Hardware:**
+
+    * Adafruit `Device Description
+      <hyperlink>`_ (Product ID: <Product Number>)
+
+    **Software and Dependencies:**
+
+    * Adafruit CircuitPython firmware for the supported boards:
+      https://circuitpython.org/downloads
+    * Adafruit's Bus Device library:
+      https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+    * Adafruit's Register library:
+      https://github.com/adafruit/Adafruit_CircuitPython_Register
+
     """
+
 
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
