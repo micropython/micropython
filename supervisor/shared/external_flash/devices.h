@@ -605,8 +605,8 @@ typedef struct {
     .single_status_byte = true, \
 }
 
-// Settings for the Macronix MX25L25645G 32MiB SPI flash.
-// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7437/MX25L25645G,%203V,%20256Mb,%20v1.6.pdf
+// Settings for the Macronix MX25L51245G 64MiB SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7437/MX25L51245G,%203V,%20512Mb,%20v1.6.pdf
 #define MX25L25645G  {\
     .total_size = (1 << 25), /* 32 MiB */ \
     .start_up_time_us = 5000, \
