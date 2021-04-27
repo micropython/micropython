@@ -64,7 +64,11 @@ void soft_timer_handler(void) {
     while (heap != NULL && TICKS_DIFF(heap->expiry_ms, ticks_ms) <= 0) {
         soft_timer_entry_t *entry = heap;
         heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
-        mp_sched_schedule(entry->callback, MP_OBJ_FROM_PTR(entry));
+        if (entry->flags & SOFT_TIMER_FLAG_PY_CALLBACK) {
+            mp_sched_schedule(entry->py_callback, MP_OBJ_FROM_PTR(entry));
+        } else {
+            entry->c_callback(entry);
+        }
         if (entry->mode == SOFT_TIMER_MODE_PERIODIC) {
             entry->expiry_ms += entry->delta_ms;
             heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap->pairheap, &entry->pairheap);
