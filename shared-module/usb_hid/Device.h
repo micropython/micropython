@@ -40,6 +40,7 @@ typedef struct  {
     uint8_t *descriptor;
     uint8_t *in_report_buffer;
     uint8_t *out_report_buffer;
+    uint16_t report_id_index;
     uint16_t descriptor_length;
     uint8_t usage_page;
     uint8_t usage;
@@ -50,6 +51,6 @@ typedef struct  {
 
 extern usb_hid_device_obj_t usb_hid_device_keyboard_obj;
 extern usb_hid_device_obj_t usb_hid_device_mouse_obj;
-extern usb_hid_device_mouse_obj usb_hid_device_consumer_control_obj;
+extern usb_hid_device_obj_t usb_hid_device_consumer_control_obj;
 
 #endif /* SHARED_MODULE_USB_HID_DEVICE_H */

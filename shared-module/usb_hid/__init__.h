@@ -27,6 +27,8 @@
 #ifndef SHARED_MODULE_USB_HID___INIT___H
 #define SHARED_MODULE_USB_HID___INIT___H
 
+#include "shared-module/usb_hid/Device.h"
+
 extern bool usb_hid_enabled;
 extern usb_hid_device_obj_t usb_hid_devices[];
 

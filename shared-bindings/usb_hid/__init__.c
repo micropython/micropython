@@ -51,18 +51,15 @@
 //|     ...
 //|
 STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
-
-    mp_obj_iter_buf_t iter_buf;
-
-    const mp_int_t len = mp_obj_get_int(mp_obj_len(devices_seq));
-    for (size_t i = 0; i < len; i++) {
-        mp_obj_t item = mp_obj_subscr(devices_seq, mp_obj_new_small_int(i), MP_OBJ_SENTINEL);
+    const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
+    for (mp_int_t i = 0; i < len; i++) {
+        mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
         if (!MP_OBJ_IS_TYPE(item, &usb_hid_device_type)) {
-            mp_raise_ValueError_varg(translate("non-Device in %q", MP_QSTR_devices));
+            mp_raise_ValueError_varg(translate("non-Device in %q"), MP_QSTR_devices);
         }
     }
 
-    if (!common_hal_usb_hid_configure_usb(descriptors)) {
+    if (!common_hal_usb_hid_configure_usb(devices)) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
 
@@ -73,7 +70,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_configure_usb_obj, usb_hid_configure_usb);
 
 STATIC const mp_rom_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),      MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
-    { MP_ROM_QSTR(MP_QSTR_configure_usb), MP_OBJ_FROM_PTR(&usb_midi_configure_usb_obj) },
+    { MP_ROM_QSTR(MP_QSTR_configure_usb), MP_OBJ_FROM_PTR(&usb_hid_configure_usb_obj) },
     { MP_ROM_QSTR(MP_QSTR_devices),       MP_ROM_PTR(&common_hal_usb_hid_devices) },
     { MP_ROM_QSTR(MP_QSTR_Device),        MP_ROM_PTR(&usb_hid_device_type) },
 };

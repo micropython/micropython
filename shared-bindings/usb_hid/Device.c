@@ -26,6 +26,7 @@
 
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
+#include "py/runtime.h"
 
 //| class Device:
 //|     """HID Device
@@ -73,12 +74,11 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(descriptor, &bufinfo, MP_BUFFER_READ);
-
-    bytearray_obj_t descriptor = mp_obj_array_t new_bytearray(bufinfo.len, bufinfo.buf);
+    mp_get_buffer_raise(args[ARG_descriptor].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_obj_t descriptor = mp_obj_new_bytearray(bufinfo.len, bufinfo.buf);
 
     const mp_int_t usage_page_arg = args[ARG_usage_page].u_int;
-    if (usage_page_arg <= 0 || usage_arg > 255) {
+    if (usage_page_arg <= 0 || usage_page_arg > 255) {
         mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_usage_page);
     }
     const uint8_t usage_page = usage_page_arg;
@@ -91,7 +91,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 
     const mp_int_t in_report_length_arg = args[ARG_in_report_length].u_int;
     if (in_report_length_arg <= 0 || in_report_length_arg > 255) {
-        mp_raise_ValueError_varg(translate("%q must be > 1-255"), MP_QSTR_in_report_length);
+        mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_in_report_length);
     }
     const uint8_t in_report_length = in_report_length_arg;
 
@@ -102,7 +102,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     else if (!MP_OBJ_IS_SMALL_INT(out_report_length_arg) ||
              MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
              MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
-        mp_raise_ValueError_varg(translate("%q must be None or > 1-255"), MP_QSTR_out_report_length);
+        mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_out_report_length);
     }
     uint8_t out_report_length = MP_OBJ_SMALL_INT_VALUE(out_report_length_arg);
 
@@ -118,6 +118,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     uint8_t report_id_index = MP_OBJ_SMALL_INT_VALUE(report_id_index_arg);
 
     common_hal_usb_hid_device_construct(self, descriptor, usage_page, usage, in_report_length, out_report_length, report_id_index);
+    return (mp_obj_t)self;
 }
 
 

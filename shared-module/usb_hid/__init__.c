@@ -24,6 +24,11 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
+#include "shared-module/usb_hid/__init__.h"
+#include "supervisor/memory.h"
+
 static const uint8_t usb_hid_descriptor_template[] = {
     0x09,        //  0 bLength
     0x21,        //  1 bDescriptorType (HID)
@@ -62,10 +67,10 @@ supervisor_allocation *hid_devices_allocation;
 
 // This is the interface descriptor, not the report descriptor.
 size_t usb_hid_descriptor_length(void) {
-    return sizeof(usb_hid_descriptor);
+    return sizeof(usb_hid_descriptor_template);
 }
 
-static const char[] usb_hid_interface_name =  USB_INTERFACE_NAME " HID";
+static const char usb_hid_interface_name[] =  MP_STRINGIFY(USB_INTERFACE_NAME) " HID";
 
 // This is the interface descriptor, not the report descriptor.
 size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length) {
@@ -84,6 +89,7 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
 static mp_obj_t default_hid_devices[] = {
     MP_OBJ_FROM_PTR(usb_hid_device_keyboard_obj),
     MP_OBJ_FROM_PTR(usb_hid_device_mouse_obj),
+    MP_OBJ_FROM_PTR(usb_hid_device_consumer_control_obj),
 };
 
 // Set the default list of devices that will be included. Called before boot.py runs, in the boot.py VM.

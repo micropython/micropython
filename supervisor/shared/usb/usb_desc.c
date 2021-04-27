@@ -26,23 +26,26 @@
 
 #include "lib/tinyusb/src/tusb.h"
 
+#include "supervisor/usb.h"
+
 #if CIRCUITPY_USB_CDC
-#include "shared-module/storage/__init__.h"
+#include "shared-bindings/usb_cdc/__init__.h"
 #endif
 
 #if CIRCUITPY_USB_HID
-#include "shared-module/usb_hid/__init__.h"
+#include "shared-bindings/usb_hid/__init__.h"
 #endif
 
 #if CIRCUITPY_USB_MIDI
-#include "shared-module/usb_midi/__init__.h"
+#include "shared-bindings/usb_midi/__init__.h"
 #endif
 
-#if CIRCUITPY_USB_MSC
-#include "shared-module/storage/__init__.h"
+#if CIRCUITPY_USB_MSC && CIRCUITPY_STORAGE
+#include "shared-bindings/storage/__init__.h"
 #endif
 
-#include "shared-module/usb_hid/Device.h"
+// For COMMON_HAL_MCU_PROCESSOR_UID_LENGTH
+#include "common-hal/microcontroller/Processor.h"
 
 uint8_t *device_descriptor;
 uint8_t *config_descriptor;
@@ -53,8 +56,8 @@ uint8_t *config_descriptor;
 static char * collected_interface_strings[];
 static uint16_t current_interface_string;
 
-static const char[] manufacturer_name = USB_MANUFACTURER;
-static const char[] product_name = USB_PRODUCT;
+static const char manufacturer_name[] = MP_STRINGIFY(USB_MANUFACTURER);
+static const char product_name[] = MP_STRINGIFY(USB_PRODUCT);
 
 // Serial number string is UID length * 2 (2 nibbles per byte) + 1 byte for null termination.
 static char serial_number_hex_string[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2 + 1];
@@ -67,12 +70,12 @@ static const uint8_t device_descriptor_template[] = {
     0x00,        //  5 bDeviceSubClass
     0x00,        //  6 bDeviceProtocol
     0x40,        //  7 bMaxPacketSize0 64
-    0x9A, 0x23,  //  8,9 idVendor [SET AT RUNTIME: lo,hi]
+    0xFF, 0xFF,  //  8,9 idVendor [SET AT RUNTIME: lo,hi]
 #define DEVICE_VID_LO_INDEX (8)
 #define DEVICE_VID_HI_INDEX (9)
-    0x, 0xFF,  // 10,11 idProduct [SET AT RUNTIME: lo,hi]
-#define DEVICE PID_LO_INDEX (10)
-#define DEVICE PID_HI_INDEX (11)
+    0xFF, 0xFF,  // 10,11 idProduct [SET AT RUNTIME: lo,hi]
+#define DEVICE_PID_LO_INDEX (10)
+#define DEVICE_PID_HI_INDEX (11)
     0x00, 0x01,  // 12,13 bcdDevice 2.00
     0x02,        // 14 iManufacturer (String Index) [SET AT RUNTIME]
 #define DEVICE_MANUFACTURER_STRING_INDEX (14)
@@ -117,11 +120,11 @@ void reset_usb_desc(void) {
 #endif
 
 #if CIRCUITPY_USB_HID
-    common_hal_usb_hid_configure_usb_default();
+    common_hal_usb_hid_configure_usb_defaults();
 #endif
 }
 
-static void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string) {
+static void usb_build_device_descriptor(uint16_t vid, uint16_t pid) {
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
     device_descriptor[DEVICE_VID_LO_INDEX] = vid & 0xFF;
@@ -234,7 +237,7 @@ static void usb_build_configuration_descriptor(uint16_t total_length, uint8_t nu
 
 }
 
-static void usb_add_interface_string(uint8_t interface_string_index, const char[] str) {
+void usb_add_interface_string(uint8_t interface_string_index, const char[] str) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
         mp_raise_SystemError("Too many USB interface names");
     }
@@ -277,7 +280,7 @@ static void usb_desc_init(void) {
     collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
     current_interface_string = 1;
 
-    usb_build_device_descriptor();
+    usb_build_device_descriptor(USB_VID, USB_PID);
     usb_build_configuration_descriptor();
     usb_build_hid_descriptor();
     usb_build_string_descriptors();

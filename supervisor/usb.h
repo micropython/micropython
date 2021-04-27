@@ -49,16 +49,19 @@ void init_usb_hardware(void);
 void post_usb_init(void);
 
 // Shared implementation.
+void reset_usb(void);
 bool usb_enabled(void);
 void usb_init(void);
 void usb_disconnect(void);
 void usb_gc_collect(void);
+void usb_post_boot_py(void);
 
-void usb_add_interface_string(uint8_t interface_string_index, const char[] str);
+void usb_add_interface_string(uint8_t interface_string_index, const char str[]);
+
+void reset_usb_desc(void);
 void usb_desc_gc_collect(void);
 void usb_desc_init(void);
-void usb_build_device_descriptor(uint16_t vid, uint16_t pid, uint8_t *current_interface_string);
-void usb_build_configuration_descriptor(uint16_t total_length, uint8_t num_interfaces);
+void usb_desc_post_boot_py(void);
 
 // Propagate plug/unplug events to the MSC logic.
 #if CIRCUITPY_USB_MSC

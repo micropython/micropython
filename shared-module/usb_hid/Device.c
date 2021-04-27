@@ -66,7 +66,7 @@ static const uint8_t keyboard_descriptor[] = {
         0x95, 0x03,        //   Report Count (3)
         0x91, 0x01,        //   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
         0xC0,              // End Collection
-    },
+};
 
 const usb_hid_device_obj_t usb_hid_device_keyboard_obj = {
     .descriptor = keyboard_descriptor,
@@ -154,7 +154,7 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 };
 
 
-void common_hal_usb_hid_device_construct(usb_hid_dev_obj_t *self, mp_obj_array_t *descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
+void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
     // report buffer pointers are NULL at start, and are created on demand.
     self->descriptor_obj = descriptor;
 

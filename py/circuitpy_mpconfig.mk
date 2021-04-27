@@ -331,7 +331,7 @@ CFLAGS += -DCIRCUITPY_UHEAP=$(CIRCUITPY_UHEAP)
 CIRCUITPY_USB ?= 1
 CFLAGS += -DCIRCUITPY_USB=$(CIRCUITPY_USB)
 
-# If you need to count endpoints, do:
+# If you need to count endpoints, use:
 # $(shell expr $(USB_NUM_EP) '>=' 8)
 
 CIRCUITPY_USB_CDC ?= 1

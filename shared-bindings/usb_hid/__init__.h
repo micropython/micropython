@@ -27,12 +27,12 @@
 #ifndef SHARED_BINDINGS_USB_HID_H
 #define SHARED_BINDINGS_USB_HID_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/obj.h"
+#include "py/objtuple.h"
 
 extern mp_obj_tuple_t common_hal_usb_hid_devices;
 
 void common_hal_usb_hid_configure_usb_defaults(void);
-usb_hid_configure_status common_hal_usb_hid_configure_usb(mp_obj_t devices_seq);
+bool common_hal_usb_hid_configure_usb(mp_obj_t devices_seq);
 
 #endif // SHARED_BINDINGS_USB_HID_H

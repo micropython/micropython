@@ -34,6 +34,10 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_MIDI
 #include "shared-module/usb_midi/__init__.h"
 #endif
@@ -76,6 +80,10 @@ void usb_init(void) {
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    usb_cdcx_usb_init();
     #endif
 
     #if CIRCUITPY_USB_MIDI

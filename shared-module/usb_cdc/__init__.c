@@ -135,14 +135,28 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     0x00,        // 65 bInterval 0 (unit depends on device speed)
 };
 
+static const char[] repl_cdc_comm_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC control";
+static const char[] data_cdc_comm_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC2 control";
+static const char[] repl_cdc_data_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC data";
+static const char[] data_cdc_data_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC2 data";
+
+static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
+    .base.type = &usb_cdc_serial_type,
+    .timeout = -1.0f,
+    .write_timeout = -1.0f,
+    .idx = 0,
+};
+
+static usb_cdc_serial_obj_t usb_cdc_data_obj = {
+    .base.type = &usb_cdc_serial_type,
+    .timeout = -1.0f,
+    .write_timeout = -1.0f,
+    .idx = 1,
+};
+
 size_t usb_cdc_descriptor_length(void) {
     return sizeof(usb_cdc_descriptor_template);
 }
-
-static const char[] repl_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC control";
-static const char[] data_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC2 control";
-static const char[] repl_cdc_data_interface_name = USB_INTERFACE_NAME " CDC data";
-static const char[] data_cdc_data_interface_name = USB_INTERFACE_NAME " CDC2 data";
 
 size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, bool repl) {
     memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
@@ -184,20 +198,6 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
 
     return sizeof(usb_midi_descriptor_template);
 }
-
-static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
-    .base.type = &usb_cdc_serial_type,
-    .timeout = -1.0f,
-    .write_timeout = -1.0f,
-    .idx = 0,
-};
-
-static usb_cdc_serial_obj_t usb_cdc_data_obj = {
-    .base.type = &usb_cdc_serial_type,
-    .timeout = -1.0f,
-    .write_timeout = -1.0f,
-    .idx = 1,
-};
 
 void usb_cdc_init(void) {
     usb_cdc_repl_enabled = true;

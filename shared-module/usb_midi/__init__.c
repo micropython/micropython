@@ -162,10 +162,10 @@ size_t usb_midi_descriptor_length(void) {
     return sizeof(usb_midi_descriptor_template);
 }
 
-static const char[] midi_streaming_interface_name =  USB_INTERFACE_NAME " MIDI";
-static const char[] midi_audio_control_interface_name = USB_INTERFACE_NAME " Audio";
-static const char[] midi_in_jack_name =  USB_INTERFACE_NAME " usb_midi.ports[0]";
-static const char[] midi_out_jack_name =  USB_INTERFACE_NAME " usb_midi.ports[0]";
+static const char[] midi_streaming_interface_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " MIDI";
+static const char[] midi_audio_control_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " Audio";
+static const char[] midi_in_jack_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " usb_midi.ports[0]";
+static const char[] midi_out_jack_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " usb_midi.ports[0]";
 
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
     memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));

@@ -81,7 +81,7 @@ size_t storage_usb_descriptor_length(void) {
     return sizeof(usb_msc_descriptor);
 }
 
-static const char[] storage_interface_name =  USB_INTERFACE_NAME " Mass Storage";
+static const char[] storage_interface_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " Mass Storage";
 
 size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
     memcpy(descriptor_buf, storage_usb_msc_descriptor_template, sizeof(storage_usb_msc_descriptor_template));
