@@ -120,7 +120,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
 }
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
-    if (!MP_OBJ_IS_STR(byteorder_obj)) {
+    if (!mp_obj_is_str(byteorder_obj)) {
         mp_raise_TypeError(translate("byteorder is not a string"));
     }
 
@@ -306,7 +306,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
     if (0) {
     #if MICROPY_PY_BUILTINS_SLICE
-    } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+    } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);

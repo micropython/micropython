@@ -276,7 +276,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
         pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
         check_for_deinit(self);
 
-        if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+        if (mp_obj_is_type(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
             size_t index = mp_get_index(&pulseio_pulsein_type, common_hal_pulseio_pulsein_get_len(self), index_obj, false);

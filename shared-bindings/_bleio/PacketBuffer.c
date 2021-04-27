@@ -78,7 +78,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
     }
 
-    if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
+    if (!mp_obj_is_type(characteristic, &bleio_characteristic_type)) {
         mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 

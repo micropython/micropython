@@ -17,6 +17,7 @@ gc.collect()
 
 
 debug = False
+index_urls = ["https://micropython.org/pi", "https://pypi.org/pypi"]
 install_path = None
 cleanup_files = []
 gzdict_sz = 16 + 15
@@ -60,7 +61,7 @@ def _makedirs(name, mode=0o777):
             ret = True
         except OSError as e:
             if e.args[0] != errno.EEXIST and e.args[0] != errno.EISDIR:
-                raise
+                raise e
             ret = False
     return ret
 
@@ -167,11 +168,16 @@ def url_open(url):
 
 
 def get_pkg_metadata(name):
-    f = url_open("https://pypi.org/pypi/%s/json" % name)
-    try:
-        return json.load(f)
-    finally:
-        f.close()
+    for url in index_urls:
+        try:
+            f = url_open("%s/%s/json" % (url, name))
+        except NotFoundError:
+            continue
+        try:
+            return json.load(f)
+        finally:
+            f.close()
+    raise NotFoundError("Package not found")
 
 
 def fatal(msg, exc=None):
@@ -283,6 +289,7 @@ for installation, upip does not support arbitrary code in setup.py.
 
 def main():
     global debug
+    global index_urls
     global install_path
     install_path = None
 
@@ -316,6 +323,9 @@ def main():
                     if l[0] == "#":
                         continue
                     to_install.append(l.rstrip())
+        elif opt == "-i":
+            index_urls = [sys.argv[i]]
+            i += 1
         elif opt == "--debug":
             debug = True
         else:

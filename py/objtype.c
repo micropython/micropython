@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013-2018 Damien P. George
- * Copyright (c) 2014-2016 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len;
             for (; item < top; ++item) {
-                assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+                assert(mp_obj_is_type(*item, &mp_type_type));
                 const mp_obj_type_t *bt = (const mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
                 count += instance_count_native_bases(bt, last_native_base);
             }
@@ -182,7 +182,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                     // do a lookup, not a (base) type in which we found the class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t *)lookup->obj;
                     mp_convert_member_lookup(MP_OBJ_NULL, org_type, elem->value, lookup->dest);
-                } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_property)) {
+                } else if (mp_obj_is_type(elem->value, &mp_type_property)) {
                     lookup->dest[0] = elem->value;
                     return;
                 } else {
@@ -223,7 +223,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len - 1;
             for (; item < top; ++item) {
-                assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+                assert(mp_obj_is_type(*item, &mp_type_type));
                 mp_obj_type_t *bt = (mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
                 if (bt == &mp_type_object) {
                     // Not a "real" type
@@ -236,7 +236,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
             }
 
             // search last base (simple tail recursion elimination)
-            assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+            assert(mp_obj_is_type(*item, &mp_type_type));
             type = (mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
         #endif
         } else {
@@ -455,7 +455,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 break;
             case MP_UNARY_OP_INT:
                 // Must return int
-                if (!MP_OBJ_IS_INT(val)) {
+                if (!mp_obj_is_int(val)) {
                     mp_raise_TypeError(NULL);
                 }
                 break;
@@ -619,7 +619,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         mp_map_t *map = &self->members;
         mp_obj_t attr_dict = mp_obj_new_dict(map->used);
         for (size_t i = 0; i < map->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+            if (mp_map_slot_is_filled(map, i)) {
                 mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
             }
         }
@@ -644,7 +644,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         }
 
         #if MICROPY_PY_BUILTINS_PROPERTY
-        if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+        if (mp_obj_is_type(member, &mp_type_property)) {
             // object member is a property; delegate the load to the property
             // Note: This is an optimisation for code size and execution time.
             // The proper way to do it is have the functionality just below
@@ -724,7 +724,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
 
     if (member[0] != MP_OBJ_NULL) {
         #if MICROPY_PY_BUILTINS_PROPERTY
-        if (MP_OBJ_IS_TYPE(member[0], &mp_type_property)) {
+        if (mp_obj_is_type(member[0], &mp_type_property)) {
             // attribute exists and is a property; delegate the store/delete
             // Note: This is an optimisation for code size and execution time.
             // The proper way to do it is have the functionality just below in
@@ -962,7 +962,7 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     }
     #endif
     #if MICROPY_PY_BUILTINS_PROPERTY
-    if (MP_OBJ_IS_TYPE(value, &mp_type_property)) {
+    if (mp_obj_is_type(value, &mp_type_property)) {
         return true;
     }
     #endif
@@ -986,7 +986,7 @@ STATIC bool map_has_special_accessors(const mp_map_t *map) {
         return false;
     }
     for (size_t i = 0; i < map->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+        if (mp_map_slot_is_filled(map, i)) {
             const mp_map_elem_t *elem = &map->table[i];
             if (check_for_special_accessors(elem->key, elem->value)) {
                 return true;
@@ -1046,7 +1046,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 }
 
 STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
+    assert(mp_obj_is_type(self_in, &mp_type_type));
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (dest[0] == MP_OBJ_NULL) {
@@ -1116,10 +1116,10 @@ const mp_obj_type_t mp_type_type = {
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     // Verify input objects have expected type
-    if (!MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)) {
+    if (!mp_obj_is_type(bases_tuple, &mp_type_tuple)) {
         mp_raise_TypeError(NULL);
     }
-    if (!MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)) {
+    if (!mp_obj_is_type(locals_dict, &mp_type_dict)) {
         mp_raise_TypeError(NULL);
     }
 
@@ -1131,7 +1131,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
-        if (!MP_OBJ_IS_TYPE(bases_items[i], &mp_type_type)) {
+        if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
             mp_raise_TypeError(translate("type is not an acceptable base type"));
         }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
@@ -1209,7 +1209,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // __new__ slot exists; check if it is a function
-        if (MP_OBJ_IS_FUN(elem->value)) {
+        if (mp_obj_is_fun(elem->value)) {
             // __new__ is a function, wrap it in a staticmethod decorator
             elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, &elem->value, NULL);
         }
@@ -1242,7 +1242,7 @@ STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
     mp_arg_check_num(n_args, kw_args, 2, 2, false);
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+    if (!mp_obj_is_type(args[0], &mp_type_type)) {
         mp_raise_TypeError(translate("first argument to super() must be type"));
     }
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
@@ -1256,10 +1256,10 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_super));
+    assert(mp_obj_is_type(self_in, &mp_type_super));
     mp_obj_super_t *self = MP_OBJ_TO_PTR(self_in);
 
-    assert(MP_OBJ_IS_TYPE(self->type, &mp_type_type));
+    assert(mp_obj_is_type(self->type, &mp_type_type));
 
     mp_obj_type_t *type = MP_OBJ_TO_PTR(self->type);
 
@@ -1284,7 +1284,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         size_t len = parent_tuple->len;
         const mp_obj_t *items = parent_tuple->items;
         for (size_t i = 0; i < len; i++) {
-            assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+            assert(mp_obj_is_type(items[i], &mp_type_type));
             if (MP_OBJ_TO_PTR(items[i]) == &mp_type_object) {
                 // The "object" type will be searched at the end of this function,
                 // and we don't want to lookup native methods in object.
@@ -1310,7 +1310,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // changes to mp_obj_instance_load_attr may require changes
             // here...
             #if MICROPY_PY_BUILTINS_PROPERTY
-            if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+            if (mp_obj_is_type(member, &mp_type_property)) {
                 const mp_obj_t *proxy = mp_obj_property_get(member);
                 if (proxy[0] == mp_const_none) {
                     mp_raise_AttributeError(translate("unreadable attribute"));
@@ -1366,7 +1366,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         // not equivalent classes, keep searching base classes
 
         // object should always be a type object, but just return false if it's not
-        if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+        if (!mp_obj_is_type(object, &mp_type_type)) {
             return false;
         }
 
@@ -1402,10 +1402,10 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     size_t len;
     mp_obj_t *items;
-    if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
+    if (mp_obj_is_type(classinfo, &mp_type_type)) {
         len = 1;
         items = &classinfo;
-    } else if (MP_OBJ_IS_TYPE(classinfo, &mp_type_tuple)) {
+    } else if (mp_obj_is_type(classinfo, &mp_type_tuple)) {
         mp_obj_tuple_get(classinfo, &len, &items);
     } else {
         mp_raise_TypeError(translate("issubclass() arg 2 must be a class or a tuple of classes"));
@@ -1421,7 +1421,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
 }
 
 STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
-    if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
+    if (!mp_obj_is_type(object, &mp_type_type)) {
         mp_raise_TypeError(translate("issubclass() arg 1 must be a class"));
     }
     return mp_obj_is_subclass(object, classinfo);

@@ -141,9 +141,9 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
 }
 
 uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
-    if (MP_OBJ_IS_SMALL_INT(obj)) {
+    if (mp_obj_is_small_int(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
-    } else if (MP_OBJ_IS_INT(obj)) {
+    } else if (mp_obj_is_int(obj)) {
         return mp_obj_get_int_truncated(obj);
     } else if (mp_obj_is_float(obj)) {
         return (uint8_t)mp_obj_get_float(obj);
@@ -162,8 +162,8 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_
         *w = 0;
     }
 
-    if (MP_OBJ_IS_INT(color) || mp_obj_is_float(color)) {
-        mp_int_t value = MP_OBJ_IS_INT(color) ? mp_obj_get_int_truncated(color) : mp_obj_get_float(color);
+    if (mp_obj_is_int(color) || mp_obj_is_float(color)) {
+        mp_int_t value = mp_obj_is_int(color) ? mp_obj_get_int_truncated(color) : mp_obj_get_float(color);
         *r = value >> 16 & 0xff;
         *g = (value >> 8) & 0xff;
         *b = value & 0xff;

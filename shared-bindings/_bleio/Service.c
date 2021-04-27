@@ -59,7 +59,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 

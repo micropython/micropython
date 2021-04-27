@@ -29,7 +29,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_points_list].u_obj, &mp_type_list)) {
+    if (!mp_obj_is_type(args[ARG_points_list].u_obj, &mp_type_list)) {
         mp_raise_TypeError_varg(translate("%q list must be a list"), MP_QSTR_point);
     }
 

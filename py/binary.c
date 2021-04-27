@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -348,7 +349,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         default: {
             bool signed_type = is_signed(val_type);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+            if (mp_obj_is_type(val_in, &mp_type_int)) {
                 // It's a longint.
                 mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
@@ -395,7 +396,7 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
             bool signed_type = is_signed(typecode);
 
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+            if (mp_obj_is_type(val_in, &mp_type_int)) {
                 // It's a long int.
                 mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,

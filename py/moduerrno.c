@@ -142,7 +142,7 @@ const char *mp_errno_to_str(mp_obj_t errno_val) {
 
 // For commonly encountered errors, return human readable strings, otherwise try errno name
 const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
-    if (!MP_OBJ_IS_SMALL_INT(errno_val)) {
+    if (!mp_obj_is_small_int(errno_val)) {
         return NULL;
     }
 

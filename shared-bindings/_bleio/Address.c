@@ -136,7 +136,7 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_BINARY_OP_EQUAL:
-            if (MP_OBJ_IS_TYPE(rhs_in, &bleio_address_type)) {
+            if (mp_obj_is_type(rhs_in, &bleio_address_type)) {
                 bleio_address_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
                 bleio_address_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 return mp_obj_new_bool(

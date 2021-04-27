@@ -85,7 +85,7 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     uint32_t value;
     if (mp_obj_get_int_maybe(ip_in, (mp_int_t *)&value)) {
         // We're done.
-    } else if (MP_OBJ_IS_STR(ip_in)) {
+    } else if (mp_obj_is_str(ip_in)) {
         GET_STR_DATA_LEN(ip_in, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
             mp_raise_ValueError(translate("Not a valid IP string"));

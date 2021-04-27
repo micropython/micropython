@@ -72,9 +72,9 @@
 
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
-        if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pinalarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_time_timealarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_touch_touchalarm_type)) {
+        if (mp_obj_is_type(objs[i], &alarm_pin_pinalarm_type) ||
+            mp_obj_is_type(objs[i], &alarm_time_timealarm_type) ||
+            mp_obj_is_type(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(translate("Expected an alarm"));

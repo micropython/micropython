@@ -51,7 +51,7 @@
 //|
 
 STATIC mp_obj_t pixelbuf_colorwheel(mp_obj_t n) {
-    return MP_OBJ_NEW_SMALL_INT(colorwheel(MP_OBJ_IS_SMALL_INT(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_get_float(n)));
+    return MP_OBJ_NEW_SMALL_INT(colorwheel(mp_obj_is_small_int(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_get_float(n)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_colorwheel_obj, pixelbuf_colorwheel);
 

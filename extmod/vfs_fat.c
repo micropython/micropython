@@ -21,8 +21,8 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/translate.h"
 
-#if _MAX_SS == _MIN_SS
-#define SECSIZE(fs) (_MIN_SS)
+#if FF_MAX_SS == FF_MIN_SS
+#define SECSIZE(fs) (FF_MIN_SS)
 #else
 #define SECSIZE(fs) ((fs)->ssize)
 #endif
@@ -84,7 +84,7 @@ STATIC void verify_fs_writable(fs_user_mount_t *vfs) {
     }
 }
 
-#if _FS_REENTRANT
+#if FF_FS_REENTRANT
 STATIC mp_obj_t fat_vfs_del(mp_obj_t self_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(self_in);
     // f_umount only needs to be called to release the sync object
@@ -99,8 +99,11 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, &bdev_in, NULL));
 
     // make the filesystem
-    uint8_t working_buf[_MAX_SS];
+    uint8_t working_buf[FF_MAX_SS];
     FRESULT res = f_mkfs(&vfs->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+    if (res == FR_MKFS_ABORTED) { // Probably doesn't support FAT16
+        res = f_mkfs(&vfs->fatfs, FM_FAT32, 0, working_buf, sizeof(working_buf));
+    }
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -377,7 +380,7 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[6] = MP_OBJ_NEW_SMALL_INT(0); // f_ffree
     t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // f_favail
     t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // f_flags
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(_MAX_LFN); // f_namemax
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(FF_MAX_LFN); // f_namemax
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -397,7 +400,7 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
     // check if we need to make the filesystem
     FRESULT res = (self->flags & FSUSER_NO_FILESYSTEM) ? FR_NO_FILESYSTEM : FR_OK;
     if (res == FR_NO_FILESYSTEM && mp_obj_is_true(mkfs)) {
-        uint8_t working_buf[_MAX_SS];
+        uint8_t working_buf[FF_MAX_SS];
         res = f_mkfs(&self->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
     }
     if (res != FR_OK) {
@@ -451,7 +454,7 @@ STATIC const mp_obj_property_t fat_vfs_label_obj = {
 #endif
 
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
-    #if _FS_REENTRANT
+    #if FF_FS_REENTRANT
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&fat_vfs_del_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },

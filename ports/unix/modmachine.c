@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,10 +60,11 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
         static uintptr_t last_base = (uintptr_t)-1;
         static uintptr_t map_page;
         if (!fd) {
-            fd = open("/dev/mem", O_RDWR | O_SYNC);
-            if (fd == -1) {
+            int _fd = open("/dev/mem", O_RDWR | O_SYNC);
+            if (_fd == -1) {
                 mp_raise_OSError(errno);
             }
+            fd = _fd;
         }
 
         uintptr_t cur_base = addr & ~MICROPY_PAGE_MASK;

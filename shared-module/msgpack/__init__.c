@@ -174,7 +174,7 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
     mp_map_t *map = &dict->map;
 
     for (size_t i = *cur; i < max; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+        if (mp_map_slot_is_filled(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
         }
@@ -263,35 +263,35 @@ STATIC void pack_dict(msgpack_stream_t *s, size_t len) {
 }
 
 STATIC void pack(mp_obj_t obj, msgpack_stream_t *s, mp_obj_t default_handler) {
-    if (MP_OBJ_IS_SMALL_INT(obj)) {
+    if (mp_obj_is_small_int(obj)) {
         // int
         int32_t x = MP_OBJ_SMALL_INT_VALUE(obj);
         pack_int(s, x);
-    } else if (MP_OBJ_IS_STR(obj)) {
+    } else if (mp_obj_is_str(obj)) {
         // string
         size_t len;
         const char *data = mp_obj_str_get_data(obj, &len);
         pack_str(s, data, len);
-    } else if (MP_OBJ_IS_TYPE(obj, &mod_msgpack_exttype_type)) {
+    } else if (mp_obj_is_type(obj, &mod_msgpack_exttype_type)) {
         mod_msgpack_extype_obj_t *ext = MP_OBJ_TO_PTR(obj);
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(ext->data, &bufinfo, MP_BUFFER_READ);
         pack_ext(s, ext->code, bufinfo.buf, bufinfo.len);
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_tuple)) {
+    } else if (mp_obj_is_type(obj, &mp_type_tuple)) {
         // tuple
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(obj);
         pack_array(s, self->len);
         for (size_t i = 0; i < self->len; i++) {
             pack(self->items[i], s, default_handler);
         }
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_list)) {
+    } else if (mp_obj_is_type(obj, &mp_type_list)) {
         // list (layout differs from tuple)
         mp_obj_list_t *self = MP_OBJ_TO_PTR(obj);
         pack_array(s, self->len);
         for (size_t i = 0; i < self->len; i++) {
             pack(self->items[i], s, default_handler);
         }
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_dict)) {
+    } else if (mp_obj_is_type(obj, &mp_type_dict)) {
         // dict
         mp_obj_dict_t *self = MP_OBJ_TO_PTR(obj);
         pack_dict(s, self->map.used);

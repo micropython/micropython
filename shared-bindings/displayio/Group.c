@@ -309,7 +309,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     displayio_group_t *self = native_group(self_in);
 
-    if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+    if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         mp_raise_NotImplementedError(translate("Slices not supported"));
     } else {
         size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
