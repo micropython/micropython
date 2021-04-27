@@ -761,14 +761,6 @@ msgid ""
 msgstr ""
 "A conexão foi desconectada e não pode mais ser usada. Crie uma nova conexão."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Arquivo .mpy corrompido"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Código bruto corrompido"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Não foi possível inicializar a Câmera"
@@ -2658,10 +2650,6 @@ msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "só pode haver até 4 parâmetros para a montagem Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "apenas o bytecode pode ser salvo"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "não é possível adicionar o método especial à classe já subclassificada"
@@ -3183,6 +3171,14 @@ msgstr "o identificador foi redefinido como global"
 msgid "identifier redefined as nonlocal"
 msgstr "o identificador foi redefinido como não-local"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "formato incompleto"
@@ -3303,6 +3299,10 @@ msgstr "o interp é definido para matrizes 1D de igual comprimento"
 msgid "interval must be in range %s-%s"
 msgstr "o intervalo deve estar entre %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
@@ -3311,10 +3311,6 @@ msgstr "argumentos inválidos"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "bits_per_pixel %d é inválido, deve ser, 1, 4, 8, 16, 24, ou 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificado inválido"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3345,10 +3341,6 @@ msgstr "o especificador do formato é inválido"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "o nome do host é inválido"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "chave inválida"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4369,6 +4361,21 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Arquivo .mpy corrompido"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Código bruto corrompido"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "apenas o bytecode pode ser salvo"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificado inválido"
+
+#~ msgid "invalid key"
+#~ msgstr "chave inválida"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Atualmente, as funções do Viper não suportam mais de 4 argumentos"

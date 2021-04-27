@@ -748,14 +748,6 @@ msgstr ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Corrupt .mpy file"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Corrupt raw code"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Could not initialise camera"
@@ -2618,10 +2610,6 @@ msgstr "Can only have up to 4 parameters to thumb assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "Can only have up to 4 parameters to xtensa assembly"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "Can only save bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "Can't add special method to already-subclassed class"
@@ -3137,6 +3125,14 @@ msgstr "identifier redefined as global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifier redefined as nonlocal"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "incomplete format"
@@ -3256,6 +3252,10 @@ msgstr "interp is defined for 1D arrays of equal length"
 msgid "interval must be in range %s-%s"
 msgstr "interval must be in range %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "invalid arguments"
@@ -3264,10 +3264,6 @@ msgstr "invalid arguments"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "invalid cert"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3298,10 +3294,6 @@ msgstr "invalid format specifier"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "invalid hostname"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "invalid key"
 
 #: py/compile.c
 #, fuzzy
@@ -4313,6 +4305,21 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Corrupt .mpy file"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Corrupt raw code"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "Can only save bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "invalid cert"
+
+#~ msgid "invalid key"
+#~ msgstr "invalid key"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper functions don't currently support more than 4 arguments"

@@ -744,14 +744,6 @@ msgid ""
 "connection."
 msgstr "接続は切断済みでもう使えません。新しい接続を作成してください"
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "破損した .mpy ファイル"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "破損したraw code"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "カメラを初期化できません"
@@ -2597,10 +2589,6 @@ msgstr ""
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr ""
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "サブクラス化済みのクラスに特殊メソッドを追加できません"
@@ -3117,6 +3105,14 @@ msgstr ""
 msgid "identifier redefined as nonlocal"
 msgstr ""
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr ""
@@ -3237,6 +3233,10 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr "intervalは%s-%sの範囲でなければなりません"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "不正な引数"
@@ -3245,10 +3245,6 @@ msgstr "不正な引数"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "不正な証明書"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3279,10 +3275,6 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "不正なホスト名"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "不正な鍵"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4294,6 +4286,18 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "破損した .mpy ファイル"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "破損したraw code"
+
+#~ msgid "invalid cert"
+#~ msgstr "不正な証明書"
+
+#~ msgid "invalid key"
+#~ msgstr "不正な鍵"
 
 #~ msgid "parameter annotation must be an identifier"
 #~ msgstr "引数アノテーションは識別子でなければなりません"
