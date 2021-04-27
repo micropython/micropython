@@ -28,15 +28,21 @@
 
 #include "py/pairheap.h"
 
+#define SOFT_TIMER_FLAG_PY_CALLBACK (1)
+
 #define SOFT_TIMER_MODE_ONE_SHOT (1)
 #define SOFT_TIMER_MODE_PERIODIC (2)
 
 typedef struct _soft_timer_entry_t {
     mp_pairheap_t pairheap;
-    uint32_t mode;
+    uint16_t flags;
+    uint16_t mode;
     uint32_t expiry_ms;
     uint32_t delta_ms; // for periodic mode
-    mp_obj_t callback;
+    union {
+        void (*c_callback)(struct _soft_timer_entry_t *);
+        mp_obj_t py_callback;
+    };
 } soft_timer_entry_t;
 
 extern volatile uint32_t soft_timer_next;

@@ -76,10 +76,10 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     self->expiry_ms = mp_hal_ticks_ms() + self->delta_ms;
 
     if (args[ARG_callback].u_obj != MP_OBJ_NULL) {
-        self->callback = args[ARG_callback].u_obj;
+        self->py_callback = args[ARG_callback].u_obj;
     }
 
-    if (self->callback != mp_const_none) {
+    if (self->py_callback != mp_const_none) {
         soft_timer_insert(self);
     }
 
@@ -89,8 +89,9 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->pairheap.base.type = &machine_timer_type;
+    self->flags = SOFT_TIMER_FLAG_PY_CALLBACK;
     self->delta_ms = 1000;
-    self->callback = mp_const_none;
+    self->py_callback = mp_const_none;
 
     // Get timer id (only soft timer (-1) supported at the moment)
     mp_int_t id = -1;
