@@ -449,20 +449,20 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
 
             // We always want to read bitmap pixels by row first and then transpose into the destination
             // buffer because most bitmaps are row associated.
-            if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+            if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
                 input_pixel.pixel = common_hal_displayio_bitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
-            } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+            } else if (mp_obj_is_type(self->bitmap, &displayio_shape_type)) {
                 input_pixel.pixel = common_hal_displayio_shape_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
-            } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
+            } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
                 input_pixel.pixel = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             }
 
             output_pixel.opaque = true;
             if (self->pixel_shader == mp_const_none) {
                 output_pixel.pixel = input_pixel.pixel;
-            } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+            } else if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
                 output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
-            } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+            } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
                 displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
             }
             if (!output_pixel.opaque) {
@@ -512,16 +512,16 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     self->moved = false;
     self->full_change = false;
     self->partial_change = false;
-    if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+    if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
         displayio_palette_finish_refresh(self->pixel_shader);
-    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+    } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
         displayio_colorconverter_finish_refresh(self->pixel_shader);
     }
-    if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+    if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_finish_refresh(self->bitmap);
-    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+    } else if (mp_obj_is_type(self->bitmap, &displayio_shape_type)) {
         displayio_shape_finish_refresh(self->bitmap);
-    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
+    } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
         // OnDiskBitmap changes will trigger a complete reload so no need to
         // track changes.
     }
@@ -552,7 +552,7 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     }
 
     // If we have an in-memory bitmap, then check it for modifications.
-    if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+    if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
         displayio_area_t *refresh_area = displayio_bitmap_get_refresh_areas(self->bitmap, tail);
         if (refresh_area != tail) {
             // Special case a TileGrid that shows a full bitmap and use its
@@ -564,7 +564,7 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
                 self->full_change = true;
             }
         }
-    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+    } else if (mp_obj_is_type(self->bitmap, &displayio_shape_type)) {
         displayio_area_t *refresh_area = displayio_shape_get_refresh_areas(self->bitmap, tail);
         if (refresh_area != tail) {
             displayio_area_copy(refresh_area, &self->dirty_area);
@@ -573,9 +573,9 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     }
 
     self->full_change = self->full_change ||
-        (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) &&
+        (mp_obj_is_type(self->pixel_shader, &displayio_palette_type) &&
             displayio_palette_needs_refresh(self->pixel_shader)) ||
-        (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
+        (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type) &&
             displayio_colorconverter_needs_refresh(self->pixel_shader));
     if (self->full_change || first_draw) {
         self->current_area.next = tail;

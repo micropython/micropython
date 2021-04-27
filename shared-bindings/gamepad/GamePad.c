@@ -111,7 +111,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     }
     gamepad_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
-        !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton), &gamepad_type)) {
+        !mp_obj_is_type(MP_OBJ_FROM_PTR(gamepad_singleton), &gamepad_type)) {
         gamepad_singleton = m_new_ll_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
         if (!MP_STATE_VM(gamepad_singleton)) {

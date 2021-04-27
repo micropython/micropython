@@ -329,13 +329,14 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
+    uint32_t wait_gpio_mask,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right) {
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
-    uint32_t pins_we_use = 0;
+    uint32_t pins_we_use = wait_gpio_mask;
     pins_we_use |= _check_pins_free(first_out_pin, out_pin_count, exclusive_pin_use);
     pins_we_use |= _check_pins_free(first_in_pin, in_pin_count, exclusive_pin_use);
     pins_we_use |= _check_pins_free(first_set_pin, set_pin_count, exclusive_pin_use);
@@ -800,4 +801,17 @@ STATIC void rp2pio_statemachine_interrupt_handler(void) {
             }
         }
     }
+}
+
+uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
+    uint8_t pio_index = pio_get_index(self->pio);
+    uint8_t sm = self->state_machine;
+    return _current_program_offset[pio_index][sm];
+}
+
+void rp2pio_statemachine_set_wrap(rp2pio_statemachine_obj_t *self, uint wrap_target, uint wrap) {
+    uint8_t sm = self->state_machine;
+    uint8_t offset = rp2pio_statemachine_program_offset(self);
+
+    pio_sm_set_wrap(self->pio, sm, offset+wrap_target, offset+wrap);
 }

@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,7 +257,7 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
 STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-    if (!mp_get_stream(args[0])->is_text && MP_OBJ_IS_STR(args[1])) {
+    if (!mp_get_stream(args[0])->is_text && mp_obj_is_str(args[1])) {
         mp_raise_ValueError(translate("string not supported; use bytes or bytearray"));
     }
     size_t max_len = (size_t)-1;

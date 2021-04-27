@@ -1185,6 +1185,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr ""
@@ -1253,6 +1254,11 @@ msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2114,6 +2120,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr ""
@@ -2304,10 +2318,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
@@ -2387,17 +2397,16 @@ msgstr ""
 msgid "abort() called"
 msgstr ""
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr ""
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
+msgstr ""
+
+#: py/compile.c
+msgid "annotation must be an identifier"
 msgstr ""
 
 #: py/modbuiltins.c
@@ -2582,12 +2591,20 @@ msgstr ""
 msgid "can't convert %q to %q"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
 msgstr ""
 
 #: py/objstr.c
@@ -2786,6 +2803,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -2993,7 +3015,7 @@ msgid "full"
 msgstr ""
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
+msgid "function doesn't take keyword arguments"
 msgstr ""
 
 #: py/argcheck.c
@@ -3046,6 +3068,10 @@ msgstr ""
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c
@@ -3427,6 +3453,10 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr ""
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr ""
@@ -3656,10 +3686,6 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr ""
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3715,6 +3741,7 @@ msgstr ""
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4098,7 +4125,7 @@ msgstr ""
 msgid "unknown type"
 msgstr ""
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr ""
 

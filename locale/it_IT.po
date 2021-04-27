@@ -1209,6 +1209,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Pin %q non valido"
@@ -1280,6 +1281,11 @@ msgstr "periodo di cattura invalido. Zona valida: 1 - 500"
 #, fuzzy
 msgid "Invalid channel count"
 msgstr "Argomento non valido"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2155,6 +2161,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Per uscire resettare la scheda senza "
@@ -2347,10 +2361,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Le funzioni Viper non supportano più di 4 argomenti al momento"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
@@ -2430,11 +2440,6 @@ msgstr "un oggetto byte-like è richiesto"
 msgid "abort() called"
 msgstr "abort() chiamato"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "l'indirizzo %08x non è allineato a %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "indirizzo fuori limite"
@@ -2442,6 +2447,10 @@ msgstr "indirizzo fuori limite"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "gli indirizzi sono vuoti"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2629,6 +2638,10 @@ msgstr "impossibile assegnare all'espressione"
 msgid "can't convert %q to %q"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "impossibile convertire l'oggetto '%q' implicitamente in %q"
@@ -2636,6 +2649,10 @@ msgstr "impossibile convertire l'oggetto '%q' implicitamente in %q"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "non è possibile convertire a int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2835,6 +2852,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3046,8 +3068,8 @@ msgid "full"
 msgstr "pieno"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "la funzione non prende argomenti nominati"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3100,6 +3122,10 @@ msgstr ""
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c
@@ -3486,6 +3512,10 @@ msgstr "yield nativo"
 msgid "need more than %d values to unpack"
 msgstr "necessari più di %d valori da scompattare"
 
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
+
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "potenza negativa senza supporto per float"
@@ -3720,10 +3750,6 @@ msgstr "la palette deve essere lunga 32 byte"
 msgid "palette_index should be an int"
 msgstr "palette_index deve essere un int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr ""
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametri devono essere i registri in sequenza da a2 a a5"
@@ -3781,6 +3807,7 @@ msgstr "pow() con 3 argomenti richiede interi"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4168,7 +4195,7 @@ msgstr ""
 msgid "unknown type"
 msgstr "tipo sconosciuto"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "tipo '%q' sconosciuto"
 
@@ -4309,6 +4336,15 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Le funzioni Viper non supportano più di 4 argomenti al momento"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "l'indirizzo %08x non è allineato a %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "la funzione non prende argomenti nominati"
+
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "Provo l'allocazione quando MicroPython VM non è attivo."
 
@@ -4385,9 +4421,6 @@ msgstr ""
 
 #~ msgid "can't convert to float"
 #~ msgstr "non è possibile convertire a float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "non è possibile convertire a int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "oggetto '%s' non è una tupla o una lista"

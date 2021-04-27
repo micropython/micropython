@@ -13,7 +13,7 @@
 
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(arg)) {
+    if (mp_obj_is_str(arg)) {
         mp_raise_TypeError(translate("a bytes-like object is required"));
     }
     #endif

@@ -50,7 +50,7 @@ STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_d
     if (xy_tuple == mp_const_none) {
         *x = x_default;
         *y = y_default;
-    } else if (!MP_OBJ_IS_OBJ(xy_tuple)) {
+    } else if (!mp_obj_is_obj(xy_tuple)) {
         mp_raise_ValueError(translate("clip point must be (x,y) tuple"));
     } else {
         mp_obj_t *items;
@@ -401,7 +401,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
+    if (!mp_obj_is_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
         mp_raise_TypeError(NULL);
     }
     displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
@@ -471,12 +471,12 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
+    if (!mp_obj_is_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
         mp_raise_TypeError(NULL);
     }
     displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_file].u_obj, &mp_type_fileio)) {
+    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_fileio)) {
         mp_raise_TypeError(NULL);
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);

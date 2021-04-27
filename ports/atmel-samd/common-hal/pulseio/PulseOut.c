@@ -93,6 +93,9 @@ void pulseout_reset() {
     refcount = 0;
     pulseout_tc_index = 0xff;
     active_pincfg = NULL;
+#ifdef SAMD21
+    rtc_end_pulse();
+#endif
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
@@ -159,6 +162,10 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
     // Turn off the pinmux which should connect the port output.
     turn_off(self->pincfg);
+#ifdef SAMD21
+    rtc_start_pulse();
+#endif
+
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
@@ -180,6 +187,9 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
         pulseout_tc_index = 0xff;
     }
     self->pin = NO_PIN;
+#ifdef SAMD21
+    rtc_end_pulse();
+#endif
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {

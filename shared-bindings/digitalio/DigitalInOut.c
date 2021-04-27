@@ -381,7 +381,7 @@ const mp_obj_type_t digitalio_digitalinout_type = {
 
 // Helper for validating digitalio.DigitalInOut arguments
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
+    if (!mp_obj_is_type(obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(obj);

@@ -41,8 +41,8 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
-    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type) &&
-        !MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type)) {
+    if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
+        !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
@@ -52,15 +52,15 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
     mp_obj_t shape = args[ARG_shape].u_obj;
     vectorio_ishape_t ishape;
     // Wire up shape functions
-    if (MP_OBJ_IS_TYPE(shape, &vectorio_polygon_type)) {
+    if (mp_obj_is_type(shape, &vectorio_polygon_type)) {
         ishape.shape = shape;
         ishape.get_area = &common_hal_vectorio_polygon_get_area;
         ishape.get_pixel = &common_hal_vectorio_polygon_get_pixel;
-    } else if (MP_OBJ_IS_TYPE(shape, &vectorio_rectangle_type)) {
+    } else if (mp_obj_is_type(shape, &vectorio_rectangle_type)) {
         ishape.shape = shape;
         ishape.get_area = &common_hal_vectorio_rectangle_get_area;
         ishape.get_pixel = &common_hal_vectorio_rectangle_get_pixel;
-    } else if (MP_OBJ_IS_TYPE(shape, &vectorio_circle_type)) {
+    } else if (mp_obj_is_type(shape, &vectorio_circle_type)) {
         ishape.shape = shape;
         ishape.get_area = &common_hal_vectorio_circle_get_area;
         ishape.get_pixel = &common_hal_vectorio_circle_get_pixel;
@@ -80,10 +80,10 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
         .event = &common_hal_vectorio_vector_shape_set_dirty
     };
 
-    if (MP_OBJ_IS_TYPE(shape, &vectorio_polygon_type)) {
+    if (mp_obj_is_type(shape, &vectorio_polygon_type)) {
         common_hal_vectorio_polygon_set_on_dirty(self->ishape.shape, on_dirty);
-    } else if (MP_OBJ_IS_TYPE(shape, &vectorio_rectangle_type)) {
-    } else if (MP_OBJ_IS_TYPE(shape, &vectorio_circle_type)) {
+    } else if (mp_obj_is_type(shape, &vectorio_rectangle_type)) {
+    } else if (mp_obj_is_type(shape, &vectorio_circle_type)) {
         common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
@@ -156,7 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorio_vector_shape_get_pixel_shader_obj, vectorio_v
 
 STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type) && !MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type)) {
+    if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
         mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
     }
 
