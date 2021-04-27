@@ -41,7 +41,7 @@
 #include "supervisor/usb.h"
 #include "tusb.h"
 
-static const uint8_t storage_usb_msc_descriptor_template[] = {
+static const uint8_t usb_msc_descriptor_template[] = {
     // MSC Interface Descriptor
     0x09,        //  0 bLength
     0x04,        //  1 bDescriptorType (Interface)
@@ -75,28 +75,32 @@ static const uint8_t storage_usb_msc_descriptor_template[] = {
 };
 
 // Is the MSC device enabled?
-bool storage_usb_enabled;
+bool storage_usb_is_enabled;
 
-size_t storage_usb_descriptor_length(void) {
-    return sizeof(usb_msc_descriptor);
+bool storage_usb_enabled(void) {
+    return storage_usb_is_enabled;
 }
 
-static const char[] storage_interface_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " Mass Storage";
+size_t storage_usb_descriptor_length(void) {
+    return sizeof(usb_msc_descriptor_template);
+}
+
+static const char storage_interface_name[] =  USB_INTERFACE_NAME " Mass Storage";
 
 size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
-    memcpy(descriptor_buf, storage_usb_msc_descriptor_template, sizeof(storage_usb_msc_descriptor_template));
+    memcpy(descriptor_buf, usb_msc_descriptor_template, sizeof(usb_msc_descriptor_template));
     descriptor_buf[MSC_INTERFACE_INDEX] = *current_interface;
     (*current_interface)++;
 
     descriptor_buf[MSC_IN_ENDPOINT_INDEX] = USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : *current_endpoint;
     descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | (USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : *current_endpoint);
-    (*current_endpoint)++:
+    (*current_endpoint)++;
 
-    usb_add_interface_string(*current_interface_string,);
+    usb_add_interface_string(*current_interface_string, storage_interface_name);
     descriptor_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
-    return sizeof(storage_usb_msc_descriptor_template);
+    return sizeof(usb_msc_descriptor_template);
 }
 
 
@@ -118,7 +122,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
 }
 
 void storage_init(void) {
-    storage_usb_enabled = true;
+    storage_usb_is_enabled = true;
 }
 
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
@@ -238,6 +242,6 @@ bool common_hal_storage_configure_usb(bool enabled) {
     if (tud_connected()) {
         return false;
     }
-    storage_usb_enabled = enabled;
+    storage_usb_is_enabled = enabled;
     return true;
 }

@@ -27,11 +27,11 @@
 #ifndef SHARED_MODULE_USB_MIDI___INIT___H
 #define SHARED_MODULE_USB_MIDI___INIT___H
 
-extern bool usb_midi_enabled;
 
 void usb_midi_init(void);
 void usb_midi_usb_init(void);
 
+bool usb_midi_enabled(void);
 size_t usb_midi_descriptor_length(void);
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string);
 

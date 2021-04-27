@@ -91,10 +91,6 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be > 1-255"
-msgstr ""
-
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
@@ -109,10 +105,6 @@ msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or 1-255"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or > 1-255"
 msgstr ""
 
 #: shared-module/vectorio/Polygon.c
@@ -1643,6 +1635,10 @@ msgstr ""
 msgid "Not connected"
 msgstr ""
 
+#: supervisor/shared/usb/usb_desc.c
+msgid "Not enough USB endpoints"
+msgstr ""
+
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
@@ -2147,6 +2143,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
+msgstr ""
+
+#: supervisor/shared/usb/usb_desc.c
+msgid "Too many USB interface names"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c

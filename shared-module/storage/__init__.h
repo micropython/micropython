@@ -27,7 +27,7 @@
 #ifndef SHARED_MODULE_STORAGE___INIT___H
 #define SHARED_MODULE_STORAGE___INIT___H
 
-extern bool storage_usb_enabled;
+bool storage_usb_enabled(void);
 
 void storage_init(void);
 size_t storage_usb_descriptor_length(void);

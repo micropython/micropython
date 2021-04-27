@@ -67,17 +67,25 @@ STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_configure_usb_obj, usb_hid_configure_usb);
 
-
-STATIC const mp_rom_map_elem_t usb_hid_module_globals_table[] = {
+// usb_hid.devices is set once the usb devices are determined, after boot.py runs.
+STATIC mp_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),      MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
     { MP_ROM_QSTR(MP_QSTR_configure_usb), MP_OBJ_FROM_PTR(&usb_hid_configure_usb_obj) },
-    { MP_ROM_QSTR(MP_QSTR_devices),       MP_ROM_PTR(&common_hal_usb_hid_devices) },
-    { MP_ROM_QSTR(MP_QSTR_Device),        MP_ROM_PTR(&usb_hid_device_type) },
+    { MP_ROM_QSTR(MP_QSTR_devices),       mp_const_none },
+    { MP_ROM_QSTR(MP_QSTR_Device),        MP_OBJ_FROM_PTR(&usb_hid_device_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(usb_hid_module_globals, usb_hid_module_globals_table);
+STATIC MP_DEFINE_MUTABLE_DICT(usb_hid_module_globals, usb_hid_module_globals_table);
 
 const mp_obj_module_t usb_hid_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&usb_hid_module_globals,
 };
+
+void usb_hid_set_devices(mp_obj_t devices) {
+    mp_map_elem_t *elem =
+        mp_map_lookup(&usb_hid_module_globals.map, MP_ROM_QSTR(MP_QSTR_devices), MP_MAP_LOOKUP);
+    if (elem) {
+        elem->value = devices;
+    }
+}

@@ -33,6 +33,7 @@
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
 #include "supervisor/memory.h"
+#include "supervisor/usb.h"
 #include "tusb.h"
 
 supervisor_allocation *usb_midi_allocation;
@@ -79,7 +80,7 @@ static const uint8_t usb_midi_descriptor_template[] = {
     0x24,        // 28 bDescriptorType: CLASS SPECIFIC INTERFACE
     0x01,        // 29 bDescriptorSubtype: MIDI STREAMING HEADER
     0x00, 0x01,  // 30,31 bsdMSC (MIDI STREAMING) version 1.0
-    0x25, 0x00   // 32,33 wLength
+    0x25, 0x00,  // 32,33 wLength
 
     // MIDI Embedded In Jack Descriptor
     0x06,        // 34 bLength
@@ -155,17 +156,21 @@ static const uint8_t usb_midi_descriptor_template[] = {
 };
 
 // Is the USB MIDI device enabled?
-bool usb_midi_enabled;
+static bool usb_midi_is_enabled;
+
+bool usb_midi_enabled(void) {
+    return usb_midi_is_enabled;
+}
 
 
 size_t usb_midi_descriptor_length(void) {
     return sizeof(usb_midi_descriptor_template);
 }
 
-static const char[] midi_streaming_interface_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " MIDI";
-static const char[] midi_audio_control_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " Audio";
-static const char[] midi_in_jack_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " usb_midi.ports[0]";
-static const char[] midi_out_jack_name =  MP_STRINGIFY(USB_INTERFACE_NAME) " usb_midi.ports[0]";
+static const char midi_streaming_interface_name[] =  USB_INTERFACE_NAME " MIDI";
+static const char midi_audio_control_interface_name[] = USB_INTERFACE_NAME " Audio";
+static const char midi_in_jack_name[] =  USB_INTERFACE_NAME " usb_midi.ports[0]";
+static const char midi_out_jack_name[] =  USB_INTERFACE_NAME " usb_midi.ports[0]";
 
 size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string) {
     memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
@@ -173,8 +178,9 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
     descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_NUMBER_INDEX] = *current_interface;
     (*current_interface)++;
 
-    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = USB_MIDI_EP_NUM_IN ? USB_MIDI_EP_NUM_IN : *current_endpoint;
-    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] =
+    descriptor_buf[MIDI_STREAMING_IN_ENDPOINT_INDEX] =
+        USB_MIDI_EP_NUM_IN ? USB_MIDI_EP_NUM_IN : *current_endpoint;
+    descriptor_buf[MIDI_STREAMING_OUT_ENDPOINT_INDEX] =
         0x80 | (USB_MIDI_EP_NUM_OUT ? USB_MIDI_EP_NUM_OUT : *current_endpoint);
     (*current_endpoint)++;
 
@@ -203,13 +209,13 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
 
 
 void usb_midi_init(void) {
-    usb_midi_enabled = true;
+    usb_midi_is_enabled = true;
 }
 
 void usb_midi_usb_init(void) {
     mp_obj_tuple_t *ports;
 
-    if (usb_midi_enabled) {
+    if (usb_midi_is_enabled) {
         // TODO(tannewt): Make this dynamic.
         size_t tuple_size = align32_size(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t *) * 2);
         size_t portin_size = align32_size(sizeof(usb_midi_portin_obj_t));
@@ -241,6 +247,6 @@ bool common_hal_usb_midi_configure_usb(bool enabled) {
     if (tud_connected()) {
         return false;
     }
-    usb_midi_enabled = enabled;
+    usb_midi_is_enabled = enabled;
     return true;
 }

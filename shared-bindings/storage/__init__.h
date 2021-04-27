@@ -30,6 +30,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "shared-module/storage/__init__.h"
+
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char *path, bool readonly);
 void common_hal_storage_umount_path(const char *path);
 void common_hal_storage_umount_object(mp_obj_t vfs_obj);

@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
 
 #include "py/obj.h"
+#include "shared-module/usb_midi/__init__.h"
 
 extern mp_obj_dict_t usb_midi_module_globals;
 

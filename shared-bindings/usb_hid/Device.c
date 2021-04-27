@@ -44,7 +44,7 @@
 //|         """Create a description of a USB HID device. To create an actual device,
 //|         pass a `Device` to `usb_hid.configure_usb()`.
 //|
-//|         :param ReadableBuffer descriptor: The USB HID Report descriptor bytes. The descriptor is not
+//|         :param ReadableBuffer report_descriptor: The USB HID Report descriptor bytes. The descriptor is not
 //|         not verified for correctness; it is up to you to make sure it is not malformed.
 //|         :param int usage_page: The Usage Page value from the descriptor. Must match what is in the descriptor.
 //|         :param int usage: The Usage value from the descriptor. Must match what is in the descriptor.
@@ -60,9 +60,9 @@
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
-    enum { ARG_descriptor, ARG_usage, ARG_usage_page, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
+    enum { ARG_report_descriptor, ARG_usage, ARG_usage_page, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT } ,
@@ -74,7 +74,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_descriptor].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_report_descriptor].u_obj, &bufinfo, MP_BUFFER_READ);
     mp_obj_t descriptor = mp_obj_new_bytearray(bufinfo.len, bufinfo.buf);
 
     const mp_int_t usage_page_arg = args[ARG_usage_page].u_int;

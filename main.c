@@ -103,6 +103,10 @@
 #include "shared-module/usb_cdc/__init__.h"
 #endif
 
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_MIDI
 #include "shared-module/usb_midi/__init__.h"
 #endif
@@ -187,6 +191,10 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_USB_CDC
     usb_cdc_init();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_init();
     #endif
 
     #if CIRCUITPY_USB_MIDI

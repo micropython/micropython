@@ -992,4 +992,57 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #define CIRCUITPY_VERBOSE_BLE 0
 
+// USB settings
+
+// If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
+
+#ifndef USB_CDC_EP_NUM_NOTIFICATION
+#define USB_CDC_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_OUT
+#define USB_CDC_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_IN
+#define USB_CDC_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_NOTIFICATION
+#define USB_CDC2_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_OUT
+#define USB_CDC2_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_IN
+#define USB_CDC2_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_OUT
+#define USB_MSC_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_IN
+#define USB_MSC_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_OUT
+#define USB_HID_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_IN
+#define USB_HID_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_OUT
+#define USB_MIDI_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_IN
+#define USB_MIDI_EP_NUM_IN (0)
+#endif
+
+
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

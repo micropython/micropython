@@ -37,9 +37,6 @@
 #error CFG_TUD_CDC must be exactly 2
 #endif
 
-bool usb_cdc_repl_enabled;
-bool usb_cdc_data_enabled;
-
 static const uint8_t usb_cdc_descriptor_template[] = {
     // CDC IAD Descriptor
     0x08,        //  0 bLength
@@ -135,10 +132,10 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     0x00,        // 65 bInterval 0 (unit depends on device speed)
 };
 
-static const char[] repl_cdc_comm_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC control";
-static const char[] data_cdc_comm_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC2 control";
-static const char[] repl_cdc_data_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC data";
-static const char[] data_cdc_data_interface_name = MP_STRINGIFY(USB_INTERFACE_NAME) " CDC2 data";
+static const char[] repl_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC control";
+static const char[] data_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC2 control";
+static const char[] repl_cdc_data_interface_name = USB_INTERFACE_NAME " CDC data";
+static const char[] data_cdc_data_interface_name = USB_INTERFACE_NAME " CDC2 data";
 
 static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
     .base.type = &usb_cdc_serial_type,
@@ -153,6 +150,17 @@ static usb_cdc_serial_obj_t usb_cdc_data_obj = {
     .write_timeout = -1.0f,
     .idx = 1,
 };
+
+static bool usb_cdc_repl_is_enabled;
+static bool usb_cdc_data_is_enabled;
+
+bool usb_cdc_repl_enabled(void) {
+    return usb_cdc_repl_is_enabled;
+}
+
+bool usb_cdc_data_enabled(void) {
+    return usb_cdc_data_enabled;
+}
 
 size_t usb_cdc_descriptor_length(void) {
     return sizeof(usb_cdc_descriptor_template);
@@ -200,8 +208,8 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
 }
 
 void usb_cdc_init(void) {
-    usb_cdc_repl_enabled = true;
-    usb_cdc_data_enabled = false;
+    usb_cdc_repl_is_enabled = true;
+    usb_cdc_data_is_enabled = false;
 }
 
 bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
