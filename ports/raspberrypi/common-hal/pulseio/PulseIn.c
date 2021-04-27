@@ -39,9 +39,11 @@
 pulseio_pulsein_obj_t *save_self;
 
 #define NO_PIN 0xff
+#define MAX_PULSE 65535
+#define MIN_PULSE 10
 volatile bool last_level;
-volatile uint16_t level_count = 0;
-volatile uint16_t result = 0;
+volatile uint32_t level_count = 0;
+volatile uint32_t result = 0;
 volatile uint16_t buf_index = 0;
 
 uint16_t pulsein_program[] = {
@@ -133,16 +135,21 @@ void common_hal_pulseio_pulsein_interrupt() {
             result = level_count;
             last_level = level;
             level_count = 1;
-            // ignore pulses that are too long and too short
-            if (result < 4000 && result > 10) {
-                self->buffer[buf_index] = result;
+	    // Pulses that are londger than MAX_PULSE will return MAX_PULSE
+	    if (result > MAX_PULSE ) {
+	        result = MAX_PULSE;
+	    }
+            // ignore pulses that are too short
+            if (result <= MAX_PULSE && result > MIN_PULSE) {
+                self->buffer[buf_index] = (uint16_t) result;
                 buf_index++;
                 self->len++;
             }
         }
     }
-// check for a pulse thats too long (4000 us) or maxlen reached,  and reset
-    if ((level_count > 4000) || (buf_index >= self->maxlen)) {
+
+// check for a pulse thats too long (MAX_PULSE us) or maxlen reached,  and reset
+    if ((level_count > MAX_PULSE) || (buf_index >= self->maxlen)) {
         pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
         pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
         pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
