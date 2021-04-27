@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "irq.h"
 #include "softtimer.h"
 
@@ -36,6 +37,10 @@ extern __IO uint32_t uwTick;
 
 volatile uint32_t soft_timer_next;
 
+// Soft-timer pairing heap for statically allocated (ie not via GC ) entries.
+STATIC soft_timer_entry_t *soft_timer_static_heap;
+
+// Clears out the GC-allocated soft-timer heap.
 void soft_timer_deinit(void) {
     MP_STATE_PORT(soft_timer_heap) = NULL;
 }
@@ -58,9 +63,9 @@ STATIC void soft_timer_schedule_systick(uint32_t ticks_ms) {
 }
 
 // Must be executed at IRQ_PRI_PENDSV
-void soft_timer_handler(void) {
+STATIC void soft_timer_handler_helper(soft_timer_entry_t **heap_in, bool *expiry_ms_set, uint32_t *expiry_ms) {
     uint32_t ticks_ms = uwTick;
-    soft_timer_entry_t *heap = MP_STATE_PORT(soft_timer_heap);
+    soft_timer_entry_t *heap = *heap_in;
     while (heap != NULL && TICKS_DIFF(heap->expiry_ms, ticks_ms) <= 0) {
         soft_timer_entry_t *entry = heap;
         heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
@@ -74,29 +79,63 @@ void soft_timer_handler(void) {
             heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap->pairheap, &entry->pairheap);
         }
     }
-    MP_STATE_PORT(soft_timer_heap) = heap;
-    if (heap == NULL) {
+    if (heap != NULL) {
+        if (!*expiry_ms_set || TICKS_DIFF(heap->expiry_ms, *expiry_ms) <= 0) {
+            *expiry_ms_set = true;
+            *expiry_ms = heap->expiry_ms;
+        }
+    }
+    *heap_in = heap;
+}
+
+// Must be executed at IRQ_PRI_PENDSV
+void soft_timer_handler(void) {
+    bool expiry_ms_set = false;
+    uint32_t expiry_ms;
+    soft_timer_handler_helper(&soft_timer_static_heap, &expiry_ms_set, &expiry_ms);
+    soft_timer_handler_helper(&MP_STATE_PORT(soft_timer_heap), &expiry_ms_set, &expiry_ms);
+    if (!expiry_ms_set) {
         // No more timers left, set largest delay possible
         soft_timer_next = uwTick;
     } else {
         // Set soft_timer_next so SysTick calls us back at the correct time
-        soft_timer_schedule_systick(heap->expiry_ms);
+        soft_timer_schedule_systick(expiry_ms);
     }
+}
+
+STATIC void soft_timer_insert_to(soft_timer_entry_t **heap, soft_timer_entry_t *other_heap, soft_timer_entry_t *entry) {
+    mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
+    uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
+    *heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &(*heap)->pairheap, &entry->pairheap);
+    if (entry == *heap) {
+        // This new timer became the earliest on this heap.
+        if (other_heap == NULL || TICKS_DIFF(entry->expiry_ms, other_heap->expiry_ms) < 0) {
+            // This new timer became the earliest of all, so set soft_timer_next.
+            soft_timer_schedule_systick(entry->expiry_ms);
+        }
+    }
+    restore_irq_pri(irq_state);
+}
+
+STATIC void soft_timer_remove_from(soft_timer_entry_t **heap, soft_timer_entry_t *entry) {
+    uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
+    *heap = (soft_timer_entry_t *)mp_pairheap_delete(soft_timer_lt, &(*heap)->pairheap, &entry->pairheap);
+    restore_irq_pri(irq_state);
+}
+
+void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t delta_ms, void (*cb)(soft_timer_entry_t *)) {
+    entry->flags = 0;
+    entry->mode = mode;
+    entry->expiry_ms = mp_hal_ticks_ms() + delta_ms;
+    entry->delta_ms = delta_ms;
+    entry->c_callback = cb;
+    soft_timer_insert_to(&soft_timer_static_heap, MP_STATE_VM(soft_timer_heap), entry);
 }
 
 void soft_timer_insert(soft_timer_entry_t *entry) {
-    mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
-    uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
-    if (entry == MP_STATE_PORT(soft_timer_heap)) {
-        // This new timer became the earliest one so set soft_timer_next
-        soft_timer_schedule_systick(entry->expiry_ms);
-    }
-    restore_irq_pri(irq_state);
+    soft_timer_insert_to(&MP_STATE_VM(soft_timer_heap), soft_timer_static_heap, entry);
 }
 
 void soft_timer_remove(soft_timer_entry_t *entry) {
-    uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t *)mp_pairheap_delete(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
-    restore_irq_pri(irq_state);
+    soft_timer_remove_from(&MP_STATE_VM(soft_timer_heap), entry);
 }

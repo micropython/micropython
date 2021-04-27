@@ -49,6 +49,8 @@ extern volatile uint32_t soft_timer_next;
 
 void soft_timer_deinit(void);
 void soft_timer_handler(void);
+
+void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t delta_ms, void (*cb)(soft_timer_entry_t *));
 void soft_timer_insert(soft_timer_entry_t *entry);
 void soft_timer_remove(soft_timer_entry_t *entry);
 
