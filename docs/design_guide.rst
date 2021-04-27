@@ -410,7 +410,7 @@ Documentation References to other Libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 When you need to make references to documentation in other libraries you should refer the class using single
 backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the reference in the ``conf.py`` file in the
-``intersphinx_mapping section`` adding a new entry::
+``intersphinx_mapping section`` by adding a new entry::
 
     "adafruit_motor": ("https://circuitpython.readthedocs.io/projects/motor/en/latest/", None,),
 
