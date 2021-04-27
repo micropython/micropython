@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-25 18:43+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3164,11 +3164,11 @@ msgstr "identificador redefinido como nonlocal"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "archivo .mpy incompatible"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "arquitectura nativa de .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3291,7 +3291,7 @@ msgstr "el intervalo debe ser der rango %s-%s"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "arquitectura inválida"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
