@@ -95,6 +95,9 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
+// For 1ms system ticker.
+static volatile uint32_t systick_ms;
+
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
@@ -102,6 +105,10 @@ static void do_reset(void);
 
 uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return systick_ms;
 }
 
 void mp_hal_delay_us(mp_uint_t usec) {
@@ -113,10 +120,9 @@ void mp_hal_delay_us(mp_uint_t usec) {
     const uint32_t ucount = SystemCoreClock / 2000000 * usec / 2;
     #endif
     for (uint32_t count = 0; ++count <= ucount;) {
+        __NOP();
     }
 }
-
-static volatile uint32_t systick_ms;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (__get_PRIMASK() == 0) {
