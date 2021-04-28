@@ -27,12 +27,13 @@
 #ifndef SHARED_MODULE_USB_CDC___INIT___H
 #define SHARED_MODULE_USB_CDC___INIT___H
 
+#include "py/mpconfig.h"
 #include "py/objtuple.h"
 
 bool usb_cdc_repl_enabled(void);
 bool usb_cdc_data_enabled(void);
 
-void usb_cdc_init(void);
+void usb_cdc_init_usb(void);
 size_t usb_cdc_descriptor_length(void);
 size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, bool repl);
 

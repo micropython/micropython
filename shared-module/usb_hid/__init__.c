@@ -67,7 +67,7 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x07,        // 25 bLength
     0x05,        // 26 bDescriptorType (Endpoint)
     0xFF,        // 27 bEndpointAddress (OUT/H2D)  [SET AT RUNTIME]
-#define HID_OUT_ENDPOINT_INDEX (26)
+#define HID_OUT_ENDPOINT_INDEX (27)
     0x03,        // 28 bmAttributes (Interrupt)
     0x40, 0x00,  // 29,30 wMaxPacketSize 64
     0x08,        // 31 bInterval 8 (unit depends on device speed)
@@ -115,22 +115,28 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX] = report_descriptor_length & 0xFF;
     descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX + 1] = (report_descriptor_length >> 8);
 
-    descriptor_buf[HID_IN_ENDPOINT_INDEX] = USB_HID_EP_NUM_IN ? USB_HID_EP_NUM_IN : *current_endpoint;
-    descriptor_buf[HID_OUT_ENDPOINT_INDEX] = 0x80 | (USB_HID_EP_NUM_OUT ? USB_HID_EP_NUM_OUT : *current_endpoint);
+    descriptor_buf[HID_IN_ENDPOINT_INDEX] = 0x80 | (USB_HID_EP_NUM_IN ? USB_HID_EP_NUM_IN : *current_endpoint);
+    descriptor_buf[HID_OUT_ENDPOINT_INDEX] = USB_HID_EP_NUM_OUT ? USB_HID_EP_NUM_OUT : *current_endpoint;
     (*current_endpoint)++;
 
     return sizeof(usb_hid_descriptor_template);
 }
 
-static mp_obj_t default_hid_devices[] = {
-    MP_OBJ_FROM_PTR(&usb_hid_device_keyboard_obj),
-    MP_OBJ_FROM_PTR(&usb_hid_device_mouse_obj),
-    MP_OBJ_FROM_PTR(&usb_hid_device_consumer_control_obj),
+static mp_rom_obj_tuple_t default_hid_devices_tuple = {
+    .base = {
+        .type = &mp_type_tuple,
+    },
+    .len = 3,
+    .items = {
+        MP_OBJ_FROM_PTR(&usb_hid_device_keyboard_obj),
+        MP_OBJ_FROM_PTR(&usb_hid_device_mouse_obj),
+        MP_OBJ_FROM_PTR(&usb_hid_device_consumer_control_obj),
+    },
 };
 
 // Set the default list of devices that will be included. Called before boot.py runs, in the boot.py VM.
 void common_hal_usb_hid_configure_usb_defaults(void) {
-    common_hal_usb_hid_configure_usb(mp_obj_new_tuple(sizeof(default_hid_devices), default_hid_devices));
+    common_hal_usb_hid_configure_usb(&default_hid_devices_tuple);
 }
 
 bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
@@ -144,7 +150,8 @@ bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
     return true;
 }
 
-void usb_hid_init(void) {
+// Called only once, before boot.py
+void usb_hid_init_usb(void) {
     usb_hid_is_enabled = true;
 }
 
@@ -170,7 +177,7 @@ void usb_hid_post_boot_py(void) {
         total_hid_report_descriptor_length -= 2;
     }
 
-    // Allocate storage that persists across VMs to build the combined descriptor
+    // Allocate storage that persists across VMs to build the combined report descriptor
     // and to remember the device details.
 
     hid_report_descriptor_allocation =

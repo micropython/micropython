@@ -67,7 +67,7 @@ void serial_early_init(void) {
 }
 
 void serial_init(void) {
-    usb_init();
+    // USB serial is set up separately.
 }
 
 bool serial_connected(void) {

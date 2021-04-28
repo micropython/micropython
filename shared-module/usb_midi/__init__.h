@@ -28,8 +28,8 @@
 #define SHARED_MODULE_USB_MIDI___INIT___H
 
 
-void usb_midi_init(void);
-void usb_midi_usb_init(void);
+void usb_midi_init_usb(void);
+void usb_midi_setup(void);
 
 bool usb_midi_enabled(void);
 size_t usb_midi_descriptor_length(void);

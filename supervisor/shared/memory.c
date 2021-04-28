@@ -39,16 +39,9 @@ enum {
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
         #endif
-        #if CIRCUITPY_USB_MIDI
-        + 1
-        #endif
     ,
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
         0
-        #if CIRCUITPY_USB
-        + 1   // device_descriptor_allocation
-        + 1   // config_descriptor_allocation
-        #endif
         #if CIRCUITPY_USB_HID
         + 1   // hid_report_descriptor_allocation
         + 1   // hid_devices_allocation

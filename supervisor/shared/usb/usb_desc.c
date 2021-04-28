@@ -52,8 +52,8 @@
 
 // Table for collecting interface strings (interface names) as descriptor is built.
 #define MAX_INTERFACE_STRINGS 16
-// slot 0 is not used.
-static uint16_t **collected_interface_strings;
+// slot 0 is always the Language ID
+static uint16_t *collected_interface_strings[MAX_INTERFACE_STRINGS];
 static uint8_t current_interface_string;
 
 static const char manufacturer_name[] = USB_MANUFACTURER;
@@ -77,11 +77,11 @@ static const uint8_t device_descriptor_template[] = {
 #define DEVICE_PID_LO_INDEX (10)
 #define DEVICE_PID_HI_INDEX (11)
     0x00, 0x01,  // 12,13 bcdDevice 2.00
-    0x02,        // 14 iManufacturer (String Index) [SET AT RUNTIME]
+    0xFF,        // 14 iManufacturer (String Index) [SET AT RUNTIME]
 #define DEVICE_MANUFACTURER_STRING_INDEX (14)
-    0x03,        // 15 iProduct (String Index) [SET AT RUNTIME]
+    0xFF,        // 15 iProduct (String Index) [SET AT RUNTIME]
 #define DEVICE_PRODUCT_STRING_INDEX (15)
-    0x01,        // 16 iSerialNumber (String Index)  [SET AT RUNTIME]
+    0xFF,        // 16 iSerialNumber (String Index)  [SET AT RUNTIME]
 #define DEVICE_SERIAL_NUMBER_STRING_INDEX (16)
     0x01,        // 17 bNumConfigurations 1
 };
@@ -102,7 +102,7 @@ static const uint8_t configuration_descriptor_template[] = {
     0x32,        // 8 bMaxPower 100mA
 };
 
-static uint8_t configuration_descriptor[sizeof(configuration_descriptor_template)];
+static uint8_t *configuration_descriptor;
 
 // Initialization done before boot.py is run.
 // Turn on or off various USB devices. On devices with limited endpoints,
@@ -169,20 +169,23 @@ static void usb_build_configuration_descriptor(void) {
     }
 #endif
 
-#if CIRCUITPY_USB_MIDI
-    if (usb_midi_enabled()) {
-        total_descriptor_length += usb_midi_descriptor_length();
-    }
-#endif
-
 #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
         total_descriptor_length += usb_hid_descriptor_length();
     }
 #endif
 
+#if CIRCUITPY_USB_MIDI
+    if (usb_midi_enabled()) {
+        total_descriptor_length += usb_midi_descriptor_length();
+    }
+#endif
+
     // Now we now how big the configuration descriptor will be.
-    // Copy the top-level template, and fix up its length.
+    // Copy the template, which is the first part of the descriptor, and fix up its length.
+    configuration_descriptor = gc_alloc(total_descriptor_length, false, false);
+    memcpy(configuration_descriptor, configuration_descriptor_template, sizeof(configuration_descriptor_template));
+
     configuration_descriptor[CONFIG_TOTAL_LENGTH_LO_INDEX] = total_descriptor_length & 0xFF;
     configuration_descriptor[CONFIG_TOTAL_LENGTH_HI_INDEX] = (total_descriptor_length >> 8) & 0xFF;
 
@@ -214,14 +217,6 @@ static void usb_build_configuration_descriptor(void) {
     }
 #endif
 
-#if CIRCUITPY_USB_MIDI
-    if (usb_midi_enabled()) {
-        // Concatenate and fix up the MIDI descriptor.
-        descriptor_buf_remaining += usb_midi_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
-    }
-#endif
-
 #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
         descriptor_buf_remaining += usb_hid_add_descriptor(
@@ -230,8 +225,19 @@ static void usb_build_configuration_descriptor(void) {
     }
 #endif
 
+#if CIRCUITPY_USB_MIDI
+    if (usb_midi_enabled()) {
+        // Concatenate and fix up the MIDI descriptor.
+        descriptor_buf_remaining += usb_midi_add_descriptor(
+            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
+    }
+#endif
+
     // Now we know how many interfaces have been used.
-    configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = current_interface - 1;
+    // current_interface is the next free interface, counting from 0,
+    // so move back to the last interface number, and then get a count.
+    // (E.g., interfaces 0-5 are used, so the number of interfaces is 6.)
+    configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = current_interface - 1 + 1;
 
     // Did we run out of endpoints?
     if (current_endpoint - 1 > USB_NUM_EP) {
@@ -266,6 +272,14 @@ void usb_desc_post_boot_py(void) {
 
 // Called in the new VM created after boot.py is run. The USB devices to be used are now chosen.
 void usb_desc_init(void) {
+    memset(collected_interface_strings, 0, sizeof(collected_interface_strings));
+
+    // Language ID is always the 0th string descriptor.
+    collected_interface_strings[0] = (uint16_t[]) {
+        0x0304,
+        0x0409,
+    };
+
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
@@ -277,10 +291,8 @@ void usb_desc_init(void) {
     }
 
     // Null-terminate the string.
-    serial_number_hex_string[sizeof(serial_number_hex_string)] = '\0';
+    serial_number_hex_string[sizeof(serial_number_hex_string) - 1] = '\0';
 
-    // Memory is cleared to zero when allocated; we depend on that.
-    collected_interface_strings = m_malloc(MAX_INTERFACE_STRINGS + 1, false);
     current_interface_string = 1;
 
     usb_build_device_descriptor(USB_VID, USB_PID);
@@ -292,9 +304,13 @@ void usb_desc_gc_collect(void) {
     if (tud_mounted()) {
         gc_free(device_descriptor);
         gc_free(configuration_descriptor);
+        for (size_t i = 0; i < MAX_INTERFACE_STRINGS; i ++) {
+            gc_free(collected_interface_strings[i]);
+        }
     } else {
         gc_collect_ptr(device_descriptor);
         gc_collect_ptr(configuration_descriptor);
+        gc_collect_root((void **) collected_interface_strings, MAX_INTERFACE_STRINGS);
     }
 }
 

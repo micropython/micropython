@@ -34,6 +34,14 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
+#if CIRCUITPY_STORAGE
+#include "shared-module/storage/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_CDC
+#include "shared-module/usb_cdc/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
 #endif
@@ -82,14 +90,28 @@ void usb_init(void) {
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
     #endif
 
+    #if CIRCUITPY_USB_MIDI
+    usb_midi_setup();
+    #endif
+}
+
+void usb_pre_boot_py(void) {
+    #if CIRCUITPY_STORAGE
+    storage_init_usb();
+    #endif
+
     #if CIRCUITPY_USB_CDC
-    usb_cdcx_usb_init();
+    usb_cdc_init_usb();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_init_usb();
     #endif
 
     #if CIRCUITPY_USB_MIDI
-    usb_midi_usb_init();
+    usb_midi_init_usb();
     #endif
-}
+};
 
 // Remember USB settings done during boot.py.
 // The boot.py heap is still valid at this point.

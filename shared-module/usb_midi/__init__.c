@@ -26,6 +26,7 @@
 
 #include "shared-bindings/usb_midi/__init__.h"
 
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
@@ -72,7 +73,7 @@ static const uint8_t usb_midi_descriptor_template[] = {
     0x01,        // 23 bInterfaceClass (Audio)
     0x03,        // 24 bInterfaceSubClass (MIDI Streaming)
     0x00,        // 25 bInterfaceProtocol
-    0xFF,        //  26 iInterface (String Index) [SET AT RUNTIME]
+    0xFF,        // 26 iInterface (String Index) [SET AT RUNTIME]
 #define MIDI_STREAMING_INTERFACE_STRING_INDEX (26)
 
     // MIDI Header Descriptor
@@ -141,7 +142,7 @@ static const uint8_t usb_midi_descriptor_template[] = {
     // MIDI IN Data Endpoint
     0x07,        // 76 bLength
     0x05,        // 77 bDescriptorType: Endpoint
-    0xFF,        // 78 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0xFF,        // 78 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define MIDI_STREAMING_IN_ENDPOINT_INDEX (78)
     0x02,        // 79 bmAttributes (Bulk)
     0x40, 0x00,  // 8081 wMaxPacketSize 64
@@ -179,9 +180,9 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
     (*current_interface)++;
 
     descriptor_buf[MIDI_STREAMING_IN_ENDPOINT_INDEX] =
-        USB_MIDI_EP_NUM_IN ? USB_MIDI_EP_NUM_IN : *current_endpoint;
+        0x80 | (USB_MIDI_EP_NUM_IN ? USB_MIDI_EP_NUM_IN : *current_endpoint);
     descriptor_buf[MIDI_STREAMING_OUT_ENDPOINT_INDEX] =
-        0x80 | (USB_MIDI_EP_NUM_OUT ? USB_MIDI_EP_NUM_OUT : *current_endpoint);
+        USB_MIDI_EP_NUM_OUT ? USB_MIDI_EP_NUM_OUT : *current_endpoint;
     (*current_endpoint)++;
 
     descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX] = *current_interface;
@@ -208,38 +209,36 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
 }
 
 
-void usb_midi_init(void) {
+// Called once, before
+void usb_midi_init_usb(void) {
     usb_midi_is_enabled = true;
 }
 
-void usb_midi_usb_init(void) {
+// Called before REPL or code.py
+void usb_midi_setup(void) {
     mp_obj_tuple_t *ports;
 
     if (usb_midi_is_enabled) {
-        // TODO(tannewt): Make this dynamic.
-        size_t tuple_size = align32_size(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t *) * 2);
-        size_t portin_size = align32_size(sizeof(usb_midi_portin_obj_t));
-        size_t portout_size = align32_size(sizeof(usb_midi_portout_obj_t));
+        // Make these objects long-lived, because they will not be going away.
 
-        // For each embedded MIDI Jack in the descriptor we create a Port
-        usb_midi_allocation = allocate_memory(tuple_size + portin_size + portout_size, false, false);
-
-        ports = (mp_obj_tuple_t *)usb_midi_allocation->ptr;
-        ports->base.type = &mp_type_tuple;
-        ports->len = 2;
-
-        usb_midi_portin_obj_t *in = (usb_midi_portin_obj_t *)(usb_midi_allocation->ptr + tuple_size / 4);
+        usb_midi_portin_obj_t *in = gc_alloc(sizeof(usb_midi_portin_obj_t), false, true);
         in->base.type = &usb_midi_portin_type;
-        ports->items[0] = MP_OBJ_FROM_PTR(in);
 
-        usb_midi_portout_obj_t *out = (usb_midi_portout_obj_t *)(usb_midi_allocation->ptr + tuple_size / 4 + portin_size / 4);
+        usb_midi_portout_obj_t *out = gc_alloc(sizeof(usb_midi_portout_obj_t), false, true);
         out->base.type = &usb_midi_portout_type;
-        ports->items[1] = MP_OBJ_FROM_PTR(out);
+
+        mp_obj_t tuple_items[2] = {
+            MP_OBJ_FROM_PTR(in),
+            MP_OBJ_FROM_PTR(out),
+        };
+
+        ports = mp_obj_new_tuple(2, tuple_items);
     } else {
         ports = mp_const_empty_tuple;
     }
 
-    mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value = MP_OBJ_FROM_PTR(ports);
+    mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value =
+        MP_OBJ_FROM_PTR(ports);
 }
 
 bool common_hal_usb_midi_configure_usb(bool enabled) {

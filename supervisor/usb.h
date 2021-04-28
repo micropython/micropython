@@ -54,6 +54,7 @@ bool usb_enabled(void);
 void usb_init(void);
 void usb_disconnect(void);
 void usb_gc_collect(void);
+void usb_pre_boot_py(void);
 void usb_post_boot_py(void);
 
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]);

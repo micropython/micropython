@@ -31,6 +31,8 @@
 #include "py/objtuple.h"
 #include "shared-bindings/usb_cdc/__init__.h"
 #include "shared-bindings/usb_cdc/Serial.h"
+#include "supervisor/usb.h"
+
 #include "tusb.h"
 
 #if CFG_TUD_CDC != 2
@@ -94,7 +96,7 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     // CDC Control IN Endpoint Descriptor
     0x07,        // 36 bLength
     0x05,        // 37 bDescriptorType (Endpoint)
-    0xFF,        // 38 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0xFF,        // 38 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define CDC_CONTROL_IN_ENDPOINT_INDEX 38
     0x03,        // 39 bmAttributes (Interrupt)
     0x40, 0x00,  // 40, 41 wMaxPacketSize 64
@@ -125,17 +127,17 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     // CDC Data IN Endpoint Descriptor
     0x07,        // 59 bLength
     0x05,        // 60 bDescriptorType (Endpoint)
-    0xFF,        // 61 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x8 | number]
+    0xFF,        // 61 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define CDC_DATA_IN_ENDPOINT_INDEX 61
     0x02,        // 62 bmAttributes (Bulk)
     0x40, 0x00,  // 63,64 wMaxPacketSize 64
     0x00,        // 65 bInterval 0 (unit depends on device speed)
 };
 
-static const char[] repl_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC control";
-static const char[] data_cdc_comm_interface_name = USB_INTERFACE_NAME " CDC2 control";
-static const char[] repl_cdc_data_interface_name = USB_INTERFACE_NAME " CDC data";
-static const char[] data_cdc_data_interface_name = USB_INTERFACE_NAME " CDC2 data";
+static const char repl_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC control";
+static const char data_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC2 control";
+static const char repl_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC data";
+static const char data_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC2 data";
 
 static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
     .base.type = &usb_cdc_serial_type,
@@ -159,7 +161,7 @@ bool usb_cdc_repl_enabled(void) {
 }
 
 bool usb_cdc_data_enabled(void) {
-    return usb_cdc_data_enabled;
+    return usb_cdc_data_is_enabled;
 }
 
 size_t usb_cdc_descriptor_length(void) {
@@ -167,7 +169,7 @@ size_t usb_cdc_descriptor_length(void) {
 }
 
 size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, bool repl) {
-    memcpy(descriptor_buf, usb_midi_descriptor_template, sizeof(usb_midi_descriptor_template));
+    memcpy(descriptor_buf, usb_cdc_descriptor_template, sizeof(usb_cdc_descriptor_template));
 
     // Store comm interface number.
     descriptor_buf[CDC_FIRST_INTERFACE_INDEX] = *current_interface;
@@ -179,19 +181,23 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     descriptor_buf[CDC_CALL_MANAGEMENT_DATA_INTERFACE_INDEX] = *current_interface;
     descriptor_buf[CDC_UNION_SLAVE_INTERFACE_INDEX] = *current_interface;
     descriptor_buf[CDC_DATA_INTERFACE_INDEX] = *current_interface;
+    (*current_interface)++;
 
-    descriptor_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = repl
+    descriptor_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = 0x80 | (
+        repl
         ? (USB_CDC_EP_NUM_NOTIFICATION ? USB_CDC_EP_NUM_NOTIFICATION : *current_endpoint)
-        : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : *current_endpoint);
+        : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : *current_endpoint));
     (*current_endpoint)++;
 
-    descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] = repl
+    descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
+        repl
         ? (USB_CDC_EP_NUM_DATA_OUT ? USB_CDC_EP_NUM_DATA_OUT : *current_endpoint)
         : (USB_CDC2_EP_NUM_DATA_OUT ? USB_CDC2_EP_NUM_DATA_OUT : *current_endpoint);
 
-    descriptor_buf[CDC_DATA_IN_ENDPOINT_INDEX] = repl
+    descriptor_buf[CDC_DATA_IN_ENDPOINT_INDEX] = 0x80 | (
+        repl
         ? (USB_CDC_EP_NUM_DATA_IN ? USB_CDC_EP_NUM_DATA_IN : *current_endpoint)
-        : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : *current_endpoint);
+        : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : *current_endpoint));
     (*current_endpoint)++;
 
     usb_add_interface_string(*current_interface_string,
@@ -204,10 +210,11 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     descriptor_buf[CDC_DATA_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
-    return sizeof(usb_midi_descriptor_template);
+    return sizeof(usb_cdc_descriptor_template);
 }
 
-void usb_cdc_init(void) {
+// Called only once, before boot.py
+void usb_cdc_init_usb(void) {
     usb_cdc_repl_is_enabled = true;
     usb_cdc_data_is_enabled = false;
 }
@@ -218,10 +225,10 @@ bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
         return false;
     }
 
-    usb_cdc_repl_enabled = repl_enabled;
+    usb_cdc_repl_is_enabled = repl_enabled;
     usb_cdc_set_repl(repl_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_repl_obj) : mp_const_none);
 
-    usb_cdc_data_enabled = data_enabled;
+    usb_cdc_data_is_enabled = data_enabled;
     usb_cdc_set_data(data_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_data_obj) : mp_const_none);
 
     return true;

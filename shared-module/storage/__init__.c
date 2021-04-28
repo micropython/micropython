@@ -39,6 +39,8 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
+
+#if CIRCUITPY_USB_MSC
 #include "tusb.h"
 
 static const uint8_t usb_msc_descriptor_template[] = {
@@ -77,6 +79,10 @@ static const uint8_t usb_msc_descriptor_template[] = {
 // Is the MSC device enabled?
 bool storage_usb_is_enabled;
 
+void storage_init_usb(void) {
+    storage_usb_is_enabled = true;
+}
+
 bool storage_usb_enabled(void) {
     return storage_usb_is_enabled;
 }
@@ -92,8 +98,8 @@ size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_inte
     descriptor_buf[MSC_INTERFACE_INDEX] = *current_interface;
     (*current_interface)++;
 
-    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : *current_endpoint;
-    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = 0x80 | (USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : *current_endpoint);
+    descriptor_buf[MSC_IN_ENDPOINT_INDEX] = 0x80 | (USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : *current_endpoint);
+    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] = USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : *current_endpoint;
     (*current_endpoint)++;
 
     usb_add_interface_string(*current_interface_string, storage_interface_name);
@@ -103,6 +109,15 @@ size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_inte
     return sizeof(usb_msc_descriptor_template);
 }
 
+bool common_hal_storage_configure_usb(bool enabled) {
+    // We can't change the descriptors once we're connected.
+    if (tud_connected()) {
+        return false;
+    }
+    storage_usb_is_enabled = enabled;
+    return true;
+}
+#endif // CIRCUITPY_USB_MSC
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
@@ -119,10 +134,6 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
         memcpy(meth + 2, args, n_args * sizeof(*args));
     }
     return mp_call_method_n_kw(n_args, 0, meth);
-}
-
-void storage_init(void) {
-    storage_usb_is_enabled = true;
 }
 
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
@@ -235,13 +246,4 @@ void common_hal_storage_erase_filesystem(void) {
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.
-}
-
-bool common_hal_storage_configure_usb(bool enabled) {
-    // We can't change the descriptors once we're connected.
-    if (tud_connected()) {
-        return false;
-    }
-    storage_usb_is_enabled = enabled;
-    return true;
 }

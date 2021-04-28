@@ -33,7 +33,7 @@ extern usb_hid_device_obj_t usb_hid_devices[];
 
 bool usb_hid_enabled(void);
 
-void usb_hid_init(void);
+void usb_hid_init_usb(void);
 void usb_hid_post_boot_py(void);
 
 size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length);
