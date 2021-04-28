@@ -93,7 +93,7 @@ bool alarm_pin_pinalarm_woke_us_up(void) {
 mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match any given alarms.
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
@@ -197,7 +197,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
     int pin_number = -1;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
