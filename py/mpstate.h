@@ -46,6 +46,7 @@ typedef struct mp_dynamic_compiler_t {
     uint8_t small_int_bits; // must be <= host small_int_bits
     bool opt_cache_map_lookup_in_bytecode;
     bool py_builtins_str_unicode;
+    uint8_t native_arch;
 } mp_dynamic_compiler_t;
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
@@ -79,7 +80,7 @@ typedef struct _mp_state_mem_t {
     void *gc_lowest_long_lived_ptr;
 
     int gc_stack_overflow;
-    size_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
     uint16_t gc_lock_depth;
 
     // This variable controls auto garbage collection.  If set to false then the
@@ -217,7 +218,8 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_SCHEDULER
     volatile int16_t sched_state;
-    uint16_t sched_sp;
+    uint8_t sched_len;
+    uint8_t sched_idx;
     #endif
 
     #if MICROPY_PY_THREAD_GIL

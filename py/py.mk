@@ -37,19 +37,19 @@ LDFLAGS_MOD += -L$(TOP)/lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
 endif
 endif
 
-#ifeq ($(MICROPY_PY_LWIP),1)
-#CFLAGS_MOD += -DMICROPY_PY_LWIP=1 -I../lib/lwip/src/include -I../lib/lwip/src/include/ipv4 -I../extmod/lwip-include
-#endif
-
 ifeq ($(MICROPY_PY_LWIP),1)
+# A port should add an include path where lwipopts.h can be found (eg extmod/lwip-include)
 LWIP_DIR = lib/lwip/src
-INC += -I$(TOP)/lib/lwip/src/include -I$(TOP)/lib/lwip/src/include/ipv4 -I$(TOP)/extmod/lwip-include
+INC += -I$(TOP)/$(LWIP_DIR)/include
 CFLAGS_MOD += -DMICROPY_PY_LWIP=1
+$(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS_MOD += -Wno-address
 SRC_MOD += extmod/modlwip.c lib/netutils/netutils.c
 SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/def.c \
 	core/dns.c \
+	core/inet_chksum.c \
 	core/init.c \
+	core/ip.c \
 	core/mem.c \
 	core/memp.c \
 	core/netif.c \
@@ -60,16 +60,26 @@ SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/tcp.c \
 	core/tcp_in.c \
 	core/tcp_out.c \
-	core/timers.c \
+	core/timeouts.c \
 	core/udp.c \
 	core/ipv4/autoip.c \
+	core/ipv4/dhcp.c \
+	core/ipv4/etharp.c \
 	core/ipv4/icmp.c \
 	core/ipv4/igmp.c \
-	core/ipv4/inet.c \
-	core/ipv4/inet_chksum.c \
-	core/ipv4/ip_addr.c \
-	core/ipv4/ip.c \
-	core/ipv4/ip_frag.c \
+	core/ipv4/ip4_addr.c \
+	core/ipv4/ip4.c \
+	core/ipv4/ip4_frag.c \
+	core/ipv6/dhcp6.c \
+	core/ipv6/ethip6.c \
+	core/ipv6/icmp6.c \
+	core/ipv6/inet6.c \
+	core/ipv6/ip6_addr.c \
+	core/ipv6/ip6.c \
+	core/ipv6/ip6_frag.c \
+	core/ipv6/mld6.c \
+	core/ipv6/nd6.c \
+	netif/ethernet.c \
 	)
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
@@ -79,7 +89,7 @@ endif
 
 ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ -Dvirt_fd_t=mp_obj_t "-DVIRT_FD_T_HEADER=<py/obj.h>" $(BTREE_DEFS_EXTRA)
+BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
 INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
 SRC_MOD += extmod/modbtree.c
 SRC_MOD += $(addprefix $(BTREE_DIR)/,\
@@ -261,12 +271,8 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduhashlib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
-	extmod/modussl_axtls.o \
-	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
-	extmod/modwebsocket.o \
-	extmod/modwebrepl.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
 	extmod/vfs_reader.o \
@@ -303,7 +309,7 @@ endif
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
 SRC_QSTR_EMITNATIVE = py/emitn%
-SRC_QSTR = $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
+SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR = $(addprefix $(TOP)/, $(filter $(SRC_QSTR_EMITNATIVE),$(PY_CORE_O_BASENAME:.o=.c)))
 
@@ -379,7 +385,7 @@ endif
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch
 # branch predictor efficiency.
-# http://article.gmane.org/gmane.comp.lang.lua.general/75426
+# https://marc.info/?l=lua-l&m=129778596120851
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping

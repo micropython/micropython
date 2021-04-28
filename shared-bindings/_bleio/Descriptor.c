@@ -85,12 +85,12 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t characteristic_obj = args[ARG_characteristic].u_obj;
-    if (!MP_OBJ_IS_TYPE(characteristic_obj, &bleio_characteristic_type)) {
+    if (!mp_obj_is_type(characteristic_obj, &bleio_characteristic_type)) {
         mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 

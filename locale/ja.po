@@ -744,14 +744,6 @@ msgid ""
 "connection."
 msgstr "接続は切断済みでもう使えません。新しい接続を作成してください"
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "破損した .mpy ファイル"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "破損したraw code"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "カメラを初期化できません"
@@ -1198,6 +1190,7 @@ msgstr "不正な %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "不正な%qピン"
@@ -1267,6 +1260,11 @@ msgstr "不正なキャプチャ周期。有効な周期は1-500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "不正なチャンネル数"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2136,6 +2134,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "タイムアウトが長すぎです。最大のタイムアウト長は%d秒"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr ""
@@ -2154,7 +2160,7 @@ msgid "Too many displays"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
 msgstr ""
 
 #: py/obj.c
@@ -2327,10 +2333,6 @@ msgstr ""
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "電圧読み取りがタイムアウト"
@@ -2410,17 +2412,16 @@ msgstr "bytes-likeオブジェクトが必要"
 msgid "abort() called"
 msgstr "abort()が呼ばれました"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr ""
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "アドレスが範囲外"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
+msgstr ""
+
+#: py/compile.c
+msgid "annotation must be an identifier"
 msgstr ""
 
 #: py/modbuiltins.c
@@ -2588,10 +2589,6 @@ msgstr ""
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr ""
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "サブクラス化済みのクラスに特殊メソッドを追加できません"
@@ -2605,6 +2602,10 @@ msgstr "式には代入できません"
 msgid "can't convert %q to %q"
 msgstr "%qを%qに変換できません"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "オブジェクト '%q' を %q に暗黙に変換できません"
@@ -2612,6 +2613,10 @@ msgstr "オブジェクト '%q' を %q に暗黙に変換できません"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "%q に変換できません"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2812,6 +2817,11 @@ msgstr "dataはイテレート可能でなければなりません"
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "dataは同じ長さでなければなりません"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3020,7 +3030,7 @@ msgid "full"
 msgstr ""
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
+msgid "function doesn't take keyword arguments"
 msgstr ""
 
 #: py/argcheck.c
@@ -3075,6 +3085,10 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphicは2048バイトでなければなりません"
@@ -3089,6 +3103,14 @@ msgstr ""
 
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
 msgstr ""
 
 #: py/objstr.c
@@ -3211,6 +3233,10 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr "intervalは%s-%sの範囲でなければなりません"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "不正な引数"
@@ -3219,10 +3245,6 @@ msgstr "不正な引数"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "不正な証明書"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3253,10 +3275,6 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "不正なホスト名"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "不正な鍵"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3454,6 +3472,10 @@ msgstr ""
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "アンパックする値は%d個では足りません"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr ""
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3684,10 +3706,6 @@ msgstr "パレットの長さは32バイトでなければなりません"
 msgid "palette_index should be an int"
 msgstr "palette_indexには整数が必要"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "引数アノテーションは識別子でなければなりません"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3745,6 +3763,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3768,6 +3787,10 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -4125,7 +4148,7 @@ msgstr "型'%q'のオブジェクトに対する不明な書式コード'%c'"
 msgid "unknown type"
 msgstr "不明な型"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "不明な型 '%q'"
 
@@ -4263,6 +4286,21 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "破損した .mpy ファイル"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "破損したraw code"
+
+#~ msgid "invalid cert"
+#~ msgstr "不正な証明書"
+
+#~ msgid "invalid key"
+#~ msgstr "不正な鍵"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "引数アノテーションは識別子でなければなりません"
 
 #~ msgid "buffer must be a bytes-like object"
 #~ msgstr "バッファはbytes-likeオブジェクトでなければなりません"

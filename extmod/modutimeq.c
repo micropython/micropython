@@ -126,7 +126,7 @@ STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
         mp_raise_IndexError(translate("empty heap"));
     }
     mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
-    if (!MP_OBJ_IS_TYPE(list_ref, &mp_type_list) || ret->len < 3) {
+    if (!mp_obj_is_type(list_ref, &mp_type_list) || ret->len < 3) {
         mp_raise_TypeError(NULL);
     }
 

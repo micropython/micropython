@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,15 +46,21 @@ size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr n
     return (size_t)-1;
 }
 
-#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+#if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
     const qstr *fields = ((mp_obj_namedtuple_type_t *)self->tuple.base.type)->fields;
     mp_obj_t dict = mp_obj_new_dict(self->tuple.len);
-    // make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    // make it an OrderedDict
     dictObj->base.type = &mp_type_ordereddict;
     dictObj->map.is_ordered = 1;
+    #else
+    dictObj->base.type = &mp_type_dict;
+    dictObj->map.is_ordered = 0;
+    #endif
+
     for (size_t i = 0; i < self->tuple.len; ++i) {
         mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(fields[i]), self->tuple.items[i]);
     }
@@ -179,7 +185,7 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     size_t n_fields;
     mp_obj_t *fields;
     #if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(fields_in)) {
+    if (mp_obj_is_str(fields_in)) {
         fields_in = mp_obj_str_split(1, &fields_in);
     }
     #endif

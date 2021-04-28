@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -480,7 +481,8 @@ bool gc_alloc_possible(void) {
 
 // We place long lived objects at the end of the heap rather than the start. This reduces
 // fragmentation by localizing the heap churn to one portion of memory (the start of the heap.)
-void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived) {
+    bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -1153,7 +1155,8 @@ void gc_dump_alloc_table(void) {
     GC_EXIT();
 }
 
-#if DEBUG_PRINT
+#if 0
+// For testing the GC functions
 void gc_test(void) {
     mp_uint_t len = 500;
     mp_uint_t *heap = malloc(len);

@@ -129,7 +129,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         #if CIRCUITPY_ALARM
@@ -138,7 +138,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #endif
         } else {
             if ((mp_obj_t)nlr.ret_val != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             }
             ret = PYEXEC_EXCEPTION;
         }
@@ -197,6 +197,7 @@ typedef struct _repl_t {
     // will be added later.
     // vstr_t line;
     bool cont_line;
+    bool paste_mode;
 } repl_t;
 
 repl_t repl;
@@ -207,6 +208,7 @@ STATIC int pyexec_friendly_repl_process_char(int c);
 void pyexec_event_repl_init(void) {
     MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
+    repl.paste_mode = false;
     // no prompt before printing friendly REPL banner or entering raw REPL
     readline_init(MP_STATE_VM(repl_line), "");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -226,6 +228,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
+        repl.paste_mode = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;
     } else if (c == CHAR_CTRL_C) {
@@ -263,6 +266,32 @@ reset:
 }
 
 STATIC int pyexec_friendly_repl_process_char(int c) {
+    if (repl.paste_mode) {
+        if (c == CHAR_CTRL_C) {
+            // cancel everything
+            mp_hal_stdout_tx_str("\r\n");
+            goto input_restart;
+        } else if (c == CHAR_CTRL_D) {
+            // end of input
+            mp_hal_stdout_tx_str("\r\n");
+            int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
+            goto input_restart;
+        } else {
+            // add char to buffer and echo
+            vstr_add_byte(MP_STATE_VM(repl_line), c);
+            if (c == '\r') {
+                mp_hal_stdout_tx_str("\r\n=== ");
+            } else {
+                char buf[1] = {c};
+                mp_hal_stdout_tx_strn(buf, 1);
+            }
+            return 0;
+        }
+    }
+
     int ret = readline_process_char(c);
 
     if (!repl.cont_line) {
@@ -289,6 +318,12 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(MP_STATE_VM(repl_line));
             return PYEXEC_FORCED_EXIT;
+        } else if (ret == CHAR_CTRL_E) {
+            // paste mode
+            mp_hal_stdout_tx_str("\r\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\r\n=== ");
+            vstr_reset(MP_STATE_VM(repl_line));
+            repl.paste_mode = true;
+            return 0;
         }
 
         if (ret < 0) {
@@ -335,6 +370,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
     input_restart:
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
+        repl.paste_mode = false;
         readline_init(MP_STATE_VM(repl_line), ">>> ");
         return 0;
     }
@@ -450,10 +486,16 @@ friendly_repl_reset:
             // do the user a favor and reenable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
-                mp_hal_stdout_tx_str("PYB: enabling IRQs\r\n");
+                mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
             }
         }
         #endif
+
+        // If the GC is locked at this point there is no way out except a reset,
+        // so force the GC to be unlocked to help the user debug what went wrong.
+        if (MP_STATE_MEM(gc_lock_depth) != 0) {
+            MP_STATE_MEM(gc_lock_depth) = 0;
+        }
 
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
@@ -535,20 +577,32 @@ int pyexec_file(const char *filename, pyexec_result_t *result) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME, result);
 }
 
+int pyexec_file_if_exists(const char *filename, pyexec_result_t *result) {
+    #if MICROPY_MODULE_FROZEN
+    if (mp_frozen_stat(filename) == MP_IMPORT_STAT_FILE) {
+        return pyexec_frozen_module(filename, result);
+    }
+    #endif
+    if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
+        return 1; // success (no file is the same as an empty file executing without fail)
+    }
+    return pyexec_file(filename, result);
+}
+
 #if MICROPY_MODULE_FROZEN
-int pyexec_frozen_module(const char *name) {
+int pyexec_frozen_module(const char *name, pyexec_result_t *result) {
     void *frozen_data;
     int frozen_type = mp_find_frozen_module(name, strlen(name), &frozen_data);
 
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0, NULL);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0, result);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE, NULL);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE, result);
         #endif
 
         default:

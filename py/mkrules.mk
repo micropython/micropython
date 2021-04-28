@@ -79,7 +79,7 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.enum.h $(HEADER_BUILD)/mpversion.h
 $(HEADER_BUILD)/qstr.split: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h $(PY_SRC)/genlast.py
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON3) $(PY_SRC)/genlast.py $(HEADER_BUILD)/qstr $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) --  $(SRC_QSTR_PREPROCESSOR) -- $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS)
-	$(Q)touch $@
+	$(Q)$(TOUCH) $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
@@ -107,7 +107,7 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 # to build the MicroPython cross compiler
 # Currently not used, because the wrong mpy-cross may be left over from a previous build. Build by hand to make sure.
-$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
+$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/mpy-cross/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).
@@ -197,7 +197,7 @@ print-cfg:
 
 print-def:
 	@$(ECHO) "The following defines are built into the $(CC) compiler"
-	touch __empty__.c
+	$(TOUCH) __empty__.c
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
 

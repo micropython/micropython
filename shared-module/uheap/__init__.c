@@ -53,7 +53,7 @@ static void indent(uint8_t levels) {
 static uint32_t object_size(uint8_t indent_level, mp_obj_t obj);
 
 static uint32_t int_size(uint8_t indent_level, mp_obj_t obj) {
-    if (MP_OBJ_IS_SMALL_INT(obj)) {
+    if (mp_obj_is_small_int(obj)) {
         return 0;
     }
     if (!VERIFY_PTR(obj)) {
@@ -68,7 +68,7 @@ static uint32_t int_size(uint8_t indent_level, mp_obj_t obj) {
 }
 
 static uint32_t string_size(uint8_t indent_level, mp_obj_t obj) {
-    if (MP_OBJ_IS_QSTR(obj)) {
+    if (mp_obj_is_qstr(obj)) {
         qstr qs = MP_OBJ_QSTR_VALUE(obj);
         const char *s = qstr_str(qs);
         if (!VERIFY_PTR(s)) {
@@ -77,7 +77,7 @@ static uint32_t string_size(uint8_t indent_level, mp_obj_t obj) {
         indent(indent_level);
         mp_printf(&mp_plat_print, "%s\n", s);
         return 0;
-    } else { // MP_OBJ_IS_TYPE(o, &mp_type_str)
+    } else { // mp_obj_is_type(o, &mp_type_str)
         mp_obj_str_t *s = MP_OBJ_TO_PTR(obj);
         return gc_nbytes(s) + gc_nbytes(s->data);
     }
@@ -120,17 +120,17 @@ static uint32_t dict_size(uint8_t indent_level, mp_obj_dict_t *dict) {
 static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
     // indent(indent_level);
     // mp_print_str(&mp_plat_print, "function\n");
-    if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_0)) {
+    if (mp_obj_is_type(obj, &mp_type_fun_builtin_0)) {
         return 0;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_1)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_builtin_1)) {
         return 0;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_2)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_builtin_2)) {
         return 0;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_3)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_builtin_3)) {
         return 0;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_builtin_var)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_builtin_var)) {
         return 0;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_bc)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fn = MP_OBJ_TO_PTR(obj);
         uint32_t total_size = gc_nbytes(fn) + gc_nbytes(fn->bytecode) + gc_nbytes(fn->const_table);
         #if MICROPY_DEBUG_PRINTERS
@@ -140,15 +140,15 @@ static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
         #endif
         return total_size;
     #if MICROPY_EMIT_NATIVE
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_native)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_native)) {
         return 0;
     #endif
     #if MICROPY_EMIT_NATIVE
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_obj_fun_viper_t)) {
+    } else if (mp_obj_is_type(obj, &mp_obj_fun_viper_t)) {
         return 0;
     #endif
     #if MICROPY_EMIT_THUMB
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_asm)) {
+    } else if (mp_obj_is_type(obj, &mp_type_fun_asm)) {
         return 0;
     #endif
     }
@@ -250,11 +250,11 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj) {
     if (obj == NULL) {
         return 0;
     }
-    if (MP_OBJ_IS_INT(obj)) {
+    if (mp_obj_is_int(obj)) {
         return int_size(indent_level, MP_OBJ_TO_PTR(obj));
-    } else if (MP_OBJ_IS_STR(obj)) {
+    } else if (mp_obj_is_str(obj)) {
         return string_size(indent_level, MP_OBJ_TO_PTR(obj));
-    } else if (MP_OBJ_IS_FUN(obj)) {
+    } else if (mp_obj_is_fun(obj)) {
         return function_size(indent_level, MP_OBJ_TO_PTR(obj));
     }
     if (!VERIFY_PTR(obj)) {
@@ -274,7 +274,7 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj) {
         return array_size(indent_level, MP_OBJ_TO_PTR(obj));
     } else if (type == &mp_type_memoryview) {
         return memoryview_size(indent_level, MP_OBJ_TO_PTR(obj));
-    } else if (MP_OBJ_IS_OBJ(obj) && VERIFY_PTR(type)) {
+    } else if (mp_obj_is_obj(obj) && VERIFY_PTR(type)) {
         return instance_size(indent_level, MP_OBJ_TO_PTR(obj));
     }
 

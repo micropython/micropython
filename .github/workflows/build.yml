@@ -184,6 +184,7 @@ jobs:
         - "adafruit_rotary_trinkey_m0"
         - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
+        - "aramcon2_badge"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -289,6 +290,8 @@ jobs:
         - "pewpew_m4"
         - "picoplanet"
         - "pimoroni_keybow2040"
+        - "pimoroni_picolipo_16mb"
+        - "pimoroni_picolipo_4mb"
         - "pimoroni_picosystem"
         - "pimoroni_tiny2040"
         - "pirkey_m0"
@@ -320,6 +323,7 @@ jobs:
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_micromod_rp2040"
         - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
         - "sparkfun_pro_micro_rp2040"
@@ -379,6 +383,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -428,6 +434,8 @@ jobs:
         python3 --version
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -457,6 +465,7 @@ jobs:
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "artisense_rd00"
+        - "atmegazero_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
@@ -489,7 +498,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210304
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210422
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
@@ -526,6 +535,8 @@ jobs:
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: |
         source $IDF_PATH/export.sh

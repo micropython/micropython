@@ -77,8 +77,7 @@
 #define MP_BC_END_FINALLY        (0x41)
 #define MP_BC_GET_ITER           (0x42)
 #define MP_BC_FOR_ITER           (0x43) // rel byte code offset, 16-bit unsigned
-#define MP_BC_POP_BLOCK          (0x44)
-#define MP_BC_POP_EXCEPT         (0x45)
+#define MP_BC_POP_EXCEPT_JUMP    (0x44) // rel byte code offset, 16-bit unsigned
 #define MP_BC_UNWIND_JUMP        (0x46) // rel byte code offset, 16-bit signed, in excess; then a byte
 #define MP_BC_GET_ITER_STACK     (0x47)
 

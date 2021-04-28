@@ -104,7 +104,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
     // For light sleep, we check if we match any existing alarms
     uint64_t pin_status = ((uint64_t) pin_63_32_status) << 32 | pin_31_0_status;
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
@@ -180,7 +180,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
 
     for (size_t i = 0; i < n_alarms; i++) {
         // TODO: Check for ULP or touch alarms because they can't coexist with GPIO alarms.
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);

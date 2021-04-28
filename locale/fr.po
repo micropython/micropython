@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-13 22:09+0000\n"
+"PO-Revision-Date: 2021-04-24 14:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -764,14 +764,6 @@ msgstr ""
 "La connexion a été déconnectée et ne peut plus être utilisée. Créez une "
 "nouvelle connexion."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Fichier .mpy corrompu"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Code brut corrompu"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Impossible d'initialiser Camera"
@@ -914,7 +906,7 @@ msgstr "Canal EXTINT déjà utilisé"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "Erreur dans le flot MIDI à la position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1231,6 +1223,7 @@ msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
@@ -1260,7 +1253,7 @@ msgstr "Broche DAC non valide fournie"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
-msgstr ""
+msgstr "Fichier MIDI invalide"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1300,6 +1293,11 @@ msgstr "Période de capture invalide. Portée valide : 1 à 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "data_count invalide %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2191,6 +2189,14 @@ msgstr "L'heure est dans le passé."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr "Délais expiré en attandant DRDY"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr "Délais expiré en attandant VSYNC"
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Pour quitter, SVP redémarrez la carte sans "
@@ -2209,9 +2215,8 @@ msgid "Too many displays"
 msgstr "Trop d'affichages"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
-msgstr ""
-"Le nombre total de données à écrire est supérieur à outgoing_packet_length"
+msgid "Total data to write is larger than %q"
+msgstr "Quantité de données à écrire est plus que %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2388,11 +2393,6 @@ msgstr "Longueur de la valeur > max_length"
 msgid "Version was invalid"
 msgstr "Version est invalide"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-"les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "La lecture de la tension a expiré"
@@ -2481,11 +2481,6 @@ msgstr "un objet 'bytes-like' est requis"
 msgid "abort() called"
 msgstr "abort() appelé"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "l'adresse %08x n'est pas alignée sur %d octets"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adresse hors limites"
@@ -2493,6 +2488,10 @@ msgstr "adresse hors limites"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adresses vides"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr "l'annotation doit être un identificateur"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2659,10 +2658,6 @@ msgstr "il peut y avoir jusqu'à 4 paramètres pour l'assemblage Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maximum 4 paramètres pour l'assembleur Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "ne peut sauvegarder que du bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2677,6 +2672,10 @@ msgstr "ne peut pas assigner à une expression"
 msgid "can't convert %q to %q"
 msgstr "impossible de convertir %q en %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr "ne peut convertir %q à int"
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
@@ -2684,6 +2683,10 @@ msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "impossible de convertir en %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "ne peut convertir en entier 'int'"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2891,6 +2894,11 @@ msgstr "les données doivent être les objets iterables"
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "les données doivent être de longueur égale"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "broche de donnée #%d utilisée"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3102,8 +3110,8 @@ msgid "full"
 msgstr "plein"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "la fonction ne prend pas d'arguments nommés"
+msgid "function doesn't take keyword arguments"
+msgstr "la fonction n'accepte pas de paramètre nommés"
 
 #: py/argcheck.c
 #, c-format
@@ -3157,6 +3165,10 @@ msgstr "générateur déjà en cours d'exécution"
 msgid "generator ignored GeneratorExit"
 msgstr "le générateur a ignoré GeneratorExit"
 
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr "générateur (generator) à surlevé StopIteration"
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic doit être long de 2048 octets"
@@ -3172,6 +3184,14 @@ msgstr "identifiant redéfini comme global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifiant redéfini comme nonlocal"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3293,6 +3313,10 @@ msgstr "interp est défini pour les matrices 1D de longueur égale"
 msgid "interval must be in range %s-%s"
 msgstr "interval doit être dans la portée %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "arguments invalides"
@@ -3301,10 +3325,6 @@ msgstr "arguments invalides"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificat invalide"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3335,10 +3355,6 @@ msgstr "spécification de format invalide"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "hostname incorrect"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "clé invalide"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3540,6 +3556,10 @@ msgstr "'yield' natif"
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "nécessite plus de %d valeurs à dégrouper"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr "factoriel négatif"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3774,10 +3794,6 @@ msgstr "la palette doit être longue de 32 octets"
 msgid "palette_index should be an int"
 msgstr "palette_index devrait être un entier 'int'"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "l'annotation du paramètre doit être un identifiant"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
@@ -3834,6 +3850,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3858,6 +3875,10 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr "appuyer le bouton de gauche au démarage\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -4216,7 +4237,7 @@ msgstr "code de formatage inconnu '%c' pour objet de type '%q'"
 msgid "unknown type"
 msgstr "type inconnu"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "type '%q' inconnu"
 
@@ -4354,6 +4375,38 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Fichier .mpy corrompu"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Code brut corrompu"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "ne peut sauvegarder que du bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificat invalide"
+
+#~ msgid "invalid key"
+#~ msgstr "clé invalide"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr ""
+#~ "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "l'adresse %08x n'est pas alignée sur %d octets"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "la fonction ne prend pas d'arguments nommés"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "l'annotation du paramètre doit être un identifiant"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr ""
+#~ "Le nombre total de données à écrire est supérieur à outgoing_packet_length"
 
 #~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 #~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
@@ -4647,9 +4700,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "ne peut convertir en nombre à virgule flottante 'float'"
-
-#~ msgid "can't convert to int"
-#~ msgstr "ne peut convertir en entier 'int'"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "l'objet '%s' n'est pas un tuple ou une liste"

@@ -60,6 +60,7 @@
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
+#include "supervisor/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -188,7 +189,10 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
+
+    #if CIRCUITPY_USB
     usb_background();
+    #endif
 
     gc_deinit();
 }
@@ -428,6 +432,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
+
             #if CIRCUITPY_ALARM
                 common_hal_alarm_pretending_deep_sleep();
             #else

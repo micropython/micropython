@@ -83,8 +83,7 @@ static inline void asm_x86_end_pass(asm_x86_t *as) {
 }
 
 void asm_x86_mov_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
-void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);
-void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32);
+size_t asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);
 void asm_x86_mov_r8_to_mem8(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r16_to_mem16(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r32_to_mem32(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
@@ -101,7 +100,9 @@ void asm_x86_sub_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_mul_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_cmp_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r8_with_r8(asm_x86_t *as, int src_r32_a, int src_r32_b);
+void asm_x86_test_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8);
+void asm_x86_jmp_reg(asm_x86_t *as, int src_r86);
 void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label);
 void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label);
 void asm_x86_entry(asm_x86_t *as, int num_locals);
@@ -110,7 +111,11 @@ void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
 void asm_x86_mov_local_to_r32(asm_x86_t *as, int src_local_num, int dest_r32);
 void asm_x86_mov_r32_to_local(asm_x86_t *as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32);
-void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32);
+void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r64, mp_uint_t label);
+void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32);
+
+// Holds a pointer to mp_fun_table
+#define ASM_X86_REG_FUN_TABLE ASM_X86_REG_EBP
 
 #if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
@@ -137,20 +142,31 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32);
 #define REG_LOCAL_3 ASM_X86_REG_EDI
 #define REG_LOCAL_NUM (3)
 
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_X86_REG_FUN_TABLE
+
 #define ASM_T               asm_x86_t
 #define ASM_END_PASS        asm_x86_end_pass
 #define ASM_ENTRY           asm_x86_entry
 #define ASM_EXIT            asm_x86_exit
 
 #define ASM_JUMP            asm_x86_jmp_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
-        asm_x86_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x86_test_r8_with_r8(as, reg, reg); \
+        } else { \
+            asm_x86_test_r32_with_r32(as, reg, reg); \
+        } \
         asm_x86_jcc_label(as, ASM_X86_CC_JZ, label); \
     } while (0)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     do { \
-        asm_x86_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x86_test_r8_with_r8(as, reg, reg); \
+        } else { \
+            asm_x86_test_r32_with_r32(as, reg, reg); \
+        } \
         asm_x86_jcc_label(as, ASM_X86_CC_JNZ, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
@@ -158,14 +174,17 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32);
         asm_x86_cmp_r32_with_r32(as, reg1, reg2); \
         asm_x86_jcc_label(as, ASM_X86_CC_JE, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], ASM_X86_REG_EAX)
+#define ASM_JUMP_REG(as, reg) asm_x86_jmp_reg((as), (reg))
+#define ASM_CALL_IND(as, idx) asm_x86_call_ind(as, idx, mp_f_n_args[idx], ASM_X86_REG_EAX)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x86_mov_r32_to_local((as), (reg_src), (local_num))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x86_mov_i32_to_r32((as), (imm), (reg_dest))
-#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_x86_mov_i32_to_r32_aligned((as), (imm), (reg_dest))
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_x86_mov_i32_to_r32((as), (imm), (reg_dest))
+#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_x86_mov_i32_to_r32((as), (imm), (reg_dest))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x86_mov_local_to_r32((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x86_mov_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x86_mov_local_addr_to_r32((as), (local_num), (reg_dest))
+#define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x86_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))

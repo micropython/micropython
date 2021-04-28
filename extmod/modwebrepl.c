@@ -13,8 +13,7 @@
 #ifdef MICROPY_PY_WEBREPL_DELAY
 #include "py/mphal.h"
 #endif
-#include "extmod/modwebsocket.h"
-#include "genhdr/mpversion.h"
+#include "extmod/moduwebsocket.h"
 
 #if MICROPY_PY_WEBREPL
 
@@ -88,6 +87,15 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return o;
 }
 
+STATIC void check_file_op_finished(mp_obj_webrepl_t *self) {
+    if (self->data_to_recv == 0) {
+        mp_stream_close(self->cur_file);
+        self->hdr_to_recv = sizeof(struct webrepl_file);
+        DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
+        write_webrepl_resp(self->sock, 0);
+    }
+}
+
 STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
     const mp_stream_p_t *file_stream = mp_get_stream(self->cur_file);
     byte readbuf[2 + 256];
@@ -140,6 +148,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
 
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
+        check_file_op_finished(self);
     } else if (self->hdr.type == GET_FILE) {
         self->data_to_recv = 1;
     }
@@ -246,12 +255,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             }
         }
 
-        if (self->data_to_recv == 0) {
-            mp_stream_close(self->cur_file);
-            self->hdr_to_recv = sizeof(struct webrepl_file);
-            DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
-            write_webrepl_resp(self->sock, 0);
-        }
+        check_file_op_finished(self);
 
         #ifdef MICROPY_PY_WEBREPL_DELAY
         // Some platforms may have broken drivers and easily gets

@@ -51,8 +51,8 @@ void pulsein_reset(void);
 void pulsein_interrupt_handler(uint8_t channel);
 void pulsein_timer_interrupt_handler(uint8_t index);
 #ifdef SAMD21
-void rtc_start_pulsein(void);
-void rtc_end_pulsein(void);
+void rtc_start_pulse(void);
+void rtc_end_pulse(void);
 #endif
 
 

@@ -34,6 +34,7 @@
 #include <poll.h>
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/obj.h"
 #include "py/objlist.h"
 #include "py/objtuple.h"
@@ -65,25 +66,21 @@ typedef struct _mp_obj_poll_t {
 } mp_obj_poll_t;
 
 STATIC int get_fd(mp_obj_t fdlike) {
-    int fd;
-    // Shortcut for fdfile compatible types
-    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio)
-        #if MICROPY_PY_SOCKET
-        || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)
-        #endif
-        ) {
-        mp_obj_fdfile_t *fdfile = MP_OBJ_TO_PTR(fdlike);
-        fd = fdfile->fd;
-    } else {
-        fd = mp_obj_get_int(fdlike);
+    if (mp_obj_is_obj(fdlike)) {
+        const mp_stream_p_t *stream_p = mp_get_stream_raise(fdlike, MP_STREAM_OP_IOCTL);
+        int err;
+        mp_uint_t res = stream_p->ioctl(fdlike, MP_STREAM_GET_FILENO, 0, &err);
+        if (res != MP_STREAM_ERROR) {
+            return res;
+        }
     }
-    return fd;
+    return mp_obj_get_int(fdlike);
 }
 
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    bool is_fd = MP_OBJ_IS_INT(args[1]);
+    bool is_fd = mp_obj_is_int(args[1]);
     int fd = get_fd(args[1]);
 
     mp_uint_t flags;
@@ -161,13 +158,13 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->events = mp_obj_get_int(eventmask_in);
-            break;
+            return mp_const_none;
         }
         entries++;
     }
 
-    // TODO raise KeyError if obj didn't exist in map
-    return mp_const_none;
+    // obj doesn't exist in poller
+    mp_raise_OSError(MP_ENOENT);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 

@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,7 +257,7 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
 STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-    if (!mp_get_stream(args[0])->is_text && MP_OBJ_IS_STR(args[1])) {
+    if (!mp_get_stream(args[0])->is_text && mp_obj_is_str(args[1])) {
         mp_raise_ValueError(translate("string not supported; use bytes or bytearray"));
     }
     size_t max_len = (size_t)-1;
@@ -561,7 +561,7 @@ off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
     seek_s.whence = whence;
-    mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &mp_stream_errno);
+    mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &mp_stream_errno);
     if (res == MP_STREAM_ERROR) {
         return -1;
     }
