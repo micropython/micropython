@@ -223,6 +223,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             irqn = USART1_IRQn;
             pins[0] = MICROPY_HW_UART1_TX;
             pins[1] = MICROPY_HW_UART1_RX;
+            #if defined(MICROPY_HW_UART1_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART1_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART1_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART1_CTS;
+            }
+            #endif
             __HAL_RCC_USART1_CLK_ENABLE();
             break;
         #endif
@@ -322,6 +332,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART5_TX;
             pins[1] = MICROPY_HW_UART5_RX;
+            #if defined(MICROPY_HW_UART5_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART5_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART5_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART5_CTS;
+            }
+            #endif
             break;
         #endif
 
@@ -364,6 +384,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART7_TX;
             pins[1] = MICROPY_HW_UART7_RX;
+            #if defined(MICROPY_HW_UART7_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART7_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART7_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART7_CTS;
+            }
+            #endif
             break;
         #endif
 
@@ -381,6 +411,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART8_TX;
             pins[1] = MICROPY_HW_UART8_RX;
+            #if defined(MICROPY_HW_UART8_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART8_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART8_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART8_CTS;
+            }
+            #endif
             break;
         #endif
 
