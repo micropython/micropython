@@ -39,7 +39,7 @@
 
 #include "clock_config.h"
 
-#define LED_STATE_ON (0)
+#define LED_STATE_ON (0)  // Todo: remove unused define
 
 volatile uint32_t systick_ms = 0;
 

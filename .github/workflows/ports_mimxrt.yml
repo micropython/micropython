@@ -10,7 +10,7 @@ on:
       - 'extmod/**'
       - 'lib/**'
       - 'drivers/**'
-      - 'ports/nrf/**'
+      - 'ports/mimxrt/**'
 
 jobs:
   build:

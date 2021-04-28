@@ -28,8 +28,8 @@
 #define MICROPY_INCLUDED_MIMXRT_PIN_H
 
 #include <stdint.h>
-#include "fsl_gpio.h"
 #include "py/obj.h"
+#include "fsl_gpio.h"
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

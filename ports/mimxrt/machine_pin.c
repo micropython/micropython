@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "pin.h"
+#include "mphalport.h"
 
 
 // Helper Functions
