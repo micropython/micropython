@@ -23,6 +23,9 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+# Enable BUILDING_MBOOT so boards can configure their .mk file accordingly.
+BUILDING_MBOOT = 1
+
 include ../../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
@@ -78,7 +81,7 @@ CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
 CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
 CFLAGS += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
 CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_READONLY
-CFLAGS += -DBUILDING_MBOOT=1
+CFLAGS += -DBUILDING_MBOOT=$(BUILDING_MBOOT)
 CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
@@ -98,7 +101,7 @@ COPT += -Os -DNDEBUG
 endif
 
 $(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
-LIB_SRC_C = \
+LIB_SRC_C += \
 	lib/libc/string0.c \
 	lib/littlefs/lfs1.c \
 	lib/littlefs/lfs1_util.c \
@@ -111,7 +114,7 @@ LIB_SRC_C = \
 	extmod/uzlib/tinflate.c \
 	extmod/uzlib/tinfgzip.c
 
-SRC_C = \
+SRC_C += \
 	main.c \
 	elem.c \
 	fsload.c \
@@ -131,7 +134,7 @@ SRC_C = \
 	ports/stm32/usbd_conf.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
-SRC_O = \
+SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE) \
 	ports/stm32/resethandler.o \
@@ -146,7 +149,7 @@ CFLAGS += -DMBOOT_PACK_KEYS_FILE=\"$(MBOOT_PACK_KEYS_FILE)\"
 endif
 
 $(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
-SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
 	hal_flash.c \
 	hal_flash_ex.c \
@@ -155,13 +158,12 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_usb.c \
 	)
 
-SRC_USBDEV = $(addprefix ports/stm32/$(USBDEV_DIR)/,\
+SRC_USBDEV += $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \
 	core/src/usbd_ioreq.c \
 	)
 
-OBJ =
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
