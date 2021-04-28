@@ -156,7 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 #if MICROPY_HW_FLASH_MOUNT_AT_BOOT
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
-    if (reset_mode == 3) {
+    if (reset_mode == BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM) {
         // Asked by user to reset filesystem
         factory_reset_create_filesystem();
     }
@@ -210,7 +210,8 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
     ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
 
-    if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj) && reset_mode != 3) {
+    if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj)
+        && reset_mode != BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM) {
         // No filesystem, bdev is still the default (so didn't detect a possibly corrupt littlefs),
         // and didn't already create a filesystem, so try to create a fresh one now.
         ret = factory_reset_create_filesystem();

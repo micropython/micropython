@@ -29,6 +29,7 @@
 
 #include "py/mphal.h"
 #include "extmod/crypto-algorithms/sha256.c"
+#include "boardctrl.h"
 #include "usbd_core.h"
 #include "storage.h"
 #include "flash.h"
@@ -1289,7 +1290,7 @@ static int pyb_usbdd_shutdown(void) {
 
 static int get_reset_mode(void) {
     usrbtn_init();
-    int reset_mode = 1;
+    int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
         // Timeout is roughly 20s, where reset_mode=1
@@ -1299,7 +1300,7 @@ static int get_reset_mode(void) {
         for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
             if (i % 32 == 0) {
                 if (++reset_mode > RESET_MODE_NUM_STATES) {
-                    reset_mode = 1;
+                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
                 led_state_all(l);
@@ -1396,7 +1397,7 @@ void stm32_main(int initial_r0) {
 
     int reset_mode = get_reset_mode();
     uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
-    if (reset_mode != 4 && (msp & APP_VALIDITY_BITS) == 0) {
+    if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER && (msp & APP_VALIDITY_BITS) == 0) {
         // not DFU mode so jump to application, passing through reset_mode
         // undo our DFU settings
         // TODO probably should disable all IRQ sources first
