@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,6 +117,10 @@ STATIC ffi_type *char2ffi_type(char c) {
             return &ffi_type_slong;
         case 'L':
             return &ffi_type_ulong;
+        case 'q':
+            return &ffi_type_sint64;
+        case 'Q':
+            return &ffi_type_uint64;
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
             return &ffi_type_float;
@@ -137,7 +141,7 @@ STATIC ffi_type *char2ffi_type(char c) {
 }
 
 STATIC ffi_type *get_ffi_type(mp_obj_t o_in) {
-    if (MP_OBJ_IS_STR(o_in)) {
+    if (mp_obj_is_str(o_in)) {
         const char *s = mp_obj_str_get_str(o_in);
         ffi_type *t = char2ffi_type(*s);
         if (t != NULL) {
@@ -361,6 +365,7 @@ STATIC void ffifunc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 }
 
 STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)n_kw;
     mp_obj_ffifunc_t *self = MP_OBJ_TO_PTR(self_in);
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
@@ -382,9 +387,9 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         #endif
         } else if (a == mp_const_none) {
             values[i] = 0;
-        } else if (MP_OBJ_IS_INT(a)) {
+        } else if (mp_obj_is_int(a)) {
             values[i] = mp_obj_int_get_truncated(a);
-        } else if (MP_OBJ_IS_STR(a)) {
+        } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)(intptr_t)s;
         } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
@@ -395,7 +400,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
                 goto error;
             }
             values[i] = (ffi_arg)(intptr_t)bufinfo.buf;
-        } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {
+        } else if (mp_obj_is_type(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
             values[i] = (ffi_arg)(intptr_t)p->func;
         } else {

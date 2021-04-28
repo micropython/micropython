@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -511,9 +512,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
-
-
-
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
     #if defined(MICROPY_UNIX_COVERAGE)
@@ -654,6 +652,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     if (mp_verbose_flag) {
         mp_micropython_mem_info(0, NULL);
     }
+    #endif
+
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
     #endif
 
     #if defined(MICROPY_UNIX_COVERAGE)

@@ -30,7 +30,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "supervisor/shared/translate.h"
@@ -83,26 +82,23 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     audioio_rawsample_obj_t *self = m_new_obj(audioio_rawsample_obj_t);
     self->base.type = &audioio_rawsample_type;
     mp_buffer_info_t bufinfo;
-    if (mp_get_buffer(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ)) {
-        uint8_t bytes_per_sample = 1;
-        bool signed_samples = bufinfo.typecode == 'b' || bufinfo.typecode == 'h';
-        if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
-            bytes_per_sample = 2;
-        } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-            mp_raise_ValueError(translate("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"));
-        }
-        common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
-            bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
-            args[ARG_sample_rate].u_int);
-    } else {
-        mp_raise_TypeError(translate("buffer must be a bytes-like object"));
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    uint8_t bytes_per_sample = 1;
+    bool signed_samples = bufinfo.typecode == 'b' || bufinfo.typecode == 'h';
+    if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
+        bytes_per_sample = 2;
+    } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
+        mp_raise_ValueError(translate("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"));
     }
+    common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
+        bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
+        args[ARG_sample_rate].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
 //|     def deinit(self) -> None:
-//|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
+//|         """Deinitialises the RawSample and releases any hardware resources for reuse."""
 //|         ...
 //|
 STATIC mp_obj_t audioio_rawsample_deinit(mp_obj_t self_in) {

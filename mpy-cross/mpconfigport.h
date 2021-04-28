@@ -9,13 +9,15 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_X86            (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (0)
-#define MICROPY_EMIT_INLINE_THUMB_FLOAT (0)
-#define MICROPY_EMIT_ARM            (0)
+#define MICROPY_EMIT_X64            (1)
+#define MICROPY_EMIT_X86            (1)
+#define MICROPY_EMIT_THUMB          (1)
+#define MICROPY_EMIT_INLINE_THUMB   (1)
+#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
+#define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
+#define MICROPY_EMIT_ARM            (1)
+#define MICROPY_EMIT_XTENSA         (1)
+#define MICROPY_EMIT_INLINE_XTENSA  (1)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
@@ -133,10 +135,6 @@ typedef long mp_off_t;
 #endif
 
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
-
-#ifndef MP_NOINLINE
-#define MP_NOINLINE __attribute__((noinline))
-#endif
 
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__

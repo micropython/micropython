@@ -11,6 +11,7 @@
 #include "py/objtuple.h"
 #include "py/objarray.h"
 #include "py/stream.h"
+#include "extmod/misc.h"
 #include "lib/utils/interrupt_char.h"
 
 #include "supervisor/shared/translate.h"
@@ -39,6 +40,20 @@ int mp_uos_dupterm_rx_chr(void) {
             continue;
         }
 
+        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+        if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+            byte buf[1];
+            int errcode = 0;
+            const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
+            mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
+            if (errcode == 0 && out_sz != 0) {
+                return buf[0];
+            } else {
+                continue;
+            }
+        }
+        #endif
+
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             byte buf[1];
@@ -66,7 +81,7 @@ int mp_uos_dupterm_rx_chr(void) {
                 return buf[0];
             }
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
+            mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 
@@ -79,12 +94,22 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
+
+        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+        if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
+            int errcode = 0;
+            const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
+            stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
+            continue;
+        }
+        #endif
+
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
             nlr_pop();
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", nlr.ret_val);
+            mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 }

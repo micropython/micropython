@@ -45,7 +45,7 @@ mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timeala
 mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_time_timealarm_type)) {
             return alarms[i];
         }
     }
@@ -82,7 +82,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     alarm_time_timealarm_obj_t *timealarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_time_timealarm_type)) {
             continue;
         }
         if (timealarm_set) {

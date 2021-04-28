@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <math.h>
 
 #include "py/objtuple.h"
 #include "py/objstr.h"
@@ -67,6 +68,7 @@
 typedef struct _mp_obj_socket_t {
     mp_obj_base_t base;
     int fd;
+    bool blocking;
 } mp_obj_socket_t;
 
 const mp_obj_type_t mp_type_socket;
@@ -80,6 +82,7 @@ STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
     o->base.type = &mp_type_socket;
     o->fd = fd;
+    o->blocking = true;
     return o;
 }
 
@@ -94,7 +97,14 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
-        *errcode = errno;
+        int err = errno;
+        // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
+        // timed out, and need to convert that to ETIMEDOUT.
+        if (err == EAGAIN && o->blocking) {
+            err = MP_ETIMEDOUT;
+        }
+
+        *errcode = err;
         return MP_STREAM_ERROR;
     }
     return r;
@@ -104,7 +114,14 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
-        *errcode = errno;
+        int err = errno;
+        // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
+        // timed out, and need to convert that to ETIMEDOUT.
+        if (err == EAGAIN && o->blocking) {
+            err = MP_ETIMEDOUT;
+        }
+
+        *errcode = err;
         return MP_STREAM_ERROR;
     }
     return r;
@@ -125,6 +142,9 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             close(self->fd);
             return 0;
 
+        case MP_STREAM_GET_FILENO:
+            return self->fd;
+
         default:
             *errcode = MP_EINVAL;
             return MP_STREAM_ERROR;
@@ -142,7 +162,12 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
-    RAISE_ERRNO(r, errno);
+    int err = errno;
+    if (r == -1 && self->blocking && err == EINPROGRESS) {
+        // EINPROGRESS on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(r, err);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
@@ -172,7 +197,12 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
     int fd = accept(self->fd, (struct sockaddr *)&addr, &addr_len);
-    RAISE_ERRNO(fd, errno);
+    int err = errno;
+    if (fd == -1 && self->blocking && err == EAGAIN) {
+        // EAGAIN on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(fd, err);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = MP_OBJ_FROM_PTR(socket_new(fd));
@@ -281,7 +311,7 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     const void *optval;
     socklen_t optlen;
     int val;
-    if (MP_OBJ_IS_INT(args[3])) {
+    if (mp_obj_is_int(args[3])) {
         val = mp_obj_int_get_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
@@ -309,9 +339,50 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     }
     flags = fcntl(self->fd, F_SETFL, flags);
     RAISE_ERRNO(flags, errno);
+    self->blocking = val;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
+
+STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+    struct timeval tv = {0,};
+    bool new_blocking = true;
+
+    // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
+    // and that's how 'tv' is initialized above
+    if (timeout_in != mp_const_none) {
+        #if MICROPY_PY_BUILTINS_FLOAT
+        mp_float_t val = mp_obj_get_float(timeout_in);
+        double ipart;
+        tv.tv_usec = round(modf(val, &ipart) * 1000000);
+        tv.tv_sec = ipart;
+        #else
+        tv.tv_sec = mp_obj_get_int(timeout_in);
+        #endif
+
+        // For SO_RCVTIMEO/SO_SNDTIMEO, zero timeout means infinity, but
+        // for Python API it means non-blocking.
+        if (tv.tv_sec == 0 && tv.tv_usec == 0) {
+            new_blocking = false;
+        }
+    }
+
+    if (new_blocking) {
+        int r;
+        r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
+        r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
+    }
+
+    if (self->blocking != new_blocking) {
+        socket_setblocking(self_in, mp_obj_new_bool(new_blocking));
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
 
 STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     // TODO: CPython explicitly says that closing returned object doesn't close
@@ -334,13 +405,13 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, con
     int proto = 0;
 
     if (n_args > 0) {
-        assert(MP_OBJ_IS_SMALL_INT(args[0]));
+        assert(mp_obj_is_small_int(args[0]));
         family = MP_OBJ_SMALL_INT_VALUE(args[0]);
         if (n_args > 1) {
-            assert(MP_OBJ_IS_SMALL_INT(args[1]));
+            assert(mp_obj_is_small_int(args[1]));
             type = MP_OBJ_SMALL_INT_VALUE(args[1]);
             if (n_args > 2) {
-                assert(MP_OBJ_IS_SMALL_INT(args[2]));
+                assert(mp_obj_is_small_int(args[2]));
                 proto = MP_OBJ_SMALL_INT_VALUE(args[2]);
             }
         }
@@ -368,6 +439,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
+    { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
 
@@ -437,7 +509,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     memset(&hints, 0, sizeof(hints));
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
-    if (MP_OBJ_IS_SMALL_INT(args[1])) {
+    if (mp_obj_is_small_int(args[1])) {
         unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
         snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;

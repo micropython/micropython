@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-06 14:41+0000\n"
+"PO-Revision-Date: 2021-04-24 14:29+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -447,7 +447,7 @@ msgstr "Försök att tilldela %d block"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
-msgstr ""
+msgstr "Försök till heap-allokering när den virtuella maskinen inte är igång."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -750,14 +750,6 @@ msgstr ""
 "Anslutningen har kopplats bort och kan inte längre användas. Skapa en ny "
 "anslutning."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Skadad .mpy-fil"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Korrupt rå kod"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Kunde inte initiera Camera"
@@ -896,6 +888,11 @@ msgstr "ESP-IDF-minnetilldelning misslyckades"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT-kanalen används redan"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Fel i MIDI-ström vid position %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Fel i regex"
@@ -1027,7 +1024,7 @@ msgstr "Det gick inte att skriva till intern flash."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "Fatalt fel."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1100,10 +1097,6 @@ msgstr "I2C-enhet används redan"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut är inte tillgängligt"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1205,6 +1198,7 @@ msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Ogiltig %q-pinne"
@@ -1231,6 +1225,10 @@ msgstr "Ogiltig BSSID"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Ogiltig MIDI-fil"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1270,6 +1268,11 @@ msgstr "Ogiltig inspelningsperiod. Giltigt intervall: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Ogiltigt kanalantal"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "Ogiltig data_count %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1477,7 +1480,7 @@ msgstr "Måste använda ett multipel av 6 rgb-pinnar, inte %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "NLR jump misslyckades. Troligen korrupt minne."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1623,6 +1626,7 @@ msgstr "Nordic systemfirmware fick slut på minne"
 msgid "Not a valid IP string"
 msgstr "Inte en giltig IP-sträng"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2154,6 +2158,14 @@ msgstr "Tid har passerats."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr "Timeout i väntan på DRDY"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr "Timeout i väntan på VSYNC"
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "För att avsluta, gör reset på kortet utan "
@@ -2172,8 +2184,8 @@ msgid "Too many displays"
 msgstr "För många displayer"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
-msgstr "Total data som ska skrivas är större än outgoing_packet_length"
+msgid "Total data to write is larger than %q"
+msgstr "Totala data att skriva är större än %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2346,10 +2358,6 @@ msgstr "Värdets längd > max_length"
 msgid "Version was invalid"
 msgstr "Versionen var ogiltig"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Avläsning av spänning tog för lång tid"
@@ -2435,11 +2443,6 @@ msgstr "ett bytesliknande objekt krävs"
 msgid "abort() called"
 msgstr "abort() anropad"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "adressen %08x är inte justerad till %d byte"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adress utanför gränsen"
@@ -2447,6 +2450,10 @@ msgstr "adress utanför gränsen"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adresserna är tomma"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr "Annoteringen måste vara en identifierare"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2547,10 +2554,6 @@ msgstr "branch utanför räckvidd"
 msgid "buffer is smaller than requested size"
 msgstr "bufferten är mindre än begärd storlek"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "buffer måste vara en byte-liknande objekt"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "buffertstorlek måste vara en multipel av elementstorlek"
@@ -2617,10 +2620,6 @@ msgstr "kan bara ha upp till 4 parametrar för Thumbs assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "kan bara spara bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "kan inte lägga till särskild metod för redan subklassad klass"
@@ -2634,6 +2633,10 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr "kan inte konvertera %q till int"
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan inte konvertera '%q' objekt implicit till %q"
@@ -2641,6 +2644,10 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "kan inte konvertera till %q"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "kan inte konvertera till int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2842,6 +2849,11 @@ msgstr "data måste vara itererbar"
 msgid "data must be of equal length"
 msgstr "data måste vara av samma längd"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "data pin #%d används redan"
+
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
 msgstr "datatyp inte förstådd"
@@ -2997,7 +3009,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string: singel '}' är inte tillåten"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
@@ -3050,7 +3062,7 @@ msgid "full"
 msgstr "full"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
+msgid "function doesn't take keyword arguments"
 msgstr "funktionen tar inte nyckelordsargument"
 
 #: py/argcheck.c
@@ -3105,6 +3117,10 @@ msgstr "generatorn kör redan"
 msgid "generator ignored GeneratorExit"
 msgstr "generatorn ignorerade GeneratorExit"
 
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr "generator kastade StopIteration"
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic måste vara 2048 byte lång"
@@ -3120,6 +3136,14 @@ msgstr "identifieraren omdefinierad till global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifieraren omdefinierad som icke-lokal"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3240,6 +3264,10 @@ msgstr "interp är definierad för 1D-matriser med samma längd"
 msgid "interval must be in range %s-%s"
 msgstr "interval måste vara i intervallet %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ogiltiga argument"
@@ -3249,13 +3277,9 @@ msgstr "ogiltiga argument"
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
 
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "ogiltigt certifikat"
-
 #: py/compile.c
 msgid "invalid decorator"
-msgstr ""
+msgstr "ogiltig dekorator"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -3283,10 +3307,6 @@ msgstr "ogiltig formatspecificerare"
 msgid "invalid hostname"
 msgstr "Ogiltigt värdnamn"
 
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "ogiltig nyckel"
-
 #: py/compile.c
 msgid "invalid micropython decorator"
 msgstr "ogiltig mikropython-dekorator"
@@ -3311,10 +3331,6 @@ msgstr "ogiltig syntax för heltal med bas %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io måste vara rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3490,6 +3506,10 @@ msgstr "native yield"
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "behöver mer än %d värden för att packa upp"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr "negativ faktoriell"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3720,10 +3740,6 @@ msgstr "palette måste vara 32 bytes lång"
 msgid "palette_index should be an int"
 msgstr "palette_index ska vara en int"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "parametern annotation måste vara en identifierare"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "parametrarna måste registreras i följd a2-a5"
@@ -3779,6 +3795,8 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3803,6 +3821,10 @@ msgstr "trycka på startknappen vid start.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "trycka båda knapparna vid uppstart.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr "håll ner vänster knapp vid start\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -4079,10 +4101,6 @@ msgstr "trapz är definierat för 1D-matriser"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "triggernivå måste vara 0 eller 1"
-
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupel/lista har fel längd"
@@ -4164,7 +4182,7 @@ msgstr "okänd formatkod '%c' för objekt av typ '%q'"
 msgid "unknown type"
 msgstr "okänd typ"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "okänd typ '%q'"
 
@@ -4216,10 +4234,6 @@ msgstr "värdet måste passa i %d byte(s)"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "wakeup-konflikt"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -4306,6 +4320,51 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Skadad .mpy-fil"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Korrupt rå kod"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan bara spara bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "ogiltigt certifikat"
+
+#~ msgid "invalid key"
+#~ msgstr "ogiltig nyckel"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adressen %08x är inte justerad till %d byte"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "funktionen tar inte nyckelordsargument"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parametern annotation måste vara en identifierare"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr "Total data som ska skrivas är större än outgoing_packet_length"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer måste vara en byte-liknande objekt"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io måste vara rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggernivå måste vara 0 eller 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "wakeup-konflikt"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr "Försökte tilldela heap när MicroPython VM inte körs."
@@ -4590,9 +4649,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "can't convert to float"
 #~ msgstr "kan inte konvertera till float"
-
-#~ msgid "can't convert to int"
-#~ msgstr "kan inte konvertera till int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "objektet '%s' är inte en tupel eller lista"

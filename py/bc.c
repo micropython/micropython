@@ -192,7 +192,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
-            if (MP_UNLIKELY(!MP_OBJ_IS_QSTR(wanted_arg_name))) {
+            if (MP_UNLIKELY(!mp_obj_is_qstr(wanted_arg_name))) {
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_TypeError(translate("unexpected keyword argument"));
                 #else
@@ -302,7 +302,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
 //     MP_BC_MAKE_CLOSURE_DEFARGS
 //     MP_BC_RAISE_VARARGS
 // There are 4 special opcodes that have an extra byte only when
-// MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled:
+// MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled (and they take a qstr):
 //     MP_BC_LOAD_NAME
 //     MP_BC_LOAD_GLOBAL
 //     MP_BC_LOAD_ATTR
@@ -331,7 +331,7 @@ STATIC const byte opcode_format_table[64] = {
     OC4(O, O, U, U), // 0x38-0x3b
     OC4(U, O, B, O), // 0x3c-0x3f
     OC4(O, B, B, O), // 0x40-0x43
-    OC4(B, B, O, B), // 0x44-0x47
+    OC4(O, U, O, B), // 0x44-0x47
     OC4(U, U, U, U), // 0x48-0x4b
     OC4(U, U, U, U), // 0x4c-0x4f
     OC4(V, V, U, V), // 0x50-0x53
@@ -392,26 +392,30 @@ STATIC const byte opcode_format_table[64] = {
 #undef V
 #undef O
 
-uint mp_opcode_format(const byte *ip, size_t *opcode_size) {
+uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) {
     uint f = (opcode_format_table[*ip >> 2] >> (2 * (*ip & 3))) & 3;
     const byte *ip_start = ip;
     if (f == MP_OPCODE_QSTR) {
+        if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
+            if (*ip == MP_BC_LOAD_NAME
+                || *ip == MP_BC_LOAD_GLOBAL
+                || *ip == MP_BC_LOAD_ATTR
+                || *ip == MP_BC_STORE_ATTR) {
+                ip += 1;
+            }
+        }
         ip += 3;
     } else {
         int extra_byte = (
             *ip == MP_BC_RAISE_VARARGS
             || *ip == MP_BC_MAKE_CLOSURE
             || *ip == MP_BC_MAKE_CLOSURE_DEFARGS
-            #if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-            || *ip == MP_BC_LOAD_NAME
-            || *ip == MP_BC_LOAD_GLOBAL
-            || *ip == MP_BC_LOAD_ATTR
-            || *ip == MP_BC_STORE_ATTR
-            #endif
             );
         ip += 1;
         if (f == MP_OPCODE_VAR_UINT) {
-            while ((*ip++ & 0x80) != 0) {
+            if (count_var_uint) {
+                while ((*ip++ & 0x80) != 0) {
+                }
             }
         } else if (f == MP_OPCODE_OFFSET) {
             ip += 2;

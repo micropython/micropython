@@ -125,6 +125,8 @@ STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             o->fd = -1;
             #endif
             return 0;
+        case MP_STREAM_GET_FILENO:
+            return o->fd;
         default:
             *errcode = EINVAL;
             return MP_STREAM_ERROR;
@@ -191,7 +193,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
 
     mp_obj_t fid = args[0].u_obj;
 
-    if (MP_OBJ_IS_SMALL_INT(fid)) {
+    if (mp_obj_is_small_int(fid)) {
         o->fd = MP_OBJ_SMALL_INT_VALUE(fid);
         return MP_OBJ_FROM_PTR(o);
     }

@@ -280,6 +280,9 @@ endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
 endif
+ifeq ($(CIRCUITPY_SYNTHIO),1)
+SRC_PATTERNS += synthio/%
+endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
@@ -315,6 +318,9 @@ SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
+endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
 endif
 ifeq ($(CIRCUITPY_MSGPACK),1)
 SRC_PATTERNS += msgpack/%
@@ -364,8 +370,11 @@ SRC_COMMON_HAL_ALL = \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
+	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
+	imagecapture/ParallelImageCapture.c \
+	imagecapture/__init__.c \
 	gnss/__init__.c \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
@@ -379,7 +388,6 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -524,6 +532,8 @@ SRC_SHARED_MODULE_ALL = \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	synthio/MidiTrack.c \
+	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \
@@ -633,6 +643,19 @@ $(addprefix lib/,\
 	)
 endif
 endif
+
+SRC_CIRCUITPY_COMMON = \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/ffunicode.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/buffer_helper.c \
+	lib/utils/context_manager_helpers.c \
+	lib/utils/interrupt_char.c \
+	lib/utils/pyexec.c \
+	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c
 
 ifdef LD_TEMPLATE_FILE
 # Generate a linker script (.ld file) from a template, for those builds that use it.

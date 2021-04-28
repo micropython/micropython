@@ -172,8 +172,7 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         case MP_UNARY_OP_NEGATIVE:
             return mp_obj_new_float(-val);
         case MP_UNARY_OP_ABS: {
-            // TODO check for NaN etc
-            if (val < 0) {
+            if (signbit(val)) {
                 return mp_obj_new_float(-val);
             } else {
                 return o_in;
@@ -187,7 +186,7 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_val = mp_obj_float_get(lhs_in);
     #if MICROPY_PY_BUILTINS_COMPLEX
-    if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
+    if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs_val, 0, rhs_in);
     } else
     #endif

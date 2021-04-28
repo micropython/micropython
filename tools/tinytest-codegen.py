@@ -12,7 +12,14 @@ import argparse
 
 def escape(s):
     s = s.decode()
-    lookup = {"\0": "\\0", "\t": "\\t", "\n": '\\n"\n"', "\r": "\\r", "\\": "\\\\", '"': '\\"'}
+    lookup = {
+        "\0": "\\0",
+        "\t": "\\t",
+        "\n": '\\n"\n"',
+        "\r": "\\r",
+        "\\": "\\\\",
+        '"': '\\"',
+    }
     return '""\n"{}"'.format("".join([lookup[x] if x in lookup else x for x in s]))
 
 

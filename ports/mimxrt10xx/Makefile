@@ -154,24 +154,13 @@ SRC_C += \
 	boards/$(BOARD)/flash_config.c \
 	boards/$(BOARD)/pins.c \
 	fatfs_port.c \
-	lib/mp-readline/readline.c \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/ccsbcs.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/buffer_helper.c \
-	lib/utils/context_manager_helpers.c \
-	lib/utils/interrupt_char.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c \
 	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c \
 	mphalport.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/clocks.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/periph.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/pins.c \
 	reset.c \
-	supervisor/flexspi_nor_flash_ops.c \
-	supervisor/shared/memory.c
+	supervisor/flexspi_nor_flash_ops.c
 
 
 ifeq ($(CIRCUITPY_NETWORK),1)
@@ -224,6 +213,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
+OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 

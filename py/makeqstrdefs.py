@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import re
 import sys
+import io
 import os
 
 # Python 2/3 compatibility:
@@ -175,7 +176,7 @@ if __name__ == "__main__":
         pass
 
     if args.command == "split":
-        with open(args.input_filename) as infile:
+        with io.open(args.input_filename, encoding="utf-8") as infile:
             process_file(infile)
 
     if args.command == "cat":

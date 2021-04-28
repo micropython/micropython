@@ -73,7 +73,7 @@ void mp_handle_pending_tail(mp_uint_t atomic_state);
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
 static inline unsigned int mp_sched_num_pending(void) {
-    return MP_STATE_VM(sched_sp);
+    return MP_STATE_VM(sched_len);
 }
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
@@ -81,9 +81,10 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
+void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
 void mp_arg_check_num(size_t n_args, mp_map_t *kw_args, size_t n_args_min, size_t n_args_max, bool takes_kw);
-void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_check_num_kw_array(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw);
+void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
@@ -196,8 +197,10 @@ NORETURN void mp_raise_recursion_depth(void);
 #endif
 
 // helper functions for native/viper code
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
+int mp_native_type_from_qstr(qstr qst);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type);
+mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals);
 mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
 void mp_native_raise(mp_obj_t o);
 
@@ -205,7 +208,9 @@ void mp_native_raise(mp_obj_t o);
 #define mp_sys_argv (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)))
 
 #if MICROPY_WARNINGS
-void mp_warning(const char *msg, ...);
+#ifndef mp_warning
+void mp_warning(const char *category, const char *msg, ...);
+#endif
 #else
 #define mp_warning(...)
 #endif

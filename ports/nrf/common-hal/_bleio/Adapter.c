@@ -351,8 +351,11 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     } else {
         err_code = sd_softdevice_disable();
     }
+
+    #if CIRCUITPY_USB
     // Re-init USB hardware
     init_usb_hardware();
+    #endif
 
     check_nrf_error(err_code);
 

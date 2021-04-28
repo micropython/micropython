@@ -110,7 +110,16 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         send_get(b'\x04') # exit the REPL, so coverage info is saved
-                        p.kill()
+                        # At this point the process might have exited already, but trying to
+                        # kill it 'again' normally doesn't result in exceptions as Python and/or
+                        # the OS seem to try to handle this nicely. When running Linux on WSL
+                        # though, the situation differs and calling Popen.kill after the process
+                        # terminated results in a ProcessLookupError. Just catch that one here
+                        # since we just want the process to be gone and that's the case.
+                        try:
+                            p.kill()
+                        except ProcessLookupError:
+                            pass
                         os.close(emulator)
                         os.close(subterminal)
                 else:
@@ -128,7 +137,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', test_file])
+                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
                 cmdlist.extend(['-m', 'mpytest'])
             else:
                 cmdlist.append(test_file)
@@ -149,13 +158,15 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
     else:
         # run on pyboard
-        import pyboard
         pyb.enter_raw_repl()
         try:
             output_mupy = pyb.execfile(test_file)
-        except pyboard.PyboardError:
+        except pyboard.PyboardError as e:
             had_crash = True
-            output_mupy = b'CRASH'
+            if not is_special and e.args[0] == 'exception':
+                output_mupy = e.args[1] + e.args[2] + b'CRASH'
+            else:
+                output_mupy = b'CRASH'
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
@@ -196,7 +207,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 if lines_exp[i][1].match(lines_mupy[i_mupy]):
                     lines_mupy[i_mupy] = lines_exp[i][0]
                 else:
-                    #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
+                    print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
                     pass
                 i_mupy += 1
             if i_mupy >= len(lines_mupy):
@@ -298,8 +309,12 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
         skip_tests.add('thread/stress_recurse.py') # has reliability issues
 
     if upy_float_precision == 0:
+        skip_tests.add('extmod/uctypes_le_float.py')
+        skip_tests.add('extmod/uctypes_native_float.py')
+        skip_tests.add('extmod/uctypes_sizeof_float.py')
         skip_tests.add('extmod/ujson_dumps_float.py')
         skip_tests.add('extmod/ujson_loads_float.py')
+        skip_tests.add('extmod/urandom_extra_float.py')
         skip_tests.add('misc/rge_sm.py')
     if upy_float_precision < 32:
         skip_tests.add('float/float2int_intbig.py') # requires fp32, there's float2int_fp30_intbig.py instead
@@ -348,6 +363,16 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
             skip_tests.add('basics/subclass_native_init.py')# native subclassing corner cases not support
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
+        elif args.target == 'nrf':
+            skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
+            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
+            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
+            skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
+            skip_tests.add('micropython/opt_level.py')      # no support for line numbers
+            skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
+            for t in tests:
+                if t.startswith('basics/io_'):
+                    skip_tests.add(t)
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -360,31 +385,21 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_executing gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_pend_throw generator_return generator_send'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_executing gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_name generator_pend_throw generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join gen_stack_overflow'.split()}) # require yield
-        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2 coroutine'.split()}) # require yield
+        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2 with_break with_return coroutine'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
-        skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
-        skip_tests.add('basics/array_construct2.py') # requires generators
-        skip_tests.add('basics/bool1.py') # seems to randomly fail
-        skip_tests.add('basics/builtin_hash_gen.py') # requires yield
-        skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
         skip_tests.add('basics/exception_chain.py') # raise from is not supported
-        skip_tests.add('basics/for_range.py') # requires yield_value
-        skip_tests.add('basics/try_finally_loops.py') # requires proper try finally code
-        skip_tests.add('basics/try_finally_return.py') # requires proper try finally code
-        skip_tests.add('basics/try_finally_return2.py') # requires proper try finally code
+        skip_tests.add('basics/scope_implicit.py') # requires checking for unbound local
+        skip_tests.add('basics/try_finally_return2.py') # requires raise_varargs
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
-        skip_tests.add('import/gen_context.py') # requires yield_value
         skip_tests.add('misc/features.py') # requires raise_varargs
-        skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
-        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
         skip_tests.add('stress/gc_trace.py') # requires yield
         skip_tests.add('stress/recursive_gen.py') # requires yield
@@ -403,8 +418,8 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
             if verdict == "exclude":
                 return
 
-        test_basename = os.path.basename(test_file)
-        test_name = os.path.splitext(test_basename)[0]
+        test_basename = test_file.replace('..', '_').replace('./', '').replace('/', '_')
+        test_name = os.path.splitext(os.path.basename(test_file))[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
@@ -560,10 +575,12 @@ the last matching regex is used:
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
     if args.target == 'unix' or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
+        global pyboard
+        sys.path.append('../tools')
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -575,7 +592,7 @@ the last matching regex is used:
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            elif args.target in ('esp8266', 'esp32', 'minimal'):
+            elif args.target in ('esp8266', 'esp32', 'minimal', 'nrf'):
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests

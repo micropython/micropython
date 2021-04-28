@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,9 +83,9 @@ void asm_x64_nop(asm_x64_t *as);
 void asm_x64_push_r64(asm_x64_t *as, int src_r64);
 void asm_x64_pop_r64(asm_x64_t *as, int dest_r64);
 void asm_x64_mov_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
+size_t asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64);
 void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64);
-void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_r8_to_mem8(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_mov_r16_to_mem16(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_mov_r32_to_mem32(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
@@ -104,7 +104,9 @@ void asm_x64_sub_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_mul_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b);
+void asm_x64_test_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8);
+void asm_x64_jmp_reg(asm_x64_t *as, int src_r64);
 void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label);
 void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label);
 void asm_x64_entry(asm_x64_t *as, int num_locals);
@@ -112,7 +114,11 @@ void asm_x64_exit(asm_x64_t *as);
 void asm_x64_mov_local_to_r64(asm_x64_t *as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t *as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64);
-void asm_x64_call_ind(asm_x64_t *as, void *ptr, int temp_r32);
+void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label);
+void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
+
+// Holds a pointer to mp_fun_table
+#define ASM_X64_REG_FUN_TABLE ASM_X64_REG_RBP
 
 #if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
@@ -139,20 +145,31 @@ void asm_x64_call_ind(asm_x64_t *as, void *ptr, int temp_r32);
 #define REG_LOCAL_3 ASM_X64_REG_R13
 #define REG_LOCAL_NUM (3)
 
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_X64_REG_FUN_TABLE
+
 #define ASM_T               asm_x64_t
 #define ASM_END_PASS        asm_x64_end_pass
 #define ASM_ENTRY           asm_x64_entry
 #define ASM_EXIT            asm_x64_exit
 
 #define ASM_JUMP            asm_x64_jmp_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
-        asm_x64_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x64_test_r8_with_r8((as), (reg), (reg)); \
+        } else { \
+            asm_x64_test_r64_with_r64((as), (reg), (reg)); \
+        } \
         asm_x64_jcc_label(as, ASM_X64_CC_JZ, label); \
     } while (0)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     do { \
-        asm_x64_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x64_test_r8_with_r8((as), (reg), (reg)); \
+        } else { \
+            asm_x64_test_r64_with_r64((as), (reg), (reg)); \
+        } \
         asm_x64_jcc_label(as, ASM_X64_CC_JNZ, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
@@ -160,14 +177,17 @@ void asm_x64_call_ind(asm_x64_t *as, void *ptr, int temp_r32);
         asm_x64_cmp_r64_with_r64(as, reg1, reg2); \
         asm_x64_jcc_label(as, ASM_X64_CC_JE, label); \
     } while (0)
-#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, ASM_X64_REG_RAX)
+#define ASM_JUMP_REG(as, reg) asm_x64_jmp_reg((as), (reg))
+#define ASM_CALL_IND(as, idx) asm_x64_call_ind(as, idx, ASM_X64_REG_RAX)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x64_mov_r64_to_local((as), (reg_src), (local_num))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_optimised((as), (imm), (reg_dest))
-#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_aligned((as), (imm), (reg_dest))
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_x64_mov_i32_to_r64((as), (imm), (reg_dest))
+#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_x64_mov_i32_to_r64((as), (imm), (reg_dest))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x64_mov_local_to_r64((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x64_mov_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x64_mov_local_addr_to_r64((as), (local_num), (reg_dest))
+#define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x64_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))

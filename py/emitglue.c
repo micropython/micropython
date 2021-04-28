@@ -67,15 +67,18 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
-    rc->data.u_byte.bytecode = code;
-    rc->data.u_byte.const_table = const_table;
+    rc->fun_data = code;
+    rc->const_table = const_table;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    rc->data.u_byte.bc_len = len;
-    rc->data.u_byte.n_obj = n_obj;
-    rc->data.u_byte.n_raw_code = n_raw_code;
+    rc->fun_data_len = len;
+    rc->n_obj = n_obj;
+    rc->n_raw_code = n_raw_code;
     #endif
 
     #ifdef DEBUG_PRINT
+    #if !MICROPY_DEBUG_PRINTERS
+    const size_t len = 0;
+    #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
     #endif
     #if MICROPY_DEBUG_PRINTERS
@@ -86,14 +89,31 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 }
 
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table,
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    uint16_t prelude_offset,
+    uint16_t n_obj, uint16_t n_raw_code,
+    uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
+    #endif
+    mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
+
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
+
     rc->kind = kind;
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
-    rc->data.u_native.fun_data = fun_data;
-    rc->data.u_native.const_table = const_table;
-    rc->data.u_native.type_sig = type_sig;
+    rc->fun_data = fun_data;
+    rc->const_table = const_table;
+    rc->type_sig = type_sig;
+
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    rc->fun_data_len = fun_len;
+    rc->prelude_offset = prelude_offset;
+    rc->n_obj = n_obj;
+    rc->n_raw_code = n_raw_code;
+    rc->n_qstr = n_qstr;
+    rc->qstr_link = qstr_link;
+    #endif
 
     #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
@@ -121,33 +141,30 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     assert(rc != NULL);
 
     // def_args must be MP_OBJ_NULL or a tuple
-    assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
+    assert(def_args == MP_OBJ_NULL || mp_obj_is_type(def_args, &mp_type_tuple));
 
     // def_kw_args must be MP_OBJ_NULL or a dict
-    assert(def_kw_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_kw_args, &mp_type_dict));
+    assert(def_kw_args == MP_OBJ_NULL || mp_obj_is_type(def_kw_args, &mp_type_dict));
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
-            break;
         case MP_CODE_NATIVE_VIPER:
-            fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
+            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->fun_data, rc->const_table);
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
+            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->fun_data, rc->type_sig);
             break;
         #endif
-        case MP_CODE_BYTECODE:
-            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.bytecode, rc->data.u_byte.const_table);
-            break;
         default:
-            // All other kinds are invalid.
-            mp_raise_RuntimeError(translate("Corrupt raw code"));
+            // rc->kind should always be set and BYTECODE is the only remaining case
+            assert(rc->kind == MP_CODE_BYTECODE);
+            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->fun_data, rc->const_table);
+            break;
     }
 
     // check for generator functions and if so wrap in generator object

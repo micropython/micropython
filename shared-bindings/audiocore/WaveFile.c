@@ -44,7 +44,7 @@
 //|         """Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened wave file
-//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 512 byte buffers are allocated internally.
+//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 256 byte buffers are allocated internally.
 //|
 //|
 //|         Playing a wave file from flash::
@@ -74,7 +74,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
 
     audioio_wavefile_obj_t *self = m_new_obj(audioio_wavefile_obj_t);
     self->base.type = &audioio_wavefile_type;
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
+    if (!mp_obj_is_type(args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;

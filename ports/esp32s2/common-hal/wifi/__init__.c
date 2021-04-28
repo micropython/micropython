@@ -158,7 +158,7 @@ void wifi_reset(void) {
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
-    if (!MP_OBJ_IS_TYPE(ip_address, &ipaddress_ipv4address_type)) {
+    if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
         mp_raise_ValueError(translate("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
