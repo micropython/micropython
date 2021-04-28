@@ -327,7 +327,7 @@ To add different types outside CircuitPython you need to add more definition to 
         "CircuitPython": ("https://circuitpython.readthedocs.io/en/latest/", None),
     }
 
-The inthersphinx_mapping above include reference to the Python, BusDevice and CircuitPython
+The intersphinx_mapping above includes references to Python, BusDevice and CircuitPython
 Documentation
 
 
