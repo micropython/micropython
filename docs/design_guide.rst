@@ -293,7 +293,7 @@ Renders as:
     :param int address: The I2C address of the device. Defaults to :const:`0x40`
 
 
-Parameters Documentation
+Documenting Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Although there are different ways to document class and functions definitions in Python,
 the following is the prevalent method of documenting parameters
@@ -308,7 +308,7 @@ following structure:
 param_type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
-To document an object in the CircuitPython domain, you need to include a ``~`` before the 
+To document an object in the CircuitPython domain, you need to include a ``~`` before the
 definition as shown in the following example:
 
 .. code-block:: sh
