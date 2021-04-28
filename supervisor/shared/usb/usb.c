@@ -66,18 +66,10 @@ bool usb_enabled(void) {
     return tusb_inited();
 }
 
-// Initialization done only once, before boot.py is run.
-void reset_usb(void) {
-    reset_usb_desc();
-}
-
-
 MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
-    usb_desc_init();
-
     init_usb_hardware();
 
     tusb_init();
@@ -89,34 +81,40 @@ void usb_init(void) {
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
     #endif
-
-    #if CIRCUITPY_USB_MIDI
-    usb_midi_setup();
-    #endif
 }
 
+// Set up USB defaults before any USB changes are made in boot.py
 void usb_pre_boot_py(void) {
     #if CIRCUITPY_STORAGE
-    storage_init_usb();
+    storage_pre_boot_py();
     #endif
 
     #if CIRCUITPY_USB_CDC
-    usb_cdc_init_usb();
+    usb_cdc_pre_boot_py();
     #endif
 
     #if CIRCUITPY_USB_HID
-    usb_hid_init_usb();
+    usb_hid_pre_boot_py();
     #endif
 
     #if CIRCUITPY_USB_MIDI
-    usb_midi_init_usb();
+    usb_midi_pre_boot_py();
     #endif
 };
 
-// Remember USB settings done during boot.py.
-// The boot.py heap is still valid at this point.
+// Act on USB settings done during boot.py.
 void usb_post_boot_py(void) {
+    #if CIRCUITPY_USB
     usb_desc_post_boot_py();
+    #endif
+
+    #if CIRCUITPY_USB_MIDI
+    usb_midi_post_boot_py();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_post_boot_py();
+    #endif
 }
 
 
@@ -145,11 +143,6 @@ void usb_background_schedule(void) {
 void usb_irq_handler(void) {
     tud_int_handler(0);
     usb_background_schedule();
-}
-
-void usb_gc_collect(void) {
-    usb_desc_gc_collect();
-    usb_hid_gc_collect();
 }
 
 // --------------------------------------------------------------------+

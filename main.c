@@ -266,97 +266,6 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     reset_status_led();
 }
 
-FIL* boot_output_file;
-
-STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    // If not in safe mode, run boot before initing USB and capture output in a
-    // file.
-    if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
-
-        new_status_color(BOOT_RUNNING);
-
-        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        FIL file_pointer;
-        boot_output_file = &file_pointer;
-
-        // Get the base filesystem.
-        FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-
-        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
-
-        bool skip_boot_output = false;
-
-        // If there's no boot.py file that might write some changing output,
-        // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
-        // match the version info we would print anyway. If so, skip writing CIRCUITPY_BOOT_OUTPUT_FILE.
-        // This saves wear and tear on the flash and also prevents filesystem damage if power is lost
-        // during the write, which may happen due to bobbling the power connector or weak power.
-
-        static const size_t NUM_CHARS_TO_COMPARE = 160;
-        if (!have_boot_py && f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
-
-            char file_contents[NUM_CHARS_TO_COMPARE];
-            UINT chars_read = 0;
-            f_read(boot_output_file, file_contents, NUM_CHARS_TO_COMPARE, &chars_read);
-            f_close(boot_output_file);
-            skip_boot_output =
-                // + 2 accounts for  \r\n.
-                chars_read == strlen(MICROPY_FULL_VERSION_INFO) + 2 &&
-                strncmp(file_contents, MICROPY_FULL_VERSION_INFO, strlen(MICROPY_FULL_VERSION_INFO)) == 0;
-        }
-
-        if (!skip_boot_output) {
-            // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
-            // in case power is momentary or will fail shortly due to, say a low, battery.
-            if (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON) {
-                mp_hal_delay_ms(1500);
-            }
-            // USB isn't up, so we can write the file.
-            filesystem_set_internal_writable_by_usb(false);
-            f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-
-            // Switch the filesystem back to non-writable by Python now instead of later,
-            // since boot.py might change it back to writable.
-            filesystem_set_internal_writable_by_usb(true);
-
-            // Write version info to boot_out.txt.
-            mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
-            mp_hal_stdout_tx_str("\r\n");
-        }
-        #endif
-
-        filesystem_flush();
-        supervisor_allocation* heap = allocate_remaining_memory();
-        start_mp(heap);
-
-        #if CIRCUITPY_USB
-        // Set up default USB values after boot.py VM starts but before running boot.py.
-        usb_pre_boot_py();
-        #endif
-
-        // TODO(tannewt): Re-add support for flashing boot error output.
-        bool found_boot = maybe_run_list(boot_py_filenames, NULL);
-        (void) found_boot;
-
-        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        if (!skip_boot_output) {
-            f_close(boot_output_file);
-            filesystem_flush();
-        }
-        boot_output_file = NULL;
-        #endif
-
-        #if CIRCUITPY_USB
-        // Remember USB settings, which may have changed during boot.py.
-        // Call this before the boot.py heap is destroyed.
-        usb_post_boot_py();
-        #endif
-
-        cleanup_after_vm(heap);
-    }
-}
-
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
         serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
@@ -369,7 +278,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode, supervisor_allocation *heap) {
+STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     serial_write("\n");
@@ -396,6 +305,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, supervisor_allocation *heap) {
             "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
             "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
+
+        stack_resize();
+        filesystem_flush();
+        supervisor_allocation* heap = allocate_remaining_memory();
+        start_mp(heap);
 
         found_main = maybe_run_list(supported_filenames, &result);
         #if CIRCUITPY_FULL_BUILD
@@ -534,9 +448,103 @@ STATIC bool run_code_py(safe_mode_t safe_mode, supervisor_allocation *heap) {
     }
 }
 
-STATIC int run_repl(supervisor_allocation *heap) {
-    int exit_code = PYEXEC_FORCED_EXIT;
+FIL* boot_output_file;
 
+STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+    // If not in safe mode, run boot before initing USB and capture output in a
+    // file.
+    if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
+        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+
+        new_status_color(BOOT_RUNNING);
+
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        FIL file_pointer;
+        boot_output_file = &file_pointer;
+
+        // Get the base filesystem.
+        FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+
+        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
+
+        bool skip_boot_output = false;
+
+        // If there's no boot.py file that might write some changing output,
+        // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
+        // match the version info we would print anyway. If so, skip writing CIRCUITPY_BOOT_OUTPUT_FILE.
+        // This saves wear and tear on the flash and also prevents filesystem damage if power is lost
+        // during the write, which may happen due to bobbling the power connector or weak power.
+
+        static const size_t NUM_CHARS_TO_COMPARE = 160;
+        if (!have_boot_py && f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
+
+            char file_contents[NUM_CHARS_TO_COMPARE];
+            UINT chars_read = 0;
+            f_read(boot_output_file, file_contents, NUM_CHARS_TO_COMPARE, &chars_read);
+            f_close(boot_output_file);
+            skip_boot_output =
+                // + 2 accounts for  \r\n.
+                chars_read == strlen(MICROPY_FULL_VERSION_INFO) + 2 &&
+                strncmp(file_contents, MICROPY_FULL_VERSION_INFO, strlen(MICROPY_FULL_VERSION_INFO)) == 0;
+        }
+
+        if (!skip_boot_output) {
+            // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
+            // in case power is momentary or will fail shortly due to, say a low, battery.
+            if (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON) {
+                mp_hal_delay_ms(1500);
+            }
+            // USB isn't up, so we can write the file.
+            filesystem_set_internal_writable_by_usb(false);
+            f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+
+            // Switch the filesystem back to non-writable by Python now instead of later,
+            // since boot.py might change it back to writable.
+            filesystem_set_internal_writable_by_usb(true);
+
+            // Write version info to boot_out.txt.
+            mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
+            mp_hal_stdout_tx_str("\r\n");
+        }
+        #endif
+
+        filesystem_flush();
+        supervisor_allocation* heap = allocate_remaining_memory();
+        start_mp(heap);
+
+        #if CIRCUITPY_USB
+        // Set up default USB values after boot.py VM starts but before running boot.py.
+        usb_pre_boot_py();
+        #endif
+
+        // TODO(tannewt): Re-add support for flashing boot error output.
+        bool found_boot = maybe_run_list(boot_py_filenames, NULL);
+        (void) found_boot;
+
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        if (!skip_boot_output) {
+            f_close(boot_output_file);
+            filesystem_flush();
+        }
+        boot_output_file = NULL;
+        #endif
+
+        #if CIRCUITPY_USB
+        // Remember USB settings, which may have changed during boot.py.
+        // Call this before the boot.py heap is destroyed.
+        usb_post_boot_py();
+        #endif
+
+        cleanup_after_vm(heap);
+    }
+}
+
+STATIC int run_repl(void) {
+    int exit_code = PYEXEC_FORCED_EXIT;
+    stack_resize();
+    filesystem_flush();
+    supervisor_allocation* heap = allocate_remaining_memory();
+    start_mp(heap);
     autoreload_suspend();
     new_status_color(REPL_RUNNING);
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -580,7 +588,6 @@ int __attribute__((used)) main(void) {
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
-    reset_usb();
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
@@ -597,18 +604,7 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    #if CIRCUITPY_BLEIO
-    supervisor_start_bluetooth();
-    #endif
-
-    // Boot script is finished, so now go into REPL/main mode.
-
-    // Set up heap for REPL or code.py
-    stack_resize();
-    filesystem_flush();
-    supervisor_allocation* heap = allocate_remaining_memory();
-    start_mp(heap);
-
+    // Start USB after giving boot.py a chance to tweak behavior.
     #if CIRCUITPY_USB
     // Setup USB connection after heap is available.
     // It needs the heap to build descriptors.
@@ -618,19 +614,24 @@ int __attribute__((used)) main(void) {
     // Set up any other serial connection.
     serial_init();
 
+    #if CIRCUITPY_BLEIO
+    supervisor_start_bluetooth();
+    #endif
+
+    // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
-            exit_code = run_repl(heap);
+            exit_code = run_repl();
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
-            skip_repl = run_code_py(safe_mode, heap);
+            skip_repl = run_code_py(safe_mode);
         } else if (exit_code != 0) {
             break;
         }
@@ -650,10 +651,6 @@ void gc_collect(void) {
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
     background_callback_gc_collect();
-
-    #if CIRCUITPY_USB
-    usb_gc_collect();
-    #endif
 
     #if CIRCUITPY_ALARM
     common_hal_alarm_gc_collect();

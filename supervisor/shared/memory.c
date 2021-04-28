@@ -35,33 +35,43 @@
 enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
     // stack + heap
-        2
-        #if INTERNAL_FLASH_FILESYSTEM == 0
-        + 1
-        #endif
+    2
+
+    #if INTERNAL_FLASH_FILESYSTEM == 0
+    + 1
+    #endif
+
+   #if CIRCUITPY_USB
+    +1    // device_descriptor_allocation
+    +1    // configuration_descriptor_allocation
+    +1    // string_descriptors_allocation
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    + 1   // hid_report_descriptor_allocation
+    + 1   // hid_devices_allocation
+    #endif
     ,
+
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
+    0
+    #if CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_TERMINALIO
+    + 1
+    #endif
+    + CIRCUITPY_DISPLAY_LIMIT * (
+        // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
+        #if CIRCUITPY_RGBMATRIX
+        4
+        #elif CIRCUITPY_SHARPDISPLAY
+        1
+        #else
         0
-        #if CIRCUITPY_USB_HID
-        + 1   // hid_report_descriptor_allocation
-        + 1   // hid_devices_allocation
         #endif
-        #if CIRCUITPY_DISPLAYIO
-        #if CIRCUITPY_TERMINALIO
-        + 1
-        #endif
-        + CIRCUITPY_DISPLAY_LIMIT * (
-            // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
-            #if CIRCUITPY_RGBMATRIX
-            4
-            #elif CIRCUITPY_SHARPDISPLAY
-            1
-            #else
-            0
-            #endif
-            )
-        #endif
+        )
+    #endif
     ,
+
     CIRCUITPY_SUPERVISOR_ALLOC_COUNT = CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT + CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT
 };
 

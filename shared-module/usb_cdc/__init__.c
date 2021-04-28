@@ -213,10 +213,9 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_cdc_descriptor_template);
 }
 
-// Called only once, before boot.py
-void usb_cdc_init_usb(void) {
-    usb_cdc_repl_is_enabled = true;
-    usb_cdc_data_is_enabled = false;
+void usb_cdc_pre_boot_py(void) {
+    usb_cdc_repl_is_enabled = CIRCUITPY_USB_CDC_REPL_ENABLED_DEFAULT;
+    usb_cdc_data_is_enabled = CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT;
 }
 
 bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {

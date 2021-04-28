@@ -85,6 +85,23 @@ static size_t total_hid_report_descriptor_length;
 static supervisor_allocation *hid_devices_allocation;
 static mp_int_t hid_devices_num;
 
+static mp_obj_tuple_t default_hid_devices_tuple = {
+    .base = {
+        .type = &mp_type_tuple,
+    },
+    .len = 3,
+    .items = {
+        MP_OBJ_FROM_PTR(&usb_hid_device_keyboard_obj),
+        MP_OBJ_FROM_PTR(&usb_hid_device_mouse_obj),
+        MP_OBJ_FROM_PTR(&usb_hid_device_consumer_control_obj),
+    },
+};
+
+void usb_hid_pre_boot_py(void) {
+    usb_hid_is_enabled = true;
+    common_hal_usb_hid_configure_usb(&default_hid_devices_tuple);
+}
+
 // This is the interface descriptor, not the report descriptor.
 size_t usb_hid_descriptor_length(void) {
     return sizeof(usb_hid_descriptor_template);
@@ -122,23 +139,6 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_hid_descriptor_template);
 }
 
-static mp_rom_obj_tuple_t default_hid_devices_tuple = {
-    .base = {
-        .type = &mp_type_tuple,
-    },
-    .len = 3,
-    .items = {
-        MP_OBJ_FROM_PTR(&usb_hid_device_keyboard_obj),
-        MP_OBJ_FROM_PTR(&usb_hid_device_mouse_obj),
-        MP_OBJ_FROM_PTR(&usb_hid_device_consumer_control_obj),
-    },
-};
-
-// Set the default list of devices that will be included. Called before boot.py runs, in the boot.py VM.
-void common_hal_usb_hid_configure_usb_defaults(void) {
-    common_hal_usb_hid_configure_usb(&default_hid_devices_tuple);
-}
-
 bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
@@ -148,11 +148,6 @@ bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
     // Remember the devices for use in usb_hid_post_boot_py.
     hid_devices_seq = devices;
     return true;
-}
-
-// Called only once, before boot.py
-void usb_hid_init_usb(void) {
-    usb_hid_is_enabled = true;
 }
 
 // Build the combined HID report descriptor and save the chosen devices.
@@ -220,11 +215,6 @@ void usb_hid_post_boot_py(void) {
 }
 
 void usb_hid_gc_collect(void) {
-    if (tud_mounted()) {
-        // Once tud_mounted() is true, we're done with the constructed descriptors.
-        free_memory(hid_report_descriptor_allocation);
-    }
-
     gc_collect_ptr(hid_devices_seq);
     gc_collect_ptr(hid_report_descriptor_allocation->ptr);
     gc_collect_ptr(hid_devices_allocation->ptr);

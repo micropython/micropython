@@ -79,8 +79,8 @@ static const uint8_t usb_msc_descriptor_template[] = {
 // Is the MSC device enabled?
 bool storage_usb_is_enabled;
 
-void storage_init_usb(void) {
-    storage_usb_is_enabled = true;
+void storage_pre_boot_py(void) {
+    storage_usb_is_enabled = CIRCUITPY_USB_MSC_ENABLED_DEFAULT;
 }
 
 bool storage_usb_enabled(void) {

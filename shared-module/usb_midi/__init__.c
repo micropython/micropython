@@ -159,6 +159,10 @@ static const uint8_t usb_midi_descriptor_template[] = {
 // Is the USB MIDI device enabled?
 static bool usb_midi_is_enabled;
 
+void usb_midi_pre_boot_py(void) {
+    usb_midi_is_enabled = CIRCUITPY_USB_MIDI_ENABLED_DEFAULT;
+}
+
 bool usb_midi_enabled(void) {
     return usb_midi_is_enabled;
 }
@@ -208,35 +212,32 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
     return sizeof(usb_midi_descriptor_template);
 }
 
+static const usb_midi_portin_obj_t midi_portin_obj = {
+    .base = {
+        .type = &usb_midi_portin_type,
+    },
+};
 
-// Called once, before
-void usb_midi_init_usb(void) {
-    usb_midi_is_enabled = true;
-}
-
-// Called before REPL or code.py
-void usb_midi_setup(void) {
-    mp_obj_tuple_t *ports;
-
-    if (usb_midi_is_enabled) {
-        // Make these objects long-lived, because they will not be going away.
-
-        usb_midi_portin_obj_t *in = gc_alloc(sizeof(usb_midi_portin_obj_t), false, true);
-        in->base.type = &usb_midi_portin_type;
-
-        usb_midi_portout_obj_t *out = gc_alloc(sizeof(usb_midi_portout_obj_t), false, true);
-        out->base.type = &usb_midi_portout_type;
-
-        mp_obj_t tuple_items[2] = {
-            MP_OBJ_FROM_PTR(in),
-            MP_OBJ_FROM_PTR(out),
-        };
-
-        ports = mp_obj_new_tuple(2, tuple_items);
-    } else {
-        ports = mp_const_empty_tuple;
+static const usb_midi_portout_obj_t midi_portout_obj = {
+    .base = {
+        .type = &usb_midi_portout_type,
     }
+};
 
+static const mp_rom_obj_tuple_t midi_ports_tuple = {
+    .base = {
+        .type = &mp_type_tuple,
+    },
+    .len = 2,
+    .items = {
+        MP_ROM_PTR(&midi_portin_obj),
+        MP_ROM_PTR(&midi_portout_obj),
+    },
+};
+
+
+void usb_midi_post_boot_py(void) {
+    mp_obj_tuple_t *ports = usb_midi_is_enabled ? MP_OBJ_FROM_PTR(&midi_ports_tuple) : mp_const_empty_tuple;
     mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value =
         MP_OBJ_FROM_PTR(ports);
 }

@@ -35,7 +35,6 @@ extern mp_obj_tuple_t common_hal_usb_hid_devices;
 
 void usb_hid_set_devices(mp_obj_t devices);
 
-void common_hal_usb_hid_configure_usb_defaults(void);
 bool common_hal_usb_hid_configure_usb(mp_obj_t devices_seq);
 
 #endif // SHARED_BINDINGS_USB_HID_H
