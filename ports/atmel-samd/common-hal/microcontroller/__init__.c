@@ -268,6 +268,24 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
 #if defined(PIN_PB23) && !defined(IGNORE_PIN_PB23)
     { MP_ROM_QSTR(MP_QSTR_PB23), MP_ROM_PTR(&pin_PB23) },
 #endif
+#if defined(PIN_PB24) && !defined(IGNORE_PIN_PB24)
+    { MP_ROM_QSTR(MP_QSTR_PB24), MP_ROM_PTR(&pin_PB24) },
+#endif
+#if defined(PIN_PB25) && !defined(IGNORE_PIN_PB25)
+    { MP_ROM_QSTR(MP_QSTR_PB25), MP_ROM_PTR(&pin_PB25) },
+#endif
+#if defined(PIN_PB26) && !defined(IGNORE_PIN_PB26)
+    { MP_ROM_QSTR(MP_QSTR_PB26), MP_ROM_PTR(&pin_PB26) },
+#endif
+#if defined(PIN_PB27) && !defined(IGNORE_PIN_PB27)
+    { MP_ROM_QSTR(MP_QSTR_PB27), MP_ROM_PTR(&pin_PB27) },
+#endif
+#if defined(PIN_PB28) && !defined(IGNORE_PIN_PB28)
+    { MP_ROM_QSTR(MP_QSTR_PB28), MP_ROM_PTR(&pin_PB28) },
+#endif
+#if defined(PIN_PB29) && !defined(IGNORE_PIN_PB29)
+    { MP_ROM_QSTR(MP_QSTR_PB29), MP_ROM_PTR(&pin_PB29) },
+#endif
 #if defined(PIN_PB30) && !defined(IGNORE_PIN_PB30)
     { MP_ROM_QSTR(MP_QSTR_PB30), MP_ROM_PTR(&pin_PB30) },
 #endif
