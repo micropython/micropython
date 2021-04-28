@@ -316,7 +316,7 @@ definition as shown in the following example:
     :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
 
 
-To include references to CircuitPython modules cookiecutter creates an entry in the
+To include references to CircuitPython modules, cookiecutter creates an entry in the
 intersphinx_mapping entry in the ``conf.py`` file located within the ``docs`` directory.
 To add different types outside CircuitPython you need to add more definition to intersphinx_mapping::
 
