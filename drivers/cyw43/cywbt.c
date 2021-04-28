@@ -149,10 +149,14 @@ STATIC int cywbt_download_firmware(const uint8_t *firmware) {
     }
 
     // RF switch must select high path during BT patch boot
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     mp_hal_pin_config(pyb_pin_WL_GPIO_1, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    #endif
     mp_hal_delay_ms(10); // give some time for CTS to go high
     cywbt_wait_cts_low();
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     mp_hal_pin_config(pyb_pin_WL_GPIO_1, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_DOWN, 0); // Select chip antenna (could also select external)
+    #endif
 
     mp_bluetooth_hci_uart_set_baudrate(115200);
     cywbt_set_baudrate(3000000);
@@ -170,9 +174,11 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_output(pyb_pin_BT_DEV_WAKE);
     mp_hal_pin_low(pyb_pin_BT_DEV_WAKE);
 
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     // TODO don't select antenna if wifi is enabled
     mp_hal_pin_config(pyb_pin_WL_GPIO_4, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0); // RF-switch power
     mp_hal_pin_high(pyb_pin_WL_GPIO_4); // Turn the RF-switch on
+    #endif
 
     uint8_t buf[256];
 
