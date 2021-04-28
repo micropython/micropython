@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-07 12:23+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Reza Almanda <rezaalmanda27@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -1662,11 +1662,11 @@ msgstr "Hanya 8 atau 16 bit mono dengan "
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Hanya alamat IPv4 yang didukung"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Hanysa socket IPv4 yang didukung"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1707,15 +1707,15 @@ msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Waktu habis"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Kehabisan memori"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Kehabisan socket"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
@@ -1761,7 +1761,7 @@ msgstr "ParallelBus belum didukung"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Periferal sedang digunakan"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1773,7 +1773,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Jumlah pin terlalu besar"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1815,7 +1815,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
-msgstr ""
+msgstr "Pin harus berurutan"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -4239,11 +4239,11 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi tidak diaktifkan"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "jendela harus <= interval"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
