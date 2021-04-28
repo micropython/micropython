@@ -296,7 +296,7 @@ Renders as:
 Parameters Documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Although there are different ways to document class and functions definitions in Python,
-the following is the prevalent method of doing parameters documentations
+the following is the prevalent method of documenting parameters
 for CircuitPython libraries. When documenting class parameters you should use the
 following structure:
 
