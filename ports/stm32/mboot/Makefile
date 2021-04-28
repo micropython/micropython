@@ -128,6 +128,7 @@ SRC_C += \
 	ports/stm32/flash.c \
 	ports/stm32/flashbdev.c \
 	ports/stm32/i2cslave.c \
+	ports/stm32/machine_adc.c \
 	ports/stm32/powerctrlboot.c \
 	ports/stm32/qspi.c \
 	ports/stm32/spibdev.c \
