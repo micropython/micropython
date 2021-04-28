@@ -1504,6 +1504,10 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to wrap functions with attributes                        */
 
+#ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
+#define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) f
+#endif
+
 #ifndef MICROPY_WRAP_MP_KEYBOARD_INTERRUPT
 #define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) f
 #endif

@@ -64,6 +64,7 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
+void mp_sched_exception(mp_obj_t exc);
 void mp_keyboard_interrupt(void);
 void mp_handle_pending(bool raise_exc);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
