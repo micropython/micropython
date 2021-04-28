@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2021 Junji Sakai
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +25,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
 
-#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 8
+#include "common-hal/alarm/SleepMemory.h"
 
-#include "py/obj.h"
+typedef enum {
+    NRF_SLEEP_WAKEUP_UNDEFINED,
+    NRF_SLEEP_WAKEUP_GPIO,
+    NRF_SLEEP_WAKEUP_TIMER,
+    NRF_SLEEP_WAKEUP_TOUCHPAD,
+    NRF_SLEEP_WAKEUP_VBUS,
+    NRF_SLEEP_WAKEUP_RESETPIN,
+    NRF_SLEEP_WAKEUP_ZZZ
+} nrf_sleep_source_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    // Stores no state currently.
-} mcu_processor_obj_t;
+extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
-extern uint32_t reset_reason_saved;
+enum {
+    SLEEPMEM_WAKEUP_BY_NONE  = 0,
+    SLEEPMEM_WAKEUP_BY_PIN   = 1,
+    SLEEPMEM_WAKEUP_BY_TIMER = 2,
+};
+#define WAKEUP_PIN_UNDEF 0xFF
+extern uint8_t sleepmem_wakeup_event;
+extern uint8_t sleepmem_wakeup_pin;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+extern void alarm_reset(void);
+
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM__INIT__H
