@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-24 14:29+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -3187,11 +3187,11 @@ msgstr "identifiant redéfini comme nonlocal"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "Fichier .mpy incompatible"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "architecture native .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3315,7 +3315,7 @@ msgstr "interval doit être dans la portée %s-%s"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "architecture invalide"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
