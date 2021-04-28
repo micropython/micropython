@@ -91,7 +91,7 @@ bool alarm_pin_pinalarm_woke_us_up(void) {
 
 mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
@@ -124,7 +124,7 @@ void alarm_pin_pinalarm_reset(void) {
 // Deep sleep alarms don't actually make use of EXTI, but we pretend they're the same.
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
             if (deep_sleep) {
                 // Deep sleep only wakes on a rising edge from one pin, WKUP (PA00)
