@@ -338,7 +338,7 @@ Parameter name used in the class or method definition
 
 Parameter_description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Parameter description. When the parameter defaults to a particular values, it is a good
+Parameter description. When the parameter defaults to a particular value, it is good
 practice to mention this::
 
     :param int pitch: Pitch value for the servo. Defaults to :const:`4500`
