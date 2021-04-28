@@ -296,24 +296,28 @@ Renders as:
 Parameters Documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Although there are different ways to document class and functions definitions in Python,
-the following is the prevalent method of doing paramaters documenations
+the following is the prevalent method of doing parameters documentations
 for CircuitPython libraries. When documenting class parameters you should use the
-following structure::
+following structure:
 
-    :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to
+.. code-block:: sh
+
+    :param param_type param_name: Parameter_description
 
 
 param_type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Type of the parameter. This could be amon other ``int``, ``float``, ``str`` ``bool``, etc.
+Type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
 When referring to different objects in the CircuitPython domain you need to include the reference
-by adding a `~` before the definition as shown in the following example::
+by adding a ``~`` before the definition as shown in the following example:
+
+.. code-block:: sh
 
     :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
 
 
 To include references to CircuitPython modules cookiecutter creates an entry in the
-intersphinx_mapping entry in the `conf.py` file located within the `docs` directory.
+intersphinx_mapping entry in the ``conf.py`` file located within the ``docs`` directory.
 To add different types outside CircuitPython you need to add more definition to intersphinx_mapping::
 
 
