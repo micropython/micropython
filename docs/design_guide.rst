@@ -318,7 +318,7 @@ definition as shown in the following example:
 
 To include references to CircuitPython modules, cookiecutter creates an entry in the
 intersphinx_mapping section in the ``conf.py`` file located within the ``docs`` directory.
-To add different types outside CircuitPython you need to add more definition to intersphinx_mapping::
+To add different types outside CircuitPython you need to include them in the intersphinx_mapping::
 
 
     intersphinx_mapping = {
