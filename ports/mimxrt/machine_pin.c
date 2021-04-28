@@ -142,6 +142,12 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+STATIC mp_obj_t machine_pin_value(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_value_obj, machine_pin_value);
+
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // TODO: Implement class locals dictionary
@@ -150,6 +156,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
