@@ -307,7 +307,7 @@ following structure:
 
 param_type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
+The type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
 To document an object in the CircuitPython domain, you need to include a ``~`` before the 
 definition as shown in the following example:
 
