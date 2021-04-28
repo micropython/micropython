@@ -21,7 +21,7 @@
 #include "zephyr_getchar.h"
 
 extern int mp_interrupt_char;
-void mp_keyboard_interrupt(void);
+void mp_sched_keyboard_interrupt(void);
 
 static struct k_sem uart_sem;
 #define UART_BUFSIZE 256
@@ -36,7 +36,7 @@ static int console_irq_input_hook(uint8_t ch)
         return 1;
     }
     if (ch == mp_interrupt_char) {
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         return 1;
     } else {
         uart_ringbuf[i_put] = ch;
