@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-24 14:29+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3139,11 +3139,11 @@ msgstr "identifieraren omdefinierad som icke-lokal"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "inkompatibel .mpy-fil"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "inkompatibel nativ .mpy-arkitektur"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3266,7 +3266,7 @@ msgstr "interval måste vara i intervallet %s-%s"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "ogiltig arkitektur"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
