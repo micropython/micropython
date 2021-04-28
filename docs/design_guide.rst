@@ -308,8 +308,8 @@ following structure:
 param_type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
-When referring to different objects in the CircuitPython domain you need to include the reference
-by adding a ``~`` before the definition as shown in the following example:
+To document an object in the CircuitPython domain, you need to include a ``~`` before the 
+definition as shown in the following example:
 
 .. code-block:: sh
 
