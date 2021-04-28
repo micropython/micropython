@@ -111,7 +111,6 @@ void mp_task(void *pvParameter) {
     size_t mp_task_heap_size;
     size_t esp_spiram_size = esp_spiram_get_size();
     void *mp_task_heap = (void *)0x3ff80000 - esp_spiram_size;
-    // printf("inside CONFIG_ESP32S2_SPIRAM_SUPPORT ram=%d\n", esp_spiram_size);
     if ( esp_spiram_size > 0 )
         mp_task_heap_size = esp_spiram_size;
     else

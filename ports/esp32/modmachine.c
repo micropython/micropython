@@ -39,15 +39,12 @@
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
 #include "esp32/clk.h"
-// #include "driver/touch_pad.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
 #include "esp32s2/clk.h"
-// #include "driver/touch_pad.h"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
 #include "esp32s3/clk.h"
-// #include "driver/touch_pad.h"
 #endif
 
 #include "py/obj.h"
