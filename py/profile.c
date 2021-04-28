@@ -298,9 +298,7 @@ STATIC mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
     mp_prof_is_executing = false;
 
     if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(obj);
+        mp_handle_pending(true);
     }
     return top;
 }
