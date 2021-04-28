@@ -55,7 +55,7 @@ STATIC void cywbt_wait_cts_low(void) {
         }
         mp_hal_delay_ms(1);
     }
-    mp_hal_pin_config_alt_static(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_USART6_CTS);
+    mp_hal_pin_config_alt(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_UART, mp_bluetooth_hci_uart_obj.uart_id);
 }
 
 STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
