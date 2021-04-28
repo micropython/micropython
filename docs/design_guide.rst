@@ -238,10 +238,33 @@ Module description
 After the license comment::
 
     """
-    `<module name>` - <Short description>
+    `<module name>`
     =================================================
-    <Longer description.>
+
+    <Longer description>
+
+    * Author(s):
+
+    Implementation Notes
+    --------------------
+
+
+    **Hardware:**
+
+    * Adafruit `Device Description
+      <hyperlink>`_ (Product ID: <Product Number>)
+
+    **Software and Dependencies:**
+
+    * Adafruit CircuitPython firmware for the supported boards:
+      https://circuitpython.org/downloads
+    * Adafruit's Bus Device library:
+      https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+    * Adafruit's Register library:
+      https://github.com/adafruit/Adafruit_CircuitPython_Register
+
     """
+
 
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -268,6 +291,54 @@ Renders as:
 
     :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
     :param int address: The I2C address of the device. Defaults to :const:`0x40`
+
+
+Parameters Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Although there are different ways to document class and functions definitions in Python,
+the following is the prevalent method of doing paramaters documenations
+for CircuitPython libraries. When documenting class parameters you should use the
+following structure::
+
+    :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to
+
+
+param_type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Type of the parameter. This could be amon other ``int``, ``float``, ``str`` ``bool``, etc.
+When referring to different objects in the CircuitPython domain you need to include the reference
+by adding a `~` before the definition as shown in the following example::
+
+    :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
+
+
+To include references to CircuitPython modules cookiecutter creates an entry in the
+intersphinx_mapping entry in the `conf.py` file located within the `docs` directory.
+To add different types outside CircuitPython you need to add more definition to intersphinx_mapping::
+
+
+    intersphinx_mapping = {
+        "python": ("https://docs.python.org/3.4", None),
+        "BusDevice":("https://circuitpython.readthedocs.io/projects/busdevice/en/latest/", None,),
+        "CircuitPython": ("https://circuitpython.readthedocs.io/en/latest/", None),
+    }
+
+The inthersphinx_mapping above include reference to the Python, BusDevice and CircuitPython
+Documentation
+
+
+param_name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter name used in the class or method definition
+
+
+Parameter_description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter description. When the parameter defaults to a particular values, it is a good
+practice to mention this::
+
+    :param int pitch: Pitch value for the servo. Defaults to :const:`4500`
+
 
 Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -382,6 +453,14 @@ Renders as:
   Turns the bot ``degrees`` right.
 
   :param float degrees: Degrees to turn right
+
+Documentation References to other Libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When you need to make references to documentation in other libraries you should refer the class using single
+backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the reference in the ``conf.py`` file in the
+``intersphinx_mapping section`` by adding a new entry::
+
+    "adafruit_motor": ("https://circuitpython.readthedocs.io/projects/motor/en/latest/", None,),
 
 Use BusDevice
 --------------------------------------------------------------------------------
