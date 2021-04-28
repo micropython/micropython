@@ -85,7 +85,8 @@ CFLAGS += -DBUILDING_MBOOT=$(BUILDING_MBOOT)
 CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
-LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
+MBOOT_LD_FILES ?= stm32_memory.ld stm32_sections.ld
+LDFLAGS = -nostdlib -L . $(addprefix -T,$(MBOOT_LD_FILES)) -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
