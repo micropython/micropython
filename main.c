@@ -170,12 +170,6 @@ STATIC void start_mp(supervisor_allocation* heap) {
     #if CIRCUITPY_NETWORK
     network_module_init();
     #endif
-
-    #if CIRCUITPY_USB_HID
-    if (usb_enabled()) {
-        usb_hid_setup_devices();
-    }
-    #endif
 }
 
 STATIC void stop_mp(void) {

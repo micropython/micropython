@@ -83,6 +83,9 @@ static supervisor_allocation *hid_report_descriptor_allocation;
 static usb_hid_device_obj_t hid_devices[MAX_HID_DEVICES];
 static mp_int_t hid_devices_num;
 
+// This tuple is store in usb_hid.devices.
+static mp_obj_tuple_t *hid_devices_tuple;
+
 static mp_obj_tuple_t default_hid_devices_tuple = {
     .base = {
         .type = &mp_type_tuple,
@@ -132,6 +135,19 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_hid_descriptor_template);
 }
 
+// Make up a fresh tuple containing the device objects saved in the static
+// devices table. Save the tuple in usb_hid.devices.
+static void usb_hid_set_devices_from_hid_devices(void) {
+    mp_obj_t tuple_items[hid_devices_num];
+    for (mp_int_t i = 0; i < hid_devices_num; i++) {
+        tuple_items[i] = &hid_devices[i];
+    }
+
+    // Remember tuple for gc purposes.
+    hid_devices_tuple = mp_obj_new_tuple(hid_devices_num, tuple_items);
+    usb_hid_set_devices(hid_devices_tuple);
+}
+
 bool common_hal_usb_hid_configure_usb(const mp_obj_t devices) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
@@ -151,20 +167,16 @@ bool common_hal_usb_hid_configure_usb(const mp_obj_t devices) {
         memcpy(&hid_devices[i], device, sizeof(usb_hid_device_obj_t));
     }
 
+    usb_hid_set_devices_from_hid_devices();
+
     return true;
 }
 
+// Called when HID devices are ready to be used, when code.py or the REPL starts running.
 void usb_hid_setup_devices(void) {
-    // Make up a fresh tuple containing the device objects are saved in the static
-    // devices table. Save the tuple in usb_hid.devices.
+    usb_hid_set_devices_from_hid_devices();
 
-    mp_obj_t tuple_items[hid_devices_num];
-    for (mp_int_t i = 0; i < hid_devices_num; i++) {
-        tuple_items[i] = &hid_devices[i];
-    }
-    usb_hid_set_devices(mp_obj_new_tuple(hid_devices_num, tuple_items));
-
-    // Create report buffers on the heap.
+   // Create report buffers on the heap.
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
         usb_hid_device_create_report_buffers(&hid_devices[i]);
     }
@@ -174,10 +186,7 @@ void usb_hid_setup_devices(void) {
 size_t usb_hid_report_descriptor_length(void) {
     size_t total_hid_report_descriptor_length = 0;
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
-        // hid_devices has already been validated to contain only usb_hid_device_obj_t objects.
-        usb_hid_device_obj_t *device =
-            MP_OBJ_TO_PTR(mp_obj_subscr(hid_devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
-        total_hid_report_descriptor_length += device->report_descriptor_length;
+        total_hid_report_descriptor_length += hid_devices[i].report_descriptor_length;
     }
 
     // Don't need space for a report id if there's only one device.
@@ -205,9 +214,15 @@ void usb_hid_build_report_descriptor(uint8_t* report_descriptor_space, size_t re
             // Copy the whole descriptor and fill in the report id.
             memcpy(report_descriptor_start, device->report_descriptor, device->report_descriptor_length);
             report_descriptor_start[device->report_id_index] = i + 1;
+
+            // Remember the report id that was assigned.
+            device->report_id = i + 1;
+
+            // Advance to the next free chunk for the next report descriptor.x
             report_descriptor_start += device->report_descriptor_length;
         }
         // Clear the heap pointer to the bytes of the descriptor.
+        // We don't need it any more and it will get lost when the heap goes away.
         device->report_descriptor = NULL;
     }
 }
@@ -220,11 +235,14 @@ void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t rep
     // Copy the descriptor from the temporary area to a supervisor storage allocation that
     // will leave between VM instantiations.
     hid_report_descriptor_allocation =
-        allocate_memory(report_descriptor_length, /*high_address*/ false, /*movable*/ false);
+        allocate_memory(align32_size(report_descriptor_length),
+                        /*high_address*/ false, /*movable*/ false);
     memcpy((uint8_t *) hid_report_descriptor_allocation->ptr, report_descriptor_space, report_descriptor_length);
 }
 
 void usb_hid_gc_collect(void) {
+    gc_collect_ptr(hid_devices_tuple);
+
     // Mark any heap pointers in the static device list as in use.
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
         gc_collect_ptr(&hid_devices[i]);

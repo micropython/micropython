@@ -63,9 +63,9 @@ static interface_string_t collected_interface_strings[MAX_INTERFACE_STRINGS];
 static size_t collected_interface_strings_length;
 static uint8_t current_interface_string;
 
-supervisor_allocation *device_descriptor_allocation;
-supervisor_allocation *configuration_descriptor_allocation;
-supervisor_allocation *string_descriptors_allocation;
+static supervisor_allocation *device_descriptor_allocation;
+static supervisor_allocation *configuration_descriptor_allocation;
+static supervisor_allocation *string_descriptors_allocation;
 
 static const char manufacturer_name[] = USB_MANUFACTURER;
 static const char product_name[] = USB_PRODUCT;
@@ -114,7 +114,8 @@ static const uint8_t configuration_descriptor_template[] = {
 
 static void usb_build_device_descriptor(uint16_t vid, uint16_t pid) {
     device_descriptor_allocation =
-        allocate_memory(sizeof(device_descriptor_template), /*high_address*/ false, /*movable*/ false);
+        allocate_memory(align32_size(sizeof(device_descriptor_template)),
+                        /*high_address*/ false, /*movable*/ false);
     uint8_t *device_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
@@ -170,7 +171,8 @@ static void usb_build_configuration_descriptor(void) {
 
     // Now we now how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor_allocation =
-        allocate_memory(total_descriptor_length, /*high_address*/ false, /*movable*/ false);
+        allocate_memory(align32_size(total_descriptor_length),
+                        /*high_address*/ false, /*movable*/ false);
     uint8_t *configuration_descriptor = (uint8_t *) configuration_descriptor_allocation->ptr;
 
     // Copy the template, which is the first part of the descriptor, and fix up its length.
@@ -248,7 +250,7 @@ static void usb_build_interface_string_table(void) {
     // Allocate space for the le16 String descriptors.
     // Space needed is 2 bytes for String Descriptor header, then 2 bytes for each character
     string_descriptors_allocation =
-        allocate_memory(current_interface_string * 2 + collected_interface_strings_length * 2,
+        allocate_memory(align32_size(current_interface_string * 2 + collected_interface_strings_length * 2),
                         /*high_address*/ false, /*movable*/ false);
     uint16_t *string_descriptors = (uint16_t *) string_descriptors_allocation->ptr;
 
@@ -309,7 +311,7 @@ void usb_build_descriptors(void) {
 // Invoked when GET DEVICE DESCRIPTOR is received.
 // Application return pointer to descriptor
 uint8_t const *tud_descriptor_device_cb(void) {
-    return (uint8_t *) device_descriptor_allocation;
+    return (uint8_t *) device_descriptor_allocation->ptr;
 }
 
 // Invoked when GET CONFIGURATION DESCRIPTOR is received.

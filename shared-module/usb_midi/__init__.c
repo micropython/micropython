@@ -234,6 +234,9 @@ static const mp_rom_obj_tuple_t midi_ports_tuple = {
 };
 
 void usb_midi_setup_ports(void) {
+    // Right now midi_ports_tuple contains no heap objects, but if it does in the future,
+    // it will need to be protected against gc.
+
     mp_obj_tuple_t *ports = usb_midi_is_enabled ? MP_OBJ_FROM_PTR(&midi_ports_tuple) : mp_const_empty_tuple;
     mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value =
         MP_OBJ_FROM_PTR(ports);

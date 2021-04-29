@@ -144,7 +144,13 @@ ifneq ($(USB_VID),)
 CFLAGS += -DUSB_VID=$(USB_VID)
 CFLAGS += -DUSB_PID=$(USB_PID)
 CFLAGS += -DUSB_MANUFACTURER='$(USB_MANUFACTURER)'
+USB_MANUFACTURER_8 := "$(shell echo $(USB_MANUFACTURER) | cut -c 1-8)"
+# Length-limited versions of strings for MSC names.
+CFLAGS += -DUSB_MANUFACTURER_8='$(USB_MANUFACTURER_8)'
+USB_PRODUCT_16 := "$(shell echo $(USB_PRODUCT) | cut -c 1-16)"
+CFLAGS += -DUSB_PRODUCT_16='$(USB_PRODUCT_16)'
 CFLAGS += -DUSB_PRODUCT='$(USB_PRODUCT)'
+
 endif
 
 # In the following URL, don't include the https:// prefix.
@@ -157,6 +163,7 @@ CFLAGS += -DCFG_TUD_CDC=2
 endif
 
 USB_HIGHSPEED ?= 0
+CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
 

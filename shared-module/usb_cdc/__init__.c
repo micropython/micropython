@@ -224,6 +224,9 @@ bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
         return false;
     }
 
+    // Right now these objects contain no heap objects, but if that changes,
+    // they will need to be protected against gc.
+
     usb_cdc_repl_is_enabled = repl_enabled;
     usb_cdc_set_repl(repl_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_repl_obj) : mp_const_none);
 

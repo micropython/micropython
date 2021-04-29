@@ -71,6 +71,9 @@ static const uint8_t keyboard_report_descriptor[] = {
 };
 
 const usb_hid_device_obj_t usb_hid_device_keyboard_obj = {
+    .base = {
+        .type = &usb_hid_device_type,
+    },
     .report_descriptor = keyboard_report_descriptor,
     .report_descriptor_length = sizeof(keyboard_report_descriptor),
     .usage_page = 0x01,
@@ -119,6 +122,9 @@ static const uint8_t mouse_report_descriptor[] = {
 };
 
 const usb_hid_device_obj_t usb_hid_device_mouse_obj = {
+    .base = {
+        .type = &usb_hid_device_type,
+    },
     .report_descriptor = mouse_report_descriptor,
     .report_descriptor_length = sizeof(mouse_report_descriptor),
     .usage_page = 0x01,
@@ -145,6 +151,9 @@ static const uint8_t consumer_control_report_descriptor[] = {
 };
 
 const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
+    .base = {
+        .type = &usb_hid_device_type,
+    },
     .report_descriptor = consumer_control_report_descriptor,
     .report_descriptor_length = sizeof(consumer_control_report_descriptor),
     .usage_page = 0x0C,

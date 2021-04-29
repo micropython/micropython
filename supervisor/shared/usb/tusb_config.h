@@ -59,14 +59,17 @@ extern "C" {
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
 
+#if USB_HIGHSPEED
 #define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE)
+#endif
 
 // Vendor name included in Inquiry response, max 8 bytes
-#define CFG_TUD_MSC_VENDOR          USB_MANUFACTURER
+#define CFG_TUD_MSC_VENDOR          USB_MANUFACTURER_8
 
 // Product name included in Inquiry response, max 16 bytes
-#define CFG_TUD_MSC_PRODUCT         USB_PRODUCT
-
+#define CFG_TUD_MSC_PRODUCT         USB_PRODUCT_16
 #define CFG_TUD_ENDPOINT0_SIZE       64
 
 // ------------- CLASS -------------//
