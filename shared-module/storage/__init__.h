@@ -31,7 +31,7 @@
 
 #if CIRCUITPY_USB
 bool storage_usb_enabled(void);
-void storage_pre_boot_py(void);
+void storage_usb_set_defaults(void);
 size_t storage_usb_descriptor_length(void);
 size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string);
 #endif

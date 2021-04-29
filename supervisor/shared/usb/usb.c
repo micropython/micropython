@@ -84,39 +84,62 @@ void usb_init(void) {
 }
 
 // Set up USB defaults before any USB changes are made in boot.py
-void usb_pre_boot_py(void) {
+void usb_set_defaults(void) {
     #if CIRCUITPY_STORAGE
-    storage_pre_boot_py();
+    storage_usb_set_defaults();
     #endif
 
     #if CIRCUITPY_USB_CDC
-    usb_cdc_pre_boot_py();
+    usb_cdc_set_defaults();
     #endif
 
     #if CIRCUITPY_USB_HID
-    usb_hid_pre_boot_py();
+    usb_hid_set_defaults();
     #endif
 
     #if CIRCUITPY_USB_MIDI
-    usb_midi_pre_boot_py();
+    usb_midi_set_defaults();
     #endif
 };
 
-// Act on USB settings done during boot.py.
-void usb_post_boot_py(void) {
-    #if CIRCUITPY_USB
-    usb_desc_post_boot_py();
-    #endif
-
-    #if CIRCUITPY_USB_MIDI
-    usb_midi_post_boot_py();
-    #endif
+// Some dynamic USB data must be saved after boot.py. How much is needed
+size_t usb_boot_py_data_size(void) {
+    size_t size = 0;
 
     #if CIRCUITPY_USB_HID
-    usb_hid_post_boot_py();
+    size += usb_hid_report_descriptor_length();
+    #endif
+
+    return size;
+}
+
+// Fill in the data to save.
+void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_build_report_descriptor(temp_storage, temp_storage_size);
     #endif
 }
 
+// After VM is gone, save data into non-heap storage (storage_allocations).
+void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_save_report_descriptor(temp_storage, temp_storage_size);
+    #endif
+
+    // Now we can also build the rest of the descriptors and place them in storage_allocations.
+    usb_build_descriptors();
+}
+
+// Call this when ready to run code.py or a REPL, and a VM has been started.
+void usb_setup_with_vm(void) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_setup_devices();
+    #endif
+
+    #if CIRCUITPY_USB_MIDI
+    usb_midi_setup_ports();
+    #endif
+}
 
 void usb_disconnect(void) {
     tud_disconnect();

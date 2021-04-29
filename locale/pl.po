@@ -744,14 +744,6 @@ msgstr ""
 "Połączenie zostało rozłączone i nie można go już używać. Utwórz nowe "
 "połączenie."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Uszkodzony plik .mpy"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr ""
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr ""
@@ -1198,6 +1190,7 @@ msgstr "Nieprawidłowe %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Zła nóżka %q"
@@ -1267,6 +1260,11 @@ msgstr "Zły okres. Poprawny zakres to: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Zła liczba kanałów"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2127,6 +2125,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "By wyjść, proszę zresetować płytkę bez "
@@ -2579,10 +2585,6 @@ msgstr "asembler Thumb może przyjąć do 4 parameterów"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "asembler Xtensa może przyjąć do 4 parameterów"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "można zapisać tylko bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "nie można dodać specjalnej metody do podklasy"
@@ -2808,6 +2810,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3091,6 +3098,14 @@ msgstr "nazwa przedefiniowana jako globalna"
 msgid "identifier redefined as nonlocal"
 msgstr "nazwa przedefiniowana jako nielokalna"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "niepełny format"
@@ -3210,6 +3225,10 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr "interwał musi mieścić się w zakresie %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "złe arguemnty"
@@ -3218,10 +3237,6 @@ msgstr "złe arguemnty"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "zły ceryfikat"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3252,10 +3267,6 @@ msgstr "zła specyfikacja formatu"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "zły klucz"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4266,6 +4277,18 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Uszkodzony plik .mpy"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "można zapisać tylko bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "zły ceryfikat"
+
+#~ msgid "invalid key"
+#~ msgstr "zły klucz"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"

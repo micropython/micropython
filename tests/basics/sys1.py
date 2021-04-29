@@ -25,6 +25,11 @@ except SystemExit as e:
     print("SystemExit", e.args)
 
 try:
+    sys.exit()
+except SystemExit as e:
+    print("SystemExit", e.args)
+
+try:
     sys.exit(42)
 except SystemExit as e:
     print("SystemExit", e.args)

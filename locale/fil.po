@@ -741,14 +741,6 @@ msgid ""
 "connection."
 msgstr ""
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr ""
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr ""
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr ""
@@ -1200,6 +1192,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
@@ -1269,6 +1262,11 @@ msgstr ""
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Maling bilang ng channel"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2134,6 +2132,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
@@ -2589,10 +2595,6 @@ msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Thumb assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "maaring i-save lamang ang bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2824,6 +2826,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3112,6 +3119,14 @@ msgstr "identifier ginawang global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifier ginawang nonlocal"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "hindi kumpleto ang format"
@@ -3231,6 +3246,10 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "mali ang mga argumento"
@@ -3239,10 +3258,6 @@ msgstr "mali ang mga argumento"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "mali ang cert"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3273,10 +3288,6 @@ msgstr "mali ang format specifier"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "mali ang key"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4297,6 +4308,15 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "can only save bytecode"
+#~ msgstr "maaring i-save lamang ang bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "mali ang cert"
+
+#~ msgid "invalid key"
+#~ msgstr "mali ang key"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr ""

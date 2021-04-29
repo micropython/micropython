@@ -156,6 +156,11 @@ static usb_cdc_serial_obj_t usb_cdc_data_obj = {
 static bool usb_cdc_repl_is_enabled;
 static bool usb_cdc_data_is_enabled;
 
+void usb_cdc_set_defaults(void) {
+    usb_cdc_repl_is_enabled = CIRCUITPY_USB_CDC_REPL_ENABLED_DEFAULT;
+    usb_cdc_data_is_enabled = CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT;
+}
+
 bool usb_cdc_repl_enabled(void) {
     return usb_cdc_repl_is_enabled;
 }
@@ -211,11 +216,6 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     (*current_interface_string)++;
 
     return sizeof(usb_cdc_descriptor_template);
-}
-
-void usb_cdc_pre_boot_py(void) {
-    usb_cdc_repl_is_enabled = CIRCUITPY_USB_CDC_REPL_ENABLED_DEFAULT;
-    usb_cdc_data_is_enabled = CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT;
 }
 
 bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {

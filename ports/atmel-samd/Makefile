@@ -126,7 +126,7 @@ ifeq ($(DEBUG), 1)
   # You may want to disable -flto if it interferes with debugging.
   CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
-  # CFLAGS += -fno-inline -fno-ipa-sra
+  CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -302,18 +302,7 @@ SRC_C += \
 	eic_handler.c \
 	fatfs_port.c \
 	freetouch/adafruit_ptc.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/ccsbcs.c \
-	lib/timeutils/timeutils.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
-	lib/utils/buffer_helper.c \
-	lib/utils/context_manager_helpers.c \
-	lib/utils/interrupt_char.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c \
 	mphalport.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/adc.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/cache.c \
@@ -331,7 +320,6 @@ SRC_C += \
 	peripherals/samd/sercom.c \
 	peripherals/samd/timers.c \
 	reset.c \
-	supervisor/shared/memory.c \
 	timer_handler.c \
 
 ifeq ($(CIRCUITPY_SDIOIO),1)
@@ -390,6 +378,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
 ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
+OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 

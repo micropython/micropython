@@ -424,7 +424,7 @@ const mp_obj_type_t busio_spi_type = {
 };
 
 busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &busio_spi_type)) {
+    if (!mp_obj_is_type(obj, &busio_spi_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), busio_spi_type.name);
     }
     return MP_OBJ_TO_PTR(obj);

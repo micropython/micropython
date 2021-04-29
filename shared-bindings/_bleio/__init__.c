@@ -117,7 +117,7 @@ STATIC mp_obj_dict_t bleio_module_globals;
 //|
 mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
     #if CIRCUITPY_BLEIO_HCI
-    if (adapter_obj != mp_const_none && !MP_OBJ_IS_TYPE(adapter_obj, &bleio_adapter_type)) {
+    if (adapter_obj != mp_const_none && !mp_obj_is_type(adapter_obj, &bleio_adapter_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), bleio_adapter_type.name);
     }
 

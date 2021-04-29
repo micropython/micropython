@@ -744,14 +744,6 @@ msgstr ""
 "Verbinding is verbroken en kan niet langer gebruikt worden. Creëer een "
 "nieuwe verbinding."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Corrupt .mpy bestand"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Corrupt raw code"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Kon camera niet initialiseren"
@@ -1199,6 +1191,7 @@ msgstr "Ongeldige %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Ongeldige %q pin"
@@ -1268,6 +1261,11 @@ msgstr "Ongeldige vastlegging periode. Geldig bereik: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Ongeldige kanaal aantallen"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2154,6 +2152,14 @@ msgstr "Tijdstip ligt in het verleden."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Om te beëindigen, reset het bord zonder "
@@ -2611,10 +2617,6 @@ msgstr "kan slechts 4 parameters aan Thumb assembly geven"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan slechts 4 parameters aan Xtensa assembly geven"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "kan alleen byte-code opslaan"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2843,6 +2845,11 @@ msgstr "data moet itereerbaar zijn"
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "data moet van gelijke lengte zijn"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3127,6 +3134,14 @@ msgstr "identifier is opnieuw gedefinieerd als global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifier is opnieuw gedefinieerd als nonlocal"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "incompleet formaat"
@@ -3246,6 +3261,10 @@ msgstr "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 msgid "interval must be in range %s-%s"
 msgstr "interval moet binnen bereik %s-%s vallen"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ongeldige argumenten"
@@ -3254,10 +3273,6 @@ msgstr "ongeldige argumenten"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "ongeldig certificaat"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3288,10 +3303,6 @@ msgstr "ongeldige formaatspecificatie"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "onjuiste hostnaam"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "ongeldige sleutel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4306,6 +4317,21 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Corrupt .mpy bestand"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Corrupt raw code"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan alleen byte-code opslaan"
+
+#~ msgid "invalid cert"
+#~ msgstr "ongeldig certificaat"
+
+#~ msgid "invalid key"
+#~ msgstr "ongeldige sleutel"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"

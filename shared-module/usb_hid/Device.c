@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/__init__.h"
@@ -155,13 +156,17 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 
 
 void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
-    // report buffer pointers are NULL at start, and are created on demand.
-    self->report_descriptor_obj = report_descriptor;
+    // report buffer pointers are NULL at start, and are created when USB is initialized.
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(report_descriptor, &bufinfo, MP_BUFFER_READ);
-    self->report_descriptor = bufinfo.buf;
     self->report_descriptor_length = bufinfo.len;
+
+    // Copy the raw the descriptor bytes into a heap obj. We don't keep the Python descriptor object.
+
+    uint8_t *descriptor_bytes = gc_alloc(bufinfo.len, false, false);
+    memcpy(descriptor_bytes, bufinfo.buf, bufinfo.len);
+    self->report_descriptor = descriptor_bytes;
 
     self->usage_page = usage_page;
     self->usage = usage;
@@ -199,6 +204,17 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
         mp_raise_msg(&mp_type_OSError, translate("USB Error"));
     }
 }
+
+
+void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
+    if (self->in_report_length > 0) {
+        self->in_report_buffer = gc_alloc(self->in_report_length, false, true /*long-lived*/);
+    }
+    if (self->out_report_length > 0) {
+        self->out_report_buffer = gc_alloc(self->out_report_length, false, true /*long-lived*/);
+    }
+}
+
 
 // Callbacks invoked when receive Get_Report request through control endpoint
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {

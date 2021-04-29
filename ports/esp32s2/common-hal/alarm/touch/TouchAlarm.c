@@ -45,7 +45,7 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
 mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match any given alarms.
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
             return alarms[i];
         }
     }
@@ -88,7 +88,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     alarm_touch_touchalarm_obj_t *touch_alarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
             if (deep_sleep && touch_alarm_set) {
                 mp_raise_ValueError(translate("Only one TouchAlarm can be set in deep sleep."));
             }

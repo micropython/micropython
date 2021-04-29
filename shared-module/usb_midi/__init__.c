@@ -37,8 +37,6 @@
 #include "supervisor/usb.h"
 #include "tusb.h"
 
-supervisor_allocation *usb_midi_allocation;
-
 static const uint8_t usb_midi_descriptor_template[] = {
     // Audio Interface Descriptor
     0x09,        //  0 bLength
@@ -159,7 +157,7 @@ static const uint8_t usb_midi_descriptor_template[] = {
 // Is the USB MIDI device enabled?
 static bool usb_midi_is_enabled;
 
-void usb_midi_pre_boot_py(void) {
+void usb_midi_set_defaults(void) {
     usb_midi_is_enabled = CIRCUITPY_USB_MIDI_ENABLED_DEFAULT;
 }
 
@@ -235,8 +233,7 @@ static const mp_rom_obj_tuple_t midi_ports_tuple = {
     },
 };
 
-
-void usb_midi_post_boot_py(void) {
+void usb_midi_setup_ports(void) {
     mp_obj_tuple_t *ports = usb_midi_is_enabled ? MP_OBJ_FROM_PTR(&midi_ports_tuple) : mp_const_empty_tuple;
     mp_map_lookup(&usb_midi_module_globals.map, MP_ROM_QSTR(MP_QSTR_ports), MP_MAP_LOOKUP)->value =
         MP_OBJ_FROM_PTR(ports);

@@ -54,7 +54,7 @@ STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {
     const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
     for (mp_int_t i = 0; i < len; i++) {
         mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        if (!MP_OBJ_IS_TYPE(item, &usb_hid_device_type)) {
+        if (!mp_obj_is_type(item, &usb_hid_device_type)) {
             mp_raise_ValueError_varg(translate("non-Device in %q"), MP_QSTR_devices);
         }
     }

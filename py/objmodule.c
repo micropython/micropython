@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,13 +142,13 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 }
 
 mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
+    assert(mp_obj_is_type(self_in, &mp_type_module));
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     return self->globals;
 }
 
 void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
+    assert(mp_obj_is_type(self_in, &mp_type_module));
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     self->globals = globals;
 }
@@ -258,18 +259,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #endif
     #if MICROPY_PY_USELECT
     { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-    #endif
-    #if MICROPY_PY_USSL
-    { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
-    #endif
-    #if MICROPY_PY_LWIP
-    { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
-    #endif
-    #if MICROPY_PY_WEBSOCKET
-    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
-    #endif
-    #if MICROPY_PY_WEBREPL
-    { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },
     #endif
     #if MICROPY_PY_FRAMEBUF
     { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },

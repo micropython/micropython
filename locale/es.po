@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-22 17:16+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-04-25 18:43+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -757,14 +757,6 @@ msgstr ""
 "La conexión se ha desconectado y ya no se puede usar. Crea una nueva "
 "conexión."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Archivo .mpy corrupto"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Código crudo corrupto"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "No se puede inicializar Camera"
@@ -1219,6 +1211,7 @@ msgstr "%q inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
@@ -1288,6 +1281,11 @@ msgstr "Inválido periodo de captura. Rango válido: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Cuenta de canales inválida"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "data_count inválido %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2180,6 +2178,14 @@ msgstr ""
 "Tiempo de espera demasiado largo: El tiempo máximo de espera es de %d "
 "segundos"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr "Tiempo de espera agotado esperado por DRDY"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr "Tiempo de espera agotado esperando por VSYNC"
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Para salir, por favor reinicia la tarjeta sin "
@@ -2470,7 +2476,7 @@ msgstr "addresses esta vacío"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "la anotación debe ser un identificador"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2637,10 +2643,6 @@ msgstr "solo puede tener hasta 4 parámetros para ensamblar Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "solo puede tener hasta 4 parámetros para ensamblador Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "solo puede almacenar bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "no se puede agregar un método a una clase ya subclasificada"
@@ -2656,7 +2658,7 @@ msgstr "no puede convertir %q a %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "no se puede convertir %q a int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2873,6 +2875,11 @@ msgstr "los datos deben permitir iteración"
 msgid "data must be of equal length"
 msgstr "los datos deben ser de igual tamaño"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "pin de datos #%d en uso"
+
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
 msgstr "tipo de dato no comprendido"
@@ -3081,7 +3088,7 @@ msgstr "lleno"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "la función no toma argumentos de tipo keyword"
 
 #: py/argcheck.c
 #, c-format
@@ -3137,7 +3144,7 @@ msgstr "generador ignorado GeneratorExit"
 
 #: py/objgenerator.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "el generador genero StopIteration"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3154,6 +3161,14 @@ msgstr "identificador redefinido como global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identificador redefinido como nonlocal"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3199,7 +3214,7 @@ msgstr "ensamblador en línea debe ser una función"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr "Formas de entrada y salida no son compactibles"
+msgstr "Formas de entrada y salida no son compatibles"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3274,6 +3289,10 @@ msgstr "interp está definido para arreglos de 1D del mismo tamaño"
 msgid "interval must be in range %s-%s"
 msgstr "el intervalo debe ser der rango %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
@@ -3282,10 +3301,6 @@ msgstr "argumentos inválidos"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "los bits_per_pixel %d no son validos, deben ser 1, 4, 8, 16, 24 o 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificado inválido"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3316,10 +3331,6 @@ msgstr "especificador de formato inválido"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "hostname inválido"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "llave inválida"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3524,7 +3535,7 @@ msgstr "necesita más de %d valores para descomprimir"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "factorial negativo"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -4338,6 +4349,21 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Archivo .mpy corrupto"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Código crudo corrupto"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "solo puede almacenar bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificado inválido"
+
+#~ msgid "invalid key"
+#~ msgstr "llave inválida"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "funciones Viper no soportan por el momento, más de 4 argumentos"

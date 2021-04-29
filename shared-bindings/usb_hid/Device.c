@@ -99,7 +99,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     if (out_report_length_arg == mp_const_none) {
         self->out_report_length = 0;
     }
-    else if (!MP_OBJ_IS_SMALL_INT(out_report_length_arg) ||
+    else if (!mp_obj_is_small_int(out_report_length_arg) ||
              MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
              MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
         mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_out_report_length);
@@ -110,7 +110,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     if (report_id_index_arg == mp_const_none) {
         self->report_id_index = 0;
     }
-    else if (!MP_OBJ_IS_SMALL_INT(report_id_index_arg) ||
+    else if (!mp_obj_is_small_int(report_id_index_arg) ||
              MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) <= 0 ||
              MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) > 255 ) {
         mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);

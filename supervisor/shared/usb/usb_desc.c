@@ -283,10 +283,8 @@ static void usb_build_interface_string_table(void) {
 }
 
 // After boot.py runs, the USB devices to be used have been chosen, and the descriptors can be set up.
-// This should be called before the heap is destroyed, so that any objects in the heap,
-// such as
-// can be used.
-void usb_desc_post_boot_py(void) {
+// This is called after the VM is finished, because it uses storage_allocations.
+void usb_build_descriptors(void) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 

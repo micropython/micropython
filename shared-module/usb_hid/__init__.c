@@ -29,6 +29,7 @@
 #include "tusb.h"
 
 #include "py/gc.h"
+#include "py/runtime.h"
 #include "shared-bindings/usb_hid/__init__.h"
 #include "shared-module/usb_hid/Device.h"
 #include "supervisor/memory.h"
@@ -73,16 +74,13 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x08,        // 31 bInterval 8 (unit depends on device speed)
 };
 
-// Sequence of devices to configure. Passed to usb_hid.configure_usb().
-// Not used after boot.py finishes and VM restarts.
-static mp_obj_t hid_devices_seq;
-
 // Is the HID device enabled?
 static bool usb_hid_is_enabled;
 
+#define MAX_HID_DEVICES 8
+
 static supervisor_allocation *hid_report_descriptor_allocation;
-static size_t total_hid_report_descriptor_length;
-static supervisor_allocation *hid_devices_allocation;
+static usb_hid_device_obj_t hid_devices[MAX_HID_DEVICES];
 static mp_int_t hid_devices_num;
 
 static mp_obj_tuple_t default_hid_devices_tuple = {
@@ -97,23 +95,18 @@ static mp_obj_tuple_t default_hid_devices_tuple = {
     },
 };
 
-void usb_hid_pre_boot_py(void) {
-    usb_hid_is_enabled = true;
-    common_hal_usb_hid_configure_usb(&default_hid_devices_tuple);
+bool usb_hid_enabled(void) {
+    return usb_hid_is_enabled;
+}
+
+void usb_hid_set_defaults(void) {
+    usb_hid_is_enabled = CIRCUITPY_USB_HID_ENABLED_DEFAULT;
+    common_hal_usb_hid_configure_usb(usb_hid_is_enabled ? &default_hid_devices_tuple : mp_const_empty_tuple);
 }
 
 // This is the interface descriptor, not the report descriptor.
 size_t usb_hid_descriptor_length(void) {
     return sizeof(usb_hid_descriptor_template);
-}
-
-// Total length of the report descriptor, with all configured devices.
-size_t usb_hid_report_descriptor_length(void) {
-    return total_hid_report_descriptor_length;
-}
-
-bool usb_hid_enabled(void) {
-    return usb_hid_is_enabled;
 }
 
 static const char usb_hid_interface_name[] =  USB_INTERFACE_NAME " HID";
@@ -139,31 +132,51 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     return sizeof(usb_hid_descriptor_template);
 }
 
-bool common_hal_usb_hid_configure_usb(mp_obj_t devices) {
+bool common_hal_usb_hid_configure_usb(const mp_obj_t devices) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
         return false;
     }
 
-    // Remember the devices for use in usb_hid_post_boot_py.
-    hid_devices_seq = devices;
+    hid_devices_num = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices));
+    if (hid_devices_num > MAX_HID_DEVICES) {
+        mp_raise_ValueError_varg(translate("No more than %d HID devices allowed"), MAX_HID_DEVICES);
+    }
+
+    // Remember the devices in static storage so they live across VMs.
+    for (mp_int_t i = 0; i < hid_devices_num; i++) {
+        // devices has already been validated to contain only usb_hid_device_obj_t objects.
+        usb_hid_device_obj_t *device =
+            MP_OBJ_TO_PTR(mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+        memcpy(&hid_devices[i], device, sizeof(usb_hid_device_obj_t));
+    }
+
     return true;
 }
 
-// Build the combined HID report descriptor and save the chosen devices.
-// Both are saved in supervisor allocations.
-void usb_hid_post_boot_py(void) {
+void usb_hid_setup_devices(void) {
+    // Make up a fresh tuple containing the device objects are saved in the static
+    // devices table. Save the tuple in usb_hid.devices.
 
-    // Build a combined report descriptor
-
-    hid_devices_num = mp_obj_get_int(mp_obj_len(hid_devices_seq));
-
-    // First get the total size.
-    total_hid_report_descriptor_length = 0;
+    mp_obj_t tuple_items[hid_devices_num];
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
-        // hid_devices_seq has already been validated to contain only usb_hid_device_obj_t objects.
+        tuple_items[i] = &hid_devices[i];
+    }
+    usb_hid_set_devices(mp_obj_new_tuple(hid_devices_num, tuple_items));
+
+    // Create report buffers on the heap.
+    for (mp_int_t i = 0; i < hid_devices_num; i++) {
+        usb_hid_device_create_report_buffers(&hid_devices[i]);
+    }
+}
+
+// Total length of the report descriptor, with all configured devices.
+size_t usb_hid_report_descriptor_length(void) {
+    size_t total_hid_report_descriptor_length = 0;
+    for (mp_int_t i = 0; i < hid_devices_num; i++) {
+        // hid_devices has already been validated to contain only usb_hid_device_obj_t objects.
         usb_hid_device_obj_t *device =
-            MP_OBJ_TO_PTR(mp_obj_subscr(hid_devices_seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+            MP_OBJ_TO_PTR(mp_obj_subscr(hid_devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
         total_hid_report_descriptor_length += device->report_descriptor_length;
     }
 
@@ -171,25 +184,15 @@ void usb_hid_post_boot_py(void) {
     if (hid_devices_num == 1) {
         total_hid_report_descriptor_length -= 2;
     }
+    return total_hid_report_descriptor_length;
+}
 
-    // Allocate storage that persists across VMs to build the combined report descriptor
-    // and to remember the device details.
-
-    hid_report_descriptor_allocation =
-        allocate_memory(align32_size(total_hid_report_descriptor_length),
-                        false /*highaddress*/, true /*movable*/);
-
-    hid_devices_allocation =
-        allocate_memory(align32_size(sizeof(usb_hid_device_obj_t) * hid_devices_num),
-                        false /*highaddress*/, true /*movable*/);
-    usb_hid_device_obj_t *hid_devices = (usb_hid_device_obj_t *) hid_devices_allocation->ptr;
-
-    uint8_t *report_descriptor_start = (uint8_t *) hid_report_descriptor_allocation->ptr;
+// Build the combined HID report descriptor in the given space.
+void usb_hid_build_report_descriptor(uint8_t* report_descriptor_space, size_t report_descriptor_length) {
+    uint8_t *report_descriptor_start = report_descriptor_space;
 
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
-        usb_hid_device_obj_t *device =
-            MP_OBJ_TO_PTR(mp_obj_subscr(hid_devices_seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
-
+        usb_hid_device_obj_t *device = &hid_devices[i];
         // Copy the report descriptor for this device.
         if (hid_devices_num == 1) {
             // Theres only one device, so it shouldn't have a report ID.
@@ -204,37 +207,43 @@ void usb_hid_post_boot_py(void) {
             report_descriptor_start[device->report_id_index] = i + 1;
             report_descriptor_start += device->report_descriptor_length;
         }
-
-        // Copy the device data and discard any descriptor-bytes object pointer.
-        memcpy(&hid_devices[i], device, sizeof(usb_hid_device_obj_t));
-        hid_devices[i].report_descriptor_obj = mp_const_none;
+        // Clear the heap pointer to the bytes of the descriptor.
+        device->report_descriptor = NULL;
     }
+}
 
-    // No longer keeping the Python object of devices to configure.
-    hid_devices_seq = MP_OBJ_NULL;
+// Call this after the heap and VM are finished.
+void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length) {
+    // Allocate storage that persists across VMs to hold the combind report descriptor.
+    // and to remember the device details.
+
+    // Copy the descriptor from the temporary area to a supervisor storage allocation that
+    // will leave between VM instantiations.
+    hid_report_descriptor_allocation =
+        allocate_memory(report_descriptor_length, /*high_address*/ false, /*movable*/ false);
+    memcpy((uint8_t *) hid_report_descriptor_allocation->ptr, report_descriptor_space, report_descriptor_length);
 }
 
 void usb_hid_gc_collect(void) {
-    gc_collect_ptr(hid_devices_seq);
-    gc_collect_ptr(hid_report_descriptor_allocation->ptr);
-    gc_collect_ptr(hid_devices_allocation->ptr);
+    // Mark any heap pointers in the static device list as in use.
+    for (mp_int_t i = 0; i < hid_devices_num; i++) {
+        gc_collect_ptr(&hid_devices[i]);
+    }
 }
 
-#if CIRCUITPY_USB_HID
+usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id) {
+    for (uint8_t i = 0; i < hid_devices_num; i++) {
+        usb_hid_device_obj_t *device = &hid_devices[i];
+        if (device->report_id == report_id) {
+            return &hid_devices[i];
+        }
+    }
+    return NULL;
+}
+
 // Invoked when GET HID REPORT DESCRIPTOR is received.
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
     return (uint8_t *) hid_report_descriptor_allocation->ptr;
-}
-#endif
-
-usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id) {
-    for (uint8_t i = 0; i < hid_devices_num; i++) {
-        usb_hid_device_obj_t *hid_devices = (usb_hid_device_obj_t *) hid_devices_allocation->ptr;
-        if (hid_devices[i].report_id == report_id) {
-            return &hid_devices[i];
-        }
-    }
-    return NULL;
 }

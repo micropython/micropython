@@ -3,6 +3,7 @@
 # fmt: off
 
 
+
 def f():
     # constants
     a = None + False + True

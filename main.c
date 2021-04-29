@@ -95,20 +95,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_STORAGE
-#include "shared-module/storage/__init__.h"
-#endif
-
-#if CIRCUITPY_USB_CDC
-#include "shared-module/usb_cdc/__init__.h"
-#endif
-
 #if CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
-#endif
-
-#if CIRCUITPY_USB_MIDI
-#include "shared-module/usb_midi/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -181,6 +169,12 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_NETWORK
     network_module_init();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    if (usb_enabled()) {
+        usb_hid_setup_devices();
+    }
     #endif
 }
 
@@ -311,6 +305,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
 
+        #if CIRCUITPY_USB
+        usb_setup_with_vm();
+        #endif
+
         found_main = maybe_run_list(supported_filenames, &result);
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
@@ -439,6 +437,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
+
             #if CIRCUITPY_ALARM
                 common_hal_alarm_pretending_deep_sleep();
             #else
@@ -514,7 +513,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
         #if CIRCUITPY_USB
         // Set up default USB values after boot.py VM starts but before running boot.py.
-        usb_pre_boot_py();
+        usb_set_defaults();
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
@@ -529,13 +528,27 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         boot_output_file = NULL;
         #endif
 
+
         #if CIRCUITPY_USB
-        // Remember USB settings, which may have changed during boot.py.
-        // Call this before the boot.py heap is destroyed.
-        usb_post_boot_py();
+
+        // Some data needs to be carried over from the USB settings in boot.py
+        // to the next VM, while the heap is still available.
+        // Its size can vary, so save it temporarily on the stack,
+        // and then when the heap goes away, copy it in into a
+        // storage_allocation.
+
+        size_t size = usb_boot_py_data_size();
+        uint8_t usb_boot_py_data[size];
+        usb_get_boot_py_data(usb_boot_py_data, size);
         #endif
 
         cleanup_after_vm(heap);
+
+        #if CIRCUITPY_USB
+        // Now give back the data we saved from the heap going away.
+        usb_return_boot_py_data(usb_boot_py_data, size);
+        #endif
+
     }
 }
 
@@ -545,6 +558,11 @@ STATIC int run_repl(void) {
     filesystem_flush();
     supervisor_allocation* heap = allocate_remaining_memory();
     start_mp(heap);
+
+    #if CIRCUITPY_USB
+    usb_setup_with_vm();
+    #endif
+
     autoreload_suspend();
     new_status_color(REPL_RUNNING);
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -662,6 +680,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_BLEIO
     common_hal_bleio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_gc_collect();
     #endif
 
     #if CIRCUITPY_WIFI

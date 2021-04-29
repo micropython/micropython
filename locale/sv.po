@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-23 12:37+0000\n"
+"PO-Revision-Date: 2021-04-24 14:29+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -750,14 +750,6 @@ msgstr ""
 "Anslutningen har kopplats bort och kan inte längre användas. Skapa en ny "
 "anslutning."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Skadad .mpy-fil"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Korrupt rå kod"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Kunde inte initiera Camera"
@@ -1206,6 +1198,7 @@ msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Ogiltig %q-pinne"
@@ -1275,6 +1268,11 @@ msgstr "Ogiltig inspelningsperiod. Giltigt intervall: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Ogiltigt kanalantal"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "Ogiltig data_count %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2160,6 +2158,14 @@ msgstr "Tid har passerats."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr "Timeout i väntan på DRDY"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr "Timeout i väntan på VSYNC"
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "För att avsluta, gör reset på kortet utan "
@@ -2614,10 +2620,6 @@ msgstr "kan bara ha upp till 4 parametrar för Thumbs assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "kan bara spara bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "kan inte lägga till särskild metod för redan subklassad klass"
@@ -2846,6 +2848,11 @@ msgstr "data måste vara itererbar"
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "data måste vara av samma längd"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "data pin #%d används redan"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3130,6 +3137,14 @@ msgstr "identifieraren omdefinierad till global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifieraren omdefinierad som icke-lokal"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "ofullständigt format"
@@ -3249,6 +3264,10 @@ msgstr "interp är definierad för 1D-matriser med samma längd"
 msgid "interval must be in range %s-%s"
 msgstr "interval måste vara i intervallet %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ogiltiga argument"
@@ -3257,10 +3276,6 @@ msgstr "ogiltiga argument"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "ogiltigt certifikat"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3291,10 +3306,6 @@ msgstr "ogiltig formatspecificerare"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "Ogiltigt värdnamn"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "ogiltig nyckel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4309,6 +4320,21 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Skadad .mpy-fil"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Korrupt rå kod"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan bara spara bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "ogiltigt certifikat"
+
+#~ msgid "invalid key"
+#~ msgstr "ogiltig nyckel"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"

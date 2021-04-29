@@ -98,7 +98,7 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
         nvm_bytearray_obj_t *self = MP_OBJ_TO_PTR(self_in);
         if (0) {
         #if MICROPY_PY_BUILTINS_SLICE
-        } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+        } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_nvm_bytearray_get_length(self), index_in, &slice)) {
                 mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
@@ -108,10 +108,10 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
                 // Assign
                 size_t src_len = slice.stop - slice.start;
                 uint8_t *src_items;
-                if (MP_OBJ_IS_TYPE(value, &mp_type_array) ||
-                    MP_OBJ_IS_TYPE(value, &mp_type_bytearray) ||
-                    MP_OBJ_IS_TYPE(value, &mp_type_memoryview) ||
-                    MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
+                if (mp_obj_is_type(value, &mp_type_array) ||
+                    mp_obj_is_type(value, &mp_type_bytearray) ||
+                    mp_obj_is_type(value, &mp_type_memoryview) ||
+                    mp_obj_is_type(value, &mp_type_bytes)) {
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {

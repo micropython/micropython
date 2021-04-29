@@ -88,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 2, storage_mount);
 //|     ...
 //|
 mp_obj_t storage_umount(mp_obj_t mnt_in) {
-    if (MP_OBJ_IS_STR(mnt_in)) {
+    if (mp_obj_is_str(mnt_in)) {
         common_hal_storage_umount_path(mp_obj_str_get_str(mnt_in));
     } else {
         common_hal_storage_umount_object(mnt_in);

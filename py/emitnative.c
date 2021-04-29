@@ -156,29 +156,6 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
-int mp_native_type_from_qstr(qstr qst) {
-    switch (qst) {
-        case MP_QSTR_object:
-            return MP_NATIVE_TYPE_OBJ;
-        case MP_QSTR_bool:
-            return MP_NATIVE_TYPE_BOOL;
-        case MP_QSTR_int:
-            return MP_NATIVE_TYPE_INT;
-        case MP_QSTR_uint:
-            return MP_NATIVE_TYPE_UINT;
-        case MP_QSTR_ptr:
-            return MP_NATIVE_TYPE_PTR;
-        case MP_QSTR_ptr8:
-            return MP_NATIVE_TYPE_PTR8;
-        case MP_QSTR_ptr16:
-            return MP_NATIVE_TYPE_PTR16;
-        case MP_QSTR_ptr32:
-            return MP_NATIVE_TYPE_PTR32;
-        default:
-            return -1;
-    }
-}
-
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
         case VTYPE_PYOBJ:
@@ -253,6 +230,11 @@ struct _emit_t {
     uint16_t const_table_cur_raw_code;
     mp_uint_t *const_table;
 
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    uint16_t qstr_link_cur;
+    mp_qstr_link_entry_t *qstr_link;
+    #endif
+
     bool last_emit_was_return_value;
 
     scope_t *scope;
@@ -264,6 +246,7 @@ STATIC const uint8_t reg_local_table[REG_LOCAL_NUM] = {REG_LOCAL_1, REG_LOCAL_2,
 
 STATIC void emit_native_global_exc_entry(emit_t *emit);
 STATIC void emit_native_global_exc_exit(emit_t *emit);
+STATIC void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj);
 
 emit_t *EXPORT_FUN(new)(mp_obj_t * error_slot, uint *label_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
@@ -318,6 +301,32 @@ STATIC void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local
     }
 }
 
+STATIC void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    size_t loc = ASM_MOV_REG_IMM_FIX_U16(emit->as, arg_reg, qst);
+    size_t link_idx = emit->qstr_link_cur++;
+    if (emit->pass == MP_PASS_EMIT) {
+        emit->qstr_link[link_idx].off = loc << 2 | 1;
+        emit->qstr_link[link_idx].qst = qst;
+    }
+    #else
+    ASM_MOV_REG_IMM(emit->as, arg_reg, qst);
+    #endif
+}
+
+STATIC void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    size_t loc = ASM_MOV_REG_IMM_FIX_WORD(emit->as, reg_dest, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
+    size_t link_idx = emit->qstr_link_cur++;
+    if (emit->pass == MP_PASS_EMIT) {
+        emit->qstr_link[link_idx].off = loc << 2 | 2;
+        emit->qstr_link[link_idx].qst = qst;
+    }
+    #else
+    ASM_MOV_REG_IMM(emit->as, reg_dest, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
+    #endif
+}
+
 #define emit_native_mov_state_imm_via(emit, local_num, imm, reg_temp) \
     do { \
         ASM_MOV_REG_IMM((emit)->as, (reg_temp), (imm)); \
@@ -330,8 +339,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_size = 0;
-    emit->const_table_cur_obj = 1; // first entry is for mp_fun_table
+    emit->const_table_cur_obj = 0;
     emit->const_table_cur_raw_code = 0;
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    emit->qstr_link_cur = 0;
+    #endif
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
 
@@ -619,7 +631,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     assert(emit->pass <= MP_PASS_STACK_SIZE || (emit->const_table_num_obj == emit->const_table_cur_obj));
     emit->const_table_num_obj = emit->const_table_cur_obj;
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        size_t const_table_alloc = emit->const_table_num_obj + emit->const_table_cur_raw_code;
+        size_t const_table_alloc = 1 + emit->const_table_num_obj + emit->const_table_cur_raw_code;
         size_t nqstr = 0;
         if (!emit->do_viper_types) {
             // Add room for qstr names of arguments
@@ -629,6 +641,13 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         emit->const_table = m_new(mp_uint_t, const_table_alloc);
         // Store mp_fun_table pointer just after qstrs
         emit->const_table[nqstr] = (mp_uint_t)(uintptr_t)mp_fun_table;
+
+        #if MICROPY_PERSISTENT_CODE_SAVE
+        size_t qstr_link_alloc = emit->qstr_link_cur;
+        if (qstr_link_alloc > 0) {
+            emit->qstr_link = m_new(mp_qstr_link_entry_t, qstr_link_alloc);
+        }
+        #endif
     }
 
     if (emit->pass == MP_PASS_EMIT) {
@@ -638,6 +657,11 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
             f, f_len, emit->const_table,
+            #if MICROPY_PERSISTENT_CODE_SAVE
+            emit->prelude_offset,
+            emit->const_table_cur_obj, emit->const_table_cur_raw_code,
+            emit->qstr_link_cur, emit->qstr_link,
+            #endif
             emit->scope->num_pos_args, emit->scope->scope_flags, 0);
     }
 }
@@ -922,6 +946,12 @@ STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, mp_i
     ASM_CALL_IND(emit->as, fun_kind);
 }
 
+STATIC void emit_call_with_qstr_arg(emit_t *emit, mp_fun_kind_t fun_kind, qstr qst, int arg_reg) {
+    need_reg_all(emit);
+    emit_native_mov_reg_qstr(emit, arg_reg, qst);
+    ASM_CALL_IND(emit->as, fun_kind);
+}
+
 // vtype of all n_pop objects is VTYPE_PYOBJ
 // Will convert any items that are not VTYPE_PYOBJ to this type and put them back on the stack.
 // If any conversions of non-immediate values are needed, then it uses REG_ARG_1, REG_ARG_2 and REG_RET.
@@ -1038,12 +1068,14 @@ STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, mp_uint_t ptr, size_t 
 }
 
 STATIC void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
-    size_t table_off = emit->const_table_cur_obj++;
+    // First entry is for mp_fun_table
+    size_t table_off = 1 + emit->const_table_cur_obj++;
     emit_load_reg_with_ptr(emit, reg, (mp_uint_t)obj, table_off);
 }
 
 STATIC void emit_load_reg_with_raw_code(emit_t *emit, int reg, mp_raw_code_t *rc) {
-    size_t table_off = emit->const_table_num_obj + emit->const_table_cur_raw_code++;
+    // First entry is for mp_fun_table, then constant objects
+    size_t table_off = 1 + emit->const_table_num_obj + emit->const_table_cur_raw_code++;
     emit_load_reg_with_ptr(emit, reg, (mp_uint_t)rc, table_off);
 }
 
@@ -1220,7 +1252,7 @@ STATIC void emit_native_import_name(emit_t *emit, qstr qst) {
     assert(vtype_level == VTYPE_PYOBJ);
     emit->do_viper_types = orig_do_viper_types;
 
-    emit_call_with_imm_arg(emit, MP_F_IMPORT_NAME, qst, REG_ARG_1); // arg1 = import name
+    emit_call_with_qstr_arg(emit, MP_F_IMPORT_NAME, qst, REG_ARG_1); // arg1 = import name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1230,7 +1262,7 @@ STATIC void emit_native_import_from(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_module;
     emit_access_stack(emit, 1, &vtype_module, REG_ARG_1); // arg1 = module
     assert(vtype_module == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_IMPORT_FROM, qst, REG_ARG_2); // arg2 = import name
+    emit_call_with_qstr_arg(emit, MP_F_IMPORT_FROM, qst, REG_ARG_2); // arg2 = import name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1256,7 +1288,11 @@ STATIC void emit_native_import(emit_t *emit, qstr qst, int kind) {
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     if (tok == MP_TOKEN_ELLIPSIS) {
+        #if MICROPY_PERSISTENT_CODE_SAVE
+        emit_native_load_const_obj(emit, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
+        #else
         emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
+        #endif
     } else {
         emit_native_pre(emit);
         if (tok == MP_TOKEN_KW_NONE) {
@@ -1284,11 +1320,14 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
     } else
     */
     {
-        emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
+        need_reg_single(emit, REG_TEMP0, 0);
+        emit_native_mov_reg_qstr_obj(emit, REG_TEMP0, qst);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_TEMP0);
     }
 }
 
 STATIC void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj) {
+    emit->scope->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
     emit_native_pre(emit);
     need_reg_single(emit, REG_RET, 0);
     emit_load_reg_with_object(emit, REG_RET, obj);
@@ -1347,13 +1386,13 @@ STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
         if (emit->do_viper_types) {
             // check for builtin casting operators
             int native_type = mp_native_type_from_qstr(qst);
-            if (native_type >= MP_NATIVE_TYPE_INT) {
+            if (native_type >= MP_NATIVE_TYPE_BOOL) {
                 emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, native_type);
                 return;
             }
         }
     }
-    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1365,7 +1404,7 @@ STATIC void emit_native_load_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_ATTR, qst, REG_ARG_2); // arg2 = attribute name
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1373,13 +1412,13 @@ STATIC void emit_native_load_method(emit_t *emit, qstr qst, bool is_super) {
     if (is_super) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, 3); // arg2 = dest ptr
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, 2); // arg2 = dest ptr
-        emit_call_with_imm_arg(emit, MP_F_LOAD_SUPER_METHOD, qst, REG_ARG_1); // arg1 = method name
+        emit_call_with_qstr_arg(emit, MP_F_LOAD_SUPER_METHOD, qst, REG_ARG_1); // arg1 = method name
     } else {
         vtype_kind_t vtype_base;
         emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
         assert(vtype_base == VTYPE_PYOBJ);
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-        emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
+        emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
     }
 }
 
@@ -1586,7 +1625,7 @@ STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
             ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
         }
     }
-    emit_call_with_imm_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
+    emit_call_with_qstr_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
@@ -1595,7 +1634,7 @@ STATIC void emit_native_store_attr(emit_t *emit, qstr qst) {
     emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_val == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
+    emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
 
@@ -1792,7 +1831,7 @@ STATIC void emit_native_delete_global(emit_t *emit, qstr qst, int kind) {
     MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_DELETE_NAME);
     MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_DELETE_GLOBAL);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
+    emit_call_with_qstr_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
     emit_post(emit);
 }
 
@@ -1800,7 +1839,8 @@ STATIC void emit_native_delete_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_2_imm_args(emit, MP_F_STORE_ATTR, qst, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg2 = attribute name, arg3 = value (null for delete)
+    ASM_XOR_REG_REG(emit->as, REG_ARG_3, REG_ARG_3); // arg3 = value (null for delete)
+    emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
 
@@ -1955,7 +1995,7 @@ STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t exc
             prev_finally->unwind_label = UNWIND_LABEL_DO_FINAL_UNWIND;
             ASM_MOV_REG_PCREL(emit->as, REG_RET, label & ~MP_EMIT_BREAK_FROM_FOR);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_RET);
-            // Cancel any active exception (see also emit_native_pop_except)
+            // Cancel any active exception (see also emit_native_pop_except_jump)
             emit_native_mov_reg_const(emit, REG_RET, MP_F_CONST_NONE_OBJ);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET);
             // Jump to the innermost active finally
@@ -1974,7 +2014,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     emit_access_stack(emit, 1, &vtype, REG_ARG_1); // arg1 = ctx_mgr
     assert(vtype == VTYPE_PYOBJ);
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___exit__, REG_ARG_2);
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___exit__, REG_ARG_2);
     // stack: (..., ctx_mgr, __exit__, self)
 
     emit_pre_pop_reg(emit, &vtype, REG_ARG_3); // self
@@ -1987,7 +2027,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
 
     // get __enter__ method
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___enter__, REG_ARG_2); // arg2 = method name
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___enter__, REG_ARG_2); // arg2 = method name
     // stack: (..., __exit__, self, __enter__, self)
 
     // call __enter__ method
@@ -2133,12 +2173,12 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, MP_OBJ_ITER_BUF_NSLOTS);
     adjust_stack(emit, MP_OBJ_ITER_BUF_NSLOTS);
     emit_call(emit, MP_F_NATIVE_ITERNEXT);
-    #ifdef NDEBUG
-    MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
-    #else
+    #if MICROPY_DEBUG_MP_OBJ_SENTINELS
     ASM_MOV_REG_IMM(emit->as, REG_TEMP1, (mp_uint_t)MP_OBJ_STOP_ITERATION);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);
+    #else
+    MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
     #endif
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
@@ -2150,18 +2190,15 @@ STATIC void emit_native_for_iter_end(emit_t *emit) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_block(emit_t *emit) {
-    emit_native_pre(emit);
-    if (!emit->exc_stack[emit->exc_stack_size - 1].is_finally) {
+STATIC void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
+    if (within_exc_handler) {
+        // Cancel any active exception so subsequent handlers don't see it
+        emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    } else {
         emit_native_leave_exc_stack(emit, false);
     }
-    emit_post(emit);
-}
-
-STATIC void emit_native_pop_except(emit_t *emit) {
-    // Cancel any active exception so subsequent handlers don't see it
-    emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
-    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    emit_native_jump(emit, label);
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
@@ -2220,17 +2257,16 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         int reg_rhs = REG_ARG_3;
         emit_pre_pop_reg_flexible(emit, &vtype_rhs, &reg_rhs, REG_RET, REG_ARG_2);
         emit_pre_pop_reg(emit, &vtype_lhs, REG_ARG_2);
-        if (0) {
-            // dummy
         #if !(N_X64 || N_X86)
-        } else if (op == MP_BINARY_OP_LSHIFT) {
+        if (op == MP_BINARY_OP_LSHIFT) {
             ASM_LSL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_RSHIFT) {
             ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+        } else
         #endif
-        } else if (op == MP_BINARY_OP_OR) {
+        if (op == MP_BINARY_OP_OR) {
             ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else if (op == MP_BINARY_OP_XOR) {
@@ -2613,6 +2649,7 @@ STATIC void emit_native_return_value(emit_t *emit) {
 }
 
 STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
+    (void)n_args;
     assert(n_args == 1);
     vtype_kind_t vtype_exc;
     emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise
@@ -2719,6 +2756,11 @@ STATIC void emit_native_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
+    #if MICROPY_DYNAMIC_COMPILER
+    EXPORT_FUN(new),
+    EXPORT_FUN(free),
+    #endif
+
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,
@@ -2764,8 +2806,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_get_iter,
     emit_native_for_iter,
     emit_native_for_iter_end,
-    emit_native_pop_block,
-    emit_native_pop_except,
+    emit_native_pop_except_jump,
     emit_native_unary_op,
     emit_native_binary_op,
     emit_native_build,

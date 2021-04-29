@@ -34,9 +34,7 @@
 
 typedef struct  {
     mp_obj_base_t base;
-    // If not MP_OBJ_NULL, points to Python array object whose contents are the descriptor.
-    mp_obj_t report_descriptor_obj;
-    // If not NULL, points to raw bytes that are the descriptor.
+    // Python buffer object whose contents are the descriptor.
     const uint8_t *report_descriptor;
     uint8_t *in_report_buffer;
     uint8_t *out_report_buffer;
@@ -52,5 +50,7 @@ typedef struct  {
 extern const usb_hid_device_obj_t usb_hid_device_keyboard_obj;
 extern const usb_hid_device_obj_t usb_hid_device_mouse_obj;
 extern const usb_hid_device_obj_t usb_hid_device_consumer_control_obj;
+
+void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self);
 
 #endif /* SHARED_MODULE_USB_HID_DEVICE_H */

@@ -334,14 +334,16 @@ void asm_x64_mov_i8_to_r8(asm_x64_t *as, int src_i8, int dest_r64) {
 }
 */
 
-STATIC void asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64) {
+size_t asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64) {
     // cpu defaults to i32 to r64, with zero extension
     if (dest_r64 < 8) {
         asm_x64_write_byte_1(as, OPCODE_MOV_I64_TO_R64 | dest_r64);
     } else {
         asm_x64_write_byte_2(as, REX_PREFIX | REX_B, OPCODE_MOV_I64_TO_R64 | (dest_r64 & 7));
     }
+    size_t loc = mp_asm_base_get_code_pos(&as->base);
     asm_x64_write_word32(as, src_i32);
+    return loc;
 }
 
 void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64) {

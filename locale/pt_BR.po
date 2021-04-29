@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-22 17:16+0000\n"
+"PO-Revision-Date: 2021-04-25 18:43+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -761,14 +761,6 @@ msgid ""
 msgstr ""
 "A conexão foi desconectada e não pode mais ser usada. Crie uma nova conexão."
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Arquivo .mpy corrompido"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Código bruto corrompido"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr "Não foi possível inicializar a Câmera"
@@ -1222,6 +1214,7 @@ msgstr "%q Inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
@@ -1291,6 +1284,11 @@ msgstr "O período de captura é inválido. O intervalo válido é: 1 - 500"
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "A contagem do canal é inválido"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "data_count %d inválido"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2186,6 +2184,14 @@ msgstr ""
 "O tempo limite é long demais: O comprimento máximo do tempo limite é de %d "
 "segundos"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr "Esgotou-se o tempo limite de espera pelo DRDY"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr "Esgotou-se o tempo de espera pelo VSYNC"
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Para sair, por favor, reinicie a placa sem "
@@ -2477,7 +2483,7 @@ msgstr "os endereços estão vazios"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "a anotação deve ser um identificador"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2644,10 +2650,6 @@ msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "só pode haver até 4 parâmetros para a montagem Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "apenas o bytecode pode ser salvo"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr "não é possível adicionar o método especial à classe já subclassificada"
@@ -2663,7 +2665,7 @@ msgstr "não é possível converter %q para %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "Não é possível converter %q para int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2881,6 +2883,11 @@ msgstr "os dados devem ser iteráveis"
 msgid "data must be of equal length"
 msgstr "os dados devem ser de igual comprimento"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "o pino de dados #%d está em uso"
+
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
 msgstr "o tipo do dado não foi compreendido"
@@ -3090,7 +3097,7 @@ msgstr "cheio"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "a função não aceita palavras-chave como argumentos"
 
 #: py/argcheck.c
 #, c-format
@@ -3146,7 +3153,7 @@ msgstr "ignorando o gerador GeneratorExit"
 
 #: py/objgenerator.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "gerador StopIteration elevado"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3163,6 +3170,14 @@ msgstr "o identificador foi redefinido como global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "o identificador foi redefinido como não-local"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3284,6 +3299,10 @@ msgstr "o interp é definido para matrizes 1D de igual comprimento"
 msgid "interval must be in range %s-%s"
 msgstr "o intervalo deve estar entre %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
@@ -3292,10 +3311,6 @@ msgstr "argumentos inválidos"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "bits_per_pixel %d é inválido, deve ser, 1, 4, 8, 16, 24, ou 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificado inválido"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3326,10 +3341,6 @@ msgstr "o especificador do formato é inválido"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "o nome do host é inválido"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "chave inválida"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3535,7 +3546,7 @@ msgstr "precisa de mais de %d valores para desempacotar"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "fatorial negativo"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -4350,6 +4361,21 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Arquivo .mpy corrompido"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Código bruto corrompido"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "apenas o bytecode pode ser salvo"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificado inválido"
+
+#~ msgid "invalid key"
+#~ msgstr "chave inválida"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Atualmente, as funções do Viper não suportam mais de 4 argumentos"
