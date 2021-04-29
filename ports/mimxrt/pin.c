@@ -45,8 +45,8 @@ uint32_t pin_get_af(const machine_pin_obj_t *pin) {
     return pin->af_mode;
 }
 
-const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
-    const machine_pin_obj_t *pin_obj;
+machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
+    machine_pin_obj_t *pin_obj;
 
     // If pin is SMALL_INT
     if (mp_obj_is_small_int(user_obj)) {
@@ -77,7 +77,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't exist"));
 }
 
-const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != NULL) {

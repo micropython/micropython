@@ -35,7 +35,7 @@
 
 
 // Helper Functions
-STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
@@ -45,16 +45,17 @@ STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},*/
     };
 
-    // parse args
+    // Parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // get io mode
+    // Get io mode
     uint mode = args[0].u_int;
     if (!IS_GPIO_MODE(mode)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
 
+    // Handle configuration for GPIO
     if ((mode == PIN_MODE_IN) || (mode == PIN_MODE_OUT)) {
         gpio_pin_config_t pin_config;
         const machine_pin_af_obj_t *af_obj;
@@ -64,11 +65,14 @@ STATIC mp_obj_t pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args
         pin_config.interruptMode = kGPIO_NoIntmode;
 
         af_obj = pin_find_af(self, PIN_AF_MODE_ALT5);  // GPIO is always ALT5
-
         if (af_obj == NULL) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("requested AF %d not available for pin %d"), PIN_AF_MODE_ALT5, mode);
         }
 
+        // Update machine pin object
+        self->mode = mode;
+
+        // Configure pad as GPIO
         GPIO_PinInit(self->gpio, self->pin, &pin_config);
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
         IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, af_obj->pad_config);  // TODO: use correct AF settings from AF list
@@ -116,7 +120,7 @@ STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_
 STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    const machine_pin_obj_t *pin = pin_find(args[0]);
+    machine_pin_obj_t *pin = pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -148,6 +152,12 @@ STATIC mp_obj_t machine_pin_value(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_value_obj, machine_pin_value);
 
+STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    return mp_obj_new_int(self->mode);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_mode_obj, machine_pin_mode);
+
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // TODO: Implement class locals dictionary
@@ -157,6 +167,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&machine_pin_mode_obj) },
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },

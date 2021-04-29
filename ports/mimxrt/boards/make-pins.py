@@ -73,7 +73,7 @@ class Pin(object):
         if self.alt_fn:
             self.print_pin_af()
             print(
-                "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{3});\n".format(
+                "machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{3});\n".format(
                     self.name, self.gpio, int(self.pin), self.name + "_af"
                 )
             )
@@ -231,7 +231,7 @@ class Pins(object):
             pin.print()
 
         print("")
-        print("const machine_pin_obj_t* machine_pin_cpu_pin_obj [] = {")
+        print("machine_pin_obj_t* machine_pin_cpu_pin_obj [] = {")
         for pin in self.cpu_pins:
             print("    &pin_{},".format(pin.name))
         print("};")
@@ -244,8 +244,8 @@ class Pins(object):
     def print_header(self, hdr_filename):
         with open(hdr_filename, "w") as hdr_file:
             for pin in self.cpu_pins:
-                hdr_file.write("extern const machine_pin_obj_t pin_{};\n".format(pin.name))
-            hdr_file.write("extern const machine_pin_obj_t* machine_pin_cpu_pin_obj[];\n")
+                hdr_file.write("extern machine_pin_obj_t pin_{};\n".format(pin.name))
+            hdr_file.write("extern machine_pin_obj_t* machine_pin_cpu_pin_obj[];\n")
             hdr_file.write("extern const uint32_t machine_pin_num_of_cpu_pins;\n")
             hdr_file.write("extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;\n")
             hdr_file.write("extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;\n")
