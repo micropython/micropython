@@ -25,7 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-#ifdef MICROPY_PY_USOCKET
+#if MICROPY_PY_USOCKET
 
 #include "py/runtime.h"
 #include "py/stream.h"

@@ -24,13 +24,103 @@
 
 menu "MicroPython Options"
 
-config MICROPY_CONFIGFILE
-	string "Configuration file"
-	default "mpconfigport_minimal.h"
-
 config MICROPY_HEAP_SIZE
 	int "Heap size"
 	default 16384
+
+menu "Compiler"
+
+config MICROPY_COMP_CONST
+	bool "Constant optimisation; id = const(value)"
+
+config MICROPY_COMP_CONST_FOLDING
+	bool "Constant folding"
+
+config MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
+	bool "optimisation of: a, b = c, d"
+
+endmenu # Compiler
+
+menu "Internal features"
+
+config MICROPY_CPYTHON_COMPAT
+	bool "CPython compatibility features"
+	help
+	  Enable features which improve CPython compatibility but may lead to
+	  more code size/memory usage.
+
+config MICROPY_ENABLE_GC
+	bool "Enable garbage collector"
+	default y
+
+config MICROPY_ENABLE_SCHEDULER
+	bool "Internal scheduler"
+
+config MICROPY_ENABLE_SOURCE_LINE
+	bool "Enable source line"
+	help
+	  Include information in the byte code to determine source line number
+	  (increases RAM usage, but doesn't slow byte code execution)
+
+choice MICROPY_FLOAT_IMPL
+	prompt "float implementation"
+	default MICROPY_FLOAT_IMPL_FLOAT
+
+config MICROPY_FLOAT_IMPL_NONE
+	bool "None"
+
+config MICROPY_FLOAT_IMPL_FLOAT
+	bool "float"
+
+config MICROPY_FLOAT_IMPL_DOUBLE
+	bool "double"
+
+endchoice # MICROPY_FLOAT_IMPL
+
+config MICROPY_HELPER_REPL
+	bool "REPL helper function"
+	default y
+
+config MICROPY_KBD_EXCEPTION
+	bool "KBD exception"
+	default y
+
+choice MICROPY_LONGINT_IMPL
+	prompt "Long int implementation"
+	default MICROPY_LONGINT_IMPL_LONGLONG
+
+config MICROPY_LONGINT_IMPL_NONE
+	bool "None"
+
+config MICROPY_LONGINT_IMPL_LONGLONG
+	bool "long long"
+
+config MICROPY_LONGINT_IMPL_MPZ
+	bool "mpz"
+
+endchoice # MICROPY_LONGINT_IMPL
+
+config MICROPY_MODULE_FROZEN_STR
+	bool "Frozen modules in the form of strings"
+
+config MICROPY_MODULE_WEAK_LINKS
+	bool "module weak links"
+
+config MICROPY_REPL_AUTO_INDENT
+	bool "REPL auto-indent"
+	default y
+
+config MICROPY_STACK_CHECK
+	bool "Stack check"
+	default y
+	help
+	  Check C stack usage. C stack is used for calling Python functions,
+	  etc. Not checking means segfault on overflow.
+
+config MICROPY_VFS
+	bool "Virtual file system"
+
+if MICROPY_VFS
 
 config MICROPY_VFS_FAT
 	bool "FatFS file system"
@@ -40,6 +130,140 @@ config MICROPY_VFS_LFS1
 
 config MICROPY_VFS_LFS2
 	bool "LittleFs version 2 file system"
+
+endif # MICROPY_VFS
+
+endmenu # Internal features
+
+menu "Modules"
+
+config MICROPY_PY_ARRAY
+	bool "array"
+	help
+	  Note that large chunk of the underlying code is shared with
+	  "bytearray" builtin type, so to get real savings, it should be
+	  disabled too.
+
+config MICROPY_PY_CMATH
+	bool "cmath"
+
+config MICROPY_PY_COLLECTIONS
+	bool "collections"
+
+config MICROPY_PY_IO
+	bool "io"
+
+menuconfig MICROPY_PY_MACHINE
+	bool "machine"
+
+if MICROPY_PY_MACHINE
+
+config MICROPY_PY_MACHINE_I2C
+	bool "i2c"
+
+endif # MICROPY_PY_MACHINE
+
+menu "micropython"
+
+config MICROPY_PY_MICROPYTHON_MEM_INFO
+	bool "mem-info related functions"
+
+endmenu # micropython
+
+config MICROPY_PY_STRUCT
+	bool "struct"
+
+menu "sys"
+
+config MICROPY_PY_SYS_MODULES
+	bool "sys.modules dictionary"
+
+config MICROPY_PY_SYS_PLATFORM
+	bool "sys.platform object"
+
+endmenu # sys
+
+config MICROPY_PY_UBINASCII
+	bool "ubinascii"
+
+config MICROPY_PY_UERRNO
+	bool "uerrno"
+
+config MICROPY_PY_UHASHLIB
+	bool "uhashlib"
+
+config MICROPY_PY_UOS
+	bool "uos"
+
+config MICROPY_PY_USOCKET
+	bool "usocket"
+
+menuconfig MICROPY_PY_UTIME
+	bool "utime"
+
+if MICROPY_PY_UTIME
+
+config MICROPY_PY_UTIME_MP_HAL
+	bool "implement functions in terms of mp_hal_* functions."
+	default y
+
+endif # MICROPY_PY_UTIME
+
+config MICROPY_PY_ZEPHYR
+	bool "zephyr"
+
+config MICROPY_PY_ZSENSOR
+	bool "zsensor"
+
+endmenu # Modules
+
+menu "Builtins"
+
+config MICROPY_PY_BUILTINS_COMPLEX
+	bool "complex"
+
+config MICROPY_PY_BUILTINS_ENUMERATE
+	bool "enumerate function(type)"
+
+config MICROPY_PY_BUILTINS_FILTER
+	bool "filter function(type)"
+
+config MICROPY_PY_BUILTINS_HELP
+	bool "help function"
+
+config MICROPY_PY_BUILTINS_MIN_MAX
+	bool "min/max functions"
+
+config MICROPY_PY_BUILTINS_PROPERTY
+	bool "property object"
+
+config MICROPY_PY_BUILTINS_RANGE_ATTRS
+	bool "readback on the range builtin type"
+	help
+	  Implement the start/stop/step attributes (readback) on the "range"
+	  builtin type. Rarely used, and costs ~60 bytes (x86).
+
+config MICROPY_PY_BUILTINS_REVERSED
+	bool "reversed function(type)"
+
+config MICROPY_PY_BUILTINS_SET
+	bool "set object"
+
+config MICROPY_PY_BUILTINS_SLICE
+	bool "Enable slice"
+	help
+	  Support slice subscript operators and slice object
+
+config MICROPY_PY_BUILTINS_STR_COUNT
+	bool "str.count() method"
+
+endmenu # Builtins
+
+config MICROPY_PY_ASYNC_AWAIT
+	bool "async/await"
+
+config MICROPY_PY_ATTRTUPLE
+	bool "attrtuple type (MicroPython extension)"
 
 endmenu # MicroPython Options
 

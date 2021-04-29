@@ -96,7 +96,7 @@ zephyr_library_compile_options(
 
 zephyr_library_compile_definitions(
     NDEBUG
-    MP_CONFIGFILE=<${CONFIG_MICROPY_CONFIGFILE}>
+    MP_CONFIGFILE=<mpconfigport.h>
     MICROPY_HEAP_SIZE=${CONFIG_MICROPY_HEAP_SIZE}
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     MICROPY_VFS_FAT=$<BOOL:${CONFIG_MICROPY_VFS_FAT}>
