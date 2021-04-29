@@ -28,7 +28,8 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "genhdr/pins.h"
+#include "pin.h"
+#include "pin_static_af.h"
 #include "pendsv.h"
 #include "sdio.h"
 
@@ -50,18 +51,62 @@ static volatile uint32_t sdmmc_error;
 static volatile uint8_t *sdmmc_buf_cur;
 static volatile uint8_t *sdmmc_buf_top;
 
+// The H7/F7/L4 have 2 SDMMC peripherals, but at the moment this driver only supports
+// using one of them in a given build, selected by MICROPY_HW_SDIO_SDMMC.
+
+#if MICROPY_HW_SDIO_SDMMC == 1
+#define SDMMC                   SDMMC1
+#define SDMMC_IRQn              SDMMC1_IRQn
+#define SDMMC_IRQHandler        SDMMC1_IRQHandler
+#define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC1_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC1_CLK_DISABLE()
+#define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC1_IS_CLK_DISABLED()
+#define STATIC_AF_SDMMC_CK      STATIC_AF_SDMMC1_CK
+#define STATIC_AF_SDMMC_CMD     STATIC_AF_SDMMC1_CMD
+#define STATIC_AF_SDMMC_D0      STATIC_AF_SDMMC1_D0
+#define STATIC_AF_SDMMC_D1      STATIC_AF_SDMMC1_D1
+#define STATIC_AF_SDMMC_D2      STATIC_AF_SDMMC1_D2
+#define STATIC_AF_SDMMC_D3      STATIC_AF_SDMMC1_D3
+#else
+#if defined(STM32F7)
+#error Due to DMA configuration, only SDMMC1 is currently supported on F7
+#endif
+#define SDMMC                   SDMMC2
+#define SDMMC_IRQn              SDMMC2_IRQn
+#define SDMMC_IRQHandler        SDMMC2_IRQHandler
+#define SDMMC_CLK_ENABLE()      __HAL_RCC_SDMMC2_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE()     __HAL_RCC_SDMMC2_CLK_DISABLE()
+#define SDMMC_IS_CLK_DISABLED() __HAL_RCC_SDMMC2_IS_CLK_DISABLED()
+#define STATIC_AF_SDMMC_CK      STATIC_AF_SDMMC2_CK
+#define STATIC_AF_SDMMC_CMD     STATIC_AF_SDMMC2_CMD
+#define STATIC_AF_SDMMC_D0      STATIC_AF_SDMMC2_D0
+#define STATIC_AF_SDMMC_D1      STATIC_AF_SDMMC2_D1
+#define STATIC_AF_SDMMC_D2      STATIC_AF_SDMMC2_D2
+#define STATIC_AF_SDMMC_D3      STATIC_AF_SDMMC2_D3
+#endif
+
+// If no custom SDIO pins defined, use the default ones
+#ifndef MICROPY_HW_SDIO_CK
+#define MICROPY_HW_SDIO_D0      (pin_C8)
+#define MICROPY_HW_SDIO_D1      (pin_C9)
+#define MICROPY_HW_SDIO_D2      (pin_C10)
+#define MICROPY_HW_SDIO_D3      (pin_C11)
+#define MICROPY_HW_SDIO_CK      (pin_C12)
+#define MICROPY_HW_SDIO_CMD     (pin_D2)
+#endif
+
 void sdio_init(uint32_t irq_pri) {
     // configure IO pins
-    mp_hal_pin_config(pin_C8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, 12);
-    mp_hal_pin_config(pin_C9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, 12);
-    mp_hal_pin_config(pin_C10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, 12);
-    mp_hal_pin_config(pin_C11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, 12);
-    mp_hal_pin_config(pin_C12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 12); // CLK doesn't need pull-up
-    mp_hal_pin_config(pin_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, 12);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D0);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D1);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D3);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_SDMMC_CK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDIO_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CMD);
 
-    __HAL_RCC_SDMMC1_CLK_ENABLE(); // enable SDIO peripheral
+    SDMMC_CLK_ENABLE(); // enable SDIO peripheral
 
-    SDMMC_TypeDef *SDIO = SDMMC1;
+    SDMMC_TypeDef *SDIO = SDMMC;
     #if defined(STM32F7)
     SDIO->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | (120 - 2); // 1-bit, 400kHz
     #else
@@ -80,36 +125,36 @@ void sdio_init(uint32_t irq_pri) {
     __HAL_RCC_DMA2_CLK_ENABLE(); // enable DMA2 peripheral
     #endif
 
-    NVIC_SetPriority(SDMMC1_IRQn, irq_pri);
+    NVIC_SetPriority(SDMMC_IRQn, irq_pri);
 
     SDIO->MASK = 0;
-    HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
+    HAL_NVIC_EnableIRQ(SDMMC_IRQn);
 }
 
 void sdio_deinit(void) {
-    __HAL_RCC_SDMMC1_CLK_DISABLE();
+    SDMMC_CLK_DISABLE();
     #if defined(STM32F7)
     __HAL_RCC_DMA2_CLK_DISABLE();
     #endif
 }
 
 void sdio_reenable(void) {
-    if (__HAL_RCC_SDMMC1_IS_CLK_DISABLED()) {
-        __HAL_RCC_SDMMC1_CLK_ENABLE(); // enable SDIO peripheral
+    if (SDMMC_IS_CLK_DISABLED()) {
+        SDMMC_CLK_ENABLE(); // enable SDIO peripheral
         sdio_enable_high_speed_4bit();
     }
 }
 
 void sdio_enable_irq(bool enable) {
     if (enable) {
-        SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+        SDMMC->MASK |= SDMMC_MASK_SDIOITIE;
     } else {
-        SDMMC1->MASK &= ~SDMMC_MASK_SDIOITIE;
+        SDMMC->MASK &= ~SDMMC_MASK_SDIOITIE;
     }
 }
 
 void sdio_enable_high_speed_4bit(void) {
-    SDMMC_TypeDef *SDIO = SDMMC1;
+    SDMMC_TypeDef *SDIO = SDMMC;
     SDIO->POWER = 0; // power off
     mp_hal_delay_us(10);
     #if defined(STM32F7)
@@ -128,33 +173,33 @@ void sdio_enable_high_speed_4bit(void) {
     mp_hal_delay_us(10);
 }
 
-void SDMMC1_IRQHandler(void) {
-    if (SDMMC1->STA & SDMMC_STA_CMDREND) {
-        SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
-        uint32_t r1 = SDMMC1->RESP1;
-        if (SDMMC1->RESPCMD == 53 && r1 & 0x800) {
-            printf("bad RESP1: %lu %lx\n", SDMMC1->RESPCMD, r1);
+void SDMMC_IRQHandler(void) {
+    if (SDMMC->STA & SDMMC_STA_CMDREND) {
+        SDMMC->ICR = SDMMC_ICR_CMDRENDC;
+        uint32_t r1 = SDMMC->RESP1;
+        if (SDMMC->RESPCMD == 53 && r1 & 0x800) {
+            printf("bad RESP1: %lu %lx\n", SDMMC->RESPCMD, r1);
             sdmmc_error = 0xffffffff;
-            SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+            SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
             sdmmc_irq_state = SDMMC_IRQ_STATE_DONE;
             return;
         }
         #if defined(STM32H7)
         if (!sdmmc_dma) {
-            while (sdmmc_buf_cur < sdmmc_buf_top && (SDMMC1->STA & SDMMC_STA_DPSMACT) && !(SDMMC1->STA & SDMMC_STA_RXFIFOE)) {
-                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
+            while (sdmmc_buf_cur < sdmmc_buf_top && (SDMMC->STA & SDMMC_STA_DPSMACT) && !(SDMMC->STA & SDMMC_STA_RXFIFOE)) {
+                *(uint32_t *)sdmmc_buf_cur = SDMMC->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
         #endif
         if (sdmmc_buf_cur >= sdmmc_buf_top) {
             // data transfer finished, so we are done
-            SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+            SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
             sdmmc_irq_state = SDMMC_IRQ_STATE_DONE;
             return;
         }
         if (sdmmc_write) {
-            SDMMC1->DCTRL =
+            SDMMC->DCTRL =
                 SDMMC_DCTRL_SDIOEN
                 | SDMMC_DCTRL_RWMOD
                 | sdmmc_block_size_log2 << SDMMC_DCTRL_DBLOCKSIZE_Pos
@@ -165,51 +210,51 @@ void SDMMC1_IRQHandler(void) {
                     | SDMMC_DCTRL_DTEN
             ;
             if (!sdmmc_dma) {
-                SDMMC1->MASK |= SDMMC_MASK_TXFIFOHEIE;
+                SDMMC->MASK |= SDMMC_MASK_TXFIFOHEIE;
             }
         }
         sdmmc_irq_state = SDMMC_IRQ_STATE_CMD_DONE;
-    } else if (SDMMC1->STA & SDMMC_STA_DATAEND) {
+    } else if (SDMMC->STA & SDMMC_STA_DATAEND) {
         // data transfer complete
         // note: it's possible to get DATAEND before CMDREND
-        SDMMC1->ICR = SDMMC_ICR_DATAENDC;
+        SDMMC->ICR = SDMMC_ICR_DATAENDC;
         #if defined(STM32F7)
         // check if there is some remaining data in RXFIFO
         if (!sdmmc_dma) {
-            while (SDMMC1->STA & SDMMC_STA_RXDAVL) {
-                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
+            while (SDMMC->STA & SDMMC_STA_RXDAVL) {
+                *(uint32_t *)sdmmc_buf_cur = SDMMC->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
         #endif
         if (sdmmc_irq_state == SDMMC_IRQ_STATE_CMD_DONE) {
             // command and data finished, so we are done
-            SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+            SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
             sdmmc_irq_state = SDMMC_IRQ_STATE_DONE;
         }
-    } else if (SDMMC1->STA & SDMMC_STA_TXFIFOHE) {
+    } else if (SDMMC->STA & SDMMC_STA_TXFIFOHE) {
         if (!sdmmc_dma && sdmmc_write) {
             // write up to 8 words to fifo
             for (size_t i = 8; i && sdmmc_buf_cur < sdmmc_buf_top; --i) {
-                SDMMC1->FIFO = *(uint32_t *)sdmmc_buf_cur;
+                SDMMC->FIFO = *(uint32_t *)sdmmc_buf_cur;
                 sdmmc_buf_cur += 4;
             }
             if (sdmmc_buf_cur >= sdmmc_buf_top) {
                 // finished, disable IRQ
-                SDMMC1->MASK &= ~SDMMC_MASK_TXFIFOHEIE;
+                SDMMC->MASK &= ~SDMMC_MASK_TXFIFOHEIE;
             }
         }
-    } else if (SDMMC1->STA & SDMMC_STA_RXFIFOHF) {
+    } else if (SDMMC->STA & SDMMC_STA_RXFIFOHF) {
         if (!sdmmc_dma && !sdmmc_write) {
             // read up to 8 words from fifo
             for (size_t i = 8; i && sdmmc_buf_cur < sdmmc_buf_top; --i) {
-                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
+                *(uint32_t *)sdmmc_buf_cur = SDMMC->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
-    } else if (SDMMC1->STA & SDMMC_STA_SDIOIT) {
-        SDMMC1->MASK &= ~SDMMC_MASK_SDIOITIE;
-        SDMMC1->ICR = SDMMC_ICR_SDIOITC;
+    } else if (SDMMC->STA & SDMMC_STA_SDIOIT) {
+        SDMMC->MASK &= ~SDMMC_MASK_SDIOITIE;
+        SDMMC->ICR = SDMMC_ICR_SDIOITC;
 
         #if MICROPY_PY_NETWORK_CYW43
         extern void (*cyw43_poll)(void);
@@ -217,11 +262,11 @@ void SDMMC1_IRQHandler(void) {
             pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
         }
         #endif
-    } else if (SDMMC1->STA & 0x3f) {
+    } else if (SDMMC->STA & 0x3f) {
         // an error
-        sdmmc_error = SDMMC1->STA;
-        SDMMC1->ICR = SDMMC_STATIC_FLAGS;
-        SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+        sdmmc_error = SDMMC->STA;
+        SDMMC->ICR = SDMMC_STATIC_FLAGS;
+        SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
         sdmmc_irq_state = SDMMC_IRQ_STATE_DONE;
     }
 }
@@ -229,22 +274,22 @@ void SDMMC1_IRQHandler(void) {
 int sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
     #if defined(STM32F7)
     // Wait for any outstanding TX to complete
-    while (SDMMC1->STA & SDMMC_STA_TXACT) {
+    while (SDMMC->STA & SDMMC_STA_TXACT) {
     }
     #endif
 
     #if defined(STM32F7)
     DMA2_Stream3->CR = 0; // ensure DMA is reset
     #endif
-    SDMMC1->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
-    SDMMC1->ARG = arg;
-    SDMMC1->CMD = cmd | SDMMC_CMD_WAITRESP_0 | SDMMC_CMD_CPSMEN;
+    SDMMC->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
+    SDMMC->ARG = arg;
+    SDMMC->CMD = cmd | SDMMC_CMD_WAITRESP_0 | SDMMC_CMD_CPSMEN;
 
     sdmmc_irq_state = SDMMC_IRQ_STATE_CMD_DATA_PENDING;
     sdmmc_error = 0;
     sdmmc_buf_cur = NULL;
     sdmmc_buf_top = NULL;
-    SDMMC1->MASK = (SDMMC1->MASK & SDMMC_MASK_SDIOITIE) | SDMMC_MASK_CMDRENDIE | 0x3f;
+    SDMMC->MASK = (SDMMC->MASK & SDMMC_MASK_SDIOITIE) | SDMMC_MASK_CMDRENDIE | 0x3f;
 
     uint32_t start = mp_hal_ticks_ms();
     for (;;) {
@@ -253,13 +298,13 @@ int sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
             break;
         }
         if (mp_hal_ticks_ms() - start > 1000) {
-            SDMMC1->MASK = DEFAULT_MASK;
-            printf("sdio_transfer timeout STA=0x%08x\n", (uint)SDMMC1->STA);
+            SDMMC->MASK = DEFAULT_MASK;
+            printf("sdio_transfer timeout STA=0x%08x\n", (uint)SDMMC->STA);
             return -MP_ETIMEDOUT;
         }
     }
 
-    SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+    SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
 
     if (sdmmc_error == SDMMC_STA_CCRCFAIL && cmd == 5) {
         // Errata: CMD CRC error is incorrectly generated for CMD 5
@@ -268,13 +313,13 @@ int sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
         return -(0x1000000 | sdmmc_error);
     }
 
-    uint32_t rcmd = SDMMC1->RESPCMD;
+    uint32_t rcmd = SDMMC->RESPCMD;
     if (rcmd != cmd) {
         printf("sdio_transfer: cmd=%lu rcmd=%lu\n", cmd, rcmd);
         return -MP_EIO;
     }
     if (resp != NULL) {
-        *resp = SDMMC1->RESP1;
+        *resp = SDMMC->RESP1;
     }
     return 0;
 }
@@ -282,7 +327,7 @@ int sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
 int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t len, uint8_t *buf) {
     #if defined(STM32F7)
     // Wait for any outstanding TX to complete
-    while (SDMMC1->STA & SDMMC_STA_TXACT) {
+    while (SDMMC->STA & SDMMC_STA_TXACT) {
     }
     #endif
 
@@ -309,11 +354,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
 
     bool dma = (len > 16);
 
-    SDMMC1->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
-    SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+    SDMMC->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
+    SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
 
-    SDMMC1->DTIMER = 0x2000000; // about 700ms running at 48MHz
-    SDMMC1->DLEN = (len + block_size - 1) & ~(block_size - 1);
+    SDMMC->DTIMER = 0x2000000; // about 700ms running at 48MHz
+    SDMMC->DLEN = (len + block_size - 1) & ~(block_size - 1);
 
     #if defined(STM32F7)
     DMA2_Stream3->CR = 0;
@@ -339,7 +384,7 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         #if defined(STM32F7)
         DMA2->LIFCR = 0x3f << 22;
         DMA2_Stream3->FCR = 0x07; // ?
-        DMA2_Stream3->PAR = (uint32_t)&SDMMC1->FIFO;
+        DMA2_Stream3->PAR = (uint32_t)&SDMMC->FIFO;
         if ((uint32_t)buf & 3) {
             printf("sdio_transfer_cmd53: buf=%p is not aligned for DMA\n", buf);
             return -MP_EINVAL;
@@ -359,12 +404,12 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             | 1 << 0 // EN
         ;
         #else
-        SDMMC1->IDMABASE0 = (uint32_t)buf;
-        SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
+        SDMMC->IDMABASE0 = (uint32_t)buf;
+        SDMMC->IDMACTRL = SDMMC_IDMA_IDMAEN;
         #endif
     } else {
         #if defined(STM32H7)
-        SDMMC1->IDMACTRL = 0;
+        SDMMC->IDMACTRL = 0;
         #endif
     }
 
@@ -373,7 +418,7 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     // (and in case we get a long-running unrelated IRQ here on the host just
     // after writing to CMD to initiate the command)
     if (!write) {
-        SDMMC1->DCTRL =
+        SDMMC->DCTRL =
             SDMMC_DCTRL_SDIOEN
             | SDMMC_DCTRL_RWMOD
             | block_size_log2 << SDMMC_DCTRL_DBLOCKSIZE_Pos
@@ -385,8 +430,8 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         ;
     }
 
-    SDMMC1->ARG = arg;
-    SDMMC1->CMD = 53 | SDMMC_CMD_WAITRESP_0 | SDMMC_CMD_CPSMEN;
+    SDMMC->ARG = arg;
+    SDMMC->CMD = 53 | SDMMC_CMD_WAITRESP_0 | SDMMC_CMD_CPSMEN;
 
     sdmmc_irq_state = SDMMC_IRQ_STATE_CMD_DATA_PENDING;
     sdmmc_block_size_log2 = block_size_log2;
@@ -395,7 +440,7 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     sdmmc_error = 0;
     sdmmc_buf_cur = (uint8_t *)buf;
     sdmmc_buf_top = (uint8_t *)buf + len;
-    SDMMC1->MASK = (SDMMC1->MASK & SDMMC_MASK_SDIOITIE) | SDMMC_MASK_CMDRENDIE | SDMMC_MASK_DATAENDIE | SDMMC_MASK_RXFIFOHFIE | 0x3f;
+    SDMMC->MASK = (SDMMC->MASK & SDMMC_MASK_SDIOITIE) | SDMMC_MASK_CMDRENDIE | SDMMC_MASK_DATAENDIE | SDMMC_MASK_RXFIFOHFIE | 0x3f;
 
     // wait to complete transfer
     uint32_t start = mp_hal_ticks_ms();
@@ -405,23 +450,23 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             break;
         }
         if (mp_hal_ticks_ms() - start > 200) {
-            SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+            SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
             #if defined(STM32F7)
-            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
+            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
             #else
-            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
+            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
             #endif
             return -MP_ETIMEDOUT;
         }
     }
 
-    SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
+    SDMMC->MASK &= SDMMC_MASK_SDIOITIE;
 
     if (sdmmc_error) {
         #if defined(STM32F7)
-        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
+        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
         #else
-        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
+        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
         #endif
         return -(0x1000000 | sdmmc_error);
     }
