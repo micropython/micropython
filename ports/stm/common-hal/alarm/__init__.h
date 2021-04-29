@@ -29,7 +29,7 @@
 
 #include "common-hal/alarm/SleepMemory.h"
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
 #define STM_WAKEUP_UNDEF    0
 #define STM_WAKEUP_GPIO     1

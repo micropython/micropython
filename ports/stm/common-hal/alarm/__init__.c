@@ -31,6 +31,7 @@
 #include "lib/utils/interrupt_char.h"
 
 #include "shared-bindings/alarm/__init__.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 
@@ -38,6 +39,13 @@
 
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
+
+// Singleton instance of SleepMemory.
+const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
+    .base = {
+        .type = &alarm_sleep_memory_type,
+    },
+};
 
 STATIC uint8_t true_deep_wake_reason;
 STATIC mp_obj_t most_recent_alarm;
