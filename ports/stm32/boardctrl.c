@@ -51,20 +51,21 @@ STATIC uint update_reset_mode(uint reset_mode) {
         // The original method used on the pyboard is appropriate if you have 2
         // or more LEDs.
         #if defined(MICROPY_HW_LED2)
-        for (uint i = 0; i < 3000; i++) {
-            if (!switch_get()) {
-                break;
-            }
-            mp_hal_delay_ms(20);
-            if (i % 30 == 29) {
-                if (++reset_mode > BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM) {
-                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
+        for (uint i = 0; i < 100; i++) {
+            led_state(2, reset_mode & 1);
+            led_state(3, reset_mode & 2);
+            led_state(4, reset_mode & 4);
+            for (uint j = 0; j < 30; ++j) {
+                mp_hal_delay_ms(20);
+                if (!switch_get()) {
+                    goto select_mode;
                 }
-                led_state(2, reset_mode & 1);
-                led_state(3, reset_mode & 2);
-                led_state(4, reset_mode & 4);
+            }
+            if (++reset_mode > BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM) {
+                reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
             }
         }
+    select_mode:
         // flash the selected reset mode
         for (uint i = 0; i < 6; i++) {
             led_state(2, 0);
