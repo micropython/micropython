@@ -112,6 +112,11 @@
 #define MICROPY_HW_SDCARD_SDMMC (1)
 #endif
 
+// Which SDMMC peripheral to use for the SDIO driver (1 or 2)
+#ifndef MICROPY_HW_SDIO_SDMMC
+#define MICROPY_HW_SDIO_SDMMC (1)
+#endif
+
 // SD/MMC card driver interface bus width (defaults to 4 bits)
 #ifndef MICROPY_HW_SDCARD_BUS_WIDTH
 #define MICROPY_HW_SDCARD_BUS_WIDTH (4)
@@ -390,10 +395,10 @@
 
 // Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
 // generates the relevant AF constants.
-#if MICROPY_HW_SDCARD_SDMMC == 1
+#if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1
 #define MICROPY_HW_SDMMC1_CK (1)
 #endif
-#if MICROPY_HW_SDCARD_SDMMC == 2
+#if MICROPY_HW_SDCARD_SDMMC == 2 || MICROPY_HW_SDIO_SDMMC == 2
 #define MICROPY_HW_SDMMC2_CK (1)
 #endif
 
