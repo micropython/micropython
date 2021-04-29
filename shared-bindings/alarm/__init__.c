@@ -244,6 +244,7 @@ const mp_obj_module_t alarm_module = {
 };
 
 extern void port_idle_until_interrupt(void);
+
 MP_WEAK void common_hal_alarm_pretending_deep_sleep(void) {
     port_idle_until_interrupt();
 }

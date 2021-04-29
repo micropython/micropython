@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
+ * Copyright (c) 2021 Junji Sakai
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-
-#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 8
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
 #include "py/obj.h"
 
+#define SLEEP_MEMORY_LENGTH (256)
+
 typedef struct {
     mp_obj_base_t base;
-    // Stores no state currently.
-} mcu_processor_obj_t;
+} alarm_sleep_memory_obj_t;
 
-extern uint32_t reset_reason_saved;
+extern void set_memory_retention(void);
+extern void alarm_sleep_memory_reset(void);
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ALARM_SLEEPMEMORY_H

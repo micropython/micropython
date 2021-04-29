@@ -688,6 +688,7 @@ msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Kan de frequentie van een timer die al in gebruik is niet variëren"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
@@ -743,14 +744,6 @@ msgid ""
 msgstr ""
 "Verbinding is verbroken en kan niet langer gebruikt worden. Creëer een "
 "nieuwe verbinding."
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Corrupt .mpy bestand"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Corrupt raw code"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1307,7 +1300,8 @@ msgstr "Ongeldige fase"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Ongeldige pin"
@@ -1691,6 +1685,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Slechts één alarm.time alarm kan worden ingesteld."
 
@@ -2625,10 +2620,6 @@ msgstr "kan slechts 4 parameters aan Thumb assembly geven"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "kan slechts 4 parameters aan Xtensa assembly geven"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "kan alleen byte-code opslaan"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -3146,6 +3137,14 @@ msgstr "identifier is opnieuw gedefinieerd als global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifier is opnieuw gedefinieerd als nonlocal"
 
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
+
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "incompleet formaat"
@@ -3265,6 +3264,10 @@ msgstr "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 msgid "interval must be in range %s-%s"
 msgstr "interval moet binnen bereik %s-%s vallen"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ongeldige argumenten"
@@ -3273,10 +3276,6 @@ msgstr "ongeldige argumenten"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "ongeldig certificaat"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3307,10 +3306,6 @@ msgstr "ongeldige formaatspecificatie"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "onjuiste hostnaam"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "ongeldige sleutel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -4325,6 +4320,21 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Corrupt .mpy bestand"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Corrupt raw code"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan alleen byte-code opslaan"
+
+#~ msgid "invalid cert"
+#~ msgstr "ongeldig certificaat"
+
+#~ msgid "invalid key"
+#~ msgstr "ongeldige sleutel"
 
 #~ msgid "Viper functions don't currently support more than 4 arguments"
 #~ msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"

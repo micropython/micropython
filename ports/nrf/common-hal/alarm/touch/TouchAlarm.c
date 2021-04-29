@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#include "py/runtime.h"
+#include "shared-bindings/alarm/touch/TouchAlarm.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 8
+//static volatile bool woke_up = false;
 
-#include "py/obj.h"
+void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin) {
+    mp_raise_NotImplementedError(NULL);
+    (void)pin;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    // Stores no state currently.
-} mcu_processor_obj_t;
+mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
+    return mp_const_none;
+}
 
-extern uint32_t reset_reason_saved;
+void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms) {
+}
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
+}
+
+bool alarm_touch_touchalarm_woke_us_up(void) {
+    return false;
+}
+
+void alarm_touch_touchalarm_reset(void) {
+}

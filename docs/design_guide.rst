@@ -460,7 +460,7 @@ Renders as:
 
 Documentation References to other Libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-When you need to reference documentation in other libraries you should include the class by using single
+When you need to make references to documentation in other libraries you should refer the class using single
 backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the reference in the ``conf.py`` file in the
 ``intersphinx_mapping section`` by adding a new entry::
 
