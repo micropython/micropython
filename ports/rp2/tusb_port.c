@@ -25,6 +25,7 @@
  */
 
 #include "tusb.h"
+#include "pico/unique_id.h"
 
 #define USBD_VID (0x2E8A) // Raspberry Pi
 #define USBD_PID (0x0005) // RP2 MicroPython
@@ -102,9 +103,21 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
             return NULL;
         }
-        const char *str = usbd_desc_str[index];
-        for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
-            desc_str[1 + len] = str[len];
+        // check, if serial is requested
+        if (index == USBD_STR_SERIAL) {
+            pico_unique_board_id_t id;
+            pico_get_unique_board_id(&id);
+            // byte by byte conversion
+            for (len = 0; len < 16; len += 2) {
+                const char *hexdig = "0123456789abcdef";
+                desc_str[1 + len] = hexdig[id.id[len >> 1] >> 4];
+                desc_str[1 + len + 1] = hexdig[id.id[len >> 1] & 0x0f];
+            }
+        } else {
+            const char *str = usbd_desc_str[index];
+            for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
+                desc_str[1 + len] = str[len];
+            }
         }
     }
 
