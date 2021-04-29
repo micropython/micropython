@@ -29,6 +29,7 @@
 
 #include "py/mphal.h"
 #include "extmod/crypto-algorithms/sha256.c"
+#include "boardctrl.h"
 #include "usbd_core.h"
 #include "storage.h"
 #include "flash.h"
@@ -94,6 +95,9 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
+// For 1ms system ticker.
+static volatile uint32_t systick_ms;
+
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
@@ -101,6 +105,10 @@ static void do_reset(void);
 
 uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return systick_ms;
 }
 
 void mp_hal_delay_us(mp_uint_t usec) {
@@ -112,10 +120,9 @@ void mp_hal_delay_us(mp_uint_t usec) {
     const uint32_t ucount = SystemCoreClock / 2000000 * usec / 2;
     #endif
     for (uint32_t count = 0; ++count <= ucount;) {
+        __NOP();
     }
 }
-
-static volatile uint32_t systick_ms;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (__get_PRIMASK() == 0) {
@@ -1289,7 +1296,7 @@ static int pyb_usbdd_shutdown(void) {
 
 static int get_reset_mode(void) {
     usrbtn_init();
-    int reset_mode = 1;
+    int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
         // Timeout is roughly 20s, where reset_mode=1
@@ -1299,7 +1306,7 @@ static int get_reset_mode(void) {
         for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
             if (i % 32 == 0) {
                 if (++reset_mode > RESET_MODE_NUM_STATES) {
-                    reset_mode = 1;
+                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
                 led_state_all(l);
@@ -1351,7 +1358,7 @@ void stm32_main(int initial_r0) {
     #endif
 
     // Make sure IRQ vector table points to flash where this bootloader lives.
-    SCB->VTOR = FLASH_BASE;
+    SCB->VTOR = MBOOT_VTOR;
 
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
@@ -1396,7 +1403,7 @@ void stm32_main(int initial_r0) {
 
     int reset_mode = get_reset_mode();
     uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
-    if (reset_mode != 4 && (msp & APP_VALIDITY_BITS) == 0) {
+    if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER && (msp & APP_VALIDITY_BITS) == 0) {
         // not DFU mode so jump to application, passing through reset_mode
         // undo our DFU settings
         // TODO probably should disable all IRQ sources first

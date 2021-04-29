@@ -5,4 +5,6 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.usb
 )
 
-set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
+if(NOT MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
+endif()

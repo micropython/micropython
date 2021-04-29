@@ -42,7 +42,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -53,24 +53,34 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     self->mode = args[ARG_mode].u_int;
+
+    uint64_t delta_ms = self->delta_ms;
     if (args[ARG_freq].u_obj != mp_const_none) {
         // Frequency specified in Hz
         #if MICROPY_PY_BUILTINS_FLOAT
-        self->delta_ms = (uint32_t)(MICROPY_FLOAT_CONST(1000.0) / mp_obj_get_float(args[ARG_freq].u_obj));
+        delta_ms = (uint32_t)(MICROPY_FLOAT_CONST(1000.0) / mp_obj_get_float(args[ARG_freq].u_obj));
         #else
-        self->delta_ms = 1000 / mp_obj_get_int(args[ARG_freq].u_obj);
+        delta_ms = 1000 / mp_obj_get_int(args[ARG_freq].u_obj);
         #endif
-    } else {
+    } else if (args[ARG_period].u_int != 0xffffffff) {
         // Period specified
-        self->delta_ms = args[ARG_period].u_int * 1000 / args[ARG_tick_hz].u_int;
+        delta_ms = (uint64_t)args[ARG_period].u_int * 1000 / args[ARG_tick_hz].u_int;
     }
-    if (self->delta_ms < 1) {
-        self->delta_ms = 1;
-    }
-    self->expiry_ms = mp_hal_ticks_ms() + self->delta_ms;
 
-    self->callback = args[ARG_callback].u_obj;
-    soft_timer_insert(self);
+    if (delta_ms < 1) {
+        delta_ms = 1;
+    } else if (delta_ms >= 0x40000000) {
+        mp_raise_ValueError(MP_ERROR_TEXT("period too large"));
+    }
+    self->delta_ms = (uint32_t)delta_ms;
+
+    if (args[ARG_callback].u_obj != MP_OBJ_NULL) {
+        self->py_callback = args[ARG_callback].u_obj;
+    }
+
+    if (self->py_callback != mp_const_none) {
+        soft_timer_insert(self, self->delta_ms);
+    }
 
     return mp_const_none;
 }
@@ -78,6 +88,9 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->pairheap.base.type = &machine_timer_type;
+    self->flags = SOFT_TIMER_FLAG_PY_CALLBACK | SOFT_TIMER_FLAG_GC_ALLOCATED;
+    self->delta_ms = 1000;
+    self->py_callback = mp_const_none;
 
     // Get timer id (only soft timer (-1) supported at the moment)
     mp_int_t id = -1;

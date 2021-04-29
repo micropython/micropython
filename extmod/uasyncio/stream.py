@@ -82,7 +82,7 @@ async def open_connection(host, port):
     try:
         s.connect(ai[-1])
     except OSError as er:
-        if er.args[0] != EINPROGRESS:
+        if er.errno != EINPROGRESS:
             raise er
     yield core._io_queue.queue_write(s)
     return ss, ss

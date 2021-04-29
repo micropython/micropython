@@ -18,5 +18,5 @@ s.listen(1)
 try:
     s.accept()
 except OSError as er:
-    print(er.args[0] in (errno.ETIMEDOUT, "timed out"))  # CPython uses a string instead of errno
+    print(er.errno in (errno.ETIMEDOUT, "timed out"))  # CPython uses a string instead of errno
 s.close()

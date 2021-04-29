@@ -17,4 +17,4 @@ s.settimeout(0)
 try:
     s.recv(1)
 except OSError as er:
-    print("EAGAIN:", er.args[0] == errno.EAGAIN)
+    print("EAGAIN:", er.errno == errno.EAGAIN)

@@ -372,7 +372,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         }
     }
 
-    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("ord expects a character"));
     #else
     mp_raise_msg_varg(&mp_type_TypeError,

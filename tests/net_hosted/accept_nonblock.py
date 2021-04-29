@@ -12,5 +12,5 @@ s.listen(1)
 try:
     s.accept()
 except OSError as er:
-    print(er.args[0] == 11)  # 11 is EAGAIN
+    print(er.errno == 11)  # 11 is EAGAIN
 s.close()

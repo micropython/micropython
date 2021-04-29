@@ -93,6 +93,21 @@ void sdio_deinit(void) {
     #endif
 }
 
+void sdio_reenable(void) {
+    if (__HAL_RCC_SDMMC1_IS_CLK_DISABLED()) {
+        __HAL_RCC_SDMMC1_CLK_ENABLE(); // enable SDIO peripheral
+        sdio_enable_high_speed_4bit();
+    }
+}
+
+void sdio_enable_irq(bool enable) {
+    if (enable) {
+        SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+    } else {
+        SDMMC1->MASK &= ~SDMMC_MASK_SDIOITIE;
+    }
+}
+
 void sdio_enable_high_speed_4bit(void) {
     SDMMC_TypeDef *SDIO = SDMMC1;
     SDIO->POWER = 0; // power off

@@ -75,7 +75,7 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
 #endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
-    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
     (void)expected;
@@ -212,7 +212,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             }
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
-                #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_TypeError(MP_ERROR_TEXT("unexpected keyword argument"));
                 #else
                 mp_raise_msg_varg(&mp_type_TypeError,

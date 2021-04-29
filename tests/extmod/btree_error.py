@@ -27,7 +27,7 @@ class Device(uio.IOBase):
 try:
     db = btree.open(Device(), pagesize=511)
 except OSError as er:
-    print("OSError", er.args[0] == uerrno.EINVAL)
+    print("OSError", er.errno == uerrno.EINVAL)
 
 # Valid pagesize, device returns error on read; errno comes from Device.readinto
 try:

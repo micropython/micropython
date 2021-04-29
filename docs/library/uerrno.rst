@@ -16,13 +16,13 @@ Constants
 
     Error codes, based on ANSI C/POSIX standard. All error codes start with
     "E". As mentioned above, inventory of the codes depends on
-    :term:`MicroPython port`. Errors are usually accessible as ``exc.args[0]``
+    :term:`MicroPython port`. Errors are usually accessible as ``exc.errno``
     where ``exc`` is an instance of `OSError`. Usage example::
 
         try:
             uos.mkdir("my_dir")
         except OSError as exc:
-            if exc.args[0] == uerrno.EEXIST:
+            if exc.errno == uerrno.EEXIST:
                 print("Directory already exists")
 
 .. data:: errorcode

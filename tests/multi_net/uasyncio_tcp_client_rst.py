@@ -24,7 +24,7 @@ async def handle_connection(reader, writer):
         writer.close()
         await writer.wait_closed()
     except OSError as er:
-        print("OSError", er.args[0])
+        print("OSError", er.errno)
     ev.set()
 
 

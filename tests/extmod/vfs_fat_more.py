@@ -90,7 +90,7 @@ for exist in ("", "/", "dir", "/dir", "dir/subdir"):
     try:
         uos.mkdir(exist)
     except OSError as er:
-        print("mkdir OSError", er.args[0] == 17)  # EEXIST
+        print("mkdir OSError", er.errno == 17)  # EEXIST
 
 uos.chdir("/")
 print(uos.stat("test5.txt")[:-3])

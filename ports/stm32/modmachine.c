@@ -270,16 +270,16 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
     }
 
     if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
         // With a string/bytes given, pass its data to the custom bootloader
         size_t len;
         const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)0x08000000);
+        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
         memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
     }
     #endif
 

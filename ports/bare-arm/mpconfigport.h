@@ -37,7 +37,7 @@
 
 // Python internal features
 #define MICROPY_ENABLE_EXTERNAL_IMPORT          (0)
-#define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
 #define MICROPY_CPYTHON_COMPAT                  (0)
 #define MICROPY_MODULE_GETATTR                  (0)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG   (0)

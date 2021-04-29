@@ -159,12 +159,25 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+NORETURN void mp_raise_type(const mp_obj_type_t *exc_type);
+NORETURN void mp_raise_ValueError_no_msg(void);
+NORETURN void mp_raise_TypeError_no_msg(void);
+NORETURN void mp_raise_NotImplementedError_no_msg(void);
+#define mp_raise_msg(exc_type, msg) mp_raise_type(exc_type)
+#define mp_raise_msg_varg(exc_type, ...) mp_raise_type(exc_type)
+#define mp_raise_ValueError(msg) mp_raise_ValueError_no_msg()
+#define mp_raise_TypeError(msg) mp_raise_TypeError_no_msg()
+#define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
+#else
 #define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
+#endif
+
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_recursion_depth(void);
 

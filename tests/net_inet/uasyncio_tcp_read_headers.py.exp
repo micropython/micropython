@@ -5,6 +5,7 @@ b'Content-Length: 54'
 b'Connection: close'
 b'Vary: Accept-Encoding'
 b'ETag: "54306c85-36"'
+b'Strict-Transport-Security: max-age=15768000'
 b'Accept-Ranges: bytes'
 close
 done
