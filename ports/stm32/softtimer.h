@@ -29,6 +29,7 @@
 #include "py/pairheap.h"
 
 #define SOFT_TIMER_FLAG_PY_CALLBACK (1)
+#define SOFT_TIMER_FLAG_GC_ALLOCATED (2)
 
 #define SOFT_TIMER_MODE_ONE_SHOT (1)
 #define SOFT_TIMER_MODE_PERIODIC (2)
@@ -49,7 +50,10 @@ extern volatile uint32_t soft_timer_next;
 
 void soft_timer_deinit(void);
 void soft_timer_handler(void);
-void soft_timer_insert(soft_timer_entry_t *entry);
+void soft_timer_gc_mark_all(void);
+
+void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t delta_ms, void (*cb)(soft_timer_entry_t *));
+void soft_timer_insert(soft_timer_entry_t *entry, uint32_t initial_delta_ms);
 void soft_timer_remove(soft_timer_entry_t *entry);
 
 #endif // MICROPY_INCLUDED_STM32_SOFTTIMER_H

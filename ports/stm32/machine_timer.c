@@ -73,14 +73,13 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
         mp_raise_ValueError(MP_ERROR_TEXT("period too large"));
     }
     self->delta_ms = (uint32_t)delta_ms;
-    self->expiry_ms = mp_hal_ticks_ms() + self->delta_ms;
 
     if (args[ARG_callback].u_obj != MP_OBJ_NULL) {
         self->py_callback = args[ARG_callback].u_obj;
     }
 
     if (self->py_callback != mp_const_none) {
-        soft_timer_insert(self);
+        soft_timer_insert(self, self->delta_ms);
     }
 
     return mp_const_none;
@@ -89,7 +88,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->pairheap.base.type = &machine_timer_type;
-    self->flags = SOFT_TIMER_FLAG_PY_CALLBACK;
+    self->flags = SOFT_TIMER_FLAG_PY_CALLBACK | SOFT_TIMER_FLAG_GC_ALLOCATED;
     self->delta_ms = 1000;
     self->py_callback = mp_const_none;
 
