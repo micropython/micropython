@@ -25,7 +25,7 @@ LD_FILES = boards/$(MCU_SERIES).ld $(TOP)/$(MCU_DIR)/gcc/$(MCU_SERIES)xxxxx_flex
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
-AF_FILE = $(BOARD_DIR)/$(MCU_SERIES)_af.csv
+AF_FILE = $(BOARD_DIR)/$(BOARD)_af.csv
 PREFIX_FILE = boards/mimxrt_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h

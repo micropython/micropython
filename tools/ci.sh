@@ -147,7 +147,12 @@ function ci_mimxrt_setup {
 
 function ci_mimxrt_build {
     make ${MAKEOPTS} -C ports/mimxrt submodules
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1010_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1050_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1060_EVK    
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1064_EVK
+    make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
 }
 
 ########################################################################################

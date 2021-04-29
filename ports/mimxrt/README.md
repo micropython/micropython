@@ -8,7 +8,10 @@ Features:
 
 Known issues:
   - pyboard.py doesn't work with files larger than 64 bytes
+  - machine pin module currently does not support GPIOMUX option of 
+    i.MX RT101x variants
 
 TODO:
   - Enable TCM
   - Peripherals (pins, LED, Timers, etc)
+
