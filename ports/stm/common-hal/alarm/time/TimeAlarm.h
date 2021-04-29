@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H
 
 #include "py/obj.h"
 
@@ -40,3 +42,5 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
 void alarm_time_timealarm_reset(void);
 
 void alarm_time_timealarm_prepare_for_deep_sleep(void);
+
+#endif  // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM_TIMEALARM_H

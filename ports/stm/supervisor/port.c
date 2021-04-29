@@ -175,6 +175,7 @@ safe_mode_t port_init(void) {
     HAL_Init(); // Turns on SysTick
     __HAL_RCC_SYSCFG_CLK_ENABLE();
 
+    #if CPY_STM32F4
     __HAL_RCC_PWR_CLK_ENABLE();
     HAL_PWR_EnableBkUpAccess();
 
@@ -193,6 +194,8 @@ safe_mode_t port_init(void) {
 
     __HAL_RCC_BACKUPRESET_FORCE();
     __HAL_RCC_BACKUPRESET_RELEASE();
+
+    #endif
 
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
