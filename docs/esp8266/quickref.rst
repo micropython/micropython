@@ -138,6 +138,10 @@ Also note that Pin(16) is a special pin (used for wakeup from deepsleep
 mode) and may be not available for use with higher-level classes like
 ``Neopixel``.
 
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``on()`` or ``value(1)``.
+
 UART (serial bus)
 -----------------
 
