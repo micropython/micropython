@@ -293,6 +293,17 @@ See :ref:`machine.RTC <machine.RTC>` ::
           (using a custom handler), `RTC.init()` and `RTC.deinit()` are
           currently not supported.
 
+WDT (Watchdog timer)
+--------------------
+
+See :ref:`machine.WDT <machine.WDT>`. ::
+
+    from machine import WDT
+
+    # enable the WDT
+    wdt = WDT()
+    wdt.feed()
+
 Deep-sleep mode
 ---------------
 
