@@ -357,6 +357,17 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
 
+WDT (Watchdog timer)
+--------------------
+
+See :ref:`machine.WDT <machine.WDT>`. ::
+
+    from machine import WDT
+
+    # enable the WDT with a timeout of 5s (1s is the minimum)
+    wdt = WDT(timeout=5000)
+    wdt.feed()
+
 Deep-sleep mode
 ---------------
 
