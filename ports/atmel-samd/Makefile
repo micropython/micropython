@@ -126,7 +126,7 @@ ifeq ($(DEBUG), 1)
   # You may want to disable -flto if it interferes with debugging.
   CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+  # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
