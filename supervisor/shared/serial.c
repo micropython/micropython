@@ -34,6 +34,7 @@
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-module/usb_cdc/__init__.h"
 
 #include "tusb.h"
 
@@ -92,6 +93,8 @@ bool serial_connected(void) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
+    #elif CIRCUITPY_USB_CDC
+    return usb_cdc_repl_enabled() && tud_cdc_connected();
     #else
     return tud_cdc_connected();
     #endif
@@ -114,9 +117,12 @@ char serial_read(void) {
     char text;
     common_hal_busio_uart_read(&debug_uart, (uint8_t *)&text, 1, &uart_errcode);
     return text;
-    #else
-    return (char)tud_cdc_read_char();
+    #elif CIRCUITPY_USB_CDC
+    if (!usb_cdc_repl_enabled()) {
+        return -1;
+    }
     #endif
+    return (char)tud_cdc_read_char();
 }
 
 bool serial_bytes_available(void) {
@@ -128,9 +134,12 @@ bool serial_bytes_available(void) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
-    #else
-    return tud_cdc_available() > 0;
+    #elif CIRCUITPY_USB_CDC
+    if (!usb_cdc_repl_enabled()) {
+        return 0;
+    }
     #endif
+    return tud_cdc_available() > 0;
 }
 void serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
@@ -144,6 +153,12 @@ void serial_write_substring(const char *text, uint32_t length) {
     #if CIRCUITPY_USB_VENDOR
     if (tud_vendor_connected()) {
         tud_vendor_write(text, length);
+    }
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    if (!usb_cdc_repl_enabled()) {
+        return;
     }
     #endif
 

@@ -60,7 +60,7 @@
 //| the host.
 //| Note that `data` is *disabled* by default."""
 
-//| def configure_usb(repl_enabled: bool, data_enabled: bool) -> None:
+//| def configure_usb(*, repl_enabled: bool = True, data_enabled: bool = False) -> None:
 //|     """Configure the USB CDC devices. Can be called in ``boot.py``, before USB is connected.
 //|
 //|     :param repl_enabled bool: Enable or disable the `repl` USB serial device.
@@ -69,15 +69,21 @@
 //|       True to enable; False to disable. *Disabled* by default."""
 //|     ...
 //|
-STATIC mp_obj_t usb_cdc_configure_usb(mp_obj_t repl_enabled, mp_obj_t data_enabled) {
-    if (!common_hal_usb_cdc_configure_usb(
-            mp_obj_is_true(repl_enabled),
-            mp_obj_is_true(data_enabled))) {
+STATIC mp_obj_t usb_cdc_configure_usb(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_repl_enabled, ARG_data_enabled };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_repl_enabled, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true } },
+        { MP_QSTR_data_enabled, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (!common_hal_usb_cdc_configure_usb(args[ARG_repl_enabled].u_bool, args[ARG_data_enabled].u_bool)) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_configure_usb_obj, usb_cdc_configure_usb);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_cdc_configure_usb_obj, 0, usb_cdc_configure_usb);
 
 // The usb_cdc module dict is mutable so that .repl and .data may
 // be set to a Serial or to None depending on whether they are enabled or not.

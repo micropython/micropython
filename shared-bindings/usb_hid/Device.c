@@ -60,7 +60,7 @@
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
-    enum { ARG_report_descriptor, ARG_usage, ARG_usage_page, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
+    enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },

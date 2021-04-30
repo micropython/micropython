@@ -659,7 +659,7 @@ msgid "Cannot record to a file"
 msgstr ""
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
+msgid "Cannot remount '/' when visible via USB."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c

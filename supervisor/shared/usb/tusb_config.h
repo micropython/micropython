@@ -74,7 +74,7 @@ extern "C" {
 
 // ------------- CLASS -------------//
 
-// Could be 2 if secondary CDC channel requested.
+// Will be set to 2 in supervisor.mk if CIRCUITPY_USB_CDC is set.
 #ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC                 1
 #endif
