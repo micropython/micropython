@@ -179,15 +179,6 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
         case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
             authmode = WIFI_AUTH_WPA_WPA2_PSK;
             break;
-        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_ENTERPRISE)):
-            authmode = WIFI_AUTH_WPA2_ENTERPRISE;
-            break;
-        case ((1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK)):
-            authmode = WIFI_AUTH_WPA3_PSK;
-            break;
-        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK)):
-            authmode = WIFI_AUTH_WPA2_WPA3_PSK;
-            break;
         default:
             mp_raise_ValueError(translate("Invalid AuthMode"));
             break;
