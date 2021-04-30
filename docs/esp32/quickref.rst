@@ -424,6 +424,21 @@ Notes:
 
     p1 = Pin(4, Pin.OUT, None)
 
+SD card
+-------
+
+See :ref:`machine.SDCard <machine.SDCard>`. ::
+
+    import machine, uos
+
+    # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
+    sd = machine.SDCard(slot=2)
+    uos.mount(sd, "/sd")  # mount
+
+    uos.listdir('/sd')    # list directory contents
+
+    uos.umount('/sd')     # eject
+
 RMT
 ---
 
