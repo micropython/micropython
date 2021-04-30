@@ -40,7 +40,7 @@
 //| """Tuple of all active HID device interfaces."""
 //|
 
-//| def configure_usb(devices: Optional[Sequence[Device, ...]]) -> None:
+//| def configure_usb(devices: Optional[Sequence[Device]]) -> None:
 //|     """Configure the USB HID devices that will be available.
 //|     Can be called in ``boot.py``, before USB is connected.
 //|

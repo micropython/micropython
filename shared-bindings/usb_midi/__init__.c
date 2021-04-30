@@ -43,7 +43,7 @@
 //| """Tuple of all MIDI ports. Each item is ether `PortIn` or `PortOut`."""
 //|
 
-//| def configure_usb(enabled: True) -> None:
+//| def configure_usb(enabled: bool = True) -> None:
 //|     """Configure the USB MIDI device.
 //|     Can be called in ``boot.py``, before USB is connected.
 //|

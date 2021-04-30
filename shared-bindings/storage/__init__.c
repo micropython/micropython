@@ -158,7 +158,7 @@ mp_obj_t storage_erase_filesystem(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(storage_erase_filesystem_obj, storage_erase_filesystem);
 
-//| def configure_usb(enabled: True) -> None:
+//| def configure_usb(enabled: bool = True) -> None:
 //|     """Configure the USB mass storage device.
 //|     Enable or disable presenting ``CIRCUITPY`` as a USB mass storage device.
 //|     By default, the device is enabled and ``CIRCUITPY`` is visible.
