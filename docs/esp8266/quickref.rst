@@ -58,7 +58,7 @@ The :mod:`network` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.config('mac')      # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface

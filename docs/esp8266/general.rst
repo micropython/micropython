@@ -185,7 +185,7 @@ limitation with usage of TLS on the low-memory devices:
    accessing various REST APIs, which usually require much smaller messages.
    The buffers size is on the order of 5KB, and is adjusted from time to
    time, taking as a reference being able to access https://google.com .
-   The smaller buffer hower means that some sites can't be accessed using
+   The smaller buffer however means that some sites can't be accessed using
    it, and it's not possible to stream large amounts of data.
 
 There are also some not implemented features specifically in MicroPython's

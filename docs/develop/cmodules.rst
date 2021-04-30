@@ -91,7 +91,7 @@ This simple module named ``cexample`` provides a single function
 ``cexample.add_ints(a, b)`` which adds the two integer args together and returns
 the result. It can be found in the MicroPython source tree
 `in the examples directory <https://github.com/micropython/micropython/tree/master/examples/usercmodule/cexample>`_
-and has a source file and a Makefile fragment with content as descibed above::
+and has a source file and a Makefile fragment with content as described above::
 
     micropython/
     └──examples/
