@@ -37,6 +37,14 @@ Reset related functions
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
+.. function:: bootloader([value])
+
+   Reset the device and enter its bootloader.  This is typically used to put the
+   device into a state where it can be programmed with new firmware.
+
+   Some ports support passing in an optional *value* argument which can control
+   which bootloader to enter, what to pass to it, or other things.
+
 Interrupt related functions
 ---------------------------
 
