@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 
-void mp_sched_exception(mp_obj_t exc) {
+void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
     MP_STATE_VM(mp_pending_exception) = exc;
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
