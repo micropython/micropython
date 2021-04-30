@@ -173,7 +173,7 @@ size_t usb_cdc_descriptor_length(void) {
     return sizeof(usb_cdc_descriptor_template);
 }
 
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, bool repl) {
+size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, bool repl) {
     memcpy(descriptor_buf, usb_cdc_descriptor_template, sizeof(usb_cdc_descriptor_template));
 
     // Store comm interface number.
@@ -206,12 +206,12 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     (*current_endpoint)++;
 
     usb_add_interface_string(*current_interface_string,
-                             repl ? repl_cdc_comm_interface_name : data_cdc_comm_interface_name);
+        repl ? repl_cdc_comm_interface_name : data_cdc_comm_interface_name);
     descriptor_buf[CDC_COMM_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
     usb_add_interface_string(*current_interface_string,
-                             repl ? repl_cdc_data_interface_name : data_cdc_data_interface_name);
+        repl ? repl_cdc_data_interface_name : data_cdc_data_interface_name);
     descriptor_buf[CDC_DATA_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 

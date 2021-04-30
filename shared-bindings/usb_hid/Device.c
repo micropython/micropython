@@ -65,7 +65,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT } ,
+        { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
     };
@@ -98,10 +98,9 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const mp_obj_t out_report_length_arg = args[ARG_out_report_length].u_obj;
     if (out_report_length_arg == mp_const_none) {
         self->out_report_length = 0;
-    }
-    else if (!mp_obj_is_small_int(out_report_length_arg) ||
-             MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
-             MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
+    } else if (!mp_obj_is_small_int(out_report_length_arg) ||
+               MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
+               MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
         mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_out_report_length);
     }
     uint8_t out_report_length = MP_OBJ_SMALL_INT_VALUE(out_report_length_arg);
@@ -109,10 +108,9 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const mp_obj_t report_id_index_arg = args[ARG_report_id_index].u_obj;
     if (report_id_index_arg == mp_const_none) {
         self->report_id_index = 0;
-    }
-    else if (!mp_obj_is_small_int(report_id_index_arg) ||
-             MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) <= 0 ||
-             MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) > 255 ) {
+    } else if (!mp_obj_is_small_int(report_id_index_arg) ||
+               MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) <= 0 ||
+               MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) > 255) {
         mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);
     }
     uint8_t report_id_index = MP_OBJ_SMALL_INT_VALUE(report_id_index_arg);

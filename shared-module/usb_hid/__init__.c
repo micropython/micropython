@@ -112,10 +112,10 @@ size_t usb_hid_descriptor_length(void) {
     return sizeof(usb_hid_descriptor_template);
 }
 
-static const char usb_hid_interface_name[] =  USB_INTERFACE_NAME " HID";
+static const char usb_hid_interface_name[] = USB_INTERFACE_NAME " HID";
 
 // This is the interface descriptor, not the report descriptor.
-size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length) {
+size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, uint16_t report_descriptor_length) {
     memcpy(descriptor_buf, usb_hid_descriptor_template, sizeof(usb_hid_descriptor_template));
 
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = *current_interface;
@@ -176,7 +176,7 @@ bool common_hal_usb_hid_configure_usb(const mp_obj_t devices) {
 void usb_hid_setup_devices(void) {
     usb_hid_set_devices_from_hid_devices();
 
-   // Create report buffers on the heap.
+    // Create report buffers on the heap.
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
         usb_hid_device_create_report_buffers(&hid_devices[i]);
     }
@@ -197,7 +197,7 @@ size_t usb_hid_report_descriptor_length(void) {
 }
 
 // Build the combined HID report descriptor in the given space.
-void usb_hid_build_report_descriptor(uint8_t* report_descriptor_space, size_t report_descriptor_length) {
+void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length) {
     uint8_t *report_descriptor_start = report_descriptor_space;
 
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
@@ -209,7 +209,7 @@ void usb_hid_build_report_descriptor(uint8_t* report_descriptor_space, size_t re
             memcpy(report_descriptor_start, device->report_descriptor, device->report_id_index - 1);
             report_descriptor_start += device->report_id_index - 1;
             memcpy(report_descriptor_start, device->report_descriptor + device->report_id_index + 1,
-                   device->report_descriptor_length - device->report_id_index - 1);
+                device->report_descriptor_length - device->report_id_index - 1);
         } else {
             // Copy the whole descriptor and fill in the report id.
             memcpy(report_descriptor_start, device->report_descriptor, device->report_descriptor_length);
@@ -236,8 +236,8 @@ void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t rep
     // will leave between VM instantiations.
     hid_report_descriptor_allocation =
         allocate_memory(align32_size(report_descriptor_length),
-                        /*high_address*/ false, /*movable*/ false);
-    memcpy((uint8_t *) hid_report_descriptor_allocation->ptr, report_descriptor_space, report_descriptor_length);
+            /*high_address*/ false, /*movable*/ false);
+    memcpy((uint8_t *)hid_report_descriptor_allocation->ptr, report_descriptor_space, report_descriptor_length);
 }
 
 void usb_hid_gc_collect(void) {
@@ -263,5 +263,5 @@ usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id) {
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
-    return (uint8_t *) hid_report_descriptor_allocation->ptr;
+    return (uint8_t *)hid_report_descriptor_allocation->ptr;
 }

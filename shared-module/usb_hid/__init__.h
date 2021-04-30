@@ -34,13 +34,13 @@ extern usb_hid_device_obj_t usb_hid_devices[];
 bool usb_hid_enabled(void);
 void usb_hid_set_defaults(void);
 
-size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t* current_interface_string, uint16_t report_descriptor_length);
+size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, uint16_t report_descriptor_length);
 size_t usb_hid_descriptor_length(void);
 size_t usb_hid_report_descriptor_length(void);
 
 void usb_hid_setup_devices(void);
 size_t usb_hid_report_descriptor_length(void);
-void usb_hid_build_report_descriptor(uint8_t* report_descriptor_space, size_t report_descriptor_length);
+void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
 void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
 
 usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id);
