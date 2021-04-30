@@ -451,6 +451,7 @@ $(filter $(SRC_PATTERNS), \
 	msgpack/__init__.c \
 	msgpack/ExtType.c \
 	supervisor/RunReason.c \
+	wifi/AuthMode.c \
 )
 
 SRC_BINDINGS_ENUMS += \
