@@ -88,7 +88,7 @@
 
 // Oscillator values in Hz
 #define HSI_VALUE (16000000)
-#define LSI_VALUE (40000)
+#define LSI_VALUE (32000)
 
 // SysTick has the highest priority
 #define TICK_INT_PRIORITY (0x00)
