@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Junji Sakai
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +52,7 @@
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
+#include "common-hal/alarm/__init__.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
@@ -73,9 +75,14 @@ static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
 
+#ifdef NRF_DEBUG_PRINT
+extern void _debug_uart_init(void);
+#endif
+
+uint32_t reset_reason_saved = 0;
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
 
-const nrfx_rtc_config_t rtc_config = {
+nrfx_rtc_config_t rtc_config = {
     .prescaler = RTC_FREQ_TO_PRESCALER(0x8000),
     .reliable = 0,
     .tick_latency = 0,
@@ -100,6 +107,12 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
         supervisor_tick();
     } else if (int_type == NRFX_RTC_INT_COMPARE0) {
         nrfx_rtc_cc_set(&rtc_instance, 0, 0, false);
+    } else if (int_type == NRFX_RTC_INT_COMPARE1) {
+        // used in light sleep
+        #if CIRCUITPY_ALARM
+        sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_TIMER;
+        #endif
+        nrfx_rtc_cc_set(&rtc_instance, 1, 0, false);
     }
 }
 
@@ -122,6 +135,22 @@ void tick_init(void) {
         overflow_tracker.suffix = OVERFLOW_CHECK_SUFFIX;
         overflow_tracker.overflowed_ticks = 0;
     }
+}
+
+void tick_uninit(void) {
+    nrfx_rtc_counter_clear(&rtc_instance);
+    nrfx_rtc_disable(&rtc_instance);
+    nrfx_rtc_uninit(&rtc_instance);
+}
+
+void tick_set_prescaler(uint32_t prescaler_val) {
+    tick_uninit();
+    // update of prescaler value sometimes fails if we skip this delay..
+    NRFX_DELAY_US(1000);
+    uint16_t prescaler_saved = rtc_config.prescaler;
+    rtc_config.prescaler = prescaler_val;
+    tick_init();
+    rtc_config.prescaler = prescaler_saved;
 }
 
 safe_mode_t port_init(void) {
@@ -153,11 +182,21 @@ safe_mode_t port_init(void) {
     analogin_init();
     #endif
 
+    reset_reason_saved = NRF_POWER->RESETREAS;
+    // clear all RESET reason bits
+    NRF_POWER->RESETREAS = reset_reason_saved;
+    // clear wakeup event/pin when reset by reset-pin
+    if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
+        #if CIRCUITPY_ALARM
+        sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
+        #endif
+    }
+
     // If the board was reset by the WatchDogTimer, we may
     // need to boot into safe mode. Reset the RESETREAS bit
     // for the WatchDogTimer so we don't encounter this the
     // next time we reboot.
-    if (NRF_POWER->RESETREAS & POWER_RESETREAS_DOG_Msk) {
+    if (reset_reason_saved & POWER_RESETREAS_DOG_Msk) {
         NRF_POWER->RESETREAS = POWER_RESETREAS_DOG_Msk;
         uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
 
@@ -219,6 +258,10 @@ void reset_port(void) {
     #endif
 
     reset_all_pins();
+
+#ifdef NRF_DEBUG_PRINT
+    _debug_uart_init();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -295,7 +338,7 @@ void port_disable_tick(void) {
     nrfx_rtc_tick_disable(&rtc_instance);
 }
 
-void port_interrupt_after_ticks(uint32_t ticks) {
+void port_interrupt_after_ticks_ch(uint32_t channel, uint32_t ticks) {
     uint32_t current_ticks = nrfx_rtc_counter_get(&rtc_instance);
     uint32_t diff = 3;
     if (ticks > diff) {
@@ -304,7 +347,15 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     if (diff > 0xffffff) {
         diff = 0xffffff;
     }
-    nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
+    nrfx_rtc_cc_set(&rtc_instance, channel, current_ticks + diff, true);
+}
+
+void port_disable_interrupt_after_ticks_ch(uint32_t channel) {
+    nrfx_rtc_cc_disable(&rtc_instance, channel);
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    port_interrupt_after_ticks_ch(0, ticks);
 }
 
 void port_idle_until_interrupt(void) {
@@ -355,3 +406,9 @@ void HardFault_Handler(void) {
         asm ("nop;");
     }
 }
+
+#if CIRCUITPY_ALARM
+// in case boards/xxx/board.c does not provide board_deinit()
+MP_WEAK void board_deinit(void) {
+}
+#endif

@@ -49,7 +49,7 @@
 //| but the `displayio.Bitmap.dirty` method must be used to inform
 //| displayio when a bitmap was modified through the buffer interface.
 //|
-//| `bitmaptools.arrayblit` can also be useful to omve data efficiently
+//| `bitmaptools.arrayblit` can also be useful to move data efficiently
 //| into a Bitmap.
 //| """
 //|
@@ -150,7 +150,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+    if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         // TODO(tannewt): Implement subscr after slices support start, stop and step tuples.
         mp_raise_NotImplementedError(translate("Slices not supported"));
         return mp_const_none;
@@ -158,7 +158,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 
     uint16_t x = 0;
     uint16_t y = 0;
-    if (MP_OBJ_IS_SMALL_INT(index_obj)) {
+    if (mp_obj_is_small_int(index_obj)) {
         mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
         uint16_t width = common_hal_displayio_bitmap_get_width(self);
         x = i % width;

@@ -658,12 +658,12 @@ STATIC mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     jobject res = NULL;
 
-    if (MP_OBJ_IS_TYPE(type_in, &jclass_type)) {
+    if (mp_obj_is_type(type_in, &jclass_type)) {
 
         mp_obj_jclass_t *jcls = MP_OBJ_TO_PTR(type_in);
         res = JJ(NewObjectArray, size, jcls->cls, NULL);
 
-    } else if (MP_OBJ_IS_STR(type_in)) {
+    } else if (mp_obj_is_str(type_in)) {
         const char *type = mp_obj_str_get_str(type_in);
         switch (*type) {
             case 'Z':

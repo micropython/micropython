@@ -137,7 +137,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
 
 void pulsein_reset() {
 #ifdef SAMD21
-    rtc_end_pulsein();
+    rtc_end_pulse();
 #endif
     refcount = 0;
     pulsein_tc_index = 0xff;
@@ -236,7 +236,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     // Set config will enable the EIC.
     pulsein_set_config(self, true);
 #ifdef SAMD21
-    rtc_start_pulsein();
+    rtc_start_pulse();
 #endif
 
 }
@@ -250,7 +250,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
         return;
     }
 #ifdef SAMD21
-    rtc_end_pulsein();
+    rtc_end_pulse();
 #endif
     set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->channel);

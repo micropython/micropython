@@ -88,11 +88,15 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(arg)) {
+    if (mp_obj_is_str(arg)) {
         mp_raise_TypeError(translate("a bytes-like object is required"));
     }
     #endif
 }
+
+#if MICROPY_PY_UHASHLIB_SHA256
+#include "crypto-algorithms/sha256.c"
+#endif
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 0, 1, false);
@@ -335,9 +339,5 @@ const mp_obj_module_t mp_module_uhashlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uhashlib_globals,
 };
-
-#if MICROPY_PY_UHASHLIB_SHA256
-#include "crypto-algorithms/sha256.c"
-#endif
 
 #endif // MICROPY_PY_UHASHLIB

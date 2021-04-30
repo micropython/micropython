@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-07 12:23+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Reza Almanda <rezaalmanda27@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -698,6 +698,7 @@ msgstr ""
 "digunakan"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
@@ -752,14 +753,6 @@ msgid ""
 "connection."
 msgstr ""
 "Koneksi telah terputus dan tidak dapat lagi digunakan. Buat koneksi baru."
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "File .mpy rusak"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Kode raw rusak"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1207,6 +1200,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "%q pada tidak valid"
@@ -1277,6 +1271,11 @@ msgstr "Periode penangkapan tidak valid. Kisaran yang valid: 1 - 500"
 msgid "Invalid channel count"
 msgstr "Jumlah kanal tidak valid"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
 msgstr "Arah tidak valid."
@@ -1309,7 +1308,8 @@ msgstr "Fase tidak valid"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin tidak valid"
@@ -1664,11 +1664,11 @@ msgstr "Hanya 8 atau 16 bit mono dengan "
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Hanya alamat IPv4 yang didukung"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Hanysa socket IPv4 yang didukung"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1692,6 +1692,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1709,15 +1710,15 @@ msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Waktu habis"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Kehabisan memori"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Kehabisan socket"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
@@ -1763,7 +1764,7 @@ msgstr "ParallelBus belum didukung"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Periferal sedang digunakan"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1775,7 +1776,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Jumlah pin terlalu besar"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1817,7 +1818,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
-msgstr ""
+msgstr "Pin harus berurutan"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2155,6 +2156,14 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for DRDY"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Timeout waiting for VSYNC"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Untuk keluar, silahkan reset board tanpa "
@@ -2347,10 +2356,6 @@ msgstr "Panjang nilai > max_length"
 msgid "Version was invalid"
 msgstr ""
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "Fungsi Viper saat ini tidak mendukung lebih dari 4 argumen"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "Tegangan baca habis waktu"
@@ -2436,11 +2441,6 @@ msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
 msgid "abort() called"
 msgstr "abort() dipanggil"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "alamat %08x tidak selaras dengan %d bytes"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "alamat di luar batas"
@@ -2448,6 +2448,10 @@ msgstr "alamat di luar batas"
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "alamatnya kosong"
+
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2614,10 +2618,6 @@ msgstr "hanya mampu memiliki hingga 4 parameter untuk Thumb assembly"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr ""
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2631,12 +2631,20 @@ msgstr "tidak dapat menetapkan ke ekspresi"
 msgid "can't convert %q to %q"
 msgstr ""
 
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't convert to int"
 msgstr ""
 
 #: py/objstr.c
@@ -2835,6 +2843,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3042,8 +3055,8 @@ msgid "full"
 msgstr ""
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "fungsi tidak dapat mengambil argumen keyword"
+msgid "function doesn't take keyword arguments"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3097,6 +3110,10 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
+#: py/objgenerator.c
+msgid "generator raised StopIteration"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr ""
@@ -3112,6 +3129,14 @@ msgstr "identifier didefinisi ulang sebagai global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifier didefinisi ulang sebagai nonlocal"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3232,6 +3257,10 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr ""
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumen-argumen tidak valid"
@@ -3240,10 +3269,6 @@ msgstr "argumen-argumen tidak valid"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "cert tidak valid"
 
 #: py/compile.c
 msgid "invalid decorator"
@@ -3274,10 +3299,6 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "key tidak valid"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3474,6 +3495,10 @@ msgstr ""
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
+msgstr ""
+
+#: py/modmath.c
+msgid "negative factorial"
 msgstr ""
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
@@ -3706,10 +3731,6 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "anotasi parameter haruse sebuah identifier"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
@@ -3765,6 +3786,7 @@ msgstr ""
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4148,7 +4170,7 @@ msgstr ""
 msgid "unknown type"
 msgstr "tipe tidak diketahui"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr ""
 
@@ -4220,11 +4242,11 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi tidak diaktifkan"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "jendela harus <= interval"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
@@ -4286,6 +4308,30 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "File .mpy rusak"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Kode raw rusak"
+
+#~ msgid "invalid cert"
+#~ msgstr "cert tidak valid"
+
+#~ msgid "invalid key"
+#~ msgstr "key tidak valid"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Fungsi Viper saat ini tidak mendukung lebih dari 4 argumen"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "alamat %08x tidak selaras dengan %d bytes"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "fungsi tidak dapat mengambil argumen keyword"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "anotasi parameter haruse sebuah identifier"
 
 #~ msgid "Total data to write is larger than outgoing_packet_length"
 #~ msgstr ""

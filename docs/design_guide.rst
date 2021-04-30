@@ -238,10 +238,33 @@ Module description
 After the license comment::
 
     """
-    `<module name>` - <Short description>
+    `<module name>`
     =================================================
-    <Longer description.>
+
+    <Longer description>
+
+    * Author(s):
+
+    Implementation Notes
+    --------------------
+
+
+    **Hardware:**
+
+    * Adafruit `Device Description
+      <hyperlink>`_ (Product ID: <Product Number>)
+
+    **Software and Dependencies:**
+
+    * Adafruit CircuitPython firmware for the supported boards:
+      https://circuitpython.org/downloads
+    * Adafruit's Bus Device library:
+      https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+    * Adafruit's Register library:
+      https://github.com/adafruit/Adafruit_CircuitPython_Register
+
     """
+
 
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -382,6 +405,14 @@ Renders as:
   Turns the bot ``degrees`` right.
 
   :param float degrees: Degrees to turn right
+
+Documentation References to other Libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When you need to make references to documentation in other libraries you should refer the class using single
+backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the reference in the ``conf.py`` file in the
+``intersphinx_mapping section`` by adding a new entry::
+
+    "adafruit_motor": ("https://circuitpython.readthedocs.io/projects/motor/en/latest/", None,),
 
 Use BusDevice
 --------------------------------------------------------------------------------

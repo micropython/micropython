@@ -90,12 +90,12 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
-    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
+    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
-    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
+    } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
         bitmap_width = bmp->width;
@@ -104,8 +104,8 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
     }
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
-    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type) &&
-        !MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type)) {
+    if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
+        !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
     uint16_t tile_width = args[ARG_tile_width].u_int;
@@ -300,7 +300,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_pixel_shader_obj, displayio_til
 
 STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
-    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type) && !MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type)) {
+    if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
         mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
     }
 
@@ -343,12 +343,12 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
     displayio_tilegrid_t *self = native_tilegrid(self_in);
 
 
-    if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+    if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         mp_raise_NotImplementedError(translate("Slices not supported"));
     } else {
         uint16_t x = 0;
         uint16_t y = 0;
-        if (MP_OBJ_IS_SMALL_INT(index_obj)) {
+        if (mp_obj_is_small_int(index_obj)) {
             mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
             uint16_t width = common_hal_displayio_tilegrid_get_width(self);
             x = i % width;

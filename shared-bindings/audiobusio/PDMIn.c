@@ -188,13 +188,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     check_for_deinit(self);
-    if (!MP_OBJ_IS_SMALL_INT(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
+    if (!mp_obj_is_small_int(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
         mp_raise_TypeError(translate("destination_length must be an int >= 0"));
     }
     uint32_t length = MP_OBJ_SMALL_INT_VALUE(destination_length);
 
     mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_TYPE(destination, &mp_type_fileio)) {
+    if (mp_obj_is_type(destination, &mp_type_fileio)) {
         mp_raise_NotImplementedError(translate("Cannot record to a file"));
     } else if (mp_get_buffer(destination, &bufinfo, MP_BUFFER_WRITE)) {
         if (bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL) < length) {

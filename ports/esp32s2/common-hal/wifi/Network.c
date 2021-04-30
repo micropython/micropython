@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/wifi/Network.h"
-
 #include <string.h>
 
-#include "py/obj.h"
+#include "py/enum.h"
+#include "shared-bindings/wifi/Network.h"
+#include "shared-bindings/wifi/AuthMode.h"
 
 mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
     const char *cstr = (const char *)self->record.ssid;
@@ -56,35 +56,42 @@ mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
 }
 
 mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
-    const char *authmode = "";
+    uint8_t authmode_mask = 0;
     switch (self->record.authmode) {
         case WIFI_AUTH_OPEN:
-            authmode = "OPEN";
+            authmode_mask = (1 << AUTHMODE_OPEN);
             break;
         case WIFI_AUTH_WEP:
-            authmode = "WEP";
+            authmode_mask = (1 << AUTHMODE_WEP);
             break;
         case WIFI_AUTH_WPA_PSK:
-            authmode = "WPA_PSK";
+            authmode_mask = (1 << AUTHMODE_WPA) | (1 << AUTHMODE_PSK);
             break;
         case WIFI_AUTH_WPA2_PSK:
-            authmode = "WPA2_PSK";
+            authmode_mask = (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK);
             break;
         case WIFI_AUTH_WPA_WPA2_PSK:
-            authmode = "WPA_WPA2_PSK";
+            authmode_mask = (1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK);
             break;
         case WIFI_AUTH_WPA2_ENTERPRISE:
-            authmode = "WPA2_ENTERPRISE";
+            authmode_mask = (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_ENTERPRISE);
             break;
         case WIFI_AUTH_WPA3_PSK:
-            authmode = "WPA3_PSK";
+            authmode_mask = (1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK);
             break;
         case WIFI_AUTH_WPA2_WPA3_PSK:
-            authmode = "WPA2_WPA3_PSK";
+            authmode_mask = (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK);
             break;
         default:
-            authmode = "UNKNOWN";
             break;
     }
-    return mp_obj_new_str(authmode, strlen(authmode));
+    mp_obj_t authmode_list = mp_obj_new_list(0, NULL);
+    if (authmode_mask != 0) {
+        for (uint8_t i = 0; i < 8; i++) {
+            if ((authmode_mask >> i) & 1) {
+                mp_obj_list_append(authmode_list, cp_enum_find(&wifi_authmode_type, i));
+            }
+        }
+    }
+    return authmode_list;
 }

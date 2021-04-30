@@ -39,7 +39,7 @@ mp_obj_t cp_enum_find(const mp_obj_type_t *type, int value) {
 }
 
 int cp_enum_value(const mp_obj_type_t *type, mp_obj_t *obj) {
-    if (!MP_OBJ_IS_TYPE(obj, type)) {
+    if (!mp_obj_is_type(obj, type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), type->name);
     }
     return ((cp_enum_obj_t *)MP_OBJ_TO_PTR(obj))->value;

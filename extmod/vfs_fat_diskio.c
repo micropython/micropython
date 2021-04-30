@@ -18,8 +18,8 @@
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
 
-#if _MAX_SS == _MIN_SS
-#define SECSIZE(fs) (_MIN_SS)
+#if FF_MAX_SS == FF_MIN_SS
+#define SECSIZE(fs) (FF_MIN_SS)
 #else
 #define SECSIZE(fs) ((fs)->ssize)
 #endif
@@ -34,7 +34,7 @@ STATIC fs_user_mount_t *disk_get_device(void *bdev) {
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read(
-    bdev_t pdrv,      /* Physical drive */
+    bdev_t pdrv,      /* Physical drive nmuber (0..) */
     BYTE *buff,        /* Data buffer to store read data */
     DWORD sector,    /* Sector address (LBA) */
     UINT count        /* Number of sectors to read (1..128) */
@@ -74,7 +74,7 @@ DRESULT disk_read(
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_write(
-    bdev_t pdrv,          /* Physical drive */
+    bdev_t pdrv,          /* Physical drive nmuber (0..) */
     const BYTE *buff,    /* Data to be written */
     DWORD sector,        /* Sector address (LBA) */
     UINT count            /* Number of sectors to write (1..128) */
@@ -120,8 +120,8 @@ DRESULT disk_write(
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_ioctl(
-    bdev_t pdrv,      /* Physical drive */
-    BYTE cmd,         /* Control code */
+    bdev_t pdrv,      /* Physical drive nmuber (0..) */
+    BYTE cmd,        /* Control code */
     void *buff        /* Buffer to send/receive control data */
     ) {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
@@ -198,7 +198,7 @@ DRESULT disk_ioctl(
             } else {
                 *((WORD *)buff) = out_value;
             }
-            #if _MAX_SS != _MIN_SS
+            #if FF_MAX_SS != FF_MIN_SS
             // need to store ssize because we use it in disk_read/disk_write
             vfs->fatfs.ssize = *((WORD *)buff);
             #endif

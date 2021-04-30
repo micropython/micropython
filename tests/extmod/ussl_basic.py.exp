@@ -1,7 +1,6 @@
 ssl_handshake_status: -256
 wrap_socket: OSError(5,)
 <_SSLSocket 
-setblocking: NotImplementedError
 4
 b''
 read: OSError(-261,)

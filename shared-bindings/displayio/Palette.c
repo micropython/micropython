@@ -109,7 +109,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         return MP_OBJ_NULL; // op not supported
     }
     // Slicing not supported. Use a duplicate Palette to swap multiple colors atomically.
-    if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+    if (mp_obj_is_type(index_in, &mp_type_slice)) {
         return MP_OBJ_NULL;
     }
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
@@ -120,8 +120,8 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     }
 
     // Convert a tuple or list to a bytearray.
-    if (MP_OBJ_IS_TYPE(value, &mp_type_tuple) ||
-        MP_OBJ_IS_TYPE(value, &mp_type_list)) {
+    if (mp_obj_is_type(value, &mp_type_tuple) ||
+        mp_obj_is_type(value, &mp_type_list)) {
         value = mp_type_bytes.make_new(&mp_type_bytes, 1, &value, NULL);
     }
 

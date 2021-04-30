@@ -213,9 +213,9 @@ bool bleio_characteristic_set_local_value(bleio_characteristic_obj_t *self, mp_b
 
     self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 
-    if (MP_OBJ_IS_TYPE(self->observer, &bleio_characteristic_buffer_type)) {
+    if (mp_obj_is_type(self->observer, &bleio_characteristic_buffer_type)) {
         bleio_characteristic_buffer_update(MP_OBJ_FROM_PTR(self->observer), bufinfo);
-    } else if (MP_OBJ_IS_TYPE(self->observer, &bleio_packet_buffer_type)) {
+    } else if (mp_obj_is_type(self->observer, &bleio_packet_buffer_type)) {
         bleio_packet_buffer_update(MP_OBJ_FROM_PTR(self->observer), bufinfo);
     } else {
         return false;

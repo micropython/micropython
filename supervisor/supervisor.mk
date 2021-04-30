@@ -7,6 +7,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/cpu.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
+  supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/rgb_led_status.c \
 	supervisor/shared/safe_mode.c \
@@ -59,7 +60,7 @@ $(BUILD)/supervisor/shared/external_flash/external_flash.o: $(HEADER_BUILD)/devi
 
 endif
 
-ifeq ($(USB),FALSE)
+ifeq ($(CIRCUITPY_USB),0)
   ifeq ($(wildcard supervisor/serial.c),)
     SRC_SUPERVISOR += supervisor/stub/serial.c
   else
@@ -122,8 +123,6 @@ else
       lib/tinyusb/src/class/vendor/vendor_device.c \
 
   endif
-
-  CFLAGS += -DUSB_AVAILABLE
 endif
 
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))

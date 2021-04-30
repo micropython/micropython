@@ -44,6 +44,7 @@ BUILD ?= build
 
 ECHO = @echo
 
+CAT = cat
 CD = cd
 CP = cp
 FIND = find
@@ -55,6 +56,7 @@ PYTHON3 ?= python3
 RM = rm
 RSYNC = rsync
 SED = sed
+TOUCH = touch
 # Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
 NPROC = $(PYTHON3) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 

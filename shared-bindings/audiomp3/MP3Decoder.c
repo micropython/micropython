@@ -72,7 +72,7 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
 
     audiomp3_mp3file_obj_t *self = m_new_obj(audiomp3_mp3file_obj_t);
     self->base.type = &audiomp3_mp3file_type;
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
+    if (!mp_obj_is_type(args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
@@ -137,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_file_obj, audiomp3_mp3file_obj_ge
 STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    if (!MP_OBJ_IS_TYPE(file, &mp_type_fileio)) {
+    if (!mp_obj_is_type(file, &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     common_hal_audiomp3_mp3file_set_file(self, file);
