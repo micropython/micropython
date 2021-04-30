@@ -171,6 +171,33 @@ Notes:
 * The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
   consumption during deepsleep.
 
+UART (serial bus)
+-----------------
+
+See :ref:`machine.UART <machine.UART>`. ::
+
+    from machine import UART
+
+    uart1 = UART(1, baudrate=9600, tx=33, rx=32)
+    uart1.write('hello')  # write 5 bytes
+    uart1.read(5)         # read up to 5 bytes
+
+The ESP32 has three hardware UARTs: UART0, UART1 and UART2.
+They each have default GPIO assigned to them, however depending on your
+ESP32 variant and board, these pins may conflict with embedded flash,
+onboard PSRAM or peripherals.
+
+Any GPIO can be used for hardware UARTs using the GPIO matrix, so to avoid
+conflicts simply provide ``tx`` and ``rx`` pins when constructing. The default
+pins listed below.
+
+=====  =====  =====  =====
+\      UART0  UART1  UART2
+=====  =====  =====  =====
+tx     1      10     17
+rx     3      9      16
+=====  =====  =====  =====
+
 PWM (pulse width modulation)
 ----------------------------
 
