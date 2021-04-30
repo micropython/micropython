@@ -222,7 +222,7 @@ Methods
    Unlike `send()`, this method will try to send all of data, by sending data
    chunk by chunk consecutively.
 
-   The behavior of this method on non-blocking sockets is undefined. Due to this,
+   The behaviour of this method on non-blocking sockets is undefined. Due to this,
    on MicroPython, it's recommended to use `write()` method instead, which
    has the same "no short writes" policy for blocking sockets, and will return
    number of bytes sent on non-blocking sockets.
