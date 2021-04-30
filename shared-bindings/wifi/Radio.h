@@ -71,18 +71,6 @@ typedef enum {
     WIFI_RADIO_ERROR_AP_TSF_RESET             = 206,
 } wifi_radio_error_t;
 
-typedef enum {
-    WIFI_RADIO_AUTH_OPEN = 0, // OK
-    WIFI_RADIO_AUTH_WEP, // not supported in SoftAP
-    WIFI_RADIO_AUTH_WPA_PSK, // OK
-    WIFI_RADIO_AUTH_WPA2_PSK, // OK
-    WIFI_RADIO_AUTH_WPA_WPA2_PSK, // OK
-    WIFI_RADIO_AUTH_WPA2_ENTERPRISE, // not currently supported
-    WIFI_RADIO_AUTH_WPA3_PSK, // not currently supported
-    WIFI_RADIO_AUTH_WPA2_WPA3_PSK, // not currently supported
-    WIFI_RADIO_AUTH_MAX, // not currently supported
-} wifi_radio_authmode_t;
-
 extern bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled);
 

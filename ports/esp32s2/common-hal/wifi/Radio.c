@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
+#include "shared-bindings/wifi/AuthMode.h"
 #include "shared-module/ipaddress/__init__.h"
 
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -164,6 +165,33 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode) {
     set_mode_ap(self, true);
+
+    switch (authmode) {
+        case (1 << AUTHMODE_OPEN):
+            authmode = WIFI_AUTH_OPEN;
+            break;
+        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA2_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA_WPA2_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_ENTERPRISE)):
+            authmode = WIFI_AUTH_WPA2_ENTERPRISE;
+            break;
+        case ((1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA3_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_WPA3) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA2_WPA3_PSK;
+            break;
+        default:
+            mp_raise_ValueError(translate("Invalid AuthMode"));
+            break;
+    }
 
     wifi_config_t *config = &self->ap_config;
     memcpy(&config->ap.ssid, ssid, ssid_len);

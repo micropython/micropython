@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/wifi/__init__.h"
+#include "shared-bindings/wifi/AuthMode.h"
 
 #include <regex.h>
 #include <string.h>
@@ -190,19 +191,13 @@ STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 
-//|     OPEN: int
-//|     WPA_PSK: int
-//|     WPA2_PSK: int
-//|     WPA_WPA2_PSK: int
-//|
 //|     def start_ap(self,
 //|                  ssid: ReadableBuffer,
 //|                  password: ReadableBuffer = b"",
 //|                  *,
 //|                  channel: Optional[int] = 1,
-//|                  authmode: Optional[int] = WPA_WPA2_PSK) -> None:
-//|         """Starts an Access Point with the specified ssid and password
-//|            If an empty.
+//|                  authmode: Optional[AuthMode]) -> None:
+//|         """Starts an Access Point with the specified ssid and password.
 //|
 //|            If ``channel`` is given, the access point will use that channel unless
 //|            a station is already operating on a different channel.
@@ -217,12 +212,21 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WIFI_RADIO_AUTH_WPA_WPA2_PSK} },
+        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t authmode = 0;
+    if (args[ARG_authmode].u_obj != MP_OBJ_NULL) {
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t item, iterable = mp_getiter(args[ARG_authmode].u_obj, &iter_buf);
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            authmode |= (1 << (wifi_authmode_t)cp_enum_value(&wifi_authmode_type, item));
+        }
+    }
 
     mp_buffer_info_t ssid;
     mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
@@ -230,16 +234,20 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_buffer_info_t password;
     password.len = 0;
     if (args[ARG_password].u_obj != MP_OBJ_NULL) {
+        if (authmode == 1) {
+            mp_raise_ValueError(translate("AuthMode.OPEN is not used with password"));
+        } else if (authmode == 0) {
+            authmode = (1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK);
+        }
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
         if (password.len > 0 && (password.len < 8 || password.len > 63)) {
             mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters"));
         }
-        if (args[ARG_authmode].u_int == WIFI_RADIO_AUTH_OPEN) {
-            mp_raise_ValueError(translate("WiFi password is not used with OPEN authentication"));
-        }
+    } else {
+        authmode = 1;
     }
 
-    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, args[ARG_authmode].u_int);
+    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmode);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
@@ -503,10 +511,6 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_stop_station),    MP_ROM_PTR(&wifi_radio_stop_station_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_ap),    MP_ROM_PTR(&wifi_radio_stop_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_ap),    MP_ROM_PTR(&wifi_radio_start_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN), MP_ROM_INT(WIFI_RADIO_AUTH_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_WPA_PSK), MP_ROM_INT(WIFI_RADIO_AUTH_WPA_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2_PSK), MP_ROM_INT(WIFI_RADIO_AUTH_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_WPA_WPA2_PSK), MP_ROM_INT(WIFI_RADIO_AUTH_WPA_WPA2_PSK) },
 
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },

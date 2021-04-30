@@ -26,7 +26,6 @@
 
 #include <string.h>
 
-#include "py/enum.h"
 #include "shared-bindings/wifi/Network.h"
 #include "shared-bindings/wifi/AuthMode.h"
 

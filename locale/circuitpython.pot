@@ -350,7 +350,7 @@ msgstr ""
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr ""
 
@@ -439,6 +439,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1191,6 +1195,10 @@ msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
@@ -2115,14 +2123,6 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr ""
@@ -2350,10 +2350,6 @@ msgid ""
 "Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
-msgstr ""
-
-#: shared-bindings/wifi/Radio.c
-msgid "WiFi password is not used with OPEN authentication"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
