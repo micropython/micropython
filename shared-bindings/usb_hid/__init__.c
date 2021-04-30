@@ -48,6 +48,7 @@
 //|       If `devices` is empty, HID is disabled. The order of the ``Devices``
 //|       may matter to the host. For instance, for MacOS, put the mouse device
 //|       before any Gamepad or Digitizer HID device or else it will not work.
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t usb_hid_configure_usb(mp_obj_t devices) {

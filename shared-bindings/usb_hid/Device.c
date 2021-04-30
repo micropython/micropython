@@ -36,25 +36,25 @@
 //|        import usb_hid
 //|
 //|        mouse = usb_hid.devices[0]
-//|
 //|        mouse.send_report()"""
 //|
 
-//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: Optional[int], , report_id_index: Optional[int]) -> None:
+//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: Optional[int], report_id_index: Optional[int]) -> None:
 //|         """Create a description of a USB HID device. To create an actual device,
 //|         pass a `Device` to `usb_hid.configure_usb()`.
 //|
 //|         :param ReadableBuffer report_descriptor: The USB HID Report descriptor bytes. The descriptor is not
-//|         not verified for correctness; it is up to you to make sure it is not malformed.
+//|           not verified for correctness; it is up to you to make sure it is not malformed.
 //|         :param int usage_page: The Usage Page value from the descriptor. Must match what is in the descriptor.
 //|         :param int usage: The Usage value from the descriptor. Must match what is in the descriptor.
 //|         :param int in_report_length: Size in bytes of the HID report sent to the host.
-//|            "In" is with respect to the host.
+//|           "In" is with respect to the host.
 //|         :param int out_report_length: Size in bytes of the HID report received from the host.
-//|            "Out" is with respect to the host. If no reports are expected, use ``None``.
+//|           "Out" is with respect to the host. If no reports are expected, use ``None``.
 //|         :param int report_id_index: position of byte in descriptor that contains the Report ID.
-//|            A Report ID will be assigned when the device is created. If there is no
-//|            Report ID, use ``None``.
+//|           A Report ID will be assigned when the device is created. If there is no
+//|           Report ID, use ``None``.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
