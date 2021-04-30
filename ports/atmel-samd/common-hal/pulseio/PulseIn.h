@@ -35,7 +35,7 @@ typedef struct {
     mp_obj_base_t base;
     uint8_t channel;
     uint8_t pin;
-    uint16_t* buffer;
+    uint16_t *buffer;
     uint16_t maxlen;
     bool idle_state;
     volatile uint16_t start;

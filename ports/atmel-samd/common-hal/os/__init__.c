@@ -60,13 +60,13 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBCMASK_TRNG_bit(MCLK);
     struct rand_sync_desc random;

@@ -150,11 +150,11 @@ void pwmout_reset(void) {
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
 
 static int calculate_pulse_count(uint32_t frequency, uint8_t *prescaler) {
-    if (frequency > PWM_SRC_CLK_FREQ/2) {
+    if (frequency > PWM_SRC_CLK_FREQ / 2) {
         return 0;
     }
-    for(int shift = 0; shift<8; shift++) {
-        int pulse_count = PWM_SRC_CLK_FREQ/(1<<shift)/frequency;
+    for (int shift = 0; shift < 8; shift++) {
+        int pulse_count = PWM_SRC_CLK_FREQ / (1 << shift) / frequency;
         if (pulse_count >= 65535) {
             continue;
         }
@@ -270,7 +270,7 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     if (duty == 65535) {
         self->duty_scaled = self->pulse_count + 1;
     } else {
-        self->duty_scaled = ((uint32_t)duty * self->pulse_count + self->pulse_count/2) / 65535;
+        self->duty_scaled = ((uint32_t)duty * self->pulse_count + self->pulse_count / 2) / 65535;
     }
     switch (self->pwm->channel) {
         case kPWM_PwmX:
@@ -292,7 +292,7 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     if (self->duty_cycle == 65535) {
         return 65535;
     }
-    return ((uint32_t)self->duty_scaled * 65535 + 65535/2) / self->pulse_count;
+    return ((uint32_t)self->duty_scaled * 65535 + 65535 / 2) / self->pulse_count;
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
@@ -319,7 +319,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
 }
 
 uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
-    return PWM_SRC_CLK_FREQ/self->pulse_count/(1 << self->prescaler);
+    return PWM_SRC_CLK_FREQ / self->pulse_count / (1 << self->prescaler);
 }
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
