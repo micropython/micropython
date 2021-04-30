@@ -90,8 +90,10 @@ for board in build_boards:
             for alias in board_info["aliases"] + [board]:
                 bin_directory = "../bin/{alias}/{language}".format(alias=alias, language=language)
                 os.makedirs(bin_directory, exist_ok=True)
-                final_filename = "adafruit-circuitpython-{alias}-{language}-{version}.{extension}".format(
-                    alias=alias, language=language, version=version, extension=extension
+                final_filename = (
+                    "adafruit-circuitpython-{alias}-{language}-{version}.{extension}".format(
+                        alias=alias, language=language, version=version, extension=extension
+                    )
                 )
                 final_filename = os.path.join(bin_directory, final_filename)
                 try:

@@ -80,15 +80,15 @@ def git_glob_to_regex(pat):
         m = m.group(0)
         if m == "*":
             return "[^/]*"
-        if m == "**":
-            return ".*"
+        if m == "**/":
+            return "(.*/)?"
         if m == "?":
             return "[^/]"
         if m == ".":
             return r"\."
         return m
 
-    result = [transform(part) for part in re.finditer(r"(\*\*|[*?.]|[^*?.]+)", pat)]
+    result = [transform(part) for part in re.finditer(r"(\*\*/|[*?.]|[^*?.]+)", pat)]
     return "(^" + "".join(result) + "$)"
 
 
@@ -151,9 +151,7 @@ def fixup_c(filename):
                 if directive in ("if ", "ifdef ", "ifndef "):
                     l_next = lines[0]
                     indent_next = len(re.match(r"( *)", l_next).group(1))
-                    if indent - 4 == indent_next and re.match(
-                        r" +(} else |case )", l_next
-                    ):
+                    if indent - 4 == indent_next and re.match(r" +(} else |case )", l_next):
                         # This #-line (and all associated ones) needs dedenting by 4 spaces.
                         l = l[4:]
                         dedent_stack.append(indent - 4)
