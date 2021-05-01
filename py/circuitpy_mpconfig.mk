@@ -234,9 +234,7 @@ CFLAGS += -DCIRCUITPY_PS2IO=$(CIRCUITPY_PS2IO)
 CIRCUITPY_PULSEIO ?= 1
 CFLAGS += -DCIRCUITPY_PULSEIO=$(CIRCUITPY_PULSEIO)
 
-# For now we tie PWMIO to PULSEIO so they always both exist. In CircuitPython 7
-# we can enable and disable them separately once PWMOut is removed from `pulseio`.
-CIRCUITPY_PWMIO ?= $(CIRCUITPY_PULSEIO)
+CIRCUITPY_PWMIO ?= 1
 CFLAGS += -DCIRCUITPY_PWMIO=$(CIRCUITPY_PWMIO)
 
 CIRCUITPY_RANDOM ?= 1
