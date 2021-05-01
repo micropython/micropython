@@ -96,6 +96,9 @@
 #define MICROPY_COMP_CONST (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
+void mp_hal_signal_event(void);
+#define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
+
 #define MICROPY_PY_SYS_PLATFORM "zephyr"
 
 #ifdef CONFIG_BOARD

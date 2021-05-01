@@ -483,7 +483,7 @@ STATIC mp_obj_t extra_coverage(void) {
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_handle_pending(true);
@@ -493,13 +493,13 @@ STATIC mp_obj_t extra_coverage(void) {
         }
 
         // setting the keyboard interrupt (twice) and cancelling it during mp_handle_pending
-        mp_keyboard_interrupt();
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         mp_handle_pending(false);
 
         // setting keyboard interrupt and a pending event (intr should be handled first)
         mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_builtin_print_obj), MP_OBJ_NEW_SMALL_INT(10));
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         if (nlr_push(&nlr) == 0) {
             mp_handle_pending(true);
             nlr_pop();

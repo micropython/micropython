@@ -305,7 +305,7 @@ static void draw_object(mp_obj_t obj) {
             async_stop();
         }
     } else {
-        MP_STATE_VM(mp_pending_exception) = mp_obj_new_exception_msg(&mp_type_TypeError, MP_ERROR_TEXT("not an image."));
+        mp_sched_exception(mp_obj_new_exception_msg(&mp_type_TypeError, MP_ERROR_TEXT("not an image.")));
         async_stop();
     }
 }
@@ -341,7 +341,7 @@ static void microbit_display_update(void) {
                     if (mp_obj_get_type(nlr.ret_val) == &mp_type_MemoryError) {
                         mp_printf(&mp_plat_print, "Allocation in interrupt handler");
                     }
-                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(nlr.ret_val);
+                    mp_sched_exception(MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
                 obj = MP_OBJ_STOP_ITERATION;
             }

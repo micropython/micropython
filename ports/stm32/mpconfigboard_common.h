@@ -122,6 +122,11 @@
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
 #endif
 
+// Which SDMMC peripheral to use for the SDIO driver (1 or 2)
+#ifndef MICROPY_HW_SDIO_SDMMC
+#define MICROPY_HW_SDIO_SDMMC (1)
+#endif
+
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
 #ifndef MICROPY_HW_HAS_MMA7660
 #define MICROPY_HW_HAS_MMA7660 (0)
@@ -390,10 +395,10 @@
 
 // Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
 // generates the relevant AF constants.
-#if MICROPY_HW_SDCARD_SDMMC == 1
+#if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1
 #define MICROPY_HW_SDMMC1_CK (1)
 #endif
-#if MICROPY_HW_SDCARD_SDMMC == 2
+#if MICROPY_HW_SDCARD_SDMMC == 2 || MICROPY_HW_SDIO_SDMMC == 2
 #define MICROPY_HW_SDMMC2_CK (1)
 #endif
 

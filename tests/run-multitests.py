@@ -160,7 +160,17 @@ class PyInstanceSubProcess(PyInstance):
 
 
 class PyInstancePyboard(PyInstance):
+    @staticmethod
+    def map_device_shortcut(device):
+        if device[0] == "a" and device[1:].isdigit():
+            return "/dev/ttyACM" + device[1:]
+        elif device[0] == "u" and device[1:].isdigit():
+            return "/dev/ttyUSB" + device[1:]
+        else:
+            return device
+
     def __init__(self, device):
+        device = self.map_device_shortcut(device)
         self.device = device
         self.pyb = pyboard.Pyboard(device)
         self.pyb.enter_raw_repl()

@@ -55,7 +55,7 @@ mergeInto(LibraryManager.library, {
                 var n = fs.readSync(process.stdin.fd, buf, 0, 1);
                 if (n > 0) {
                     if (buf[0] == mp_interrupt_char) {
-                        Module.ccall('mp_keyboard_interrupt', 'null', ['null'], ['null']);
+                        Module.ccall('mp_sched_keyboard_interrupt', 'null', ['null'], ['null']);
                     } else {
                         process.stdout.write(String.fromCharCode(buf[0]));
                     }

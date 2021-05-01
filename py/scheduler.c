@@ -28,16 +28,20 @@
 
 #include "py/runtime.h"
 
-#if MICROPY_KBD_EXCEPTION
-// This function may be called asynchronously at any time so only do the bare minimum.
-void MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(mp_keyboard_interrupt)(void) {
-    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
+    MP_STATE_VM(mp_pending_exception) = exc;
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
     #endif
+}
+
+#if MICROPY_KBD_EXCEPTION
+// This function may be called asynchronously at any time so only do the bare minimum.
+void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void) {
+    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+    mp_sched_exception(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
 }
 #endif
 
@@ -130,6 +134,7 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
         MP_STATE_VM(sched_queue)[iput].func = function;
         MP_STATE_VM(sched_queue)[iput].arg = arg;
+        MICROPY_SCHED_HOOK_SCHEDULED;
         ret = true;
     } else {
         // schedule queue is full

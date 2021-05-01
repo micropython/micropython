@@ -550,6 +550,12 @@
 #define MICROPY_VM_HOOK_RETURN
 #endif
 
+// Hook for mp_sched_schedule when a function gets scheduled on sched_queue
+// (this macro executes within an atomic section)
+#ifndef MICROPY_SCHED_HOOK_SCHEDULED
+#define MICROPY_SCHED_HOOK_SCHEDULED
+#endif
+
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)
@@ -1504,8 +1510,12 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to wrap functions with attributes                        */
 
-#ifndef MICROPY_WRAP_MP_KEYBOARD_INTERRUPT
-#define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) f
+#ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
+#define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT
+#define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) f
 #endif
 
 #ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
