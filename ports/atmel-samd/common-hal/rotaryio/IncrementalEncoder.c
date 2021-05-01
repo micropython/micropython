@@ -34,8 +34,8 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
     if (!pin_a->has_extint || !pin_b->has_extint) {
         mp_raise_RuntimeError(translate("Both pins must support hardware interrupts"));
     }
@@ -63,15 +63,15 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     gpio_set_pin_function(self->pin_b, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_pull_mode(self->pin_b, GPIO_PULL_UP);
 
-    set_eic_channel_data(self->eic_channel_a, (void*) self);
-    set_eic_channel_data(self->eic_channel_b, (void*) self);
+    set_eic_channel_data(self->eic_channel_a, (void *)self);
+    set_eic_channel_data(self->eic_channel_b, (void *)self);
 
     self->position = 0;
     self->quarter_count = 0;
 
     shared_module_softencoder_state_init(self,
-        ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
-        (uint8_t) gpio_get_pin_level(self->pin_b));
+        ((uint8_t)gpio_get_pin_level(self->pin_a) << 1) |
+        (uint8_t)gpio_get_pin_level(self->pin_b));
 
     claim_pin(pin_a);
     claim_pin(pin_b);
@@ -83,11 +83,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     turn_on_eic_channel(self->eic_channel_b, EIC_CONFIG_SENSE0_BOTH_Val);
 }
 
-bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
+bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
     return self->pin_a == NO_PIN;
 }
 
-void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
+void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
@@ -106,11 +106,11 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
 }
 
 void incrementalencoder_interrupt_handler(uint8_t channel) {
-    rotaryio_incrementalencoder_obj_t* self = get_eic_channel_data(channel);
+    rotaryio_incrementalencoder_obj_t *self = get_eic_channel_data(channel);
 
     uint8_t new_state =
-        ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
-        (uint8_t) gpio_get_pin_level(self->pin_b);
+        ((uint8_t)gpio_get_pin_level(self->pin_a) << 1) |
+        (uint8_t)gpio_get_pin_level(self->pin_b);
 
     shared_module_softencoder_state_update(self, new_state);
 }

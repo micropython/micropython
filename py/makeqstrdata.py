@@ -631,6 +631,7 @@ def parse_input_headers(infiles):
 
     return qcfgs, qstrs, i18ns
 
+
 def escape_bytes(qstr):
     if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
         # qstr is all printable ASCII so render it as-is (for easier debugging)
@@ -639,6 +640,7 @@ def escape_bytes(qstr):
         # qstr contains non-printable codes so render entire thing as hex pairs
         qbytes = bytes_cons(qstr, "utf8")
         return "".join(("\\x%02x" % b) for b in qbytes)
+
 
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qbytes = bytes_cons(qstr, "utf8")
@@ -713,7 +715,6 @@ def print_qstr_enums(qstrs):
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         print("QENUM(MP_QSTR_%s)" % (ident,))
-
 
 
 if __name__ == "__main__":

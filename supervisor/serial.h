@@ -49,6 +49,6 @@ bool serial_bytes_available(void);
 bool serial_connected(void);
 
 // XXX  used in nrf52-sleep debug
-int dbg_printf(const char *fmt, ...)__attribute__((format (printf, 1, 2)));
+int dbg_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
