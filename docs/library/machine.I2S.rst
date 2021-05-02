@@ -54,10 +54,10 @@ blocking::
    
 non-blocking::
  
-   audio_out.callback(i2s_callback)    # i2s_callback is called when buf is emptied
+   audio_out.irq(i2s_callback)         # i2s_callback is called when buf is emptied
    num_written = audio_out.write(buf)  # returns immediately
         
-   audio_in.callback(i2s_callback)     # i2s_callback is called when buf is filled
+   audio_in.irq(i2s_callback)          # i2s_callback is called when buf is filled
    num_read = audio_in.readinto(buf)   # returns immediately    
  
 uasyncio::
@@ -123,7 +123,7 @@ Methods
   "buf" byte ordering is little-endian.  For Stereo format, left channel sample precedes right channel sample.
   Returns number of bytes written 
   
-.. method::  I2S.callback(handler)
+.. method::  I2S.irq(handler)
 
   Set a callback. ``handler`` is called when ``buf`` is emptied (``write`` method) or becomes full (``readinto`` method).  
   Setting a callback changes the ``write`` and ``readinto`` methods to non-blocking operation.

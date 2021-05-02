@@ -55,7 +55,7 @@
 // - readinto() and write() methods return immediately.
 // - buffer filling and emptying happens asynchronously to the main MicroPython task
 // - a callback function is called when the supplied buffer has been filled (read) or emptied (write)
-// - non-blocking mode is enabled when a callback is set with the callback() method
+// - non-blocking mode is enabled when a callback is set with the irq() method
 // - a FreeRTOS task is created to implement the asynchronous background operations
 // - a FreeRTOS queue is used to transfer the supplied buffer to the background task
 //
@@ -526,7 +526,7 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
-STATIC mp_obj_t machine_i2s_callback(mp_obj_t self_in, mp_obj_t handler) {
+STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
@@ -568,7 +568,7 @@ STATIC mp_obj_t machine_i2s_callback(mp_obj_t self_in, mp_obj_t handler) {
     self->callback_for_non_blocking = handler;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_callback_obj, machine_i2s_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
 // Shift() is typically used as a volume control.
 // shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
@@ -638,7 +638,7 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_callback),        MP_ROM_PTR(&machine_i2s_callback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
 
     // Static method
     { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
