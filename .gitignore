@@ -28,11 +28,12 @@ dist/
 ######################
 *.swp
 
-# Build directory
+# Build directories
 ######################
 build/
 bin/
 circuitpython-stubs/
+build-*/
 
 # Test failure outputs
 ######################

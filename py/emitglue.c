@@ -34,6 +34,7 @@
 #include "py/emitglue.h"
 #include "py/runtime0.h"
 #include "py/bc.h"
+#include "py/profile.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -52,6 +53,9 @@ mp_uint_t mp_verbose_flag = 0;
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
+    #if MICROPY_PY_SYS_SETTRACE
+    rc->line_of_definition = 0;
+    #endif
     return rc;
 }
 
@@ -75,6 +79,11 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->n_raw_code = n_raw_code;
     #endif
 
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_bytecode_prelude_t *prelude = &rc->prelude;
+    mp_prof_extract_prelude(code, prelude);
+    #endif
+
     #ifdef DEBUG_PRINT
     #if !MICROPY_DEBUG_PRINTERS
     const size_t len = 0;
@@ -88,7 +97,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
 }
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t prelude_offset,
@@ -171,6 +180,13 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
         fun = mp_obj_new_gen_wrap(fun, (rc->scope_flags & MP_SCOPE_FLAG_ASYNC) != 0);
     }
+
+    #if MICROPY_PY_SYS_SETTRACE
+    if (rc->kind == MP_CODE_BYTECODE) {
+        mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);
+        self_fun->rc = rc;
+    }
+    #endif
 
     return fun;
 }

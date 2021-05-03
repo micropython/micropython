@@ -1,9 +1,8 @@
 # test construction of bytes from different objects
 
-# tuple, list, bytearray
+# tuple, list
 print(bytes((1, 2)))
 print(bytes([1, 2]))
-print(bytes(bytearray(4)))
 
 # constructor value out of range
 try:

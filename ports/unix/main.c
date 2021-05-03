@@ -47,7 +47,6 @@
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
-#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
@@ -66,7 +65,6 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
-    mp_uos_dupterm_tx_strn(str, len);
     (void)dummy;
 }
 
@@ -139,7 +137,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         }
         #endif
 
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
         if (!compile_only) {
             // execute it
@@ -314,7 +312,11 @@ STATIC int usage(char **argv) {
     int impl_opts_cnt = 0;
     printf(
         "  compile-only                 -- parse and compile only\n"
+        #if MICROPY_EMIT_NATIVE
         "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        #else
+        "  emit=bytecode                -- set the default code emitter\n"
+        #endif
         );
     impl_opts_cnt++;
     #if MICROPY_ENABLE_GC
@@ -344,10 +346,12 @@ STATIC void pre_process_options(int argc, char **argv) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
                 #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -450,6 +454,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_init();
+
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
 
     #if MICROPY_VFS_POSIX
     {
@@ -647,6 +658,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
         }
     }
+
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
+    if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
+        mp_call_function_0(MP_STATE_VM(sys_exitfunc));
+    }
+    #endif
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     if (mp_verbose_flag) {

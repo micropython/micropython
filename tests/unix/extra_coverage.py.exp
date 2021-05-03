@@ -28,11 +28,10 @@ RuntimeError:
 # repl
 ame__
 
-argv            byteorder       exc_info        exit
-getsizeof       implementation  maxsize         modules
-path            platform        print_exception
-stderr          stdin           stdout          version
-version_info
+argv            atexit          byteorder       exc_info
+exit            getsizeof       implementation  maxsize
+modules         path            platform        stderr
+stdin           stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -75,6 +74,28 @@ unlocked
 1
 2
 3
+# ringbuf
+99 0
+98 1
+22
+99 0
+97 2
+aa55
+99 0
+0 99
+-1
+1 98
+-1
+2 97
+0
+cc99
+99 0
+0
+11bb
+0
+22ff
+-1
+-1
 0123456789 b'0123456789'
 7300
 7300
@@ -94,14 +115,17 @@ OSError
 None
 None
 frzstr1
+frzstr1.py
 frzmpy1
+.frozen/frzmpy1.py
 frzstr_pkg1.__init__
-1
+frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-1
+.frozen/frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
 b'# test frozen package'
+NULL

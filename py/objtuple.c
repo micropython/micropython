@@ -34,6 +34,9 @@
 
 #include "supervisor/shared/translate.h"
 
+// type check is done on getiter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
+
 /******************************************************************************/
 /* tuple                                                                      */
 
@@ -104,8 +107,7 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
-    // type check is done on getiter method to allow tuple, namedtuple, attrtuple
-    mp_check_self(mp_obj_get_type(self_in)->getiter == mp_obj_tuple_getiter);
+    mp_check_self(mp_obj_is_tuple_compatible(self_in));
     mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     if (another_type->getiter != mp_obj_tuple_getiter) {
@@ -261,8 +263,7 @@ mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
 }
 
 void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
-    // type check is done on getiter method to allow tuple, namedtuple, attrtuple
-    mp_check_self(mp_obj_get_type(self_in)->getiter == mp_obj_tuple_getiter);
+    assert(mp_obj_is_tuple_compatible(self_in));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     *len = self->len;
     *items = &self->items[0];
