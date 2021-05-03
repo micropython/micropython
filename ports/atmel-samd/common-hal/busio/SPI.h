@@ -43,7 +43,7 @@ typedef struct {
 } busio_spi_obj_t;
 
 void reset_sercoms(void);
-void never_reset_sercom(Sercom* sercom);
+void never_reset_sercom(Sercom *sercom);
 
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H

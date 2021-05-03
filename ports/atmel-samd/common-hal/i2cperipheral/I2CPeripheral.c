@@ -36,8 +36,8 @@
 #include "peripherals/samd/sercom.h"
 
 void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
-        const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
-        uint8_t *addresses, unsigned int num_addresses, bool smbus) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
+    uint8_t *addresses, unsigned int num_addresses, bool smbus) {
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
@@ -58,12 +58,13 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
 
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
-#ifdef SAM_D5X_E5X
+    #ifdef SAM_D5X_E5X
     sercom->I2CS.CTRLC.bit.SDASETUP = 0x08;
-#endif
+    #endif
 
     sercom->I2CS.CTRLA.bit.SWRST = 1;
-    while (sercom->I2CS.CTRLA.bit.SWRST || sercom->I2CS.SYNCBUSY.bit.SWRST) {}
+    while (sercom->I2CS.CTRLA.bit.SWRST || sercom->I2CS.SYNCBUSY.bit.SWRST) {
+    }
 
     sercom->I2CS.CTRLB.bit.AACKEN = 0; //  Automatic acknowledge is disabled.
 
@@ -134,8 +135,7 @@ static int i2c_peripheral_check_error(i2cperipheral_i2c_peripheral_obj_t *self, 
     return -err;
 }
 
-int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart)
-{
+int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart) {
     int err = i2c_peripheral_check_error(self, false);
     if (err) {
         return err;

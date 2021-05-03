@@ -854,7 +854,8 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
-        mp_obj_t ret = mp_obj_subscr(self->subobj[0], index, value);
+        mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
+        mp_obj_t ret = subobj_type->subscr(self_in, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         return ret;

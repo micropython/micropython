@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-24 14:29+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -707,6 +707,7 @@ msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisée"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Ne peut reveillé sur le board de broche. Seuleument à niveau."
 
@@ -1331,7 +1332,8 @@ msgstr "Phase invalide"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
@@ -1717,6 +1719,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Seulement une alarme alarm.time peut être réglée."
 
@@ -3187,11 +3190,11 @@ msgstr "identifiant redéfini comme nonlocal"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "Fichier .mpy incompatible"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "architecture native .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3315,7 +3318,7 @@ msgstr "interval doit être dans la portée %s-%s"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "architecture invalide"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"

@@ -62,10 +62,10 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
 
     // Determine start of prelude, and extract n_state from it
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     uintptr_t prelude_offset = ((uintptr_t *)self_fun->bytecode)[0];
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
     size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
     size_t n_exc_stack = 0;
 
@@ -85,10 +85,10 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->code_state.exc_sp = NULL;
 
     // Prepare the generator instance for execution
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
     o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void *)(self_fun->bytecode + start_offset));
 
     return MP_OBJ_FROM_PTR(o);

@@ -73,7 +73,7 @@ STATIC bool extended_filter_in_use(CanMramXidfe *filter) {
 
 STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, bool extended) {
     size_t num_half_filters_needed = 1;
-    for(size_t i=0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         if (extended != matches[i]->extended) {
             continue;
         }
@@ -89,13 +89,13 @@ STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, boo
 STATIC size_t num_filters_available(canio_can_obj_t *can, bool extended) {
     size_t available = 0;
     if (extended) {
-        for(size_t i = 0; i < MP_ARRAY_SIZE(can->state->extended_rx_filter); i++) {
+        for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->extended_rx_filter); i++) {
             if (!extended_filter_in_use(&can->state->extended_rx_filter[i])) {
                 available++;
             }
         }
     } else {
-        for(size_t i = 0; i < MP_ARRAY_SIZE(can->state->standard_rx_filter); i++) {
+        for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->standard_rx_filter); i++) {
             if (!standard_filter_in_use(&can->state->standard_rx_filter[i])) {
                 available++;
             }
@@ -119,13 +119,13 @@ STATIC void clear_filters(canio_listener_obj_t *self) {
     prevent_config_change(can);
 
     // For each filter entry, if it pointed at this FIFO set it to DISABLE
-    for(size_t i = 0; i < MP_ARRAY_SIZE(can->state->extended_rx_filter); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->extended_rx_filter); i++) {
         int val = CAN_XIDFE_0_EFEC_STF0M_Val + fifo;
         if (can->state->extended_rx_filter[i].XIDFE_0.bit.EFEC == val) {
             can->state->extended_rx_filter[i].XIDFE_0.bit.EFEC = CAN_XIDFE_0_EFEC_DISABLE_Val;
         }
     }
-    for(size_t i = 0; i < MP_ARRAY_SIZE(can->state->standard_rx_filter); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(can->state->standard_rx_filter); i++) {
         int val = CAN_SIDFE_0_SFEC_STF1M_Val + fifo;
         if (can->state->standard_rx_filter[i].SIDFE_0.bit.SFEC == val) {
             can->state->standard_rx_filter[i].SIDFE_0.bit.SFEC = CAN_SIDFE_0_SFEC_DISABLE_Val;
@@ -212,7 +212,7 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
 
     // step 1: single id standard matches
     // we have to gather up pairs and stuff them in a single filter entry
-    for(size_t i = 0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (match->extended) {
             continue;
@@ -230,13 +230,13 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
     }
     // step 1.5. odd single id standard match
     if (first_id != NO_ID) {
-            install_standard_filter(standard, first_id, first_id, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
-            standard = next_standard_filter(self, standard);
-            first_id = NO_ID;
+        install_standard_filter(standard, first_id, first_id, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
+        standard = next_standard_filter(self, standard);
+        first_id = NO_ID;
     }
 
     // step 2: standard mask filter
-    for(size_t i = 0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (match->extended) {
             continue;
@@ -250,7 +250,7 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
 
     // step 3: single id extended matches
     // we have to gather up pairs and stuff them in a single filter entry
-    for(size_t i = 0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (!match->extended) {
             continue;
@@ -268,13 +268,13 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
     }
     // step 3.5. odd single id standard match
     if (first_id != NO_ID) {
-            install_extended_filter(extended, first_id, first_id, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
-            extended = next_extended_filter(self, extended);
-            first_id = NO_ID;
+        install_extended_filter(extended, first_id, first_id, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
+        extended = next_extended_filter(self, extended);
+        first_id = NO_ID;
     }
 
     // step 4: extended mask filters
-    for(size_t i = 0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (!match->extended) {
             continue;
@@ -294,13 +294,13 @@ void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_o
     if (!can->fifo0_in_use) {
         self->fifo_idx = 0;
         self->fifo = can->state->rx0_fifo;
-        self->hw = (canio_rxfifo_reg_t*)&can->hw->RXF0C;
+        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF0C;
         can->hw->IR.reg = CAN_IR_RF0N | CAN_IR_RF0W | CAN_IR_RF0F | CAN_IR_RF0L;
         can->fifo0_in_use = true;
     } else if (!can->fifo1_in_use) {
         self->fifo_idx = 1;
         self->fifo = can->state->rx1_fifo;
-        self->hw = (canio_rxfifo_reg_t*)&can->hw->RXF1C;
+        self->hw = (canio_rxfifo_reg_t *)&can->hw->RXF1C;
         can->fifo1_in_use = true;
         can->hw->IR.reg = CAN_IR_RF1N | CAN_IR_RF1W | CAN_IR_RF1F | CAN_IR_RF1L;
     } else {

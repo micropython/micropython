@@ -805,7 +805,6 @@ def read_raw_code(f, qstr_win):
         )
 
 
-
 def read_mpy(filename):
     with open(filename, "rb") as f:
         header = bytes_cons(f.read(4))
@@ -821,7 +820,6 @@ def read_mpy(filename):
         config.mp_small_int_bits = header[3]
         qstr_win = QStrWindow(qw_size)
         return read_raw_code(f, qstr_win)
-
 
 
 def dump_mpy(raw_codes):
@@ -896,10 +894,10 @@ def freeze_mpy(base_qstrs, raw_codes):
     qstr_size = {"metadata": 0, "data": 0}
     for _, _, qstr in new:
         qbytes = qstrutil.bytes_cons(qstr, "utf8")
-        print("    {%d, %d}," % (
-            qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH),
-            len(qbytes)
-        ))
+        print(
+            "    {%d, %d},"
+            % (qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH), len(qbytes))
+        )
         qstr_size["metadata"] += (
             config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
         )
@@ -919,7 +917,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print("    (qstr_attr_t *)mp_qstr_frozen_const_attr,")
     print("    {")
     for _, _, qstr in new:
-        print("        \"%s\"," % qstrutil.escape_bytes(qstr))
+        print('        "%s",' % qstrutil.escape_bytes(qstr))
     print("    },")
     print("};")
 

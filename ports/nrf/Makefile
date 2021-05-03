@@ -94,6 +94,11 @@ else
   CFLAGS += -flto -flto-partition=none
 endif
 
+ifeq ($(NRF_DEBUG_PRINT), 1)
+  CFLAGS += -DNRF_DEBUG_PRINT=1
+  SRC_SUPERVISOR += supervisor/debug_uart.c
+endif
+
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
