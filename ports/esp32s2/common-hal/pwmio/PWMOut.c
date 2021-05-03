@@ -128,7 +128,13 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     if (ledc_channel_config(&(self->chan_handle))) {
         return PWMOUT_INITIALIZATION_ERROR;
     }
-
+    
+    // check the frequency -- 0 is not valid
+    // maybe also want to reject frequency > system_clock / 2 ??
+    if (frequency == 0) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+    
     // Make reservations
     reserved_timer_freq[timer_index] = frequency;
     reserved_channels[channel_index] = timer_index;
