@@ -91,33 +91,6 @@ class AlternateFunction(object):
         self.idx = idx
         self.af_str = af_str
         self.instance = self.af_str.split("_")[0]
-        """
-        self.func = ""
-        self.fn_num = None
-        self.pin_type = ""
-        self.supported = False
-
-        af_words = af_str.split("_", 1)
-        self.func, self.fn_num = split_name_num(af_words[0])
-        if len(af_words) > 1:
-            self.pin_type = af_words[1]
-        if self.func in SUPPORTED_FN:
-            pin_types = SUPPORTED_FN[self.func]
-            if self.pin_type in pin_types:
-                self.supported = True
-        """
-
-    def is_supported(self):
-        return self.supported
-
-    def ptr(self):
-        """Returns the numbered function (i.e. USART6) for this AF."""
-        if self.fn_num is None:
-            return self.func
-        return "{:s}{:d}".format(self.func, self.fn_num)
-
-    def mux_name(self):
-        return "AF{:d}_{:s}".format(self.idx, self.ptr())
 
     def print(self):
         """Prints the C representation of this AF."""
@@ -126,27 +99,6 @@ class AlternateFunction(object):
                 self.af_str, self.idx, self.instance, "0x10B0U"
             )
         )
-        """
-        cond_var = None
-        if self.supported:
-            cond_var = conditional_var("{}{}".format(self.func, self.fn_num))
-            print_conditional_if(cond_var)
-            print("  AF", end="")
-        else:
-            print("  //", end="")
-        fn_num = self.fn_num
-        if fn_num is None:
-            fn_num = 0
-        print(
-            "({:2d}, {:8s}, {:2d}, {:10s}, {:8s}), // {:s}".format(
-                self.idx, self.func, fn_num, self.pin_type, self.ptr(), self.af_str
-            )
-        )
-        print_conditional_endif(cond_var)
-        """
-
-    def qstr_list(self):
-        return [self.mux_name()]
 
 
 class NamedPin(object):
