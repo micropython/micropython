@@ -29,28 +29,23 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include "driver/rtc_io.h"
+// TODO: #include "driver/rtc_io.h"
 #include "samd21.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "mphalport.h"
 #include "modmachine.h"
-// Should not be used-- #include "modmachine.h"
 // #include "extmod/virtpin.h"
 // #include "machine_rtc.h"
-// #include "modesp32.h"q
 #include "machine_pin.h"
-// include "sam.h"
 
 // Used to implement a range of pull capabilities
 #define GPIO_PULL_DOWN (1)
 #define GPIO_PULL_UP   (2)
-#define GPIO_PULL_HOLD (4)
 
 #define GPIO_MODE_INPUT       (1) 
 #define GPIO_MODE_OUTPUT      (2)
-#define GPIO_MODE_OPEN_DRAIN  (4) 
 
 #define GPIO_PIN_INTR_HILEVEL     (1) // interruption
 #define GPIO_PIN_INTR_POSEDGE     (2)
@@ -60,7 +55,6 @@
 
 // --- hal_gpio routines -------------------------------------------------------------
 
-int  GPIO_IS_VALID_OUTPUT_GPIO( gpio_num_t p ){ return 0; } //TODO: from ESP32 API, change to SAMD API (on ESP32 some GPIO cannot be used as output)
 int  rtc_gpio_is_valid_gpio( gpio_num_t p ){ return 0; } // TODO: from ESP32 API, change to SAMD API
 
 
@@ -71,49 +65,44 @@ void gpio_pad_select( machine_pin_obj_t *pin_obj ){
 } 
 
 void gpio_set_level( machine_pin_obj_t *pin_obj, uint8_t state ){
-    mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_level %u \n", PORT_PA(pin_obj) ); 
-    mp_printf( MP_PYTHON_PRINTER, "DBG: state %u \n", state );
+    // mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_level %u \n", PORT_PA(pin_obj) ); 
+    // mp_printf( MP_PYTHON_PRINTER, "DBG: state %u \n", state );
     if( state != 0 ) {
-        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTSET.reg = PORT_PA(pin_obj); // REG_PORT_OUTSET0
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTSET.reg = PORT_PA(pin_obj); 
     }
     else {
-        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTCLR.reg = PORT_PA(pin_obj); // REG_PORT_OUTCLR0
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTCLR.reg = PORT_PA(pin_obj); 
     }
 }
 
 uint8_t gpio_get_level( machine_pin_obj_t *pin_obj ) {
-    if( (PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIR.reg & PORT_PA(pin_obj)) == 0){ // DIR = Input ? -- REG_PORT_DIR0
-        mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_get_level IN %u \n", PORT_PA(pin_obj) );
-        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].IN.reg &  PORT_PA(pin_obj)) != 0) { // REG_PORT_IN0
+    if( (PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIR.reg & PORT_PA(pin_obj)) == 0){ // DIR = Input ? 
+        //mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_get_level IN %u \n", PORT_PA(pin_obj) );
+        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].IN.reg &  PORT_PA(pin_obj)) != 0) { 
             return 1;
         } else {
             return 0;
         }
     }
     else { // DIR = output
-        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUT.reg &  PORT_PA(pin_obj)) != 0) // REG_PORT_OUT0
+        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUT.reg &  PORT_PA(pin_obj)) != 0) {
             return 1;
-        else
+        } else {
             return 0;
+        }
     }
 }
 
 
 void gpio_set_direction( machine_pin_obj_t *pin_obj, uint8_t io_mode ){ 
     if( io_mode & GPIO_MODE_OUTPUT ) {
-        mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction OUT %u \n", PORT_PA(pin_obj) );
-        //REG_PORT_DIRSET0 = PORT_PA(pin_obj);
+        //mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction OUT %u \n", PORT_PA(pin_obj) );
         PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIRSET.reg = PORT_PA(pin_obj);
     }
-    else if ( io_mode & GPIO_MODE_INPUT ) {
-        mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction IN %u \n", PORT_PA(pin_obj) );
-        //REG_PORT_DIRCLR0 = PORT_PA(pin_obj);
+    else {
+        // mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction IN %u \n", PORT_PA(pin_obj) );
         PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIRCLR.reg = PORT_PA(pin_obj);
     }
-    else {
-        mp_raise_ValueError(MP_ERROR_TEXT("OD to implement"));
-    }
-
 } 
 
 void gpio_pulldown_en(  machine_pin_obj_t *pin_obj ){ 
@@ -131,11 +120,7 @@ void gpio_pull_disable(  machine_pin_obj_t *pin_obj ){
     PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg &= ~PORT_PINCFG_PULLEN;
 } 
 
-void gpio_hold_en( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
-void gpio_hold_dis( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
 void rtc_gpio_deinit( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
-
-
 
 // in.h: const mp_obj_type_t machine_pin_type;
 
@@ -223,11 +208,6 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
-        //TODO: if (self->id >= 34 && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
-        //    mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
-        //} else {
-        //    gpio_set_direction(self, pin_io_mode);
-        //}
         gpio_set_direction((machine_pin_obj_t *)self, pin_io_mode);
     }
 
@@ -246,12 +226,6 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         } else {
             gpio_pull_disable((machine_pin_obj_t *)self);
         }
-        if (mode & GPIO_PULL_HOLD) {
-            //TODO: should be checked
-            gpio_hold_en(self->id);
-        } else if (GPIO_IS_VALID_OUTPUT_GPIO(self->id)) {
-            gpio_hold_dis(self->id);
-        }
     }
 
     return mp_const_none;
@@ -261,7 +235,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // TODO: support pin name with pind_find(). See /ports/stm32/pin.c for implementation
+    // TODO: support pin name with pin_find(). See /ports/stm32/pin.c for implementation
 
     // get the wanted pin object
     int wanted_pin = mp_obj_get_int(args[0]);
@@ -289,7 +263,7 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(gpio_get_level(self)); // gpio_get_level(self->id)
+        return MP_OBJ_NEW_SMALL_INT(gpio_get_level(self));
     } else {
         // set pin
         gpio_set_level(self, mp_obj_is_true(args[0]));
@@ -325,22 +299,11 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
-// pin.debug()
-STATIC mp_obj_t machine_pin_debug(mp_obj_t self_in) {
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_PA %u \n", PORT_PA(self) );
-    mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_DIR0 %u \n", REG_PORT_DIR0 );
-    mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_OUT0 %u \n", REG_PORT_OUT0 );
-    mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_IN0 %u \n", REG_PORT_IN0 );
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_INEN0 %u \n", REG_PORT_INEN0 );
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: PORT_PULLEN0 %u \n", REG_PORT_PULLEN0 );
 
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_debug_obj, machine_pin_debug);
-
+// TODO: Implement IRQ support (from ESP32 API)
+//
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
-//TODO: STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+// STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 //    enum { ARG_handler, ARG_trigger, ARG_wake };
 //    static const mp_arg_t allowed_args[] = {
 //        { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -410,20 +373,17 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&machine_pin_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_debug), MP_ROM_PTR(&machine_pin_debug_obj) },
     //TODO: { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(GPIO_MODE_OUTPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(GPIO_PULL_HOLD) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
-    { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
-    { MP_ROM_QSTR(MP_QSTR_WAKE_HIGH), MP_ROM_INT(GPIO_PIN_INTR_HILEVEL) },
+    //TODO: { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
+    //TODO: { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
+    //TODO: { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
+    //TODO: { MP_ROM_QSTR(MP_QSTR_WAKE_HIGH), MP_ROM_INT(GPIO_PIN_INTR_HILEVEL) },
 };
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -461,4 +421,4 @@ const mp_obj_type_t machine_pin_type = {
 /******************************************************************************/
 // Pin IRQ object
 
-// not copied yet
+// not copied (yet) from ESP32 code
