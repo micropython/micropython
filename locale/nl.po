@@ -353,7 +353,7 @@ msgstr "Alle event kanalen zijn in gebruik"
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Alle sync event kanalen zijn in gebruik"
 
@@ -744,6 +744,10 @@ msgid ""
 msgstr ""
 "Verbinding is verbroken en kan niet langer gebruikt worden. Creëer een "
 "nieuwe verbinding."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "Corrupt .mpy bestand"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1480,7 +1484,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr "NVS-fout"
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Naam te lang"
 
@@ -2155,14 +2159,6 @@ msgstr "Tijdstip ligt in het verleden."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Om te beëindigen, reset het bord zonder "
@@ -2579,10 +2575,6 @@ msgstr "buffer te klein voor gevraagde bytes"
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "buttons moeten digitalio.DigitalInOut zijn"
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "byte code niet geïmplementeerd"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "byteorder is geen string"
@@ -2689,10 +2681,6 @@ msgstr "kan niet laden van '%q'"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "kan niet met '%q' index laden"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr "kan throw niet aan net gestartte generator toevoegen"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -3048,6 +3036,10 @@ msgstr "flip argumenten moeten een ndarray zijn"
 msgid "float too big"
 msgstr "float is te groot"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr "lettertype moet 2048 bytes lang zijn"
@@ -3117,7 +3109,7 @@ msgstr "generator wordt al uitgevoerd"
 msgid "generator ignored GeneratorExit"
 msgstr "generator negeerde GeneratorExit"
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3136,6 +3128,10 @@ msgstr "identifier is opnieuw gedefinieerd als global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifier is opnieuw gedefinieerd als nonlocal"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3280,10 +3276,6 @@ msgstr ""
 #: py/compile.c
 msgid "invalid decorator"
 msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "ongeldige dupterm index"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3681,6 +3673,10 @@ msgstr "alleen sample_rate=16000 wordt ondersteund"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "alleen segmenten met step=1 (ook wel None) worden ondersteund"
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3903,8 +3899,8 @@ msgid "sampling rate out of range"
 msgstr "bemonsteringssnelheid buiten bereik"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "schedule stack is vol"
+msgid "schedule queue full"
+msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
@@ -4321,8 +4317,17 @@ msgstr "zi moet van type float zijn"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Corrupt .mpy bestand"
+#~ msgid "byte code not implemented"
+#~ msgstr "byte code niet geïmplementeerd"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "kan throw niet aan net gestartte generator toevoegen"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "ongeldige dupterm index"
+
+#~ msgid "schedule stack full"
+#~ msgstr "schedule stack is vol"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Corrupt raw code"

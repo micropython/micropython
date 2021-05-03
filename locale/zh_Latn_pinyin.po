@@ -360,7 +360,7 @@ msgstr "Suǒyǒu shǐyòng de shìjiàn píndào"
 msgid "All state machines in use"
 msgstr "suǒ yǒu zhèng zài shǐ yòng de zhuàng tài jī"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Suǒyǒu tóngbù shìjiàn píndào shǐyòng"
 
@@ -749,6 +749,10 @@ msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
 msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn de liánjiē."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "Fǔbài de .mpy wénjiàn"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1490,7 +1494,7 @@ msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 msgid "NVS Error"
 msgstr "NVS cuò wù"
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
 
@@ -2158,14 +2162,6 @@ msgstr "shí jiān yǐ jīng guò qù."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Chāoshí shíjiān tài zhǎng: Zuìdà chāoshí shíjiān wèi%d miǎo"
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
@@ -2580,10 +2576,6 @@ msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "zì jié dàimǎ wèi zhíxíng"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "byteorder bùshì zìfú chuàn"
@@ -2689,10 +2681,6 @@ msgstr "wúfǎ cóng '%q' jiāzài"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "wúfǎ yòng '%q' ' suǒyǐn jiāzài"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -3051,6 +3039,10 @@ msgstr "fānzhuǎn shēn shù bìxū shì ndarray"
 msgid "float too big"
 msgstr "fú diǎn tài dà"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr "zìtǐ bìxū wèi 2048 zì jié"
@@ -3119,7 +3111,7 @@ msgstr "shēngchéng qì yǐjīng zhíxíng"
 msgid "generator ignored GeneratorExit"
 msgstr "shēngchéng qì hūlüè shēngchéng qì tuìchū"
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3138,6 +3130,10 @@ msgstr "biāozhì fú chóngxīn dìngyì wèi quánjú"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "biāozhì fú chóngxīn dìngyì wéi fēi běndì"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3282,10 +3278,6 @@ msgstr "wú xiào bits_per_pixel %d， bì xū shì, 1, 4, 8, 16, 24, huò 32"
 #: py/compile.c
 msgid "invalid decorator"
 msgstr "wú xiào zhuāng shì"
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "dupterm suǒyǐn wúxiào"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3681,6 +3673,10 @@ msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3902,8 +3898,8 @@ msgid "sampling rate out of range"
 msgstr "qǔyàng lǜ chāochū fànwéi"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "jìhuà duīzhàn yǐ mǎn"
+msgid "schedule queue full"
+msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
@@ -4320,8 +4316,17 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Fǔbài de .mpy wénjiàn"
+#~ msgid "byte code not implemented"
+#~ msgstr "zì jié dàimǎ wèi zhíxíng"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "dupterm suǒyǐn wúxiào"
+
+#~ msgid "schedule stack full"
+#~ msgstr "jìhuà duīzhàn yǐ mǎn"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Sǔnhuài de yuánshǐ dàimǎ"
