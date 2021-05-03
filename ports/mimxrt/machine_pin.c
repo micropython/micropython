@@ -59,6 +59,7 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
     if ((mode == PIN_MODE_IN) || (mode == PIN_MODE_OUT)) {
         gpio_pin_config_t pin_config;
         const machine_pin_af_obj_t *af_obj;
+        uint32_t pad_config = 0UL;
 
         pin_config.outputLogic = args[1].u_int;
         pin_config.direction = mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput;
@@ -72,51 +73,57 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
         // Update machine pin object
         self->mode = mode;
 
+        // Update pad configuration
+        if (mode == PIN_MODE_IN) {
+            pad_config = IOMUXC_SW_PAD_CTL_PAD_SRE(0U) |
+                IOMUXC_SW_PAD_CTL_PAD_DSE(0b100) |
+                IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01) |
+                IOMUXC_SW_PAD_CTL_PAD_ODE(0U) |
+                IOMUXC_SW_PAD_CTL_PAD_PKE(1U) |
+                IOMUXC_SW_PAD_CTL_PAD_PUE(1U) |
+                IOMUXC_SW_PAD_CTL_PAD_PUS(2U) |
+                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);
+        } else {
+            pad_config = af_obj->pad_config;
+        }
+
         // Configure pad as GPIO
         GPIO_PinInit(self->gpio, self->pin, &pin_config);
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
-        IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, af_obj->pad_config);  // TODO: use correct AF settings from AF list
+        IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, pad_config);
     }
 
     return mp_const_none;
 }
 
-
-STATIC void machine_pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     mp_printf(print, "<Pin.%q>", self->name);
 }
 
+// Pin mapping dictionaries
 const mp_obj_type_t machine_pin_cpu_pins_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_cpu,
-    .print = machine_pin_named_pins_obj_print,
+    .print = named_pin_obj_print,
     .locals_dict = (mp_obj_t)&machine_pin_cpu_pins_locals_dict,
 };
 
 const mp_obj_type_t machine_pin_board_pins_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_board,
-    .print = machine_pin_named_pins_obj_print,
+    .print = named_pin_obj_print,
     .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
 };
 
 
-STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+STATIC void pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
     mp_printf(print, "PIN(%s)", qstr_str(self->name));
 }
 
-/**
- * pin_obj_make_new
- *
- *	pin = machine.Pin(id)
- *
- *	with id being either:
- *		int: board pin numbers
- *		str: board or cpu pin names
- */
+// constructor(id, ...)
 STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -132,6 +139,7 @@ STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_arg
     return (mp_obj_t)pin;
 }
 
+// pin.off()
 STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     mp_hal_pin_low(self);
@@ -139,6 +147,7 @@ STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
 
+// pin.on()
 STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     mp_hal_pin_high(self);
@@ -146,6 +155,7 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+// pin.value()
 STATIC mp_obj_t machine_pin_value(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
@@ -181,7 +191,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_tab
 const mp_obj_type_t machine_pin_type = {
     {&mp_type_type},
     .name = MP_QSTR_Pin,
-    .print = machine_pin_obj_print,
+    .print = pin_obj_print,
     .make_new = machine_pin_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
@@ -190,7 +200,7 @@ const mp_obj_type_t machine_pin_type = {
 const mp_obj_type_t machine_pin_af_type = {
     {&mp_type_type},
     .name = MP_QSTR_PinAF,
-    .print = machine_pin_obj_print,
+    .print = pin_obj_print,
     .make_new = machine_pin_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
