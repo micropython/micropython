@@ -813,5 +813,5 @@ void rp2pio_statemachine_set_wrap(rp2pio_statemachine_obj_t *self, uint wrap_tar
     uint8_t sm = self->state_machine;
     uint8_t offset = rp2pio_statemachine_program_offset(self);
 
-    pio_sm_set_wrap(self->pio, sm, offset+wrap_target, offset+wrap);
+    pio_sm_set_wrap(self->pio, sm, offset + wrap_target, offset + wrap);
 }

@@ -77,13 +77,13 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
 }
 
 const qstr_attr_t mp_qstr_const_attr[] = {
-        #ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) { hash, len },
 #define TRANSLATION(id, length, compressed ...)
-        #include "genhdr/qstrdefs.generated.h"
+    #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION
 #undef QDEF
-        #endif
+    #endif
 };
 
 const qstr_pool_t mp_qstr_const_pool = {

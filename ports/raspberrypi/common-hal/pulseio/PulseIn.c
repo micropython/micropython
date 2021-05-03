@@ -135,21 +135,21 @@ void common_hal_pulseio_pulsein_interrupt() {
             result = level_count;
             last_level = level;
             level_count = 1;
-	    // Pulses that are londger than MAX_PULSE will return MAX_PULSE
-	    if (result > MAX_PULSE ) {
-	        result = MAX_PULSE;
-	    }
+            // Pulses that are londger than MAX_PULSE will return MAX_PULSE
+            if (result > MAX_PULSE) {
+                result = MAX_PULSE;
+            }
             // ignore pulses that are too short
             if (result <= MAX_PULSE && result > MIN_PULSE) {
-                self->buffer[buf_index] = (uint16_t) result;
-	        if (self->len < self->maxlen) {
-                   self->len++;
-	        }
-	        if (buf_index < self->maxlen) {
-                   buf_index++;
+                self->buffer[buf_index] = (uint16_t)result;
+                if (self->len < self->maxlen) {
+                    self->len++;
+                }
+                if (buf_index < self->maxlen) {
+                    buf_index++;
                 } else {
-                   self->start = 0;
-                   buf_index = 0;
+                    self->start = 0;
+                    buf_index = 0;
                 }
             }
         }

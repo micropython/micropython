@@ -41,7 +41,7 @@ typedef struct {
     uint8_t sda_pin;
 } busio_i2c_obj_t;
 
-extern Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
-                                   uint8_t *sercom_index, uint32_t *sda_pinmux, uint32_t *scl_pinmux);
+extern Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
+    uint8_t *sercom_index, uint32_t *sda_pinmux, uint32_t *scl_pinmux);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H

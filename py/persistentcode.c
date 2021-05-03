@@ -189,13 +189,13 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 
 #if MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     // high part
     *(uint16_t *)pc = (*(uint16_t *)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
     // low part
     *(uint16_t *)(pc + 2) = (*(uint16_t *)(pc + 2) & 0x0f00) | (val << 4 & 0x7000) | (val & 0x00ff);
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 }
 #endif
 

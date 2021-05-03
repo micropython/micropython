@@ -619,7 +619,6 @@ configuration = standard.ConfigurationDescriptor(
     # bit 7 is always 1 and 0-4 are always 0
     # Turn off remote wakeup until we handle it in CircuitPython.
     bmAttributes=0x80,
-
 )
 descriptor_list.insert(0, configuration)
 

@@ -7,9 +7,9 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-#define IGNORE_PIN_PA04	    1
-#define IGNORE_PIN_PA05	    1
-#define IGNORE_PIN_PA06	    1
+#define IGNORE_PIN_PA04     1
+#define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PA06     1
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA13     1
 #define IGNORE_PIN_PA20     1

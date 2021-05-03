@@ -76,22 +76,22 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
 STATIC int usage(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] <input filename>\n"
-"Options:\n"
-"--version : show version information\n"
-"-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
-"-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
-"-v : verbose (trace various operations); can be multiple\n"
-"-O[N] : apply bytecode optimizations of level N\n"
-"\n"
-"Target specific options:\n"
-"-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-"-mno-unicode : don't support unicode in compiled strings\n"
-"-mcache-lookup-bc : cache map lookups in the bytecode\n"
-"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa\n"
-"\n"
-"Implementation specific options:\n", argv[0]
-);
+        "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
+        "Options:\n"
+        "--version : show version information\n"
+        "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
+        "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
+        "-v : verbose (trace various operations); can be multiple\n"
+        "-O[N] : apply bytecode optimizations of level N\n"
+        "\n"
+        "Target specific options:\n"
+        "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
+        "-mno-unicode : don't support unicode in compiled strings\n"
+        "-mcache-lookup-bc : cache map lookups in the bytecode\n"
+        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa\n"
+        "\n"
+        "Implementation specific options:\n", argv[0]
+        );
     int impl_opts_cnt = 0;
     printf(
         "  emit={bytecode,native,viper} -- set the default code emitter\n"
