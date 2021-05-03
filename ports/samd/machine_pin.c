@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include "driver/gpio.h"
 // #include "driver/rtc_io.h"
 #include "samd21.h"
 
@@ -66,30 +65,33 @@ int  rtc_gpio_is_valid_gpio( gpio_num_t p ){ return 0; } // TODO: from ESP32 API
 
 
 void gpio_pad_select( machine_pin_obj_t *pin_obj ){
-    // Deactivate MultiPlexing 
+    // Deactivate MultiPlexing, EnableInput
     PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg &= ~PORT_PINCFG_PMUXEN;
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg |= PORT_PINCFG_INEN;
 } 
 
 void gpio_set_level( machine_pin_obj_t *pin_obj, uint8_t state ){
     mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_level %u \n", PORT_PA(pin_obj) ); 
     mp_printf( MP_PYTHON_PRINTER, "DBG: state %u \n", state );
     if( state != 0 ) {
-        REG_PORT_OUTSET0 = PORT_PA(pin_obj);
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTSET.reg = PORT_PA(pin_obj); // REG_PORT_OUTSET0
     }
     else {
-        REG_PORT_OUTCLR0 = PORT_PA(pin_obj);
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTCLR.reg = PORT_PA(pin_obj); // REG_PORT_OUTCLR0
     }
 }
 
 uint8_t gpio_get_level( machine_pin_obj_t *pin_obj ) {
-    if( (REG_PORT_DIR0 & PORT_PA(pin_obj)) == 0){ // DIR = Input ?
-        if ((REG_PORT_IN0 &  PORT_PA(pin_obj)) != 0)
+    if( (PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIR.reg & PORT_PA(pin_obj)) == 0){ // DIR = Input ? -- REG_PORT_DIR0
+        mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_get_level IN %u \n", PORT_PA(pin_obj) );
+        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].IN.reg &  PORT_PA(pin_obj)) != 0) { // REG_PORT_IN0
             return 1;
-        else
+        } else {
             return 0;
+        }
     }
     else { // DIR = output
-        if ((REG_PORT_OUT0 &  PORT_PA(pin_obj)) != 0)
+        if ((PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUT.reg &  PORT_PA(pin_obj)) != 0) // REG_PORT_OUT0
             return 1;
         else
             return 0;
@@ -100,10 +102,13 @@ uint8_t gpio_get_level( machine_pin_obj_t *pin_obj ) {
 void gpio_set_direction( machine_pin_obj_t *pin_obj, uint8_t io_mode ){ 
     if( io_mode & GPIO_MODE_OUTPUT ) {
         mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction OUT %u \n", PORT_PA(pin_obj) );
-        REG_PORT_DIRSET0 = PORT_PA(pin_obj);
+        //REG_PORT_DIRSET0 = PORT_PA(pin_obj);
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIRSET.reg = PORT_PA(pin_obj);
     }
     else if ( io_mode & GPIO_MODE_INPUT ) {
-        REG_PORT_DIRCLR0 = PORT_PA(pin_obj);
+        mp_printf( MP_PYTHON_PRINTER, "DBG: gpio_set_direction IN %u \n", PORT_PA(pin_obj) );
+        //REG_PORT_DIRCLR0 = PORT_PA(pin_obj);
+        PORT->Group[PORTPA_NR(pin_obj->port_shift)].DIRCLR.reg = PORT_PA(pin_obj);
     }
     else {
         mp_raise_ValueError(MP_ERROR_TEXT("OD to implement"));
@@ -111,10 +116,21 @@ void gpio_set_direction( machine_pin_obj_t *pin_obj, uint8_t io_mode ){
 
 } 
 
-void gpio_pulldown_en( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
-void gpio_pulldown_dis( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
-void gpio_pullup_en( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
-void gpio_pullup_dis( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
+void gpio_pulldown_en(  machine_pin_obj_t *pin_obj ){ 
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg |= PORT_PINCFG_PULLEN;
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTCLR.reg = PORT_PA(pin_obj);
+} 
+
+void gpio_pullup_en(  machine_pin_obj_t *pin_obj ){ 
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg |= PORT_PINCFG_PULLEN;
+    // Force out High to enable Pull-Up
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].OUTSET.reg = PORT_PA(pin_obj);
+} 
+
+void gpio_pull_disable(  machine_pin_obj_t *pin_obj ){
+    PORT->Group[PORTPA_NR(pin_obj->port_shift)].PINCFG[PORTPA_SHIFT(pin_obj->port_shift)].reg &= ~PORT_PINCFG_PULLEN;
+} 
+
 void gpio_hold_en( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
 void gpio_hold_dis( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
 void rtc_gpio_deinit( gpio_num_t p ){ } // TODO: from ESP32 API, change to SAMD API
@@ -201,7 +217,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 
     // set initial value (do this before configuring mode/pull)
     if (args[ARG_value].u_obj != MP_OBJ_NULL) {
-        gpio_set_level((machine_pin_obj_t *)self, mp_obj_is_true(args[ARG_value].u_obj)); // TODO: check casting
+        gpio_set_level((machine_pin_obj_t *)self, mp_obj_is_true(args[ARG_value].u_obj)); 
     }
 
     // configure mode
@@ -221,15 +237,14 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         if (args[ARG_pull].u_obj != mp_const_none) {
             mode = mp_obj_get_int(args[ARG_pull].u_obj);
         }
-        if (mode & GPIO_PULL_DOWN) {
-            gpio_pulldown_en(self->id);
+        if ((mode & GPIO_PULL_DOWN) | (mode & GPIO_PULL_UP)) {
+            if (mode & GPIO_PULL_DOWN ){
+                gpio_pulldown_en((machine_pin_obj_t *)self);
+            } else {
+                gpio_pullup_en((machine_pin_obj_t *)self);
+            }
         } else {
-            gpio_pulldown_dis(self->id);
-        }
-        if (mode & GPIO_PULL_UP) {
-            gpio_pullup_en(self->id);
-        } else {
-            gpio_pullup_dis(self->id);
+            gpio_pull_disable((machine_pin_obj_t *)self);
         }
         if (mode & GPIO_PULL_HOLD) {
             //TODO: should be checked
