@@ -38,6 +38,8 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj);
 void common_hal_storage_remount(const char *path, bool readonly, bool disable_concurrent_write_protection);
 mp_obj_t common_hal_storage_getmount(const char *path);
 void common_hal_storage_erase_filesystem(void);
-bool common_hal_storage_configure_usb(bool enabled);
+
+bool common_hal_storage_disable_usb_drive(void);
+bool common_hal_storage_enable_usb_drive(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H

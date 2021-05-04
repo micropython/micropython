@@ -143,7 +143,7 @@ static void usb_build_configuration_descriptor(void) {
     // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
     // In the past, the order has been CDC, MSC, MIDI, HID, so preserve that order.
     #if CIRCUITPY_USB_CDC
-    if (usb_cdc_repl_enabled()) {
+    if (usb_cdc_console_enabled()) {
         total_descriptor_length += usb_cdc_descriptor_length();
     }
     if (usb_cdc_data_enabled()) {
@@ -190,7 +190,7 @@ static void usb_build_configuration_descriptor(void) {
     uint8_t *descriptor_buf_remaining = configuration_descriptor + sizeof(configuration_descriptor_template);
 
     #if CIRCUITPY_USB_CDC
-    if (usb_cdc_repl_enabled()) {
+    if (usb_cdc_console_enabled()) {
         // Concatenate and fix up the CDC REPL descriptor.
         descriptor_buf_remaining += usb_cdc_add_descriptor(
             descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string, true);

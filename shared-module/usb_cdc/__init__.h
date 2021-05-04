@@ -30,7 +30,7 @@
 #include "py/mpconfig.h"
 #include "py/objtuple.h"
 
-bool usb_cdc_repl_enabled(void);
+bool usb_cdc_console_enabled(void);
 bool usb_cdc_data_enabled(void);
 
 void usb_cdc_set_defaults(void);

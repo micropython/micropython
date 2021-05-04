@@ -32,6 +32,7 @@
 
 extern mp_obj_dict_t usb_midi_module_globals;
 
-bool common_hal_usb_midi_configure_usb(bool enabled);
+bool common_hal_usb_midi_disable(void);
+bool common_hal_usb_midi_enable(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H

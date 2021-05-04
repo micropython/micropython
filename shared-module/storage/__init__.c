@@ -109,13 +109,21 @@ size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_inte
     return sizeof(usb_msc_descriptor_template);
 }
 
-bool common_hal_storage_configure_usb(bool enabled) {
+static bool usb_drive_set_enabled(bool enabled) {
     // We can't change the descriptors once we're connected.
     if (tud_connected()) {
         return false;
     }
     storage_usb_is_enabled = enabled;
     return true;
+}
+
+bool common_hal_storage_disable_usb_drive(void) {
+    return usb_drive_set_enabled(false);
+}
+
+bool common_hal_storage_enable_usb_drive(void) {
+    return usb_drive_set_enabled(true);
 }
 #endif // CIRCUITPY_USB_MSC
 

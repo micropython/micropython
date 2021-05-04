@@ -242,11 +242,19 @@ void usb_midi_setup_ports(void) {
         MP_OBJ_FROM_PTR(ports);
 }
 
-bool common_hal_usb_midi_configure_usb(bool enabled) {
+static bool usb_midi_set_enabled(bool enabled) {
     // We can't change the descriptors once we're connected.
     if (tud_connected()) {
         return false;
     }
     usb_midi_is_enabled = enabled;
     return true;
+}
+
+bool common_hal_usb_midi_disable(void) {
+    return usb_midi_set_enabled(false);
+}
+
+bool common_hal_usb_midi_enable(void) {
+    return usb_midi_set_enabled(true);
 }

@@ -94,7 +94,7 @@ bool serial_connected(void) {
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
     #elif CIRCUITPY_USB_CDC
-    return usb_cdc_repl_enabled() && tud_cdc_connected();
+    return usb_cdc_console_enabled() && tud_cdc_connected();
     #else
     return tud_cdc_connected();
     #endif
@@ -118,7 +118,7 @@ char serial_read(void) {
     common_hal_busio_uart_read(&debug_uart, (uint8_t *)&text, 1, &uart_errcode);
     return text;
     #elif CIRCUITPY_USB_CDC
-    if (!usb_cdc_repl_enabled()) {
+    if (!usb_cdc_console_enabled()) {
         return -1;
     }
     #endif
@@ -135,7 +135,7 @@ bool serial_bytes_available(void) {
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
     #elif CIRCUITPY_USB_CDC
-    if (!usb_cdc_repl_enabled()) {
+    if (!usb_cdc_console_enabled()) {
         return 0;
     }
     #endif
@@ -157,7 +157,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     #endif
 
     #if CIRCUITPY_USB_CDC
-    if (!usb_cdc_repl_enabled()) {
+    if (!usb_cdc_console_enabled()) {
         return;
     }
     #endif

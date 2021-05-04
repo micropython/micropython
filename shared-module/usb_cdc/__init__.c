@@ -134,12 +134,12 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     0x00,        // 65 bInterval 0 (unit depends on device speed)
 };
 
-static const char repl_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC control";
+static const char console_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC control";
 static const char data_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC2 control";
-static const char repl_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC data";
+static const char console_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC data";
 static const char data_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC2 data";
 
-static usb_cdc_serial_obj_t usb_cdc_repl_obj = {
+static usb_cdc_serial_obj_t usb_cdc_console_obj = {
     .base.type = &usb_cdc_serial_type,
     .timeout = -1.0f,
     .write_timeout = -1.0f,
@@ -153,16 +153,16 @@ static usb_cdc_serial_obj_t usb_cdc_data_obj = {
     .idx = 1,
 };
 
-static bool usb_cdc_repl_is_enabled;
+static bool usb_cdc_console_is_enabled;
 static bool usb_cdc_data_is_enabled;
 
 void usb_cdc_set_defaults(void) {
-    usb_cdc_repl_is_enabled = CIRCUITPY_USB_CDC_REPL_ENABLED_DEFAULT;
+    usb_cdc_console_is_enabled = CIRCUITPY_USB_CDC_CONSOLE_ENABLED_DEFAULT;
     usb_cdc_data_is_enabled = CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT;
 }
 
-bool usb_cdc_repl_enabled(void) {
-    return usb_cdc_repl_is_enabled;
+bool usb_cdc_console_enabled(void) {
+    return usb_cdc_console_is_enabled;
 }
 
 bool usb_cdc_data_enabled(void) {
@@ -173,7 +173,7 @@ size_t usb_cdc_descriptor_length(void) {
     return sizeof(usb_cdc_descriptor_template);
 }
 
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, bool repl) {
+size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, bool console) {
     memcpy(descriptor_buf, usb_cdc_descriptor_template, sizeof(usb_cdc_descriptor_template));
 
     // Store comm interface number.
@@ -189,36 +189,40 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     (*current_interface)++;
 
     descriptor_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = 0x80 | (
-        repl
+        console
         ? (USB_CDC_EP_NUM_NOTIFICATION ? USB_CDC_EP_NUM_NOTIFICATION : *current_endpoint)
         : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : *current_endpoint));
     (*current_endpoint)++;
 
     descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
-        repl
+        console
         ? (USB_CDC_EP_NUM_DATA_OUT ? USB_CDC_EP_NUM_DATA_OUT : *current_endpoint)
         : (USB_CDC2_EP_NUM_DATA_OUT ? USB_CDC2_EP_NUM_DATA_OUT : *current_endpoint);
 
     descriptor_buf[CDC_DATA_IN_ENDPOINT_INDEX] = 0x80 | (
-        repl
+        console
         ? (USB_CDC_EP_NUM_DATA_IN ? USB_CDC_EP_NUM_DATA_IN : *current_endpoint)
         : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : *current_endpoint));
     (*current_endpoint)++;
 
     usb_add_interface_string(*current_interface_string,
-        repl ? repl_cdc_comm_interface_name : data_cdc_comm_interface_name);
+        console ? console_cdc_comm_interface_name : data_cdc_comm_interface_name);
     descriptor_buf[CDC_COMM_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
     usb_add_interface_string(*current_interface_string,
-        repl ? repl_cdc_data_interface_name : data_cdc_data_interface_name);
+        console ? console_cdc_data_interface_name : data_cdc_data_interface_name);
     descriptor_buf[CDC_DATA_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
     return sizeof(usb_cdc_descriptor_template);
 }
 
-bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
+bool common_hal_usb_cdc_disable(void) {
+    return common_hal_usb_cdc_enable(false, false);
+}
+
+bool common_hal_usb_cdc_enable(bool console, bool data) {
     // We can't change the descriptors once we're connected.
     if (tud_connected()) {
         return false;
@@ -227,11 +231,11 @@ bool common_hal_usb_cdc_configure_usb(bool repl_enabled, bool data_enabled) {
     // Right now these objects contain no heap objects, but if that changes,
     // they will need to be protected against gc.
 
-    usb_cdc_repl_is_enabled = repl_enabled;
-    usb_cdc_set_repl(repl_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_repl_obj) : mp_const_none);
+    usb_cdc_console_is_enabled = console;
+    usb_cdc_set_console(console ? MP_OBJ_FROM_PTR(&usb_cdc_console_obj) : mp_const_none);
 
-    usb_cdc_data_is_enabled = data_enabled;
-    usb_cdc_set_data(data_enabled ? MP_OBJ_FROM_PTR(&usb_cdc_data_obj) : mp_const_none);
+    usb_cdc_data_is_enabled = data;
+    usb_cdc_set_data(data ? MP_OBJ_FROM_PTR(&usb_cdc_data_obj) : mp_const_none);
 
     return true;
 }

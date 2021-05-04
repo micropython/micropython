@@ -40,8 +40,8 @@
 //|
 
 //|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int]) -> None:
-//|         """Create a description of a USB HID device. To create an actual device,
-//|         pass a `Device` to `usb_hid.configure_usb()`.
+//|         """Create a description of a USB HID device. The actual device is created when you
+//|         pass a `Device` to `usb_hid.enable()`.
 //|
 //|         :param ReadableBuffer report_descriptor: The USB HID Report descriptor bytes. The descriptor is not
 //|           not verified for correctness; it is up to you to make sure it is not malformed.

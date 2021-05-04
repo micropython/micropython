@@ -74,13 +74,11 @@ static const uint8_t usb_hid_descriptor_template[] = {
     0x08,        // 31 bInterval 8 (unit depends on device speed)
 };
 
-// Is the HID device enabled?
-static bool usb_hid_is_enabled;
-
 #define MAX_HID_DEVICES 8
 
 static supervisor_allocation *hid_report_descriptor_allocation;
 static usb_hid_device_obj_t hid_devices[MAX_HID_DEVICES];
+// If 0, USB HID is disabled.
 static mp_int_t hid_devices_num;
 
 // This tuple is store in usb_hid.devices.
@@ -99,12 +97,12 @@ static mp_obj_tuple_t default_hid_devices_tuple = {
 };
 
 bool usb_hid_enabled(void) {
-    return usb_hid_is_enabled;
+    return hid_devices_num == 0;
 }
 
 void usb_hid_set_defaults(void) {
-    usb_hid_is_enabled = CIRCUITPY_USB_HID_ENABLED_DEFAULT;
-    common_hal_usb_hid_configure_usb(usb_hid_is_enabled ? &default_hid_devices_tuple : mp_const_empty_tuple);
+    common_hal_usb_hid_enable(
+        CIRCUITPY_USB_HID_ENABLED_DEFAULT ? &default_hid_devices_tuple : mp_const_empty_tuple);
 }
 
 // This is the interface descriptor, not the report descriptor.
@@ -148,7 +146,11 @@ static void usb_hid_set_devices_from_hid_devices(void) {
     usb_hid_set_devices(hid_devices_tuple);
 }
 
-bool common_hal_usb_hid_configure_usb(const mp_obj_t devices) {
+bool common_hal_usb_hid_disable(void) {
+    return common_hal_usb_hid_enable(mp_const_empty_tuple);
+}
+
+bool common_hal_usb_hid_enable(const mp_obj_t devices) {
     // We can't change the devices once we're connected.
     if (tud_connected()) {
         return false;
@@ -198,6 +200,10 @@ size_t usb_hid_report_descriptor_length(void) {
 
 // Build the combined HID report descriptor in the given space.
 void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length) {
+    if (!usb_hid_enabled()) {
+        return;
+    }
+
     uint8_t *report_descriptor_start = report_descriptor_space;
 
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
@@ -229,7 +235,11 @@ void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t re
 
 // Call this after the heap and VM are finished.
 void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length) {
-    // Allocate storage that persists across VMs to hold the combind report descriptor.
+    if (!usb_hid_enabled()) {
+        return;
+    }
+
+    // Allocate storage that persists across VMs to hold the combined report descriptor.
     // and to remember the device details.
 
     // Copy the descriptor from the temporary area to a supervisor storage allocation that
