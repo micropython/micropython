@@ -204,7 +204,7 @@ void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t re
         usb_hid_device_obj_t *device = &hid_devices[i];
         // Copy the report descriptor for this device.
         if (hid_devices_num == 1) {
-            // Theres only one device, so it shouldn't have a report ID.
+            // There's only one device, so it shouldn't have a report ID.
             // Copy the descriptor, but splice out the report id indicator and value (2 bytes).
             memcpy(report_descriptor_start, device->report_descriptor, device->report_id_index - 1);
             report_descriptor_start += device->report_id_index - 1;

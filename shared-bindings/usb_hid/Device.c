@@ -39,7 +39,7 @@
 //|        mouse.send_report()"""
 //|
 
-//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: Optional[int], report_id_index: Optional[int]) -> None:
+//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int]) -> None:
 //|         """Create a description of a USB HID device. To create an actual device,
 //|         pass a `Device` to `usb_hid.configure_usb()`.
 //|
@@ -50,7 +50,7 @@
 //|         :param int in_report_length: Size in bytes of the HID report sent to the host.
 //|           "In" is with respect to the host.
 //|         :param int out_report_length: Size in bytes of the HID report received from the host.
-//|           "Out" is with respect to the host. If no reports are expected, use ``None``.
+//|           "Out" is with respect to the host. If no reports are expected, use 0.
 //|         :param int report_id_index: position of byte in descriptor that contains the Report ID.
 //|           A Report ID will be assigned when the device is created. If there is no
 //|           Report ID, use ``None``.
@@ -66,8 +66,8 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
-        { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+        { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = 0 } },
+        { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -95,27 +95,24 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     }
     const uint8_t in_report_length = in_report_length_arg;
 
-    const mp_obj_t out_report_length_arg = args[ARG_out_report_length].u_obj;
-    if (out_report_length_arg == mp_const_none) {
-        self->out_report_length = 0;
-    } else if (!mp_obj_is_small_int(out_report_length_arg) ||
-               MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) <= 0 ||
-               MP_OBJ_SMALL_INT_VALUE(out_report_length_arg) > 255) {
-        mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_out_report_length);
+    const mp_int_t out_report_length_arg = args[ARG_out_report_length].u_int;
+    if (out_report_length_arg <= 0 || out_report_length_arg > 255) {
+        mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_out_report_length);
     }
-    uint8_t out_report_length = MP_OBJ_SMALL_INT_VALUE(out_report_length_arg);
+    const uint8_t out_report_length = out_report_length_arg;
 
     const mp_obj_t report_id_index_arg = args[ARG_report_id_index].u_obj;
-    if (report_id_index_arg == mp_const_none) {
-        self->report_id_index = 0;
-    } else if (!mp_obj_is_small_int(report_id_index_arg) ||
-               MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) <= 0 ||
-               MP_OBJ_SMALL_INT_VALUE(report_id_index_arg) > 255) {
-        mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);
+    uint8_t report_id_index = 0;
+    if (report_id_index_arg != mp_const_none) {
+        const mp_int_t report_id_index_int = mp_obj_int_get_checked(report_id_index_arg);
+        if (report_id_index_int <= 0 || report_id_index_int > 255) {
+            mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);
+        }
+        report_id_index = report_id_index_int;
     }
-    uint8_t report_id_index = MP_OBJ_SMALL_INT_VALUE(report_id_index_arg);
 
-    common_hal_usb_hid_device_construct(self, descriptor, usage_page, usage, in_report_length, out_report_length, report_id_index);
+    common_hal_usb_hid_device_construct(
+        self, descriptor, usage_page, usage, in_report_length, out_report_length, report_id_index);
     return (mp_obj_t)self;
 }
 
