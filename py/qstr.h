@@ -65,7 +65,7 @@ typedef struct _qstr_attr_t {
 } qstr_attr_t;
 
 typedef struct _qstr_pool_t {
-    struct _qstr_pool_t *prev;
+    const struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;

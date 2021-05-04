@@ -878,7 +878,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print()
     print("extern const qstr_pool_t mp_qstr_const_pool;")
     print("const qstr_pool_t mp_qstr_frozen_const_pool = {")
-    print("    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool")
+    print("    &mp_qstr_const_pool, // previous pool")
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))

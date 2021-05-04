@@ -123,7 +123,7 @@ void qstr_init(void) {
 STATIC const char *find_qstr(qstr q, qstr_attr_t *attr) {
     // search pool for this qstr
     // total_prev_len==0 in the final pool, so the loop will always terminate
-    qstr_pool_t *pool = MP_STATE_VM(last_pool);
+    const qstr_pool_t *pool = MP_STATE_VM(last_pool);
     while (q < pool->total_prev_len) {
         pool = pool->prev;
     }
@@ -181,7 +181,7 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
     mp_uint_t str_hash = qstr_compute_hash((const byte *)str, str_len);
 
     // search pools for the data
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
         qstr_attr_t *attrs = pool->attrs;
         for (mp_uint_t at = 0, top = pool->len; at < top; at++) {
             if (attrs[at].hash == str_hash && attrs[at].len == str_len && memcmp(pool->qstrs[at], str, str_len) == 0) {
@@ -290,7 +290,7 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
     *n_qstr = 0;
     *n_str_data_bytes = 0;
     *n_total_bytes = 0;
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const qstr_attr_t *q = pool->attrs, *q_top = pool->attrs + pool->len; q < q_top; q++) {
@@ -310,8 +310,8 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 void qstr_dump_data(void) {
     QSTR_ENTER();
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
-        for (const char **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
+        for (const char *const *q = pool->qstrs, *const *q_top = pool->qstrs + pool->len; q < q_top; q++) {
             mp_printf(&mp_plat_print, "Q(%s)\n", *q);
         }
     }
