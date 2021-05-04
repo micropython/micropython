@@ -159,7 +159,7 @@ set(PICO_SDK_COMPONENTS
 
 # Define mpy-cross flags and frozen manifest
 set(MICROPY_CROSS_FLAGS -march=armv7m)
-set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/manifest.py)
+set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}
