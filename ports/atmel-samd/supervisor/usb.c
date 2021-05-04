@@ -68,19 +68,19 @@ void USB_Handler(void) {
 #endif
 
 #ifdef SAM_D5X_E5X
-void USB_0_Handler (void) {
+void USB_0_Handler(void) {
     usb_irq_handler();
 }
 
-void USB_1_Handler (void) {
+void USB_1_Handler(void) {
     usb_irq_handler();
 }
 
-void USB_2_Handler (void) {
+void USB_2_Handler(void) {
     usb_irq_handler();
 }
 
-void USB_3_Handler (void) {
+void USB_3_Handler(void) {
     usb_irq_handler();
 }
 #endif

@@ -43,7 +43,7 @@ typedef struct {
     uint32_t baudrate;
     uint32_t timeout_ms;
     uint32_t buffer_length;
-    uint8_t* buffer;
+    uint8_t *buffer;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H

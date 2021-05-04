@@ -129,22 +129,18 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
     mcu_reset_reason_t r = RESET_REASON_UNKNOWN;
     if (reset_reason_saved == 0) {
-      r = RESET_REASON_POWER_ON;
-    }
-    else if (reset_reason_saved & POWER_RESETREAS_RESETPIN_Msk) {
-      r = RESET_REASON_RESET_PIN;
-    }
-    else if (reset_reason_saved & POWER_RESETREAS_DOG_Msk) {
-      r = RESET_REASON_WATCHDOG;
-    }
-    else if (reset_reason_saved & POWER_RESETREAS_SREQ_Msk) {
-      r = RESET_REASON_SOFTWARE;
-    }
-    else if ((reset_reason_saved & POWER_RESETREAS_OFF_Msk) ||
-         (reset_reason_saved & POWER_RESETREAS_LPCOMP_Msk) ||
-         (reset_reason_saved & POWER_RESETREAS_NFC_Msk) ||
-         (reset_reason_saved & POWER_RESETREAS_VBUS_Msk))  {
-      r = RESET_REASON_DEEP_SLEEP_ALARM;
+        r = RESET_REASON_POWER_ON;
+    } else if (reset_reason_saved & POWER_RESETREAS_RESETPIN_Msk) {
+        r = RESET_REASON_RESET_PIN;
+    } else if (reset_reason_saved & POWER_RESETREAS_DOG_Msk) {
+        r = RESET_REASON_WATCHDOG;
+    } else if (reset_reason_saved & POWER_RESETREAS_SREQ_Msk) {
+        r = RESET_REASON_SOFTWARE;
+    } else if ((reset_reason_saved & POWER_RESETREAS_OFF_Msk) ||
+               (reset_reason_saved & POWER_RESETREAS_LPCOMP_Msk) ||
+               (reset_reason_saved & POWER_RESETREAS_NFC_Msk) ||
+               (reset_reason_saved & POWER_RESETREAS_VBUS_Msk)) {
+        r = RESET_REASON_DEEP_SLEEP_ALARM;
     }
     return r;
 }

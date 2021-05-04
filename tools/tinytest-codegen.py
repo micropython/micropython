@@ -57,8 +57,10 @@ test_function = (
     "void {name}(void* data) {{\n"
     "  static const char pystr[] = {script};\n"
     "  static const char exp[] = {output};\n"
+    '  printf("\\n");\n'
     "  upytest_set_expected_output(exp, sizeof(exp) - 1);\n"
     "  upytest_execute_test(pystr);\n"
+    '  printf("result: ");\n'
     "}}"
 )
 
@@ -70,7 +72,15 @@ testgroup_member = '  {{ "{name}", {name}_tests }},'
 
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
-test_dirs = ("basics", "micropython", "float", "extmod", "inlineasm")  # 'import', 'io', 'misc')
+test_dirs = (
+    "basics",
+    "micropython",
+    "misc",
+    "extmod",
+    "float",
+    "inlineasm",
+    "qemu-arm",
+)  # 'import', 'io',)
 exclude_tests = (
     # pattern matching in .exp
     "basics/bytes_compare3.py",
@@ -102,6 +112,12 @@ exclude_tests = (
     "micropython/heapalloc_traceback.py",
     # pattern matching in .exp
     "micropython/meminfo.py",
+    # needs sys stdfiles
+    "misc/print_exception.py",
+    # settrace .exp files are too large
+    "misc/sys_settrace_loop.py",
+    "misc/sys_settrace_generator.py",
+    "misc/sys_settrace_features.py",
 )
 
 output = []

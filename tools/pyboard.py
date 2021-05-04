@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# SPDX-FileCopyrightText: Copyright (c) 2014-2016 Damien P. George
+# SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
 # SPDX-FileCopyrightText: Copyright (c) 2017 Paul Sokolovsky
 # SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
@@ -370,8 +370,8 @@ class Pyboard:
         ret = ret.strip()
         return ret
 
-    def exec_(self, command):
-        ret, ret_err = self.exec_raw(command)
+    def exec_(self, command, data_consumer=None):
+        ret, ret_err = self.exec_raw(command, data_consumer=data_consumer)
         if ret_err:
             raise PyboardError("exception", ret, ret_err)
         return ret
@@ -384,6 +384,56 @@ class Pyboard:
     def get_time(self):
         t = str(self.eval("pyb.RTC().datetime()"), encoding="utf8")[1:-1].split(", ")
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
+
+    def fs_ls(self, src):
+        cmd = (
+            "import uos\nfor f in uos.ilistdir(%s):\n"
+            " print('{:12} {}{}'.format(f[3]if len(f)>3 else 0,f[0],'/'if f[1]&0x4000 else ''))"
+            % (("'%s'" % src) if src else "")
+        )
+        self.exec_(cmd, data_consumer=stdout_write_bytes)
+
+    def fs_cat(self, src, chunk_size=256):
+        cmd = (
+            "with open('%s') as f:\n while 1:\n"
+            "  b=f.read(%u)\n  if not b:break\n  print(b,end='')" % (src, chunk_size)
+        )
+        self.exec_(cmd, data_consumer=stdout_write_bytes)
+
+    def fs_get(self, src, dest, chunk_size=256):
+        self.exec_("f=open('%s','rb')\nr=f.read" % src)
+        with open(dest, "wb") as f:
+            while True:
+                data = bytearray()
+                self.exec_("print(r(%u))" % chunk_size, data_consumer=lambda d: data.extend(d))
+                assert data.endswith(b"\r\n\x04")
+                data = eval(str(data[:-3], "ascii"))
+                if not data:
+                    break
+                f.write(data)
+        self.exec_("f.close()")
+
+    def fs_put(self, src, dest, chunk_size=256):
+        self.exec_("f=open('%s','wb')\nw=f.write" % dest)
+        with open(src, "rb") as f:
+            while True:
+                data = f.read(chunk_size)
+                if not data:
+                    break
+                if sys.version_info < (3,):
+                    self.exec_("w(b" + repr(data) + ")")
+                else:
+                    self.exec_("w(" + repr(data) + ")")
+        self.exec_("f.close()")
+
+    def fs_mkdir(self, dir):
+        self.exec_("import uos\nuos.mkdir('%s')" % dir)
+
+    def fs_rmdir(self, dir):
+        self.exec_("import uos\nuos.rmdir('%s')" % dir)
+
+    def fs_rm(self, src):
+        self.exec_("import uos\nuos.remove('%s')" % src)
 
 
 # in Python2 exec is a keyword so one must use "exec_"
@@ -398,6 +448,89 @@ def execfile(filename, device="/dev/ttyACM0", baudrate=115200, user="micro", pas
     stdout_write_bytes(output)
     pyb.exit_raw_repl()
     pyb.close()
+
+
+def filesystem_command(pyb, args):
+    def fname_remote(src):
+        if src.startswith(":"):
+            src = src[1:]
+        return src
+
+    def fname_cp_dest(src, dest):
+        src = src.rsplit("/", 1)[-1]
+        if dest is None or dest == "":
+            dest = src
+        elif dest == ".":
+            dest = "./" + src
+        elif dest.endswith("/"):
+            dest += src
+        return dest
+
+    cmd = args[0]
+    args = args[1:]
+    try:
+        if cmd == "cp":
+            srcs = args[:-1]
+            dest = args[-1]
+            if srcs[0].startswith("./") or dest.startswith(":"):
+                op = pyb.fs_put
+                fmt = "cp %s :%s"
+                dest = fname_remote(dest)
+            else:
+                op = pyb.fs_get
+                fmt = "cp :%s %s"
+            for src in srcs:
+                src = fname_remote(src)
+                dest2 = fname_cp_dest(src, dest)
+                print(fmt % (src, dest2))
+                op(src, dest2)
+        else:
+            op = {
+                "ls": pyb.fs_ls,
+                "cat": pyb.fs_cat,
+                "mkdir": pyb.fs_mkdir,
+                "rmdir": pyb.fs_rmdir,
+                "rm": pyb.fs_rm,
+            }[cmd]
+            if cmd == "ls" and not args:
+                args = [""]
+            for src in args:
+                src = fname_remote(src)
+                print("%s :%s" % (cmd, src))
+                op(src)
+    except PyboardError as er:
+        print(str(er.args[2], "ascii"))
+        pyb.exit_raw_repl()
+        pyb.close()
+        sys.exit(1)
+
+
+_injected_import_hook_code = """\
+import uos, uio
+class _FS:
+  class File(uio.IOBase):
+    def __init__(self):
+      self.off = 0
+    def ioctl(self, request, arg):
+      return 0
+    def readinto(self, buf):
+      buf[:] = memoryview(_injected_buf)[self.off:self.off + len(buf)]
+      self.off += len(buf)
+      return len(buf)
+  mount = umount = chdir = lambda *args: None
+  def stat(self, path):
+    if path == '_injected.mpy':
+      return tuple(0 for _ in range(10))
+    else:
+      raise OSError(-2) # ENOENT
+  def open(self, path, mode):
+    return self.File()
+uos.mount(_FS(), '/_')
+uos.chdir('/_')
+from _injected import *
+uos.umount('/_')
+del _injected_buf, _FS
+"""
 
 
 def main():
@@ -427,6 +560,9 @@ def main():
         action="store_true",
         help="follow the output after running the scripts [default if no scripts given]",
     )
+    cmd_parser.add_argument(
+        "-f", "--filesystem", action="store_true", help="perform a filesystem action"
+    )
     cmd_parser.add_argument("files", nargs="*", help="input files")
     args = cmd_parser.parse_args()
 
@@ -438,7 +574,7 @@ def main():
         sys.exit(1)
 
     # run any command or file(s)
-    if args.command is not None or len(args.files):
+    if args.command is not None or args.filesystem or len(args.files):
         # we must enter raw-REPL mode to execute commands
         # this will do a soft-reset of the board
         try:
@@ -463,6 +599,11 @@ def main():
                 stdout_write_bytes(ret_err)
                 sys.exit(1)
 
+        # do filesystem commands, if given
+        if args.filesystem:
+            filesystem_command(pyb, args.files)
+            args.files.clear()
+
         # run the command, if given
         if args.command is not None:
             execbuffer(args.command.encode("utf-8"))
@@ -471,13 +612,16 @@ def main():
         for filename in args.files:
             with open(filename, "rb") as f:
                 pyfile = f.read()
+                if filename.endswith(".mpy") and pyfile[0] == ord("M"):
+                    pyb.exec_("_injected_buf=" + repr(pyfile))
+                    pyfile = _injected_import_hook_code
                 execbuffer(pyfile)
 
         # exiting raw-REPL just drops to friendly-REPL mode
         pyb.exit_raw_repl()
 
     # if asked explicitly, or no files given, then follow the output
-    if args.follow or (args.command is None and len(args.files) == 0):
+    if args.follow or (args.command is None and not args.filesystem and len(args.files) == 0):
         try:
             ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
         except PyboardError as er:

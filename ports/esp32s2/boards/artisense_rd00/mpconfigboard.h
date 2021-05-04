@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
-//Same setup as the Saola board but with no Neopixel on board
+// Same setup as the Saola board but with no Neopixel on board
 
 #define MICROPY_HW_BOARD_NAME       "Artisense Reference Design RD00"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"

@@ -49,7 +49,7 @@
 //| but the `displayio.Bitmap.dirty` method must be used to inform
 //| displayio when a bitmap was modified through the buffer interface.
 //|
-//| `bitmaptools.arrayblit` can also be useful to omve data efficiently
+//| `bitmaptools.arrayblit` can also be useful to move data efficiently
 //| into a Bitmap.
 //| """
 //|

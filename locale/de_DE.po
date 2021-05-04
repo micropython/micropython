@@ -359,7 +359,7 @@ msgstr "Alle event Kanäle werden benutzt"
 msgid "All state machines in use"
 msgstr "Alle state machines in verwendung"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Alle sync event Kanäle werden benutzt"
 
@@ -694,6 +694,7 @@ msgstr ""
 "Die Frequenz eines bereits verwendeten Timers kann nicht variiert werden"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Kann nicht auf Flanke wecken, nur auf Level."
 
@@ -750,6 +751,10 @@ msgid ""
 msgstr ""
 "Die Verbindung wurde getrennt und kann nicht mehr verwendet werden. "
 "Erstellen Sie eine neue Verbindung."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "Beschädigte .mpy Datei"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1308,7 +1313,8 @@ msgstr "Ungültige Phase"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Ungültiger Pin"
@@ -1488,7 +1494,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr ""
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Name zu lang"
 
@@ -1693,6 +1699,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -2159,14 +2166,6 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 "Zeitbeschränkung ist zu groß: Maximale Zeitbeschränkung ist %d Sekunden"
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Zum beenden, resette bitte das board ohne "
@@ -2587,10 +2586,6 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "Tasten müssen digitalio.DigitalInOut sein"
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "Bytecode nicht implementiert"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "Byteorder ist kein String"
@@ -2698,10 +2693,6 @@ msgstr "Laden von '%q' nicht möglich"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "Laden mit '%q' index nicht möglich"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr "Ich kann den Wurf nicht an den gerade gestarteten Generator hängen"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -3064,6 +3055,10 @@ msgstr "Das Flip-Argument muss ein Ndarray sein"
 msgid "float too big"
 msgstr "float zu groß"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr "Die Schriftart (font) muss 2048 Byte lang sein"
@@ -3134,7 +3129,7 @@ msgstr "Generator läuft bereits"
 msgid "generator ignored GeneratorExit"
 msgstr "Generator ignoriert GeneratorExit"
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3153,6 +3148,10 @@ msgstr "Bezeichner als global neu definiert"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "Bezeichner als nonlocal definiert"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3297,10 +3296,6 @@ msgstr ""
 #: py/compile.c
 msgid "invalid decorator"
 msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "ungültiger dupterm index"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3703,6 +3698,10 @@ msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 "Es werden nur Slices mit Schritt = 1 (auch bekannt als None) unterstützt"
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3926,8 +3925,8 @@ msgid "sampling rate out of range"
 msgstr "Abtastrate außerhalb der Reichweite"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "Der schedule stack ist voll"
+msgid "schedule queue full"
+msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
@@ -4349,8 +4348,17 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Beschädigte .mpy Datei"
+#~ msgid "byte code not implemented"
+#~ msgstr "Bytecode nicht implementiert"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "Ich kann den Wurf nicht an den gerade gestarteten Generator hängen"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "ungültiger dupterm index"
+
+#~ msgid "schedule stack full"
+#~ msgstr "Der schedule stack ist voll"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Beschädigter raw code"

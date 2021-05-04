@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-07 12:23+0000\n"
+"PO-Revision-Date: 2021-04-28 16:11+0000\n"
 "Last-Translator: Reza Almanda <rezaalmanda27@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -357,7 +357,7 @@ msgstr "Semua channel event sedang digunakan"
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 
@@ -698,6 +698,7 @@ msgstr ""
 "digunakan"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
@@ -752,6 +753,10 @@ msgid ""
 "connection."
 msgstr ""
 "Koneksi telah terputus dan tidak dapat lagi digunakan. Buat koneksi baru."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "File .mpy rusak"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1307,7 +1312,8 @@ msgstr "Fase tidak valid"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin tidak valid"
@@ -1486,7 +1492,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr ""
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Nama terlalu panjang"
 
@@ -1662,11 +1668,11 @@ msgstr "Hanya 8 atau 16 bit mono dengan "
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Hanya alamat IPv4 yang didukung"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Hanysa socket IPv4 yang didukung"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1690,6 +1696,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1707,15 +1714,15 @@ msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Waktu habis"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Kehabisan memori"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Kehabisan socket"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
@@ -1761,7 +1768,7 @@ msgstr "ParallelBus belum didukung"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Periferal sedang digunakan"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1773,7 +1780,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Jumlah pin terlalu besar"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1815,7 +1822,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
-msgstr ""
+msgstr "Pin harus berurutan"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2151,14 +2158,6 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2574,10 +2573,6 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr ""
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr ""
@@ -2682,10 +2677,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
 msgstr ""
 
 #: py/objgenerator.c
@@ -3039,6 +3030,10 @@ msgstr ""
 msgid "float too big"
 msgstr ""
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr ""
@@ -3107,7 +3102,7 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3126,6 +3121,10 @@ msgstr "identifier didefinisi ulang sebagai global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifier didefinisi ulang sebagai nonlocal"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3270,10 +3269,6 @@ msgstr ""
 #: py/compile.c
 msgid "invalid decorator"
 msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "indeks dupterm tidak valid"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3669,6 +3664,10 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3888,7 +3887,7 @@ msgid "sampling rate out of range"
 msgstr "nilai sampling keluar dari jangkauan"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
+msgid "schedule queue full"
 msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
@@ -4239,11 +4238,11 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi tidak diaktifkan"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "jendela harus <= interval"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
@@ -4306,8 +4305,8 @@ msgstr "zi harus berjenis float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "File .mpy rusak"
+#~ msgid "invalid dupterm index"
+#~ msgstr "indeks dupterm tidak valid"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Kode raw rusak"
