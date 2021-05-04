@@ -340,7 +340,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 board_init();
             }
             #endif
-            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
