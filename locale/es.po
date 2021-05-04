@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-28 16:11+0000\n"
+"PO-Revision-Date: 2021-05-05 15:32+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3067,7 +3067,7 @@ msgstr "punto flotante demasiado grande"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "sin capacidades de flotante"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3159,7 +3159,7 @@ msgstr "identificador redefinido como nonlocal"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "import * no a nivel de módulo"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3707,7 +3707,7 @@ msgstr "solo se admiten segmentos con step=1 (alias None)"
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "código de operación"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3931,7 +3931,7 @@ msgstr "frecuencia de muestreo fuera de rango"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "cola de planificación llena"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
