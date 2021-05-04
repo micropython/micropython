@@ -125,7 +125,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
                 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
-                if (block == MP_QSTR_NULL) {
+                if (block == MP_QSTRnull) {
                     mp_print_str(print, "\n");
                 } else {
                     mp_printf(print, decompressed_block, block);
@@ -145,7 +145,7 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
     } else if (arg == mp_const_none) {
         return 0;
     } else if (mp_obj_is_small_int(arg)) {
-        if (MP_OBJ_SMALL_INT_VALUE(arg) == 0) {
+        if (arg == MP_OBJ_NEW_SMALL_INT(0)) {
             return 0;
         } else {
             return 1;

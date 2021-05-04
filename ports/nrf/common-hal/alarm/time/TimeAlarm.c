@@ -43,7 +43,7 @@ mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timeala
 mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_time_timealarm_type)) {
             return alarms[i];
         }
     }
@@ -55,10 +55,10 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
 }
 
 bool alarm_time_timealarm_woke_us_up(void) {
-  return sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_TIMER;
+    return sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_TIMER;
 }
 
-int64_t wakeup_time_saved =0;
+int64_t wakeup_time_saved = 0;
 
 int64_t alarm_time_timealarm_get_wakeup_timediff_ms(void) {
     if (wakeup_time_saved == 0) {
@@ -82,13 +82,13 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     wakeup_time_saved = 0;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_time_timealarm_type)) {
             continue;
         }
         if (timealarm_set) {
             mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
         }
-        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;
     }
     if (!timealarm_set) {

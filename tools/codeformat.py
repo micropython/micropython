@@ -32,6 +32,7 @@ import itertools
 import os
 import pathlib
 import re
+import sys
 import subprocess
 
 # Relative to top-level repo dir.
@@ -68,6 +69,45 @@ EXCLUSIONS = [
     "tests/basics/*.py",
 ]
 
+# None of the standard Python path matching routines implement the matching
+# we want, which is most like git's "pathspec" version of globs.
+# In particular, we want "**/" to match all directories.
+# This routine is sufficient to work with the patterns we have, but
+# subtle cases like character classes that contain meta-characters
+# are not covered
+def git_glob_to_regex(pat):
+    def transform(m):
+        m = m.group(0)
+        if m == "*":
+            return "[^/]*"
+        if m == "**/":
+            return "(.*/)?"
+        if m == "?":
+            return "[^/]"
+        if m == ".":
+            return r"\."
+        return m
+
+    result = [transform(part) for part in re.finditer(r"(\*\*/|[*?.]|[^*?.]+)", pat)]
+    return "(^" + "".join(result) + "$)"
+
+
+# Create a single, complicated regular expression that matches exactly the
+# files we want, accounting for the PATHS as well as the EXCLUSIONS.
+path_re = (
+    ""
+    # First a negative lookahead assertion that it doesn't match
+    # any of the EXCLUSIONS
+    + "(?!"
+    + "|".join(git_glob_to_regex(pat) for pat in EXCLUSIONS)
+    + ")"
+    # Then a positive match for any of the PATHS
+    + "(?:"
+    + "|".join(git_glob_to_regex(pat) for pat in PATHS)
+    + ")"
+)
+path_rx = re.compile(path_re)
+
 # Path to repo top-level dir.
 TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -76,15 +116,15 @@ UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
 C_EXTS = (".c", ".h")
 PY_EXTS = (".py",)
 
+# Transform a filename argument relative to the current directory into one
+# relative to the TOP directory, which is what we need when checking against
+# path_rx.
+def relative_filename(arg):
+    return str(pathlib.Path(arg).resolve().relative_to(TOP))
 
-def list_files(args, paths, exclusions=None, prefix=""):
-    files = set()
-    args = [os.path.join(prefix, arg) for arg in args]
-    for pattern in paths:
-        files.update(arg for arg in args if pathlib.Path(arg).match(pattern))
-    for pattern in exclusions or []:
-        files.difference_update(fnmatch.filter(files, os.path.join(prefix, pattern)))
-    return sorted(files)
+
+def list_files(args):
+    return sorted(arg for arg in args if path_rx.match(relative_filename(arg)))
 
 
 def fixup_c(filename):
@@ -135,19 +175,25 @@ def fixup_c(filename):
 
 
 def main():
-    cmd_parser = argparse.ArgumentParser(description="Auto-format C and Python files -- to be used via pre-commit only.")
+    cmd_parser = argparse.ArgumentParser(
+        description="Auto-format C and Python files -- to be used via pre-commit only."
+    )
     cmd_parser.add_argument("-c", action="store_true", help="Format C code only")
     cmd_parser.add_argument("-p", action="store_true", help="Format Python code only")
     cmd_parser.add_argument("-v", action="store_true", help="Enable verbose output")
+    cmd_parser.add_argument("--dry-run", action="store_true", help="Print, don't act")
     cmd_parser.add_argument("files", nargs="+", help="Run on specific globs")
     args = cmd_parser.parse_args()
+
+    if args.dry_run:
+        print(" ".join(sys.argv))
 
     # Setting only one of -c or -p disables the other. If both or neither are set, then do both.
     format_c = args.c or not args.p
     format_py = args.p or not args.c
 
     # Expand the arguments passed on the command line, subject to the PATHS and EXCLUSIONS
-    files = list_files(args.files, PATHS, EXCLUSIONS, TOP)
+    files = list_files(args.files)
 
     # Extract files matching a specific language.
     def lang_files(exts):
@@ -161,7 +207,10 @@ def main():
             file_args = list(itertools.islice(files, N))
             if not file_args:
                 break
-            subprocess.call(cmd + file_args)
+            if args.dry_run:
+                print(" ".join(cmd + file_args))
+            else:
+                subprocess.call(cmd + file_args)
 
     # Format C files with uncrustify.
     if format_c:

@@ -37,12 +37,12 @@ STATIC audiopwmio_pwmaudioout_obj_t *active_audio = NULL;
 
 STATIC void set_pin(uint8_t channel, GPIO_PinState state) {
     HAL_GPIO_WritePin(pin_port(active_audio->pin[channel]->port),
-                      pin_mask(active_audio->pin[channel]->number), state);
+        pin_mask(active_audio->pin[channel]->number), state);
 }
 
 STATIC void toggle_pin(uint8_t channel) {
     HAL_GPIO_TogglePin(pin_port(active_audio->pin[channel]->port),
-                       pin_mask(active_audio->pin[channel]->number));
+        pin_mask(active_audio->pin[channel]->number));
 }
 
 STATIC void set_drive_mode(const mcu_pin_obj_t *pin, uint32_t mode) {
@@ -93,10 +93,10 @@ STATIC bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
         }
 
         uint32_t num_samples = buffer_length / self->bytes_per_sample / self->sample_channel_count;
-        int16_t *buffer16 = (int16_t*)buffer;
+        int16_t *buffer16 = (int16_t *)buffer;
 
         while (num_samples--) {
-            for (int8_t channel=0; channel < effective_channels; channel++) {
+            for (int8_t channel = 0; channel < effective_channels; channel++) {
                 int16_t val;
                 if (self->bytes_per_sample == 1) {
                     val = *buffer++ << 8;
@@ -121,7 +121,7 @@ STATIC bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
                     if (self->len[channel] > 1) {
                         self->buffer[channel][self->buffer_length[channel]++] = self->len[channel];
                         if (replicate) {
-                            self->buffer[1-channel][self->buffer_length[1-channel]++] = self->len[channel];
+                            self->buffer[1 - channel][self->buffer_length[1 - channel]++] = self->len[channel];
                         }
                         self->len[channel] = 0;
                     }
@@ -131,14 +131,14 @@ STATIC bool fill_buffers(audiopwmio_pwmaudioout_obj_t *self) {
             }
         }
     } while (get_buffer_result == GET_BUFFER_MORE_DATA &&
-             (!self->buffer_length[0] || (self->pin[1] && !self->buffer_length[1])));
+        (!self->buffer_length[0] || (self->pin[1] && !self->buffer_length[1])));
 
     if (get_buffer_result == GET_BUFFER_DONE) {
         // It's the final countdown
-        for (int8_t channel=0; channel < effective_channels; channel++) {
+        for (int8_t channel = 0; channel < effective_channels; channel++) {
             self->buffer[channel][self->buffer_length[channel]++] = self->len[channel];
             if (replicate) {
-                self->buffer[1-channel][self->buffer_length[1-channel]++] = self->len[channel];
+                self->buffer[1 - channel][self->buffer_length[1 - channel]++] = self->len[channel];
             }
         }
 
@@ -163,10 +163,8 @@ STATIC void move_to_beginning(uint16_t *buffer, uint16_t *buffer_length, uint16_
 
 STATIC void pwmaudioout_event_handler(void) {
     // Detect TIM Update event
-    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET)
-    {
-        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET)
-        {
+    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET) {
+        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET) {
             __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
             if (!active_audio || active_audio->paused) {
                 __HAL_TIM_DISABLE_IT(&tim_handle, TIM_IT_UPDATE);
@@ -221,7 +219,7 @@ void audiopwmout_reset() {
 
 // Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *self,
-        const mcu_pin_obj_t *left_channel, const mcu_pin_obj_t *right_channel, uint16_t quiescent_value) {
+    const mcu_pin_obj_t *left_channel, const mcu_pin_obj_t *right_channel, uint16_t quiescent_value) {
 
     // Set up the pin(s) for output
     self->pin[0] = left_channel;
@@ -306,7 +304,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     // Calculate period (TODO: supersample to 1 MHz?)
     TIM_TypeDef *tim_instance = stm_peripherals_find_timer();
     uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
-    uint32_t prescaler = source/sample_rate;
+    uint32_t prescaler = source / sample_rate;
 
     // Activate timer
     active_audio = self;
@@ -314,7 +312,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     stm_peripherals_timer_preinit(tim_instance, 4, pwmaudioout_event_handler);
 
     tim_handle.Instance = tim_instance;
-    tim_handle.Init.Period = 100; //immediately replaced.
+    tim_handle.Init.Period = 100; // immediately replaced.
     tim_handle.Init.Prescaler = prescaler - 1;
     tim_handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     tim_handle.Init.CounterMode = TIM_COUNTERMODE_UP;

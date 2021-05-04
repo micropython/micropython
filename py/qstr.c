@@ -32,6 +32,7 @@
 #include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"
+#include "py/runtime.h"
 
 #include "supervisor/linker.h"
 
@@ -77,13 +78,13 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
 }
 
 const qstr_attr_t mp_qstr_const_attr[] = {
-        #ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) { hash, len },
 #define TRANSLATION(id, length, compressed ...)
-        #include "genhdr/qstrdefs.generated.h"
+    #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION
 #undef QDEF
-        #endif
+    #endif
 };
 
 const qstr_pool_t mp_qstr_const_pool = {
@@ -198,11 +199,16 @@ qstr qstr_from_str(const char *str) {
 }
 
 qstr qstr_from_strn(const char *str, size_t len) {
-    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     QSTR_ENTER();
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         // qstr does not exist in interned pool so need to add it
+
+        // check that len is not too big
+        if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
+            QSTR_EXIT();
+            mp_raise_msg(&mp_type_RuntimeError, translate("Name too long"));
+        }
 
         // compute number of bytes needed to intern this string
         size_t n_bytes = len + 1;

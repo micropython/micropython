@@ -141,7 +141,7 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 /* byte code functions                                                        */
 
 qstr mp_obj_code_get_name(const byte *code_info) {
-    code_info = mp_decode_uint_skip(code_info); // skip code_info_size entry
+    MP_BC_PRELUDE_SIZE_DECODE(code_info);
     #if MICROPY_PERSISTENT_CODE
     return code_info[0] | (code_info[1] << 8);
     #else
@@ -159,12 +159,7 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     #endif
 
     const byte *bc = fun->bytecode;
-    bc = mp_decode_uint_skip(bc); // skip n_state
-    bc = mp_decode_uint_skip(bc); // skip n_exc_stack
-    bc++; // skip scope_params
-    bc++; // skip n_pos_args
-    bc++; // skip n_kwonly_args
-    bc++; // skip n_def_pos_args
+    MP_BC_PRELUDE_SIG_DECODE(bc);
     return mp_obj_code_get_name(bc);
 }
 
@@ -195,18 +190,19 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
     { \
-        /* bytecode prelude: state size and exception stack size */               \
-        n_state_out_var = mp_decode_uint_value(bytecode);                         \
-        size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
-                                                                                  \
+        const uint8_t *ip = bytecode; \
+        size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args; \
+        MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state_out_var, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args); \
+                                    \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
             + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
-#define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \
+#define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
     code_state->ip = 0; \
+    code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
 
@@ -233,7 +229,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     }
     #endif
 
-    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);
@@ -278,7 +274,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
     }
     #endif
 
-    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);
@@ -292,9 +288,11 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
             assert(0);
         }
     }
-    const byte *bytecode_ptr = mp_decode_uint_skip(mp_decode_uint_skip(self->bytecode));
-    size_t n_pos_args = bytecode_ptr[1];
-    size_t n_kwonly_args = bytecode_ptr[2];
+    const byte *bytecode_ptr = self->bytecode;
+    size_t n_state_unused, n_exc_stack_unused, scope_flags_unused;
+    size_t n_pos_args, n_kwonly_args, n_def_args_unused;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(bytecode_ptr, n_state_unused, n_exc_stack_unused,
+        scope_flags_unused, n_pos_args, n_kwonly_args, n_def_args_unused);
     // We can't check the case when an exception is returned in state[0]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
@@ -470,7 +468,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
             return (mp_uint_t)items;
         } else {
             mp_buffer_info_t bufinfo;
-            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_WRITE)) {
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
                 // supports the buffer protocol, return a pointer to the data
                 return (mp_uint_t)bufinfo.buf;
             } else {

@@ -63,6 +63,7 @@ NPROC = $(PYTHON3) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
 CXX = $(CROSS_COMPILE)g++
+GDB = $(CROSS_COMPILE)gdb
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
@@ -78,6 +79,8 @@ MAKE_FROZEN = $(PYTHON3) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 MPY_TOOL = $(PYTHON3) $(TOP)/tools/mpy-tool.py
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
+
+MPY_LIB_DIR = $(TOP)/../micropython-lib
 
 all:
 .PHONY: all

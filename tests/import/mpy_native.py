@@ -58,15 +58,15 @@ class UserFS:
 # these are the test .mpy files
 user_files = {
     # bad architecture
-    "/mod0.mpy": b"M\x04\xff\x00\x10",
+    "/mod0.mpy": b"M\x05\xff\x00\x10",
     # test loading of viper and asm
     "/mod1.mpy": (
-        b"M\x04\x0b\x1f\x20"  # header
-        b"\x38"  # n bytes, bytecode
-        b"\x01\x00\x00\x00\x00\x00\x05\x00\x00\x00\x00\xff"  # prelude
-        b"\x11"  # LOAD_CONST_NONE
-        b"\x5b"  # RETURN_VALUE
-        b"\x02m\x02m\x00\x02"  # simple_name, source_file, n_obj, n_raw_code
+        b"M\x05\x0b\x1f\x20"  # header
+        b"\x20"  # n bytes, bytecode
+        b"\x00\x08\x02m\x02m"  # prelude
+        b"\x51"  # LOAD_CONST_NONE
+        b"\x63"  # RETURN_VALUE
+        b"\x00\x02"  # n_obj, n_raw_code
         b"\x22"  # n bytes, viper code
         b"\x00\x00\x00\x00\x00\x00"  # dummy machine code
         b"\x00\x00"  # qstr0
@@ -75,6 +75,33 @@ user_files = {
         b"\x23"  # n bytes, asm code
         b"\x00\x00\x00\x00\x00\x00\x00\x00"  # dummy machine code
         b"\x00\x00\x00"  # scope_flags, n_pos_args, type_sig
+    ),
+    # test loading viper with truncated data
+    "/mod2.mpy": (
+        b"M\x05\x0b\x1f\x20"  # header
+        b"\x20"  # n bytes, bytecode
+        b"\x00\x08\x02m\x02m"  # prelude
+        b"\x51"  # LOAD_CONST_NONE
+        b"\x63"  # RETURN_VALUE
+        b"\x00\x01"  # n_obj, n_raw_code
+        b"\x12"  # n bytes(=4), viper code
+    ),
+    # test loading viper with additional scope flags and relocation
+    "/mod3.mpy": (
+        b"M\x05\x0b\x1f\x20"  # header
+        b"\x20"  # n bytes, bytecode
+        b"\x00\x08\x02m\x02m"  # prelude
+        b"\x51"  # LOAD_CONST_NONE
+        b"\x63"  # RETURN_VALUE
+        b"\x00\x01"  # n_obj, n_raw_code
+        b"\x12"  # n bytes(=4), viper code
+        b"\x00\x00\x00\x00"  # dummy machine code
+        b"\x00"  # n_qstr
+        b"\x81\x60"  # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC (0xe0 encoded over two bytes)
+        b"\x00\x00"  # n_obj, n_raw_code
+        b"\x06rodata"  # rodata, 6 bytes
+        b"\x04"  # bss, 4 bytes
+        b"\x03\x01\x00"  # dummy relocation of rodata
     ),
 }
 
@@ -90,6 +117,8 @@ for i in range(len(user_files)):
         print(mod, "OK")
     except ValueError as er:
         print(mod, "ValueError", er)
+    except RuntimeError as er:
+        print(mod, "RuntimeError", er)
 
 # unmount and undo path addition
 uos.umount("/userfs")

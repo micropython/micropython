@@ -111,6 +111,7 @@ except TypeError:
 -cud1
 ~cud1
 cud1 * cud2
+cud1 @ cud2
 cud1 / cud2
 cud2 // cud1
 cud1 += cud2

@@ -56,7 +56,7 @@ static void flash_disable(void) {
     common_hal_busio_spi_unlock(&supervisor_flash_spi_bus);
 }
 
-static bool transfer(uint8_t* command, uint32_t command_length, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+static bool transfer(uint8_t *command, uint32_t command_length, uint8_t *data_in, uint8_t *data_out, uint32_t data_length) {
     if (!flash_enable()) {
         return false;
     }

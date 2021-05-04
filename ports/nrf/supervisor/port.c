@@ -259,9 +259,9 @@ void reset_port(void) {
 
     reset_all_pins();
 
-#ifdef NRF_DEBUG_PRINT
+    #ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
-#endif
+    #endif
 }
 
 void reset_to_bootloader(void) {

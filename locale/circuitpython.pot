@@ -751,6 +751,10 @@ msgid ""
 "connection."
 msgstr ""
 
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
 msgstr ""
@@ -1483,7 +1487,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr ""
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr ""
 
@@ -2550,10 +2554,6 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr ""
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr ""
@@ -2658,10 +2658,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
 msgstr ""
 
 #: py/objgenerator.c
@@ -3015,6 +3011,10 @@ msgstr ""
 msgid "float too big"
 msgstr ""
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr ""
@@ -3083,7 +3083,7 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3101,6 +3101,10 @@ msgstr ""
 
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
+msgstr ""
+
+#: py/compile.c
+msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
@@ -3245,10 +3249,6 @@ msgstr ""
 
 #: py/compile.c
 msgid "invalid decorator"
-msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3648,6 +3648,10 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3867,7 +3871,7 @@ msgid "sampling rate out of range"
 msgstr ""
 
 #: py/modmicropython.c
-msgid "schedule stack full"
+msgid "schedule queue full"
 msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
