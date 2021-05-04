@@ -64,7 +64,7 @@ typedef uint16_t qstr_len_t;
 #endif
 
 typedef struct _qstr_pool_t {
-    struct _qstr_pool_t *prev;
+    const struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;
