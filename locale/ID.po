@@ -357,7 +357,7 @@ msgstr "Semua channel event sedang digunakan"
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 
@@ -753,6 +753,10 @@ msgid ""
 "connection."
 msgstr ""
 "Koneksi telah terputus dan tidak dapat lagi digunakan. Buat koneksi baru."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "File .mpy rusak"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1488,7 +1492,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr ""
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Nama terlalu panjang"
 
@@ -2156,14 +2160,6 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Untuk keluar, silahkan reset board tanpa "
@@ -2577,10 +2573,6 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr ""
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr ""
@@ -2685,10 +2677,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
 msgstr ""
 
 #: py/objgenerator.c
@@ -3042,6 +3030,10 @@ msgstr ""
 msgid "float too big"
 msgstr ""
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr ""
@@ -3110,7 +3102,7 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3129,6 +3121,10 @@ msgstr "identifier didefinisi ulang sebagai global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifier didefinisi ulang sebagai nonlocal"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3273,10 +3269,6 @@ msgstr ""
 #: py/compile.c
 msgid "invalid decorator"
 msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "indeks dupterm tidak valid"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3672,6 +3664,10 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
+#: py/vm.c
+msgid "opcode"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
@@ -3891,7 +3887,7 @@ msgid "sampling rate out of range"
 msgstr "nilai sampling keluar dari jangkauan"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
+msgid "schedule queue full"
 msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
@@ -4309,8 +4305,8 @@ msgstr "zi harus berjenis float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "File .mpy rusak"
+#~ msgid "invalid dupterm index"
+#~ msgstr "indeks dupterm tidak valid"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Kode raw rusak"
