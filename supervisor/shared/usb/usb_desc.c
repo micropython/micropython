@@ -115,8 +115,8 @@ static const uint8_t configuration_descriptor_template[] = {
 static void usb_build_device_descriptor(uint16_t vid, uint16_t pid) {
     device_descriptor_allocation =
         allocate_memory(align32_size(sizeof(device_descriptor_template)),
-                        /*high_address*/ false, /*movable*/ false);
-    uint8_t *device_descriptor = (uint8_t *) device_descriptor_allocation->ptr;
+            /*high_address*/ false, /*movable*/ false);
+    uint8_t *device_descriptor = (uint8_t *)device_descriptor_allocation->ptr;
     memcpy(device_descriptor, device_descriptor_template, sizeof(device_descriptor_template));
 
     device_descriptor[DEVICE_VID_LO_INDEX] = vid & 0xFF;
@@ -142,38 +142,38 @@ static void usb_build_configuration_descriptor(void) {
 
     // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
     // In the past, the order has been CDC, MSC, MIDI, HID, so preserve that order.
-#if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_CDC
     if (usb_cdc_repl_enabled()) {
         total_descriptor_length += usb_cdc_descriptor_length();
     }
     if (usb_cdc_data_enabled()) {
         total_descriptor_length += usb_cdc_descriptor_length();
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_MSC
     if (storage_usb_enabled()) {
         total_descriptor_length += storage_usb_descriptor_length();
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_HID
+    #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
         total_descriptor_length += usb_hid_descriptor_length();
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_MIDI
+    #if CIRCUITPY_USB_MIDI
     if (usb_midi_enabled()) {
         total_descriptor_length += usb_midi_descriptor_length();
     }
-#endif
+    #endif
 
     // Now we now how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor_allocation =
         allocate_memory(align32_size(total_descriptor_length),
-                        /*high_address*/ false, /*movable*/ false);
-    uint8_t *configuration_descriptor = (uint8_t *) configuration_descriptor_allocation->ptr;
+            /*high_address*/ false, /*movable*/ false);
+    uint8_t *configuration_descriptor = (uint8_t *)configuration_descriptor_allocation->ptr;
 
     // Copy the template, which is the first part of the descriptor, and fix up its length.
 
@@ -189,7 +189,7 @@ static void usb_build_configuration_descriptor(void) {
 
     uint8_t *descriptor_buf_remaining = configuration_descriptor + sizeof(configuration_descriptor_template);
 
-#if CIRCUITPY_USB_CDC
+    #if CIRCUITPY_USB_CDC
     if (usb_cdc_repl_enabled()) {
         // Concatenate and fix up the CDC REPL descriptor.
         descriptor_buf_remaining += usb_cdc_add_descriptor(
@@ -200,31 +200,31 @@ static void usb_build_configuration_descriptor(void) {
         descriptor_buf_remaining += usb_cdc_add_descriptor(
             descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string, false);
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB_MSC
     if (storage_usb_enabled()) {
         // Concatenate and fix up the MSC descriptor.
         descriptor_buf_remaining += storage_usb_add_descriptor(
             descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_HID
+    #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string,
             usb_hid_report_descriptor_length());
     }
-#endif
+    #endif
 
-#if CIRCUITPY_USB_MIDI
+    #if CIRCUITPY_USB_MIDI
     if (usb_midi_enabled()) {
         // Concatenate and fix up the MIDI descriptor.
         descriptor_buf_remaining += usb_midi_add_descriptor(
             descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
     }
-#endif
+    #endif
 
     // Now we know how many interfaces have been used.
     configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = current_interface;
@@ -251,8 +251,8 @@ static void usb_build_interface_string_table(void) {
     // Space needed is 2 bytes for String Descriptor header, then 2 bytes for each character
     string_descriptors_allocation =
         allocate_memory(align32_size(current_interface_string * 2 + collected_interface_strings_length * 2),
-                        /*high_address*/ false, /*movable*/ false);
-    uint16_t *string_descriptors = (uint16_t *) string_descriptors_allocation->ptr;
+            /*high_address*/ false, /*movable*/ false);
+    uint16_t *string_descriptors = (uint16_t *)string_descriptors_allocation->ptr;
 
 
     uint16_t *string_descriptor = string_descriptors;
@@ -268,7 +268,7 @@ static void usb_build_interface_string_table(void) {
     for (uint8_t string_index = 1; string_index < current_interface_string; string_index++) {
         const char *str = collected_interface_strings[string_index].char_str;
         const size_t str_len = strlen(str);
-        uint8_t descriptor_size  = 2 + (str_len * 2);
+        uint8_t descriptor_size = 2 + (str_len * 2);
         string_descriptor[0] = 0x0300 | descriptor_size;
 
         // Convert to le16.
@@ -311,7 +311,7 @@ void usb_build_descriptors(void) {
 // Invoked when GET DEVICE DESCRIPTOR is received.
 // Application return pointer to descriptor
 uint8_t const *tud_descriptor_device_cb(void) {
-    return (uint8_t *) device_descriptor_allocation->ptr;
+    return (uint8_t *)device_descriptor_allocation->ptr;
 }
 
 // Invoked when GET CONFIGURATION DESCRIPTOR is received.
@@ -319,7 +319,7 @@ uint8_t const *tud_descriptor_device_cb(void) {
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;  // for multiple configurations
-    return (uint8_t *) configuration_descriptor_allocation->ptr;
+    return (uint8_t *)configuration_descriptor_allocation->ptr;
 }
 
 // Invoked when GET STRING DESCRIPTOR request is received.
