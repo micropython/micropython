@@ -186,6 +186,11 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
 #define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
 
+#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+#define MICROPY_EXECUTION_CORE_NUM (2)
+#define MICROPY_EXECUTION_CORE_CUR (get_core_num())
+#endif
+
 #if MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #define MICROPY_VM_HOOK_COUNT (10)
