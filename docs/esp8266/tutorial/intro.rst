@@ -75,6 +75,10 @@ the DTR and RTS pins wired in a special way then deploying the firmware should
 be easy as all steps can be done automatically.  Boards that have such features
 include the Adafruit Feather HUZZAH and NodeMCU boards.
 
+If you do not have such a board, you need keep GPIO0 pulled to ground and reset
+the device by pulling the reset pin to ground and releasing it again to enter
+programming mode.
+
 For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
@@ -112,6 +116,10 @@ the firmware (note the ``-fm dio`` option)::
 
 If the above commands run without error then MicroPython should be installed on
 your board!
+
+If you pulled GPIO0 manually to ground to enter programming mode, release it
+now and reset the device by again pulling the reset pin to ground for a short
+duration.
 
 Serial prompt
 -------------
