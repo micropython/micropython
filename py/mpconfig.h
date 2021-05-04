@@ -1541,6 +1541,13 @@ typedef double mp_float_t;
 #define MICROPY_END_ATOMIC_SECTION(state) (void)(state)
 #endif
 
+// The number (and current) independent execution cores/CPUs that the MicroPython
+// VM can run on.
+#ifndef MICROPY_EXECUTION_CORE_NUM
+#define MICROPY_EXECUTION_CORE_NUM (1)
+#define MICROPY_EXECUTION_CORE_CUR (0)
+#endif
+
 // Allow to override static modifier for global objects, e.g. to use with
 // object code analysis tools which don't support static symbols.
 #ifndef STATIC

@@ -80,7 +80,7 @@ typedef struct _mp_state_mem_t {
 
     int gc_stack_overflow;
     MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
-    uint16_t gc_lock_depth;
+    uint16_t gc_lock_depth[MICROPY_EXECUTION_CORE_NUM];
 
     // This variable controls auto garbage collection.  If set to 0 then the
     // GC won't automatically run when gc_alloc can't find enough blocks.  But

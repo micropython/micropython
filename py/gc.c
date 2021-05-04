@@ -150,7 +150,9 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
 
     // unlock the GC
-    MP_STATE_MEM(gc_lock_depth) = 0;
+    for (size_t i = 0; i < MICROPY_EXECUTION_CORE_NUM; ++i) {
+        MP_STATE_MEM(gc_lock_depth[i]) = 0;
+    }
 
     // allow auto collection
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
@@ -174,19 +176,19 @@ void gc_init(void *start, void *end) {
 }
 
 void gc_lock(void) {
-    GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
-    GC_EXIT();
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR])++;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 void gc_unlock(void) {
-    GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)--;
-    GC_EXIT();
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR])--;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 bool gc_is_locked(void) {
-    return MP_STATE_MEM(gc_lock_depth) != 0;
+    return MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR]) != 0;
 }
 
 // ptr should be of type void*
@@ -320,7 +322,6 @@ STATIC void gc_sweep(void) {
 
 void gc_collect_start(void) {
     GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
     #if MICROPY_GC_ALLOC_THRESHOLD
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
@@ -360,13 +361,11 @@ void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
-    MP_STATE_MEM(gc_lock_depth)--;
     GC_EXIT();
 }
 
 void gc_sweep_all(void) {
     GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
     MP_STATE_MEM(gc_stack_overflow) = 0;
     gc_collect_end();
 }
@@ -445,13 +444,12 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
         return NULL;
     }
 
-    GC_ENTER();
-
     // check if GC is locked
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        GC_EXIT();
+    if (MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR]) > 0) {
         return NULL;
     }
+
+    GC_ENTER();
 
     size_t i;
     size_t end_block;
@@ -573,12 +571,12 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
-    GC_ENTER();
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+    if (MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR]) > 0) {
         // TODO how to deal with this error?
-        GC_EXIT();
         return;
     }
+
+    GC_ENTER();
 
     DEBUG_printf("gc_free(%p)\n", ptr);
 
@@ -674,14 +672,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return NULL;
     }
 
+    if (MP_STATE_MEM(gc_lock_depth[MICROPY_EXECUTION_CORE_CUR]) > 0) {
+        return NULL;
+    }
+
     void *ptr = ptr_in;
 
     GC_ENTER();
-
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        GC_EXIT();
-        return NULL;
-    }
 
     // get the GC block number corresponding to this pointer
     assert(VERIFY_PTR(ptr));
