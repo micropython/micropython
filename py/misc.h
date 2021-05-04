@@ -165,6 +165,7 @@ bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
 bool unichar_isident(unichar c);
+bool unichar_isalnum(unichar c);
 bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
@@ -241,14 +242,83 @@ extern mp_uint_t mp_verbose_flag;
 /** float internals *************/
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MP_FLOAT_EXP_BITS (11)
 #define MP_FLOAT_FRAC_BITS (52)
+typedef uint64_t mp_float_uint_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MP_FLOAT_EXP_BITS (8)
 #define MP_FLOAT_FRAC_BITS (23)
+typedef uint32_t mp_float_uint_t;
 #endif
+
 #define MP_FLOAT_EXP_BIAS ((1 << (MP_FLOAT_EXP_BITS - 1)) - 1)
+
+typedef union _mp_float_union_t {
+    mp_float_t f;
+    #if MP_ENDIANNESS_LITTLE
+    struct {
+        mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
+        mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
+        mp_float_uint_t sgn : 1;
+    } p;
+    #else
+    struct {
+        mp_float_uint_t sgn : 1;
+        mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
+        mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
+    } p;
+    #endif
+    mp_float_uint_t i;
+} mp_float_union_t;
+
 #endif // MICROPY_PY_BUILTINS_FLOAT
+
+/** ROM string compression *************/
+
+#if MICROPY_ROM_TEXT_COMPRESSION
+
+#ifdef NO_QSTR
+
+// Compression enabled but doing QSTR extraction.
+// So leave MP_COMPRESSED_ROM_TEXT in place for makeqstrdefs.py / makecompresseddata.py to find them.
+
+#else
+
+// Compression enabled and doing a regular build.
+// Map MP_COMPRESSED_ROM_TEXT to the compressed strings.
+
+// Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
+typedef struct {} *mp_rom_error_text_t;
+
+#include <string.h>
+
+inline __attribute__((always_inline)) const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
+    // "genhdr/compressed.data.h" contains an invocation of the MP_MATCH_COMPRESSED macro for each compressed string.
+    // The giant if(strcmp) tree is optimized by the compiler, which turns this into a direct return of the compressed data.
+    #define MP_MATCH_COMPRESSED(a, b) if (strcmp(msg, a) == 0) { return b; } else
+
+    // It also contains a single invocation of the MP_COMPRESSED_DATA macro, we don't need that here.
+    #define MP_COMPRESSED_DATA(x)
+
+    #include "genhdr/compressed.data.h"
+
+#undef MP_COMPRESSED_DATA
+#undef MP_MATCH_COMPRESSED
+
+    return msg;
+}
+
+#endif
+
+#else
+
+// Compression not enabled, just make it a no-op.
+
+typedef const char *mp_rom_error_text_t;
+#define MP_COMPRESSED_ROM_TEXT(x) x
+
+#endif // MICROPY_ROM_TEXT_COMPRESSION
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

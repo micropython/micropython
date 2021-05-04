@@ -93,7 +93,7 @@ STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, const
 }
 
 STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     switch (op) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(self->len != 0);
@@ -111,7 +111,7 @@ STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
-    mp_obj_list_t *o = mp_instance_cast_to_native_base(lhs, &mp_type_list);
+    mp_obj_list_t *o = mp_obj_cast_to_native_base(lhs, &mp_type_list);
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!mp_obj_is_type(rhs, &mp_type_list)) {
@@ -162,7 +162,7 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 }
 
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     if (value == MP_OBJ_NULL) {
         // delete
         #if MICROPY_PY_BUILTINS_SLICE
@@ -173,7 +173,6 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
 
             mp_int_t len_adj = slice.start - slice.stop;
-            // printf("Len adj: %d\n", len_adj);
             assert(len_adj <= 0);
             mp_seq_replace_slice_no_grow(self->items, self->len, slice.start, slice.stop, self->items /*NULL*/, 0, sizeof(*self->items));
             // Clear "freed" elements at the end of list
@@ -211,7 +210,6 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 mp_raise_NotImplementedError(NULL);
             }
             mp_int_t len_adj = value_len - (slice_out.stop - slice_out.start);
-            // printf("Len adj: %d\n", len_adj);
             if (len_adj > 0) {
                 if (self->len + len_adj > self->alloc) {
                     // TODO: Might optimize memory copies here by checking if block can
@@ -243,7 +241,7 @@ STATIC mp_obj_t list_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     if (self->len >= self->alloc) {
         self->items = m_renew(mp_obj_t, self->items, self->alloc, self->alloc * 2);
         self->alloc *= 2;
@@ -256,8 +254,8 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     if (mp_obj_is_type(arg_in, &mp_type_list)) {
-        mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
-        mp_obj_list_t *arg = mp_instance_cast_to_native_base(arg_in, &mp_type_list);
+        mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
+        mp_obj_list_t *arg = mp_obj_cast_to_native_base(arg_in, &mp_type_list);
 
         if (self->len + arg->len > self->alloc) {
             // TODO: use alloc policy for "4"
@@ -276,7 +274,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 
 inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_list);
     }
     mp_obj_t ret = self->items[index];
     self->len -= 1;
@@ -292,7 +290,7 @@ inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
 
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(args[0], &mp_type_list);
     size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     return mp_obj_list_pop(self, index);
 }
@@ -332,7 +330,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj
 // TODO Python defines sort to be stable but ours is not
 mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_reverse, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -344,7 +342,7 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     mp_check_self(mp_obj_is_type(pos_args[0], &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(pos_args[0], &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(pos_args[0], &mp_type_list);
 
     if (self->len > 1) {
         mp_quicksort(self->items, self->items + self->len - 1,
@@ -357,7 +355,7 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 mp_obj_t mp_obj_list_clear(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     self->len = 0;
     self->items = m_renew(mp_obj_t, self->items, self->alloc, LIST_MIN_ALLOC);
     self->alloc = LIST_MIN_ALLOC;
@@ -367,19 +365,19 @@ mp_obj_t mp_obj_list_clear(mp_obj_t self_in) {
 
 STATIC mp_obj_t list_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     return mp_obj_new_list(self->len, self->items);
 }
 
 STATIC mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     return mp_seq_count_obj(self->items, self->len, value);
 }
 
 STATIC mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(args[0], &mp_type_list);
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
@@ -394,7 +392,7 @@ inline void mp_obj_list_insert(mp_obj_list_t *self, size_t index, mp_obj_t obj) 
 
 STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     // insert has its own strange index logic
     mp_int_t index = MP_OBJ_SMALL_INT_VALUE(idx);
     if (index < 0) {
@@ -421,7 +419,7 @@ mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value) {
 
 STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
 
     mp_int_t len = self->len;
     for (mp_int_t i = 0; i < len / 2; i++) {
@@ -498,7 +496,7 @@ mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items) {
 }
 
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     *len = self->len;
     *items = self->items;
 }
@@ -511,7 +509,7 @@ void mp_obj_list_set_len(mp_obj_t self_in, size_t len) {
 }
 
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
+    mp_obj_list_t *self = mp_obj_cast_to_native_base(self_in, &mp_type_list);
     size_t i = mp_get_index(self->base.type, self->len, index, false);
     self->items[i] = value;
 }

@@ -132,7 +132,7 @@ STATIC mp_obj_t mod_urandom_choice(mp_obj_t seq) {
     if (len > 0) {
         return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL);
     } else {
-        nlr_raise(mp_obj_new_exception(&mp_type_IndexError));
+        mp_raise_type(&mp_type_IndexError);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);
@@ -141,21 +141,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
 STATIC mp_float_t yasmarang_float(void) {
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    typedef uint64_t mp_float_int_t;
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    typedef uint32_t mp_float_int_t;
-    #endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_int_t frc : MP_FLOAT_FRAC_BITS, exp : MP_FLOAT_EXP_BITS, sgn : 1;
-        } p;
-        #else
-        struct { mp_float_int_t sgn : 1, exp : MP_FLOAT_EXP_BITS, frc : MP_FLOAT_FRAC_BITS;
-        } p;
-        #endif
-    } u;
+    mp_float_union_t u;
     u.p.sgn = 0;
     u.p.exp = (1 << (MP_FLOAT_EXP_BITS - 1)) - 1;
     if (MP_FLOAT_FRAC_BITS <= 32) {

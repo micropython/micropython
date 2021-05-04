@@ -7,7 +7,7 @@
 
 # You can set these variables from the command line.
 PYTHON        = python3
-SPHINXOPTS    =
+SPHINXOPTS    = -W --keep-going
 SPHINXBUILD   = sphinx-build
 PAPER         =
 # path to build the generated docs
@@ -223,7 +223,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o - | sed -e '/"POT-Creation-Date: /d' > $@
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -248,7 +248,7 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 stubs:

@@ -23,32 +23,29 @@ QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
-ifeq ($(MICROPY_PY_BTREE),1)
-BTREE_DIR = lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
-INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
-SRC_MOD += extmod/modbtree.c
-SRC_MOD += $(addprefix $(BTREE_DIR)/,\
-btree/bt_close.c \
-btree/bt_conv.c \
-btree/bt_debug.c \
-btree/bt_delete.c \
-btree/bt_get.c \
-btree/bt_open.c \
-btree/bt_overflow.c \
-btree/bt_page.c \
-btree/bt_put.c \
-btree/bt_search.c \
-btree/bt_seq.c \
-btree/bt_split.c \
-btree/bt_utils.c \
-mpool/mpool.c \
-	)
-CFLAGS_MOD += -DMICROPY_PY_BTREE=1
-# we need to suppress certain warnings to get berkeley-db to compile cleanly
-# and we have separate BTREE_DEFS so the definitions don't interfere with other source code
-$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
-$(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
+# Enable building 32-bit code on 64-bit host.
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CC += -m32
+CXX += -m32
+LD += -m32
+endif
+
+# External modules written in C.
+ifneq ($(USER_C_MODULES),)
+# pre-define USERMOD variables as expanded so that variables are immediate
+# expanded as they're added to them
+SRC_USERMOD :=
+CFLAGS_USERMOD :=
+LDFLAGS_USERMOD :=
+$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(module))\
+)
+
+SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
+CFLAGS_MOD += $(CFLAGS_USERMOD)
+LDFLAGS_MOD += $(LDFLAGS_USERMOD)
 endif
 
 ifeq ($(CIRCUITPY_ULAB),1)
@@ -125,6 +122,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	runtime_utils.o \
 	scheduler.o \
 	nativeglue.o \
+	pairheap.o \
 	ringbuf.o \
 	stackctrl.o \
 	argcheck.o \
@@ -201,6 +199,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	)
 
 PY_EXTMOD_O_BASENAME = \
+	extmod/moduasyncio.o \
 	extmod/moductypes.o \
 	extmod/modujson.o \
 	extmod/modure.o \
@@ -298,6 +297,11 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/
 	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
+
+# Standard C functions like memset need to be compiled with special flags so
+# the compiler does not optimise these functions in terms of themselves.
+CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
+$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.

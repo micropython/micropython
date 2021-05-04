@@ -40,7 +40,7 @@
 #if MICROPY_CPYTHON_COMPAT
 STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
-        mp_raise_ValueError(translate("I/O operation on closed file"));
+        mp_raise_ValueError(MP_ERROR_TEXT("I/O operation on closed file"));
     }
 }
 #else
@@ -226,6 +226,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },

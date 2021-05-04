@@ -25,9 +25,9 @@
 #include "fdlibm.h"
 
 #ifdef __STDC__
-static	const float	one	= 1.0, tiny=1.0e-30;
+static	const float	one	= 1.0f, tiny=1.0e-30f;
 #else
-static	float	one	= 1.0, tiny=1.0e-30;
+static	float	one	= 1.0f, tiny=1.0e-30f;
 #endif
 
 // sqrtf is exactly __ieee754_sqrtf when _IEEE_LIBM defined

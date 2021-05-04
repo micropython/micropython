@@ -38,7 +38,7 @@ typedef struct _mp_obj_int_t {
     #endif
 } mp_obj_int_t;
 
-extern const mp_obj_int_t mp_maxsize_obj;
+extern const mp_obj_int_t mp_sys_maxsize_obj;
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in);

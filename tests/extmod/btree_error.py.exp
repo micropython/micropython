@@ -1,0 +1,6 @@
+OSError True
+read 24
+OSError(1000,)
+read 24
+ioctl 2
+OSError(1001,)

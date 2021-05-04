@@ -101,6 +101,7 @@ mp_obj_t mp_vfs_rmdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
 
+int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point);
 mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in);
 
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj);

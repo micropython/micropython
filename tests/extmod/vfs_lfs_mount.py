@@ -58,6 +58,12 @@ def test(bdev, vfs_class):
         f.write('print("package")\n')
     import lfspkg
 
+    # chdir and import module from current directory (needs "" in sys.path)
+    uos.mkdir("/lfs/subdir")
+    uos.chdir("/lfs/subdir")
+    uos.rename("/lfs/lfsmod.py", "/lfs/subdir/lfsmod2.py")
+    import lfsmod2
+
     # umount
     uos.umount("/lfs")
 
@@ -72,6 +78,7 @@ import sys
 
 sys.path.clear()
 sys.path.append("/lfs")
+sys.path.append("")
 
 # run tests
 test(bdev, uos.VfsLfs1)

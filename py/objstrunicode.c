@@ -151,7 +151,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(translate("string indices must be integers, not %q"), mp_obj_get_type_qstr(index));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("string indices must be integers, not %q"), mp_obj_get_type_qstr(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0) {
@@ -161,7 +161,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
+                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -180,7 +180,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
+                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
             }
             // Then check completion
             if (i-- == 0) {
@@ -197,7 +197,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
     assert(type == &mp_type_str);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
@@ -205,9 +205,13 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_t ostart, ostop, ostep;
-            mp_obj_slice_get(index, &ostart, &ostop, &ostep);
+            mp_obj_slice_t *slice = MP_OBJ_TO_PTR(index);
+            ostart = slice->start;
+            ostop = slice->stop;
+            ostep = slice->step;
+
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
 
             const byte *pstart, *pstop;

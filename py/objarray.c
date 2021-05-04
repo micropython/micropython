@@ -519,7 +519,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -532,7 +532,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_raise_ValueError(translate("lhs and rhs should be compatible"));
+                        mp_raise_ValueError(MP_ERROR_TEXT("lhs and rhs should be compatible"));
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
@@ -550,7 +550,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                 } else {
-                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
+                    mp_raise_NotImplementedError(MP_ERROR_TEXT("array/bytes required on right side"));
                 }
 
                 // TODO: check src/dst compat
@@ -569,7 +569,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 }
                 #endif
                 if (len_adj > 0) {
-                    if ((mp_uint_t)len_adj > o->free) {
+                    if ((size_t)len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
                         o->free = len_adj;
@@ -722,6 +722,7 @@ const mp_obj_type_t mp_type_array = {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_bytearray,
     .print = array_print,
     .make_new = bytearray_make_new,
@@ -746,6 +747,7 @@ STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table
 
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
     .getiter = array_iterator_new,

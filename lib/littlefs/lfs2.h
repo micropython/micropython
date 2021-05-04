@@ -21,7 +21,7 @@ extern "C"
 // Software library version
 // Major (top-nibble), incremented on backwards incompatible changes
 // Minor (bottom-nibble), incremented on feature additions
-#define LFS2_VERSION 0x00020001
+#define LFS2_VERSION 0x00020002
 #define LFS2_VERSION_MAJOR (0xffff & (LFS2_VERSION >> 16))
 #define LFS2_VERSION_MINOR (0xffff & (LFS2_VERSION >>  0))
 
@@ -355,6 +355,11 @@ typedef struct lfs2_superblock {
     lfs2_size_t attr_max;
 } lfs2_superblock_t;
 
+typedef struct lfs2_gstate {
+    uint32_t tag;
+    lfs2_block_t pair[2];
+} lfs2_gstate_t;
+
 // The littlefs filesystem type
 typedef struct lfs2 {
     lfs2_cache_t rcache;
@@ -369,10 +374,9 @@ typedef struct lfs2 {
     } *mlist;
     uint32_t seed;
 
-    struct lfs2_gstate {
-        uint32_t tag;
-        lfs2_block_t pair[2];
-    } gstate, gpending, gdelta;
+    lfs2_gstate_t gstate;
+    lfs2_gstate_t gdisk;
+    lfs2_gstate_t gdelta;
 
     struct lfs2_free {
         lfs2_block_t off;

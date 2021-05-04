@@ -135,7 +135,7 @@ typedef struct _mp_fun_table_t {
     mp_int_t (*small_int_floor_divide)(mp_int_t num, mp_int_t denom);
     mp_int_t (*small_int_modulo)(mp_int_t dividend, mp_int_t divisor);
     bool (*yield_from)(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value);
-    void *setjmp;
+    void *setjmp_;
     // Additional entries for dynamic runtime, starts at index 50
     void *(*memset_)(void *s, int c, size_t n);
     void *(*memmove_)(void *dest, const void *src, size_t n);
@@ -145,8 +145,8 @@ typedef struct _mp_fun_table_t {
     #if defined(__GNUC__)
     NORETURN // Only certain compilers support no-return attributes in function pointer declarations
     #endif
-    void (*raise_msg)(const mp_obj_type_t *exc_type, const char *msg);
-    mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
+    void (*raise_msg)(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+    const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
     mp_obj_t (*obj_new_str)(const char *data, size_t len);
     mp_obj_t (*obj_new_bytes)(const byte *data, size_t len);
     mp_obj_t (*obj_new_bytearray_by_ref)(size_t n, void *items);

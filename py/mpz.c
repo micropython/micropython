@@ -783,22 +783,7 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src) {
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    typedef uint64_t mp_float_int_t;
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    typedef uint32_t mp_float_int_t;
-    #endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_int_t frc : MP_FLOAT_FRAC_BITS, exp : MP_FLOAT_EXP_BITS, sgn : 1;
-        } p;
-        #else
-        struct { mp_float_int_t sgn : 1, exp : MP_FLOAT_EXP_BITS, frc : MP_FLOAT_FRAC_BITS;
-        } p;
-        #endif
-    } u = {src};
-
+    mp_float_union_t u = {src};
     z->neg = u.p.sgn;
     if (u.p.exp == 0) {
         // value == 0 || value < 1
@@ -820,7 +805,7 @@ void mpz_set_from_float(mpz_t *z, mp_float_t src) {
             const int dig_cnt = (adj_exp + 1 + (DIG_SIZE - 1)) / DIG_SIZE;
             const unsigned int rem = adj_exp % DIG_SIZE;
             int dig_ind, shft;
-            mp_float_int_t frc = u.p.frc | ((mp_float_int_t)1 << MP_FLOAT_FRAC_BITS);
+            mp_float_uint_t frc = u.p.frc | ((mp_float_uint_t)1 << MP_FLOAT_FRAC_BITS);
 
             if (adj_exp < MP_FLOAT_FRAC_BITS) {
                 shft = 0;

@@ -102,7 +102,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
             parse_input_kind = MP_PARSE_EVAL_INPUT;
             break;
         default:
-            mp_raise_ValueError(translate("bad compile mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);

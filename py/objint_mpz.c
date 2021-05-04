@@ -43,6 +43,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
+// *FORMAT-OFF*
 #define DIG_MASK ((MPZ_LONG_1 << MPZ_DIG_SIZE) - 1)
 STATIC const mpz_dig_t maxsize_dig[] = {
     #define NUM_DIG 1
@@ -66,7 +67,8 @@ STATIC const mpz_dig_t maxsize_dig[] = {
     #endif
     #endif
 };
-const mp_obj_int_t mp_maxsize_obj = {
+// *FORMAT-ON*
+const mp_obj_int_t mp_sys_maxsize_obj = {
     {&mp_type_int},
     {.fixed_dig = 1, .len = NUM_DIG, .alloc = NUM_DIG, .dig = (mpz_dig_t *)maxsize_dig}
 };
@@ -202,10 +204,10 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
+    #endif
     #if MICROPY_PY_BUILTINS_COMPLEX
     } else if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
-    #endif
     #endif
     } else {
         // delegate to generic function to check for extra cases
@@ -220,7 +222,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         mp_float_t flhs = mpz_as_float(zlhs);
         mp_float_t frhs = mpz_as_float(zrhs);
         return mp_obj_new_float(flhs / frhs);
-    } else
+    }
     #endif
 
     if (op >= MP_BINARY_OP_INPLACE_OR && op < MP_BINARY_OP_CONTAINS) {
@@ -243,7 +245,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                 zero_division_error:
-                    mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
                 }
                 mpz_t rem;
                 mpz_init_zero(&rem);
@@ -282,7 +284,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    mp_raise_ValueError(translate("negative shift count"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -298,7 +300,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                     #if MICROPY_PY_BUILTINS_FLOAT
                     return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
                     #else
-                    mp_raise_ValueError(translate("negative power with no float support"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("negative power with no float support"));
                     #endif
                 }
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
@@ -351,7 +353,7 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
-        mp_raise_TypeError(translate("pow() with 3 arguments requires integers"));
+        mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
     } else {
         mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
         mp_obj_int_t *res_p = (mp_obj_int_t *)MP_OBJ_TO_PTR(result);
@@ -436,9 +438,25 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
             return value;
         } else {
             // overflow
-            mp_raise_msg(&mp_type_OverflowError, translate("overflow converting long int to machine word"));
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
         }
     }
+}
+
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
+    if (mp_obj_is_small_int(self_in)) {
+        if (MP_OBJ_SMALL_INT_VALUE(self_in) >= 0) {
+            return MP_OBJ_SMALL_INT_VALUE(self_in);
+        }
+    } else {
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_uint_t value;
+        if (mpz_as_uint_checked(&self->mpz, &value)) {
+            return value;
+        }
+    }
+
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT

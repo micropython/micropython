@@ -27,7 +27,7 @@ elif platform.python_version_tuple()[0] == "3":
     unichr = chr
 # end compatibility code
 
-# Blacklist of qstrings that are specially handled in further
+# Blocklist of qstrings that are specially handled in further
 # processing and should be ignored
 QSTRING_BLOCK_LIST = set(["NULL", "number_of"])
 

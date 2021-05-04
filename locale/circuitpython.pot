@@ -70,7 +70,7 @@ msgstr ""
 msgid "%q in use"
 msgstr ""
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -80,7 +80,7 @@ msgid "%q index out of range"
 msgstr ""
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
+msgid "%q indices must be integers, not %s"
 msgstr ""
 
 #: shared-bindings/vectorio/Polygon.c
@@ -129,24 +129,8 @@ msgstr ""
 msgid "'%q' argument required"
 msgstr ""
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr ""
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
 msgstr ""
 
 #: py/runtime.c
@@ -159,10 +143,6 @@ msgstr ""
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -207,12 +187,31 @@ msgstr ""
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
 msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
 msgstr ""
 
 #: py/objstr.c
@@ -664,16 +663,8 @@ msgstr ""
 msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr ""
 
-#: py/objslice.c
-msgid "Cannot subclass slice"
-msgstr ""
-
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr ""
-
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
@@ -1380,14 +1371,6 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
-
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr ""
-
-#: py/objslice.c
-msgid "Length must be non-negative"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
@@ -2404,6 +2387,10 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr ""
 
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
@@ -2414,6 +2401,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
+msgstr ""
+
+#: py/compile.c
+msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
@@ -2569,6 +2560,10 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
@@ -2578,12 +2573,21 @@ msgstr ""
 msgid "can't convert %q to int"
 msgstr ""
 
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/obj.c
+msgid "can't convert to complex"
 msgstr ""
 
 #: py/runtime.c
@@ -2684,6 +2688,10 @@ msgstr ""
 msgid "cannot perform relative import"
 msgstr ""
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr ""
@@ -2730,6 +2738,10 @@ msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
+msgstr ""
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
 msgstr ""
 
 #: py/objcomplex.c
@@ -2834,7 +2846,15 @@ msgstr ""
 msgid "dimensions do not match"
 msgstr ""
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr ""
@@ -2843,7 +2863,7 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr ""
 
@@ -3078,10 +3098,6 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible .mpy file"
-msgstr ""
-
-#: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
 msgstr ""
 
@@ -3215,10 +3231,6 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr ""
-
-#: py/compile.c
-msgid "invalid decorator"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3427,10 +3439,6 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr ""
-
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3485,7 +3493,7 @@ msgstr ""
 msgid "no response from SD card"
 msgstr ""
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr ""
 
@@ -3538,15 +3546,16 @@ msgid "object "
 msgstr ""
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
 msgstr ""
 
 #: py/obj.c
-msgid "object does not support item assignment"
+msgid "object doesn't support item assignment"
 msgstr ""
 
 #: py/obj.c
-msgid "object does not support item deletion"
+msgid "object doesn't support item deletion"
 msgstr ""
 
 #: py/obj.c
@@ -3554,7 +3563,7 @@ msgid "object has no len"
 msgstr ""
 
 #: py/obj.c
-msgid "object is not subscriptable"
+msgid "object isn't subscriptable"
 msgstr ""
 
 #: py/runtime.c
@@ -3574,7 +3583,8 @@ msgid "object not iterable"
 msgstr ""
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
+#, c-format
+msgid "object of type '%s' has no len()"
 msgstr ""
 
 #: py/obj.c
@@ -3844,6 +3854,10 @@ msgstr ""
 msgid "script compilation not supported"
 msgstr ""
 
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr ""
@@ -3872,12 +3886,12 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c py/objslice.c
 msgid "slice step can't be zero"
 msgstr ""
 
-#: py/objslice.c py/sequence.c
-msgid "slice step cannot be zero"
+#: py/nativeglue.c
+msgid "slice unsupported"
 msgstr ""
 
 #: py/objint.c py/sequence.c
@@ -3941,7 +3955,11 @@ msgid "string not supported; use bytes or bytearray"
 msgstr ""
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
 msgstr ""
 
 #: extmod/moductypes.c

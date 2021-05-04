@@ -86,10 +86,10 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, 
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
     mp_raise_TypeError_varg(
-        translate("function takes %d positional arguments but %d were given"), expected, given);
+        MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), expected, given);
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_TypeError_varg(
-        translate("%q() takes %d positional arguments but %d were given"),
+        MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
         mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
     #endif
 }
@@ -213,7 +213,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 if (wanted_arg_name == arg_names[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         mp_raise_TypeError_varg(
-                            translate("function got multiple values for argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
+                            MP_ERROR_TEXT("function got multiple values for argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                     }
                     code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
                     goto continue2;
@@ -222,10 +222,10 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                mp_raise_TypeError(translate("unexpected keyword argument"));
+                mp_raise_TypeError(MP_ERROR_TEXT("unexpected keyword argument"));
                 #else
                 mp_raise_TypeError_varg(
-                    translate("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
+                    MP_ERROR_TEXT("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                 #endif
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
@@ -251,7 +251,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         while (d < &code_state->state[n_state]) {
             if (*d++ == MP_OBJ_NULL) {
                 mp_raise_TypeError_varg(
-                    translate("function missing required positional argument #%d"), &code_state->state[n_state] - d);
+                    MP_ERROR_TEXT("function missing required positional argument #%d"), &code_state->state[n_state] - d);
             }
         }
 
@@ -267,7 +267,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
                     mp_raise_TypeError_varg(
-                        translate("function missing required keyword argument '%q'"),
+                        MP_ERROR_TEXT("function missing required keyword argument '%q'"),
                         MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
                 }
             }
@@ -276,7 +276,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     } else {
         // no keyword arguments given
         if (n_kwonly_args != 0) {
-            mp_raise_TypeError(translate("function missing keyword-only argument"));
+            mp_raise_TypeError(MP_ERROR_TEXT("function missing keyword-only argument"));
         }
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
             *var_pos_kw_args = mp_obj_new_dict(0);

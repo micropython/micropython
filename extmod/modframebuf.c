@@ -22,6 +22,10 @@ typedef struct _mp_obj_framebuf_t {
     uint8_t format;
 } mp_obj_framebuf_t;
 
+#if !MICROPY_ENABLE_DYNRUNTIME
+STATIC const mp_obj_type_t mp_type_framebuf;
+#endif
+
 typedef void (*setpixel_t)(const mp_obj_framebuf_t *, int, int, uint32_t);
 typedef uint32_t (*getpixel_t)(const mp_obj_framebuf_t *, int, int);
 typedef void (*fill_rect_t)(const mp_obj_framebuf_t *, int, int, int, int, uint32_t);
@@ -278,7 +282,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, cons
         case FRAMEBUF_GS8:
             break;
         default:
-            mp_raise_ValueError(translate("invalid format"));
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -288,7 +292,7 @@ STATIC const mp_obj_type_t mp_type_framebuf;
 
 // Helper to ensure we have the native super class instead of a subclass.
 static mp_obj_framebuf_t *native_framebuf(mp_obj_t framebuf_obj) {
-    mp_obj_t native_framebuf = mp_instance_cast_to_native_base(framebuf_obj, &mp_type_framebuf);
+    mp_obj_t native_framebuf = mp_obj_cast_to_native_base(framebuf_obj, &mp_type_framebuf);
     mp_obj_assert_native_inited(native_framebuf);
     return MP_OBJ_TO_PTR(native_framebuf);
 }

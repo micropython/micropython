@@ -35,6 +35,11 @@ class RAMBlockDevice:
             return 0
 
 
+def print_stat(st, print_size=True):
+    # don't print times (just check that they have the correct type)
+    print(st[:6], st[6] if print_size else -1, type(st[7]), type(st[8]), type(st[9]))
+
+
 def test(bdev, vfs_class):
     print("test", vfs_class)
 
@@ -63,16 +68,16 @@ def test(bdev, vfs_class):
     # mkdir, rmdir
     vfs.mkdir("testdir")
     print(list(vfs.ilistdir()))
-    print(list(vfs.ilistdir("testdir")))
+    print(sorted(list(vfs.ilistdir("testdir"))))
     vfs.rmdir("testdir")
     print(list(vfs.ilistdir()))
     vfs.mkdir("testdir")
 
     # stat a file
-    print(vfs.stat("test"))
+    print_stat(vfs.stat("test"))
 
     # stat a dir (size seems to vary on LFS2 so don't print that)
-    print(vfs.stat("testdir")[:6])
+    print_stat(vfs.stat("testdir"), False)
 
     # read
     with vfs.open("test", "r") as f:
@@ -91,19 +96,57 @@ def test(bdev, vfs_class):
 
     # rename
     vfs.rename("testbig", "testbig2")
-    print(list(vfs.ilistdir()))
+    print(sorted(list(vfs.ilistdir())))
+    vfs.chdir("testdir")
+    vfs.rename("/testbig2", "testbig2")
+    print(sorted(list(vfs.ilistdir())))
+    vfs.rename("testbig2", "/testbig2")
+    vfs.chdir("/")
+    print(sorted(list(vfs.ilistdir())))
 
     # remove
     vfs.remove("testbig2")
-    print(list(vfs.ilistdir()))
+    print(sorted(list(vfs.ilistdir())))
 
     # getcwd, chdir
+    vfs.mkdir("/testdir2")
+    vfs.mkdir("/testdir/subdir")
     print(vfs.getcwd())
     vfs.chdir("/testdir")
     print(vfs.getcwd())
+
+    # create file in directory to make sure paths are relative
+    vfs.open("test2", "w").close()
+    print_stat(vfs.stat("test2"))
+    print_stat(vfs.stat("/testdir/test2"))
+    vfs.remove("test2")
+
+    # chdir back to root and remove testdir
     vfs.chdir("/")
     print(vfs.getcwd())
+    vfs.chdir("testdir")
+    print(vfs.getcwd())
+    vfs.chdir("..")
+    print(vfs.getcwd())
+    vfs.chdir("testdir/subdir")
+    print(vfs.getcwd())
+    vfs.chdir("../..")
+    print(vfs.getcwd())
+    vfs.chdir("/./testdir2")
+    print(vfs.getcwd())
+    vfs.chdir("../testdir")
+    print(vfs.getcwd())
+    vfs.chdir("../..")
+    print(vfs.getcwd())
+    vfs.chdir(".//testdir")
+    print(vfs.getcwd())
+    vfs.chdir("subdir/./")
+    print(vfs.getcwd())
+    vfs.chdir("/")
+    print(vfs.getcwd())
+    vfs.rmdir("testdir/subdir")
     vfs.rmdir("testdir")
+    vfs.rmdir("testdir2")
 
 
 bdev = RAMBlockDevice(30)

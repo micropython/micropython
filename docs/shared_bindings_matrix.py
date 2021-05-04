@@ -224,7 +224,7 @@ def support_matrix_by_board(use_branded_name=True):
     # flatmap with comprehensions
     boards = dict(sorted([board for matrix in mapped_exec for board in matrix]))
 
-    #print(json.dumps(boards, indent=2))
+    # print(json.dumps(boards, indent=2))
     return boards
 
 if __name__ == '__main__':

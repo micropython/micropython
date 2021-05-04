@@ -71,27 +71,18 @@ jobs:
       run: make -C mpy-cross -j2
     - name: Build unix port
       run: |
-        make -C ports/unix deplibs -j2
-        make -C ports/unix -j2
-        make -C ports/unix coverage -j2
+        make -C ports/unix VARIANT=coverage -j2
     - name: Test all
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-tests -j1
       working-directory: tests
-    - name: Print failure info
-      run: |
-        shopt -s nullglob;
-        for exp in *.exp;
-        do testbase=$(basename $exp .exp);
-        echo -e "\nFAILURE $testbase";
-        diff -u $testbase.exp $testbase.out;
-        done
-      working-directory: tests
-      if: failure()
     - name: Native Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-tests -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-tests -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy -d basics float micropython
+      working-directory: tests
+    - name: Native mpy Tests
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-tests -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
       working-directory: tests
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian

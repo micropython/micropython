@@ -67,6 +67,7 @@
 // #define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
 // #define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
 #define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
+#define OPCODE_SHR_RM32_CL       (0xd3) /* /5 */
 #define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
 // #define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
 // #define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
@@ -259,6 +260,10 @@ void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
 }
 
+void asm_x86_shr_r32_cl(asm_x86_t *as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 5, OPCODE_SHR_RM32_CL);
+}
+
 void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 7, OPCODE_SAR_RM32_CL);
 }
@@ -403,7 +408,7 @@ void asm_x86_entry(asm_x86_t *as, int num_locals) {
     asm_x86_push_r32(as, ASM_X86_REG_EBX);
     asm_x86_push_r32(as, ASM_X86_REG_ESI);
     asm_x86_push_r32(as, ASM_X86_REG_EDI);
-    num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
+    num_locals |= 3; // make it odd so stack is aligned on 16 byte boundary
     asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, num_locals * WORD_SIZE);
     as->num_locals = num_locals;
 }
@@ -496,11 +501,14 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32) {
 #endif
 
 void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32) {
-    // TODO align stack on 16-byte boundary before the call
-    assert(n_args <= 5);
-    if (n_args > 4) {
-        asm_x86_push_r32(as, ASM_X86_REG_ARG_5);
+    assert(n_args <= 4);
+
+    // Align stack on 16-byte boundary during the call
+    unsigned int align = ((n_args + 3) & ~3) - n_args;
+    if (align) {
+        asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, align * WORD_SIZE);
     }
+
     if (n_args > 3) {
         asm_x86_push_r32(as, ASM_X86_REG_ARG_4);
     }
@@ -520,7 +528,7 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 
     // the caller must clean up the stack
     if (n_args > 0) {
-        asm_x86_add_i32_to_r32(as, WORD_SIZE * n_args, ASM_X86_REG_ESP);
+        asm_x86_add_i32_to_r32(as, (n_args + align) * WORD_SIZE, ASM_X86_REG_ESP);
     }
 }
 

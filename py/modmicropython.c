@@ -132,9 +132,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_lock_obj, mp_micropython_he
 
 STATIC mp_obj_t mp_micropython_heap_unlock(void) {
     gc_unlock();
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_MEM(gc_lock_depth));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_heap_unlock);
+
+#if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
+STATIC mp_obj_t mp_micropython_heap_locked(void) {
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_MEM(gc_lock_depth));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_heap_locked);
+#endif
 #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
@@ -152,7 +159,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd
 #if MICROPY_ENABLE_SCHEDULER
 STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
     if (!mp_sched_schedule(function, arg)) {
-        mp_raise_msg(&mp_type_RuntimeError, translate("schedule queue full"));
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("schedule queue full"));
     }
     return mp_const_none;
 }
@@ -186,6 +193,9 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #if MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },
+    #if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
+    { MP_ROM_QSTR(MP_QSTR_heap_locked), MP_ROM_PTR(&mp_micropython_heap_locked_obj) },
+    #endif
     #endif
     #if MICROPY_KBD_EXCEPTION
     { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },

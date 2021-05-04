@@ -10,6 +10,10 @@ print(sorted(s))
 s = {1 + len(s)}
 print(s)
 
+# bools mixed with integers
+s = {False, True, 0, 1, 2}
+print(len(s))
+
 # Sets are not hashable
 try:
     {s: 1}

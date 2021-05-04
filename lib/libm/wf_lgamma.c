@@ -25,8 +25,6 @@
 
 #include "fdlibm.h"
 #define _IEEE_LIBM 1
-//#include <reent.h>
-//#include <errno.h>
 
 #ifdef __STDC__
 	float lgammaf(float x)

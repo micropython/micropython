@@ -13,6 +13,15 @@ condition a test. The run-tests script uses small scripts in the
 feature_check directory to check whether each such feature is present,
 and skips the relevant tests if not.
 
+Tests are generally verified by running the test both in MicroPython and
+in CPython and comparing the outputs. If the output differs the test fails
+and the outputs are saved in a .out and a .exp file respectively.
+For tests that cannot be run in CPython, for example because they use
+the machine module, a .exp file can be provided next to the test's .py
+file. A convenient way to generate that is to run the test, let it fail
+(because CPython cannot run it) and then copy the .out file (but not
+before checking it manually!)
+
 When creating new tests, anything that relies on float support should go in the
 float/ subdirectory.  Anything that relies on import x, where x is not a built-in
 module, should go in the import/ subdirectory.

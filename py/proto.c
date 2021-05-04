@@ -30,7 +30,7 @@
 
 #ifndef MICROPY_UNSAFE_PROTO
 const void *mp_proto_get(uint16_t name, mp_const_obj_t obj) {
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
     if (!type->protocol) {
         return NULL;
     }

@@ -247,7 +247,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     }
     #else
     // If we get here then the file was not frozen and we can't compile scripts.
-    mp_raise_ImportError(translate("script compilation not supported"));
+    mp_raise_ImportError(MP_ERROR_TEXT("script compilation not supported"));
     #endif
 }
 
@@ -332,7 +332,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         // We must have some component left over to import from
         if (p == this_name) {
-            mp_raise_ValueError(translate("cannot perform relative import"));
+            mp_raise_ValueError(MP_ERROR_TEXT("cannot perform relative import"));
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
@@ -512,7 +512,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     // Check that it's not a relative import
     if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
-        mp_raise_NotImplementedError(translate("relative import"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("relative import"));
     }
 
     // Check if module already exists, and return it if it does
@@ -534,10 +534,9 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
     // Couldn't find the module, so fail
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-    mp_raise_msg(&mp_type_ImportError, translate("module not found"));
+    mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("module not found"));
     #else
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-        translate("no module named '%q'"), module_name_qstr));
+    mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("no module named '%q'"), module_name_qstr);
     #endif
 }
 

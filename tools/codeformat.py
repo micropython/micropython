@@ -113,7 +113,10 @@ TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
 
-C_EXTS = (".c", ".h")
+C_EXTS = (
+    ".c",
+    ".h",
+)
 PY_EXTS = (".py",)
 
 # Transform a filename argument relative to the current directory into one
@@ -135,8 +138,10 @@ def fixup_c(filename):
     # Write out file with fixups.
     with open(filename, "w", newline="") as f:
         dedent_stack = []
+        i = 0
         while lines:
             # Get next line.
+            i += 1
             l = lines.pop(0)
 
             # Revert "// |" back to "//| "
@@ -146,6 +151,7 @@ def fixup_c(filename):
             # Dedent #'s to match indent of following line (not previous line).
             m = re.match(r"( +)#(if |ifdef |ifndef |elif |else|endif)", l)
             if m:
+                print(i, dedent_stack, m)
                 indent = len(m.group(1))
                 directive = m.group(2)
                 if directive in ("if ", "ifdef ", "ifndef "):
@@ -158,15 +164,14 @@ def fixup_c(filename):
                     else:
                         # This #-line does not need dedenting.
                         dedent_stack.append(-1)
-                else:
-                    if dedent_stack:
-                        if dedent_stack[-1] >= 0:
-                            # This associated #-line needs dedenting to match the #if.
-                            indent_diff = indent - dedent_stack[-1]
-                            assert indent_diff >= 0
-                            l = l[indent_diff:]
-                        if directive == "endif":
-                            dedent_stack.pop()
+                elif dedent_stack:
+                    if dedent_stack[-1] >= 0:
+                        # This associated #-line needs dedenting to match the #if.
+                        indent_diff = indent - dedent_stack[-1]
+                        assert indent_diff >= 0
+                        l = l[indent_diff:]
+                    if directive == "endif":
+                        dedent_stack.pop()
 
             # Write out line.
             f.write(l)

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "py/persistentcode.h"
 #include "py/bc0.h"
 #include "py/objstr.h"
+#include "py/mpthread.h"
 
 #include "supervisor/shared/translate.h"
 
@@ -381,7 +382,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if !MICROPY_EMIT_MACHINE_CODE
     if (kind != MP_CODE_BYTECODE) {
-        mp_raise_ValueError(translate("incompatible .mpy file"));
+
     }
     #endif
 
@@ -543,6 +544,18 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
+            #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+            // If native code needs relocations then it's not guaranteed that a pointer to
+            // the head of `buf` (containing the machine code) will be retained for the GC
+            // to trace.  This is because native functions can start inside `buf` and so
+            // it's possible that the only GC-reachable pointers are pointers inside `buf`.
+            // So put this `buf` on a list of reachable root pointers.
+            if (MP_STATE_PORT(track_reloc_code_list) == MP_OBJ_NULL) {
+                MP_STATE_PORT(track_reloc_code_list) = mp_obj_new_list(0, NULL);
+            }
+            mp_obj_list_append(MP_STATE_PORT(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
+            #endif
+            // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
         }
         #endif
@@ -569,12 +582,12 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
-        mp_raise_MpyError(translate("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
+        mp_raise_MpyError(MP_ERROR_TEXT("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError(translate("incompatible native .mpy architecture"));
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible native .mpy architecture"));
         }
     }
     qstr_window_t qw;
@@ -851,15 +864,21 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 
 STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     int fd = (intptr_t)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t ret = write(fd, str, len);
+    MP_THREAD_GIL_ENTER();
     (void)ret;
 }
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
+    MP_THREAD_GIL_EXIT();
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    MP_THREAD_GIL_ENTER();
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(rc, &fd_print);
+    MP_THREAD_GIL_EXIT();
     close(fd);
+    MP_THREAD_GIL_ENTER();
 }
 
 #else

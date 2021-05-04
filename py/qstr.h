@@ -92,4 +92,9 @@ const byte *qstr_data(qstr q, size_t *len);
 void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes);
 void qstr_dump_data(void);
 
+#if MICROPY_ROM_TEXT_COMPRESSION
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
+#define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
+#endif
+
 #endif // MICROPY_INCLUDED_PY_QSTR_H

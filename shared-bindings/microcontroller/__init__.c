@@ -44,7 +44,7 @@
 //| """Pin references and cpu functionality
 //|
 //| The `microcontroller` module defines the pins from the perspective of the
-//| microcontroller. See `board` for board-specific pin mappings."""
+//| microcontroller. See :py:mod:`board` for board-specific pin mappings."""
 //|
 //| from nvm import ByteArray
 //| from watchdog import WatchDogTimer

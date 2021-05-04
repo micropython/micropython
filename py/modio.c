@@ -59,12 +59,17 @@ STATIC mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int 
     mp_load_method(obj, qst, dest);
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
     dest[2] = MP_OBJ_FROM_PTR(&ar);
-    mp_obj_t ret = mp_call_method_n_kw(1, 0, dest);
-    if (ret == mp_const_none) {
+    mp_obj_t ret_obj = mp_call_method_n_kw(1, 0, dest);
+    if (ret_obj == mp_const_none) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
+    }
+    mp_int_t ret = mp_obj_get_int(ret_obj);
+    if (ret >= 0) {
+        return ret;
     } else {
-        return mp_obj_get_int(ret);
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
     }
 }
 STATIC mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {

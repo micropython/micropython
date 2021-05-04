@@ -147,7 +147,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     }
     #endif
 
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
     const compressed_string_t *compressed = translate("object ");

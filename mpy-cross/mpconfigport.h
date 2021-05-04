@@ -48,14 +48,9 @@
 
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
-// Define to 1 to use undertested inefficient GC helper implementation
-// (if more efficient arch-specific one is not available).
-#ifndef MICROPY_GCREGS_SETJMP
-    #ifdef __mips__
-        #define MICROPY_GCREGS_SETJMP (1)
-    #else
-        #define MICROPY_GCREGS_SETJMP (0)
-    #endif
+#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+// Fall back to setjmp() implementation for discovery of GC pointers in registers.
+#define MICROPY_GCREGS_SETJMP (1)
 #endif
 
 #define MICROPY_PY___FILE__         (0)

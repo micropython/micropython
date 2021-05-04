@@ -364,7 +364,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg_varg(&mp_type_KeyError, translate("pop from empty %q"), MP_QSTR_set);
+        mp_raise_msg_varg(&mp_type_KeyError, MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_set);
     }
     return obj;
 }
@@ -569,6 +569,7 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_frozenset,
     .print = set_print,
     .make_new = set_make_new,

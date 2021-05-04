@@ -115,7 +115,7 @@ void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
     #endif
 }
@@ -207,7 +207,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
         // check that len is not too big
         if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
             QSTR_EXIT();
-            mp_raise_msg(&mp_type_RuntimeError, translate("Name too long"));
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Name too long"));
         }
 
         // compute number of bytes needed to intern this string
@@ -318,3 +318,78 @@ void qstr_dump_data(void) {
     QSTR_EXIT();
 }
 #endif
+
+#if MICROPY_ROM_TEXT_COMPRESSION
+
+#ifdef NO_QSTR
+
+// If NO_QSTR is set, it means we're doing QSTR extraction.
+// So we won't yet have "genhdr/compressed.data.h"
+
+#else
+
+// Emit the compressed_string_data string.
+#define MP_COMPRESSED_DATA(x) STATIC const char *compressed_string_data = x;
+#define MP_MATCH_COMPRESSED(a, b)
+#include "genhdr/compressed.data.h"
+#undef MP_COMPRESSED_DATA
+#undef MP_MATCH_COMPRESSED
+
+#endif // NO_QSTR
+
+// This implements the "common word" compression scheme (see makecompresseddata.py) where the most
+// common 128 words in error messages are replaced by their index into the list of common words.
+
+// The compressed string data is delimited by setting high bit in the final char of each word.
+// e.g. aaaa<0x80|a>bbbbbb<0x80|b>....
+// This method finds the n'th string.
+STATIC const byte *find_uncompressed_string(uint8_t n) {
+    const byte *c = (byte *)compressed_string_data;
+    while (n > 0) {
+        while ((*c & 0x80) == 0) {
+            ++c;
+        }
+        ++c;
+        --n;
+    }
+    return c;
+}
+
+// Given a compressed string in src, decompresses it into dst.
+// dst must be large enough (use MP_MAX_UNCOMPRESSED_TEXT_LEN+1).
+void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src_chr) {
+    // Skip past the 0xff marker.
+    const byte *src = (byte *)src_chr + 1;
+    // Need to add spaces around compressed words, except for the first (i.e. transition from 1<->2).
+    // 0 = start, 1 = compressed, 2 = regular.
+    int state = 0;
+    while (*src) {
+        if ((byte) * src >= 128) {
+            if (state != 0) {
+                *dst++ = ' ';
+            }
+            state = 1;
+
+            // High bit set, replace with common word.
+            const byte *word = find_uncompressed_string(*src & 0x7f);
+            // The word is terminated by the final char having its high bit set.
+            while ((*word & 0x80) == 0) {
+                *dst++ = *word++;
+            }
+            *dst++ = (*word & 0x7f);
+        } else {
+            // Otherwise just copy one char.
+            if (state == 1) {
+                *dst++ = ' ';
+            }
+            state = 2;
+
+            *dst++ = *src;
+        }
+        ++src;
+    }
+    // Add null-terminator.
+    *dst = 0;
+}
+
+#endif // MICROPY_ROM_TEXT_COMPRESSION

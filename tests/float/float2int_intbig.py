@@ -32,8 +32,10 @@ if ll_type is None:
 
 
 # basic conversion
-print(int(14187745.0))
-print("%d" % 14187745.0)
+# fmt: off
+print(int(14187745.))
+print("%d" % 14187745.)
+# fmt: on
 if ll_type == 2:
     print(int(2.0 ** 100))
     print("%d" % 2.0 ** 100)

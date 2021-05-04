@@ -55,6 +55,7 @@ typedef struct _id_info_t {
 } id_info_t;
 
 #define SCOPE_IS_FUNC_LIKE(s) ((s) >= SCOPE_LAMBDA)
+#define SCOPE_IS_COMP_LIKE(s) (SCOPE_LIST_COMP <= (s) && (s) <= SCOPE_GEN_EXPR)
 
 // scope is a "block" in Python parlance
 typedef enum {

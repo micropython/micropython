@@ -37,6 +37,9 @@
 // type check is done on getiter method to allow tuple, namedtuple, attrtuple
 #define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
 
+// type check is done on getiter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
+
 /******************************************************************************/
 /* tuple                                                                      */
 
@@ -108,15 +111,12 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
-    mp_obj_type_t *another_type = mp_obj_get_type(another_in);
+    const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     if (another_type->getiter != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
-        another_in = mp_instance_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
+        another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
-            if (op == MP_BINARY_OP_EQUAL) {
-                return mp_const_false;
-            }
             return MP_OBJ_NULL;
         }
     }
@@ -190,14 +190,14 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
         if (self->base.type->subscr != &mp_obj_tuple_subscr) {
-            self = mp_instance_cast_to_native_base(self_in, &mp_type_tuple);
+            self = mp_obj_cast_to_native_base(self_in, &mp_type_tuple);
         }
 
         #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice.stop - slice.start, NULL));
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);

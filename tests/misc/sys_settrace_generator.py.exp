@@ -1,195 +1,195 @@
 ### trace_handler::main event: call
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:33
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:34
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:40
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
  0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:41
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
  0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:42
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:44
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:34
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:44
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:44
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:44
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
  0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:38
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:38
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
-### trace_handler::main event: exception
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:48
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:49
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
  0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:50
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:51
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:52
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: call
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:42
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:52
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:52
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: return
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:52
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: call
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: return
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: call
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: return
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: call
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:46
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: return
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:46
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: exception
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:58
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
+### trace_handler::main event: line
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:59
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 test_generator 7 8
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:53
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:61
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:54
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:62
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:34
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:42
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:64
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:35
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:43
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:64
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:36
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:44
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:56
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:64
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: call
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:37
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:45
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:38
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:46
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: return
- 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:38
- 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:55
- 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:make_gen => miscmisc/sys_settrace_generator.py:46
+ 1:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:63
+ 2:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 ### trace_handler::main event: line
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:57
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:65
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 7
 ### trace_handler::main event: return
- 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:57
- 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:60
+ 0:   @__main__:test_generator => miscmisc/sys_settrace_generator.py:65
+ 1:   @__main__:<module> => miscmisc/sys_settrace_generator.py:69
 Total traces executed:  54

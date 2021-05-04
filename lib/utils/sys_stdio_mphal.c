@@ -86,13 +86,8 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
 }
 
 STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-
-    // For now, pretend we actually flush the stdio stream.
-    if (request == MP_STREAM_FLUSH) {
-        return 0;
-    } else if (request == MP_STREAM_POLL) {
+    (void)self_in;
+    if (request == MP_STREAM_POLL) {
         return mp_hal_stdio_poll(arg);
     } else {
         *errcode = MP_EINVAL;

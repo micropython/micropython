@@ -79,4 +79,8 @@ void serial_write_compressed(const compressed_string_t *compressed);
 char *decompress(const compressed_string_t *compressed, char *decompressed);
 uint16_t decompress_length(const compressed_string_t *compressed);
 
+
+// Map MicroPython's error messages to our translations.
+#define MP_ERROR_TEXT(x) translate(x)
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

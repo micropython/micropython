@@ -60,6 +60,8 @@
 // (un)comment to use rule names; for debugging
 // #define USE_RULE_NAME (1)
 
+// *FORMAT-OFF*
+
 enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
@@ -209,8 +211,10 @@ STATIC const char *const rule_name_table[] = {
 };
 #endif
 
+// *FORMAT-ON*
+
 typedef struct _rule_stack_t {
-    size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number
+    size_t src_line : (8 * sizeof(size_t) - 8); // maximum bits storing source line number
     size_t rule_id : 8; // this must be large enough to fit largest rule number
     size_t arg_i; // this dictates the maximum nodes in a "list" of things
 } rule_stack_t;
@@ -350,7 +354,7 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     }
 }
 
-int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
+size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -620,8 +624,9 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     mp_obj_t arg0;
     if (rule_id == RULE_expr
         || rule_id == RULE_xor_expr
-        || rule_id == RULE_and_expr) {
-        // folding for binary ops: | ^ &
+        || rule_id == RULE_and_expr
+        || rule_id == RULE_power) {
+        // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -631,13 +636,19 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             op = MP_BINARY_OP_OR;
         } else if (rule_id == RULE_xor_expr) {
             op = MP_BINARY_OP_XOR;
-        } else {
+        } else if (rule_id == RULE_and_expr) {
             op = MP_BINARY_OP_AND;
+        } else {
+            op = MP_BINARY_OP_POWER;
         }
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
             mp_obj_t arg1;
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+                return false;
+            }
+            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
+                // ** can't have negative rhs
                 return false;
             }
             arg0 = mp_binary_op(op, arg0, arg1);
@@ -657,8 +668,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
-                // Can't fold @ or / or **
+            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH) {
+                // Can't fold @ or /
                 return false;
             }
             mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
@@ -716,7 +727,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 mp_obj_t value;
                 if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                        translate("constant must be an integer"));
+                        MP_ERROR_TEXT("constant must be an integer"));
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t *)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
@@ -1167,37 +1178,37 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         switch (lex->tok_kind) {
             case MP_TOKEN_INDENT:
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    translate("unexpected indent"));
+                    MP_ERROR_TEXT("unexpected indent"));
                 break;
             case MP_TOKEN_DEDENT_MISMATCH:
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    translate("unindent does not match any outer indentation level"));
+                    MP_ERROR_TEXT("unindent does not match any outer indentation level"));
                 break;
                 #if MICROPY_COMP_FSTRING_LITERAL
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
             case MP_TOKEN_FSTRING_BACKSLASH:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string expression part cannot include a backslash"));
+                    MP_ERROR_TEXT("f-string expression part cannot include a backslash"));
                 break;
             case MP_TOKEN_FSTRING_COMMENT:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string expression part cannot include a '#'"));
+                    MP_ERROR_TEXT("f-string expression part cannot include a '#'"));
                 break;
             case MP_TOKEN_FSTRING_UNCLOSED:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: expecting '}'"));
+                    MP_ERROR_TEXT("f-string: expecting '}'"));
                 break;
             case MP_TOKEN_FSTRING_UNOPENED:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: single '}' is not allowed"));
+                    MP_ERROR_TEXT("f-string: single '}' is not allowed"));
                 break;
             case MP_TOKEN_FSTRING_EMPTY_EXP:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: empty expression not allowed"));
+                    MP_ERROR_TEXT("f-string: empty expression not allowed"));
                 break;
             case MP_TOKEN_FSTRING_RAW:
                 exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    translate("raw f-strings are not implemented"));
+                    MP_ERROR_TEXT("raw f-strings are not implemented"));
                 break;
             #else
             case MP_TOKEN_FSTRING_BACKSLASH:
@@ -1207,13 +1218,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             case MP_TOKEN_FSTRING_EMPTY_EXP:
             case MP_TOKEN_FSTRING_RAW:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("malformed f-string"));
+                    MP_ERROR_TEXT("malformed f-string"));
                 break;
             #endif
                 #endif
             default:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("invalid syntax"));
+                    MP_ERROR_TEXT("invalid syntax"));
                 break;
         }
         // add traceback to give info about file name and location

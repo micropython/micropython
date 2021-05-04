@@ -40,11 +40,11 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     size_t n_args_max = (sig >> 1) & 0xffff;
 
     if (n_kw && !takes_kw) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_arg_error_terse_mismatch();
-        } else {
-            mp_raise_TypeError(translate("function doesn't take keyword arguments"));
-        }
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        mp_arg_error_terse_mismatch();
+        #else
+        mp_raise_TypeError(MP_ERROR_TEXT("function doesn't take keyword arguments"));
+        #endif
     }
 
     if (n_args_min == n_args_max) {
@@ -52,8 +52,8 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_TypeError_varg(
-                translate("function takes %d positional arguments but %d were given"),
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
                 n_args_min, n_args);
             #endif
         }
@@ -62,16 +62,16 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_TypeError_varg(
-                translate("function missing %d required positional arguments"),
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("function missing %d required positional arguments"),
                 n_args_min - n_args);
             #endif
         } else if (n_args > n_args_max) {
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_TypeError_varg(
-                translate("function expected at most %d arguments, got %d"),
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("function expected at most %d arguments, got %d"),
                 n_args_max, n_args);
             #endif
         }
@@ -107,8 +107,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
                     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                     mp_arg_error_terse_mismatch();
                     #else
-                    mp_raise_TypeError_varg(
-                        translate("'%q' argument required"), allowed[i].qst);
+                    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("'%q' argument required"), allowed[i].qst);
                     #endif
                 }
                 out_vals[i] = allowed[i].defval;
@@ -133,7 +132,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         mp_arg_error_terse_mismatch();
         #else
         // TODO better error message
-        mp_raise_TypeError(translate("extra positional arguments given"));
+        mp_raise_TypeError(MP_ERROR_TEXT("extra positional arguments given"));
         #endif
     }
     if (kws_found < kws->used) {
@@ -141,7 +140,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         mp_arg_error_terse_mismatch();
         #else
         // TODO better error message
-        mp_raise_TypeError(translate("extra keyword arguments given"));
+        mp_raise_TypeError(MP_ERROR_TEXT("extra keyword arguments given"));
         #endif
     }
 }
@@ -153,11 +152,11 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 }
 
 NORETURN void mp_arg_error_terse_mismatch(void) {
-    mp_raise_TypeError(translate("argument num/types mismatch"));
+    mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
 }
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_raise_NotImplementedError(translate("keyword argument(s) not yet implemented - use normal args instead"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not yet implemented - use normal args instead"));
 }
 #endif

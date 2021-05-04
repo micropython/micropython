@@ -150,7 +150,7 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in) {
     }
     // TODO: Support actual libffi type objects
 
-    mp_raise_TypeError(translate("Unknown type"));
+    mp_raise_TypeError(MP_ERROR_TEXT("unknown type"));
 }
 
 STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
@@ -169,11 +169,11 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
             union { ffi_arg ffi;
                     float flt;
             } val_union = { .ffi = val };
-            return mp_obj_new_float((mp_float_t)val_union.flt);
+            return mp_obj_new_float_from_f(val_union.flt);
         }
         case 'd': {
             double *p = (double *)&val;
-            return mp_obj_new_float(*p);
+            return mp_obj_new_float_from_d(*p);
         }
         #endif
         case 'O':
@@ -220,7 +220,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(translate("Error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -278,12 +278,12 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(translate("Error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
     if (res != FFI_OK) {
-        mp_raise_ValueError(translate("ffi_prep_closure_loc"));
+        mp_raise_ValueError(MP_ERROR_TEXT("ffi_prep_closure_loc"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -380,10 +380,10 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         #if MICROPY_PY_BUILTINS_FLOAT
         } else if (*argtype == 'f') {
             float *p = (float *)&values[i];
-            *p = mp_obj_get_float(a);
+            *p = mp_obj_get_float_to_f(a);
         } else if (*argtype == 'd') {
             double *p = (double *)&values[i];
-            *p = mp_obj_get_float(a);
+            *p = mp_obj_get_float_to_d(a);
         #endif
         } else if (a == mp_const_none) {
             values[i] = 0;
@@ -417,7 +417,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     if (sizeof(ffi_arg) == 4 && self->rettype == 'd') {
         double retval;
         ffi_call(&self->cif, self->func, &retval, valueptrs);
-        return mp_obj_new_float(retval);
+        return mp_obj_new_float_from_d(retval);
     } else
     #endif
     {
@@ -427,7 +427,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 
 error:
-    mp_raise_TypeError(translate("Don't know how to pass object to native function"));
+    mp_raise_TypeError(MP_ERROR_TEXT("Don't know how to pass object to native function"));
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {

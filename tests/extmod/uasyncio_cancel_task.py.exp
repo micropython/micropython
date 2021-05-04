@@ -1,0 +1,31 @@
+True
+task start
+True
+main sleep
+task cancel
+task start
+True
+True
+True
+True
+main sleep
+task cancel
+main wait
+main got CancelledError
+task start
+task done
+False
+----
+task 2
+task start
+main cancel
+main sleep
+task cancel
+task 2 cancel
+----
+task 2
+task start
+main cancel
+main sleep
+task cancel
+task 2 done

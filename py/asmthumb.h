@@ -80,12 +80,19 @@ void asm_thumb_exit(asm_thumb_t *as);
 
 #define ASM_THUMB_OP_IT (0xbf00)
 #define ASM_THUMB_OP_ITE_EQ (0xbf0c)
+#define ASM_THUMB_OP_ITE_NE (0xbf14)
 #define ASM_THUMB_OP_ITE_CS (0xbf2c)
+#define ASM_THUMB_OP_ITE_CC (0xbf34)
 #define ASM_THUMB_OP_ITE_MI (0xbf4c)
+#define ASM_THUMB_OP_ITE_PL (0xbf54)
 #define ASM_THUMB_OP_ITE_VS (0xbf6c)
+#define ASM_THUMB_OP_ITE_VC (0xbf74)
 #define ASM_THUMB_OP_ITE_HI (0xbf8c)
+#define ASM_THUMB_OP_ITE_LS (0xbf94)
 #define ASM_THUMB_OP_ITE_GE (0xbfac)
+#define ASM_THUMB_OP_ITE_LT (0xbfb4)
 #define ASM_THUMB_OP_ITE_GT (0xbfcc)
+#define ASM_THUMB_OP_ITE_LE (0xbfd4)
 
 #define ASM_THUMB_OP_NOP        (0xbf00)
 #define ASM_THUMB_OP_WFI        (0xbf30)
@@ -345,6 +352,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenien
 #define ASM_MOV_REG_PCREL(as, rlo_dest, label) asm_thumb_mov_reg_pcrel((as), (rlo_dest), (label))
 
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_LSL, (reg_dest), (reg_shift))
+#define ASM_LSR_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_LSR, (reg_dest), (reg_shift))
 #define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_ASR, (reg_dest), (reg_shift))
 #define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_ORR, (reg_dest), (reg_src))
 #define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_thumb_format_4((as), ASM_THUMB_FORMAT_4_EOR, (reg_dest), (reg_src))
