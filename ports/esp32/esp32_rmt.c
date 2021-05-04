@@ -96,7 +96,9 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->carrier_freq = carrier_freq;
     self->loop_en = false;
 
-    rmt_config_t config;
+    // start with an empty config, not what was on the stack
+
+    rmt_config_t config = {};
     config.rmt_mode = RMT_MODE_TX;
     config.channel = (rmt_channel_t)self->channel_id;
     config.gpio_num = self->pin;
