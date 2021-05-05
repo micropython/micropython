@@ -149,14 +149,14 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
             new_pool_length = MICROPY_ALLOC_QSTR_ENTRIES_INIT;
         }
         #endif
-        mp_uint_t pool_size = sizeof(qstr_pool_t) + sizeof(const char *) * new_pool_length;
-        void *chunk = m_malloc_maybe(pool_size + sizeof(qstr_attr_t) * new_pool_length, true);
-        if (chunk == NULL) {
+        mp_uint_t pool_size = sizeof(qstr_pool_t)
+            + (sizeof(const char *) + sizeof(qstr_attr_t)) * new_pool_length;
+        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size, true);
+        if (pool == NULL) {
             QSTR_EXIT();
             m_malloc_fail(new_pool_length);
         }
-        qstr_pool_t *pool = (qstr_pool_t *)chunk;
-        pool->attrs = (qstr_attr_t *)(void *)((char *)chunk + pool_size);
+        pool->attrs = (qstr_attr_t *)(pool->qstrs + new_pool_length);
         pool->prev = MP_STATE_VM(last_pool);
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
         pool->alloc = new_pool_length;
