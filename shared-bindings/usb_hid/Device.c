@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 
 //| class Device:
-//|     """HID Device
+//|     """HID Device specification"""
 //|
 //|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int]) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
