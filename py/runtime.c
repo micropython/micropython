@@ -30,15 +30,11 @@
 #include <string.h>
 #include <assert.h>
 
-
-#include "extmod/vfs.h"
-
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
-#include "py/objtype.h"
 #include "py/objlist.h"
 #include "py/objtype.h"
 #include "py/objmodule.h"
