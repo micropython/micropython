@@ -529,15 +529,14 @@ SPI Example
 
 
 
-Class example template
+Class documentation example template
 --------------------------------------------------------------------------------
-When documenting classes, you could use the following template to illustrate the basic class functioning.
-it is closely related with the simpletest, however this will display the information in the readthedocs
+When documenting classes, you should use the following template to illustrate basic usage.
+It is similar with the simpletest example, however this will display the information in the Read The Docs
 documentation.
-The advantage of using this, is users will be familiar with this as it is used across libraries
+The advantage of using this template is it makes the documentation consistent across the libraries.
 
-This is an example for a AHT20 temperature sensor. You could locate this after the class parameter
-definitions.
+This is an example for a AHT20 temperature sensor. Include the following after the class parameter:
 
 
 .. code-block:: python
