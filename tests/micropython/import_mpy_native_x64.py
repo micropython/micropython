@@ -90,7 +90,7 @@ user_files = {
         b'\x12' # n bytes(=4), viper code
             b'\x00\x00\x00\x00' # dummy machine code
             b'\x00' # n_qstr
-            b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
+            b'\x81\x60' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
             b'\x00\x00' # n_obj, n_raw_code
             b'\x06rodata' # rodata, 6 bytes
             b'\x04' # bss, 4 bytes
