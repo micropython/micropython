@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-28 16:11+0000\n"
+"PO-Revision-Date: 2021-05-05 15:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -454,6 +454,10 @@ msgstr "Tentativa de alocar %d blocos"
 msgid "Attempted heap allocation when VM not running."
 msgstr ""
 "Tentativa de alocação das pilhas quando o VM não estiver em funcionamento."
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1233,6 +1237,10 @@ msgstr "Seleção inválida dos pinos %q"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valor inválido da unidade ADC"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -3076,7 +3084,7 @@ msgstr "float muito grande"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "Flutuante não compatível"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3168,7 +3176,7 @@ msgstr "o identificador foi redefinido como não-local"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "importação * não está no nível do módulo"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3716,7 +3724,7 @@ msgstr ""
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3944,7 +3952,7 @@ msgstr "Taxa de amostragem fora do intervalo"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "fila de espera cheia"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"

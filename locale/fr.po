@@ -457,6 +457,10 @@ msgstr ""
 "exécution."
 
 #: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
 msgstr "Échec d'authentification"
 
@@ -1242,6 +1246,10 @@ msgstr "Sélection de broche %q invalide"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valeur d'unité ADC non valide"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"

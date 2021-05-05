@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-28 16:11+0000\n"
+"PO-Revision-Date: 2021-05-05 18:42+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -448,6 +448,10 @@ msgstr "Försök att tilldela %d block"
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
 msgstr "Försök till heap-allokering när den virtuella maskinen inte är igång."
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr "AuthMode.OPEN används inte med lösenord"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1217,6 +1221,10 @@ msgstr "Ogiltigt val av %q pinne"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Ogiltigt ADC-enhetsvärde"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr "Ogiltig AuthMode"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -3042,7 +3050,7 @@ msgstr "flyttalet för stort"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "float stöds ej"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3134,7 +3142,7 @@ msgstr "identifieraren omdefinierad som icke-lokal"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "import * inte på modulnivå"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3678,7 +3686,7 @@ msgstr "endast segment med steg=1 (aka Ingen) stöds"
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "opkod"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3903,7 +3911,7 @@ msgstr "samplingsfrekvens utanför räckvidden"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "schemakön full"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
