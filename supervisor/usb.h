@@ -28,6 +28,8 @@
 #define MICROPY_INCLUDED_SUPERVISOR_USB_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // Ports must call this as frequently as they can in order to keep the USB
 // connection alive and responsive.  Normally this is called from background
