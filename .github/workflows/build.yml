@@ -37,7 +37,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra gcc-aarch64-linux-gnu
         pip install -r requirements-dev.txt
     - name: Versions
       run: |
@@ -93,6 +93,12 @@ jobs:
     - name: mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
+    - name: Build mpy-cross.static-aarch64
+      run: make -C mpy-cross -j2 -f Makefile.static-aarch64
+    - uses: actions/upload-artifact@v2
+      with:
+        name: mpy-cross.static-aarch64
+        path: mpy-cross/mpy-cross.static-aarch64
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
@@ -113,6 +119,7 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
     - name: Upload stubs and mpy-cross builds to S3
       run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-aarch64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-aarch64-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
