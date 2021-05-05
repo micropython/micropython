@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
+#include "shared-bindings/wifi/AuthMode.h"
 #include "shared-module/ipaddress/__init__.h"
 
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -42,19 +43,42 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
-static void start_station(wifi_radio_obj_t *self) {
-    if (self->sta_mode) {
-        return;
-    }
+static void set_mode_station(wifi_radio_obj_t *self, bool state) {
     wifi_mode_t next_mode;
-    if (self->ap_mode) {
-        next_mode = WIFI_MODE_APSTA;
+    if (state) {
+        if (self->ap_mode) {
+            next_mode = WIFI_MODE_APSTA;
+        } else {
+            next_mode = WIFI_MODE_STA;
+        }
     } else {
-        next_mode = WIFI_MODE_STA;
+        if (self->ap_mode) {
+            next_mode = WIFI_MODE_AP;
+        } else {
+            next_mode = WIFI_MODE_NULL;
+        }
     }
     esp_wifi_set_mode(next_mode);
+    self->sta_mode = state;
+}
 
-    self->sta_mode = 1;
+static void set_mode_ap(wifi_radio_obj_t *self, bool state) {
+    wifi_mode_t next_mode;
+    if (state) {
+        if (self->sta_mode) {
+            next_mode = WIFI_MODE_APSTA;
+        } else {
+            next_mode = WIFI_MODE_AP;
+        }
+    } else {
+        if (self->sta_mode) {
+            next_mode = WIFI_MODE_STA;
+        } else {
+            next_mode = WIFI_MODE_NULL;
+        }
+    }
+    esp_wifi_set_mode(next_mode);
+    self->ap_mode = state;
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -71,8 +95,6 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
-        // esp_wifi_start() would default to soft-AP, thus setting it to station
-        start_station(self);
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
@@ -85,6 +107,12 @@ mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
 }
 
+mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
+    uint8_t mac[MAC_ADDRESS_LENGTH];
+    esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
+    return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
+}
+
 mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     if (self->current_scan != NULL) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
@@ -92,7 +120,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
-    start_station(self);
+    set_mode_station(self, true);
 
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
     scan->base.type = &wifi_scannednetworks_type;
@@ -127,6 +155,50 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
     esp_netif_set_hostname(self->netif, hostname);
 }
 
+void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
+    set_mode_station(self, true);
+}
+
+void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
+    set_mode_station(self, false);
+}
+
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode) {
+    set_mode_ap(self, true);
+
+    switch (authmode) {
+        case (1 << AUTHMODE_OPEN):
+            authmode = WIFI_AUTH_OPEN;
+            break;
+        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA2_PSK;
+            break;
+        case ((1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK)):
+            authmode = WIFI_AUTH_WPA_WPA2_PSK;
+            break;
+        default:
+            mp_raise_ValueError(translate("Invalid AuthMode"));
+            break;
+    }
+
+    wifi_config_t *config = &self->ap_config;
+    memcpy(&config->ap.ssid, ssid, ssid_len);
+    config->ap.ssid[ssid_len] = 0;
+    memcpy(&config->ap.password, password, password_len);
+    config->ap.password[password_len] = 0;
+    config->ap.channel = channel;
+    config->ap.authmode = authmode;
+    config->ap.max_connection = 4; // kwarg?
+    esp_wifi_set_config(WIFI_IF_AP, config);
+}
+
+void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
+    set_mode_ap(self, false);
+}
+
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
@@ -147,7 +219,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     // explicitly clear bits since xEventGroupWaitBits may have timed out
     xEventGroupClearBits(self->event_group_handle, WIFI_CONNECTED_BIT);
     xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
-    start_station(self);
+    set_mode_station(self, true);
 
     wifi_config_t *config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
@@ -239,6 +311,14 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ip_info.gw.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv4_gateway_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.gw.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
@@ -247,12 +327,28 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ip_info.netmask.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
     esp_netif_get_ip_info(self->netif, &self->ip_info);
     return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->ap_netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.ip.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
