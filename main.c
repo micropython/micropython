@@ -334,17 +334,19 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool fake_sleeping = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
+
+        // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
                 board_init();
             }
             #endif
-            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
+        // If interrupted by keyboard, return
         if (serial_connected() && serial_bytes_available()) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
@@ -371,6 +373,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // If messages haven't been printed yet, print them
         if (!printed_press_any_key && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
@@ -597,6 +600,7 @@ int __attribute__((used)) main(void) {
     for (;;) {
         if (!skip_repl) {
             exit_code = run_repl();
+            supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
