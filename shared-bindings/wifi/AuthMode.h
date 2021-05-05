@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_AUTHMODE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_AUTHMODE_H
 
+#include "py/enum.h"
+
 typedef enum {
     AUTHMODE_OPEN,
     AUTHMODE_WEP,
@@ -38,5 +40,6 @@ typedef enum {
 } wifi_authmode_t;
 
 extern const mp_obj_type_t wifi_authmode_type;
+extern const cp_enum_obj_t authmode_OPEN_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_AUTHMODE_H
