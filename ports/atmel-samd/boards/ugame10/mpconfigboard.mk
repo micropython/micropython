@@ -34,5 +34,3 @@ CIRCUITPY_BUSDEVICE = 0
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/ugame10
 
 CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
-
-SUPEROPT_GC = 0
