@@ -60,23 +60,6 @@ try:
 except AttributeError:
     print('AttributeError')
 
-try:
-    m4[1:3] = m2[1:3]
-except ValueError:
-    print("ValueError")
-
-# invalid assignment on RHS
-try:
-    memoryview(array.array('i'))[0:2] = b'1234'
-except ValueError:
-    print('ValueError')
-
-# invalid attribute
-try:
-    memoryview(b'a').noexist
-except AttributeError:
-    print('AttributeError')
-
 # equality
 print(memoryview(b'abc') == b'abc')
 print(memoryview(b'abc') != b'abc')
