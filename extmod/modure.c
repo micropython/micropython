@@ -272,8 +272,13 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
 #if MICROPY_PY_URE_SUB
 
-STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *args) {
-    mp_obj_re_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
+    mp_obj_re_t *self;
+    if (mp_obj_is_type(args[0], &re_type)) {
+        self = MP_OBJ_TO_PTR(args[0]);
+    } else {
+        self = MP_OBJ_TO_PTR(mod_re_compile(1, args));
+    }
     mp_obj_t replace = args[1];
     mp_obj_t where = args[2];
     mp_int_t count = 0;
@@ -377,10 +382,7 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
     return mp_obj_new_str_from_vstr(mp_obj_get_type(where), &vstr_return);
 }
 
-STATIC mp_obj_t re_sub(size_t n_args, const mp_obj_t *args) {
-    return re_sub_helper(args[0], n_args, args);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub_helper);
 
 #endif
 
@@ -439,33 +441,6 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
 
-STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
-    (void)n_args;
-    mp_obj_t self = mod_re_compile(1, args);
-
-    const mp_obj_t args2[] = {self, args[1]};
-    mp_obj_t match = ure_exec(is_anchored, 2, args2);
-    return match;
-}
-
-STATIC mp_obj_t mod_re_match(size_t n_args, const mp_obj_t *args) {
-    return mod_re_exec(true, n_args, args);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_match_obj, 2, 4, mod_re_match);
-
-STATIC mp_obj_t mod_re_search(size_t n_args, const mp_obj_t *args) {
-    return mod_re_exec(false, n_args, args);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
-
-#if MICROPY_PY_URE_SUB
-STATIC mp_obj_t mod_re_sub(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t self = mod_re_compile(1, args);
-    return re_sub_helper(MP_OBJ_TO_PTR(self), n_args, args);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
-#endif
-
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     #if CIRCUITPY
@@ -474,10 +449,10 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
-    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
-    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
+    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     #if MICROPY_PY_URE_SUB
-    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
     #endif
     #if MICROPY_PY_URE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },

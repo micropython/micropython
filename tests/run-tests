@@ -448,7 +448,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     # Remove them from the below when they work
     if args.emit == 'native':
         skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from_close generator_name'.split()}) # require raise_varargs, generator name
-        skip_tests.update({'basics/async_%s.py' % t for t in 'with with2 with_break with_return'.split()}) # require yield
+        skip_tests.update({'basics/async_%s.py' % t for t in 'with with2 with_break with_return'.split()}) # require async_with
+        skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
         skip_tests.add('basics/annotate_var.py') # requires checking for unbound local
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
@@ -464,7 +465,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/opt_level_lineno.py') # native doesn't have proper traceback info
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
-        # skip_tests.add('../extmod/ulab/tests/argminmax.py') # requires yield
 
     def run_one_test(test_file):
         test_file = test_file.replace('\\', '/')

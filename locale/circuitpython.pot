@@ -663,6 +663,10 @@ msgstr ""
 msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr ""
 
+#: py/objslice.c
+msgid "Cannot subclass slice"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
@@ -3886,8 +3890,12 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c py/objslice.c
+#: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
+msgstr ""
+
+#: py/objslice.c
+msgid "slice step cannot be zero"
 msgstr ""
 
 #: py/nativeglue.c

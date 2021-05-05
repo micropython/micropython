@@ -90,6 +90,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->base.type = &mp_type_gen_instance;
 
     // Parse the input arguments and set up the code state
+    o->coroutine_generator = self->coroutine_generator;
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte *)prelude_offset;

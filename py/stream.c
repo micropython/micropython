@@ -576,4 +576,7 @@ int mp_stream_posix_fsync(mp_obj_t stream) {
     return res;
 }
 
+const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
+    return mp_proto_get(MP_QSTR_protocol_stream, self);
+}
 #endif

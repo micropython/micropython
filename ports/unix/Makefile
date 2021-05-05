@@ -13,8 +13,8 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
 
-# define main target
-PROG = micropython
+# This should be configured by the mpconfigvariant.mk
+PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h

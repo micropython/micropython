@@ -30,15 +30,11 @@
 #include <string.h>
 #include <assert.h>
 
-
-#include "extmod/vfs.h"
-
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
-#include "py/objtype.h"
 #include "py/objlist.h"
 #include "py/objtype.h"
 #include "py/objmodule.h"
@@ -1066,27 +1062,27 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
+            #if MICROPY_PY_BUILTINS_PROPERTY
+            // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
+        } else if (mp_obj_is_type(member, &mp_type_property) && mp_obj_is_native_type(type) && self != MP_OBJ_NULL) {
+            // object member is a property; delegate the load to the property
+            // Note: This is an optimisation for code size and execution time.
+            // The proper way to do it is have the functionality just below
+            // in a __get__ method of the property object, and then it would
+            // be called by the descriptor code down below.  But that way
+            // requires overhead for the nested mp_call's and overhead for
+            // the code.
+            const mp_obj_t *proxy = mp_obj_property_get(member);
+            if (proxy[0] == mp_const_none) {
+                mp_raise_AttributeError(translate("unreadable attribute"));
+            } else {
+                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self);
+            }
+            #endif
         } else {
             // `member` is a value, so just return that value.
             dest[0] = member;
         }
-        #if MICROPY_PY_BUILTINS_PROPERTY
-        // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
-    } else if (mp_obj_is_type(member, &mp_type_property) && mp_obj_is_native_type(type) && self != MP_OBJ_NULL) {
-        // object member is a property; delegate the load to the property
-        // Note: This is an optimisation for code size and execution time.
-        // The proper way to do it is have the functionality just below
-        // in a __get__ method of the property object, and then it would
-        // be called by the descriptor code down below.  But that way
-        // requires overhead for the nested mp_call's and overhead for
-        // the code.
-        const mp_obj_t *proxy = mp_obj_property_get(member);
-        if (proxy[0] == mp_const_none) {
-            mp_raise_AttributeError(translate("unreadable attribute"));
-        } else {
-            dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self);
-        }
-        #endif
     } else {
         // `member` is a value, so just return that value.
         dest[0] = member;
