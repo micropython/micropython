@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 15:32+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -456,7 +456,7 @@ msgstr "Asignación del montículo mientras la VM no esta ejecutándose."
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN no se usa con contraseña"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1237,7 +1237,7 @@ msgstr "Valor de unidad de ADC no válido"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode invalido"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
