@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 15:32+0000\n"
+"PO-Revision-Date: 2021-05-05 18:42+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -451,7 +451,7 @@ msgstr "Försök till heap-allokering när den virtuella maskinen inte är igån
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN används inte med lösenord"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1224,7 +1224,7 @@ msgstr "Ogiltigt ADC-enhetsvärde"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "Ogiltig AuthMode"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
