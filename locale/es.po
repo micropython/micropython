@@ -455,6 +455,10 @@ msgid "Attempted heap allocation when VM not running."
 msgstr "Asignación del montículo mientras la VM no esta ejecutándose."
 
 #: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
 msgstr "Fallo de autenticación"
 
@@ -1230,6 +1234,10 @@ msgstr "selección inválida de pin %q"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valor de unidad de ADC no válido"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"

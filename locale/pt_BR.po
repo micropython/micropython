@@ -456,6 +456,10 @@ msgstr ""
 "Tentativa de alocação das pilhas quando o VM não estiver em funcionamento."
 
 #: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
 msgstr "Houve um falha na autenticação"
 
@@ -1233,6 +1237,10 @@ msgstr "Seleção inválida dos pinos %q"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valor inválido da unidade ADC"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"

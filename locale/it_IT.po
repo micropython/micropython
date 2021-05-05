@@ -454,6 +454,10 @@ msgid "Attempted heap allocation when VM not running."
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
 msgstr "Autenticazione Fallita"
 
@@ -1219,6 +1223,10 @@ msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c

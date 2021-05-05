@@ -450,6 +450,10 @@ msgid "Attempted heap allocation when VM not running."
 msgstr "Försök till heap-allokering när den virtuella maskinen inte är igång."
 
 #: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
 msgstr "Autentiseringsfel"
 
@@ -1217,6 +1221,10 @@ msgstr "Ogiltigt val av %q pinne"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Ogiltigt ADC-enhetsvärde"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
