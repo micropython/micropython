@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-28 16:11+0000\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -458,7 +458,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN n'est pas utilisé avec un mot de passe"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1249,7 +1249,7 @@ msgstr "Valeur d'unité ADC non valide"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode invalide"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -3096,7 +3096,7 @@ msgstr "nombre à virgule flottante trop grand"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "valeures flotantes non supportées"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3188,7 +3188,7 @@ msgstr "identifiant redéfini comme nonlocal"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "import * n'est pas au niveau du module"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3736,7 +3736,7 @@ msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3963,7 +3963,7 @@ msgstr "taux d'échantillonage hors bornes"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "file de schédule pleine"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
