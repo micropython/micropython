@@ -294,6 +294,9 @@ STATIC const mp_obj_type_t mp_type_framebuf;
 static mp_obj_framebuf_t *native_framebuf(mp_obj_t framebuf_obj) {
     mp_obj_t native_framebuf = mp_obj_cast_to_native_base(framebuf_obj, &mp_type_framebuf);
     mp_obj_assert_native_inited(native_framebuf);
+    if (native_framebuf == MP_OBJ_NULL) {
+        mp_raise_TypeError(NULL);
+    }
     return MP_OBJ_TO_PTR(native_framebuf);
 }
 
