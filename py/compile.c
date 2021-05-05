@@ -2809,6 +2809,7 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
     EMIT_ARG(call_method, 0, 0, 0);
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     EMIT_ARG(yield, MP_EMIT_YIELD_FROM);
+    reserve_labels_for_native(comp, 3);
 }
 #endif
 
