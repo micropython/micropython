@@ -166,7 +166,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_erase_filesystem_obj, storage_erase_filesystem
 //|
 STATIC mp_obj_t storage_disable_usb_drive(void) {
     if (!common_hal_storage_disable_usb_drive()) {
-        mp_raise_RuntimeError(translate("Cannot change usb devices now"));
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -181,7 +181,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|
 STATIC mp_obj_t storage_enable_usb_drive(void) {
     if (!common_hal_storage_enable_usb_drive()) {
-        mp_raise_RuntimeError(translate("Cannot change usb devices now"));
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
     return mp_const_none;
 }

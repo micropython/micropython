@@ -31,14 +31,6 @@
 //| class Device:
 //|     """HID Device
 //|
-//|     Usage::
-//|
-//|        import usb_hid
-//|
-//|        mouse = usb_hid.devices[0]
-//|        mouse.send_report()"""
-//|
-
 //|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int]) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
 //|         pass a `Device` to `usb_hid.enable()`.
@@ -57,6 +49,17 @@
 //|         """
 //|         ...
 //|
+//|     KEYBOARD: Device
+//|     """Standard keyboard device supporting keycodes 0x00-0xDD, modifiers 0xE-0xE7, and five LED indicators."""
+//|
+//|     MOUSE: Device
+//|     """Standard mouse device supporting five mouse buttons, X and Y relative movements from -127 to 127
+//|     in each report, and a relative mouse wheel change from -127 to 127 in each report."""
+//|
+//|     CONSUMER_CONTROL: Device
+//|     """Consumer Control device supporting sent values from 1-652, with no rollover."""
+//|
+
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;

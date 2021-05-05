@@ -29,6 +29,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "supervisor/memory.h"
+#include "supervisor/shared/safe_mode.h"
 #include "supervisor/usb.h"
 
 #if CIRCUITPY_USB_CDC
@@ -231,7 +232,7 @@ static void usb_build_configuration_descriptor(void) {
 
     // Did we run out of endpoints?
     if (current_endpoint - 1 > USB_NUM_EP) {
-        mp_raise_RuntimeError(translate("Not enough USB endpoints"));
+        reset_into_safe_mode(USB_TOO_MANY_ENDPOINTS);
     }
 
 }
@@ -239,7 +240,7 @@ static void usb_build_configuration_descriptor(void) {
 // str must not be on the heap.
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
-        mp_raise_RuntimeError(translate("Too many USB interface names"));
+        reset_into_safe_mode(USB_TOO_MANY_INTERFACE_NAMES);
     }
 
     collected_interface_strings[interface_string_index].char_str = str;
