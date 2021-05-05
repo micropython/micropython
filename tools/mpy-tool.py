@@ -767,8 +767,8 @@ def read_raw_code(f, qstr_win):
 def read_mpy(filename):
     with open(filename, "rb") as f:
         header = bytes_cons(f.read(4))
-        if header[0] != ord("M"):
-            raise Exception("not a valid .mpy file")
+        if header[0] != ord("C"):
+            raise Exception("not a valid CircuitPython .mpy file")
         if header[1] != config.MPY_VERSION:
             raise Exception("incompatible .mpy version")
         feature_byte = header[2]
