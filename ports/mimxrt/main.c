@@ -108,3 +108,27 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     }
 }
 #endif
+
+const char mimxrt_help_text[] =
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online help please visit https://micropython.org/help/.\n"
+    "\n"
+    "For access to the hardware use the 'machine' module. \n"
+    "\n"
+    "Quick overview of some objects:\n"
+    "  machine.Pin(pin) -- get a pin, eg machine.Pin(0)\n"
+    "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
+    "    methods: init(..), value([v]), high(), low())\n"
+    "\n"
+    "Pin IO modes are: Pin.IN, Pin.OUT\n"
+    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
+    "\n"
+    "Useful control commands:\n"
+    "  CTRL-C -- interrupt a running program\n"
+    "  CTRL-D -- on a blank line, do a soft reset of the board\n"
+    "  CTRL-E -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
+    "For a list of available modules, type help('modules')\n"
+;

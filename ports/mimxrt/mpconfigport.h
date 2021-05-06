@@ -43,6 +43,7 @@
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_KBD_EXCEPTION               (1)
 #define MICROPY_HELPER_REPL                 (1)
+#define MICROPY_REPL_AUTO_INDENT            (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE          (1)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
@@ -59,6 +60,8 @@
 #define MICROPY_PY_BUILTINS_REVERSED        (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX         (0)
 #define MICROPY_PY_BUILTINS_HELP            (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT       mimxrt_help_text
 #define MICROPY_PY___FILE__                 (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
