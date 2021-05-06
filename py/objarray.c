@@ -101,7 +101,7 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     if (typecode == 'x') {
-        mp_raise_ValueError(translate("bad typecode"));
+        mp_raise_ValueError(MP_ERROR_TEXT("bad typecode"));
     }
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
@@ -134,7 +134,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         // construct array from raw bytes
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         if (bufinfo.len % sz) {
-            mp_raise_ValueError(translate("bytes length not a multiple of item size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("bytes length not a multiple of item size"));
         }
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
@@ -249,7 +249,7 @@ STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_
     size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
     size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
     if (bytelen % element_size != 0) {
-        mp_raise_TypeError(translate("memoryview: length is not a multiple of itemsize"));
+        mp_raise_TypeError(MP_ERROR_TEXT("memoryview: length is not a multiple of itemsize"));
     }
     mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
 
@@ -458,7 +458,7 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
     mp_get_buffer_raise(args[1], &needle_bufinfo, MP_BUFFER_READ);
 
     if (mp_binary_get_size('@', needle_bufinfo.typecode, NULL) != 1) {
-        mp_raise_TypeError(translate("a bytes-like object is required"));
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
     }
 
     const byte *start = haystack_bufinfo.buf;
@@ -477,7 +477,7 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
 
     if (p == NULL) {
         if (is_index) {
-            mp_raise_ValueError(translate("substring not found"));
+            mp_raise_ValueError(MP_ERROR_TEXT("substring not found"));
         } else {
             return MP_OBJ_NEW_SMALL_INT(-1);
         }

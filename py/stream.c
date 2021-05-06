@@ -85,6 +85,10 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     return done;
 }
 
+const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
+    return mp_proto_get(MP_QSTR_protocol_stream, self);
+}
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     const mp_stream_p_t *stream_p = mp_proto_get(MP_QSTR_protocol_stream, self_in);
     if (stream_p == NULL
@@ -258,7 +262,7 @@ STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     if (!mp_get_stream(args[0])->is_text && mp_obj_is_str(args[1])) {
-        mp_raise_ValueError(translate("string not supported; use bytes or bytearray"));
+        mp_raise_ValueError(MP_ERROR_TEXT("string not supported; use bytes or bytearray"));
     }
     size_t max_len = (size_t)-1;
     size_t off = 0;
@@ -293,7 +297,7 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     mp_uint_t len = bufinfo.len;
     if (n_args > 2) {
         if (mp_get_stream(args[0])->pyserial_readinto_compatibility) {
-            mp_raise_ValueError(translate("length argument not allowed for this type"));
+            mp_raise_ValueError(MP_ERROR_TEXT("length argument not allowed for this type"));
         }
         len = mp_obj_get_int(args[2]);
         if (len > bufinfo.len) {
@@ -576,7 +580,4 @@ int mp_stream_posix_fsync(mp_obj_t stream) {
     return res;
 }
 
-const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
-    return mp_proto_get(MP_QSTR_protocol_stream, self);
-}
 #endif

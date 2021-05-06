@@ -207,8 +207,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_get_playing_obj, audiobusio_i2sout_o
 const mp_obj_property_t audiobusio_i2sout_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiobusio_i2sout_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def pause(self) -> None:
@@ -256,8 +256,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_get_paused_obj, audiobusio_i2sout_ob
 const mp_obj_property_t audiobusio_i2sout_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiobusio_i2sout_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 #endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
 

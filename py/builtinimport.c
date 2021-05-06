@@ -422,10 +422,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 } else {
                     // couldn't find the file, so fail
                     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                    mp_raise_ImportError(translate("module not found"));
+                    mp_raise_ImportError(MP_ERROR_TEXT("module not found"));
                     #else
                     mp_raise_msg_varg(&mp_type_ImportError,
-                        translate("no module named '%q'"), mod_name);
+                        MP_ERROR_TEXT("no module named '%q'"), mod_name);
                     #endif
                 }
             } else {

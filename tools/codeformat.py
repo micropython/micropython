@@ -151,7 +151,6 @@ def fixup_c(filename):
             # Dedent #'s to match indent of following line (not previous line).
             m = re.match(r"( +)#(if |ifdef |ifndef |elif |else|endif)", l)
             if m:
-                print(i, dedent_stack, m)
                 indent = len(m.group(1))
                 directive = m.group(2)
                 if directive in ("if ", "ifdef ", "ifndef "):

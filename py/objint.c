@@ -142,9 +142,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // ...then number is Inf (positive or negative) if fraction is 0, else NaN.
         if (u.p.frc == 0) {
-            mp_raise_OverflowError_varg(translate("can't convert %q to %q"), MP_QSTR_inf, MP_QSTR_int);
+            mp_raise_OverflowError_varg(MP_ERROR_TEXT("can't convert %q to %q"), MP_QSTR_inf, MP_QSTR_int);
         } else {
-            mp_raise_ValueError_varg(translate("can't convert %q to %q"), MP_QSTR_NaN, MP_QSTR_int);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("can't convert %q to %q"), MP_QSTR_NaN, MP_QSTR_int);
         }
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
@@ -332,7 +332,7 @@ void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_s
         }
     }
 
-    mp_raise_OverflowError_varg(translate("value must fit in %d byte(s)"), nbytes);
+    mp_raise_OverflowError_varg(MP_ERROR_TEXT("value must fit in %d byte(s)"), nbytes);
 }
 
 #endif // MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
@@ -368,7 +368,7 @@ void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_sig
         // Fall through to failure.
     }
 
-    mp_raise_OverflowError_varg(translate("value must fit in %d byte(s)"), nbytes);
+    mp_raise_OverflowError_varg(MP_ERROR_TEXT("value must fit in %d byte(s)"), nbytes);
 }
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE

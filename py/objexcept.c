@@ -465,11 +465,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
-    #if MICROPY_ROM_TEXT_COMPRESSION
-    o_str->hash = 0; // will be computed only if string object is accessed
-    #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-    #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, &arg, NULL);
 }

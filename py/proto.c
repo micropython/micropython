@@ -47,6 +47,6 @@ const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj) {
     if (proto) {
         return proto;
     }
-    mp_raise_TypeError_varg(translate("'%q' object does not support '%q'"),
+    mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object does not support '%q'"),
         mp_obj_get_type_qstr(obj), name);
 }

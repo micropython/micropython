@@ -430,7 +430,7 @@ STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     if (res != FR_OK) {
         if (res == FR_WRITE_PROTECTED) {
-            mp_raise_msg(&mp_type_OSError, translate("Read-only filesystem"));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Read-only filesystem"));
         }
         mp_raise_OSError(fresult_to_errno_table[res]);
     }

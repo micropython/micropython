@@ -43,7 +43,7 @@
 size_t mp_seq_multiply_len(size_t item_sz, size_t len) {
     size_t new_len;
     if (__builtin_mul_overflow(item_sz, len, &new_len)) {
-        mp_raise_msg(&mp_type_OverflowError, translate("small int overflow"));
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     }
     return new_len;
 }

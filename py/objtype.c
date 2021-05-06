@@ -121,7 +121,7 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
 // valid.
 void mp_obj_assert_native_inited(mp_obj_t native_object) {
     if (native_object == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
-        mp_raise_NotImplementedError(translate("Call super().__init__() before accessing native object."));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Call super().__init__() before accessing native object."));
     }
 }
 
@@ -1358,7 +1358,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             if (mp_obj_is_type(member, &mp_type_property)) {
                 const mp_obj_t *proxy = mp_obj_property_get(member);
                 if (proxy[0] == mp_const_none) {
-                    mp_raise_AttributeError(translate("unreadable attribute"));
+                    mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
                 } else {
                     dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
                 }

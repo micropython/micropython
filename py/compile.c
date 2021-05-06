@@ -1801,7 +1801,7 @@ STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns,
-        translate("'await', 'async for' or 'async with' outside async function"));
+        MP_ERROR_TEXT("'await', 'async for' or 'async with' outside async function"));
     return false;
 }
 

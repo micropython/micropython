@@ -26,7 +26,7 @@
 
 // *FORMAT-OFF*
 
-#if __clang__
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__

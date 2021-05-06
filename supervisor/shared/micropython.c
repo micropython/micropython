@@ -47,7 +47,7 @@ int mp_hal_stdin_rx_chr(void) {
         #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
         #endif
-        mp_handle_pending();
+        mp_handle_pending(true);
         if (serial_bytes_available()) {
             toggle_rx_led();
             return serial_read();

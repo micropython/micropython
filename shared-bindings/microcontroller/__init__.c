@@ -172,12 +172,12 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else
-    { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&mp_const_none_obj) },
+    { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_NONE },
     #endif
     #if CIRCUITPY_WATCHDOG
     { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&common_hal_mcu_watchdogtimer_obj) },
     #else
-    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&mp_const_none_obj) },
+    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_NONE },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ResetReason),  MP_ROM_PTR(&mcu_reset_reason_type) },
     { MP_ROM_QSTR(MP_QSTR_RunMode),  MP_ROM_PTR(&mcu_runmode_type) },

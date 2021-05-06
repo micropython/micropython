@@ -26,6 +26,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
+
 #include "py/objexcept.h"
 #include "py/runtime.h"
 #include "shared-bindings/_bleio/__init__.h"

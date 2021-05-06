@@ -358,8 +358,8 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
     const mp_obj_property_t obj_name = { \
         .base.type = &mp_type_property, \
         .proxy = {(mp_obj_t)&fun_name##_obj, \
-                  (mp_obj_t)&mp_const_none_obj, \
-                  (mp_obj_t)&mp_const_none_obj}, }
+                  MP_ROM_NONE, \
+                  MP_ROM_NONE}, }
 
 // These macros are used to define constant or mutable map/dict objects
 // You can put "static" in front of the definition to make it local

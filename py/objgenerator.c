@@ -326,8 +326,7 @@ STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
     if (!self->coroutine_generator) {
         // Pretend like a generator does not have this coroutine behavior.
         // Pay no attention to the dir() behind the curtain
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            translate("type object 'generator' has no attribute '__await__'")));
+        mp_raise_AttributeError(MP_ERROR_TEXT("type object 'generator' has no attribute '__await__'"));
     }
     // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
     return self;

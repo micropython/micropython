@@ -115,7 +115,7 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
     size_t offset) {
     if (offset > self_len) {
-        mp_raise_ValueError(translate("offset out of bounds"));
+        mp_raise_ValueError(MP_ERROR_TEXT("offset out of bounds"));
     }
 
     if (type == &mp_type_bytes) {

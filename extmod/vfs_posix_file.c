@@ -10,7 +10,7 @@
 #include "extmod/vfs_posix.h"
 #include "supervisor/shared/translate.h"
 
-#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#if (defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX) || (defined(MICROPY_VFS_POSIX_FILE) && MICROPY_VFS_POSIX_FILE)
 
 #include <fcntl.h>
 #include <unistd.h>

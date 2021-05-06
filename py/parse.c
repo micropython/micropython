@@ -869,7 +869,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
     }
     if (parser.rule_stack == NULL || parser.result_stack == NULL) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Unable to init parser"));
+        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Unable to init parser"));
     }
 
     parser.lexer = lex;

@@ -149,7 +149,7 @@ const mp_obj_property_t audiomp3_mp3file_file_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomp3_mp3file_get_file_obj,
               (mp_obj_t)&audiomp3_mp3file_set_file_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -178,7 +178,7 @@ const mp_obj_property_t audiomp3_mp3file_sample_rate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomp3_mp3file_get_sample_rate_obj,
               (mp_obj_t)&audiomp3_mp3file_set_sample_rate_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     bits_per_sample: int
@@ -194,8 +194,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_bits_per_sample_obj, audiomp3_mp3
 const mp_obj_property_t audiomp3_mp3file_bits_per_sample_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomp3_mp3file_get_bits_per_sample_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     channel_count: int
@@ -211,8 +211,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_channel_count_obj, audiomp3_mp3fi
 const mp_obj_property_t audiomp3_mp3file_channel_count_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomp3_mp3file_get_channel_count_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     rms_level: float
@@ -228,8 +228,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_rms_level_obj, audiomp3_mp3file_o
 const mp_obj_property_t audiomp3_mp3file_rms_level_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomp3_mp3file_get_rms_level_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 

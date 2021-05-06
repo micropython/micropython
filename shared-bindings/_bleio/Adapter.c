@@ -139,7 +139,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_enabled_obj,
                (mp_obj_t)&bleio_adapter_set_enabled_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     address: Address
@@ -163,7 +163,7 @@ const mp_obj_property_t bleio_adapter_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_address_obj,
                (mp_obj_t)&bleio_adapter_set_address_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     name: str
@@ -187,7 +187,7 @@ const mp_obj_property_t bleio_adapter_name_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_name_obj,
                (mp_obj_t)&bleio_adapter_set_name_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> None:
@@ -375,8 +375,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_advertising_obj, bleio_adapter_get_a
 const mp_obj_property_t bleio_adapter_advertising_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_advertising_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     connected: bool
@@ -392,8 +392,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connected_obj, bleio_adapter_get_con
 const mp_obj_property_t bleio_adapter_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_connected_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     connections: Tuple[Connection]
@@ -408,8 +408,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connections_obj, bleio_adapter_get_c
 const mp_obj_property_t bleio_adapter_connections_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_connections_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     def connect(self, address: Address, *, timeout: float) -> Connection:

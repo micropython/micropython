@@ -150,7 +150,7 @@ STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
 #include "py/parsenum.h"
 
 STATIC void raise_corrupt_mpy(void) {
-    mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("Corrupt .mpy file"));
 }
 
 STATIC int read_byte(mp_reader_t *reader);

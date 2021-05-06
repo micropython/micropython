@@ -52,7 +52,7 @@ typedef struct _mp_obj__EVE_t {
 STATIC const mp_obj_type_t _EVE_type;
 
 #define EVEHAL(s) \
-    (&((mp_obj__EVE_t *)mp_instance_cast_to_native_base((s), &_EVE_type))->_eve)
+    (&((mp_obj__EVE_t *)mp_obj_cast_to_native_base((s), &_EVE_type))->_eve)
 
 //|     def register(self, o: object) -> None:
 //|         ...

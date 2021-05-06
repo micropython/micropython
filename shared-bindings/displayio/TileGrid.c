@@ -85,7 +85,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
     uint16_t bitmap_width;
     uint16_t bitmap_height;
-    mp_obj_t native = mp_instance_cast_to_native_base(bitmap, &displayio_shape_type);
+    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
     if (native != MP_OBJ_NULL) {
         displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
         bitmap_width = bmp->width;
@@ -137,7 +137,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
-    mp_obj_t native_tilegrid = mp_instance_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
+    mp_obj_t native_tilegrid = mp_obj_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
@@ -162,7 +162,7 @@ const mp_obj_property_t displayio_tilegrid_hidden_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_hidden_obj,
               (mp_obj_t)&displayio_tilegrid_set_hidden_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     x: int
@@ -187,7 +187,7 @@ const mp_obj_property_t displayio_tilegrid_x_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_x_obj,
               (mp_obj_t)&displayio_tilegrid_set_x_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     y: int
@@ -212,7 +212,7 @@ const mp_obj_property_t displayio_tilegrid_y_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_y_obj,
               (mp_obj_t)&displayio_tilegrid_set_y_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     flip_x: bool
@@ -236,7 +236,7 @@ const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
               (mp_obj_t)&displayio_tilegrid_set_flip_x_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     flip_y: bool
@@ -260,7 +260,7 @@ const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
               (mp_obj_t)&displayio_tilegrid_set_flip_y_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -286,7 +286,7 @@ const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
               (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     pixel_shader: Union[ColorConverter, Palette]
@@ -314,7 +314,7 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
               (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:

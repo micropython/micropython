@@ -1074,7 +1074,7 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // the code.
             const mp_obj_t *proxy = mp_obj_property_get(member);
             if (proxy[0] == mp_const_none) {
-                mp_raise_AttributeError(translate("unreadable attribute"));
+                mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
             } else {
                 dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self);
             }
@@ -1137,7 +1137,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("no such attribute"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
         #else
         // following CPython, we give a more detailed error message for type objects
         if (mp_obj_is_type(base, &mp_type_type)) {
@@ -1211,7 +1211,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     #endif
     }
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-    mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("no such attribute"));
+    mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
         MP_ERROR_TEXT("'%s' object has no attribute '%q'"),
@@ -1462,7 +1462,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
 
     // See if it's a package, then can try FS import
     if (!mp_obj_is_package(module)) {
-        mp_raise_msg_varg(&mp_type_ImportError, translate("cannot import name %q"), name);
+        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("cannot import name %q"), name);
     }
 
     mp_load_method_maybe(module, MP_QSTR___name__, dest);
@@ -1483,7 +1483,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     #else
 
     // Package import not supported with external imports disabled
-    mp_raise_msg_varg(&mp_type_ImportError, translate("cannot import name %q"), name);
+    mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("cannot import name %q"), name);
 
     #endif
 }
@@ -1691,6 +1691,6 @@ NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
-    mp_raise_RuntimeError(translate("maximum recursion depth exceeded"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }
 #endif

@@ -108,7 +108,7 @@ const mp_obj_property_t displayio_colorconverter_dither_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_colorconverter_get_dither_obj,
               (mp_obj_t)&displayio_colorconverter_set_dither_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def make_transparent(self, pixel: int) -> None:

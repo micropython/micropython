@@ -203,7 +203,7 @@ const mp_obj_property_t pwmio_pwmout_duty_cycle_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
               (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     frequency: int
@@ -240,7 +240,7 @@ const mp_obj_property_t pwmio_pwmout_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pwmio_pwmout_get_frequency_obj,
               (mp_obj_t)&pwmio_pwmout_set_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {

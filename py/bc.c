@@ -204,9 +204,9 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             mp_obj_t wanted_arg_name = kwargs[2 * i];
             if (MP_UNLIKELY(!mp_obj_is_qstr(wanted_arg_name))) {
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                mp_raise_TypeError(translate("unexpected keyword argument"));
+                mp_raise_TypeError(MP_ERROR_TEXT("unexpected keyword argument"));
                 #else
-                mp_raise_TypeError(translate("keywords must be strings"));
+                mp_raise_TypeError(MP_ERROR_TEXT("keywords must be strings"));
                 #endif
             }
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {

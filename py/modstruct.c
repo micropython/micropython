@@ -190,7 +190,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(NULL);
         #else
-        mp_raise_ValueError_varg(translate("pack expected %d items for packing (got %d)"), count, n_args);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("pack expected %d items for packing (got %d)"), count, n_args);
         #endif
     }
     const char *fmt = mp_obj_str_get_str(fmt_in);
