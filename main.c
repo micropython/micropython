@@ -95,8 +95,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_USB_CDC
-#include "shared-module/usb_cdc/__init__.h"
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -299,6 +299,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
 
+        #if CIRCUITPY_USB
+        usb_setup_with_vm();
+        #endif
+
         found_main = maybe_run_list(supported_filenames, &result);
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
@@ -334,17 +338,19 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool fake_sleeping = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
+
+        // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
                 board_init();
             }
             #endif
-            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
+        // If interrupted by keyboard, return
         if (serial_connected() && serial_bytes_available()) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
@@ -371,6 +377,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // If messages haven't been printed yet, print them
         if (!printed_press_any_key && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
@@ -497,10 +504,14 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
+
+        #if CIRCUITPY_USB
+        // Set up default USB values after boot.py VM starts but before running boot.py.
+        usb_set_defaults();
+        #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
@@ -514,7 +525,27 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         boot_output_file = NULL;
         #endif
 
+
+        #if CIRCUITPY_USB
+
+        // Some data needs to be carried over from the USB settings in boot.py
+        // to the next VM, while the heap is still available.
+        // Its size can vary, so save it temporarily on the stack,
+        // and then when the heap goes away, copy it in into a
+        // storage_allocation.
+
+        size_t size = usb_boot_py_data_size();
+        uint8_t usb_boot_py_data[size];
+        usb_get_boot_py_data(usb_boot_py_data, size);
+        #endif
+
         cleanup_after_vm(heap);
+
+        #if CIRCUITPY_USB
+        // Now give back the data we saved from the heap going away.
+        usb_return_boot_py_data(usb_boot_py_data, size);
+        #endif
+
     }
 }
 
@@ -524,6 +555,11 @@ STATIC int run_repl(void) {
     filesystem_flush();
     supervisor_allocation* heap = allocate_remaining_memory();
     start_mp(heap);
+
+    #if CIRCUITPY_USB
+    usb_setup_with_vm();
+    #endif
+
     autoreload_suspend();
     new_status_color(REPL_RUNNING);
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -583,7 +619,14 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start serial and HID after giving boot.py a chance to tweak behavior.
+    // Start USB after giving boot.py a chance to tweak behavior.
+    #if CIRCUITPY_USB
+    // Setup USB connection after heap is available.
+    // It needs the heap to build descriptors.
+    usb_init();
+    #endif
+
+    // Set up any other serial connection.
     serial_init();
 
     #if CIRCUITPY_BLEIO
@@ -597,6 +640,7 @@ int __attribute__((used)) main(void) {
     for (;;) {
         if (!skip_repl) {
             exit_code = run_repl();
+            supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
@@ -634,6 +678,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_BLEIO
     common_hal_bleio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_gc_collect();
     #endif
 
     #if CIRCUITPY_WIFI

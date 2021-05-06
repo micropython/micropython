@@ -155,7 +155,8 @@ def get_settings_from_makefile(port_dir, board_name):
 
     settings = {}
     for line in contents.stdout.split('\n'):
-        m = re.match(r'^([A-Z][A-Z0-9_]*) = (.*)$', line)
+        # Handle both = and := definitions.
+        m = re.match(r'^([A-Z][A-Z0-9_]*) :?= (.*)$', line)
         if m:
             settings[m.group(1)] = m.group(2)
 

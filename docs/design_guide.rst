@@ -251,15 +251,17 @@ After the license comment::
 
     **Hardware:**
 
-    * Adafruit `Device Description
+    * `Adafruit Device Description
       <hyperlink>`_ (Product ID: <Product Number>)
 
     **Software and Dependencies:**
 
     * Adafruit CircuitPython firmware for the supported boards:
       https://circuitpython.org/downloads
+
     * Adafruit's Bus Device library:
       https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+
     * Adafruit's Register library:
       https://github.com/adafruit/Adafruit_CircuitPython_Register
 
@@ -524,6 +526,50 @@ SPI Example
               spi.write(b'0x00')
               spi.readinto(self.buf)
           return self.buf[0]
+
+
+
+Class documentation example template
+--------------------------------------------------------------------------------
+When documenting classes, you should use the following template to illustrate basic usage.
+It is similar with the simpletest example, however this will display the information in the Read The Docs
+documentation.
+The advantage of using this template is it makes the documentation consistent across the libraries.
+
+This is an example for a AHT20 temperature sensor. Include the following after the class parameter:
+
+
+.. code-block:: python
+
+    """
+
+    **Quickstart: Importing and using the AHT10/AHT20 temperature sensor**
+
+        Here is an example of using the :class:`AHTx0` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            import adafruit_ahtx0
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()  # uses board.SCL and board.SDA
+            aht = adafruit_ahtx0.AHTx0(i2c)
+
+        Now you have access to the temperature and humidity using
+        the :attr:`temperature` and :attr:`relative_humidity` attributes
+
+        .. code-block:: python
+
+            temperature = aht.temperature
+            relative_humidity = aht.relative_humidity
+
+    """
+
 
 Use composition
 --------------------------------------------------------------------------------

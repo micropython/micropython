@@ -577,7 +577,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
-    if (header[0] != 'M'
+    if (header[0] != 'C'
         || header[1] != MPY_VERSION
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
@@ -832,7 +832,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     //  byte  number of bits in a small int
     //  uint  size of qstr window
     byte header[4] = {
-        'M',
+        'C',
         MPY_VERSION,
         MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
         #if MICROPY_DYNAMIC_COMPILER
