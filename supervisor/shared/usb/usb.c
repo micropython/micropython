@@ -34,6 +34,18 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
+#if CIRCUITPY_STORAGE
+#include "shared-module/storage/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_CDC
+#include "shared-module/usb_cdc/__init__.h"
+#endif
+
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_MIDI
 #include "shared-module/usb_midi/__init__.h"
 #endif
@@ -41,7 +53,6 @@
 #include "tusb.h"
 
 #if CIRCUITPY_USB_VENDOR
-#include "genhdr/autogen_usb_descriptor.h"
 
 // The WebUSB support being conditionally added to this file is based on the
 // tinyusb demo examples/device/webusb_serial.
@@ -50,27 +61,6 @@ extern const tusb_desc_webusb_url_t desc_webusb_url;
 
 static bool web_serial_connected = false;
 #endif
-
-
-
-// Serial number as hex characters. This writes directly to the USB
-// descriptor.
-extern uint16_t usb_serial_number[1 + COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2];
-
-void load_serial_number(void) {
-    // create serial number based on device unique id
-    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
-    common_hal_mcu_processor_get_uid(raw_id);
-
-    usb_serial_number[0] = 0x300 | sizeof(usb_serial_number);
-    for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-        for (int j = 0; j < 2; j++) {
-            uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
-            // Strings are UTF-16-LE encoded.
-            usb_serial_number[1 + i * 2 + j] = nibble_to_hex_upper[nibble];
-        }
-    }
-}
 
 bool usb_enabled(void) {
     return tusb_inited();
@@ -81,7 +71,6 @@ MP_WEAK void post_usb_init(void) {
 
 void usb_init(void) {
     init_usb_hardware();
-    load_serial_number();
 
     tusb_init();
 
@@ -92,9 +81,63 @@ void usb_init(void) {
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
     #endif
+}
+
+// Set up USB defaults before any USB changes are made in boot.py
+void usb_set_defaults(void) {
+    #if CIRCUITPY_STORAGE
+    storage_usb_set_defaults();
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    usb_cdc_set_defaults();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_set_defaults();
+    #endif
 
     #if CIRCUITPY_USB_MIDI
-    usb_midi_init();
+    usb_midi_set_defaults();
+    #endif
+};
+
+// Some dynamic USB data must be saved after boot.py. How much is needed
+size_t usb_boot_py_data_size(void) {
+    size_t size = 0;
+
+    #if CIRCUITPY_USB_HID
+    size += usb_hid_report_descriptor_length();
+    #endif
+
+    return size;
+}
+
+// Fill in the data to save.
+void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_build_report_descriptor(temp_storage, temp_storage_size);
+    #endif
+}
+
+// After VM is gone, save data into non-heap storage (storage_allocations).
+void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_save_report_descriptor(temp_storage, temp_storage_size);
+    #endif
+
+    // Now we can also build the rest of the descriptors and place them in storage_allocations.
+    usb_build_descriptors();
+}
+
+// Call this when ready to run code.py or a REPL, and a VM has been started.
+void usb_setup_with_vm(void) {
+    #if CIRCUITPY_USB_HID
+    usb_hid_setup_devices();
+    #endif
+
+    #if CIRCUITPY_USB_MIDI
+    usb_midi_setup_ports();
     #endif
 }
 

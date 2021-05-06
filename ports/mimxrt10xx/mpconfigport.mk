@@ -14,7 +14,6 @@ endif
 
 INTERNAL_LIBM = 1
 
-USB_SERIAL_NUMBER_LENGTH = 32
 USB_HIGHSPEED = 1
 
 # Number of USB endpoint pairs.
