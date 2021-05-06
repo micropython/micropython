@@ -153,7 +153,7 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
     } else {
         // try builtin module
         return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
-            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) != NULL;
     }
 }
 

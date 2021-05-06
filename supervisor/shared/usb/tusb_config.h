@@ -38,8 +38,6 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
-#include "genhdr/autogen_usb_descriptor.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -61,11 +59,22 @@ extern "C" {
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
 
+#if USB_HIGHSPEED
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE)
+#endif
+
+// Vendor name included in Inquiry response, max 8 bytes
+#define CFG_TUD_MSC_VENDOR          USB_MANUFACTURER_8
+
+// Product name included in Inquiry response, max 16 bytes
+#define CFG_TUD_MSC_PRODUCT         USB_PRODUCT_16
 #define CFG_TUD_ENDPOINT0_SIZE       64
 
 // ------------- CLASS -------------//
 
-// Could be 2 if secondary CDC channel requested.
+// Will be set to 2 in supervisor.mk if CIRCUITPY_USB_CDC is set.
 #ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC                 1
 #endif
