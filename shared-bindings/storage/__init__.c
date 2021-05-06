@@ -158,14 +158,45 @@ mp_obj_t storage_erase_filesystem(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(storage_erase_filesystem_obj, storage_erase_filesystem);
 
+//| def disable_usb_drive() -> None:
+//|     """Disable presenting ``CIRCUITPY`` as a USB mass storage device.
+//|     By default, the device is enabled and ``CIRCUITPY`` is visible.
+//|     Can be called in ``boot.py``, before USB is connected."""
+//|     ...
+//|
+STATIC mp_obj_t storage_disable_usb_drive(void) {
+    if (!common_hal_storage_disable_usb_drive()) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_drive);
+
+//| def enable_usb_drive() -> None:
+//|     """Enabled presenting ``CIRCUITPY`` as a USB mass storage device.
+//|     By default, the device is enabled and ``CIRCUITPY`` is visible,
+//|     so you do not normally need to call this function.
+//|     Can be called in ``boot.py``, before USB is connected."""
+//|     ...
+//|
+STATIC mp_obj_t storage_enable_usb_drive(void) {
+    if (!common_hal_storage_enable_usb_drive()) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(storage_enable_usb_drive_obj, storage_enable_usb_drive);
+
 STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_storage) },
 
-    { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getmount), MP_ROM_PTR(&storage_getmount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_erase_filesystem), MP_ROM_PTR(&storage_erase_filesystem_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mount),             MP_ROM_PTR(&storage_mount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_umount),            MP_ROM_PTR(&storage_umount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remount),           MP_ROM_PTR(&storage_remount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getmount),          MP_ROM_PTR(&storage_getmount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_erase_filesystem),  MP_ROM_PTR(&storage_erase_filesystem_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_usb_drive), MP_ROM_PTR(&storage_disable_usb_drive_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_usb_drive),  MP_ROM_PTR(&storage_enable_usb_drive_obj) },
 
 //| class VfsFat:
 //|     def __init__(self, block_device: str) -> None:

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
-#define MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+#ifndef SHARED_MODULE_STORAGE___INIT___H
+#define SHARED_MODULE_STORAGE___INIT___H
 
 #include "py/mpconfig.h"
 
-typedef enum {
-    NO_SAFE_MODE = 0,
-    BROWNOUT,
-    HARD_CRASH,
-    USER_SAFE_MODE,
-    HEAP_OVERWRITTEN,
-    MANUAL_SAFE_MODE,
-    MICROPY_NLR_JUMP_FAIL,
-    MICROPY_FATAL_ERROR,
-    GC_ALLOC_OUTSIDE_VM,
-    PROGRAMMATIC_SAFE_MODE,
-    NORDIC_SOFT_DEVICE_ASSERT,
-    FLASH_WRITE_FAIL,
-    MEM_MANAGE,
-    WATCHDOG_RESET,
-    USB_TOO_MANY_ENDPOINTS,
-    USB_TOO_MANY_INTERFACE_NAMES,
-    NO_HEAP,
-} safe_mode_t;
+#if CIRCUITPY_USB
+bool storage_usb_enabled(void);
+void storage_usb_set_defaults(void);
+size_t storage_usb_descriptor_length(void);
+size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string);
+#endif
 
-safe_mode_t wait_for_safe_mode_reset(void);
-
-void safe_mode_on_next_reset(safe_mode_t reason);
-void reset_into_safe_mode(safe_mode_t reason) NORETURN;
-
-void print_safe_mode_message(safe_mode_t reason);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+#endif // SHARED_MODULE_STORAGE___INIT___H

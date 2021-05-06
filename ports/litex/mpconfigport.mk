@@ -9,9 +9,6 @@ INTERNAL_LIBM = 1
 # Number of USB endpoint pairs.
 USB_NUM_EP = 16
 
-# Chip supplied serial number, in bytes
-USB_SERIAL_NUMBER_LENGTH = 30
-
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 

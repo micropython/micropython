@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,27 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#ifndef SHARED_MODULE_USB_HID___INIT___H
+#define SHARED_MODULE_USB_HID___INIT___H
 
-void board_init(void) {
-}
+#include "shared-module/usb_hid/Device.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+extern usb_hid_device_obj_t usb_hid_devices[];
 
-void reset_board(void) {
-}
+bool usb_hid_enabled(void);
+void usb_hid_set_defaults(void);
+
+size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, uint16_t report_descriptor_length);
+size_t usb_hid_descriptor_length(void);
+size_t usb_hid_report_descriptor_length(void);
+
+void usb_hid_setup_devices(void);
+size_t usb_hid_report_descriptor_length(void);
+void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
+void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
+
+usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id);
+
+void usb_hid_gc_collect(void);
+
+#endif // SHARED_MODULE_USB_HID___INIT___H

@@ -245,7 +245,6 @@ jobs:
         - "feather_mimxrt1011"
         - "feather_mimxrt1062"
         - "feather_nrf52840_express"
-        - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
         - "fluff_m0"
         - "gemma_m0"
