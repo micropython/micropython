@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-06 17:51+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-05-06 20:48+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -100,7 +100,7 @@ msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
-msgstr ""
+msgstr "%q debe estar entre 1-255"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -116,7 +116,7 @@ msgstr "%q debe ser >= 1"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or 1-255"
-msgstr ""
+msgstr "%q debe ser None o 1-255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -633,7 +633,7 @@ msgstr "No se puede configurar CCCD en la característica local"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "No se pueden cambiar dispositivos USB en este momento"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
@@ -680,7 +680,7 @@ msgstr "No se puede grabar en un archivo"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr ""
+msgstr "No se puede remountar '/' cuanto se es visible vía USB."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1630,7 +1630,7 @@ msgstr "No hay soporte de entero largo"
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "No se permiten más de %d dispositivos HID permitidos"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2270,11 +2270,11 @@ msgstr "Error USB"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr ""
+msgstr "Dispositivos USB necesita más puntos finales de los disponibles."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr ""
+msgstr "Dispositivos USB especifica demasiados nombres de interfaz."
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3613,7 +3613,7 @@ msgstr "no hay tal atributo"
 
 #: shared-bindings/usb_hid/__init__.c
 msgid "non-Device in %q"
-msgstr ""
+msgstr "hay un no-Device en %q"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
