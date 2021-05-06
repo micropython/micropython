@@ -34,11 +34,17 @@
 #include "mphalport.h"
 
 
+enum {
+    PIN_INIT_ARG_MODE = 0,
+    PIN_INIT_ARG_VALUE
+};
+
+
 // Helper Functions
 STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         // TODO: Implement additional arguments
         /*{ MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
@@ -50,7 +56,7 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get io mode
-    uint mode = args[0].u_int;
+    uint mode = args[PIN_INIT_ARG_MODE].u_int;
     if (!IS_GPIO_MODE(mode)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
@@ -61,7 +67,11 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
 
-        pin_config.outputLogic = args[1].u_int;
+        if ((args[PIN_INIT_ARG_VALUE].u_obj != MP_OBJ_NULL) && (mp_obj_is_true(args[PIN_INIT_ARG_VALUE].u_obj))) {
+            pin_config.outputLogic = 1U;
+        } else {
+            pin_config.outputLogic = 0U;
+        }
         pin_config.direction = mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput;
         pin_config.interruptMode = kGPIO_NoIntmode;
 
@@ -76,21 +86,21 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
         // Update pad configuration
         if (mode == PIN_MODE_IN) {
             pad_config = IOMUXC_SW_PAD_CTL_PAD_SRE(0U) |
-                IOMUXC_SW_PAD_CTL_PAD_DSE(0b100) |
-                IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01) |
-                IOMUXC_SW_PAD_CTL_PAD_ODE(0U) |
-                IOMUXC_SW_PAD_CTL_PAD_PKE(1U) |
-                IOMUXC_SW_PAD_CTL_PAD_PUE(1U) |
-                IOMUXC_SW_PAD_CTL_PAD_PUS(2U) |
-                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);
+                IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
+                IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01) |  // medium(100MHz)
+                IOMUXC_SW_PAD_CTL_PAD_ODE(0b0) |  // Open Drain Disabled
+                IOMUXC_SW_PAD_CTL_PAD_PKE(0b1) |  // Pull/Keeper Enabled
+                IOMUXC_SW_PAD_CTL_PAD_PUE(0b1) |  // Pull selected
+                IOMUXC_SW_PAD_CTL_PAD_PUS(0b00) |  // 100K Ohm Pull Down
+                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
         } else {
             pad_config = af_obj->pad_config;
         }
 
         // Configure pad as GPIO
-        GPIO_PinInit(self->gpio, self->pin, &pin_config);
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
         IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, pad_config);
+        GPIO_PinInit(self->gpio, self->pin, &pin_config);
     }
 
     return mp_const_none;
@@ -156,11 +166,20 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
 // pin.value()
-STATIC mp_obj_t machine_pin_value(mp_obj_t self_in) {
-    machine_pin_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
+STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
+    machine_pin_obj_t *self = args[0];
+    if ((n_args > 1) && (self->mode == PIN_MODE_OUT)) {
+        if (MP_OBJ_SMALL_INT_VALUE(args[1]) == 1U) {
+            machine_pin_on(args[0]);
+        } else {
+            machine_pin_off(args[0]);
+        }
+        return mp_const_none;
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_value_obj, machine_pin_value);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
