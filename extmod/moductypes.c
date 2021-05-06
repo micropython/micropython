@@ -34,38 +34,10 @@
 
 #if MICROPY_PY_UCTYPES
 
-/// \module uctypes - Access data structures in memory
-///
-/// The module allows to define layout of raw data structure (using terms
-/// of C language), and then access memory buffers using this definition.
-/// The module also provides convenience functions to access memory buffers
-/// contained in Python objects or wrap memory buffers in Python objects.
-/// \constant UINT8_1 - uint8_t value type
-
-/// \class struct - C-like structure
-///
-/// Encapsulalation of in-memory data structure. This class doesn't define
-/// any methods, only attribute access (for structure fields) and
-/// indexing (for pointer and array fields).
-///
-/// Usage:
-///
-///     # Define layout of a structure with 2 fields
-///     # 0 and 4 are byte offsets of fields from the beginning of struct
-///     # they are logically ORed with field type
-///     FOO_STRUCT = {"a": 0 | uctypes.UINT32, "b": 4 | uctypes.UINT8}
-///
-///     # Example memory buffer to access (contained in bytes object)
-///     buf = b"\x64\0\0\0\0x14"
-///
-///     # Create structure object referring to address of
-///     # the data in the buffer above
-///     s = uctypes.struct(FOO_STRUCT, uctypes.addressof(buf))
-///
-///     # Access fields
-///     print(s.a, s.b)
-///     # Result:
-///     # 100, 20
+// The uctypes module allows defining the layout of a raw data structure (using
+// terms of the C language), and then access memory buffers using this definition.
+// The module also provides convenience functions to access memory buffers
+// contained in Python objects or wrap memory buffers in Python objects.
 
 #define LAYOUT_LITTLE_ENDIAN (0)
 #define LAYOUT_BIG_ENDIAN    (1)
@@ -647,9 +619,8 @@ STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
     return 0;
 }
 
-/// \function addressof()
-/// Return address of object's data (applies to object providing buffer
-/// interface).
+// addressof()
+// Return address of object's data (applies to objects providing the buffer interface).
 STATIC mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -657,19 +628,15 @@ STATIC mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof);
 
-/// \function bytearray_at()
-/// Capture memory at given address of given size as bytearray. Memory is
-/// captured by reference (and thus memory pointed by bytearray may change
-/// or become invalid at later time). Use bytes_at() to capture by value.
+// bytearray_at()
+// Capture memory at given address of given size as bytearray.
 STATIC mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void *)(uintptr_t)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
 
-/// \function bytes_at()
-/// Capture memory at given address of given size as bytes. Memory is
-/// captured by value, i.e. copied. Use bytearray_at() to capture by reference
-/// ("zero copy").
+// bytes_at()
+// Capture memory at given address of given size as bytes.
 STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytes((void *)(uintptr_t)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
 }
@@ -695,36 +662,19 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bytes_at), MP_ROM_PTR(&uctypes_struct_bytes_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytearray_at), MP_ROM_PTR(&uctypes_struct_bytearray_at_obj) },
 
-    /// \moduleref uctypes
-
-    /// \constant NATIVE - Native structure layout - native endianness,
-    /// platform-specific field alignment
     { MP_ROM_QSTR(MP_QSTR_NATIVE), MP_ROM_INT(LAYOUT_NATIVE) },
-    /// \constant LITTLE_ENDIAN - Little-endian structure layout, tightly packed
-    /// (no alignment constraints)
     { MP_ROM_QSTR(MP_QSTR_LITTLE_ENDIAN), MP_ROM_INT(LAYOUT_LITTLE_ENDIAN) },
-    /// \constant BIG_ENDIAN - Big-endian structure layout, tightly packed
-    /// (no alignment constraints)
     { MP_ROM_QSTR(MP_QSTR_BIG_ENDIAN), MP_ROM_INT(LAYOUT_BIG_ENDIAN) },
 
-    /// \constant VOID - void value type, may be used only as pointer target type.
     { MP_ROM_QSTR(MP_QSTR_VOID), MP_ROM_INT(TYPE2SMALLINT(UINT8, VAL_TYPE_BITS)) },
 
-    /// \constant UINT8 - uint8_t value type
     { MP_ROM_QSTR(MP_QSTR_UINT8), MP_ROM_INT(TYPE2SMALLINT(UINT8, 4)) },
-    /// \constant INT8 - int8_t value type
     { MP_ROM_QSTR(MP_QSTR_INT8), MP_ROM_INT(TYPE2SMALLINT(INT8, 4)) },
-    /// \constant UINT16 - uint16_t value type
     { MP_ROM_QSTR(MP_QSTR_UINT16), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
-    /// \constant INT16 - int16_t value type
     { MP_ROM_QSTR(MP_QSTR_INT16), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
-    /// \constant UINT32 - uint32_t value type
     { MP_ROM_QSTR(MP_QSTR_UINT32), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
-    /// \constant INT32 - int32_t value type
     { MP_ROM_QSTR(MP_QSTR_INT32), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
-    /// \constant UINT64 - uint64_t value type
     { MP_ROM_QSTR(MP_QSTR_UINT64), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
-    /// \constant INT64 - int64_t value type
     { MP_ROM_QSTR(MP_QSTR_INT64), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
 
     { MP_ROM_QSTR(MP_QSTR_BFUINT8), MP_ROM_INT(TYPE2SMALLINT(BFUINT8, 4)) },
