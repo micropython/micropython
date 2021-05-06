@@ -4,9 +4,11 @@
 class PIO -- advanced PIO usage
 ===============================
 
-The :class:`PIO` class gives access to an instance of the RP2040's PIO (programmable I/O) interface.
+The :class:`PIO` class gives access to an instance of the RP2040's PIO
+(programmable I/O) interface.
 
-The preferred way to interact with PIO is using :class:`rp2.StateMachine`: the PIO class is for advanced use.
+The preferred way to interact with PIO is using :class:`rp2.StateMachine`: the
+PIO class is for advanced use.
 
 For assembling PIO programs, see :mod:`rp2`.
 
@@ -16,7 +18,8 @@ Constructors
 
 .. class:: PIO(id)
 
-    Gets the PIO instance numbered *id*. The RP2040 has two PIO instances, numbered 0 and 1.
+    Gets the PIO instance numbered *id*. The RP2040 has two PIO instances,
+    numbered 0 and 1.
 
     Raises a ``ValueError`` if any other argument is provided.
 
@@ -28,7 +31,9 @@ Methods
 
     Add the *program* to the instruction memory of this PIO instance.
 
-    The amount of memory available for programs on each PIO instance is limited. If there isn't enough space left in the PIO's program memory, you'll get ``OSError`` 12 ``ENOMEM``.
+    The amount of memory available for programs on each PIO instance is
+    limited. If there isn't enough space left in the PIO's program memory,
+    you'll get ``OSError`` 12 ``ENOMEM``.
 
 .. method:: pio.remove_program([program])
 
@@ -40,7 +45,8 @@ Methods
 
 .. method:: pio.state_machine(id, [program, ...])
 
-    Gets the state machine numbered *id*. On the RP2040, each PIO instance has four state machines, numbered 0 to 3.
+    Gets the state machine numbered *id*. On the RP2040, each PIO instance has
+    four state machines, numbered 0 to 3.
 
     Optionally initialize it with a *program*: see `state_machine.init`.
 
@@ -64,12 +70,14 @@ Constants
           PIO.OUT_LOW
           PIO.OUT_HIGH
 
-    These constants are used for the *out_init*, *set_init*, and *sideset_init* arguments to `asm_pio`.
+    These constants are used for the *out_init*, *set_init*, and *sideset_init*
+    arguments to `asm_pio`.
 
 .. data:: PIO.SHIFT_LEFT
           PIO.SHIFT_RIGHT
 
-    These constants are used for the *in_shiftdir* and *out_shiftdir* arguments to `asm_pio` or `state_machine.init`.
+    These constants are used for the *in_shiftdir* and *out_shiftdir* arguments
+    to `asm_pio` or `state_machine.init`.
 
 .. data:: PIO.JOIN_NONE
           PIO.JOIN_TX
