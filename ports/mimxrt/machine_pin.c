@@ -143,7 +143,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 
         if (pull == PIN_PULL_DISABLED) {
             pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
-        } else if (pull == PIN_PULL_KEEPER) {
+        } else if (pull == PIN_PULL_HOLD) {
             pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
                 IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
         } else {
@@ -253,7 +253,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_UP_47K), MP_ROM_INT(PIN_PULL_UP_47K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP_22K), MP_ROM_INT(PIN_PULL_UP_22K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(PIN_PULL_DOWN_100K) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_KEEPER), MP_ROM_INT(PIN_PULL_KEEPER) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_KEEPER), MP_ROM_INT(PIN_PULL_HOLD) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
