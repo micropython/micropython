@@ -391,10 +391,8 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
-// printf("scalar type=%d offset=%x\n", val_type, offset);
 
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
-//            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
             if (self->flags == LAYOUT_NATIVE) {
                 if (set_val == MP_OBJ_NULL) {
                     return get_aligned(val_type, self->addr + offset, 0);
@@ -461,7 +459,6 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
-// printf("agg type=%d offset=%x\n", agg_type, offset);
 
     switch (agg_type) {
         case STRUCT: {
@@ -486,7 +483,6 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
-// printf("PTR/ARR base addr=%p\n", o->addr);
             return MP_OBJ_FROM_PTR(o);
         }
     }
@@ -642,7 +638,6 @@ STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-
 STATIC const mp_obj_type_t uctypes_struct_type = {
     { &mp_type_type },
     .name = MP_QSTR_struct,
@@ -719,7 +714,6 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
     { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(mp_module_uctypes_globals, mp_module_uctypes_globals_table);
 
 const mp_obj_module_t mp_module_uctypes = {
