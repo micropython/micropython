@@ -12,9 +12,17 @@ API, but this interface is useful to :ref:`customise the filesystem
 configuration <filesystem>` or implement a low-level storage system for your
 application.
 
+
+Constructors
+------------
+
 .. class:: Flash()
 
    Gets the singleton object for accessing the SPI flash memory.
+
+
+Methods
+-------
 
 .. method:: Flash.readblocks(block_num, buf)
             Flash.readblocks(block_num, buf [, offset])

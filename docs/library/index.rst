@@ -176,4 +176,7 @@ The following libraries are specific to the RP2040, as used in the Raspberry Pi 
   :maxdepth: 2
 
   rp2.rst
+  rp2.PIO.rst
+  rp2.StateMachine.rst
+  rp2.Flash.rst
 
