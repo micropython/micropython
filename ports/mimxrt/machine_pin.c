@@ -51,7 +51,8 @@ STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in);
 // Local data
 enum {
     PIN_INIT_ARG_MODE = 0,
-    PIN_INIT_ARG_VALUE
+    PIN_INIT_ARG_PULL,
+    PIN_INIT_ARG_VALUE,
 };
 
 // Pin mapping dictionaries
@@ -89,9 +90,10 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
 STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         // TODO: Implement additional arguments
-        /*{ MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        /*
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},*/
     };
@@ -111,7 +113,9 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
         gpio_pin_config_t pin_config;
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
+        uint8_t pull = PIN_PULL_DISABLED;
 
+        // Generate pin configuration
         if ((args[PIN_INIT_ARG_VALUE].u_obj != MP_OBJ_NULL) && (mp_obj_is_true(args[PIN_INIT_ARG_VALUE].u_obj))) {
             pin_config.outputLogic = 1U;
         } else {
@@ -128,21 +132,35 @@ STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, cons
         // Update machine pin object
         self->mode = mode;
 
-        // Update pad configuration
-        if (mode == PIN_MODE_IN) {
-            pad_config = IOMUXC_SW_PAD_CTL_PAD_SRE(0U) |
-                IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
-                IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01) |  // medium(100MHz)
-                IOMUXC_SW_PAD_CTL_PAD_ODE(0b0) |  // Open Drain Disabled
-                IOMUXC_SW_PAD_CTL_PAD_PKE(0b1) |  // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(0b1) |  // Pull selected
-                IOMUXC_SW_PAD_CTL_PAD_PUS(0b00) |  // 100K Ohm Pull Down
-                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
-        } else {
-            pad_config = af_obj->pad_config;
+        // Generate pad configuration
+        if (args[PIN_INIT_ARG_PULL].u_obj != mp_const_none) {
+            pull = (uint8_t)mp_obj_get_int(args[PIN_INIT_ARG_PULL].u_obj);
         }
 
-        // Configure pad as GPIO
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);  // Slow Slew Rate
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);  // medium(100MHz)
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
+
+        if (pull == PIN_PULL_DISABLED) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
+        } else if (pull == PIN_PULL_KEEPER) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
+                IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
+        } else {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) |  // Pull/Keeper Enabled
+                IOMUXC_SW_PAD_CTL_PAD_PUE(1) |            // Pull selected
+                IOMUXC_SW_PAD_CTL_PAD_PUS(pull);
+        }
+
+        if (mode == PIN_MODE_IN) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
+                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
+        } else {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b100) |  // Drive Strength R0/4
+                IOMUXC_SW_PAD_CTL_PAD_HYS(0U);  // Hysteresis disabled
+        }
+
+        // Configure PAD as GPIO
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
         IOMUXC_SetPinConfig(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, pad_config);
         GPIO_PinInit(self->gpio, self->pin, &pin_config);
@@ -232,6 +250,12 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),      MP_ROM_INT(PIN_MODE_IN) },
     { MP_ROM_QSTR(MP_QSTR_OUT),     MP_ROM_INT(PIN_MODE_OUT) },
+
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(PIN_PULL_UP_100K) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP_47K), MP_ROM_INT(PIN_PULL_UP_47K) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP_22K), MP_ROM_INT(PIN_PULL_UP_22K) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(PIN_PULL_DOWN_100K) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_KEEPER), MP_ROM_INT(PIN_PULL_KEEPER) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 

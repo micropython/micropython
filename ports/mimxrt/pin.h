@@ -56,6 +56,15 @@ enum {
     PIN_AF_MODE_ALT8,
 };
 
+enum {
+    PIN_PULL_DOWN_100K = 0,
+    PIN_PULL_UP_47K,
+    PIN_PULL_UP_100K,
+    PIN_PULL_UP_22K,
+    PIN_PULL_DISABLED,
+    PIN_PULL_KEEPER,
+};
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 typedef struct {
