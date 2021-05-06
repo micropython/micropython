@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 15:32+0000\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -457,7 +457,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "O AuthMode.OPEN não é usado com senha"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -1240,7 +1240,7 @@ msgstr "Valor inválido da unidade ADC"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode inválido"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
