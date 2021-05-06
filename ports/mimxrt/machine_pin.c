@@ -34,7 +34,7 @@
 #include "mphalport.h"
 
 // Local functions
-STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // Class Methods
@@ -87,7 +87,7 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
     }
 }
 
-STATIC mp_obj_t pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -180,7 +180,7 @@ STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_
     mp_printf(print, "PIN(%s)", qstr_str(self->name));
 }
 
-// constructor(id, ...)
+// pin(id, mode, pull, ...)
 STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -190,7 +190,7 @@ STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_arg
         // pin mode given, so configure this GPIO
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        pin_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
+        machine_pin_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
     }
 
     return (mp_obj_t)pin;
@@ -214,25 +214,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
 // pin.value()
 STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
-    machine_pin_obj_t *self = args[0];
-    if (n_args > 1) {
-        if (MP_OBJ_SMALL_INT_VALUE(args[1]) == 1U) {
-            mp_hal_pin_high(self);
-        } else {
-            mp_hal_pin_low(self);
-        }
-        return mp_const_none;
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
-    }
+    return machine_pin_call(args[0], n_args, 0, args[1]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
+// pin.mode()
 STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     return mp_obj_new_int(self->mode);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_mode_obj, machine_pin_mode);
+
+// pin.init(mode, pull)
+STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_obj_init);
 
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
@@ -244,6 +241,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&machine_pin_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&machine_pin_init_obj) },
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
