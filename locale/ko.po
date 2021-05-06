@@ -88,6 +88,10 @@ msgstr ""
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
@@ -99,6 +103,10 @@ msgstr ""
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q 는 >=1이어야합니다"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -607,6 +615,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
@@ -649,7 +662,7 @@ msgid "Cannot record to a file"
 msgstr "파일에 녹음 할 수 없습니다"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
+msgid "Cannot remount '/' when visible via USB."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
@@ -1579,6 +1592,11 @@ msgstr ""
 msgid "No long integer support"
 msgstr ""
 
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr ""
@@ -2185,6 +2203,14 @@ msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -3499,6 +3525,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "no such attribute"
+msgstr ""
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c

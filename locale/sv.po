@@ -95,6 +95,10 @@ msgstr "%q index måste vara heltal, inte %q"
 msgid "%q list must be a list"
 msgstr "%q-listan måste vara en lista"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q måste vara >= 0"
@@ -106,6 +110,10 @@ msgstr "%q måste vara >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q måste vara >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -615,6 +623,11 @@ msgstr "Kan bara larma från djup sömn på två låga pinnar."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "Det går inte att skapa en ny Adapter; använd _bleio.adapter;"
@@ -658,8 +671,8 @@ msgid "Cannot record to a file"
 msgstr "Det går inte att spela in till en fil"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "Kan inte återmontera '/' när USB är aktivt."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1598,6 +1611,11 @@ msgstr "Ingen nyckel angavs"
 msgid "No long integer support"
 msgstr "Inget stöd för långt heltal"
 
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Inget nätverk med sådant ssid"
@@ -2229,6 +2247,14 @@ msgstr "USB upptagen"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "USB-fel"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3559,6 +3585,10 @@ msgstr "inget svar från SD-kort"
 msgid "no such attribute"
 msgstr "inget sådant attribut"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "icke-UUID hittades i service_uuids_whitelist"
@@ -4327,6 +4357,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Kan inte återmontera '/' när USB är aktivt."
 
 #~ msgid "Timeout waiting for DRDY"
 #~ msgstr "Timeout i väntan på DRDY"
