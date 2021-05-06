@@ -909,7 +909,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.write_bytes(
         bytearray(
             [
-                ord("M"),
+                ord("C"),
                 MPY_VERSION,
                 env.arch.mpy_feature,
                 MP_SMALL_INT_BITS,
