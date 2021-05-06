@@ -55,24 +55,6 @@ CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/u
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 endif
 
-# External modules written in C.
-ifneq ($(USER_C_MODULES),)
-# pre-define USERMOD variables as expanded so that variables are immediate
-# expanded as they're added to them
-SRC_USERMOD :=
-CFLAGS_USERMOD :=
-LDFLAGS_USERMOD :=
-$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
-    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
-    $(info Including User C Module from $(USERMOD_DIR))\
-	$(eval include $(module))\
-)
-
-SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
-CFLAGS_MOD += $(CFLAGS_USERMOD)
-LDFLAGS_MOD += $(LDFLAGS_USERMOD)
-endif
-
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
