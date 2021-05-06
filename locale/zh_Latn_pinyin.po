@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-19 19:15+0000\n"
+"PO-Revision-Date: 2021-05-06 20:48+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -99,7 +99,7 @@ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
-msgstr ""
+msgstr "%q bì xū wéi 1-255"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -115,7 +115,7 @@ msgstr "%q bìxū dàyú huò děngyú 1"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or 1-255"
-msgstr ""
+msgstr "%q bì xū wéi wú huò 1-255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -461,7 +461,7 @@ msgstr "dāng VM bú yùn xíng shí, cháng shì duī fēn pèi."
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN wèi shǐ yòng mì mǎ"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -629,7 +629,7 @@ msgstr "Wúfǎ jiāng CCCD shèzhì wéi běndì tèzhēng"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "xiàn zài wú fǎ gēng gǎi USB shè bèi"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
@@ -674,7 +674,7 @@ msgstr "Wúfǎ jìlù dào wénjiàn"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr ""
+msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1239,7 +1239,7 @@ msgstr "Wúxiào de ADC dānwèi zhí"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "wú xiào AuthMode"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1300,7 +1300,7 @@ msgstr "Wúxiào de tōngdào jìshù"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_count %d"
-msgstr ""
+msgstr "wú xiào data_count %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1616,7 +1616,7 @@ msgstr "Méiyǒu zhǎng zhěngshù zhīchí"
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2207,7 +2207,7 @@ msgstr "Xiǎnshì tài duō"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2247,11 +2247,11 @@ msgstr "USB Cuòwù"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr ""
+msgstr "USB shè bèi xū yào de zhōng duān bǐ kě yòng de yào duō."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr ""
+msgstr "USB shè bèi zhǐ dìng le tài duō de jiè miàn míng chēng."
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -2484,7 +2484,7 @@ msgstr "dìzhǐ wèi kōng"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "zhù shì bì xū shì biāo zhì fú"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2662,7 +2662,7 @@ msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2877,7 +2877,7 @@ msgstr "shùjù chángdù bìxū xiāngděng"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "shù jù yǐn jiǎo #%d zài shǐ yòng zhōng"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3075,7 +3075,7 @@ msgstr "fú diǎn tài dà"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "fú dòng bù shòu zhī chí"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3091,7 +3091,7 @@ msgstr "chōngfèn"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "gōng néng bù cǎi qǔ guān jiàn zì cān shù"
 
 #: py/argcheck.c
 #, c-format
@@ -3147,7 +3147,7 @@ msgstr "shēngchéng qì hūlüè shēngchéng qì tuìchū"
 
 #: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "fā diàn jī tí chū tíng zhǐ"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3167,15 +3167,15 @@ msgstr "biāozhì fú chóngxīn dìngyì wéi fēi běndì"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "dǎo rù * bú zài mó kuài jí bié"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "bù jiān róng .mpy wén jiàn"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "bù jiān róng de yuán shēng .mpy jià gòu"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3298,7 +3298,7 @@ msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "wú xiào de jià gòu"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -3535,7 +3535,7 @@ msgstr "xūyào chāoguò%d de zhí cáinéng jiědú"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "fù yīn zǐ"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3584,7 +3584,7 @@ msgstr "méiyǒu cǐ shǔxìng"
 
 #: shared-bindings/usb_hid/__init__.c
 msgid "non-Device in %q"
-msgstr ""
+msgstr "fēi shè bèi zài %q"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3713,7 +3713,7 @@ msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "cāo zuò dài mǎ"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3857,7 +3857,7 @@ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -3937,7 +3937,7 @@ msgstr "qǔyàng lǜ chāochū fànwéi"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "shí jiān biǎo duì liè yǐ mǎn"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
