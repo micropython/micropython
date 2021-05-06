@@ -37,9 +37,6 @@
 // type check is done on getiter method to allow tuple, namedtuple, attrtuple
 #define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
 
-// type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
-
 /******************************************************************************/
 /* tuple                                                                      */
 
