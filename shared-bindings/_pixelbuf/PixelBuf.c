@@ -1,5 +1,5 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
