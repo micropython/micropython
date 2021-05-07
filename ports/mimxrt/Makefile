@@ -101,18 +101,29 @@ SRC_C = \
 	pin.c \
 	tusb_port.c \
 	board_init.c \
+	modmimxrt.c \
+	mimxrt_flash.c \
 	$(BOARD_DIR)/flash_config.c \
+	hal/flash.c \
+	$(MCU_DIR)/drivers/fsl_flexspi.c \
+	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(BOARD_DIR)/pins.c \
 	machine_led.c \
 	modutime.c \
 	modmachine.c \
+	moduos.c \
 	mphalport.c \
+	lib/littlefs/lfs1.c \
+	lib/littlefs/lfs1_util.c \
+	lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
 	lib/utils/gchelper_native.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_TINYUSB_IMX_C) \
 
@@ -125,7 +136,12 @@ SRC_QSTR += \
 	machine_led.c \
 	modutime.c \
 	modmachine.c \
+	moduos.c \
 	pin.c \
+	modmimxrt.c \
+	mimxrt_flash.c \
+	lib/utils/mpirq.c \
+	lib/utils/sys_stdio_mphal.c \
 	$(BOARD_DIR)/pins.c \
 
 OBJ += $(PY_O)

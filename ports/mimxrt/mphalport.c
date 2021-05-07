@@ -46,6 +46,21 @@ void mp_hal_set_interrupt_char(int c) {
 
 #endif
 
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    // #if MICROPY_HW_ENABLE_UART_REPL
+    // if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
+    //     ret |= MP_STREAM_POLL_RD;
+    // }
+    // #endif
+    #if MICROPY_HW_ENABLE_USBDEV
+    if (tud_cdc_connected() && tud_cdc_available()) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    #endif
+    return ret;
+}
+
 void mp_hal_delay_ms(mp_uint_t ms) {
     ms += 1;
     uint32_t t0 = systick_ms;

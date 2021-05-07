@@ -28,7 +28,7 @@
 /* FLEXSPI Feature related definitions */
 #define FLEXSPI_FEATURE_HAS_PARALLEL_MODE 1
 
-/* Lookup table related defintions */
+/* Lookup table related definitions */
 #define CMD_INDEX_READ 0
 #define CMD_INDEX_READSTATUS 1
 #define CMD_INDEX_WRITEENABLE 2
@@ -37,6 +37,7 @@
 #define CMD_LUT_SEQ_IDX_READ 0
 #define CMD_LUT_SEQ_IDX_READSTATUS 1
 #define CMD_LUT_SEQ_IDX_WRITEENABLE 3
+#define CMD_LUT_SEQ_IDX_ERASE 5
 #define CMD_LUT_SEQ_IDX_WRITE 9
 
 #define CMD_SDR 0x01
@@ -221,6 +222,7 @@ typedef struct _FlexSPIConfig
 #define NOR_CMD_INDEX_DUMMY 6                           //!< 6
 #define NOR_CMD_INDEX_ERASEBLOCK 7                      //!< 7
 
+/* Definition clash with flash.c; could be the cause of trouble
 #define NOR_CMD_LUT_SEQ_IDX_READ CMD_LUT_SEQ_IDX_READ //!< 0  READ LUT sequence id in lookupTable stored in config block
 #define NOR_CMD_LUT_SEQ_IDX_READSTATUS \
     CMD_LUT_SEQ_IDX_READSTATUS //!< 1  Read Status LUT sequence id in lookupTable stored in config block
@@ -240,7 +242,7 @@ typedef struct _FlexSPIConfig
     14 //!< 14 Restore 0-4-4/0-8-8 mode sequence id in lookupTable stored in config block
 #define NOR_CMD_LUT_SEQ_IDX_EXIT_NOCMD \
     15 //!< 15 Exit 0-4-4/0-8-8 mode sequence id in lookupTable stored in config blobk
-
+*/
 /*
  *  Serial NOR configuration block
  */

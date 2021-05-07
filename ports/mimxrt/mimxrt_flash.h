@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2020-2021 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
-#define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+#ifndef MICROPY_INCLUDED_MIMXRT_MODMIMXRT_H
+#define MICROPY_INCLUDED_MIMXRT_MODMIMXRT_H
 
-#include <stdint.h>
+#include "py/obj.h"
+// Use just one of the includes for the definition of qspiflash_config
+// Which one does not matter.
+#include "boards/TEENSY40/teensy40_flexspi_nor_config.h"
 
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
-#define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
+extern const mp_obj_type_t mimxrt_flash_type;
+extern flexspi_nor_config_t qspiflash_config;
 
-extern volatile uint32_t systick_ms;
-
-void mp_hal_set_interrupt_char(int c);
-
-static inline uint64_t  mp_hal_time_ns(void) {
-    // FIXME: Implement hal time ns
-    return 0UL;
-}
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
-}
-
-static inline mp_uint_t mp_hal_ticks_us(void) {
-    return systick_ms * 1000;
-}
-
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
-}
-
-#endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+#endif // MICROPY_INCLUDED_MIMXRT_MODMIMXRT_H

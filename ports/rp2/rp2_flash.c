@@ -94,6 +94,13 @@ STATIC mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    // if (n_args == 4) {
+    //     mp_printf(&mp_plat_print, "writeblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
+    //               n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
+    // } else {
+    //     mp_printf(&mp_plat_print, "writeblocks: nargs = %d, block = %d, len = %d\n",
+    //               n_args, mp_obj_get_int(args[1]), bufinfo.len);
+    // }
     if (n_args == 3) {
         flash_range_erase(self->flash_base + offset, bufinfo.len);
         // TODO check return value
@@ -121,6 +128,7 @@ STATIC mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
+            // mp_printf(&mp_plat_print, "IOCTL_BLOCK_ERASE: block=%d\n", mp_obj_get_int(arg_in));
             uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
             flash_range_erase(self->flash_base + offset, BLOCK_SIZE_BYTES);
             // TODO check return value

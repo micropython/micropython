@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
-#define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
 
-#include <stdint.h>
+#ifndef _FLASH_H_
+#define _FLASH_H_
 
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
-#define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
+#include "fsl_flexspi.h"
 
-extern volatile uint32_t systick_ms;
+status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
+status_t flexspi_nor_init(void);
+void flexspi_nor_update_lut(void);
+void flexspi_nor_reset(void); // just a wrapper of the inline flexspi reset to guarentee it is not in-lined into a flash address
+status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
+status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t address, const uint32_t *src, uint32_t size);
 
-void mp_hal_set_interrupt_char(int c);
+#endif
 
-static inline uint64_t  mp_hal_time_ns(void) {
-    // FIXME: Implement hal time ns
-    return 0UL;
-}
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
-}
-
-static inline mp_uint_t mp_hal_ticks_us(void) {
-    return systick_ms * 1000;
-}
-
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
-}
-
-#endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H

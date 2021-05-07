@@ -32,6 +32,7 @@
 #include "py/stackctrl.h"
 #include "lib/utils/gchelper.h"
 #include "lib/utils/pyexec.h"
+#include "lib/mp-readline/readline.h"
 #include "tusb.h"
 #include "led.h"
 
@@ -54,6 +55,12 @@ int main(void) {
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+
+        // Initialise sub-systems.
+        readline_init0();
+
+        // Execute _boot.py to set up the filesystem.
+        pyexec_frozen_module("_boot.py");
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -81,6 +88,7 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
+/*
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     mp_raise_OSError(MP_ENOENT);
 }
@@ -93,6 +101,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+*/
 
 void nlr_jump_fail(void *val) {
     for (;;) {
