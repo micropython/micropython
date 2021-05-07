@@ -103,8 +103,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_
 const mp_obj_property_t wifi_radio_mac_address_ap_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -369,8 +369,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_ap_obj, wifi_radio_get_ipv
 const mp_obj_property_t wifi_radio_ipv4_gateway_ap_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_gateway_ap_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     ipv4_subnet: Optional[ipaddress.IPv4Address]
@@ -401,8 +401,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_ap_obj, wifi_radio_get_ipv4
 const mp_obj_property_t wifi_radio_ipv4_subnet_ap_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_subnet_ap_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
@@ -433,8 +433,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_ap_obj, wifi_radio_get_ipv
 const mp_obj_property_t wifi_radio_ipv4_address_ap_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_address_ap_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     ipv4_dns: Optional[ipaddress.IPv4Address]
