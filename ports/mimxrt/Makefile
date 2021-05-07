@@ -1,6 +1,7 @@
 BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
+BOARD_LOADER ?= teensy_loader_cli
 
 CROSS_COMPILE ?= arm-none-eabi-
 
@@ -14,6 +15,9 @@ include $(BOARD_DIR)/mpconfigboard.mk
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
+
+# MicroPython feature configurations
+FROZEN_MANIFEST ?= manifest.py
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
@@ -62,6 +66,9 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 endif
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+
+CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
 
 # TinyUSB Stack source
 SRC_TINYUSB_C += \

@@ -131,7 +131,7 @@ const char mimxrt_help_text[] =
     // "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
     "\n"
     "Pin IO modes are: Pin.IN, Pin.OUT\n"
-    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN\n"
+    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_KEEPER\n"
     "\n"
     "Useful control commands:\n"
     "  CTRL-C -- interrupt a running program\n"
