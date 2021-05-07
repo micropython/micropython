@@ -36,5 +36,8 @@
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
 #define HSE_VALUE ((uint32_t)8000000)
-#define LSE_VALUE ((uint32_t)32768)
-#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+
+// Replace LSE lines and recompile if you add a low power crystal
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+// #define LSE_VALUE ((uint32_t)32768)
