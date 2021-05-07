@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-28 16:11+0000\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -98,6 +98,10 @@ msgstr "indices %q doivent être des chiffres entier, et non %q"
 msgid "%q list must be a list"
 msgstr "La liste %q doit être une liste"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q doit être >= 0"
@@ -109,6 +113,10 @@ msgstr "%q doit être >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q doit être >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -458,7 +466,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN n'est pas utilisé avec un mot de passe"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -625,6 +633,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Impossible de définir CCCD sur une caractéristique locale"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
@@ -670,8 +683,8 @@ msgid "Cannot record to a file"
 msgstr "Impossible d'enregistrer vers un fichier"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "'/' ne peut être remonté quand l'USB est actif."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1249,7 +1262,7 @@ msgstr "Valeur d'unité ADC non valide"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode invalide"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1623,6 +1636,11 @@ msgstr "Aucune clé n'a été spécifiée"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Pas de support pour chiffre entier long"
+
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2260,6 +2278,14 @@ msgstr "USB occupé"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "Erreur USB"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3096,7 +3122,7 @@ msgstr "nombre à virgule flottante trop grand"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "valeures flotantes non supportées"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3188,7 +3214,7 @@ msgstr "identifiant redéfini comme nonlocal"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "import * n'est pas au niveau du module"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3607,6 +3633,10 @@ msgstr "pas de réponse de la carte SD"
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "non UUID trouvé dans service_uuids_whitelist"
@@ -3736,7 +3766,7 @@ msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3963,7 +3993,7 @@ msgstr "taux d'échantillonage hors bornes"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "file de schédule pleine"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
@@ -4380,6 +4410,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "'/' ne peut être remonté quand l'USB est actif."
 
 #~ msgid "Timeout waiting for DRDY"
 #~ msgstr "Délais expiré en attandant DRDY"

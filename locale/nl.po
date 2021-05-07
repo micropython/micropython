@@ -90,6 +90,10 @@ msgstr "%q indices moeten integers zijn, geen %q"
 msgid "%q list must be a list"
 msgstr "%q lijst moet een lijst zijn"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q moet >= 0 zijn"
@@ -101,6 +105,10 @@ msgstr "%q moet >= 0 zijn"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q moet >= 1 zijn"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -609,6 +617,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan CCCD niet toewijzen aan lokaal Characteristic"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "Kan geen nieuwe Adapter creëren; gebruik _bleio.adapter;"
@@ -652,8 +665,8 @@ msgid "Cannot record to a file"
 msgstr "Kan niet opnemen naar een bestand"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "Kan '/' niet hermounten als USB actief is."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1590,6 +1603,11 @@ msgstr "Een sleutel was niet gespecificeerd"
 msgid "No long integer support"
 msgstr "Geen lange integer ondersteuning"
 
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Geen netwerk met dat SSID gevonden"
@@ -2223,6 +2241,14 @@ msgstr "USB Bezet"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "USB Fout"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3556,6 +3582,10 @@ msgstr "geen antwoord van SD kaart"
 msgid "no such attribute"
 msgstr "niet zo'n attribuut"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "niet-UUID gevonden in service_uuids_whitelist"
@@ -4324,6 +4354,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Kan '/' niet hermounten als USB actief is."
 
 #~ msgid "byte code not implemented"
 #~ msgstr "byte code niet geïmplementeerd"

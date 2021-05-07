@@ -96,6 +96,10 @@ msgstr "%q indices must be integers, not %q"
 msgid "%q list must be a list"
 msgstr "%q list must be a list"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q must be >= 0"
@@ -107,6 +111,10 @@ msgstr "%q must be >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q must be >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -615,6 +623,11 @@ msgstr "Can only alarm on two low pins from deep sleep."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Can't set CCCD on local Characteristic"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "Cannot create a new Adapter; use _bleio.adapter;"
@@ -657,8 +670,8 @@ msgid "Cannot record to a file"
 msgstr "Cannot record to a file"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "Cannot remount '/' when USB is active."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1593,6 +1606,11 @@ msgstr "No key was specified"
 msgid "No long integer support"
 msgstr "No long integer support"
 
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "No network with that ssid"
@@ -2220,6 +2238,14 @@ msgstr "USB busy"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "USB error"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3545,6 +3571,10 @@ msgstr "no response from SD card"
 msgid "no such attribute"
 msgstr "no such attribute"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "non-UUID found in service_uuids_whitelist"
@@ -4312,6 +4342,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Cannot remount '/' when USB is active."
 
 #~ msgid "byte code not implemented"
 #~ msgstr "Byte code not implemented"

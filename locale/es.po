@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 15:32+0000\n"
+"PO-Revision-Date: 2021-05-06 20:48+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -98,6 +98,10 @@ msgstr "índices %q deben ser enteros, no %q"
 msgid "%q list must be a list"
 msgstr "%q lista debe ser una lista"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr "%q debe estar entre 1-255"
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q debe ser >= 0"
@@ -109,6 +113,10 @@ msgstr "%q debe ser >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q debe ser >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr "%q debe ser None o 1-255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -456,7 +464,7 @@ msgstr "Asignación del montículo mientras la VM no esta ejecutándose."
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN no se usa con contraseña"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -622,6 +630,11 @@ msgstr "Solo puede alerta en dos low pines viniendo de deep sleep."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "No se puede configurar CCCD en la característica local"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr "No se pueden cambiar dispositivos USB en este momento"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "No se puede crear nuevo Adapter; use _bleio.adapter;"
@@ -666,8 +679,8 @@ msgid "Cannot record to a file"
 msgstr "No se puede grabar en un archivo"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "No se puede volver a montar '/' cuando el USB esta activo."
+msgid "Cannot remount '/' when visible via USB."
+msgstr "No se puede remountar '/' cuanto se es visible vía USB."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1237,7 +1250,7 @@ msgstr "Valor de unidad de ADC no válido"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode invalido"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1613,6 +1626,11 @@ msgstr "No se especificó ninguna llave"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "No hay soporte de entero largo"
+
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr "No se permiten más de %d dispositivos HID permitidos"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2249,6 +2267,14 @@ msgstr "USB ocupado"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "Error USB"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr "Dispositivos USB necesita más puntos finales de los disponibles."
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr "Dispositivos USB especifica demasiados nombres de interfaz."
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3585,6 +3611,10 @@ msgstr "no hay respuesta de la tarjeta SD"
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr "hay un no-Device en %q"
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "no UUID encontrado en service_uuids_whitelist"
@@ -4356,6 +4386,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "No se puede volver a montar '/' cuando el USB esta activo."
 
 #~ msgid "Timeout waiting for DRDY"
 #~ msgstr "Tiempo de espera agotado esperado por DRDY"

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 15:32+0000\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -96,6 +96,10 @@ msgstr "Os indicadores %q devem ser inteiros, não %q"
 msgid "%q list must be a list"
 msgstr "A lista %q deve ser uma lista"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q deve ser >= 0"
@@ -107,6 +111,10 @@ msgstr "%q deve ser >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q deve ser >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -457,7 +465,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "O AuthMode.OPEN não é usado com senha"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -625,6 +633,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Não é possível definir o CCCD com a característica local"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "Não é possível criar um novo Adaptador; utilize _bleio.adapter;"
@@ -669,8 +682,8 @@ msgid "Cannot record to a file"
 msgstr "Não é possível gravar em um arquivo"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "Não é possível remontar '/' enquanto o USB estiver ativo."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1240,7 +1253,7 @@ msgstr "Valor inválido da unidade ADC"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "AuthMode inválido"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1612,6 +1625,11 @@ msgstr "Nenhuma chave foi definida"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Não há compatibilidade com inteiro longo"
+
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2255,6 +2273,14 @@ msgstr "USB ocupada"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "Erro na USB"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3596,6 +3622,10 @@ msgstr "não houve resposta do cartão SD"
 msgid "no such attribute"
 msgstr "não há tal atributo"
 
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "um não UUID foi encontrado na lista service_uuids_whitelist"
@@ -4368,6 +4398,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Não é possível remontar '/' enquanto o USB estiver ativo."
 
 #~ msgid "Timeout waiting for DRDY"
 #~ msgstr "Esgotou-se o tempo limite de espera pelo DRDY"
