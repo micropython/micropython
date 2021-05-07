@@ -15,6 +15,9 @@ include $(BOARD_DIR)/mpconfigboard.mk
 QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
+# MicroPython feature configurations
+FROZEN_MANIFEST ?= boards/manifest.py
+
 # Include py core make definitions
 include $(TOP)/py/py.mk
 
