@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-05 18:42+0000\n"
+"PO-Revision-Date: 2021-05-08 13:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -97,7 +97,7 @@ msgstr "%q-listan måste vara en lista"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
-msgstr ""
+msgstr "%q måste vara 1-255"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -113,7 +113,7 @@ msgstr "%q måste vara >= 1"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or 1-255"
-msgstr ""
+msgstr "%q måste vara None eller 1-255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -626,7 +626,7 @@ msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "Kan inte ändra USB-enheter nu"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
@@ -672,7 +672,7 @@ msgstr "Det går inte att spela in till en fil"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr ""
+msgstr "Det går inte att montera om '/' när den är synlig via USB."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -1614,7 +1614,7 @@ msgstr "Inget stöd för långt heltal"
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "Högst %d HID-enheter är tillåtna"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -2250,11 +2250,11 @@ msgstr "USB-fel"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr ""
+msgstr "USB-enheter behöver fler slutpunkter än vad som är tillgängligt."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr ""
+msgstr "USB-enheter anger för många gränssnittsnamn."
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3587,7 +3587,7 @@ msgstr "inget sådant attribut"
 
 #: shared-bindings/usb_hid/__init__.c
 msgid "non-Device in %q"
-msgstr ""
+msgstr "icke-enhet i %q"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
