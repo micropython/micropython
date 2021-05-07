@@ -26,6 +26,7 @@
  */
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mphal.h"
 #include "ticks.h"
 #include "tusb.h"
@@ -46,6 +47,14 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 #endif
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (tud_cdc_connected() && tud_cdc_available()) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
+}
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {

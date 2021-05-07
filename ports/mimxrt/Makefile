@@ -17,6 +17,7 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # MicroPython feature configurations
 FROZEN_MANIFEST ?= boards/manifest.py
+MICROPY_VFS_LFS2 ?= 1
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
@@ -24,7 +25,7 @@ include $(TOP)/py/py.mk
 GIT_SUBMODULES = lib/tinyusb lib/nxp_driver
 
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
-LD_FILES = boards/$(MCU_SERIES).ld $(TOP)/$(MCU_DIR)/gcc/$(MCU_SERIES)xxxxx_flexspi_nor.ld
+LD_FILES = boards/$(BOARD)/$(BOARD).ld boards/$(MCU_SERIES).ld boards/common.ld
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
@@ -59,8 +60,10 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
 	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX \
 	-D__STARTUP_CLEAR_BSS \
+	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>'
+CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 
 LDFLAGS = $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref --print-memory-usage
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -101,6 +104,8 @@ SRC_TINYUSB_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
+	$(MCU_DIR)/drivers/fsl_flexspi.c \
+	$(MCU_DIR)/drivers/fsl_trng.c \
 
 SRC_C = \
 	main.c \
@@ -112,15 +117,20 @@ SRC_C = \
 	$(BOARD_DIR)/flash_config.c \
 	machine_led.c \
 	machine_pin.c \
+	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
+	modmimxrt.c \
+	moduos.c \
 	mphalport.c \
+	hal/flexspi_nor_flash.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
 	lib/utils/gchelper_native.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_TINYUSB_IMX_C) \
 
@@ -132,15 +142,20 @@ SRC_S = lib/utils/gchelper_m3.s \
 SRC_QSTR += \
 	machine_led.c \
 	machine_pin.c \
+	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
+	modmimxrt.c \
+	moduos.c \
 	pin.c \
+	lib/utils/sys_stdio_mphal.c \
 	$(GEN_PINS_SRC) \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
