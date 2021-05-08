@@ -532,7 +532,7 @@ const mp_obj_property_t rp2pio_statemachine_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rp2pio_statemachine_get_frequency_obj,
               (mp_obj_t)&rp2pio_statemachine_set_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     rxstall: bool
@@ -550,8 +550,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_rxstall_obj, rp2pio_statemachi
 const mp_obj_property_t rp2pio_statemachine_rxstall_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rp2pio_statemachine_get_rxstall_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     in_waiting: int
@@ -568,8 +568,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_in_waiting_obj, rp2pio_statema
 const mp_obj_property_t rp2pio_statemachine_in_waiting_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rp2pio_statemachine_get_in_waiting_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {

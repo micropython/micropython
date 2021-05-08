@@ -87,7 +87,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_message_id_get_obj,
               (mp_obj_t)&canio_message_id_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     data: bytes
@@ -116,7 +116,7 @@ STATIC const mp_obj_property_t canio_message_data_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_message_data_get_obj,
               (mp_obj_t)&canio_message_data_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -141,7 +141,7 @@ STATIC const mp_obj_property_t canio_message_extended_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_message_extended_get_obj,
               (mp_obj_t)&canio_message_extended_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {

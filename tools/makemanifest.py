@@ -76,9 +76,10 @@ def freeze(path, script=None, opt=0):
     If `script` is an iterable then freeze() is called on all items of the
     iterable (with the same `path` and `opt` passed through).
 
-    If `script` is a string then it specifies the filename to freeze, and
-    can include extra directories before the file.  The file will be
-    searched for in `path`.
+    If `script` is a string then it specifies the file or directory to
+    freeze, and can include extra directories before the file or last
+    directory.  The file or directory will be searched for in `path`.  If
+    `script` is a directory then all files in that directory will be frozen.
 
     `opt` is the optimisation level to pass to mpy-cross when compiling .py
     to .mpy.
@@ -163,17 +164,10 @@ def get_timestamp_newest(path):
     return ts_newest
 
 
-def mkdir(path):
-    cur_path = ""
-    for p in path.split("/")[:-1]:
-        cur_path += p + "/"
-        try:
-            os.mkdir(cur_path)
-        except OSError as er:
-            if er.args[0] == 17:  # file exists
-                pass
-            else:
-                raise er
+def mkdir(filename):
+    path = os.path.dirname(filename)
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 
 def freeze_internal(kind, path, script, opt):
@@ -182,14 +176,22 @@ def freeze_internal(kind, path, script, opt):
         if any(f[0] == KIND_AS_STR for f in manifest_list):
             raise FreezeError("can only freeze one str directory")
         manifest_list.append((KIND_AS_STR, path, script, opt))
-    elif script is None:
-        for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
+    elif script is None or isinstance(script, str) and script.find(".") == -1:
+        # Recursively search `path` for files to freeze, optionally restricted
+        # to a subdirectory specified by `script`
+        if script is None:
+            subdir = ""
+        else:
+            subdir = "/" + script
+        for dirpath, dirnames, filenames in os.walk(path + subdir, followlinks=True):
             for f in filenames:
                 freeze_internal(kind, path, (dirpath + "/" + f)[len(path) + 1 :], opt)
     elif not isinstance(script, str):
+        # `script` is an iterable of items to freeze
         for s in script:
             freeze_internal(kind, path, s, opt)
     else:
+        # `script` should specify an individual file to be frozen
         extension_kind = {KIND_AS_MPY: ".py", KIND_MPY: ".mpy"}
         if kind == KIND_AUTO:
             for k, ext in extension_kind.items():
@@ -235,6 +237,9 @@ def main():
     # Get paths to tools
     MAKE_FROZEN = VARS["MPY_DIR"] + "/tools/make-frozen.py"
     MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/mpy-cross"
+    if sys.platform == "win32":
+        MPY_CROSS += ".exe"
+    MPY_CROSS = os.getenv("MICROPY_MPYCROSS", MPY_CROSS)
     MPY_TOOL = VARS["MPY_DIR"] + "/tools/mpy-tool.py"
 
     # Ensure mpy-cross is built
@@ -275,7 +280,8 @@ def main():
                     + ["-o", outfile, "-s", script, "-O{}".format(opt), infile]
                 )
                 if res != 0:
-                    print("error compiling {}: {}".format(infile, out))
+                    print("error compiling {}:".format(infile))
+                    sys.stdout.buffer.write(out)
                     raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
@@ -298,13 +304,31 @@ def main():
         sys.exit(1)
 
     # Freeze .mpy files
-    res, output_mpy = system(
-        [sys.executable, MPY_TOOL, "-f", "-q", args.build_dir + "/genhdr/qstrdefs.preprocessed.h"]
-        + mpy_files
-    )
-    if res != 0:
-        print("error freezing mpy {}: {}".format(mpy_files, output_mpy))
-        sys.exit(1)
+    if mpy_files:
+        res, output_mpy = system(
+            [
+                sys.executable,
+                MPY_TOOL,
+                "-f",
+                "-q",
+                args.build_dir + "/genhdr/qstrdefs.preprocessed.h",
+            ]
+            + mpy_files
+        )
+        if res != 0:
+            print("error freezing mpy {}:".format(mpy_files))
+            print(str(output_mpy, "utf8"))
+            sys.exit(1)
+    else:
+        output_mpy = (
+            b'#include "py/emitglue.h"\n'
+            b"extern const qstr_pool_t mp_qstr_const_pool;\n"
+            b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
+            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
+            b"};\n"
+            b'const char mp_frozen_mpy_names[1] = {"\\0"};\n'
+            b"const mp_raw_code_t *const mp_frozen_mpy_content[0] = {};\n"
+        )
 
     # Generate output
     print("GEN", args.output)

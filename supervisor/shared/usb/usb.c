@@ -25,6 +25,7 @@
  */
 
 #include "py/objstr.h"
+#include "py/runtime.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"

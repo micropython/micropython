@@ -93,7 +93,7 @@ typedef int8_t mpz_dbl_dig_signed_t;
 typedef struct _mpz_t {
     size_t neg : 1;
     size_t fixed_dig : 1;
-    size_t alloc : 8 * sizeof(size_t) - 2;
+    size_t alloc : (8 * sizeof(size_t) - 2);
     size_t len;
     mpz_dig_t *dig;
 } mpz_t;

@@ -63,7 +63,7 @@ const mp_obj_property_t vectorio_polygon_points_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_polygon_get_points_obj,
               (mp_obj_t)&vectorio_polygon_set_points_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t vectorio_polygon_locals_dict_table[] = {

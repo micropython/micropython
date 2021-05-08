@@ -159,14 +159,14 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
 }
 
 void timeutils_seconds_since_epoch_to_struct_time(mp_uint_t t, timeutils_struct_time_t *tm) {
-    t -= EPOCH1970_EPOCH2000_DIFF_SECS;
+    t -= TIMEUTILS_SECONDS_1970_TO_2000;
     timeutils_seconds_since_2000_to_struct_time(t, tm);
 }
 
 mp_uint_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month, mp_uint_t date,
     mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
     mp_uint_t t = timeutils_seconds_since_2000(year, month, date, hour, minute, second);
-    return t + EPOCH1970_EPOCH2000_DIFF_SECS;
+    return t + TIMEUTILS_SECONDS_1970_TO_2000;
 }
 
 mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,

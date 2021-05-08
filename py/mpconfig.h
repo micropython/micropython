@@ -58,25 +58,28 @@
 
 // A MicroPython object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
-//  - xxxx...xx10 : a qstr, bits 2 and above are the value
+//  - xxxx...x010 : a qstr, bits 3 and above are the value
+//  - xxxx...x110 : an immediate object, bits 3 and above are the value
 //  - xxxx...xx00 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_A (0)
 
 // A MicroPython object is a machine word having the following form:
 //  - xxxx...xx01 : a small int, bits 2 and above are the value
-//  - xxxx...xx11 : a qstr, bits 2 and above are the value
+//  - xxxx...x011 : a qstr, bits 3 and above are the value
+//  - xxxx...x111 : an immediate object, bits 3 and above are the value
 //  - xxxx...xxx0 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_B (1)
 
 // A MicroPython object is a machine word having the following form (called R):
 //  - iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int with 31-bit signed value
-//  - 01111111 1qqqqqqq qqqqqqqq qqqqq110 str with 20-bit qstr value
+//  - 01111111 1qqqqqqq qqqqqqqq qqqq0110 str with 19-bit qstr value
+//  - 01111111 10000000 00000000 ssss1110 immediate object with 4-bit value
 //  - s1111111 10000000 00000000 00000010 +/- inf
 //  - s1111111 1xxxxxxx xxxxxxxx xxxxx010 nan, x != 0
 //  - seeeeeee efffffff ffffffff ffffff10 30-bit fp, e != 0xff
 //  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
-// Str and float stored as O = R + 0x80800000, retrieved as R = O - 0x80800000.
-// This makes strs easier to encode/decode as they have zeros in the top 9 bits.
+// Str, immediate and float stored as O = R + 0x80800000, retrieved as R = O - 0x80800000.
+// This makes strs/immediates easier to encode/decode as they have zeros in the top 9 bits.
 // This scheme only works with 32-bit word size and float enabled.
 #define MICROPY_OBJ_REPR_C (2)
 
@@ -86,6 +89,7 @@
 //  - 01111111 11111000 00000000 00000000 00000000 00000000 00000000 00000000 normalised nan
 //  - 01111111 11111101 iiiiiiii iiiiiiii iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int
 //  - 01111111 11111110 00000000 00000000 qqqqqqqq qqqqqqqq qqqqqqqq qqqqqqq1 str
+//  - 01111111 11111111 ss000000 00000000 00000000 00000000 00000000 00000000 immediate object
 //  - 01111111 11111100 00000000 00000000 pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
 // Stored as O = R + 0x8004000000000000, retrieved as R = O - 0x8004000000000000.
 // This makes pointers have all zeros in the top 32 bits.
@@ -95,6 +99,13 @@
 
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
+#endif
+
+// Whether to encode None/False/True as immediate objects instead of pointers to
+// real objects.  Reduces code size by a decent amount without hurting
+// performance, for all representations except D on some architectures.
+#ifndef MICROPY_OBJ_IMMEDIATE_OBJS
+#define MICROPY_OBJ_IMMEDIATE_OBJS (MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D)
 #endif
 
 /*****************************************************************************/
@@ -342,6 +353,18 @@
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
 
+// Whether native relocatable code loaded from .mpy files is explicitly tracked
+// so that the GC cannot reclaim it.  Needed on architectures that allocate
+// executable memory on the MicroPython heap and don't explicitly track this
+// data some other way.
+#ifndef MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+#if !MICROPY_EMIT_MACHINE_CODE || defined(MP_PLAT_ALLOC_EXEC) || defined(MP_PLAT_COMMIT_EXEC)
+#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (0)
+#else
+#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (1)
+#endif
+#endif
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
@@ -585,9 +608,29 @@
 #define MICROPY_HELPER_REPL (0)
 #endif
 
+// Allow enabling debug prints after each REPL line
+#ifndef MICROPY_REPL_INFO
+#define MICROPY_REPL_INFO (0)
+#endif
+
 // Whether to include emacs-style readline behavior in REPL
 #ifndef MICROPY_REPL_EMACS_KEYS
 #define MICROPY_REPL_EMACS_KEYS (0)
+#endif
+
+// Whether to include emacs-style word movement/kill readline behavior in REPL.
+// This adds Alt+F, Alt+B, Alt+D and Alt+Backspace for forward-word, backward-word, forward-kill-word
+// and backward-kill-word, respectively.
+#ifndef MICROPY_REPL_EMACS_WORDS_MOVE
+#define MICROPY_REPL_EMACS_WORDS_MOVE (0)
+#endif
+
+// Whether to include extra convenience keys for word movement/kill in readline REPL.
+// This adds Ctrl+Right, Ctrl+Left and Ctrl+W for forward-word, backward-word and backward-kill-word
+// respectively. Ctrl+Delete is not implemented because it's a very different escape sequence.
+// Depends on MICROPY_REPL_EMACS_WORDS_MOVE.
+#ifndef MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (0)
 #endif
 
 // Whether to implement auto-indent in REPL
@@ -723,7 +766,7 @@ typedef double mp_float_t;
 
 // Whether to support module-level __getattr__ (see PEP 562)
 #ifndef MICROPY_MODULE_GETATTR
-#define MICROPY_MODULE_GETATTR (0)
+#define MICROPY_MODULE_GETATTR (1)
 #endif
 
 // Whether module weak links are supported
@@ -834,6 +877,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Support for assignment expressions with := (see PEP 572, Python 3.8+)
+#ifndef MICROPY_PY_ASSIGN_EXPR
+#define MICROPY_PY_ASSIGN_EXPR (1)
+#endif
+
 // Non-standard .pend_throw() method for generators, allowing for
 // Future-like behavior with respect to exception handling: an
 // exception set with .pend_throw() will activate on the next call
@@ -917,6 +965,11 @@ typedef double mp_float_t;
 // i.e. slice.start, slice.stop, slice.step
 #ifndef MICROPY_PY_BUILTINS_SLICE_ATTRS
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
+#endif
+
+// Whether to support the .indices(len) method on slice objects
+#ifndef MICROPY_PY_BUILTINS_SLICE_INDICES
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (0)
 #endif
 
 // Whether to support frozenset object
@@ -1058,6 +1111,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_STACK_USE (MICROPY_PY_MICROPYTHON_MEM_INFO)
 #endif
 
+// Whether to provide the "micropython.heap_locked" function
+#ifndef MICROPY_PY_MICROPYTHON_HEAP_LOCKED
+#define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (0)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
@@ -1121,6 +1179,21 @@ typedef double mp_float_t;
 // Whether to provide math.isclose function
 #ifndef MICROPY_PY_MATH_ISCLOSE
 #define MICROPY_PY_MATH_ISCLOSE (0)
+#endif
+
+// Whether to provide fix for atan2 Inf handling.
+#ifndef MICROPY_PY_MATH_ATAN2_FIX_INFNAN
+#define MICROPY_PY_MATH_ATAN2_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for fmod Inf handling.
+#ifndef MICROPY_PY_MATH_FMOD_FIX_INFNAN
+#define MICROPY_PY_MATH_FMOD_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for modf negative zero handling.
+#ifndef MICROPY_PY_MATH_MODF_FIX_NEGZERO
+#define MICROPY_PY_MATH_MODF_FIX_NEGZERO (0)
 #endif
 
 // Whether to provide "cmath" module
@@ -1281,6 +1354,10 @@ typedef double mp_float_t;
 
 // Extended modules
 
+#ifndef MICROPY_PY_UASYNCIO
+#define MICROPY_PY_UASYNCIO (0)
+#endif
+
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (0)
 #endif
@@ -1414,6 +1491,17 @@ typedef double mp_float_t;
 #endif
 
 /*****************************************************************************/
+/* Hooks for a port to wrap functions with attributes                        */
+
+#ifndef MICROPY_WRAP_MP_KEYBOARD_INTERRUPT
+#define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) f
+#endif
+
+/*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
 // All uPy objects in ROM must be aligned on at least a 4 byte boundary
@@ -1443,7 +1531,9 @@ typedef double mp_float_t;
 #define BYTES_PER_WORD (sizeof(mp_uint_t))
 #endif
 
+#ifndef BITS_PER_BYTE
 #define BITS_PER_BYTE (8)
+#endif
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // mp_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))

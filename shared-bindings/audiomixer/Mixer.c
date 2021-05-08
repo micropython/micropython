@@ -169,8 +169,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_playing_obj, audiomixer_mixer_obj
 const mp_obj_property_t audiomixer_mixer_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     sample_rate: int
@@ -186,8 +186,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_sample_rate_obj, audiomixer_mixer
 const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_sample_rate_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     voice: Tuple[MixerVoice, ...]
@@ -207,8 +207,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_voice_obj, audiomixer_mixer_obj_g
 const mp_obj_property_t audiomixer_mixer_voice_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_voice_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def play(self, sample: _typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:

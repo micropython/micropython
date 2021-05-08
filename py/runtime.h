@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_RUNTIME_H
 #define MICROPY_INCLUDED_PY_RUNTIME_H
 
+#include <stdarg.h>
+
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
@@ -66,15 +68,14 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
-void mp_handle_pending(void);
+void mp_keyboard_interrupt(void);
+void mp_handle_pending(bool raise_exc);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) {
-    return MP_STATE_VM(sched_len);
-}
+#define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
@@ -161,6 +162,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+#define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
 NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);

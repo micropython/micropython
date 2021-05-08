@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,10 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/objarray.h"
+#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
+#include "lib/timeutils/timeutils.h"
 
 STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
@@ -119,6 +121,9 @@ STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args,
     self->base.type = type;
     vstr_init(&self->cur_dir, 16);
     vstr_add_byte(&self->cur_dir, '/');
+    #if LFS_BUILD_VERSION == 2
+    self->enable_mtime = args[LFS_MAKE_ARG_mtime].u_bool;
+    #endif
     MP_VFS_LFSx(init_config)(self, args[LFS_MAKE_ARG_bdev].u_obj,
         args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(mount)(&self->lfs, &self->config);
@@ -236,10 +241,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(rmdir_obj), MP_VFS_LFSx(rmdir));
 STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_obj_t path_new_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path_old = MP_VFS_LFSx(make_path)(self, path_old_in);
+    const char *path = mp_obj_str_get_str(path_new_in);
     vstr_t path_new;
     vstr_init(&path_new, vstr_len(&self->cur_dir));
-    vstr_add_strn(&path_new, vstr_str(&self->cur_dir), vstr_len(&self->cur_dir));
-    vstr_add_str(&path_new, mp_obj_str_get_str(path_new_in));
+    if (path[0] != '/') {
+        vstr_add_strn(&path_new, vstr_str(&self->cur_dir), vstr_len(&self->cur_dir));
+    }
+    vstr_add_str(&path_new, path);
     int ret = LFSx_API(rename)(&self->lfs, path_old, vstr_null_terminated_str(&path_new));
     vstr_clear(&path_new);
     if (ret < 0) {
@@ -283,8 +291,45 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     }
 
     // If not at root add trailing / to make it easy to build paths
+    // and then normalise the path
     if (vstr_len(&self->cur_dir) != 1) {
         vstr_add_byte(&self->cur_dir, '/');
+
+        #define CWD_LEN (vstr_len(&self->cur_dir))
+        size_t to = 1;
+        size_t from = 1;
+        char *cwd = vstr_str(&self->cur_dir);
+        while (from < CWD_LEN) {
+            for (; cwd[from] == '/' && from < CWD_LEN; ++from) {
+                // Scan for the start
+            }
+            if (from > to) {
+                // Found excessive slash chars, squeeze them out
+                vstr_cut_out_bytes(&self->cur_dir, to, from - to);
+                from = to;
+            }
+            for (; cwd[from] != '/' && from < CWD_LEN; ++from) {
+                // Scan for the next /
+            }
+            if ((from - to) == 1 && cwd[to] == '.') {
+                // './', ignore
+                vstr_cut_out_bytes(&self->cur_dir, to, ++from - to);
+                from = to;
+            } else if ((from - to) == 2 && cwd[to] == '.' && cwd[to + 1] == '.') {
+                // '../', skip back
+                if (to > 1) {
+                    // Only skip back if not at the tip
+                    for (--to; to > 1 && cwd[to - 1] != '/'; --to) {
+                        // Skip back
+                    }
+                }
+                vstr_cut_out_bytes(&self->cur_dir, to, ++from - to);
+                from = to;
+            } else {
+                // Normal element, keep it and just move the offset
+                to = ++from;
+            }
+        }
     }
 
     return mp_const_none;
@@ -304,12 +349,28 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(getcwd_obj), MP_VFS_LFSx(getcwd));
 
 STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = mp_obj_str_get_str(path_in);
+    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     struct LFSx_API (info) info;
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
+
+    mp_uint_t mtime = 0;
+    #if LFS_BUILD_VERSION == 2
+    uint8_t mtime_buf[8];
+    lfs2_ssize_t sz = lfs2_getattr(&self->lfs, path, LFS_ATTR_MTIME, &mtime_buf, sizeof(mtime_buf));
+    if (sz == sizeof(mtime_buf)) {
+        uint64_t ns = 0;
+        for (size_t i = sizeof(mtime_buf); i > 0; --i) {
+            ns = ns << 8 | mtime_buf[i - 1];
+        }
+        mtime = timeutils_seconds_since_2000_from_nanoseconds_since_1970(ns);
+        #if MICROPY_EPOCH_IS_1970
+        mtime += TIMEUTILS_SECONDS_1970_TO_2000;
+        #endif
+    }
+    #endif
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(info.type == LFSx_MACRO(_TYPE_REG) ? MP_S_IFREG : MP_S_IFDIR); // st_mode
@@ -319,9 +380,9 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(info.size); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(0); // st_ctime
+    t->items[7] = mp_obj_new_int_from_uint(mtime); // st_atime
+    t->items[8] = mp_obj_new_int_from_uint(mtime); // st_mtime
+    t->items[9] = mp_obj_new_int_from_uint(mtime); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -400,6 +461,8 @@ STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_ta
 STATIC mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path) {
     MP_OBJ_VFS_LFSx *self = self_in;
     struct LFSx_API (info) info;
+    mp_obj_str_t path_obj = { { &mp_type_str }, 0, 0, (const byte *)path };
+    path = MP_VFS_LFSx(make_path)(self, MP_OBJ_FROM_PTR(&path_obj));
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret == 0) {
         if (info.type == LFSx_MACRO(_TYPE_REG)) {

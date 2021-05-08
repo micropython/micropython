@@ -69,7 +69,7 @@ mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode) {
             return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_reset_obj);
         case WATCHDOGMODE_NONE:
         default:
-            return (mp_obj_t)MP_ROM_PTR(&mp_const_none_obj);
+            return MP_ROM_NONE;
     }
 }
 

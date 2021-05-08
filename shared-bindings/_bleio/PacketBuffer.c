@@ -204,8 +204,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_
 const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     outgoing_packet_length: int
@@ -225,8 +225,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_
 const mp_obj_property_t bleio_packet_buffer_outgoing_packet_length_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {

@@ -31,6 +31,7 @@
 #include <sys/time.h>
 
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "py/runtime.h"
 
 #ifndef _WIN32
@@ -39,6 +40,11 @@
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
+        #if MICROPY_PY_THREAD_GIL
+        // Since signals can occur at any time, we may not be holding the GIL when
+        // this callback is called, so it is not safe to raise an exception here
+        #error "MICROPY_ASYNC_KBD_INTR and MICROPY_PY_THREAD_GIL are not compatible"
+        #endif
         mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
         sigemptyset(&mask);
@@ -51,8 +57,7 @@ STATIC void sighandler(int signum) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+        mp_keyboard_interrupt();
         #endif
     }
 }
@@ -113,9 +118,10 @@ void mp_hal_stdio_mode_orig(void) {
 
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
-    int ret = read(0, &c, 1);
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
     if (ret == 0) {
-        c = 4;     // EOF, ctrl-D
+        c = 4; // EOF, ctrl-D
     } else if (c == '\n') {
         c = '\r';
     }
@@ -123,8 +129,8 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    int ret = write(1, str, len);
-    (void)ret; // to suppress compiler warning
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
@@ -158,4 +164,9 @@ mp_uint_t mp_hal_ticks_us(void) {
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000 + tv.tv_usec;
     #endif
+}
+
+uint64_t mp_hal_time_ns(void) {
+    time_t now = time(NULL);
+    return (uint64_t)now * 1000000000ULL;
 }

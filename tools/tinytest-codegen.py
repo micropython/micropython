@@ -110,6 +110,8 @@ exclude_tests = (
     # different filename in output
     "micropython/emg_exc.py",
     "micropython/heapalloc_traceback.py",
+    # don't have emergency exception buffer
+    "micropython/heapalloc_exc_compressed_emg_exc.py",
     # pattern matching in .exp
     "micropython/meminfo.py",
     # needs sys stdfiles

@@ -138,31 +138,31 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
     const compressed_string_t *desc = NULL;
     switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
         case EPERM:
-            desc = translate("Permission denied");
+            desc = MP_ERROR_TEXT("Permission denied");
             break;
         case ENOENT:
-            desc = translate("No such file/directory");
+            desc = MP_ERROR_TEXT("No such file/directory");
             break;
         case EIO:
-            desc = translate("Input/output error");
+            desc = MP_ERROR_TEXT("Input/output error");
             break;
         case EACCES:
-            desc = translate("Permission denied");
+            desc = MP_ERROR_TEXT("Permission denied");
             break;
         case EEXIST:
-            desc = translate("File exists");
+            desc = MP_ERROR_TEXT("File exists");
             break;
         case ENODEV:
-            desc = translate("Unsupported operation");
+            desc = MP_ERROR_TEXT("Unsupported operation");
             break;
         case EINVAL:
-            desc = translate("Invalid argument");
+            desc = MP_ERROR_TEXT("Invalid argument");
             break;
         case ENOSPC:
-            desc = translate("No space left on device");
+            desc = MP_ERROR_TEXT("No space left on device");
             break;
         case EROFS:
-            desc = translate("Read-only filesystem");
+            desc = MP_ERROR_TEXT("Read-only filesystem");
             break;
     }
     if (desc != NULL && decompress_length(desc) <= len) {

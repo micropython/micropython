@@ -107,7 +107,7 @@ STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     mp_obj_t heap_in = args[0];
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == heap->alloc) {
-        mp_raise_IndexError(translate("queue overflow"));
+        mp_raise_IndexError(MP_ERROR_TEXT("queue overflow"));
     }
     mp_uint_t l = heap->len;
     heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -123,7 +123,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_ut
 STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_IndexError(translate("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
     mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
     if (!mp_obj_is_type(list_ref, &mp_type_list) || ret->len < 3) {
@@ -148,7 +148,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
 STATIC mp_obj_t mod_utimeq_peektime(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_IndexError(translate("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
 
     struct qentry *item = &heap->items[0];

@@ -31,12 +31,14 @@
 #include "py/gc.h"
 #include "lib/utils/mpirq.h"
 
+#if MICROPY_ENABLE_SCHEDULER
+
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
 
 const mp_arg_t mp_irq_init_args[] = {
-    { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_trigger, MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
 };
@@ -62,8 +64,10 @@ mp_irq_obj_t *mp_irq_new(const mp_irq_methods_t *methods, mp_obj_t parent) {
 void mp_irq_handler(mp_irq_obj_t *self) {
     if (self->handler != mp_const_none) {
         if (self->ishard) {
-            // When executing code within a handler we must lock the GC to prevent
-            // any memory allocations.
+            // When executing code within a handler we must lock the scheduler to
+            // prevent any scheduled callbacks from running, and lock the GC to
+            // prevent any memory allocations.
+            mp_sched_lock();
             gc_lock();
             nlr_buf_t nlr;
             if (nlr_push(&nlr) == 0) {
@@ -77,6 +81,7 @@ void mp_irq_handler(mp_irq_obj_t *self) {
                 mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             }
             gc_unlock();
+            mp_sched_unlock();
         } else {
             // Schedule call to user function
             mp_sched_schedule(self->handler, self->parent);
@@ -122,3 +127,5 @@ const mp_obj_type_t mp_irq_type = {
     .call = mp_irq_call,
     .locals_dict = (mp_obj_dict_t *)&mp_irq_locals_dict,
 };
+
+#endif // MICROPY_ENABLE_SCHEDULER

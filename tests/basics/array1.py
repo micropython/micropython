@@ -37,3 +37,23 @@ try:
     array.array('X')
 except ValueError:
     print("ValueError")
+
+# equality (CPython requires both sides are array)
+print(bytes(array.array('b', [0x61, 0x62, 0x63])) == b'abc')
+print(array.array('b', [0x61, 0x62, 0x63]) == b'abc')
+print(array.array('b', [0x61, 0x62, 0x63]) != b'abc')
+print(array.array('b', [0x61, 0x62, 0x63]) == b'xyz')
+print(array.array('b', [0x61, 0x62, 0x63]) != b'xyz')
+print(b'abc' == array.array('b', [0x61, 0x62, 0x63]))
+print(b'abc' != array.array('b', [0x61, 0x62, 0x63]))
+print(b'xyz' == array.array('b', [0x61, 0x62, 0x63]))
+print(b'xyz' != array.array('b', [0x61, 0x62, 0x63]))
+
+class X(array.array):
+    pass
+
+print(bytes(X('b', [0x61, 0x62, 0x63])) == b'abc')
+print(X('b', [0x61, 0x62, 0x63]) == b'abc')
+print(X('b', [0x61, 0x62, 0x63]) != b'abc')
+print(X('b', [0x61, 0x62, 0x63]) == array.array('b', [0x61, 0x62, 0x63]))
+print(X('b', [0x61, 0x62, 0x63]) != array.array('b', [0x61, 0x62, 0x63]))

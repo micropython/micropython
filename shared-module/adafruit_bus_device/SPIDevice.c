@@ -47,7 +47,7 @@ mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spid
         mp_load_method(self->spi, MP_QSTR_try_lock, dest);
 
         while (!mp_obj_is_true(mp_call_method_n_kw(0, 0, dest))) {
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 

@@ -86,8 +86,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_se
 const mp_obj_property_t bleio_service_characteristics_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_characteristics_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     remote: bool
@@ -103,8 +103,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get
 const mp_obj_property_t bleio_service_remote_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_remote_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     secondary: bool
@@ -120,8 +120,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_
 const mp_obj_property_t bleio_service_secondary_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_secondary_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     uuid: Optional[UUID]
@@ -140,8 +140,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_u
 const mp_obj_property_t bleio_service_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_uuid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 

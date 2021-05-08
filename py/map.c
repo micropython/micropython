@@ -179,6 +179,7 @@ mp_map_elem_t *PLACE_IN_ITCM(mp_map_lookup)(mp_map_t * map, mp_obj_t index, mp_m
                     --map->used;
                     memmove(elem, elem + 1, (top - elem - 1) * sizeof(*elem));
                     // put the found element after the end so the caller can access it if needed
+                    // note: caller must NULL the value so the GC can clean up (e.g. see dict_get_helper).
                     elem = &map->table[map->used];
                     elem->key = MP_OBJ_NULL;
                     elem->value = value;

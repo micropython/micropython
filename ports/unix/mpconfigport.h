@@ -24,7 +24,15 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
+
+// Variant-specific definitions.
+#include "mpconfigvariant.h"
+
+// The minimal variant's config covers everything.
+// If we're building the minimal variant, ignore the rest of this file.
+#ifndef MICROPY_UNIX_MINIMAL
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
@@ -62,9 +70,13 @@
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
+#ifndef MICROPY_FLOAT_IMPL
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
+#endif
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
@@ -72,6 +84,7 @@
 #endif
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
@@ -90,16 +103,19 @@
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
 #if MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 #define MICROPY_COMP_CONST (0)
 #endif
+#ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
+#endif
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
@@ -159,22 +175,23 @@
 #define MICROPY_ERROR_PRINTER       (&mp_stderr_print)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 
+// VFS stat functions should return time values relative to 1970/1/1
+#define MICROPY_EPOCH_IS_1970       (1)
+
 extern const struct _mp_print_t mp_stderr_print;
 
-// Define to 1 to use undertested inefficient GC helper implementation
-// (if more efficient arch-specific one is not available).
-#ifndef MICROPY_GCREGS_SETJMP
-    #ifdef __mips__
-        #define MICROPY_GCREGS_SETJMP (1)
-    #else
-        #define MICROPY_GCREGS_SETJMP (0)
-    #endif
+#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+// Fall back to setjmp() implementation for discovery of GC pointers in registers.
+#define MICROPY_GCREGS_SETJMP (1)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
+
+#define mp_type_fileio mp_type_vfs_posix_fileio
+#define mp_type_textio mp_type_vfs_posix_textio
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
@@ -273,8 +290,6 @@ void mp_unix_mark_exec(void);
 #define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
 #endif
 
-#define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
-
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
@@ -331,6 +346,14 @@ void mp_unix_mark_exec(void);
 #include <stdio.h>
 #endif
 
-#define MICROPY_PY_BUILTINS_HELP (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
-#define CIRCUITPY_RE_DEBUG (1)
+#if MICROPY_PY_THREAD
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0)
+#define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
+#endif
+
+#define MICROPY_EVENT_POLL_HOOK mp_hal_delay_us(500);
+
+#include <sched.h>
+#define MICROPY_UNIX_MACHINE_IDLE sched_yield();
+
+#endif // MICROPY_UNIX_MINIMAL

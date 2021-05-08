@@ -98,8 +98,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_packed_obj, ipaddress_ipv4ad
 const mp_obj_property_t ipaddress_ipv4address_packed_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_packed_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     version: int
@@ -122,8 +122,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_version_obj, ipaddress_ipv4a
 const mp_obj_property_t ipaddress_ipv4address_version_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_version_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __eq__(self, other: object) -> bool:

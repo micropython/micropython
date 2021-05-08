@@ -120,8 +120,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_value_obj, analogio_analogin_obj
 const mp_obj_property_t analogio_analogin_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&analogio_analogin_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     reference_voltage: float
@@ -145,8 +145,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,
 const mp_obj_property_t analogio_analogin_reference_voltage_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&analogio_analogin_get_reference_voltage_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t analogio_analogin_locals_dict_table[] = {

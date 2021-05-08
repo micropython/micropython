@@ -4,6 +4,9 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+# Extra deps that need to happen before object compilation.
+OBJ_EXTRA_ORDER_DEPS =
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
@@ -97,20 +100,6 @@ $(OBJ_DIRS):
 
 $(HEADER_BUILD):
 	$(Q)$(MKDIR) -p $@
-
-ifneq ($(FROZEN_MANIFEST),)
-# to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
-	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
-
-ifneq ($(FROZEN_DIR),)
-$(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
-endif
-
-ifneq ($(FROZEN_MPY_DIR),)
-$(error FROZEN_MPY_DIR cannot be used in conjunction with FROZEN_MANIFEST)
-endif
-endif
 
 ifneq ($(FROZEN_DIR),)
 $(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)

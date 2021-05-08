@@ -11,7 +11,7 @@
 Functions
 ---------
 
-.. function:: exit(retval=0)
+.. function:: exit(retval=0, /)
 
    Terminate current program with a given exit code. Underlyingly, this
    function raise as `SystemExit` exception. If an argument is given, its

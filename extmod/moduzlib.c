@@ -43,7 +43,7 @@ STATIC int read_src_stream(TINF_DATA *data) {
         mp_raise_OSError(err);
     }
     if (out_sz == 0) {
-        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+        mp_raise_type(&mp_type_EOFError);
     }
     return c;
 }
@@ -74,7 +74,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, cons
         dict_opt = uzlib_zlib_parse_header(&o->decomp);
         if (dict_opt < 0) {
         header_error:
-            mp_raise_ValueError(translate("compression header"));
+            mp_raise_ValueError(MP_ERROR_TEXT("compression header"));
         }
         dict_sz = 1 << dict_opt;
     } else {
