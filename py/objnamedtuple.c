@@ -96,7 +96,7 @@ void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        mp_raise_AttributeError(translate("can't set attribute"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("can't set attribute"));
     }
 }
 
@@ -112,11 +112,11 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
         mp_arg_error_terse_mismatch();
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_raise_TypeError_varg(
-            translate("function takes %d positional arguments but %d were given"),
+            MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
             num_fields, n_args + n_kw);
         #else
         mp_raise_TypeError_varg(
-            translate("%q() takes %d positional arguments but %d were given"),
+            MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
             type->base.name, num_fields, n_args + n_kw);
         #endif
     }
@@ -138,7 +138,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(
-                translate("unexpected keyword argument '%q'"), kw);
+                MP_ERROR_TEXT("unexpected keyword argument '%q'"), kw);
             #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
@@ -146,7 +146,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(
-                translate("function got multiple values for argument '%q'"), kw);
+                MP_ERROR_TEXT("function got multiple values for argument '%q'"), kw);
             #endif
         }
         tuple->items[id] = kw_args->table[i].value;
@@ -168,6 +168,7 @@ mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = mp_obj_new_namedtuple_base(n_fields, fields);
     o->base.base.type = &mp_type_type;
+    o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
     o->base.name = name;
     o->base.print = namedtuple_print;
     o->base.make_new = namedtuple_make_new;

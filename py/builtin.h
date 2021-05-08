@@ -103,6 +103,7 @@ extern const mp_obj_module_t mp_module_thread;
 extern const mp_obj_dict_t mp_module_builtins_globals;
 
 // extmod modules
+extern const mp_obj_module_t mp_module_uasyncio;
 extern const mp_obj_module_t mp_module_uerrno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_uzlib;

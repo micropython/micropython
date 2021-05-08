@@ -60,14 +60,16 @@
 #define ASM_X86_REG_ARG_2 ASM_X86_REG_ECX
 #define ASM_X86_REG_ARG_3 ASM_X86_REG_EDX
 #define ASM_X86_REG_ARG_4 ASM_X86_REG_EBX
-#define ASM_X86_REG_ARG_5 ASM_X86_REG_ESI
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned
+#define ASM_X86_CC_JAE (0x3) // above or equal, unsigned
 #define ASM_X86_CC_JZ  (0x4)
 #define ASM_X86_CC_JE  (0x4)
 #define ASM_X86_CC_JNZ (0x5)
 #define ASM_X86_CC_JNE (0x5)
+#define ASM_X86_CC_JBE (0x6) // below or equal, unsigned
+#define ASM_X86_CC_JA  (0x7) // above, unsigned
 #define ASM_X86_CC_JL  (0xc) // less, signed
 #define ASM_X86_CC_JGE (0xd) // greater or equal, signed
 #define ASM_X86_CC_JLE (0xe) // less or equal, signed
@@ -94,6 +96,7 @@ void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_or_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32);
+void asm_x86_shr_r32_cl(asm_x86_t *as, int dest_r32);
 void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32);
 void asm_x86_add_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_sub_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
@@ -129,7 +132,6 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define REG_ARG_2 ASM_X86_REG_ARG_2
 #define REG_ARG_3 ASM_X86_REG_ARG_3
 #define REG_ARG_4 ASM_X86_REG_ARG_4
-#define REG_ARG_5 ASM_X86_REG_ARG_5
 
 // caller-save, so can be used as temporaries
 #define REG_TEMP0 ASM_X86_REG_EAX
@@ -187,6 +189,7 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x86_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
+#define ASM_LSR_REG(as, reg) asm_x86_shr_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
 #define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x86_or_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x86_xor_r32_r32((as), (reg_dest), (reg_src))

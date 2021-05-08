@@ -133,7 +133,7 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_level_obj,
               (mp_obj_t)&audiomixer_mixervoice_set_level_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     playing: bool
@@ -151,8 +151,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_playing_obj, audiomixer_mixe
 const mp_obj_property_t audiomixer_mixervoice_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {

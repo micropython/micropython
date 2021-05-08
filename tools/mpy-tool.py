@@ -234,6 +234,7 @@ class RawCode(object):
             self.ip, self.ip2, self.prelude = extract_prelude(self.bytecode, self.prelude_offset)
             self.simple_name = self._unpack_qstr(self.ip2)
             self.source_file = self._unpack_qstr(self.ip2 + 2)
+            self.line_info_offset = self.ip2 + 4
 
     def _unpack_qstr(self, ip):
         qst = self.bytecode[ip] | self.bytecode[ip + 1] << 8
@@ -313,12 +314,13 @@ class RawCode(object):
                     "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
                 )
                 print(
-                    "STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};" % (obj_name, obj)
+                    "STATIC const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
+                    % (obj_name, obj)
                 )
                 print("#endif")
             elif type(obj) is complex:
                 print(
-                    "STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, %.16g, %.16g};"
+                    "STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
                     % (obj_name, obj.real, obj.imag)
                 )
             else:
@@ -384,7 +386,10 @@ class RawCode(object):
             print("        .n_def_pos_args = %u," % self.prelude[5])
             print("        .qstr_block_name = %s," % self.simple_name.qstr_id)
             print("        .qstr_source_file = %s," % self.source_file.qstr_id)
-            print("        .line_info = fun_data_%s + %u," % (self.escaped_name, 0))  # TODO
+            print(
+                "        .line_info = fun_data_%s + %u,"
+                % (self.escaped_name, self.line_info_offset)
+            )
             print("        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.ip))
             print("    },")
             print("    .line_of_definition = %u," % 0)  # TODO

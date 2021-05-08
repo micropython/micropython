@@ -99,8 +99,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_connected_get_value_obj, wiznet5k_conn
 const mp_obj_property_t wiznet5k_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&wiznet5k_connected_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     dhcp: bool
@@ -137,7 +137,7 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&wiznet5k_dhcp_get_value_obj,
               (mp_obj_t)&wiznet5k_dhcp_set_value_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def ifconfig(self, params: Optional[Tuple[str, str, str, str]] = None) -> Optional[Tuple[str, str, str, str]]:

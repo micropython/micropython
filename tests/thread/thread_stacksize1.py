@@ -11,7 +11,7 @@ import _thread
 if sys.implementation.name == "micropython":
     sz = 2 * 1024
 else:
-    sz = 32 * 1024
+    sz = 512 * 1024
 
 
 def foo():

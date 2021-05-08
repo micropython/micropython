@@ -64,7 +64,7 @@ mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t format) {
             return (mp_obj_t)MP_ROM_PTR(&camera_imageformat_rgb565_obj);
         case IMAGEFORMAT_NONE:
         default:
-            return (mp_obj_t)MP_ROM_PTR(&mp_const_none_obj);
+            return MP_ROM_NONE;
     }
 }
 

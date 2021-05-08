@@ -108,8 +108,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_get_bytes_per_block_obj, 
 const mp_obj_property_t memorymonitor_allocationsize_bytes_per_block_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&memorymonitor_allocationsize_get_bytes_per_block_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __len__(self) -> int:

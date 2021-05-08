@@ -135,8 +135,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid16_obj, bleio_uuid_get_uuid16);
 const mp_obj_property_t bleio_uuid_uuid16_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_uuid_get_uuid16_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     uuid128: bytes
@@ -161,8 +161,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 const mp_obj_property_t bleio_uuid_uuid128_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     size: int
@@ -181,8 +181,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_size_obj, bleio_uuid_get_size);
 const mp_obj_property_t bleio_uuid_size_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_uuid_get_size_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 

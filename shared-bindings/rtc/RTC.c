@@ -91,7 +91,7 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rtc_rtc_get_datetime_obj,
               (mp_obj_t)&rtc_rtc_set_datetime_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     calibration: int
@@ -122,7 +122,7 @@ const mp_obj_property_t rtc_rtc_calibration_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rtc_rtc_get_calibration_obj,
               (mp_obj_t)&rtc_rtc_set_calibration_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {

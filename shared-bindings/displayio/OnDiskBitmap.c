@@ -103,8 +103,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_width_obj, displayio_ondisk
 const mp_obj_property_t displayio_ondiskbitmap_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 
 };
 
@@ -122,8 +122,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_height_obj, displayio_ondis
 const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 
 };
 

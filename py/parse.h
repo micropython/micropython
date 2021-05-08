@@ -85,7 +85,7 @@ static inline mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg) 
 bool mp_parse_node_is_const_false(mp_parse_node_t pn);
 bool mp_parse_node_is_const_true(mp_parse_node_t pn);
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o);
-int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
+size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
 void mp_parse_node_print(mp_parse_node_t pn, size_t indent);
 
 typedef enum {

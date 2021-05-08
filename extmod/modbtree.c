@@ -18,6 +18,7 @@
 
 typedef struct _mp_obj_btree_t {
     mp_obj_base_t base;
+    mp_obj_t stream; // retain a reference to prevent GC from reclaiming it
     DB *db;
     mp_obj_t start_key;
     mp_obj_t end_key;
@@ -44,9 +45,10 @@ void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
-STATIC mp_obj_btree_t *btree_new(DB *db) {
+STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
     mp_obj_btree_t *o = m_new_obj(mp_obj_btree_t);
     o->base.type = &btree_type;
+    o->stream = stream;
     o->db = db;
     o->start_key = mp_const_none;
     o->end_key = mp_const_none;
@@ -228,14 +230,14 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_btree_t *self = mp_instance_cast_to_native_base(self_in, &btree_type);
+    mp_obj_btree_t *self = mp_obj_cast_to_native_base(self_in, &btree_type);
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
         key.data = (void *)mp_obj_str_get_data(index, &key.size);
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            mp_raise_type(&mp_type_KeyError);
         }
         CHECK_ERROR(res);
         return mp_const_none;
@@ -245,7 +247,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         key.data = (void *)mp_obj_str_get_data(index, &key.size);
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            mp_raise_type(&mp_type_KeyError);
         }
         CHECK_ERROR(res);
         return mp_obj_new_bytes(val.data, val.size);
@@ -340,7 +342,7 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     if (db == NULL) {
         mp_raise_OSError(errno);
     }
-    return MP_OBJ_FROM_PTR(btree_new(db));
+    return MP_OBJ_FROM_PTR(btree_new(db, pos_args[0]));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
 

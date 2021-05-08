@@ -37,6 +37,7 @@ with the ``u`` prefix dropped:
    json.rst
    re.rst
    sys.rst
+   uasyncio.rst
    uctypes.rst
    uselect.rst
    uzlib.rst

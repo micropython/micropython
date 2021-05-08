@@ -76,7 +76,7 @@ mp_obj_t gnss_satellitesystem_type_to_obj(gnss_satellitesystem_t system) {
             return (mp_obj_t)MP_ROM_PTR(&gnss_satellitesystem_qzss_l1s_obj);
         case SATELLITESYSTEM_NONE:
         default:
-            return (mp_obj_t)MP_ROM_PTR(&mp_const_none_obj);
+            return MP_ROM_NONE;
     }
 }
 

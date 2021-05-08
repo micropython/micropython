@@ -25,7 +25,6 @@ import sys
 import urllib.parse
 import time
 
-import recommonmark
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
@@ -68,8 +67,9 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
+    'sphinx_search.extension',
     'rstjinja',
-    'recommonmark',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

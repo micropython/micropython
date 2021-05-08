@@ -123,8 +123,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get
 const mp_obj_property_t touchio_touchin_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&touchio_touchin_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 
@@ -142,8 +142,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_raw_value_obj, touchio_touchin_obj
 const mp_obj_property_t touchio_touchin_raw_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&touchio_touchin_get_raw_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 
@@ -187,7 +187,7 @@ const mp_obj_property_t touchio_touchin_threshold_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&touchio_touchin_get_threshold_obj,
               (mp_obj_t)&touchio_touchin_set_threshold_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 

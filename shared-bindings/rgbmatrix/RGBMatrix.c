@@ -314,7 +314,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
               (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def refresh(self) -> None:
@@ -342,8 +342,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_width_obj, rgbmatrix_rgbmatrix
 const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     height: int
@@ -359,8 +359,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_height_obj, rgbmatrix_rgbmatri
 const mp_obj_property_t rgbmatrix_rgbmatrix_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {

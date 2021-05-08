@@ -60,8 +60,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bitmap_obj, fontio_builtinfont_
 const mp_obj_property_t fontio_builtinfont_bitmap_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&fontio_builtinfont_get_bitmap_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def get_bounding_box(self) -> Tuple[int, int]:

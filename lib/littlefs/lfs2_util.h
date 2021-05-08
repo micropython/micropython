@@ -50,31 +50,35 @@ extern "C"
 
 // Logging functions
 #ifdef LFS2_YES_TRACE
-#define LFS2_TRACE(fmt, ...) \
-    printf("lfs2_trace:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+#define LFS2_TRACE_(fmt, ...) \
+    printf("%s:%d:trace: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+#define LFS2_TRACE(...) LFS2_TRACE_(__VA_ARGS__, "")
 #else
-#define LFS2_TRACE(fmt, ...)
+#define LFS2_TRACE(...)
 #endif
 
 #ifndef LFS2_NO_DEBUG
-#define LFS2_DEBUG(fmt, ...) \
-    printf("lfs2_debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+#define LFS2_DEBUG_(fmt, ...) \
+    printf("%s:%d:debug: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+#define LFS2_DEBUG(...) LFS2_DEBUG_(__VA_ARGS__, "")
 #else
-#define LFS2_DEBUG(fmt, ...)
+#define LFS2_DEBUG(...)
 #endif
 
 #ifndef LFS2_NO_WARN
-#define LFS2_WARN(fmt, ...) \
-    printf("lfs2_warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+#define LFS2_WARN_(fmt, ...) \
+    printf("%s:%d:warn: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+#define LFS2_WARN(...) LFS2_WARN_(__VA_ARGS__, "")
 #else
-#define LFS2_WARN(fmt, ...)
+#define LFS2_WARN(...)
 #endif
 
 #ifndef LFS2_NO_ERROR
-#define LFS2_ERROR(fmt, ...) \
-    printf("lfs2_error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+#define LFS2_ERROR_(fmt, ...) \
+    printf("%s:%d:error: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+#define LFS2_ERROR(...) LFS2_ERROR_(__VA_ARGS__, "")
 #else
-#define LFS2_ERROR(fmt, ...)
+#define LFS2_ERROR(...)
 #endif
 
 // Runtime assertions
@@ -107,7 +111,7 @@ static inline uint32_t lfs2_alignup(uint32_t a, uint32_t alignment) {
     return lfs2_aligndown(a + alignment-1, alignment);
 }
 
-// Find the next smallest power of 2 less than or equal to a
+// Find the smallest power of 2 greater than or equal to a
 static inline uint32_t lfs2_npw2(uint32_t a) {
 #if !defined(LFS2_NO_INTRINSICS) && (defined(__GNUC__) || defined(__CC_ARM))
     return 32 - __builtin_clz(a-1);

@@ -115,7 +115,7 @@ const mp_obj_property_t vectorio_vector_shape_x_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_vector_shape_get_x_obj,
               (mp_obj_t)&vectorio_vector_shape_set_x_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -141,7 +141,7 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_vector_shape_get_y_obj,
               (mp_obj_t)&vectorio_vector_shape_set_y_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -170,7 +170,7 @@ const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_vector_shape_get_pixel_shader_obj,
               (mp_obj_t)&vectorio_vector_shape_set_pixel_shader_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 

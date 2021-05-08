@@ -303,6 +303,11 @@ void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     emit_al(as, 0x1a00010 | (rd << 12) | (rs << 8) | rd);
 }
 
+void asm_arm_lsr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
+    // mov rd, rd, lsr rs
+    emit_al(as, 0x1a00030 | (rd << 12) | (rs << 8) | rd);
+}
+
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     // mov rd, rd, asr rs
     emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);

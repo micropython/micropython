@@ -111,8 +111,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_latitude_obj, gnss_obj_get_latitude);
 const mp_obj_property_t gnss_latitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_latitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     longitude: float
@@ -128,8 +128,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_longitude_obj, gnss_obj_get_longitude);
 const mp_obj_property_t gnss_longitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_longitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     altitude: float
@@ -145,8 +145,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_altitude_obj, gnss_obj_get_altitude);
 const mp_obj_property_t gnss_altitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_altitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     timestamp: time.struct_time
@@ -164,8 +164,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_timestamp_obj, gnss_obj_get_timestamp);
 const mp_obj_property_t gnss_timestamp_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_timestamp_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     fix: PositionFix
@@ -181,8 +181,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_fix_obj, gnss_obj_get_fix);
 const mp_obj_property_t gnss_fix_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_fix_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {

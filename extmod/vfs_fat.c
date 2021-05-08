@@ -12,6 +12,7 @@
 #endif
 
 #include <string.h>
+#include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -340,9 +341,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(fno.fsize); // st_size
-    t->items[7] = seconds;                 // st_atime
-    t->items[8] = seconds;                 // st_mtime
-    t->items[9] = seconds;                 // st_ctime
+    t->items[7] = seconds; // st_atime
+    t->items[8] = seconds; // st_mtime
+    t->items[9] = seconds; // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -429,7 +430,7 @@ STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     if (res != FR_OK) {
         if (res == FR_WRITE_PROTECTED) {
-            mp_raise_msg(&mp_type_OSError, translate("Read-only filesystem"));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Read-only filesystem"));
         }
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -440,7 +441,7 @@ STATIC const mp_obj_property_t fat_vfs_label_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&fat_vfs_getlabel_obj,
               (mp_obj_t)&fat_vfs_setlabel_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 #endif
 

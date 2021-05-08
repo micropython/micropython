@@ -141,7 +141,7 @@ const mp_obj_property_t rotaryio_incrementalencoder_position_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rotaryio_incrementalencoder_get_position_obj,
               (mp_obj_t)&rotaryio_incrementalencoder_set_position_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t rotaryio_incrementalencoder_locals_dict_table[] = {

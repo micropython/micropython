@@ -1,0 +1,15 @@
+task start 1
+task end 1
+2
+task start 2
+timeout
+task_catch start
+ignore cancel
+task_catch done
+TimeoutError
+task start
+ValueError
+task start 3
+task end 3
+6
+finish

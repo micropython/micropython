@@ -90,6 +90,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->base.type = &mp_type_gen_instance;
 
     // Parse the input arguments and set up the code state
+    o->coroutine_generator = self->coroutine_generator;
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte *)prelude_offset;
@@ -156,6 +157,7 @@ static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
@@ -200,7 +202,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     // Ensure the generator cannot be reentered during execution
     if (self->pend_exc == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("generator already executing"));
+        mp_raise_ValueError(MP_ERROR_TEXT("generator already executing"));
     }
 
     #if MICROPY_PY_GENERATOR_PEND_THROW
@@ -213,7 +215,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     // If the generator is started, allow sending a value.
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
-            mp_raise_TypeError(translate("can't send non-None value to a just-started generator"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't send non-None value to a just-started generator"));
         }
     } else {
         *self->code_state.sp = send_value;
@@ -268,7 +270,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             *ret_val = self->code_state.state[0];
             // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
             if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(*ret_val)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, translate("generator raised StopIteration"));
+                *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("generator raised StopIteration"));
             }
             break;
         }
@@ -286,7 +288,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (ret == mp_const_none || ret == MP_OBJ_STOP_ITERATION) {
                 return MP_OBJ_STOP_ITERATION;
             } else {
-                nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_StopIteration, ret));
             }
 
         case MP_VM_RETURN_YIELD:
@@ -302,7 +304,7 @@ STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     // This translate is literally too much for m0 boards
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->coroutine_generator) {
-        mp_raise_TypeError(translate("'coroutine' object is not an iterator"));
+        mp_raise_TypeError(MP_ERROR_TEXT("'coroutine' object is not an iterator"));
     }
     #endif
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
@@ -311,7 +313,7 @@ STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -324,8 +326,7 @@ STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
     if (!self->coroutine_generator) {
         // Pretend like a generator does not have this coroutine behavior.
         // Pay no attention to the dir() behind the curtain
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            translate("type object 'generator' has no attribute '__await__'")));
+        mp_raise_AttributeError(MP_ERROR_TEXT("type object 'generator' has no attribute '__await__'"));
     }
     // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
     return self;
@@ -354,7 +355,7 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -365,7 +366,7 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
         case MP_VM_RETURN_YIELD:
-            mp_raise_RuntimeError(translate("generator ignored GeneratorExit"));
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("generator ignored GeneratorExit"));
 
         // Swallow GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:
@@ -386,7 +387,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pend_exc == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("generator already executing"));
+        mp_raise_ValueError(MP_ERROR_TEXT("generator already executing"));
     }
     mp_obj_t prev = self->pend_exc;
     self->pend_exc = exc_in;

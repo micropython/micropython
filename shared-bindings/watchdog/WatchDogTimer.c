@@ -111,7 +111,7 @@ const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
               (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     mode: WatchDogMode
@@ -162,7 +162,7 @@ const mp_obj_property_t watchdog_watchdogtimer_mode_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_mode_obj,
               (mp_obj_t)&watchdog_watchdogtimer_set_mode_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t watchdog_watchdogtimer_locals_dict_table[] = {
