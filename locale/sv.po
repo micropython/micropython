@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-08 13:32+0000\n"
+"PO-Revision-Date: 2021-05-10 11:33+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -204,22 +204,22 @@ msgstr "'%s' förväntar sig {r0, r1, ...}"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "Objektet '%s' stöder inte tilldelning"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "Objektet '%s' stöder inte borttagning"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -228,7 +228,7 @@ msgstr "Objektet '%s' har inget attribut '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "Objektet '%s' är inte prenumererbar"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -2481,7 +2481,7 @@ msgstr "arg är en tom sekvens"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr ""
+msgstr "arg måste vara av användartyp"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2497,7 +2497,7 @@ msgstr "argumentet har fel typ"
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr ""
+msgstr "argumentnamn återanvänt"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2654,7 +2654,7 @@ msgstr "kan inte tilldela uttryck"
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "kan inte avbryta sig själv"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
@@ -2784,7 +2784,7 @@ msgstr "kan inte utföra relativ import"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "Kan inte entydigt få sizeof scalar"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2836,7 +2836,7 @@ msgstr "color ska vara en int"
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
-msgstr ""
+msgstr "jämförelse av int och uint"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2945,11 +2945,11 @@ msgstr "dimensioner matchar inte"
 
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
-msgstr ""
+msgstr "div/mod inte implementerat för uint"
 
 #: py/objfloat.c py/objint_mpz.c
 msgid "divide by zero"
-msgstr ""
+msgstr "division med noll"
 
 #: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3652,15 +3652,15 @@ msgstr "objekt "
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "objektet '%s' är inte en tuple eller list"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
-msgstr ""
+msgstr "objektet stöder inte tilldelning"
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
-msgstr ""
+msgstr "objektet stöder inte borttagning"
 
 #: py/obj.c
 msgid "object has no len"
@@ -3668,7 +3668,7 @@ msgstr "objektet har inte len"
 
 #: py/obj.c
 msgid "object isn't subscriptable"
-msgstr ""
+msgstr "Objektet är inte prenumererbart"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3963,7 +3963,7 @@ msgstr "skriptkompilering stöds inte"
 
 #: py/nativeglue.c
 msgid "set unsupported"
-msgstr ""
+msgstr "set stöds inte"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
@@ -4003,7 +4003,7 @@ msgstr "segmentsteg kan inte vara noll"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
-msgstr ""
+msgstr "slice stöds inte"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4067,7 +4067,7 @@ msgstr "sträng stöds inte; använd bytes eller bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
-msgstr ""
+msgstr "struct: kan inte indexera"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
