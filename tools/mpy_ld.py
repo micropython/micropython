@@ -758,7 +758,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
     fun_table = {
-        key: 67 + idx
+        key: 68 + idx
         for idx, key in enumerate(
             [
                 "mp_type_type",
@@ -908,13 +908,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     # MPY: header
     out.write_bytes(
         bytearray(
-            [
-                ord("C"),
-                MPY_VERSION,
-                env.arch.mpy_feature,
-                MP_SMALL_INT_BITS,
-                QSTR_WINDOW_SIZE,
-            ]
+            [ord("C"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS, QSTR_WINDOW_SIZE,]
         )
     )
 

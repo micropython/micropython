@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/nativeglue.h"
+#include "py/objtype.h"
 #include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -328,6 +329,7 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_get_float_to_d,
     mp_get_buffer_raise,
     mp_get_stream_raise,
+    mp_obj_assert_native_inited,
     &mp_plat_print,
     &mp_type_type,
     &mp_type_str,
