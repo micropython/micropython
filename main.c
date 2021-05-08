@@ -447,11 +447,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 FIL* boot_output_file;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    // If not in safe mode, run boot before initing USB and capture output in a
-    // file.
-    if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    // If not in safe mode, run boot before initing USB and capture output in a file.
 
+    // There is USB setup to do even if boot.py is not actually run.
+    const bool ok_to_run = filesystem_present()
+        && safe_mode == NO_SAFE_MODE
+        && MP_STATE_VM(vfs_mount_table) != NULL;
+
+    static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    bool skip_boot_output = false;
+
+    if (ok_to_run) {
         new_status_color(BOOT_RUNNING);
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
@@ -462,8 +468,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
 
         bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
-
-        bool skip_boot_output = false;
 
         // If there's no boot.py file that might write some changing output,
         // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
@@ -505,15 +509,20 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #endif
 
         filesystem_flush();
-        supervisor_allocation* heap = allocate_remaining_memory();
-        start_mp(heap);
+    }
 
-        #if CIRCUITPY_USB
-        // Set up default USB values after boot.py VM starts but before running boot.py.
-        usb_set_defaults();
-        #endif
+    // Do USB setup even if boot.py is not run.
 
-        // TODO(tannewt): Re-add support for flashing boot error output.
+    supervisor_allocation* heap = allocate_remaining_memory();
+    start_mp(heap);
+
+#if CIRCUITPY_USB
+    // Set up default USB values after boot.py VM starts but before running boot.py.
+    usb_set_defaults();
+#endif
+
+    // TODO(tannewt): Re-add support for flashing boot error output.
+    if (ok_to_run) {
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;
 
@@ -524,29 +533,28 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         boot_output_file = NULL;
         #endif
-
-
-        #if CIRCUITPY_USB
-
-        // Some data needs to be carried over from the USB settings in boot.py
-        // to the next VM, while the heap is still available.
-        // Its size can vary, so save it temporarily on the stack,
-        // and then when the heap goes away, copy it in into a
-        // storage_allocation.
-
-        size_t size = usb_boot_py_data_size();
-        uint8_t usb_boot_py_data[size];
-        usb_get_boot_py_data(usb_boot_py_data, size);
-        #endif
-
-        cleanup_after_vm(heap);
-
-        #if CIRCUITPY_USB
-        // Now give back the data we saved from the heap going away.
-        usb_return_boot_py_data(usb_boot_py_data, size);
-        #endif
-
     }
+
+
+#if CIRCUITPY_USB
+
+    // Some data needs to be carried over from the USB settings in boot.py
+    // to the next VM, while the heap is still available.
+    // Its size can vary, so save it temporarily on the stack,
+    // and then when the heap goes away, copy it in into a
+    // storage_allocation.
+
+    size_t size = usb_boot_py_data_size();
+    uint8_t usb_boot_py_data[size];
+    usb_get_boot_py_data(usb_boot_py_data, size);
+#endif
+
+    cleanup_after_vm(heap);
+
+#if CIRCUITPY_USB
+    // Now give back the data we saved from the heap going away.
+    usb_return_boot_py_data(usb_boot_py_data, size);
+#endif
 }
 
 STATIC int run_repl(void) {
