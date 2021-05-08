@@ -138,6 +138,9 @@ int main(int argc, char **argv) {
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         rp2_pio_deinit();
         machine_pin_deinit();
+        #if MICROPY_PY_THREAD
+        mp_thread_deinit();
+        #endif
         gc_sweep_all();
         mp_deinit();
     }
