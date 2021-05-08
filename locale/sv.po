@@ -78,7 +78,7 @@ msgstr "%q-fel: %d"
 msgid "%q in use"
 msgstr "%q används redan"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -88,8 +88,8 @@ msgid "%q index out of range"
 msgstr "Index %q ligger utanför intervallet"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr "%q index måste vara heltal, inte %q"
+msgid "%q indices must be integers, not %s"
+msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -145,25 +145,9 @@ msgstr "%s fel 0x%x"
 msgid "'%q' argument required"
 msgstr "'%q' argument krävs"
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr "Objektet '%q' kan inte tilldela attributet '%q'"
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
 msgstr "Objektet '%q' stöder inte '%q'"
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr "Objektet '%q' stöder inte tilldelning"
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr "Objektet '%q' stöder inte borttagning av objekt"
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr "Objektet '%q' har inget attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -176,10 +160,6 @@ msgstr "Objektet '%q' kan inte anropas"
 #: py/runtime.c
 msgid "'%q' object is not iterable"
 msgstr "Objektet '%q' är inte itererbart"
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr "Objektet '%q' är inte indexbar"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -223,13 +203,32 @@ msgstr "'%s' förväntar sig {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
+msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "Objektet '%s' har inget attribut '%q'"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
+msgstr ""
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -701,10 +700,6 @@ msgstr "Det går inte att subklassa slice"
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Kan inte överföra utan MOSI- och MISO-pinnar."
-
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Kan inte entydigt få sizeof scalar"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -1423,14 +1418,6 @@ msgstr "Lagret finns redan i en grupp."
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "Layer måste vara en subklass av Group eller TileGrid."
-
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "Length måste vara en int"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr "Length måste vara positiv"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
@@ -2492,6 +2479,10 @@ msgstr "Annoteringen måste vara en identifierare"
 msgid "arg is an empty sequence"
 msgstr "arg är en tom sekvens"
 
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "argumentet argsort måste vara en ndarray"
@@ -2503,6 +2494,10 @@ msgstr "argsort är inte implementerad för tillplattade matriser"
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "argumentet har fel typ"
+
+#: py/compile.c
+msgid "argument name reused"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2657,6 +2652,10 @@ msgstr "kan inte lägga till särskild metod för redan subklassad klass"
 msgid "can't assign to expression"
 msgstr "kan inte tilldela uttryck"
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
@@ -2666,6 +2665,11 @@ msgstr "kan inte konvertera %q till %q"
 msgid "can't convert %q to int"
 msgstr "kan inte konvertera %q till int"
 
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "kan inte konvertera %s till komplex"
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan inte konvertera '%q' objekt implicit till %q"
@@ -2673,6 +2677,10 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "kan inte konvertera till %q"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "kan inte konvertera till komplex"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2774,6 +2782,10 @@ msgstr "kan inte importera namn %q"
 msgid "cannot perform relative import"
 msgstr "kan inte utföra relativ import"
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "casting inte implementerad"
@@ -2821,6 +2833,10 @@ msgstr "färg måste vara mellan 0x000000 och 0xffffff"
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
 msgstr "color ska vara en int"
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
+msgstr ""
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2927,7 +2943,15 @@ msgstr "differentieringsordning utanför intervallet"
 msgid "dimensions do not match"
 msgstr "dimensioner matchar inte"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "division med noll"
@@ -2936,7 +2960,7 @@ msgstr "division med noll"
 msgid "empty"
 msgstr "tom"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "tom heap"
 
@@ -3171,10 +3195,6 @@ msgid "import * not at module level"
 msgstr "import * inte på modulnivå"
 
 #: py/persistentcode.c
-msgid "incompatible .mpy file"
-msgstr "inkompatibel .mpy-fil"
-
-#: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
 msgstr "inkompatibel nativ .mpy-arkitektur"
 
@@ -3309,10 +3329,6 @@ msgstr "ogiltiga argument"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
-
-#: py/compile.c
-msgid "invalid decorator"
-msgstr "ogiltig dekorator"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3523,10 +3539,6 @@ msgstr "namnet '%q' är inte definierat"
 msgid "name not defined"
 msgstr "namn inte definierat"
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr "namn återanvänt för argument"
-
 #: py/emitnative.c
 msgid "native yield"
 msgstr "native yield"
@@ -3581,7 +3593,7 @@ msgstr "ingen reset-pinne tillgänglig"
 msgid "no response from SD card"
 msgstr "inget svar från SD-kort"
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "inget sådant attribut"
 
@@ -3638,24 +3650,25 @@ msgid "object "
 msgstr "objekt "
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr "objektet '%q' är inte en tuple eller list"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item assignment"
-msgstr "Objektet stöder inte tilldelning"
+msgid "object doesn't support item assignment"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item deletion"
-msgstr "objektet stöder inte borttagning"
+msgid "object doesn't support item deletion"
+msgstr ""
 
 #: py/obj.c
 msgid "object has no len"
 msgstr "objektet har inte len"
 
 #: py/obj.c
-msgid "object is not subscriptable"
-msgstr "Objektet är inte indexbart"
+msgid "object isn't subscriptable"
+msgstr ""
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3674,8 +3687,9 @@ msgid "object not iterable"
 msgstr "objektet är inte iterable"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr "objekt av typen '%q' har inte len()"
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "objekt av typen '%s' har ingen len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3947,6 +3961,10 @@ msgstr "schemakön full"
 msgid "script compilation not supported"
 msgstr "skriptkompilering stöds inte"
 
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "shape måste vara en tuple"
@@ -3979,9 +3997,13 @@ msgstr "värdet för sleep måste vara positivt"
 msgid "slice step can't be zero"
 msgstr "segmentsteg kan inte vara noll"
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
 msgstr "segmentsteg kan inte vara noll"
+
+#: py/nativeglue.c
+msgid "slice unsupported"
+msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4044,8 +4066,12 @@ msgid "string not supported; use bytes or bytearray"
 msgstr "sträng stöds inte; använd bytes eller bytearray"
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "struct: kan inte indexera"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct: index utanför intervallet"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -4358,6 +4384,66 @@ msgstr "zi måste vara av typ float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
 
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "%q index måste vara heltal, inte %q"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "Objektet '%q' kan inte tilldela attributet '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "Objektet '%q' stöder inte tilldelning"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "Objektet '%q' stöder inte borttagning av objekt"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "Objektet '%q' har inget attribut '%q'"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "Objektet '%q' är inte indexbar"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Kan inte entydigt få sizeof scalar"
+
+#~ msgid "Length must be an int"
+#~ msgstr "Length måste vara en int"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Length måste vara positiv"
+
+#~ msgid "incompatible .mpy file"
+#~ msgstr "inkompatibel .mpy-fil"
+
+#~ msgid "invalid decorator"
+#~ msgstr "ogiltig dekorator"
+
+#~ msgid "name reused for argument"
+#~ msgstr "namn återanvänt för argument"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "objektet '%q' är inte en tuple eller list"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "Objektet stöder inte tilldelning"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "objektet stöder inte borttagning"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "Objektet är inte indexbart"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "objekt av typen '%q' har inte len()"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct: kan inte indexera"
+
 #~ msgid "Cannot remount '/' when USB is active."
 #~ msgstr "Kan inte återmontera '/' när USB är aktivt."
 
@@ -4630,9 +4716,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tupel/lista krävs för RHS"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "Indexet %q måste vara ett heltal, inte %s"
-
 #~ msgid "'%s' object cannot assign attribute '%q'"
 #~ msgstr "Objektet '%s' kan inte tilldela attributet '%q'"
 
@@ -4644,9 +4727,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "'%s' object does not support item deletion"
 #~ msgstr "Objektet '%s' stöder inte borttagning av objekt"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "Objektet '%s' har inget attribut '%q'"
 
 #~ msgid "'%s' object is not an iterator"
 #~ msgstr "Objektet '%s' är inte en iterator"
@@ -4681,9 +4761,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init __ () ska returnera None, inte '%s'"
 
-#~ msgid "can't convert %s to complex"
-#~ msgstr "kan inte konvertera %s till komplex"
-
 #~ msgid "can't convert %s to float"
 #~ msgstr "kan inte konvertera %s till float"
 
@@ -4699,17 +4776,11 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "can't convert inf to int"
 #~ msgstr "kan inte konvertera inf till int"
 
-#~ msgid "can't convert to complex"
-#~ msgstr "kan inte konvertera till komplex"
-
 #~ msgid "can't convert to float"
 #~ msgstr "kan inte konvertera till float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "objektet '%s' är inte en tupel eller lista"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "objekt av typen '%s' har ingen len()"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "pop från en tom uppsättning"
@@ -4725,9 +4796,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "string indices must be integers, not %s"
 #~ msgstr "strängindex måste vara heltal, inte %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct: index utanför intervallet"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "okänt format '%c' för objekt av typ '%s'"

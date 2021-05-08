@@ -81,7 +81,7 @@ msgstr "Échec de %q : %d"
 msgid "%q in use"
 msgstr "%q en cours d'utilisation"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -91,8 +91,8 @@ msgid "%q index out of range"
 msgstr "index %q hors de portée"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr "indices %q doivent être des chiffres entier, et non %q"
+msgid "%q indices must be integers, not %s"
+msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -148,25 +148,9 @@ msgstr "%s erreur 0x%x"
 msgid "'%q' argument required"
 msgstr "paramètre '%q' requis"
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
 msgstr "l'objet '%q' ne supporte pas '%q'"
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr "l'objet '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -179,10 +163,6 @@ msgstr "l'objet '%q' ne peut pas être appelé"
 #: py/runtime.c
 msgid "'%q' object is not iterable"
 msgstr "l'objet '%q' n'est pas itérable"
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr "l'objet '%q' n'est pas souscriptable"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -226,13 +206,32 @@ msgstr "'%s' attend {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' le chiffre entier %d n'est pas dans la portée %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
+msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' le chiffre entier 0x%x ne correspond pas au masque 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "l'objet '%s' n'a pas d'attribut '%q'"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
+msgstr ""
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -714,10 +713,6 @@ msgstr "On ne peut faire de sous-classes de tranches"
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO."
-
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -1448,14 +1443,6 @@ msgstr "Couche déjà dans un groupe."
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "'Layer' doit être un 'Group' ou une sous-classe 'TileGrid'."
-
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "Length doit être un chiffre entier (int)"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr "Length ne doit pas être négatif"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
@@ -2530,6 +2517,10 @@ msgstr "l'annotation doit être un identificateur"
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
 
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "Le paramêtre argsort doit être un ndarray"
@@ -2541,6 +2532,10 @@ msgstr "argsort n'est pas mis en œuvre pour les matrices aplatis"
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "l'argument est d'un mauvais type"
+
+#: py/compile.c
+msgid "argument name reused"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2696,6 +2691,10 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "ne peut pas assigner à une expression"
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
@@ -2705,6 +2704,11 @@ msgstr "impossible de convertir %q en %q"
 msgid "can't convert %q to int"
 msgstr "ne peut convertir %q à int"
 
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "ne peut convertir %s en nombre complexe"
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
@@ -2712,6 +2716,10 @@ msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "impossible de convertir en %q"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "ne peut convertir en nombre complexe"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2817,6 +2825,10 @@ msgstr "ne peut pas importer le nom %q"
 msgid "cannot perform relative import"
 msgstr "ne peut pas réaliser un import relatif"
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "typage"
@@ -2865,6 +2877,10 @@ msgstr "la couleur doit être entre 0x000000 et 0xffffff"
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
 msgstr "la couleur doit être un entier 'int'"
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
+msgstr ""
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2971,7 +2987,15 @@ msgstr "differentiation order hors de portée"
 msgid "dimensions do not match"
 msgstr "les dimensions ne correspondent pas"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "division par zéro"
@@ -2980,7 +3004,7 @@ msgstr "division par zéro"
 msgid "empty"
 msgstr "vide"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "tas vide"
 
@@ -3217,10 +3241,6 @@ msgid "import * not at module level"
 msgstr "import * n'est pas au niveau du module"
 
 #: py/persistentcode.c
-msgid "incompatible .mpy file"
-msgstr "Fichier .mpy incompatible"
-
-#: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
 msgstr "architecture native .mpy incompatible"
 
@@ -3356,10 +3376,6 @@ msgstr "arguments invalides"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
-
-#: py/compile.c
-msgid "invalid decorator"
-msgstr "décorateur invalide"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3571,10 +3587,6 @@ msgstr "nom '%q' non défini"
 msgid "name not defined"
 msgstr "nom non défini"
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr "nom réutilisé comme paramètre"
-
 #: py/emitnative.c
 msgid "native yield"
 msgstr "'yield' natif"
@@ -3629,7 +3641,7 @@ msgstr "pas de broche de réinitialisation disponible"
 msgid "no response from SD card"
 msgstr "pas de réponse de la carte SD"
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -3688,24 +3700,25 @@ msgid "object "
 msgstr "objet "
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr "l'objet '%q' n'est pas un tuple ou une list"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item assignment"
-msgstr "l'objet ne supporte pas l'assignation d'éléments"
+msgid "object doesn't support item assignment"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item deletion"
-msgstr "l'objet ne supporte pas la suppression d'éléments"
+msgid "object doesn't support item deletion"
+msgstr ""
 
 #: py/obj.c
 msgid "object has no len"
 msgstr "l'objet n'a pas de 'len'"
 
 #: py/obj.c
-msgid "object is not subscriptable"
-msgstr "l'objet n'est pas sous-scriptable"
+msgid "object isn't subscriptable"
+msgstr ""
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3724,8 +3737,9 @@ msgid "object not iterable"
 msgstr "objet non itérable"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr "len() indéfinie pour un objet de type '%q'"
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "l'objet de type '%s' n'a pas de len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3999,6 +4013,10 @@ msgstr "file de schédule pleine"
 msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
 
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "forme doit être un tuple"
@@ -4031,9 +4049,13 @@ msgstr "la longueur de sleep ne doit pas être négative"
 msgid "slice step can't be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
+
+#: py/nativeglue.c
+msgid "slice unsupported"
+msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4097,8 +4119,12 @@ msgstr ""
 "chaîne de carac. non supportée; utilisez des bytes ou une matrice de bytes"
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "struct : indexage impossible"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct : index hors limites"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -4411,6 +4437,66 @@ msgstr "zi doit être de type float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
 
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "indices %q doivent être des chiffres entier, et non %q"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "l'objet '%q' n'as pas d'attribut '%q'"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "l'objet '%q' n'est pas souscriptable"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' le chiffre entier %d n'est pas dans la portée %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' le chiffre entier 0x%x ne correspond pas au masque 0x%x"
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
+
+#~ msgid "Length must be an int"
+#~ msgstr "Length doit être un chiffre entier (int)"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Length ne doit pas être négatif"
+
+#~ msgid "incompatible .mpy file"
+#~ msgstr "Fichier .mpy incompatible"
+
+#~ msgid "invalid decorator"
+#~ msgstr "décorateur invalide"
+
+#~ msgid "name reused for argument"
+#~ msgstr "nom réutilisé comme paramètre"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "l'objet '%q' n'est pas un tuple ou une list"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "l'objet ne supporte pas l'assignation d'éléments"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "l'objet ne supporte pas la suppression d'éléments"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "l'objet n'est pas sous-scriptable"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "len() indéfinie pour un objet de type '%q'"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct : indexage impossible"
+
 #~ msgid "Cannot remount '/' when USB is active."
 #~ msgstr "'/' ne peut être remonté quand l'USB est actif."
 
@@ -4681,9 +4767,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tuple ou liste requis en partie droite"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "les indices %q doivent être des entiers, pas %s"
-
 #~ msgid "'%s' object cannot assign attribute '%q'"
 #~ msgstr "L'objet '%s' ne peut pas attribuer '%q'"
 
@@ -4695,9 +4778,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "'%s' object does not support item deletion"
 #~ msgstr "l'objet '%s' ne supporte pas la suppression d'éléments"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "l'objet '%s' n'a pas d'attribut '%q'"
 
 #~ msgid "'%s' object is not an iterator"
 #~ msgstr "l'objet '%s' n'est pas un itérateur"
@@ -4732,9 +4812,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() doit retourner None, pas '%s'"
 
-#~ msgid "can't convert %s to complex"
-#~ msgstr "ne peut convertir %s en nombre complexe"
-
 #~ msgid "can't convert %s to float"
 #~ msgstr "ne peut convertir %s en nombre à virgule flottante 'float'"
 
@@ -4750,17 +4827,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "can't convert inf to int"
 #~ msgstr "on ne peut convertir l'infini 'inf' en entier 'int'"
 
-#~ msgid "can't convert to complex"
-#~ msgstr "ne peut convertir en nombre complexe"
-
 #~ msgid "can't convert to float"
 #~ msgstr "ne peut convertir en nombre à virgule flottante 'float'"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "l'objet '%s' n'est pas un tuple ou une liste"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "l'objet de type '%s' n'a pas de len()"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "'pop' d'un ensemble set vide"
@@ -4777,9 +4848,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "string indices must be integers, not %s"
 #~ msgstr ""
 #~ "les indices de chaîne de caractères doivent être des entiers, pas %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct : index hors limites"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "code de format '%c' inconnu pour un objet de type '%s'"
