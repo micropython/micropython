@@ -1,4 +1,4 @@
-// Circuit Python SAMD21 clock tree:
+// CircuitPython SAMD21 clock tree:
 // DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK0, GCLK1
 //   GCLK0 (48MHz) -> peripherals
 //   GLCK1 (48MHz divided by 150 = 320Khz) -> DAC peripheral (DAC requires 350KHz or lower)

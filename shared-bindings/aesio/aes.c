@@ -28,7 +28,7 @@
 //|              from binascii import hexlify
 //|
 //|              key = b'Sixteen byte key'
-//|              inp = b'Circuit Python!!' # Note: 16-bytes long
+//|              inp = b'CircuitPython!!!' # Note: 16-bytes long
 //|              outp = bytearray(len(inp))
 //|              cipher = aesio.AES(key, aesio.mode.MODE_ECB)
 //|              cipher.encrypt_into(inp, outp)
