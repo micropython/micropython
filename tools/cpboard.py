@@ -630,7 +630,7 @@ def print_error_exit(args, e):
 def main():
     import argparse
 
-    cmd_parser = argparse.ArgumentParser(description="Circuit Python Board Tool")
+    cmd_parser = argparse.ArgumentParser(description="CircuitPython Board Tool")
     cmd_parser.add_argument("board", help="build_name, vid:pid or /dev/tty")
     cmd_parser.add_argument("-f", "--firmware", help="upload UF2 firmware file")
     cmd_parser.add_argument("-c", "--command", help="program passed in as string")
