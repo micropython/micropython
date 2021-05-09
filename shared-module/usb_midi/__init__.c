@@ -191,19 +191,19 @@ size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfa
     descriptor_buf[MIDI_STREAMING_INTERFACE_NUMBER_INDEX_2] = *current_interface;
     (*current_interface)++;
 
-    usb_add_interface_string(*current_interface, midi_streaming_interface_name);
+    usb_add_interface_string(*current_interface_string, midi_streaming_interface_name);
     descriptor_buf[MIDI_STREAMING_INTERFACE_STRING_INDEX] = *current_interface;
     (*current_interface_string)++;
 
-    usb_add_interface_string(*current_interface, midi_audio_control_interface_name);
+    usb_add_interface_string(*current_interface_string, midi_audio_control_interface_name);
     descriptor_buf[MIDI_AUDIO_CONTROL_INTERFACE_STRING_INDEX] = *current_interface;
     (*current_interface_string)++;
 
-    usb_add_interface_string(*current_interface, midi_in_jack_name);
+    usb_add_interface_string(*current_interface_string, midi_in_jack_name);
     descriptor_buf[MIDI_IN_JACK_STRING_INDEX] = *current_interface;
     (*current_interface_string)++;
 
-    usb_add_interface_string(*current_interface, midi_out_jack_name);
+    usb_add_interface_string(*current_interface_string, midi_out_jack_name);
     descriptor_buf[MIDI_OUT_JACK_STRING_INDEX] = *current_interface;
     (*current_interface_string)++;
 
