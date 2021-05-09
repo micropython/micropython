@@ -49,6 +49,7 @@ SRC_C = \
 	main.c \
 	modutime.c \
         machine_pin.c \
+        machine_adc.c \
 	modmachine.c \
 	mphalport.c \
 	samd_isr.c \
@@ -79,7 +80,7 @@ SRC_S = lib/utils/gchelper_m3.s
 endif
 
 # List of sources for qstr extraction
-SRC_QSTR += modutime.c modmachine.c machine_pin.c
+SRC_QSTR += modutime.c modmachine.c machine_pin.c machine_adc.c
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
