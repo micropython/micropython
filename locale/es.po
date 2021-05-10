@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-06 20:48+0000\n"
+"PO-Revision-Date: 2021-05-10 11:33+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -207,22 +207,22 @@ msgstr "'%s' espera {r0, r1, ...}"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' entero %d no se encuentra en el rango %d..%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' entero 0x%x no cabe en la máscara 0x%x"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "'%s' el objeto no tiene capacidad de asignación de item"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' el objeto no tiene capacidad de borrado de item"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -231,7 +231,7 @@ msgstr "objeto '%s' no tiene atributo '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' el objeto no puede retornar índice de artículos"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -2504,7 +2504,7 @@ msgstr "argumento es una secuencia vacía"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr ""
+msgstr "arg debe ser tipo-user"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2520,7 +2520,7 @@ msgstr "el argumento tiene un tipo erroneo"
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr ""
+msgstr "nombre de argumento reutilizado"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2677,7 +2677,7 @@ msgstr "no se puede asignar a la expresión"
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "no se puede cancelar a si mismo"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
@@ -2810,7 +2810,7 @@ msgstr "no se puedo realizar importación relativa"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "no se puede sin ambiguedades traer el sizeof del escalar"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2862,7 +2862,7 @@ msgstr "color deberia ser un int"
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
-msgstr ""
+msgstr "comparación entre int y uint"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2970,11 +2970,11 @@ msgstr "las dimensiones no concuerdan"
 
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
-msgstr ""
+msgstr "div/mod no implementado para uint"
 
 #: py/objfloat.c py/objint_mpz.c
 msgid "divide by zero"
-msgstr ""
+msgstr "divide por cero"
 
 #: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3681,15 +3681,15 @@ msgstr "objecto "
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "objeto '%s' no es una tupla o lista"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
-msgstr ""
+msgstr "el objeto no tiene capacidad de asignar item"
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
-msgstr ""
+msgstr "el objeto no tiene capacidad de borrado de item"
 
 #: py/obj.c
 msgid "object has no len"
@@ -3697,7 +3697,7 @@ msgstr "el objeto no tiene longitud"
 
 #: py/obj.c
 msgid "object isn't subscriptable"
-msgstr ""
+msgstr "el objeto no puede retornar índice de artículos"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3991,7 +3991,7 @@ msgstr "script de compilación no soportado"
 
 #: py/nativeglue.c
 msgid "set unsupported"
-msgstr ""
+msgstr "sin capacidades para el conjunto"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
@@ -4031,7 +4031,7 @@ msgstr "slice step no puede ser cero"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
-msgstr ""
+msgstr "sin capacidades para rebanado"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4095,7 +4095,7 @@ msgstr "string no soportado; usa bytes o bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
-msgstr ""
+msgstr "struct: no puede indexar"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"

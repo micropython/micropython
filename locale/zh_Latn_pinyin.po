@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-06 20:48+0000\n"
+"PO-Revision-Date: 2021-05-10 11:33+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -206,22 +206,22 @@ msgstr "'%s' yùqí {r0, r1, ...}"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' zhěng shù %d bú zài %d fàn wéi nèi %d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' zhěng shù 0x%x bú shì hé zài miàn mó 0x%x"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "'%s' duì xiàng bù zhī chí xiàng mù fēn pèi"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' duì xiàng bù zhī chí xiàng mù shān chú"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -230,7 +230,7 @@ msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' duì xiàng bù kě miáo shù"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -2479,7 +2479,7 @@ msgstr "cānshù shì yīgè kōng de xùliè"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr ""
+msgstr "cān shù bì xū shì yòng hù lèi xíng"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2495,7 +2495,7 @@ msgstr "cānshù lèixíng cuòwù"
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr ""
+msgstr "chóng fù shǐ yòng de cān shù míng chēng"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2652,7 +2652,7 @@ msgstr "bùnéng fēnpèi dào biǎodá shì"
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "bù néng qǔ xiāo zì wǒ"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
@@ -2781,7 +2781,7 @@ msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "bù néng háo bù hán hu de dé dào dà xiǎo de lín"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2836,7 +2836,7 @@ msgstr "yánsè yīng wèi zhěngshù"
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
-msgstr ""
+msgstr "yīn tè hé wū yīn tè de bǐ jiào"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2944,11 +2944,11 @@ msgstr "chǐ cùn bù pǐ pèi"
 
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
-msgstr ""
+msgstr "div/ mó zǔ wèi wéi wèi shí xiàn"
 
 #: py/objfloat.c py/objint_mpz.c
 msgid "divide by zero"
-msgstr ""
+msgstr "chú yǐ líng"
 
 #: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -3649,15 +3649,15 @@ msgstr "duì xiàng "
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "duì xiàng '%s' bù shì yí gè fān gǔn huò liè biǎo"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
-msgstr ""
+msgstr "duì xiàng bù zhī chí xiàng mù fēn pèi"
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
-msgstr ""
+msgstr "duì xiàng bù zhī chí xiàng mù shān chú"
 
 #: py/obj.c
 msgid "object has no len"
@@ -3665,7 +3665,7 @@ msgstr "duìxiàng méiyǒu chángdù"
 
 #: py/obj.c
 msgid "object isn't subscriptable"
-msgstr ""
+msgstr "duì xiàng bù kě miáo shù"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3959,7 +3959,7 @@ msgstr "bù zhīchí jiǎoběn biānyì"
 
 #: py/nativeglue.c
 msgid "set unsupported"
-msgstr ""
+msgstr "shè zhì bù shòu zhī chí"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
@@ -3999,7 +3999,7 @@ msgstr "qiēpiàn bù bùnéng wéi líng"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
-msgstr ""
+msgstr "qiē piàn bù shòu zhī chí"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4063,7 +4063,7 @@ msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
-msgstr ""
+msgstr "jié gòu: wú fǎ suǒ yǐn"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
