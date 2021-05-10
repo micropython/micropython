@@ -247,7 +247,7 @@ mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
     other->map.is_fixed = 0;
     other->map.is_ordered = self->map.is_ordered;
-    memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
+    memcpy0(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
     return other_out;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);

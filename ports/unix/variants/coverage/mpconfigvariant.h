@@ -63,6 +63,7 @@
 #define MICROPY_PY_UCRYPTOLIB          (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
+#define MICROPY_NONNULL_COMPLIANT (1)
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

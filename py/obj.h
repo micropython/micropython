@@ -993,8 +993,8 @@ void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times
 #if MICROPY_PY_BUILTINS_SLICE
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
 #endif
-#define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
-#define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
+#define mp_seq_copy(dest, src, len, item_t) memcpy0(dest, src, len * sizeof(item_t))
+#define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy0(dest, src1, (len1) * sizeof(item_t)); memcpy0(dest + (len1), src2, (len2) * sizeof(item_t)); }
 bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, size_t len1, const byte *data2, size_t len2);
 bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp_obj_t *items2, size_t len2);
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, const mp_obj_t *args);
@@ -1002,17 +1002,17 @@ mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value);
 mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes);
 
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
-#define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte *)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
+#define mp_seq_clear(start, len, alloc_len, item_sz) memset0((byte *)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
 
 // Note: dest and slice regions may overlap
 #define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_sz) \
-    memmove(((char *)dest) + (beg) * (item_sz), slice, slice_len * (item_sz)); \
-    memmove(((char *)dest) + (beg + slice_len) * (item_sz), ((char *)dest) + (end) * (item_sz), (dest_len - end) * (item_sz));
+    (void)memmove0(((char *)dest) + (beg) * (item_sz), slice, slice_len * (item_sz)); \
+    (void)memmove0(((char *)dest) + (beg + slice_len) * (item_sz), ((char *)dest) + (end) * (item_sz), (dest_len - end) * (item_sz));
 
 // Note: dest and slice regions may overlap
 #define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_sz) \
-    memmove(((char *)dest) + (beg + slice_len) * (item_sz), ((char *)dest) + (end) * (item_sz), ((dest_len) + (len_adj) - ((beg) + (slice_len))) * (item_sz)); \
-    memmove(((char *)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
+    (void)memmove0(((char *)dest) + (beg + slice_len) * (item_sz), ((char *)dest) + (end) * (item_sz), ((dest_len) + (len_adj) - ((beg) + (slice_len))) * (item_sz)); \
+    (void)memmove0(((char *)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
 
 // Provide translation for legacy API
 #define MP_OBJ_IS_SMALL_INT mp_obj_is_small_int

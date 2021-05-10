@@ -1718,4 +1718,8 @@ typedef double mp_float_t;
 #endif
 #endif
 
+#if !defined(MICROPY_NONNULL_COMPLIANT)
+#define MICROPY_NONNULL_COMPLIANT (0)
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H
