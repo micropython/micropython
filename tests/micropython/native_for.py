@@ -1,4 +1,4 @@
-import pyb
+# test for native for loops
 
 
 @micropython.native

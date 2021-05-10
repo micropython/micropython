@@ -100,7 +100,10 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             pos_found++;
             given_arg = pos[i];
         } else {
-            mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
+            mp_map_elem_t *kw = NULL;
+            if (kws != NULL) {
+                kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
+            }
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
                     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
@@ -134,7 +137,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         mp_raise_TypeError(MP_ERROR_TEXT("extra positional arguments given"));
         #endif
     }
-    if (kws_found < kws->used) {
+    if (kws != NULL && kws_found < kws->used) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else

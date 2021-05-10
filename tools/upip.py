@@ -129,7 +129,11 @@ def url_open(url):
 
     proto, _, host, urlpath = url.split("/", 3)
     try:
-        ai = usocket.getaddrinfo(host, 443, 0, usocket.SOCK_STREAM)
+        port = 443
+        if ":" in host:
+            host, port = host.split(":")
+            port = int(port)
+        ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
     # print("Address infos:", ai)
@@ -147,7 +151,7 @@ def url_open(url):
                 warn_ussl = False
 
         # MicroPython rawsocket module supports file interface directly
-        s.write("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (urlpath, host))
+        s.write("GET /%s HTTP/1.0\r\nHost: %s:%s\r\n\r\n" % (urlpath, host, port))
         l = s.readline()
         protover, status, msg = l.split(None, 2)
         if status != b"200":

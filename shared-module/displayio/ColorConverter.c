@@ -156,7 +156,7 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     switch (self->input_colorspace) {
         case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
             pixel = __builtin_bswap16(pixel);
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case DISPLAYIO_COLORSPACE_RGB565: {
             uint32_t r8 = (pixel >> 11) << 3;
             uint32_t g8 = ((pixel >> 5) << 2) & 0xff;
@@ -167,7 +167,7 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
 
         case DISPLAYIO_COLORSPACE_RGB555_SWAPPED:
             pixel = __builtin_bswap16(pixel);
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case DISPLAYIO_COLORSPACE_RGB555: {
             uint32_t r8 = (pixel >> 10) << 3;
             uint32_t g8 = ((pixel >> 5) << 3) & 0xff;

@@ -313,11 +313,7 @@ STATIC void gc_sweep(void) {
                 }
                 #endif
                 free_tail = 1;
-                ATB_ANY_TO_FREE(block);
-                #if CLEAR_ON_SWEEP
-                memset((void *)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
-                #endif
-                DEBUG_printf("gc_sweep(%x)\n", PTR_FROM_BLOCK(block));
+                DEBUG_printf("gc_sweep(%p)\n", (void *)PTR_FROM_BLOCK(block));
 
                 #ifdef LOG_HEAP_ACTIVITY
                 gc_log_change(block, 0);
@@ -325,7 +321,8 @@ STATIC void gc_sweep(void) {
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
-                break;
+                // fall through to free the head
+                MP_FALLTHROUGH
 
             case AT_TAIL:
                 if (free_tail) {

@@ -1,5 +1,5 @@
 :mod:`sys` -- system specific functions
-=======================================
+========================================
 
 .. include:: ../templates/unsupported_in_circuitpython.inc
 

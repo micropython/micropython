@@ -204,6 +204,7 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+#define MICROPY_EPOCH_IS_1970                 (0)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
