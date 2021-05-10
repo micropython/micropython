@@ -98,7 +98,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 //|         :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
 //|
 //|           * ``tm_year``: the year, 2017 for example
-//|           * ``tm_month``: the month, range [1, 12]
+//|           * ``tm_mon``: the month, range [1, 12]
 //|           * ``tm_mday``: the day of the month, range [1, 31]
 //|           * ``tm_hour``: the hour, range [0, 23]
 //|           * ``tm_min``: the minute, range [0, 59]
