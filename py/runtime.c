@@ -392,7 +392,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         goto generic_binary_op;
                     } else {
                         // use standard precision
-                        lhs_val <<= rhs_val;
+                        lhs_val = (mp_uint_t)lhs_val << rhs_val;
                     }
                     break;
                 }

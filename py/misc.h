@@ -319,4 +319,27 @@ typedef const char *mp_rom_error_text_t;
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 
+/** NULL-protected mem* wrappers ****/
+// In ISO C, memcpy(dest, NULL, 0) and similar are undefined (the source
+// and destination pointers are annotated as "non-null").
+// This doesn't matter much, as the implementation provided on embedded
+// platforms never dereferences the source or destintaion pointer if the
+// length is zero.  However, on Linux and particularly under undefined
+// behavior sanitizers, this is treated as an error.
+//
+// Use the "0" alternative where a NULL pointer and a zero length can
+// occur together, and on systems where compliance with ISO C is
+// important, ensure that MICROPY_NONNULL_COMPLIANT is defined to (1).
+#if MICROPY_NONNULL_COMPLIANT
+#define memcpy0(dest, src, n) ((n) != 0 ? memcpy((dest), (src), (n)) : (dest))
+#define memmove0(dest, src, n) ((n) != 0 ? memmove((dest), (src), (n)) : (dest))
+#define memset0(s, c, n) ((n) != 0 ? memset((s), (c), (n)) : (s))
+#define memcmp0(s1, s2, n) ((n) != 0 ? memcmp((s1), (s2), (n)) : (0))
+#else
+#define memcpy0(dest, src, n) memcpy((dest), (src), (n))
+#define memmove0(dest, src, n) memmove((dest), (src), (n))
+#define memset0(s, c, n) memset((s), (c), (n))
+#define memcmp0(s1, s2, n) memcmp((s1), (s2), (n))
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MISC_H
