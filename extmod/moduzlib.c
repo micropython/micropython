@@ -15,7 +15,7 @@
 #if MICROPY_PY_UZLIB
 
 #define UZLIB_CONF_PARANOID_CHECKS (1)
-#include "../../lib/uzlib/src/tinf.h"
+#include "../lib/uzlib/src/tinf.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -35,7 +35,7 @@ STATIC int read_src_stream(TINF_DATA *data) {
     p -= offsetof(mp_obj_decompio_t, decomp);
     mp_obj_decompio_t *self = (mp_obj_decompio_t *)p;
 
-    const mp_stream_p_t *stream = mp_get_stream(self->src_stream);
+    const mp_stream_p_t *stream = mp_get_stream_raise(self->src_stream, MP_STREAM_OP_READ);
     int err;
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
@@ -206,10 +206,10 @@ const mp_obj_module_t mp_module_uzlib = {
 // only if module is enabled by config setting.
 
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#include "../../lib/uzlib/src/tinflate.c"
-#include "../../lib/uzlib/src/tinfzlib.c"
-#include "../../lib/uzlib/src/tinfgzip.c"
-#include "../../lib/uzlib/src/adler32.c"
-#include "../../lib/uzlib/src/crc32.c"
+#include "../lib/uzlib/src/tinflate.c"
+#include "../lib/uzlib/src/tinfzlib.c"
+#include "../lib/uzlib/src/tinfgzip.c"
+#include "../lib/uzlib/src/adler32.c"
+#include "../lib/uzlib/src/crc32.c"
 
 #endif // MICROPY_PY_UZLIB

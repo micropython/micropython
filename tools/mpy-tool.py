@@ -919,7 +919,7 @@ def merge_mpy(raw_codes, output_file):
             merged_mpy.extend(f.read())
     else:
         header = bytearray(5)
-        header[0] = ord("M")
+        header[0] = ord("C")
         header[1] = config.MPY_VERSION
         header[2] = (
             config.native_arch << 2

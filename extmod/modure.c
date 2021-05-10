@@ -170,10 +170,11 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     size_t len;
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
-    #if MICROPY_PY_URE_MATCH_SPAN_START_END
+    #if MICROPY_PY_URE_MATCH_SPAN_START_END && !(defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME)
+
     if (n_args > 2) {
         const mp_obj_type_t *self_type = mp_obj_get_type(args[1]);
-        mp_int_t str_len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[1]));
+        mp_int_t str_len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(args[1]));
         const byte *begin = (const byte *)subj.begin;
 
         int pos = mp_obj_get_int(args[2]);
