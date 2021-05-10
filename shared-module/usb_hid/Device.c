@@ -210,7 +210,7 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
     memcpy(self->in_report_buffer, report, len);
 
     if (!tud_hid_report(self->report_id, self->in_report_buffer, len)) {
-        mp_raise_msg(&mp_type_OSError, translate("USB brror"));
+        mp_raise_msg(&mp_type_OSError, translate("USB error"));
     }
 }
 
