@@ -258,12 +258,13 @@ STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC int typecode_for_comparison(int typecode) {
+STATIC int typecode_for_comparison(int typecode, bool *is_unsigned) {
     if (typecode == BYTEARRAY_TYPECODE) {
         typecode = 'B';
     }
     if (typecode <= 'Z') {
         typecode += 32; // to lowercase
+        *is_unsigned = true;
     }
     return typecode;
 }
@@ -322,7 +323,11 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             return mp_const_false;
         }
 
-        case MP_BINARY_OP_EQUAL: {
+        case MP_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL: {
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;
             array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
@@ -333,11 +338,13 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             // The type doesn't matter: array/bytearray/str/bytes all have the same buffer layout, so
             // just check if the typecodes are compatible; for testing equality the types should have the
             // same code except for signedness, and not be floating point because nan never equals nan.
+            // For > and < the types should be the same and unsigned.
             // Note that typecode_for_comparison always returns lowercase letters to save code size.
             // No need for (& TYPECODE_MASK) here: xxx_get_buffer already takes care of that.
-            const int lhs_code = typecode_for_comparison(lhs_bufinfo.typecode);
-            const int rhs_code = typecode_for_comparison(rhs_bufinfo.typecode);
-            if (lhs_code == rhs_code && lhs_code != 'f' && lhs_code != 'd') {
+            bool is_unsigned = false;
+            const int lhs_code = typecode_for_comparison(lhs_bufinfo.typecode, &is_unsigned);
+            const int rhs_code = typecode_for_comparison(rhs_bufinfo.typecode, &is_unsigned);
+            if (lhs_code == rhs_code && lhs_code != 'f' && lhs_code != 'd' && (op == MP_BINARY_OP_EQUAL || is_unsigned)) {
                 return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
             }
             // mp_obj_equal_not_equal treats returning MP_OBJ_NULL as 'fall back to pointer comparison'
