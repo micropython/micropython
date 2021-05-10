@@ -870,6 +870,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_DELATTR_SETATTR (0)
 #endif
 
+// Whether to support the __class_getitem__ method
+// This costs a bit of some code size and makes class[any]
+// return itself for compatibility
+#ifndef MICROPY_PY_CLS_GETITEM
+#define MICROPY_PY_CLS_GETITEM (1)
+#endif
+
 // Support for async/await/async for/async with
 #ifndef MICROPY_PY_ASYNC_AWAIT
 #define MICROPY_PY_ASYNC_AWAIT (1)

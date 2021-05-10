@@ -65,6 +65,7 @@ static_qstr_list = [
     "_",
     "__call__",
     "__class__",
+    "__class_getitem__",
     "__delitem__",
     "__enter__",
     "__exit__",

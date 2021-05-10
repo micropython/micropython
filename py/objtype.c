@@ -42,7 +42,7 @@
 #endif
 
 #define ENABLE_SPECIAL_ACCESSORS \
-    (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
+    (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_CLS_GETITEM)
 
 STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
@@ -1091,6 +1091,40 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
+#if MICROPY_PY_CLS_GETITEM
+STATIC mp_obj_t type_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    assert(mp_obj_is_type(self_in, &mp_type_type));
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_t member[4] = {MP_OBJ_NULL, MP_OBJ_NULL, index, value};
+    struct class_lookup_data lookup = {
+        .obj = self,
+        .meth_offset = offsetof(mp_obj_type_t, subscr),
+        .dest = member,
+        .is_type = true,
+    };
+    if (value != MP_OBJ_SENTINEL) {
+        // must load item
+        mp_raise_TypeError(MP_ERROR_TEXT("class items are read-only"));
+    }
+    lookup.attr = MP_QSTR___class_getitem__;
+    mp_obj_class_lookup(&lookup, self_in);
+    if (member[0] == MP_OBJ_SENTINEL) {
+        return mp_obj_subscr(self->subobj[0], index, value);
+    } else if (member[0] != MP_OBJ_NULL) {
+        member[1] = self_in;
+        mp_obj_t ret = mp_call_method_n_kw(1, 0, member);
+        if (value == MP_OBJ_SENTINEL) {
+            return ret;
+        } else {
+            return mp_const_none;
+        }
+    } else {
+        return MP_OBJ_NULL; // op not supported
+    }
+}
+#endif
+
 const mp_obj_type_t mp_type_type = {
     { &mp_type_type },
     .name = MP_QSTR_type,
@@ -1099,6 +1133,9 @@ const mp_obj_type_t mp_type_type = {
     .call = type_call,
     .unary_op = mp_generic_unary_op,
     .attr = type_attr,
+#if MICROPY_PY_CLS_GETITEM
+    .subscr = type_subscr,
+#endif
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
