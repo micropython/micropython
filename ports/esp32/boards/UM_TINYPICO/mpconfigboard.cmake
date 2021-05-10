@@ -3,7 +3,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram
-    boards/TINYPICO/sdkconfig.board
+    boards/UM_TINYPICO/sdkconfig.board
 )
 
 if(NOT MICROPY_FROZEN_MANIFEST)
