@@ -40,7 +40,7 @@
 #include STM32_HAL_H
 
 #define STM32_GPIO_PORT_SIZE 16
-STATIC pulseio_pulsein_obj_t* callback_obj_ref[STM32_GPIO_PORT_SIZE];
+STATIC pulseio_pulsein_obj_t *callback_obj_ref[STM32_GPIO_PORT_SIZE];
 
 STATIC TIM_HandleTypeDef tim_handle;
 STATIC uint32_t overflow_count = 0;
@@ -64,7 +64,7 @@ STATIC void pulsein_exti_event_handler(uint8_t num) {
     // Interrupt register must be cleared manually
     EXTI->PR = 1 << num;
 
-    pulseio_pulsein_obj_t* self = callback_obj_ref[num];
+    pulseio_pulsein_obj_t *self = callback_obj_ref[num];
     if (!self) {
         return;
     }
@@ -118,7 +118,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     // Allocate pulse buffer
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        //TODO: free the EXTI here?
+        // TODO: free the EXTI here?
         mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"),
             maxlen * sizeof(uint16_t));
     }
@@ -189,7 +189,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
-    //Remove pulsein slot from shared array
+    // Remove pulsein slot from shared array
     callback_obj_ref[self->pin->number] = NULL;
     stm_peripherals_exti_free(self->pin->number);
     reset_pin_number(self->pin->port, self->pin->number);
@@ -201,7 +201,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     }
 }
 
-void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     stm_peripherals_exti_disable(self->pin->number);
     self->paused = true;
 }
@@ -239,14 +239,14 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t tri
     stm_peripherals_exti_enable(self->pin->number);
 }
 
-void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
     stm_peripherals_exti_disable(self->pin->number);
     self->start = 0;
     self->len = 0;
     stm_peripherals_exti_enable(self->pin->number);
 }
 
-uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_t index) {
+uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index) {
     stm_peripherals_exti_disable(self->pin->number);
     if (index < 0) {
         index += self->len;

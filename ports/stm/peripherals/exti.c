@@ -39,7 +39,7 @@ STATIC bool stm_exti_never_reset[STM32_GPIO_PORT_SIZE];
 STATIC void (*stm_exti_callback[STM32_GPIO_PORT_SIZE])(uint8_t num);
 
 void exti_reset(void) {
-    for (size_t i = 0;i < STM32_GPIO_PORT_SIZE; i++) {
+    for (size_t i = 0; i < STM32_GPIO_PORT_SIZE; i++) {
         if (!stm_exti_never_reset[i]) {
             stm_exti_reserved[i] = false;
             stm_exti_callback[i] = NULL;
@@ -79,7 +79,7 @@ void stm_peripherals_exti_disable(uint8_t num) {
     HAL_NVIC_DisableIRQ(stm_peripherals_exti_get_irq(num));
 }
 
-void stm_peripherals_exti_set_callback(void(*callback)(uint8_t num), uint8_t number) {
+void stm_peripherals_exti_set_callback(void (*callback)(uint8_t num), uint8_t number) {
     stm_exti_callback[number] = callback;
 }
 
@@ -98,7 +98,7 @@ IRQn_Type stm_peripherals_exti_get_irq(uint8_t num) {
         return EXTI3_IRQn;
     } else if (num == 4) {
         return EXTI4_IRQn;
-    } else if (num >= 5 && num <= 9 ) {
+    } else if (num >= 5 && num <= 9) {
         return EXTI9_5_IRQn;
     } else if (num >= 10 && num <= 15) {
         return EXTI15_10_IRQn;
@@ -107,42 +107,35 @@ IRQn_Type stm_peripherals_exti_get_irq(uint8_t num) {
     }
 }
 
-void EXTI0_IRQHandler(void)
-{
+void EXTI0_IRQHandler(void) {
     stm_exti_callback[0](0);
 }
-void EXTI1_IRQHandler(void)
-{
+void EXTI1_IRQHandler(void) {
     stm_exti_callback[1](1);
 }
-void EXTI2_IRQHandler(void)
-{
+void EXTI2_IRQHandler(void) {
     stm_exti_callback[2](2);
 }
-void EXTI3_IRQHandler(void)
-{
+void EXTI3_IRQHandler(void) {
     stm_exti_callback[3](3);
 }
-void EXTI4_IRQHandler(void)
-{
+void EXTI4_IRQHandler(void) {
     stm_exti_callback[4](4);
 }
 
-void EXTI9_5_IRQHandler(void)
-{
+void EXTI9_5_IRQHandler(void) {
     uint32_t pending = EXTI->PR;
     for (uint i = 5; i <= 9; i++) {
-        if(pending & (1 << i)) {
+        if (pending & (1 << i)) {
             stm_exti_callback[i](i);
         }
     }
 }
 
-void EXTI15_10_IRQHandler(void)
-{
+void EXTI15_10_IRQHandler(void) {
     uint32_t pending = EXTI->PR;
     for (uint i = 10; i <= 15; i++) {
-        if(pending & (1 << i)) {
+        if (pending & (1 << i)) {
             stm_exti_callback[i](i);
         }
     }

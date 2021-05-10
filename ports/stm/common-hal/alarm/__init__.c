@@ -38,7 +38,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/port.h"
-#include "supervisor/shared/workflow.h"
+#include "supervisor/workflow.h"
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -167,7 +167,9 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     HAL_PWR_EnterSTANDBYMode();
 
     // The above shuts down RAM, so we should never hit this
-    while(1);
+    while (1) {
+        ;
+    }
 }
 
 void common_hal_alarm_pretending_deep_sleep(void) {

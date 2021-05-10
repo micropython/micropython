@@ -38,7 +38,7 @@ bool stm_peripherals_exti_is_free(uint8_t num);
 bool stm_peripherals_exti_reserve(uint8_t num);
 void stm_peripherals_exti_enable(uint8_t num);
 void stm_peripherals_exti_disable(uint8_t num);
-void stm_peripherals_exti_set_callback(void(*callback)(uint8_t num), uint8_t number);
+void stm_peripherals_exti_set_callback(void (*callback)(uint8_t num), uint8_t number);
 void stm_peripherals_exti_free(uint8_t num);
 IRQn_Type stm_peripherals_exti_get_irq(uint8_t num);
 

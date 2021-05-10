@@ -38,12 +38,12 @@ uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self
     return 0;
 }
 
-bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t* values, uint32_t len) {
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t *values, uint32_t len) {
     mp_raise_NotImplementedError(translate("Sleep Memory not available"));
     return false;
 }
 
-void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t* values, uint32_t len) {
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t *values, uint32_t len) {
     mp_raise_NotImplementedError(translate("Sleep Memory not available"));
     return;
 }

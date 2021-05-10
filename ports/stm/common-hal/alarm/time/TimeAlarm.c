@@ -82,7 +82,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         if (timealarm_set) {
             mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
         }
-        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;
     }
     if (!timealarm_set) {

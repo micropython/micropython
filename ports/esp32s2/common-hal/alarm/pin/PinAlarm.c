@@ -102,7 +102,7 @@ bool alarm_pin_pinalarm_woke_us_up(void) {
 
 mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // For light sleep, we check if we match any existing alarms
-    uint64_t pin_status = ((uint64_t) pin_63_32_status) << 32 | pin_31_0_status;
+    uint64_t pin_status = ((uint64_t)pin_63_32_status) << 32 | pin_31_0_status;
     for (size_t i = 0; i < n_alarms; i++) {
         if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;

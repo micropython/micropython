@@ -78,7 +78,7 @@ void stm32_peripherals_rtc_init(void) {
 
 // This function is called often for timing so we cache the seconds elapsed computation based on the
 // register value. The STM HAL always does shifts and conversion if we use it directly.
-uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t* subticks) {
+uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t *subticks) {
     // Disable IRQs to ensure we read all of the RTC registers as close in time as possible. Read
     // SSR twice to make sure we didn't read across a tick.
     __disable_irq();
@@ -122,16 +122,16 @@ uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t* subticks) {
         *subticks = subseconds % 32;
     }
 
-    uint64_t raw_ticks = ((uint64_t) TICK_DIVISOR) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
+    uint64_t raw_ticks = ((uint64_t)TICK_DIVISOR) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
     return raw_ticks;
 }
 
-void stm32_peripherals_rtc_assign_wkup_callback(void(*callback)(void)) {
+void stm32_peripherals_rtc_assign_wkup_callback(void (*callback)(void)) {
     wkup_callback = callback;
 }
 
 void stm32_peripherals_rtc_set_wakeup_mode_seconds(uint32_t seconds) {
-    //prep stuff from CubeMX
+    // prep stuff from CubeMX
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
     __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
 
@@ -159,8 +159,8 @@ void stm32_peripherals_rtc_reset_alarms(void) {
     HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
 }
 
-void stm32_peripherals_rtc_assign_alarm_callback(uint8_t alarm_idx, void(*callback)(void)) {
-        alarm_callbacks[alarm_idx] = callback;
+void stm32_peripherals_rtc_assign_alarm_callback(uint8_t alarm_idx, void (*callback)(void)) {
+    alarm_callbacks[alarm_idx] = callback;
 }
 
 void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
@@ -183,7 +183,7 @@ void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
     }
 
     alarm.AlarmTime.SubSeconds = rtc_clock_frequency - 1 -
-                                 ((raw_ticks % TICK_DIVISOR) * 32);
+        ((raw_ticks % TICK_DIVISOR) * 32);
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
     // Masking here means that the bits are ignored so we set none of them.

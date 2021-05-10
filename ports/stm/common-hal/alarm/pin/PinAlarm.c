@@ -94,7 +94,7 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
         if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
-        alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
         if (alarm_pin_triggered & (1 << alarm->pin->number)) {
             return alarms[i];
         }
@@ -125,7 +125,7 @@ void alarm_pin_pinalarm_reset(void) {
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
-            alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+            alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
             if (deep_sleep) {
                 // Deep sleep only wakes on a rising edge from one pin, WKUP (PA00)
                 // All pin settings are handled automatically.

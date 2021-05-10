@@ -261,7 +261,7 @@ void reset_port(void) {
     pwmout_reset();
     #endif
     #if CIRCUITPY_PULSEIO || CIRCUITPY_ALARM
-        exti_reset();
+    exti_reset();
     #endif
 }
 
@@ -334,7 +334,7 @@ __attribute__((used)) void HardFault_Handler(void) {
     }
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return stm32_peripherals_rtc_raw_ticks(subticks);
 }
 
