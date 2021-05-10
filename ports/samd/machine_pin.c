@@ -174,7 +174,7 @@ gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(cpu=%u)", self->id);
+    mp_printf(print, "Pin(cpu=P%c%02d)", (char)(65+(uint8_t)(PORTPA_NR(self->port_shift))), self->id);
 }
 
 // pin.init(mode, pull=None, *, value)
