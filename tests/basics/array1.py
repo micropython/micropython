@@ -66,3 +66,24 @@ print(X('b', [0x61, 0x62, 0x63]) == b'abc')
 print(X('b', [0x61, 0x62, 0x63]) != b'abc')
 print(X('b', [0x61, 0x62, 0x63]) == array.array('b', [0x61, 0x62, 0x63]))
 print(X('b', [0x61, 0x62, 0x63]) != array.array('b', [0x61, 0x62, 0x63]))
+
+# other comparisons
+for typecode in ["B", "H", "I", "L", "Q"]:
+    a = array.array(typecode, [1, 1])
+    print(a < a)
+    print(a <= a)
+    print(a > a)
+    print(a >= a)
+
+    al = array.array(typecode, [1, 0])
+    ab = array.array(typecode, [1, 2])
+
+    print(a < al)
+    print(a <= al)
+    print(a > al)
+    print(a >= al)
+
+    print(a < ab)
+    print(a <= ab)
+    print(a > ab)
+    print(a >= ab)
