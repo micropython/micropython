@@ -135,6 +135,8 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
     }
     if (args->key.u_obj != mp_const_none) {
         options |= SSL_NO_DEFAULT_KEY;
+        (void)mp_obj_str_get_str(args->key.u_obj);
+        (void)mp_obj_str_get_str(args->cert.u_obj);
     }
     if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
         mp_raise_OSError(MP_EINVAL);
@@ -145,12 +147,14 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         const byte *data = (const byte *)mp_obj_str_get_data(args->key.u_obj, &len);
         int res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_RSA_KEY, data, len, NULL);
         if (res != SSL_OK) {
+            ssl_ctx_free(o->ssl_ctx);
             mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
         }
 
         data = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &len);
         res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
         if (res != SSL_OK) {
+            ssl_ctx_free(o->ssl_ctx);
             mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
         }
     }
@@ -175,6 +179,7 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
                 } else if (r == SSL_EAGAIN) {
                     r = MP_EAGAIN;
                 }
+                mp_stream_close(MP_OBJ_FROM_PTR(o));
                 ussl_raise_error(r);
             }
         }

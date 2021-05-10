@@ -2821,7 +2821,9 @@ static FRESULT create_name (    /* FR_OK: successful, FR_INVALID_NAME: could not
         if (di >= FF_MAX_LFN) return FR_INVALID_NAME;   /* Reject too long name */
         lfn[di++] = wc;                 /* Store the Unicode character */
     }
-    while (*p == '/' || *p == '\\') p++;    /* Skip duplicated separators if exist */
+    if (wc) { // Either wc is 0 if the end of string is reached, or nonzero if a separator was encountered first
+        while (*p == '/' || *p == '\\') p++;    /* Skip duplicated separators if exist */
+    }
     *path = p;                          /* Return pointer to the next segment */
     cf = (wc < ' ') ? NS_LAST : 0;      /* Set last segment flag if end of the path */
 
