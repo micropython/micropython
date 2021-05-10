@@ -37,6 +37,15 @@
     ((MODE) == PIN_MODE_OUT) || \
     ((MODE) == PIN_MODE_ALT))
 
+#define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == PIN_DRIVE_OFF) || \
+    ((DRIVE) == PIN_DRIVE_LOWEST_POWER) || \
+    ((DRIVE) == PIN_DRIVE_LOW_POWER) || \
+    ((DRIVE) == PIN_DRIVE_LOWER_POWER) || \
+    ((DRIVE) == PIN_DRIVE_MED_POWER) || \
+    ((DRIVE) == PIN_DRIVE_HIGHER_POWER) || \
+    ((DRIVE) == PIN_DRIVE_HIGH_POWER) || \
+    ((DRIVE) == PIN_DRIVE_HIGHEST_POWER))
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 enum {
@@ -63,6 +72,17 @@ enum {
     PIN_PULL_UP_22K,
     PIN_PULL_DISABLED,
     PIN_PULL_HOLD,
+};
+
+enum {
+    PIN_DRIVE_OFF = 0b000,
+    PIN_DRIVE_LOWEST_POWER,
+    PIN_DRIVE_LOW_POWER,
+    PIN_DRIVE_LOWER_POWER,
+    PIN_DRIVE_MED_POWER,
+    PIN_DRIVE_HIGHER_POWER,
+    PIN_DRIVE_HIGH_POWER,
+    PIN_DRIVE_HIGHEST_POWER,
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
