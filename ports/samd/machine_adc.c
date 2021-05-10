@@ -27,8 +27,6 @@
 
 #include <stdio.h>
 
-// #include "esp_log.h"
-
 // #include "driver/gpio.h"
 // #include "driver/adc.h"
 
@@ -39,6 +37,27 @@
 #include "machine_adc.h"
 #include "machine_pin.h"
 
+// --- ADC helper ----------------------------------------------------------------------
+
+void adc_initialize(){
+    // Enable APB Clock for ADC
+    PM->APBCMASK.reg |= PM_APBCMASK_ADC;
+    // Enable GCLK1 for ADC
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_ID_ADC ;
+    // Wait for Synch
+    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    // Reload calibration data
+    uint32_t bias = (*((uint32_t *) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos;
+    uint32_t linearity = (*((uint32_t *) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
+    linearity |= ((*((uint32_t *) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
+    // Wait for Synch
+    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    // Write calibration data
+    ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity); 
+}
+
+
+// --- ADC class implementation --------------------------------------------------------
 STATIC uint8_t adc_bit_width;
 
 STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
@@ -46,6 +65,7 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     static int initialized = 0;
     if (!initialized) {
+        adc_initialize();
 //        #if CONFIG_IDF_TARGET_ESP32S2
 //        adc1_config_width(ADC_WIDTH_BIT_13);
 //        #else
@@ -57,6 +77,7 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     gpio_num_t pin_id = machine_pin_get_id(args[0]);
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: pin_id %u", pin_id );
     const madc_obj_t *self = NULL;
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
         if (pin_id == madc_obj[i].gpio_id) {

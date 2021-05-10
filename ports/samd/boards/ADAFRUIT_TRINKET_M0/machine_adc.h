@@ -33,7 +33,6 @@
 #define adc1_channel_t uint8_t 
 
 // TODO: ESP32 - adapt to SAMD21
-#define GPIO_NUM_11  11
 #define ADC1_CHANNEL_0  0
 #define ADC_WIDTH_12BIT 12 
 
@@ -56,7 +55,7 @@ typedef struct _madc_obj_t {
 
 
 STATIC const madc_obj_t madc_obj[] = {
-    {{&machine_adc_type}, GPIO_NUM_11, ADC1_CHANNEL_0},
+    {{&machine_adc_type}, PIN_PA08, ADC1_CHANNEL_0},
 };
 
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in);
