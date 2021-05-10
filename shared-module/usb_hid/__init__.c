@@ -97,7 +97,7 @@ static mp_obj_tuple_t default_hid_devices_tuple = {
 };
 
 bool usb_hid_enabled(void) {
-    return hid_devices_num == 0;
+    return hid_devices_num > 0;
 }
 
 void usb_hid_set_defaults(void) {
@@ -119,7 +119,7 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = *current_interface;
     (*current_interface)++;
 
-    usb_add_interface_string(*current_interface, usb_hid_interface_name);
+    usb_add_interface_string(*current_interface_string, usb_hid_interface_name);
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 

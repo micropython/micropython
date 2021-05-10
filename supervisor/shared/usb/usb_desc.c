@@ -247,6 +247,11 @@ void usb_add_interface_string(uint8_t interface_string_index, const char str[]) 
     collected_interface_strings_length += strlen(str);
 }
 
+static const uint16_t language_id[] = {
+    0x0304,
+    0x0409,
+};
+
 static void usb_build_interface_string_table(void) {
     // Allocate space for the le16 String descriptors.
     // Space needed is 2 bytes for String Descriptor header, then 2 bytes for each character
@@ -259,21 +264,20 @@ static void usb_build_interface_string_table(void) {
     uint16_t *string_descriptor = string_descriptors;
 
     // Language ID is always the 0th string descriptor.
-    collected_interface_strings[0].descriptor = (uint16_t[]) {
-        0x0304,
-        0x0409,
-    };
+    collected_interface_strings[0].descriptor = language_id;
 
     // Build the le16 versions of all the descriptor strings.
     // Start at 1 to skip the Language ID.
     for (uint8_t string_index = 1; string_index < current_interface_string; string_index++) {
         const char *str = collected_interface_strings[string_index].char_str;
         const size_t str_len = strlen(str);
-        uint8_t descriptor_size = 2 + (str_len * 2);
-        string_descriptor[0] = 0x0300 | descriptor_size;
+        // 1 word for descriptor type and length, 1 word for each character.
+        const uint8_t descriptor_size_words = 1 + str_len;
+        const uint8_t descriptor_size_bytes = descriptor_size_words * 2;
+        string_descriptor[0] = 0x0300 | descriptor_size_bytes;
 
         // Convert to le16.
-        for (size_t i = 0; i <= str_len; i++) {
+        for (size_t i = 0; i < str_len; i++) {
             string_descriptor[i + 1] = str[i];
         }
 
@@ -281,7 +285,7 @@ static void usb_build_interface_string_table(void) {
         collected_interface_strings[string_index].descriptor = string_descriptor;
 
         // Move to next descriptor slot.
-        string_descriptor += descriptor_size;
+        string_descriptor += descriptor_size_words;
     }
 }
 
