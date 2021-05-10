@@ -105,36 +105,25 @@ const mp_obj_module_t mp_module_uerrno = {
     .globals = (mp_obj_dict_t *)&mp_module_uerrno_globals,
 };
 
-const char *mp_errno_to_str(mp_obj_t errno_val) {
+qstr mp_errno_to_str(mp_obj_t errno_val) {
     // Otherwise, return the Exxxx string for that error code
     #if MICROPY_PY_UERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        return "";
+        return MP_QSTRnull;
     } else {
-        return qstr_str(MP_OBJ_QSTR_VALUE(elem->value));
+        return MP_OBJ_QSTR_VALUE(elem->value);
     }
     #else
     // We don't have the errorcode dict so do a simple search in the modules dict
     for (size_t i = 0; i < MP_ARRAY_SIZE(mp_module_uerrno_globals_table); ++i) {
         if (errno_val == mp_module_uerrno_globals_table[i].value) {
-            return qstr_str(MP_OBJ_QSTR_VALUE(mp_module_uerrno_globals_table[i].key));
+            return MP_OBJ_QSTR_VALUE(mp_module_uerrno_globals_table[i].key);
         }
     }
-    return "";
+    return MP_QSTRnull;
     #endif
-}
-
-#else // MICROPY_PY_UERRNO
-
-const char *mp_errno_to_str(mp_obj_t errno_val) {
-    int v = MP_OBJ_SMALL_INT_VALUE(errno_val);
-    #define X(e) if (v == e) return qstr_str(MP_QSTR_##e);
-    MICROPY_PY_UERRNO_LIST
-#undef X
-
-    return "";
 }
 
 #endif // MICROPY_PY_UERRNO
@@ -149,31 +138,31 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
     const compressed_string_t *desc = NULL;
     switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
         case EPERM:
-            desc = translate("Permission denied");
+            desc = MP_ERROR_TEXT("Permission denied");
             break;
         case ENOENT:
-            desc = translate("No such file/directory");
+            desc = MP_ERROR_TEXT("No such file/directory");
             break;
         case EIO:
-            desc = translate("Input/output error");
+            desc = MP_ERROR_TEXT("Input/output error");
             break;
         case EACCES:
-            desc = translate("Permission denied");
+            desc = MP_ERROR_TEXT("Permission denied");
             break;
         case EEXIST:
-            desc = translate("File exists");
+            desc = MP_ERROR_TEXT("File exists");
             break;
         case ENODEV:
-            desc = translate("Unsupported operation");
+            desc = MP_ERROR_TEXT("Unsupported operation");
             break;
         case EINVAL:
-            desc = translate("Invalid argument");
+            desc = MP_ERROR_TEXT("Invalid argument");
             break;
         case ENOSPC:
-            desc = translate("No space left on device");
+            desc = MP_ERROR_TEXT("No space left on device");
             break;
         case EROFS:
-            desc = translate("Read-only filesystem");
+            desc = MP_ERROR_TEXT("Read-only filesystem");
             break;
     }
     if (desc != NULL && decompress_length(desc) <= len) {
@@ -181,6 +170,9 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
         return buf;
     }
 
-    const char *msg = mp_errno_to_str(errno_val);
+    const char *msg = "";
+    #if MICROPY_PY_UERRNO
+    msg = qstr_str(mp_errno_to_str(errno_val));
+    #endif
     return msg[0] != '\0' ? msg : NULL;
 }

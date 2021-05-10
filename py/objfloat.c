@@ -57,31 +57,17 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
-const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, M_E};
-const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
+const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
+const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
 
 #endif
+
+#define MICROPY_FLOAT_ZERO MICROPY_FLOAT_CONST(0.0)
 
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 // must return actual integer value if it fits in mp_int_t
 mp_int_t mp_float_hash(mp_float_t src) {
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    typedef uint64_t mp_float_uint_t;
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    typedef uint32_t mp_float_uint_t;
-    #endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_uint_t frc : MP_FLOAT_FRAC_BITS, exp : MP_FLOAT_EXP_BITS, sgn : 1;
-        } p;
-        #else
-        struct { mp_float_uint_t sgn : 1, exp : MP_FLOAT_EXP_BITS, frc : MP_FLOAT_FRAC_BITS;
-        } p;
-        #endif
-        mp_float_uint_t i;
-    } u = {.f = src};
-
+    mp_float_union_t u = {.f = src};
     mp_int_t val;
     const int adj_exp = (int)u.p.exp - MP_FLOAT_EXP_BIAS;
     if (adj_exp < 0) {
@@ -188,15 +174,14 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     #if MICROPY_PY_BUILTINS_COMPLEX
     if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs_val, 0, rhs_in);
-    } else
-    #endif
-    {
-        return mp_obj_float_binary_op(op, lhs_val, rhs_in);
     }
+    #endif
+    return mp_obj_float_binary_op(op, lhs_val, rhs_in);
 }
 
 const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,
@@ -230,24 +215,24 @@ STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     mp_float_t div = (*x - mod) / *y;
 
     // Python specs require that mod has same sign as second operand
-    if (mod == 0.0) {
-        mod = MICROPY_FLOAT_C_FUN(copysign)(0.0, *y);
+    if (mod == MICROPY_FLOAT_ZERO) {
+        mod = MICROPY_FLOAT_C_FUN(copysign)(MICROPY_FLOAT_ZERO, *y);
     } else {
-        if ((mod < 0.0) != (*y < 0.0)) {
+        if ((mod < MICROPY_FLOAT_ZERO) != (*y < MICROPY_FLOAT_ZERO)) {
             mod += *y;
-            div -= 1.0;
+            div -= MICROPY_FLOAT_CONST(1.0);
         }
     }
 
     mp_float_t floordiv;
-    if (div == 0.0) {
+    if (div == MICROPY_FLOAT_ZERO) {
         // if division is zero, take the correct sign of zero
-        floordiv = MICROPY_FLOAT_C_FUN(copysign)(0.0, *x / *y);
+        floordiv = MICROPY_FLOAT_C_FUN(copysign)(MICROPY_FLOAT_ZERO, *x / *y);
     } else {
         // Python specs require that x == (x//y)*y + (x%y)
         floordiv = MICROPY_FLOAT_C_FUN(floor)(div);
-        if (div - floordiv > 0.5) {
-            floordiv += 1.0;
+        if (div - floordiv > MICROPY_FLOAT_CONST(0.5)) {
+            floordiv += MICROPY_FLOAT_CONST(1.0);
         }
     }
 
@@ -279,7 +264,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
             zero_division_error:
-                mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
+                mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
             // call divmod to compute the correct floor division, which
@@ -295,15 +280,15 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             break;
         case MP_BINARY_OP_MODULO:
         case MP_BINARY_OP_INPLACE_MODULO:
-            if (rhs_val == 0) {
+            if (rhs_val == MICROPY_FLOAT_ZERO) {
                 goto zero_division_error;
             }
             lhs_val = MICROPY_FLOAT_C_FUN(fmod)(lhs_val, rhs_val);
             // Python specs require that mod has same sign as second operand
-            if (lhs_val == 0.0) {
+            if (lhs_val == MICROPY_FLOAT_ZERO) {
                 lhs_val = MICROPY_FLOAT_C_FUN(copysign)(0.0, rhs_val);
             } else {
-                if ((lhs_val < 0.0) != (rhs_val < 0.0)) {
+                if ((lhs_val < MICROPY_FLOAT_ZERO) != (rhs_val < MICROPY_FLOAT_ZERO)) {
                     lhs_val += rhs_val;
                 }
             }
@@ -317,7 +302,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
                 #if MICROPY_PY_BUILTINS_COMPLEX
                 return mp_obj_complex_binary_op(MP_BINARY_OP_POWER, lhs_val, 0, rhs_in);
                 #else
-                mp_raise_ValueError(translate("complex values not supported"));
+                mp_raise_ValueError(MP_ERROR_TEXT("complex values not supported"));
                 #endif
             }
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);

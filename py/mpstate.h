@@ -47,6 +47,7 @@ typedef struct mp_dynamic_compiler_t {
     bool opt_cache_map_lookup_in_bytecode;
     bool py_builtins_str_unicode;
     uint8_t native_arch;
+    uint8_t nlr_buf_num_regs;
 } mp_dynamic_compiler_t;
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
@@ -100,7 +101,7 @@ typedef struct _mp_state_mem_t {
     size_t gc_collected;
     #endif
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
     #endif
@@ -149,12 +150,17 @@ typedef struct _mp_state_vm_t {
     volatile mp_obj_t mp_pending_exception;
 
     #if MICROPY_ENABLE_SCHEDULER
-    mp_sched_item_t sched_stack[MICROPY_SCHEDULER_DEPTH];
+    mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH];
     #endif
 
     // current exception being handled, for sys.exc_info()
     #if MICROPY_PY_SYS_EXC_INFO
     mp_obj_base_t *cur_exception;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    // exposed through sys.atexit function
+    mp_obj_t sys_exitfunc;
     #endif
 
     // dictionary for the __main__ module
@@ -169,6 +175,11 @@ typedef struct _mp_state_vm_t {
     mp_obj_dict_t *mp_module_builtins_override_dict;
     #endif
 
+    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+    // An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
+    mp_obj_t track_reloc_code_list;
+    #endif
+
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 
@@ -176,15 +187,6 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_REPL_EVENT_DRIVEN
     vstr_t *repl_line;
-    #endif
-
-    #if MICROPY_PY_OS_DUPTERM
-    mp_obj_t dupterm_objs[MICROPY_PY_OS_DUPTERM];
-    mp_obj_t dupterm_arr_obj;
-    #endif
-
-    #if MICROPY_PY_LWIP_SLIP
-    mp_obj_t lwip_slip_stream;
     #endif
 
     #if MICROPY_VFS
@@ -202,13 +204,16 @@ typedef struct _mp_state_vm_t {
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make qstr interning thread-safe.
     mp_thread_mutex_t qstr_mutex;
     #endif
 
     #if MICROPY_ENABLE_COMPILER
     mp_uint_t mp_optimise_value;
+    #if MICROPY_EMIT_NATIVE
+    uint8_t default_emit_opt; // one of MP_EMIT_OPT_xxx
+    #endif
     #endif
 
     // size of the emergency exception buf, if it's dynamically allocated
@@ -258,6 +263,12 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_globals;
 
     nlr_buf_t *nlr_top;
+
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_obj_t prof_trace_callback;
+    bool prof_callback_is_executing;
+    struct _mp_code_state_t *current_code_state;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.

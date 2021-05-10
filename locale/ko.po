@@ -71,7 +71,7 @@ msgstr ""
 msgid "%q in use"
 msgstr "%q 사용 중입니다"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -81,11 +81,15 @@ msgid "%q index out of range"
 msgstr "%q 인덱스 범위를 벗어났습니다"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr ""
+msgid "%q indices must be integers, not %s"
+msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
 msgstr ""
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
@@ -99,6 +103,10 @@ msgstr ""
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q 는 >=1이어야합니다"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -130,24 +138,8 @@ msgstr ""
 msgid "'%q' argument required"
 msgstr ""
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr ""
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
 msgstr ""
 
 #: py/runtime.c
@@ -160,10 +152,6 @@ msgstr ""
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -208,12 +196,31 @@ msgstr "'%s' {r0, r1, ...}은 을 기대합니다"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
 msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
 msgstr ""
 
 #: py/objstr.c
@@ -351,7 +358,7 @@ msgstr ""
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr ""
 
@@ -440,6 +447,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -603,6 +614,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
@@ -645,7 +661,7 @@ msgid "Cannot record to a file"
 msgstr "파일에 녹음 할 수 없습니다"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
+msgid "Cannot remount '/' when visible via USB."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
@@ -675,15 +691,12 @@ msgstr ""
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr ""
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
@@ -734,6 +747,10 @@ msgstr "명령은 0에서 255 사이의 정수(int) 여야합니다"
 msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
+msgstr ""
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
 msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
@@ -1195,6 +1212,10 @@ msgstr ""
 msgid "Invalid ADC Unit value"
 msgstr ""
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr ""
@@ -1288,7 +1309,8 @@ msgstr "단계가 잘못되었습니다"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "핀이 잘못되었습니다"
@@ -1379,14 +1401,6 @@ msgstr ""
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "길이는 정수(int) 여야합니다"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr ""
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
 msgstr ""
@@ -1467,7 +1481,7 @@ msgstr ""
 msgid "NVS Error"
 msgstr ""
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr ""
 
@@ -1563,6 +1577,11 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
+msgstr ""
+
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1666,6 +1685,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -2115,14 +2135,6 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr ""
@@ -2178,6 +2190,14 @@ msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -2409,6 +2429,10 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr ""
 
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
@@ -2419,6 +2443,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
+msgstr ""
+
+#: py/compile.c
+msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
@@ -2529,10 +2557,6 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr ""
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr ""
@@ -2578,6 +2602,10 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
@@ -2587,12 +2615,21 @@ msgstr ""
 msgid "can't convert %q to int"
 msgstr ""
 
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr ""
+
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
+msgstr ""
+
+#: py/obj.c
+msgid "can't convert to complex"
 msgstr ""
 
 #: py/runtime.c
@@ -2637,10 +2674,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
 msgstr ""
 
 #: py/objgenerator.c
@@ -2697,6 +2730,10 @@ msgstr ""
 msgid "cannot perform relative import"
 msgstr ""
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr ""
@@ -2743,6 +2780,10 @@ msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
+msgstr ""
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
 msgstr ""
 
 #: py/objcomplex.c
@@ -2847,7 +2888,15 @@ msgstr ""
 msgid "dimensions do not match"
 msgstr ""
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr ""
@@ -2856,7 +2905,7 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr ""
 
@@ -2994,6 +3043,10 @@ msgstr ""
 msgid "float too big"
 msgstr "float이 너무 큽니다"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr ""
@@ -3062,7 +3115,7 @@ msgstr ""
 msgid "generator ignored GeneratorExit"
 msgstr ""
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
 msgstr ""
 
@@ -3082,8 +3135,8 @@ msgstr ""
 msgid "identifier redefined as nonlocal"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "incompatible .mpy file"
+#: py/compile.c
+msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
@@ -3221,14 +3274,6 @@ msgstr ""
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr ""
-
-#: py/compile.c
-msgid "invalid decorator"
-msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "Dupterm index가 유효하지 않습니다"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3436,10 +3481,6 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr ""
-
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3494,8 +3535,12 @@ msgstr ""
 msgid "no response from SD card"
 msgstr ""
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
+msgstr ""
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c
@@ -3547,15 +3592,16 @@ msgid "object "
 msgstr ""
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
 msgstr ""
 
 #: py/obj.c
-msgid "object does not support item assignment"
+msgid "object doesn't support item assignment"
 msgstr ""
 
 #: py/obj.c
-msgid "object does not support item deletion"
+msgid "object doesn't support item deletion"
 msgstr ""
 
 #: py/obj.c
@@ -3563,7 +3609,7 @@ msgid "object has no len"
 msgstr ""
 
 #: py/obj.c
-msgid "object is not subscriptable"
+msgid "object isn't subscriptable"
 msgstr ""
 
 #: py/runtime.c
@@ -3583,7 +3629,8 @@ msgid "object not iterable"
 msgstr ""
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
+#, c-format
+msgid "object of type '%s' has no len()"
 msgstr ""
 
 #: py/obj.c
@@ -3621,6 +3668,10 @@ msgstr ""
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: py/vm.c
+msgid "opcode"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
@@ -3842,11 +3893,15 @@ msgid "sampling rate out of range"
 msgstr ""
 
 #: py/modmicropython.c
-msgid "schedule stack full"
+msgid "schedule queue full"
 msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
+msgstr ""
+
+#: py/nativeglue.c
+msgid "set unsupported"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3881,8 +3936,12 @@ msgstr ""
 msgid "slice step can't be zero"
 msgstr ""
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
+msgstr ""
+
+#: py/nativeglue.c
+msgid "slice unsupported"
 msgstr ""
 
 #: py/objint.c py/sequence.c
@@ -3946,7 +4005,11 @@ msgid "string not supported; use bytes or bytearray"
 msgstr ""
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
 msgstr ""
 
 #: extmod/moductypes.c
@@ -4260,6 +4323,12 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid "Length must be an int"
+#~ msgstr "길이는 정수(int) 여야합니다"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "Dupterm index가 유효하지 않습니다"
+
 #~ msgid "invalid cert"
 #~ msgstr "cert가 유효하지 않습니다"
 
@@ -4275,9 +4344,6 @@ msgstr ""
 #~ msgstr ""
 #~ "\n"
 #~ "실행 완료 코드. 재장전 을 기다리는 중입니다\n"
-
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #~ msgid "'%s' object does not support item assignment"
 #~ msgstr "'%s' 을 지정할 수 없습니다"

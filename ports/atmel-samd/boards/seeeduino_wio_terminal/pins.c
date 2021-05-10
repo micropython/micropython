@@ -83,6 +83,27 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SDA),  MP_ROM_PTR(&pin_PA13) },
     { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_INT),  MP_ROM_PTR(&pin_PC21) },
 
+    // DAC
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DAC0),  MP_ROM_PTR(&pin_PA02) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DAC1),  MP_ROM_PTR(&pin_PA05) },
+
+    // I2S
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_LRCLK),  MP_ROM_PTR(&pin_PA20) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_SDIN),  MP_ROM_PTR(&pin_PA21) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_SDOUT),  MP_ROM_PTR(&pin_PA22) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_BLCK),  MP_ROM_PTR(&pin_PB16) },
+
+    // RTL8720D
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_PWR),  MP_ROM_PTR(&pin_PA18) },       // CHIP_PU
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_RXD),  MP_ROM_PTR(&pin_PC22) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_TXD),  MP_ROM_PTR(&pin_PC23) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MOSI),  MP_ROM_PTR(&pin_PB24) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_CLK),  MP_ROM_PTR(&pin_PB25) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MISO),  MP_ROM_PTR(&pin_PC24) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_CS),  MP_ROM_PTR(&pin_PC25) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_READY),  MP_ROM_PTR(&pin_PC20) },     // IRQ0
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_DIR),  MP_ROM_PTR(&pin_PA19) },       // SYNC
+
     // Comm objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },

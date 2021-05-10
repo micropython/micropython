@@ -21,6 +21,6 @@ capable board.
    {% for key, value in support_matrix|dictsort %}
        {{ '.. _' ~ key|replace(" ", "-") ~ ':' }}
    * - {{ key }}
-     - {{ '`' ~ value|join("`, `") ~ '`' }}
+     - {{ ':py:mod:`' ~ value|join("`, :py:mod:`") ~ '`' }}
 
    {% endfor %}

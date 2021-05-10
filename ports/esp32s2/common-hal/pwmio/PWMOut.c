@@ -63,6 +63,12 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     uint16_t duty,
     uint32_t frequency,
     bool variable_frequency) {
+
+    // check the frequency (avoid divide by zero below)
+    if (frequency == 0) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+
     // Calculate duty cycle
     uint32_t duty_bits = 0;
     uint32_t interval = LEDC_APB_CLK_HZ / frequency;

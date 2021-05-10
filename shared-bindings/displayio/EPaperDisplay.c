@@ -188,7 +188,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
 
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
-    mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &displayio_epaperdisplay_type);
+    mp_obj_t native_display = mp_obj_cast_to_native_base(display_obj, &displayio_epaperdisplay_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
@@ -242,8 +242,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_time_to_refresh_obj, displ
 const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_time_to_refresh_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     busy: bool
@@ -259,8 +259,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaper
 const mp_obj_property_t displayio_epaperdisplay_busy_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_busy_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     width: int
@@ -275,8 +275,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_width_obj, displayio_epape
 const mp_obj_property_t displayio_epaperdisplay_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     height: int
@@ -291,8 +291,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_height_obj, displayio_epap
 const mp_obj_property_t displayio_epaperdisplay_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     rotation: int
@@ -315,7 +315,7 @@ const mp_obj_property_t displayio_epaperdisplay_rotation_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
               (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     bus: _DisplayBus
@@ -330,8 +330,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperd
 const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_bus_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 

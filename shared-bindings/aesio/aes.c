@@ -28,7 +28,7 @@
 //|              from binascii import hexlify
 //|
 //|              key = b'Sixteen byte key'
-//|              inp = b'Circuit Python!!' # Note: 16-bytes long
+//|              inp = b'CircuitPython!!!' # Note: 16-bytes long
 //|              outp = bytearray(len(inp))
 //|              cipher = aesio.AES(key, aesio.mode.MODE_ECB)
 //|              cipher.encrypt_into(inp, outp)
@@ -246,7 +246,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(aesio_aes_set_mode_obj, aesio_aes_set_mode);
 const mp_obj_property_t aesio_aes_mode_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&aesio_aes_get_mode_obj,
-              (mp_obj_t)&aesio_aes_set_mode_obj, (mp_obj_t)&mp_const_none_obj},
+              (mp_obj_t)&aesio_aes_set_mode_obj, MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t aesio_locals_dict_table[] = {

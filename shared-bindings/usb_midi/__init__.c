@@ -43,11 +43,41 @@
 //| """Tuple of all MIDI ports. Each item is ether `PortIn` or `PortOut`."""
 //|
 
+//| def disable() -> None:
+//|     """Disable presenting a USB MIDI device to the host.
+//|     The device is normally enabled by default.
+//|     Can be called in ``boot.py``, before USB is connected."""
+//|     ...
+//|
+STATIC mp_obj_t usb_midi_disable(void) {
+    if (!common_hal_usb_midi_disable()) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
+
+//| def enable() -> None:
+//|     """Enable presenting a USB MIDI device to the host.
+//|     The device is enabled by default, so you do not normally need to call this function.
+//|     Can be called in ``boot.py``, before USB is connected."""
+//|     ...
+//|
+STATIC mp_obj_t usb_midi_enable(void) {
+    if (!common_hal_usb_midi_enable()) {
+        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_enable_obj, usb_midi_enable);
+
 mp_map_elem_t usb_midi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_midi) },
-    { MP_ROM_QSTR(MP_QSTR_ports), mp_const_empty_tuple },
+    { MP_ROM_QSTR(MP_QSTR_disable),  MP_OBJ_FROM_PTR(&usb_midi_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable),   MP_OBJ_FROM_PTR(&usb_midi_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ports),    mp_const_empty_tuple },
     { MP_ROM_QSTR(MP_QSTR_PortIn),   MP_OBJ_FROM_PTR(&usb_midi_portin_type) },
-    { MP_ROM_QSTR(MP_QSTR_PortOut),   MP_OBJ_FROM_PTR(&usb_midi_portout_type) },
+    { MP_ROM_QSTR(MP_QSTR_PortOut),  MP_OBJ_FROM_PTR(&usb_midi_portout_type) },
 };
 
 // This isn't const so we can set ports dynamically.

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-19 19:15+0000\n"
+"PO-Revision-Date: 2021-05-10 11:33+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -80,7 +80,7 @@ msgstr "%q Shībài: %d"
 msgid "%q in use"
 msgstr "%q zhèngzài shǐyòng"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -90,12 +90,16 @@ msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
+msgid "%q indices must be integers, not %s"
+msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q lièbiǎo bìxū shì lièbiǎo"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr "%q bì xū wéi 1-255"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -108,6 +112,10 @@ msgstr "%q Bìxū > = 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr "%q bì xū wéi wú huò 1-255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -139,25 +147,9 @@ msgstr "%s cuò wù 0x%x"
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr "'%q' duì xiàng wú fǎ fēn pèi shǔ xìng '%q'"
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
 msgstr "'%q' duì xiàng bù zhī chí '%q'"
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr "'%q' duì xiàng bù zhī chí xiàng mù fēn pèi"
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr "'%q' duì xiàng bù zhī chí xiàng mù shān chú"
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr "%q' duì xiàng méi yǒu shǔ xìng %q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -170,10 +162,6 @@ msgstr "%q' duì xiàng bù kě diào yòng"
 #: py/runtime.c
 msgid "'%q' object is not iterable"
 msgstr "%q' duì xiàng bù kě yí dòng"
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr "%q' duì xiàng bù kě xià biāo"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -217,13 +205,32 @@ msgstr "'%s' yùqí {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' zhěngshù %d bùzài fànwéi nèi %d.%d"
+msgid "'%s' integer %d isn't within range %d..%d"
+msgstr "'%s' zhěng shù %d bú zài %d fàn wéi nèi %d"
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr "'%s' zhěng shù 0x%x bú shì hé zài miàn mó 0x%x"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr "'%s' duì xiàng bù zhī chí xiàng mù fēn pèi"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr "'%s' duì xiàng bù zhī chí xiàng mù shān chú"
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
+msgstr "'%s' duì xiàng bù kě miáo shù"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -360,7 +367,7 @@ msgstr "Suǒyǒu shǐyòng de shìjiàn píndào"
 msgid "All state machines in use"
 msgstr "suǒ yǒu zhèng zài shǐ yòng de zhuàng tài jī"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Suǒyǒu tóngbù shìjiàn píndào shǐyòng"
 
@@ -450,6 +457,10 @@ msgstr "cháng shì fēn pèi %d kuài"
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
 msgstr "dāng VM bú yùn xíng shí, cháng shì duī fēn pèi."
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr "AuthMode.OPEN wèi shǐ yòng mì mǎ"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -614,6 +625,11 @@ msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī 
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Wúfǎ jiāng CCCD shèzhì wéi běndì tèzhēng"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr "xiàn zài wú fǎ gēng gǎi USB shè bèi"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr "Wúfǎ chuàngjiàn xīn de shìpèiqì; shǐyòng_bleio.Adapter;"
@@ -656,8 +672,8 @@ msgid "Cannot record to a file"
 msgstr "Wúfǎ jìlù dào wénjiàn"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "USB jīhuó shí wúfǎ chóngxīn bǎng ding '/'."
+msgid "Cannot remount '/' when visible via USB."
+msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -686,15 +702,12 @@ msgstr "Wúfǎ zi fēnlèi"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "wú fǎ zài yǐn jiǎo biān yuán huàn xǐng. jǐn jí bié."
 
@@ -748,6 +761,10 @@ msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
 msgstr "Liánjiē yǐ duàn kāi, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn de liánjiē."
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "Fǔbài de .mpy wénjiàn"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -1215,6 +1232,10 @@ msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
 msgid "Invalid ADC Unit value"
 msgstr "Wúxiào de ADC dānwèi zhí"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr "wú xiào AuthMode"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Wúxiào de BMP wénjiàn"
@@ -1274,7 +1295,7 @@ msgstr "Wúxiào de tōngdào jìshù"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_count %d"
-msgstr ""
+msgstr "wú xiào data_count %d"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1308,7 +1329,8 @@ msgstr "Jiēduàn wúxiào"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Wúxiào de yǐn jiǎo"
@@ -1399,14 +1421,6 @@ msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
 
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "Chángdù bìxū shì yīgè zhěngshù"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr "Chángdù bìxū shìfēi fùshù"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC dì zhǐ wú xiào"
@@ -1488,7 +1502,7 @@ msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 msgid "NVS Error"
 msgstr "NVS cuò wù"
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
 
@@ -1585,6 +1599,11 @@ msgstr "Wèi zhǐdìng mì yào"
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Méiyǒu zhǎng zhěngshù zhīchí"
+
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -1692,6 +1711,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 
@@ -2155,14 +2175,6 @@ msgstr "shí jiān yǐ jīng guò qù."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Chāoshí shíjiān tài zhǎng: Zuìdà chāoshí shíjiān wèi%d miǎo"
 
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
 msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
@@ -2182,7 +2194,7 @@ msgstr "Xiǎnshì tài duō"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2219,6 +2231,14 @@ msgstr "USB máng"
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
 msgstr "USB Cuòwù"
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr "USB shè bèi xū yào de zhōng duān bǐ kě yòng de yào duō."
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr "USB shè bèi zhǐ dìng le tài duō de jiè miàn míng chēng."
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -2451,11 +2471,15 @@ msgstr "dìzhǐ wèi kōng"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "zhù shì bì xū shì biāo zhì fú"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "cānshù shì yīgè kōng de xùliè"
+
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr "cān shù bì xū shì yòng hù lèi xíng"
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2468,6 +2492,10 @@ msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
+
+#: py/compile.c
+msgid "argument name reused"
+msgstr "chóng fù shǐ yòng de cān shù míng chēng"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2577,10 +2605,6 @@ msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
 
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "zì jié dàimǎ wèi zhíxíng"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "byteorder bùshì zìfú chuàn"
@@ -2626,6 +2650,10 @@ msgstr "wúfǎ tiānjiā tèshū fāngfǎ dào zi fēnlèi lèi"
 msgid "can't assign to expression"
 msgstr "bùnéng fēnpèi dào biǎodá shì"
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr "bù néng qǔ xiāo zì wǒ"
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
@@ -2633,7 +2661,12 @@ msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2642,6 +2675,10 @@ msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "wúfǎ zhuǎnhuàn wèi %q"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "bùnéng zhuǎnhuàn wèi fùzá"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2686,10 +2723,6 @@ msgstr "wúfǎ cóng '%q' jiāzài"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "wúfǎ yòng '%q' ' suǒyǐn jiāzài"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2746,6 +2779,10 @@ msgstr "wúfǎ dǎorù míngchēng %q"
 msgid "cannot perform relative import"
 msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr "bù néng háo bù hán hu de dé dào dà xiǎo de lín"
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "tóuyǐng"
@@ -2796,6 +2833,10 @@ msgstr "yánsè bìxū jiè yú 0x000000 hé 0xffffff zhī jiān"
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
 msgstr "yánsè yīng wèi zhěngshù"
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
+msgstr "yīn tè hé wū yīn tè de bǐ jiào"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2852,7 +2893,7 @@ msgstr "shùjù chángdù bìxū xiāngděng"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "shù jù yǐn jiǎo #%d zài shǐ yòng zhōng"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -2901,7 +2942,15 @@ msgstr "chā yì shùn xù fàn wéi"
 msgid "dimensions do not match"
 msgstr "chǐ cùn bù pǐ pèi"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr "div/ mó zǔ wèi wéi wèi shí xiàn"
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr "chú yǐ líng"
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "bèi líng chú"
@@ -2910,7 +2959,7 @@ msgstr "bèi líng chú"
 msgid "empty"
 msgstr "kòngxián"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -3048,6 +3097,10 @@ msgstr "fānzhuǎn shēn shù bìxū shì ndarray"
 msgid "float too big"
 msgstr "fú diǎn tài dà"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr "fú dòng bù shòu zhī chí"
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr "zìtǐ bìxū wèi 2048 zì jié"
@@ -3062,7 +3115,7 @@ msgstr "chōngfèn"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "gōng néng bù cǎi qǔ guān jiàn zì cān shù"
 
 #: py/argcheck.c
 #, c-format
@@ -3116,9 +3169,9 @@ msgstr "shēngchéng qì yǐjīng zhíxíng"
 msgid "generator ignored GeneratorExit"
 msgstr "shēngchéng qì hūlüè shēngchéng qì tuìchū"
 
-#: py/objgenerator.c
+#: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "fā diàn jī tí chū tíng zhǐ"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3136,13 +3189,13 @@ msgstr "biāozhì fú chóngxīn dìngyì wèi quánjú"
 msgid "identifier redefined as nonlocal"
 msgstr "biāozhì fú chóngxīn dìngyì wéi fēi běndì"
 
-#: py/persistentcode.c
-msgid "incompatible .mpy file"
-msgstr ""
+#: py/compile.c
+msgid "import * not at module level"
+msgstr "dǎo rù * bú zài mó kuài jí bié"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "bù jiān róng de yuán shēng .mpy jià gòu"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3265,7 +3318,7 @@ msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "wú xiào de jià gòu"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -3275,14 +3328,6 @@ msgstr "wúxiào de cānshù"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "wú xiào bits_per_pixel %d， bì xū shì, 1, 4, 8, 16, 24, huò 32"
-
-#: py/compile.c
-msgid "invalid decorator"
-msgstr "wú xiào zhuāng shì"
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "dupterm suǒyǐn wúxiào"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3491,10 +3536,6 @@ msgstr "míngchēng '%q' wèi dìngyì"
 msgid "name not defined"
 msgstr "míngchēng wèi dìngyì"
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr "cān shǔ míngchēng bèi chóngxīn shǐyòng"
-
 #: py/emitnative.c
 msgid "native yield"
 msgstr "yuán chǎn"
@@ -3506,7 +3547,7 @@ msgstr "xūyào chāoguò%d de zhí cáinéng jiědú"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "fù yīn zǐ"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3549,9 +3590,13 @@ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 msgid "no response from SD card"
 msgstr "SD kǎ wú huíyīng"
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr "fēi shè bèi zài %q"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3602,24 +3647,25 @@ msgid "object "
 msgstr "duì xiàng "
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr "duìxiàng '%q' bùshì yuán zǔ huò lièbiǎo"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
+msgstr "duì xiàng '%s' bù shì yí gè fān gǔn huò liè biǎo"
 
 #: py/obj.c
-msgid "object does not support item assignment"
-msgstr "duìxiàng bù zhīchí xiàngmù fēnpèi"
+msgid "object doesn't support item assignment"
+msgstr "duì xiàng bù zhī chí xiàng mù fēn pèi"
 
 #: py/obj.c
-msgid "object does not support item deletion"
-msgstr "duìxiàng bù zhīchí shānchú xiàngmù"
+msgid "object doesn't support item deletion"
+msgstr "duì xiàng bù zhī chí xiàng mù shān chú"
 
 #: py/obj.c
 msgid "object has no len"
 msgstr "duìxiàng méiyǒu chángdù"
 
 #: py/obj.c
-msgid "object is not subscriptable"
-msgstr "duìxiàng bùnéng xià biāo"
+msgid "object isn't subscriptable"
+msgstr "duì xiàng bù kě miáo shù"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3638,8 +3684,9 @@ msgid "object not iterable"
 msgstr "duìxiàng bùnéng diédài"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr "lèixíng '%q' de duìxiàng méiyǒu len()"
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "lèixíng '%s' de duìxiàng méiyǒu chángdù"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3677,6 +3724,10 @@ msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
+
+#: py/vm.c
+msgid "opcode"
+msgstr "cāo zuò dài mǎ"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3820,7 +3871,7 @@ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr ""
+msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -3899,12 +3950,16 @@ msgid "sampling rate out of range"
 msgstr "qǔyàng lǜ chāochū fànwéi"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "jìhuà duīzhàn yǐ mǎn"
+msgid "schedule queue full"
+msgstr "shí jiān biǎo duì liè yǐ mǎn"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "bù zhīchí jiǎoběn biānyì"
+
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr "shè zhì bù shòu zhī chí"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
@@ -3938,9 +3993,13 @@ msgstr "shuìmián chángdù bìxū shìfēi fùshù"
 msgid "slice step can't be zero"
 msgstr "qiēpiàn bù cháng bùnéng wéi líng"
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
 msgstr "qiēpiàn bù bùnéng wéi líng"
+
+#: py/nativeglue.c
+msgid "slice unsupported"
+msgstr "qiē piàn bù shòu zhī chí"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4003,8 +4062,12 @@ msgid "string not supported; use bytes or bytearray"
 msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "jiégòu: bùnéng suǒyǐn"
+msgid "struct: can't index"
+msgstr "jié gòu: wú fǎ suǒ yǐn"
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "jiégòu: suǒyǐn chāochū fànwéi"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -4317,8 +4380,80 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Fǔbài de .mpy wénjiàn"
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "'%q' duì xiàng wú fǎ fēn pèi shǔ xìng '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "'%q' duì xiàng bù zhī chí xiàng mù fēn pèi"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "'%q' duì xiàng bù zhī chí xiàng mù shān chú"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "%q' duì xiàng méi yǒu shǔ xìng %q'"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "%q' duì xiàng bù kě xià biāo"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' zhěngshù %d bùzài fànwéi nèi %d.%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
+
+#~ msgid "Length must be an int"
+#~ msgstr "Chángdù bìxū shì yīgè zhěngshù"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Chángdù bìxū shìfēi fùshù"
+
+#~ msgid "incompatible .mpy file"
+#~ msgstr "bù jiān róng .mpy wén jiàn"
+
+#~ msgid "invalid decorator"
+#~ msgstr "wú xiào zhuāng shì"
+
+#~ msgid "name reused for argument"
+#~ msgstr "cān shǔ míngchēng bèi chóngxīn shǐyòng"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "duìxiàng '%q' bùshì yuán zǔ huò lièbiǎo"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "duìxiàng bù zhīchí xiàngmù fēnpèi"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "duìxiàng bù zhīchí shānchú xiàngmù"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "duìxiàng bùnéng xià biāo"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "lèixíng '%q' de duìxiàng méiyǒu len()"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "jiégòu: bùnéng suǒyǐn"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "USB jīhuó shí wúfǎ chóngxīn bǎng ding '/'."
+
+#~ msgid "byte code not implemented"
+#~ msgstr "zì jié dàimǎ wèi zhíxíng"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "dupterm suǒyǐn wúxiào"
+
+#~ msgid "schedule stack full"
+#~ msgstr "jìhuà duīzhàn yǐ mǎn"
 
 #~ msgid "Corrupt raw code"
 #~ msgstr "Sǔnhuài de yuánshǐ dàimǎ"
@@ -4548,9 +4683,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
-
 #~ msgid "'%s' object does not support '%q'"
 #~ msgstr "'%s' duì xiàng bù zhīchí '%q'"
 
@@ -4559,9 +4691,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "'%s' object does not support item deletion"
 #~ msgstr "'%s' duìxiàng bù zhīchí shānchú xiàngmù"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 
 #~ msgid "'%s' object is not an iterator"
 #~ msgstr "'%s' duìxiàng bùshì yīgè diédài qì"
@@ -4596,9 +4725,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
 
-#~ msgid "can't convert %s to complex"
-#~ msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
-
 #~ msgid "can't convert %s to float"
 #~ msgstr "wúfǎ zhuǎnhuàn %s dào fú diǎn xíng biànliàng"
 
@@ -4614,17 +4740,11 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "can't convert inf to int"
 #~ msgstr "bùnéng jiāng inf zhuǎnhuàn wèi int"
 
-#~ msgid "can't convert to complex"
-#~ msgstr "bùnéng zhuǎnhuàn wèi fùzá"
-
 #~ msgid "can't convert to float"
 #~ msgstr "bùnéng zhuǎnhuàn wèi fú diǎn"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "lèixíng '%s' de duìxiàng méiyǒu chángdù"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "cóng kōng jí dànchū"
@@ -4640,9 +4760,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "string indices must be integers, not %s"
 #~ msgstr "zìfú chuàn zhǐshù bìxū shì zhěngshù, ér bùshì %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "jiégòu: suǒyǐn chāochū fànwéi"
 
 #, fuzzy
 #~ msgid "unknown format code '%c' for object of type '%s'"

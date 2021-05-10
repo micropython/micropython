@@ -15,111 +15,19 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
-# Any files listed by this variable will cause a full regeneration of qstrs
+# Any files listed by these variables will cause a full regeneration of qstrs
+# DEPENDENCIES: included in qstr processing; REQUIREMENTS: not included
 QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
-# this sets the config file for FatFs
-CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
-
-ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_MOD += -DMICROPY_PY_USSL=1
-ifeq ($(MICROPY_SSL_AXTLS),1)
-CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/lib/axtls/config
-LDFLAGS_MOD += -L$(BUILD) -laxtls
-else ifeq ($(MICROPY_SSL_MBEDTLS),1)
-# Can be overridden by ports which have "builtin" mbedTLS
-MICROPY_SSL_MBEDTLS_INCLUDE ?= $(TOP)/lib/mbedtls/include
-CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(MICROPY_SSL_MBEDTLS_INCLUDE)
-LDFLAGS_MOD += -L$(TOP)/lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
-endif
-endif
-
-ifeq ($(MICROPY_PY_LWIP),1)
-# A port should add an include path where lwipopts.h can be found (eg extmod/lwip-include)
-LWIP_DIR = lib/lwip/src
-INC += -I$(TOP)/$(LWIP_DIR)/include
-CFLAGS_MOD += -DMICROPY_PY_LWIP=1
-$(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS_MOD += -Wno-address
-SRC_MOD += extmod/modlwip.c lib/netutils/netutils.c
-SRC_MOD += $(addprefix $(LWIP_DIR)/,\
-	core/def.c \
-	core/dns.c \
-	core/inet_chksum.c \
-	core/init.c \
-	core/ip.c \
-	core/mem.c \
-	core/memp.c \
-	core/netif.c \
-	core/pbuf.c \
-	core/raw.c \
-	core/stats.c \
-	core/sys.c \
-	core/tcp.c \
-	core/tcp_in.c \
-	core/tcp_out.c \
-	core/timeouts.c \
-	core/udp.c \
-	core/ipv4/autoip.c \
-	core/ipv4/dhcp.c \
-	core/ipv4/etharp.c \
-	core/ipv4/icmp.c \
-	core/ipv4/igmp.c \
-	core/ipv4/ip4_addr.c \
-	core/ipv4/ip4.c \
-	core/ipv4/ip4_frag.c \
-	core/ipv6/dhcp6.c \
-	core/ipv6/ethip6.c \
-	core/ipv6/icmp6.c \
-	core/ipv6/inet6.c \
-	core/ipv6/ip6_addr.c \
-	core/ipv6/ip6.c \
-	core/ipv6/ip6_frag.c \
-	core/ipv6/mld6.c \
-	core/ipv6/nd6.c \
-	netif/ethernet.c \
-	)
-ifeq ($(MICROPY_PY_LWIP_SLIP),1)
-CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
-SRC_MOD += $(LWIP_DIR)/netif/slipif.c
-endif
-endif
-
-ifeq ($(MICROPY_PY_BTREE),1)
-BTREE_DIR = lib/berkeley-db-1.xx
-BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ "-Dvirt_fd_t=void*" $(BTREE_DEFS_EXTRA)
-INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
-SRC_MOD += extmod/modbtree.c
-SRC_MOD += $(addprefix $(BTREE_DIR)/,\
-btree/bt_close.c \
-btree/bt_conv.c \
-btree/bt_debug.c \
-btree/bt_delete.c \
-btree/bt_get.c \
-btree/bt_open.c \
-btree/bt_overflow.c \
-btree/bt_page.c \
-btree/bt_put.c \
-btree/bt_search.c \
-btree/bt_seq.c \
-btree/bt_split.c \
-btree/bt_utils.c \
-mpool/mpool.c \
-	)
-CFLAGS_MOD += -DMICROPY_PY_BTREE=1
-# we need to suppress certain warnings to get berkeley-db to compile cleanly
-# and we have separate BTREE_DEFS so the definitions don't interfere with other source code
-$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
-$(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
-endif
-
-ifeq ($(CIRCUITPY_ULAB),1)
-ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
-SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
-CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/ulab/code
-$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
+# Enable building 32-bit code on 64-bit host.
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CC += -m32
+CXX += -m32
+LD += -m32
 endif
 
 # External modules written in C.
@@ -140,6 +48,13 @@ CFLAGS_MOD += $(CFLAGS_USERMOD)
 LDFLAGS_MOD += $(LDFLAGS_USERMOD)
 endif
 
+ifeq ($(CIRCUITPY_ULAB),1)
+ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
+SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
+CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/ulab/code
+$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
+endif
+
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
@@ -147,6 +62,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrx86.o \
 	nlrx64.o \
 	nlrthumb.o \
+	nlrpowerpc.o \
 	nlrxtensa.o \
 	nlrsetjmp.o \
 	malloc.o \
@@ -178,6 +94,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	asmxtensa.o \
 	emitnxtensa.o \
 	emitinlinextensa.o \
+	emitnxtensawin.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
@@ -187,9 +104,12 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	runtime_utils.o \
 	scheduler.o \
 	nativeglue.o \
+	pairheap.o \
+	ringbuf.o \
 	stackctrl.o \
 	argcheck.o \
 	warning.o \
+	profile.o \
 	map.o \
 	enum.o \
 	obj.o \
@@ -258,10 +178,10 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	repl.o \
 	smallint.o \
 	frozenmod.o \
-	ringbuf.o \
 	)
 
 PY_EXTMOD_O_BASENAME = \
+	extmod/moduasyncio.o \
 	extmod/moductypes.o \
 	extmod/modujson.o \
 	extmod/modure.o \
@@ -275,14 +195,15 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduselect.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
+	extmod/vfs_blockdev.o \
 	extmod/vfs_reader.o \
 	extmod/vfs_posix.o \
 	extmod/vfs_posix_file.o \
 	extmod/vfs_fat.o \
 	extmod/vfs_fat_diskio.o \
 	extmod/vfs_fat_file.o \
+	extmod/vfs_lfs.o \
 	extmod/utime_mphal.o \
-	extmod/uos_dupterm.o \
 	lib/embed/abort_.o \
 	lib/utils/printf.o \
 
@@ -292,6 +213,11 @@ PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 
 # this is a convenience variable for ports that want core, extmod and frozen code
 PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
+
+# object file for frozen code specified via a manifest
+ifneq ($(FROZEN_MANIFEST),)
+PY_O += $(BUILD)/$(BUILD)/frozen_content.o
+endif
 
 # object file for frozen files
 ifneq ($(FROZEN_DIR),)
@@ -359,6 +285,11 @@ $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
 $(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 
+# Standard C functions like memset need to be compiled with special flags so
+# the compiler does not optimise these functions in terms of themselves.
+CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
+$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
@@ -389,3 +320,6 @@ endif
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping
+
+# Include rules for extmod related code
+include $(TOP)/extmod/extmod.mk

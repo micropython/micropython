@@ -29,4 +29,4 @@
 void supervisor_workflow_reset(void);
 
 // True when the user could be actively iterating on their code.
-bool workflow_active(void);
+bool supervisor_workflow_active(void);

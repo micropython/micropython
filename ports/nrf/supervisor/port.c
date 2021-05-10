@@ -259,9 +259,9 @@ void reset_port(void) {
 
     reset_all_pins();
 
-#ifdef NRF_DEBUG_PRINT
+    #ifdef NRF_DEBUG_PRINT
     _debug_uart_init();
-#endif
+    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -282,7 +282,7 @@ void reset_cpu(void) {
 }
 
 // The uninitialized data section is placed directly after BSS, under the theory
-// that Circuit Python has a lot more .data and .bss than the bootloader.  As a
+// that CircuitPython has a lot more .data and .bss than the bootloader.  As a
 // result, this section is less likely to be tampered with by the bootloader.
 extern uint32_t _euninitialized;
 

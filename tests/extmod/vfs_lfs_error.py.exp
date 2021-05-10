@@ -1,0 +1,28 @@
+test <class 'VfsLfs1'>
+mkfs OSError
+mount OSError
+ilistdir OSError
+remove OSError
+rmdir OSError
+rename OSError
+mkdir OSError
+chdir OSError
+/
+chdir OSError
+/
+stat OSError
+seek OSError
+test <class 'VfsLfs2'>
+mkfs OSError
+mount OSError
+ilistdir OSError
+remove OSError
+rmdir OSError
+rename OSError
+mkdir OSError
+chdir OSError
+/
+chdir OSError
+/
+stat OSError
+seek OSError

@@ -157,7 +157,7 @@ const mp_obj_property_t audioio_rawsample_sample_rate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audioio_rawsample_get_sample_rate_obj,
               (mp_obj_t)&audioio_rawsample_set_sample_rate_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audioio_rawsample_locals_dict_table[] = {

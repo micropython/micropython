@@ -100,8 +100,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_pin_obj, alarm_pin_pinalarm_obj
 const mp_obj_property_t alarm_pin_pinalarm_pin_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_pin_pinalarm_get_pin_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     value: bool
@@ -116,8 +116,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_value_obj, alarm_pin_pinalarm_o
 const mp_obj_property_t alarm_pin_pinalarm_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_pin_pinalarm_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {

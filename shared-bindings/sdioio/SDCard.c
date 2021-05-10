@@ -221,8 +221,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get
 const mp_obj_property_t sdioio_sdcard_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&sdioio_sdcard_get_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     @property
@@ -240,8 +240,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_width_obj, sdioio_sdcard_obj_get_wid
 const mp_obj_property_t sdioio_sdcard_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&sdioio_sdcard_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def deinit(self) -> None:

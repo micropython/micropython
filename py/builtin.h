@@ -103,6 +103,7 @@ extern const mp_obj_module_t mp_module_thread;
 extern const mp_obj_dict_t mp_module_builtins_globals;
 
 // extmod modules
+extern const mp_obj_module_t mp_module_uasyncio;
 extern const mp_obj_module_t mp_module_uerrno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_uzlib;
@@ -114,12 +115,8 @@ extern const mp_obj_module_t mp_module_ucryptolib;
 extern const mp_obj_module_t mp_module_ubinascii;
 extern const mp_obj_module_t mp_module_urandom;
 extern const mp_obj_module_t mp_module_uselect;
-extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
-extern const mp_obj_module_t mp_module_lwip;
-extern const mp_obj_module_t mp_module_uwebsocket;
-extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
 extern const mp_obj_module_t ulab_user_cmodule;

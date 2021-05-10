@@ -53,3 +53,7 @@ void serial_write(const char *text) {
 
 void supervisor_workflow_reset(void) {
 }
+
+bool supervisor_workflow_active(void) {
+    return false;
+}

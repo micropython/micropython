@@ -83,11 +83,11 @@
 STATIC float convert_dec_to_frac(uint8_t val) {
     float float_val = (float)val;
     if (val < 10) {
-        return (float_val/10.0);
+        return float_val / 10.0;
     } else if (val < 100) {
-        return (float_val/100.0);
+        return float_val / 100.0;
     } else {
-        return (float_val/1000.0);
+        return float_val / 1000.0;
     }
 }
 
@@ -134,17 +134,17 @@ STATIC float calculate_temperature(uint16_t raw_value) {
     tempR = room_temp_val_int + convert_dec_to_frac(room_temp_val_dec);
     tempH = hot_temp_val_int + convert_dec_to_frac(hot_temp_val_dec);
 
-    INT1VR = 1 - ((float)room_int1v_val/INT1V_DIVIDER_1000);
-    INT1VH = 1 - ((float)hot_int1v_val/INT1V_DIVIDER_1000);
+    INT1VR = 1 - ((float)room_int1v_val / INT1V_DIVIDER_1000);
+    INT1VH = 1 - ((float)hot_int1v_val / INT1V_DIVIDER_1000);
 
-    VADCR = ((float)ADCR * INT1VR)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
-    VADCH = ((float)ADCH * INT1VH)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+    VADCR = ((float)ADCR * INT1VR) / ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+    VADCH = ((float)ADCH * INT1VH) / ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
 
     float VADC;      /* Voltage calculation using ADC result for Coarse Temp calculation */
     float VADCM;     /* Voltage calculation using ADC result for Fine Temp calculation. */
     float INT1VM;    /* Voltage calculation for reality INT1V value during the ADC conversion */
 
-    VADC = ((float)raw_value * INT1V_VALUE_FLOAT)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+    VADC = ((float)raw_value * INT1V_VALUE_FLOAT) / ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
 
     // Hopefully compiler will remove common subepxressions here.
 
@@ -152,15 +152,15 @@ STATIC float calculate_temperature(uint16_t raw_value) {
     // 1b as mentioned in data sheet section "Temperature Sensor Characteristics"
     // of Electrical Characteristics. (adapted from ASF sample code).
     // Coarse Temp Calculation by assume INT1V=1V for this ADC conversion
-    float coarse_temp = tempR + (((tempH - tempR)/(VADCH - VADCR)) * (VADC - VADCR));
+    float coarse_temp = tempR + (((tempH - tempR) / (VADCH - VADCR)) * (VADC - VADCR));
 
     // Calculation to find the real INT1V value during the ADC conversion
-    INT1VM = INT1VR + (((INT1VH - INT1VR) * (coarse_temp - tempR))/(tempH - tempR));
+    INT1VM = INT1VR + (((INT1VH - INT1VR) * (coarse_temp - tempR)) / (tempH - tempR));
 
-    VADCM = ((float)raw_value * INT1VM)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+    VADCM = ((float)raw_value * INT1VM) / ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
 
     // Fine Temp Calculation by replace INT1V=1V by INT1V = INT1Vm for ADC conversion
-    float fine_temp = tempR + (((tempH - tempR)/(VADCH - VADCR)) * (VADCM - VADCR));
+    float fine_temp = tempR + (((tempH - tempR) / (VADCH - VADCR)) * (VADCM - VADCR));
 
     return fine_temp;
 }
@@ -183,17 +183,17 @@ STATIC float calculate_temperature(uint16_t TP, uint16_t TC) {
     uint16_t VCH = (*(uint32_t *)FUSES_HOT_ADC_VAL_CTAT_ADDR & FUSES_HOT_ADC_VAL_CTAT_Msk) >> FUSES_HOT_ADC_VAL_CTAT_Pos;
 
     // From SAMD51 datasheet: section 45.6.3.1 (page 1327).
-    return (TL*VPH*TC - VPL*TH*TC - TL*VCH*TP + TH*VCL*TP) / (VCL*TP - VCH*TP - VPL*TC + VPH*TC);
+    return (TL * VPH * TC - VPL * TH * TC - TL * VCH * TP + TH * VCL * TP) / (VCL * TP - VCH * TP - VPL * TC + VPH * TC);
 }
 #endif // SAMD51
 
 float common_hal_mcu_processor_get_temperature(void) {
     struct adc_sync_descriptor adc;
 
-    static Adc* adc_insts[] = ADC_INSTS;
+    static Adc *adc_insts[] = ADC_INSTS;
     samd_peripherals_adc_setup(&adc, adc_insts[0]);
 
-#ifdef SAMD21
+    #ifdef SAMD21
     // The parameters chosen here are from the temperature example in:
     // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
     // That note also recommends in general:
@@ -205,9 +205,9 @@ float common_hal_mcu_processor_get_temperature(void) {
     // Channel arg is ignored.
     adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
     adc_sync_set_inputs(&adc,
-                        ADC_INPUTCTRL_MUXPOS_TEMP_Val,   // pos_input
-                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        IGNORED_CHANNEL);                // channel (ignored)
+        ADC_INPUTCTRL_MUXPOS_TEMP_Val,                   // pos_input
+        ADC_INPUTCTRL_MUXNEG_GND_Val,                    // neg_input
+        IGNORED_CHANNEL);                                // channel (ignored)
 
     hri_adc_write_CTRLB_PRESCALER_bf(adc.device.hw, ADC_CTRLB_PRESCALER_DIV32_Val);
     hri_adc_write_SAMPCTRL_SAMPLEN_bf(adc.device.hw, ADC_TEMP_SAMPLE_LENGTH);
@@ -227,14 +227,14 @@ float common_hal_mcu_processor_get_temperature(void) {
     // Empirical observation shows the first reading is quite different than subsequent ones.
 
     // Channel arg is ignored.
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &value), 2);
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &value), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&value), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&value), 2);
 
     adc_sync_deinit(&adc);
     return calculate_temperature(value);
-#endif // SAMD21
+    #endif // SAMD21
 
-#ifdef SAM_D5X_E5X
+    #ifdef SAM_D5X_E5X
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
     // Using INTVCC0 as the reference voltage.
     // INTVCC1 seems to read a little high.
@@ -250,48 +250,48 @@ float common_hal_mcu_processor_get_temperature(void) {
     // Channel arg is ignored.
     adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
     adc_sync_set_inputs(&adc,
-                        ADC_INPUTCTRL_MUXPOS_PTAT_Val,   // pos_input
-                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        IGNORED_CHANNEL);                // channel (ignored)
+        ADC_INPUTCTRL_MUXPOS_PTAT_Val,                   // pos_input
+        ADC_INPUTCTRL_MUXNEG_GND_Val,                    // neg_input
+        IGNORED_CHANNEL);                                // channel (ignored)
 
     // Read both temperature sensors.
     volatile uint16_t ptat;
     volatile uint16_t ctat;
 
     // Read twice for stability (necessary?).
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ptat), 2);
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ptat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&ptat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&ptat), 2);
 
     adc_sync_set_inputs(&adc,
-                        ADC_INPUTCTRL_MUXPOS_CTAT_Val,   // pos_input
-                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        IGNORED_CHANNEL);                // channel (ignored)
+        ADC_INPUTCTRL_MUXPOS_CTAT_Val,                   // pos_input
+        ADC_INPUTCTRL_MUXNEG_GND_Val,                    // neg_input
+        IGNORED_CHANNEL);                                // channel (ignored)
 
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ctat), 2);
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ctat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&ctat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&ctat), 2);
 
     // Turn off temp sensor.
     hri_supc_clear_VREF_TSEN_bit(SUPC);
 
     adc_sync_deinit(&adc);
     return calculate_temperature(ptat, ctat);
-#endif // SAMD51
+    #endif // SAMD51
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-#if MICROCONTROLLER_VOLTAGE_DISABLE
+    #if MICROCONTROLLER_VOLTAGE_DISABLE
     return NAN;
-#else
+    #else
     struct adc_sync_descriptor adc;
 
-    static Adc* adc_insts[] = ADC_INSTS;
+    static Adc *adc_insts[] = ADC_INSTS;
     samd_peripherals_adc_setup(&adc, adc_insts[0]);
 
-#ifdef SAMD21
+    #ifdef SAMD21
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
-#endif
+    #endif
 
-#ifdef SAM_D5X_E5X
+    #ifdef SAM_D5X_E5X
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
 
@@ -302,14 +302,14 @@ float common_hal_mcu_processor_get_voltage(void) {
     // startup time. There is no synchronization bit to check.
     // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
     mp_hal_delay_ms(1);
-#endif
+    #endif
 
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
     // Channel arg is ignored.
     adc_sync_set_inputs(&adc,
-                        ADC_INPUTCTRL_MUXPOS_SCALEDIOVCC_Val,     // IOVCC/4 (nominal 3.3V/4)
-                        ADC_INPUTCTRL_MUXNEG_GND_Val,             // neg_input
-                        IGNORED_CHANNEL);                         // channel (ignored).
+        ADC_INPUTCTRL_MUXPOS_SCALEDIOVCC_Val,                     // IOVCC/4 (nominal 3.3V/4)
+        ADC_INPUTCTRL_MUXNEG_GND_Val,                             // neg_input
+        IGNORED_CHANNEL);                                         // channel (ignored).
     adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
 
     volatile uint16_t reading;
@@ -320,13 +320,13 @@ float common_hal_mcu_processor_get_voltage(void) {
     // "Discard the first conversion result whenever there is a change in ADC configuration
     // like voltage reference / ADC channel change"
     // Empirical observation shows the first reading is quite different than subsequent ones.
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &reading), 2);
-    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &reading), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&reading), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t *)&reading), 2);
 
     adc_sync_deinit(&adc);
     // Multiply by 4 to compensate for SCALEDIOVCC division by 4.
     return (reading / 4095.0f) * 4.0f;
-#endif
+    #endif
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
@@ -336,16 +336,16 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     #ifdef SAMD21
-    uint32_t* id_addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
-                                 (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
+    uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
+                                 (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
     #endif
     #ifdef SAM_D5X_E5X
-    uint32_t* id_addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
-                                 (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
+    uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
+                                 (uint32_t *)0x00806014, (uint32_t *)0x00806018};
     #endif
 
-    for (int i=0; i<4; i++) {
-        for (int k=0; k<4; k++) {
+    for (int i = 0; i < 4; i++) {
+        for (int k = 0; k < 4; k++) {
             raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
         }
     }

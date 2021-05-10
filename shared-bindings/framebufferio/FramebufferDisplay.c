@@ -88,7 +88,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 
 // Helper to ensure we have the native super class instead of a subclass.
 static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_obj) {
-    mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &framebufferio_framebufferdisplay_type);
+    mp_obj_t native_display = mp_obj_cast_to_native_base(display_obj, &framebufferio_framebufferdisplay_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
@@ -172,7 +172,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_auto_refresh_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_auto_refresh_obj,
               (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_refresh_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     brightness: float
@@ -209,7 +209,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_brightness_obj,
               (mp_obj_t)&framebufferio_framebufferdisplay_set_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     auto_brightness: bool
@@ -240,7 +240,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_auto_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_auto_brightness_obj,
               (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     width: int
@@ -255,8 +255,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_width_obj, frameb
 const mp_obj_property_t framebufferio_framebufferdisplay_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     height: int
@@ -271,8 +271,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_height_obj, frame
 const mp_obj_property_t framebufferio_framebufferdisplay_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     rotation: int
@@ -295,7 +295,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_rotation_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_rotation_obj,
               (mp_obj_t)&framebufferio_framebufferdisplay_set_rotation_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     framebuffer: _typing.FrameBuffer
@@ -311,8 +311,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_framebuffer_obj, 
 const mp_obj_property_t framebufferio_framebufferframebuffer_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_framebuffer_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 

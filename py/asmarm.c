@@ -40,7 +40,11 @@
 
 void asm_arm_end_pass(asm_arm_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
-        #ifdef __arm__
+        #if defined(__linux__) && defined(__GNUC__)
+        char *start = mp_asm_base_get_code(&as->base);
+        char *end = start + mp_asm_base_get_code_size(&as->base);
+        __builtin___clear_cache(start, end);
+        #elif defined(__arm__)
         // flush I- and D-cache
         asm volatile (
             "0:"
@@ -297,6 +301,11 @@ void asm_arm_mov_reg_pcrel(asm_arm_t *as, uint reg_dest, uint label) {
 void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     // mov rd, rd, lsl rs
     emit_al(as, 0x1a00010 | (rd << 12) | (rs << 8) | rd);
+}
+
+void asm_arm_lsr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
+    // mov rd, rd, lsr rs
+    emit_al(as, 0x1a00030 | (rd << 12) | (rs << 8) | rd);
 }
 
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {

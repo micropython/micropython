@@ -51,11 +51,11 @@ static volatile uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 static volatile uint32_t current_compare = 0;
 
-static void turn_on(__IO PORT_PINCFG_Type * pincfg) {
+static void turn_on(__IO PORT_PINCFG_Type *pincfg) {
     pincfg->reg = PORT_PINCFG_PMUXEN;
 }
 
-static void turn_off(__IO PORT_PINCFG_Type * pincfg) {
+static void turn_off(__IO PORT_PINCFG_Type *pincfg) {
     pincfg->reg = PORT_PINCFG_RESETVALUE;
 }
 
@@ -71,7 +71,7 @@ void pulse_finish(void) {
         return;
     }
     current_compare = (current_compare + pulse_buffer[pulse_index] * 3 / 4) & 0xffff;
-    Tc* tc = tc_insts[pulseout_tc_index];
+    Tc *tc = tc_insts[pulseout_tc_index];
     tc->COUNT16.CC[0].reg = current_compare;
     if (pulse_index % 2 == 0) {
         turn_on(active_pincfg);
@@ -79,9 +79,13 @@ void pulse_finish(void) {
 }
 
 void pulseout_interrupt_handler(uint8_t index) {
-    if (index != pulseout_tc_index) return;
-    Tc* tc = tc_insts[index];
-    if (!tc->COUNT16.INTFLAG.bit.MC0) return;
+    if (index != pulseout_tc_index) {
+        return;
+    }
+    Tc *tc = tc_insts[index];
+    if (!tc->COUNT16.INTFLAG.bit.MC0) {
+        return;
+    }
 
     pulse_finish();
 
@@ -93,16 +97,16 @@ void pulseout_reset() {
     refcount = 0;
     pulseout_tc_index = 0xff;
     active_pincfg = NULL;
-#ifdef SAMD21
+    #ifdef SAMD21
     rtc_end_pulse();
-#endif
+    #endif
 }
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pwmio_pwmout_obj_t* carrier,
-                                            const mcu_pin_obj_t* pin,
-                                            uint32_t frequency,
-                                            uint16_t duty_cycle) {
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
+    const pwmio_pwmout_obj_t *carrier,
+    const mcu_pin_obj_t *pin,
+    uint32_t frequency,
+    uint16_t duty_cycle) {
     if (!carrier || pin || frequency) {
         mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
     }
@@ -136,8 +140,8 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
         #ifdef SAMD21
         tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 |
-                                TC_CTRLA_PRESCALER_DIV64 |
-                                TC_CTRLA_WAVEGEN_NFRQ;
+            TC_CTRLA_PRESCALER_DIV64 |
+            TC_CTRLA_WAVEGEN_NFRQ;
         #endif
         #ifdef SAM_D5X_E5X
         tc_reset(tc);
@@ -162,17 +166,17 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
     // Turn off the pinmux which should connect the port output.
     turn_off(self->pincfg);
-#ifdef SAMD21
+    #ifdef SAMD21
     rtc_start_pulse();
-#endif
+    #endif
 
 }
 
-bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
     return self->pin == NO_PIN;
 }
 
-void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     if (common_hal_pulseio_pulseout_deinited(self)) {
         return;
     }
@@ -187,12 +191,12 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
         pulseout_tc_index = 0xff;
     }
     self->pin = NO_PIN;
-#ifdef SAMD21
+    #ifdef SAMD21
     rtc_end_pulse();
-#endif
+    #endif
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
     if (active_pincfg != NULL) {
         mp_raise_RuntimeError(translate("Another send is already active"));
     }
@@ -202,7 +206,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     pulse_length = length;
 
     current_compare = pulses[0] * 3 / 4;
-    Tc* tc = tc_insts[pulseout_tc_index];
+    Tc *tc = tc_insts[pulseout_tc_index];
     tc->COUNT16.CC[0].reg = current_compare;
 
     // Clear our interrupt in case it was set earlier
@@ -212,7 +216,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     turn_on(active_pincfg);
     tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
 
-    while(pulse_index < length) {
+    while (pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
         RUN_BACKGROUND_TASKS;

@@ -33,8 +33,9 @@ def module_name(f):
 
 modules = []
 
-root = sys.argv[1].rstrip("/")
-root_len = len(root)
+if len(sys.argv) > 1:
+    root = sys.argv[1].rstrip("/")
+    root_len = len(root)
 
 for dirpath, dirnames, filenames in os.walk(root):
     for f in filenames:

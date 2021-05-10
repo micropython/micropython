@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -154,9 +154,10 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *filename) {
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *source_name) {
+    (void)source_name;
     #if MICROPY_PY___FILE__
-    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(filename)));
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
     #endif
 
     // execute the module in its context
@@ -246,7 +247,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     }
     #else
     // If we get here then the file was not frozen and we can't compile scripts.
-    mp_raise_ImportError(translate("script compilation not supported"));
+    mp_raise_ImportError(MP_ERROR_TEXT("script compilation not supported"));
     #endif
 }
 
@@ -331,7 +332,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         // We must have some component left over to import from
         if (p == this_name) {
-            mp_raise_ValueError(translate("cannot perform relative import"));
+            mp_raise_ValueError(MP_ERROR_TEXT("cannot perform relative import"));
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
@@ -348,6 +349,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
         mod_str = qstr_str(new_mod_q);
         mod_len = new_mod_l;
+    }
+
+    if (mod_len == 0) {
+        mp_raise_ValueError(NULL);
     }
 
     // check if module already exists
@@ -405,14 +410,6 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     el = mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
                         MP_OBJ_NEW_QSTR(current_module_name),
                         MP_MAP_LOOKUP);
-                    #if MICROPY_MODULE_WEAK_LINKS
-                    // check if there is a weak link to this module
-                    if (el == NULL) {
-                        el = mp_map_lookup((mp_map_t *)&mp_builtin_module_weak_links_map,
-                            MP_OBJ_NEW_QSTR(current_module_name),
-                            MP_MAP_LOOKUP);
-                    }
-                    #endif
                 } else {
                     el = mp_map_lookup(&((mp_obj_module_t *)outer_module_obj)->globals->map,
                         MP_OBJ_NEW_QSTR(current_module_name),
@@ -425,10 +422,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 } else {
                     // couldn't find the file, so fail
                     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-                    mp_raise_ImportError(translate("module not found"));
+                    mp_raise_ImportError(MP_ERROR_TEXT("module not found"));
                     #else
                     mp_raise_msg_varg(&mp_type_ImportError,
-                        translate("no module named '%q'"), mod_name);
+                        MP_ERROR_TEXT("no module named '%q'"), mod_name);
                     #endif
                 }
             } else {
@@ -515,7 +512,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     // Check that it's not a relative import
     if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
-        mp_raise_NotImplementedError(translate("relative import"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("relative import"));
     }
 
     // Check if module already exists, and return it if it does
@@ -527,20 +524,19 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
-    mp_map_elem_t *el = mp_map_lookup((mp_map_t *)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
-    if (el != NULL) {
+    module_obj = mp_module_search_umodule(qstr_str(module_name_qstr));
+    if (module_obj != MP_OBJ_NULL) {
         // Found weak-linked module
-        mp_module_call_init(module_name_qstr, el->value);
-        return el->value;
+        mp_module_call_init(module_name_qstr, module_obj);
+        return module_obj;
     }
     #endif
 
     // Couldn't find the module, so fail
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-    mp_raise_msg(&mp_type_ImportError, translate("module not found"));
+    mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("module not found"));
     #else
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-        translate("no module named '%q'"), module_name_qstr));
+    mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("no module named '%q'"), module_name_qstr);
     #endif
 }
 

@@ -9,7 +9,7 @@ import multiprocessing
 import threading
 import subprocess
 
-from makeqstrdefs import qstr_unescape, QSTRING_BLACK_LIST
+from makeqstrdefs import qstr_unescape, QSTRING_BLOCK_LIST
 
 re_line = re.compile(r"#[line]*\s(\d+)\s\"([^\"]+)\"", re.DOTALL)
 re_qstr = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+", re.DOTALL)
@@ -29,7 +29,7 @@ def process_file(fname, output_dir, content):
     output = []
     for match in re_qstr.findall(content):
         name = match.replace("MP_QSTR_", "")
-        if name not in QSTRING_BLACK_LIST:
+        if name not in QSTRING_BLOCK_LIST:
             output.append("Q(" + qstr_unescape(name) + ")")
     for match in re_translate.findall(content):
         output.append('TRANSLATE("' + match[0] + '")')

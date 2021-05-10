@@ -27,4 +27,3 @@
 #pragma once
 
 extern bool supervisor_workflow_connecting(void);
-extern bool supervisor_workflow_active(void);

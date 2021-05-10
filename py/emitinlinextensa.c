@@ -83,17 +83,17 @@ STATIC void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_
 
 STATIC mp_uint_t emit_inline_xtensa_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
-        emit_inline_xtensa_error_msg(emit, translate("can only have up to 4 parameters to Xtensa assembly"));
+        emit_inline_xtensa_error_msg(emit, MP_ERROR_TEXT("can only have up to 4 parameters to Xtensa assembly"));
         return 0;
     }
     for (mp_uint_t i = 0; i < n_params; i++) {
         if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
-            emit_inline_xtensa_error_msg(emit, translate("parameters must be registers in sequence a2 to a5"));
+            emit_inline_xtensa_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence a2 to a5"));
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
         if (!(strlen(p) == 2 && p[0] == 'a' && p[1] == '2' + i)) {
-            emit_inline_xtensa_error_msg(emit, translate("parameters must be registers in sequence a2 to a5"));
+            emit_inline_xtensa_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence a2 to a5"));
             return 0;
         }
     }
@@ -161,19 +161,19 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     }
     emit_inline_xtensa_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-            translate("'%s' expects a register"), op));
+            MP_ERROR_TEXT("'%s' expects a register"), op));
     return 0;
 }
 
 STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int min, int max) {
     mp_obj_t o;
     if (!mp_parse_node_get_int_maybe(pn, &o)) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects an integer"), op));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects an integer"), op));
         return 0;
     }
     uint32_t i = mp_obj_get_int_truncated(o);
     if (min != max && ((int)i < min || (int)i > max)) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' integer %d is not within range %d..%d"), op, i, min, max));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' integer %d isn't within range %d..%d"), op, i, min, max));
         return 0;
     }
     return i;
@@ -181,7 +181,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
 
 STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects a label"), op));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects a label"), op));
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
@@ -192,7 +192,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     }
     // only need to have the labels on the last pass
     if (emit->pass == MP_PASS_EMIT) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("label '%q' not defined"), label_qstr));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("label '%q' not defined"), label_qstr));
     }
     return 0;
 }
@@ -326,12 +326,12 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
     return;
 
 unknown_op:
-    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("unsupported Xtensa instruction '%s' with %d arguments"), op_str, n_args));
+    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("unsupported Xtensa instruction '%s' with %d arguments"), op_str, n_args));
     return;
 
     /*
 branch_not_in_range:
-    emit_inline_xtensa_error_msg(emit, translate("branch not in range"));
+    emit_inline_xtensa_error_msg(emit, MP_ERROR_TEXT("branch not in range"));
     return;
     */
 }

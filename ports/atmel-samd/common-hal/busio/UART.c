@@ -55,14 +55,14 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
-    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
+    const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
+    const mcu_pin_obj_t *rs485_dir, bool rs485_invert,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
-    mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    Sercom* sercom = NULL;
+    Sercom *sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
     uint32_t rx_pinmux = 0;
     uint8_t rx_pad = 255; // Unset pad
@@ -88,29 +88,29 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->timeout_ms = timeout * 1000;
 
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
 
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
-        Sercom* potential_sercom = NULL;
+        Sercom *potential_sercom = NULL;
         if (have_tx) {
             sercom_index = tx->sercom[i].index;
             if (sercom_index >= SERCOM_INST_NUM) {
                 continue;
             }
             potential_sercom = sercom_insts[sercom_index];
-#ifdef SAMD21
-	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+            #ifdef SAMD21
+            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0 ||
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
-#endif
-#ifdef SAM_D5X_E5X
-	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+            #endif
+            #ifdef SAM_D5X_E5X
+            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0)) {
                 continue;
             }
-#endif
+            #endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (rx == NULL) {
@@ -158,7 +158,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         // self->buffer, so do it manually.  (However, as long as internal
         // pointers like this are NOT moved, allocating the buffer
         // in the long-lived pool is not strictly necessary)
-        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
+        self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
         if (self->buffer == NULL) {
             common_hal_busio_uart_deinit(self);
             mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), self->buffer_length * sizeof(uint8_t));
@@ -191,24 +191,24 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Doing a group mask and set of the registers saves 60 bytes over setting the bitfields individually.
 
     sercom->USART.CTRLA.reg &= ~(SERCOM_USART_CTRLA_TXPO_Msk |
-                                 SERCOM_USART_CTRLA_RXPO_Msk |
-                                 SERCOM_USART_CTRLA_FORM_Msk);
+        SERCOM_USART_CTRLA_RXPO_Msk |
+        SERCOM_USART_CTRLA_FORM_Msk);
     sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
-                               SERCOM_USART_CTRLA_RXPO(rx_pad) |
-                               (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
+        SERCOM_USART_CTRLA_RXPO(rx_pad) |
+        (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.
     // CHSIZE is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
     sercom->USART.CTRLB.reg &= ~(SERCOM_USART_CTRLB_TXEN |
-                                 SERCOM_USART_CTRLB_RXEN |
-                                 SERCOM_USART_CTRLB_PMODE |
-                                 SERCOM_USART_CTRLB_SBMODE |
-                                 SERCOM_USART_CTRLB_CHSIZE_Msk);
+        SERCOM_USART_CTRLB_RXEN |
+        SERCOM_USART_CTRLB_PMODE |
+        SERCOM_USART_CTRLB_SBMODE |
+        SERCOM_USART_CTRLB_CHSIZE_Msk);
     sercom->USART.CTRLB.reg |= (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
-                               (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
-                               (parity == BUSIO_UART_PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
-                               (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
-                               SERCOM_USART_CTRLB_CHSIZE(bits % 8);
+        (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
+        (parity == BUSIO_UART_PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
+        (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
+        SERCOM_USART_CTRLB_CHSIZE(bits % 8);
 
     // Set baud rate
     common_hal_busio_uart_set_baudrate(self, baudrate);
@@ -227,7 +227,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         gpio_set_pin_direction(tx->number, GPIO_DIRECTION_OUT);
         gpio_set_pin_pull_mode(tx->number, GPIO_PULL_OFF);
         gpio_set_pin_function(tx->number, tx_pinmux);
-        self->tx_pin  = tx->number;
+        self->tx_pin = tx->number;
         claim_pin(tx);
     } else {
         self->tx_pin = NO_PIN;
@@ -237,7 +237,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         gpio_set_pin_direction(rx->number, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(rx->number, GPIO_PULL_OFF);
         gpio_set_pin_function(rx->number, rx_pinmux);
-        self->rx_pin  = rx->number;
+        self->rx_pin = rx->number;
         claim_pin(rx);
     } else {
         self->rx_pin = NO_PIN;
@@ -255,7 +255,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
     usart_async_disable(usart_desc_p);
     usart_async_deinit(usart_desc_p);
     reset_pin_number(self->rx_pin);
@@ -271,7 +271,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
 
     if (len == 0) {
         // Nothing to read.
@@ -328,7 +328,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
 
     struct io_descriptor *io;
     usart_async_get_io_descriptor(usart_desc_p, &io);
@@ -359,21 +359,21 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
     usart_async_set_baud_rate(usart_desc_p,
-                              // Samples and ARITHMETIC vs FRACTIONAL must correspond to USART_SAMPR in
-                              // hpl_sercom_config.h.
-                              _usart_async_calculate_baud_rate(baudrate,  // e.g. 9600 baud
-                                                               PROTOTYPE_SERCOM_USART_ASYNC_CLOCK_FREQUENCY,
-                                                               16,   // samples
-                                                               USART_BAUDRATE_ASYNCH_ARITHMETIC,
-                                                               0  // fraction - not used for ARITHMETIC
-                                                               ));
+        // Samples and ARITHMETIC vs FRACTIONAL must correspond to USART_SAMPR in
+        // hpl_sercom_config.h.
+        _usart_async_calculate_baud_rate(baudrate,                        // e.g. 9600 baud
+            PROTOTYPE_SERCOM_USART_ASYNC_CLOCK_FREQUENCY,
+            16,                                                      // samples
+            USART_BAUDRATE_ASYNCH_ARITHMETIC,
+            0                                                     // fraction - not used for ARITHMETIC
+            ));
     self->baudrate = baudrate;
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout_ms / 1000.0f);
+    return (mp_float_t)(self->timeout_ms / 1000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
@@ -382,7 +382,7 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
     struct usart_async_status async_status;
     usart_async_get_status(usart_desc_p, &async_status);
     return async_status.rxcnt;
@@ -390,7 +390,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
     usart_async_flush_rx_buffer(usart_desc_p);
 
 }
@@ -401,7 +401,7 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
         return false;
     }
     // This assignment is only here because the usart_async routines take a *const argument.
-    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_descriptor *const usart_desc_p = (struct usart_async_descriptor *const)&self->usart_desc;
     struct usart_async_status async_status;
     usart_async_get_status(usart_desc_p, &async_status);
     return !(async_status.flags & USART_ASYNC_STATUS_BUSY);

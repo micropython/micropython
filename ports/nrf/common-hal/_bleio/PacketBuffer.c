@@ -401,8 +401,8 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
                 return MIN(MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                               self->max_packet_size),
-                           self->characteristic->max_length);
+                    self->max_packet_size),
+                    self->characteristic->max_length);
             }
         }
         // There's no current connection, so we don't know the MTU, and
@@ -418,7 +418,7 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
             bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(self->conn_handle);
             if (connection) {
                 return MIN(common_hal_bleio_connection_get_max_packet_length(connection),
-                           self->max_packet_size);
+                    self->max_packet_size);
             }
         }
     }

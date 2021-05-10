@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Adafruit FunHome"
+#define MICROPY_HW_BOARD_NAME       "Adafruit FunHouse"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 #define MICROPY_HW_APA_MOSI (&pin_GPIO14)

@@ -8,6 +8,7 @@ CHIP_FAMILY = samd21
 
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
+CIRCUITPY_FULL_BUILD = 0
 
 # A number of modules are removed for pIRKey to make room for frozen libraries.
 # Many I/O functions are not available.
@@ -15,15 +16,11 @@ LONGINT_IMPL = NONE
 CIRCUITPY_ANALOGIO = 0
 CIRCUITPY_MATH = 0
 CIRCUITPY_NEOPIXEL_WRITE = 0
+CIRCUITPY_PULSEIO = 1
 CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
-CIRCUITPY_SAMD = 0
 CIRCUITPY_USB_MIDI = 1
 CIRCUITPY_TOUCHIO = 0
-CIRCUITPY_FULL_BUILD = 0
-
-SUPEROPT_GC = 0
-SUPEROPT_VM = 0
 
 # Include these Python libraries in firmware.
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar

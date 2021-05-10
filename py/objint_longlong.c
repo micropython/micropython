@@ -42,7 +42,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
-const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
+const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
@@ -203,7 +203,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 #if MICROPY_PY_BUILTINS_FLOAT
                 return mp_obj_float_binary_op(op, lhs_val, rhs_in);
                 #else
-                mp_raise_ValueError(translate("negative power with no float support"));
+                mp_raise_ValueError(MP_ERROR_TEXT("negative power with no float support"));
                 #endif
             }
             long long ans = 1;
@@ -236,7 +236,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
+    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
@@ -265,7 +265,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
-        mp_raise_msg(&mp_type_OverflowError, translate("ulonglong too large"));
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;

@@ -155,7 +155,8 @@ def get_settings_from_makefile(port_dir, board_name):
 
     settings = {}
     for line in contents.stdout.split('\n'):
-        m = re.match(r'^([A-Z][A-Z0-9_]*) = (.*)$', line)
+        # Handle both = and := definitions.
+        m = re.match(r'^([A-Z][A-Z0-9_]*) :?= (.*)$', line)
         if m:
             settings[m.group(1)] = m.group(2)
 
@@ -224,7 +225,7 @@ def support_matrix_by_board(use_branded_name=True):
     # flatmap with comprehensions
     boards = dict(sorted([board for matrix in mapped_exec for board in matrix]))
 
-    #print(json.dumps(boards, indent=2))
+    # print(json.dumps(boards, indent=2))
     return boards
 
 if __name__ == '__main__':

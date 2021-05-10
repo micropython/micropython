@@ -89,7 +89,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {
-        mp_raise_TypeError(translate("a bytes-like object is required"));
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
     }
     #endif
 }

@@ -37,7 +37,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BUS10), MP_ROM_PTR(&pin_GPIO25) },    //              BUS10 alias
     { MP_ROM_QSTR(MP_QSTR_ADC_DP), MP_ROM_PTR(&pin_GPIO25) },   //              ADC_DP alias
     { MP_ROM_QSTR(MP_QSTR_CAM_VSYNC), MP_ROM_PTR(&pin_GPIO25) }, //              CAM_VSYNC alias
-                                                                // NC   - G11
+                                                                 // NC   - G11
 
     // PWM pins (PWM0,PWM1)
     { MP_ROM_QSTR(MP_QSTR_PWM0), MP_ROM_PTR(&pin_GPIO13) },     // GPIO13 - PWM0

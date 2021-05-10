@@ -13,8 +13,8 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     self->count += 1;
 }
 
-void common_hal_countio_counter_construct(countio_counter_obj_t* self,
-    const mcu_pin_obj_t* pin_a) {
+void common_hal_countio_counter_construct(countio_counter_obj_t *self,
+    const mcu_pin_obj_t *pin_a) {
 
     self->pin_a = pin_a->number;
     _countio_objs[self->pin_a] = self;
@@ -36,11 +36,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
 
 }
 
-bool common_hal_countio_counter_deinited(countio_counter_obj_t* self) {
+bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
     return self->pin_a == NO_PIN;
 }
 
-void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
+void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     if (common_hal_countio_counter_deinited(self)) {
         return;
     }
@@ -52,15 +52,15 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
     self->pin_a = NO_PIN;
 }
 
-mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {
+mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
     return self->count;
 }
 
-void common_hal_countio_counter_set_count(countio_counter_obj_t* self,
-        mp_int_t new_count) {
+void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
+    mp_int_t new_count) {
     self->count = new_count;
 }
 
-void common_hal_countio_counter_reset(countio_counter_obj_t* self){
-   self->count = 0;
+void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
+    self->count = 0;
 }

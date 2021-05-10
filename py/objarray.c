@@ -101,7 +101,7 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     if (typecode == 'x') {
-        mp_raise_ValueError(translate("bad typecode"));
+        mp_raise_ValueError(MP_ERROR_TEXT("bad typecode"));
     }
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
@@ -134,7 +134,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         // construct array from raw bytes
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         if (bufinfo.len % sz) {
-            mp_raise_ValueError(translate("bytes length not a multiple of item size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("bytes length not a multiple of item size"));
         }
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
@@ -249,7 +249,7 @@ STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_
     size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
     size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
     if (bytelen % element_size != 0) {
-        mp_raise_TypeError(translate("memoryview: length is not a multiple of itemsize"));
+        mp_raise_TypeError(MP_ERROR_TEXT("memoryview: length is not a multiple of itemsize"));
     }
     mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
 
@@ -458,7 +458,7 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
     mp_get_buffer_raise(args[1], &needle_bufinfo, MP_BUFFER_READ);
 
     if (mp_binary_get_size('@', needle_bufinfo.typecode, NULL) != 1) {
-        mp_raise_TypeError(translate("a bytes-like object is required"));
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
     }
 
     const byte *start = haystack_bufinfo.buf;
@@ -477,7 +477,7 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
 
     if (p == NULL) {
         if (is_index) {
-            mp_raise_ValueError(translate("substring not found"));
+            mp_raise_ValueError(MP_ERROR_TEXT("substring not found"));
         } else {
             return MP_OBJ_NEW_SMALL_INT(-1);
         }
@@ -519,7 +519,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -532,7 +532,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_raise_ValueError(translate("lhs and rhs should be compatible"));
+                        mp_raise_ValueError(MP_ERROR_TEXT("lhs and rhs should be compatible"));
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
@@ -550,7 +550,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                 } else {
-                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
+                    mp_raise_NotImplementedError(MP_ERROR_TEXT("array/bytes required on right side"));
                 }
 
                 // TODO: check src/dst compat
@@ -569,10 +569,10 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 }
                 #endif
                 if (len_adj > 0) {
-                    if ((mp_uint_t)len_adj > o->free) {
+                    if ((size_t)len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
-                        o->free = 0;
+                        o->free = len_adj;
                         dest_items = o->items;
                     }
                     mp_seq_replace_slice_grow_inplace(dest_items, o->len,
@@ -587,6 +587,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     #endif
                     // TODO: alloc policy after shrinking
                 }
+                o->free -= len_adj;
                 o->len += len_adj;
                 return mp_const_none;
                 #else
@@ -721,6 +722,7 @@ const mp_obj_type_t mp_type_array = {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_bytearray,
     .print = array_print,
     .make_new = bytearray_make_new,
@@ -745,6 +747,7 @@ STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table
 
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
     .getiter = array_iterator_new,

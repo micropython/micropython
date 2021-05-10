@@ -162,7 +162,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     if (len == 0) {
         // The RP2040 I2C peripheral will not perform 0 byte writes.
         // So use bitbangio.I2C to do the write.

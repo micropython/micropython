@@ -163,19 +163,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, superviso
 bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
     *out_value = 0;
     switch (cmd) {
-        case BP_IOCTL_INIT:
+        case MP_BLOCKDEV_IOCTL_INIT:
             supervisor_flash_init();
             break;
-        case BP_IOCTL_DEINIT:
+        case MP_BLOCKDEV_IOCTL_DEINIT:
             supervisor_flash_flush();
             break; // TODO properly
-        case BP_IOCTL_SYNC:
+        case MP_BLOCKDEV_IOCTL_SYNC:
             supervisor_flash_flush();
             break;
-        case BP_IOCTL_SEC_COUNT:
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
             *out_value = flash_get_block_count();
             break;
-        case BP_IOCTL_SEC_SIZE:
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             *out_value = supervisor_flash_get_block_size();
             break;
         default:
@@ -211,16 +211,16 @@ const mp_obj_type_t supervisor_flash_type = {
 
 void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
-    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
-    vfs->readblocks[0] = (mp_obj_t)&supervisor_flash_obj_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&supervisor_flash_obj;
-    vfs->readblocks[2] = (mp_obj_t)flash_read_blocks; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&supervisor_flash_obj_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&supervisor_flash_obj;
-    vfs->writeblocks[2] = (mp_obj_t)flash_write_blocks; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&supervisor_flash_obj_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&supervisor_flash_obj;
-    vfs->u.ioctl[2] = (mp_obj_t)flash_ioctl; // native version
+    vfs->blockdev.readblocks[0] = (mp_obj_t)&supervisor_flash_obj_readblocks_obj;
+    vfs->blockdev.readblocks[1] = (mp_obj_t)&supervisor_flash_obj;
+    vfs->blockdev.readblocks[2] = (mp_obj_t)flash_read_blocks; // native version
+    vfs->blockdev.writeblocks[0] = (mp_obj_t)&supervisor_flash_obj_writeblocks_obj;
+    vfs->blockdev.writeblocks[1] = (mp_obj_t)&supervisor_flash_obj;
+    vfs->blockdev.writeblocks[2] = (mp_obj_t)flash_write_blocks; // native version
+    vfs->blockdev.u.ioctl[0] = (mp_obj_t)&supervisor_flash_obj_ioctl_obj;
+    vfs->blockdev.u.ioctl[1] = (mp_obj_t)&supervisor_flash_obj;
+    vfs->blockdev.u.ioctl[2] = (mp_obj_t)flash_ioctl; // native version
 }

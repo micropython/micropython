@@ -238,10 +238,35 @@ Module description
 After the license comment::
 
     """
-    `<module name>` - <Short description>
+    `<module name>`
     =================================================
-    <Longer description.>
+
+    <Longer description>
+
+    * Author(s):
+
+    Implementation Notes
+    --------------------
+
+
+    **Hardware:**
+
+    * `Adafruit Device Description
+      <hyperlink>`_ (Product ID: <Product Number>)
+
+    **Software and Dependencies:**
+
+    * Adafruit CircuitPython firmware for the supported boards:
+      https://circuitpython.org/downloads
+
+    * Adafruit's Bus Device library:
+      https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+
+    * Adafruit's Register library:
+      https://github.com/adafruit/Adafruit_CircuitPython_Register
+
     """
+
 
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -268,6 +293,58 @@ Renders as:
 
     :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
     :param int address: The I2C address of the device. Defaults to :const:`0x40`
+
+
+Documenting Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Although there are different ways to document class and functions definitions in Python,
+the following is the prevalent method of documenting parameters
+for CircuitPython libraries. When documenting class parameters you should use the
+following structure:
+
+.. code-block:: sh
+
+    :param param_type param_name: Parameter_description
+
+
+param_type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The type of the parameter. This could be among other `int`, `float`, `str` `bool`, etc.
+To document an object in the CircuitPython domain, you need to include a ``~`` before the
+definition as shown in the following example:
+
+.. code-block:: sh
+
+    :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
+
+
+To include references to CircuitPython modules, cookiecutter creates an entry in the
+intersphinx_mapping section in the ``conf.py`` file located within the ``docs`` directory.
+To add different types outside CircuitPython you need to include them in the intersphinx_mapping::
+
+
+    intersphinx_mapping = {
+        "python": ("https://docs.python.org/3.4", None),
+        "BusDevice":("https://circuitpython.readthedocs.io/projects/busdevice/en/latest/", None,),
+        "CircuitPython": ("https://circuitpython.readthedocs.io/en/latest/", None),
+    }
+
+The intersphinx_mapping above includes references to Python, BusDevice and CircuitPython
+Documentation
+
+
+param_name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter name used in the class or method definition
+
+
+Parameter_description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter description. When the parameter defaults to a particular value, it is good
+practice to include the default::
+
+    :param int pitch: Pitch value for the servo. Defaults to :const:`4500`
+
 
 Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -383,6 +460,14 @@ Renders as:
 
   :param float degrees: Degrees to turn right
 
+Documentation References to other Libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When you need to make references to documentation in other libraries you should refer the class using single
+backticks  ``:class:`~adafruit_motor.servo.Servo```. You must also add the reference in the ``conf.py`` file in the
+``intersphinx_mapping section`` by adding a new entry::
+
+    "adafruit_motor": ("https://circuitpython.readthedocs.io/projects/motor/en/latest/", None,),
+
 Use BusDevice
 --------------------------------------------------------------------------------
 
@@ -442,6 +527,50 @@ SPI Example
               spi.readinto(self.buf)
           return self.buf[0]
 
+
+
+Class documentation example template
+--------------------------------------------------------------------------------
+When documenting classes, you should use the following template to illustrate basic usage.
+It is similar with the simpletest example, however this will display the information in the Read The Docs
+documentation.
+The advantage of using this template is it makes the documentation consistent across the libraries.
+
+This is an example for a AHT20 temperature sensor. Include the following after the class parameter:
+
+
+.. code-block:: python
+
+    """
+
+    **Quickstart: Importing and using the AHT10/AHT20 temperature sensor**
+
+        Here is an example of using the :class:`AHTx0` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            import adafruit_ahtx0
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()  # uses board.SCL and board.SDA
+            aht = adafruit_ahtx0.AHTx0(i2c)
+
+        Now you have access to the temperature and humidity using
+        the :attr:`temperature` and :attr:`relative_humidity` attributes
+
+        .. code-block:: python
+
+            temperature = aht.temperature
+            relative_humidity = aht.relative_humidity
+
+    """
+
+
 Use composition
 --------------------------------------------------------------------------------
 
@@ -458,10 +587,10 @@ object instead of the pins themselves. This allows the calling code to provide
 any object with the appropriate methods such as an I2C expansion board.
 
 Another example is to expect a :py:class:`~digitalio.DigitalInOut` for a pin to
-toggle instead of a :py:class:`~microcontroller.Pin` from `board`. Taking in the
-:py:class:`~microcontroller.Pin` object alone would limit the driver to pins on
-the actual microcontroller instead of pins provided by another driver such as an
-IO expander.
+toggle instead of a :py:class:`~microcontroller.Pin` from :py:mod:`board`.
+Taking in the :py:class:`~microcontroller.Pin` object alone would limit the
+driver to pins on the actual microcontroller instead of pins provided by another
+driver such as an IO expander.
 
 Lots of small modules
 --------------------------------------------------------------------------------
@@ -524,6 +653,14 @@ You could other examples if needed featuring different
 functionalities of the library.
 If you add additional examples, be sure to include them in the ``examples.rst``. Naming of the examples
 files should use the name of the library followed by a description, using underscore to separate them.
+When using print statements you should use the ``" ".format()`` format, as there are particular boards
+that are not capable to use f-strings.
+
+.. code-block:: python
+
+  text_to_display = "World!"
+
+  print("Hello {}".format(text_to_display))
 
 Sensor properties and units
 --------------------------------------------------------------------------------

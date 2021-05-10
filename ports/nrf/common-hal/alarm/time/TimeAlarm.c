@@ -55,10 +55,10 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
 }
 
 bool alarm_time_timealarm_woke_us_up(void) {
-  return sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_TIMER;
+    return sleepmem_wakeup_event == SLEEPMEM_WAKEUP_BY_TIMER;
 }
 
-int64_t wakeup_time_saved =0;
+int64_t wakeup_time_saved = 0;
 
 int64_t alarm_time_timealarm_get_wakeup_timediff_ms(void) {
     if (wakeup_time_saved == 0) {
@@ -88,7 +88,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         if (timealarm_set) {
             mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
         }
-        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm = MP_OBJ_TO_PTR(alarms[i]);
         timealarm_set = true;
     }
     if (!timealarm_set) {

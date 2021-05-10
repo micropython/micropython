@@ -4,6 +4,9 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+# Extra deps that need to happen before object compilation.
+OBJ_EXTRA_ORDER_DEPS =
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
@@ -59,7 +62,7 @@ QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.pp: %.c
 	$(STEPECHO) "PreProcess $<"
-	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
+	$(Q)$(CPP) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
 # The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
@@ -99,6 +102,7 @@ $(HEADER_BUILD):
 	$(Q)$(MKDIR) -p $@
 
 ifneq ($(FROZEN_DIR),)
+$(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)
 $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
 	$(STEPECHO) "Generating $@"
 	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
@@ -152,6 +156,13 @@ clean-prog:
 
 .PHONY: clean-prog
 endif
+
+submodules:
+	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
+ifneq ($(GIT_SUBMODULES),)
+	$(Q)git submodule update --init $(addprefix $(TOP)/,$(GIT_SUBMODULES))
+endif
+.PHONY: submodules
 
 LIBMICROPYTHON = libmicropython.a
 

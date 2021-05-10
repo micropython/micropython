@@ -211,8 +211,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_maxlen_obj, pulseio_pulsein_obj_ge
 const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pulseio_pulsein_get_maxlen_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     paused: bool
@@ -230,8 +230,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_paused_obj, pulseio_pulsein_obj_ge
 const mp_obj_property_t pulseio_pulsein_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pulseio_pulsein_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __bool__(self) -> bool: ...

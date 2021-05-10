@@ -42,11 +42,11 @@ typedef struct canio_can_obj {
     Can *hw;
     canio_can_state_t *state;
     int baudrate;
-    uint8_t rx_pin_number:8;
-    uint8_t tx_pin_number:8;
-    bool loopback:1;
-    bool silent:1;
-    bool auto_restart:1;
-    bool fifo0_in_use:1;
-    bool fifo1_in_use:1;
+    uint8_t rx_pin_number : 8;
+    uint8_t tx_pin_number : 8;
+    bool loopback : 1;
+    bool silent : 1;
+    bool auto_restart : 1;
+    bool fifo0_in_use : 1;
+    bool fifo1_in_use : 1;
 } canio_can_obj_t;

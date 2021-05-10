@@ -1,0 +1,4 @@
+mod0 RuntimeError Corrupt .mpy file
+mod1 RuntimeError Corrupt .mpy file
+mod2 MpyError Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.
+mod3 MpyError Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.

@@ -201,8 +201,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_playing_obj, audiopwmio_pwm
 const mp_obj_property_t audiopwmio_pwmaudioout_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiopwmio_pwmaudioout_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def pause(self) -> None:
@@ -250,8 +250,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_paused_obj, audiopwmio_pwma
 const mp_obj_property_t audiopwmio_pwmaudioout_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiopwmio_pwmaudioout_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {

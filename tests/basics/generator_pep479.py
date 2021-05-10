@@ -27,3 +27,14 @@ try:
     g.throw(StopIteration)
 except RuntimeError:
     print('RuntimeError')
+
+# throwing a StopIteration through yield from, will be converted to a RuntimeError
+def gen():
+    yield from range(2)
+    print('should not get here')
+g = gen()
+print(next(g))
+try:
+    g.throw(StopIteration)
+except RuntimeError:
+    print('RuntimeError')

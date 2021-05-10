@@ -1,5 +1,5 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
@@ -35,7 +35,7 @@
 
 // Helper to ensure we have the native super class instead of a subclass.
 static pixelbuf_pixelbuf_obj_t *native_pixelbuf(mp_obj_t pixelbuf_obj) {
-    mp_obj_t native_pixelbuf = mp_instance_cast_to_native_base(pixelbuf_obj, &pixelbuf_pixelbuf_type);
+    mp_obj_t native_pixelbuf = mp_obj_cast_to_native_base(pixelbuf_obj, &pixelbuf_pixelbuf_type);
     mp_obj_assert_native_inited(native_pixelbuf);
     return MP_OBJ_TO_PTR(native_pixelbuf);
 }

@@ -54,14 +54,12 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     const mcu_pin_obj_t *data_clock,
     const mcu_pin_obj_t *vertical_sync,
     const mcu_pin_obj_t *horizontal_reference,
-    int data_count)
-{
+    int data_count) {
     if (data0->number != PIN_PCC_D0) {
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data0);
     }
     // The peripheral supports 8, 10, 12, or 14 data bits, but the code only supports 8 at present
-    if (data_count != 8)
-    {
+    if (data_count != 8) {
         mp_raise_ValueError_varg(translate("Invalid data_count %d"), data_count);
     }
     if (vertical_sync && vertical_sync->number != PIN_PCC_DEN1) {
@@ -74,7 +72,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data_clock);
     }
     // technically, 0 was validated as free already but check again
-    for (int i=0; i<data_count; i++) {
+    for (int i = 0; i < data_count; i++) {
         if (!pin_number_is_free(data0->number + i)) {
             mp_raise_ValueError_varg(translate("data pin #%d in use"), i);
         }
@@ -87,8 +85,8 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
 
     // Accumulate 4 bytes into RHR register (two 16-bit pixels)
     PCC->MR.reg = PCC_MR_CID(0x1) | // Clear on falling DEN1 (VSYNC)
-                PCC_MR_ISIZE(0x0) | // Input data bus is 8 bits
-                PCC_MR_DSIZE(0x2);  // "4 data" at a time (accumulate in RHR)
+        PCC_MR_ISIZE(0x0) |         // Input data bus is 8 bits
+        PCC_MR_DSIZE(0x2);          // "4 data" at a time (accumulate in RHR)
 
     PCC->MR.bit.PCEN = 1; // Enable PCC
 
@@ -100,62 +98,59 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     gpio_set_pin_direction(PIN_PCC_CLK, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(PIN_PCC_CLK, GPIO_PULL_OFF);
     gpio_set_pin_function(PIN_PCC_CLK, GPIO_PIN_FUNCTION_PCC);
-    //claim_pin_number(PIN_PCC_CLK);
+    // claim_pin_number(PIN_PCC_CLK);
     if (vertical_sync) {
         gpio_set_pin_direction(PIN_PCC_DEN1, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_DEN1, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_DEN1, GPIO_PIN_FUNCTION_PCC); // VSYNC
-        //claim_pin_number(PIN_PCC_DEN1);
+        // claim_pin_number(PIN_PCC_DEN1);
     }
     if (horizontal_reference) {
         gpio_set_pin_direction(PIN_PCC_DEN2, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(PIN_PCC_DEN2, GPIO_PULL_OFF);
         gpio_set_pin_function(PIN_PCC_DEN2, GPIO_PIN_FUNCTION_PCC); // HSYNC
-        //claim_pin_number(PIN_PCC_DEN2);
+        // claim_pin_number(PIN_PCC_DEN2);
     }
-    for (int i=0; i<data_count; i++) {
-        gpio_set_pin_direction(PIN_PCC_D0+i, GPIO_DIRECTION_IN);
-        gpio_set_pin_pull_mode(PIN_PCC_D0+i, GPIO_PULL_OFF);
-        gpio_set_pin_function(PIN_PCC_D0+i, GPIO_PIN_FUNCTION_PCC);
-        //claim_pin_number(PIN_PCC_D0+i);
+    for (int i = 0; i < data_count; i++) {
+        gpio_set_pin_direction(PIN_PCC_D0 + i, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(PIN_PCC_D0 + i, GPIO_PULL_OFF);
+        gpio_set_pin_function(PIN_PCC_D0 + i, GPIO_PIN_FUNCTION_PCC);
+        // claim_pin_number(PIN_PCC_D0+i);
     }
 }
 
-void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self)
-{
+void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {
     if (common_hal_imagecapture_parallelimagecapture_deinited(self)) {
         return;
     }
     reset_pin_number(self->vertical_sync);
     reset_pin_number(self->horizontal_reference);
     reset_pin_number(PIN_PCC_CLK);
-    for (int i=0; i<self->data_count; i++) {
+    for (int i = 0; i < self->data_count; i++) {
         reset_pin_number(PIN_PCC_D0 + i);
     }
     self->data_count = 0;
 }
 
-bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallelimagecapture_obj_t *self)
-{
+bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallelimagecapture_obj_t *self) {
     return self->data_count == 0;
 }
 
-static void setup_dma(DmacDescriptor* descriptor, size_t count, uint32_t *buffer) {
+static void setup_dma(DmacDescriptor *descriptor, size_t count, uint32_t *buffer) {
     descriptor->BTCTRL.reg = DMAC_BTCTRL_VALID |
-                             DMAC_BTCTRL_BLOCKACT_NOACT |
-                             DMAC_BTCTRL_EVOSEL_BLOCK |
-                             DMAC_BTCTRL_DSTINC |
-                             DMAC_BTCTRL_BEATSIZE_WORD;
+        DMAC_BTCTRL_BLOCKACT_NOACT |
+        DMAC_BTCTRL_EVOSEL_BLOCK |
+        DMAC_BTCTRL_DSTINC |
+        DMAC_BTCTRL_BEATSIZE_WORD;
     descriptor->BTCNT.reg = count;
-    descriptor->DSTADDR.reg = (uint32_t)buffer + 4*count;
+    descriptor->DSTADDR.reg = (uint32_t)buffer + 4 * count;
     descriptor->SRCADDR.reg = (uint32_t)&PCC->RHR.reg;
     descriptor->DESCADDR.reg = 0;
 }
 
 #include <string.h>
 
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize)
-{
+void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
 
     uint8_t dma_channel = dma_allocate_channel();
 
@@ -171,8 +166,7 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
         const volatile uint32_t *vsync_reg = &PORT->Group[(self->vertical_sync / 32)].IN.reg;
         uint32_t vsync_bit = 1 << (self->vertical_sync % 32);
 
-        while (*vsync_reg & vsync_bit)
-        {
+        while (*vsync_reg & vsync_bit) {
             // Wait for VSYNC low (frame end)
 
             RUN_BACKGROUND_TASKS;

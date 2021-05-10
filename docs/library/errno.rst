@@ -7,6 +7,7 @@
 |see_cpython_module| :mod:`cpython:errno`.
 
 This module provides access to symbolic error codes for `OSError` exception.
+A particular inventory of codes depends on :term:`MicroPython port`.
 
 Constants
 ---------
@@ -14,7 +15,8 @@ Constants
 .. data:: EEXIST, EAGAIN, etc.
 
     Error codes, based on ANSI C/POSIX standard. All error codes start with
-    "E". Errors are usually accessible as ``exc.args[0]``
+    "E". As mentioned above, inventory of the codes depends on
+    :term:`MicroPython port`. Errors are usually accessible as ``exc.args[0]``
     where ``exc`` is an instance of `OSError`. Usage example::
 
         try:
@@ -28,5 +30,5 @@ Constants
     Dictionary mapping numeric error codes to strings with symbolic error
     code (see above)::
 
-        >>> print(errno.errorcode[uerrno.EEXIST])
+        >>> print(errno.errorcode[errno.EEXIST])
         EEXIST

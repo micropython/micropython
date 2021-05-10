@@ -63,6 +63,12 @@ test("{:>20}", "foo")
 test("{:^20}", "foo")
 test("{:<20}", "foo")
 
+# formatting bool as int
+test('{:d}', False)
+test('{:20}', False)
+test('{:d}', True)
+test('{:20}', True)
+
 # nested format specifiers
 print("{:{}}".format(123, '#>10'))
 print("{:{}{}{}}".format(123, '#', '>', '10'))

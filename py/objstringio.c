@@ -40,7 +40,7 @@
 #if MICROPY_CPYTHON_COMPAT
 STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
-        mp_raise_ValueError(translate("I/O operation on closed file"));
+        mp_raise_ValueError(MP_ERROR_TEXT("I/O operation on closed file"));
     }
 }
 #else
@@ -72,9 +72,9 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
     const void *buf = o->vstr->buf;
     o->vstr->buf = m_new(char, o->vstr->len);
-    memcpy(o->vstr->buf, buf, o->vstr->len);
     o->vstr->fixed_buf = false;
     o->ref_obj = MP_OBJ_NULL;
+    memcpy(o->vstr->buf, buf, o->vstr->len);
 }
 
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
@@ -226,6 +226,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },
@@ -243,13 +244,6 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .is_text = true,
 };
 
-STATIC const mp_stream_p_t bytesio_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
-    .read = stringio_read,
-    .write = stringio_write,
-    .ioctl = stringio_ioctl,
-};
-
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
     .name = MP_QSTR_StringIO,
@@ -262,6 +256,13 @@ const mp_obj_type_t mp_type_stringio = {
 };
 
 #if MICROPY_PY_IO_BYTESIO
+STATIC const mp_stream_p_t bytesio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
+    .read = stringio_read,
+    .write = stringio_write,
+    .ioctl = stringio_ioctl,
+};
+
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
     .name = MP_QSTR_BytesIO,

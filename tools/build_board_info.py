@@ -65,26 +65,28 @@ extension_by_board = {
     "meowbit_v121": UF2,
 }
 
-language_allow_list = set([
-    "ID",
-    "de_DE",
-    "en_GB",
-    "en_US",
-    "en_x_pirate",
-    "es",
-    "fil",
-    "fr",
-    "it_IT",
-    "ja",
-    "nl",
-    "pl",
-    "pt_BR",
-    "sv",
-    "zh_Latn_pinyin",
-])
+language_allow_list = set(
+    [
+        "ID",
+        "de_DE",
+        "en_GB",
+        "en_US",
+        "en_x_pirate",
+        "es",
+        "fil",
+        "fr",
+        "it_IT",
+        "ja",
+        "nl",
+        "pl",
+        "pt_BR",
+        "sv",
+        "zh_Latn_pinyin",
+    ]
+)
 
 
-def get_languages(list_all = False):
+def get_languages(list_all=False):
     languages = set()
     for f in os.scandir("../locale"):
         if f.name.endswith(".po"):

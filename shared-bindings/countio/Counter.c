@@ -109,7 +109,7 @@ const mp_obj_property_t countio_counter_count_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&countio_counter_get_count_obj,
               (mp_obj_t)&countio_counter_set_count_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def reset(self) -> None:

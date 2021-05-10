@@ -44,7 +44,7 @@
 // Define this to (1), and you can scope the instruction-pointer of the state machine on D26..28 (note the weird encoding though!)
 #define DEBUG_STATE_MACHINE (0)
 #if DEBUG_STATE_MACHINE
-#define SIDE(x) ((x)<<8)
+#define SIDE(x) ((x) << 8)
 #else
 #define SIDE(x) (0)
 #endif
@@ -61,10 +61,10 @@
 /* 0 */ pio_encode_wait_gpio(0, vsync) | _0, \
 /* 1 */ pio_encode_wait_gpio(1, vsync) | _1, \
         /* .wrap_target */  \
-/* 2 */ pio_encode_wait_gpio(1, href)  | _2, \
-/* 3 */ pio_encode_wait_gpio(1, pclk)  | _3, \
+/* 2 */ pio_encode_wait_gpio(1, href) | _2, \
+/* 3 */ pio_encode_wait_gpio(1, pclk) | _3, \
 /* 4 */ pio_encode_in(pio_pins, width) | _4, \
-/* 5 */ pio_encode_wait_gpio(0, pclk)  | _5, \
+/* 5 */ pio_encode_wait_gpio(0, pclk) | _5, \
         /* .wrap */ \
     }
 
@@ -73,8 +73,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     const mcu_pin_obj_t *data_clock,
     const mcu_pin_obj_t *vertical_sync,
     const mcu_pin_obj_t *horizontal_reference,
-    int data_count)
-{
+    int data_count) {
 
     uint16_t imagecapture_code[] = IMAGECAPTURE_CODE(data_count, data_clock->number, vertical_sync->number, horizontal_reference->number);
 
@@ -86,12 +85,12 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         data0, data_count, // in pins
         0, 0, // in pulls
         NULL, 0, 0, 0, // set pins
-#if DEBUG_STATE_MACHINE
+        #if DEBUG_STATE_MACHINE
         &pin_GPIO26, 3, 7, 7, // sideset pins
-#else
+        #else
         NULL, 0, 0, 0, // sideset pins
-#endif
-        (1<<vertical_sync->number) | (1<<horizontal_reference->number) | (1<<data_clock->number), // wait gpio pins
+        #endif
+        (1 << vertical_sync->number) | (1 << horizontal_reference->number) | (1 << data_clock->number), // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // wait for txstall
@@ -103,21 +102,18 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     rp2pio_statemachine_set_wrap(&self->state_machine, 2, 5);
 }
 
-void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self)
-{
+void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {
     if (common_hal_imagecapture_parallelimagecapture_deinited(self)) {
         return;
     }
     return common_hal_rp2pio_statemachine_deinit(&self->state_machine);
 }
 
-bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallelimagecapture_obj_t *self)
-{
+bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallelimagecapture_obj_t *self) {
     return common_hal_rp2pio_statemachine_deinited(&self->state_machine);
 }
 
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize)
-{
+void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
     PIO pio = self->state_machine.pio;
     uint sm = self->state_machine.state_machine;
     uint8_t offset = rp2pio_statemachine_program_offset(&self->state_machine);

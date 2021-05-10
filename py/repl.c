@@ -153,7 +153,7 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
     } else {
         // try builtin module
         return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
-            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) != NULL;
     }
 }
 
@@ -265,7 +265,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
 
         // a complete word, lookup in current object
         qstr q = qstr_find_strn(s_start, s_len);
-        if (q == MP_QSTR_NULL) {
+        if (q == MP_QSTRnull) {
             // lookup will fail
             return 0;
         }

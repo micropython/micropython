@@ -164,8 +164,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_properties_obj, bleio_
 const mp_obj_property_t bleio_characteristic_properties_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_properties_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     uuid: Optional[UUID]
@@ -184,8 +184,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_uuid_obj, bleio_charac
 const mp_obj_property_t bleio_characteristic_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_uuid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     value: bytearray
@@ -216,7 +216,7 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_value_obj,
                (mp_obj_t)&bleio_characteristic_set_value_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     max_length: int
@@ -232,8 +232,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_max_length_obj, bleio_
 const mp_obj_property_t bleio_characteristic_max_length_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_max_length_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     descriptors: Descriptor
@@ -250,8 +250,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio
 const mp_obj_property_t bleio_characteristic_descriptors_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_descriptors_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     service: Service
@@ -267,8 +267,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_service_obj, bleio_cha
 const mp_obj_property_t bleio_characteristic_service_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_service_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     def set_cccd(self, *, notify: bool = False, indicate: bool = False) -> None:

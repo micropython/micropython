@@ -39,7 +39,3 @@
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)

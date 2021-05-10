@@ -89,7 +89,7 @@ static void make_sample_code_file(FATFS *fatfs) {
 void filesystem_init(bool create_allowed, bool force_create) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &_internal_vfs;
-    vfs_fat->flags = 0;
+    vfs_fat->blockdev.flags = 0;
     supervisor_flash_init_vfs(vfs_fat);
 
     // try to mount the flash
@@ -165,20 +165,20 @@ void filesystem_set_internal_writable_by_usb(bool writable) {
 
 void filesystem_set_writable_by_usb(fs_user_mount_t *vfs, bool usb_writable) {
     if (usb_writable) {
-        vfs->flags |= FSUSER_USB_WRITABLE;
+        vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_USB_WRITABLE;
     } else {
-        vfs->flags &= ~FSUSER_USB_WRITABLE;
+        vfs->blockdev.flags &= ~MP_BLOCKDEV_FLAG_USB_WRITABLE;
     }
 }
 
 bool filesystem_is_writable_by_python(fs_user_mount_t *vfs) {
-    return (vfs->flags & FSUSER_CONCURRENT_WRITE_PROTECTED) == 0 ||
-           (vfs->flags & FSUSER_USB_WRITABLE) == 0;
+    return (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED) == 0 ||
+           (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_USB_WRITABLE) == 0;
 }
 
 bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs) {
-    return (vfs->flags & FSUSER_CONCURRENT_WRITE_PROTECTED) == 0 ||
-           (vfs->flags & FSUSER_USB_WRITABLE) != 0;
+    return (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED) == 0 ||
+           (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_USB_WRITABLE) != 0;
 }
 
 void filesystem_set_internal_concurrent_write_protection(bool concurrent_write_protection) {
@@ -187,9 +187,9 @@ void filesystem_set_internal_concurrent_write_protection(bool concurrent_write_p
 
 void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concurrent_write_protection) {
     if (concurrent_write_protection) {
-        vfs->flags |= FSUSER_CONCURRENT_WRITE_PROTECTED;
+        vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED;
     } else {
-        vfs->flags &= ~FSUSER_CONCURRENT_WRITE_PROTECTED;
+        vfs->blockdev.flags &= ~MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED;
     }
 }
 

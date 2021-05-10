@@ -60,7 +60,7 @@ static inline size_t mp_asm_base_get_code_size(mp_asm_base_t *as) {
 
 static inline void *mp_asm_base_get_code(mp_asm_base_t *as) {
     #if defined(MP_PLAT_COMMIT_EXEC)
-    return MP_PLAT_COMMIT_EXEC(as->code_base, as->code_size);
+    return MP_PLAT_COMMIT_EXEC(as->code_base, as->code_size, NULL);
     #else
     return as->code_base;
     #endif

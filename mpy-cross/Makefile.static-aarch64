@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+PROG=mpy-cross.static-aarch64
+BUILD=build-static-aarch64
+STATIC_BUILD=1
+
+CROSS_COMPILE = aarch64-linux-gnu-
+include mpy-cross.mk

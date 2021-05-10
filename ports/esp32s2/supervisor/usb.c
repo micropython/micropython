@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "supervisor/usb.h"
 #include "supervisor/esp_port.h"
 #include "lib/utils/interrupt_char.h"

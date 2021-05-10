@@ -129,6 +129,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
     }
 
     size_t i;
+    byte *p_base = p;
     for (i = 0; i < n_args;) {
         mp_uint_t sz = 1;
         if (*fmt == '\0') {
@@ -155,9 +156,9 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
             while (sz--) {
                 // Pad bytes don't have a corresponding argument.
                 if (*fmt == 'x') {
-                    mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), &p);
+                    mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), p_base, &p);
                 } else {
-                    mp_binary_set_val(fmt_type, *fmt, args[i], &p);
+                    mp_binary_set_val(fmt_type, *fmt, args[i], p_base, &p);
                     i++;
                 }
             }
@@ -186,6 +187,7 @@ mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte
         }
     }
 
+    byte *p_base = p;
     for (uint i = 0; i < num_items;) {
         mp_uint_t sz = 1;
 
@@ -201,7 +203,7 @@ mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte
             res->items[i++] = item;
         } else {
             while (sz--) {
-                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                item = mp_binary_get_val(fmt_type, *fmt, p_base, &p);
                 // Pad bytes are not stored.
                 if (*fmt != 'x') {
                     res->items[i++] = item;

@@ -153,8 +153,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_uuid_obj, bleio_descriptor_get_uu
 const mp_obj_property_t bleio_descriptor_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_descriptor_get_uuid_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     characteristic: Characteristic
@@ -170,8 +170,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_
 const mp_obj_property_t bleio_descriptor_characteristic_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_descriptor_get_characteristic_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     value: bytearray
@@ -202,7 +202,7 @@ const mp_obj_property_t bleio_descriptor_value_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_descriptor_get_value_obj,
                (mp_obj_t)&bleio_descriptor_set_value_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {

@@ -124,7 +124,7 @@ Functions
    string for first position which matches regex (which still may be
    0 if regex is anchored).
 
-.. function:: sub(regex_str, replace, string, count=0, flags=0)
+.. function:: sub(regex_str, replace, string, count=0, flags=0, /)
 
    Compile *regex_str* and search for it in *string*, replacing all matches
    with *replace*, and returning the new string.
@@ -138,11 +138,12 @@ Functions
    If *count* is specified and non-zero then substitution will stop after
    this many substitutions are made.  The *flags* argument is ignored.
 
-   Note: availability of this function depends on MicroPython port.
+   Note: availability of this function depends on :term:`MicroPython port`.
 
 .. data:: DEBUG
 
    Flag value, display debug information about compiled expression.
+   (Availability depends on :term:`MicroPython port`.)
 
 
 .. _regex:
@@ -155,14 +156,14 @@ Compiled regular expression. Instances of this class are created using
 
 .. method:: regex.match(string)
             regex.search(string)
-            regex.sub(replace, string, count=0, flags=0)
+            regex.sub(replace, string, count=0, flags=0, /)
 
    Similar to the module-level functions :meth:`match`, :meth:`search`
    and :meth:`sub`.
    Using methods is (much) more efficient if the same regex is applied to
    multiple strings.
 
-.. method:: regex.split(string, max_split=-1)
+.. method:: regex.split(string, max_split=-1, /)
 
    Split a *string* using regex. If *max_split* is given, it specifies
    maximum number of splits to perform. Returns list of strings (there
@@ -183,7 +184,7 @@ to the replacement function in `sub()`.
 
    Return a tuple containing all the substrings of the groups of the match.
 
-   Note: availability of this method depends on MicroPython port.
+   Note: availability of this method depends on :term:`MicroPython port`.
 
 .. method:: match.start([index])
             match.end([index])
@@ -192,10 +193,10 @@ to the replacement function in `sub()`.
    substring group that was matched.  *index* defaults to the entire
    group, otherwise it will select a group.
 
-   Note: availability of these methods depends on MicroPython port.
+   Note: availability of these methods depends on :term:`MicroPython port`.
 
 .. method:: match.span([index])
 
    Returns the 2-tuple ``(match.start(index), match.end(index))``.
 
-   Note: availability of this method depends on MicroPython port.
+   Note: availability of this method depends on :term:`MicroPython port`.

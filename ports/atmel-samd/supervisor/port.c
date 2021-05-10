@@ -97,9 +97,13 @@
 volatile bool hold_interrupt = false;
 #ifdef SAMD21
 static void rtc_set_continuous(bool continuous) {
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
+        ;
+    }
     RTC->MODE0.READREQ.reg = (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
+        ;
+    }
 }
 
 void rtc_start_pulse(void) {
@@ -132,8 +136,8 @@ static void save_usb_clock_calibration(void) {
     // save the new value if its different enough.
     SYSCTRL->DFLLSYNC.bit.READREQ = 1;
     uint16_t saved_calibration = 0x1ff;
-    if (strcmp((char*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
-        saved_calibration = ((uint16_t *) CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
+    if (strcmp((char *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        saved_calibration = ((uint16_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
     }
     while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
         // TODO(tannewt): Run the mass storage stuff if this takes a while.
@@ -142,7 +146,7 @@ static void save_usb_clock_calibration(void) {
     if (abs(current_calibration - saved_calibration) > 10) {
         // Copy the full internal config page to memory.
         uint8_t page_buffer[NVMCTRL_ROW_SIZE];
-        memcpy(page_buffer, (uint8_t*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, NVMCTRL_ROW_SIZE);
+        memcpy(page_buffer, (uint8_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, NVMCTRL_ROW_SIZE);
 
         // Modify it.
         memcpy(page_buffer, "CIRCUITPYTHON1", 15);
@@ -155,31 +159,33 @@ static void save_usb_clock_calibration(void) {
         // whenever we need it instead of storing it long term.
         struct flash_descriptor desc;
         desc.dev.hw = NVMCTRL;
-        flash_write(&desc, (uint32_t) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, page_buffer, NVMCTRL_ROW_SIZE);
+        flash_write(&desc, (uint32_t)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, page_buffer, NVMCTRL_ROW_SIZE);
     }
 }
 #endif
 
 static void rtc_init(void) {
-#ifdef SAMD21
+    #ifdef SAMD21
     _gclk_enable_channel(RTC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK2_Val);
     RTC->MODE0.CTRL.bit.SWRST = true;
-    while (RTC->MODE0.CTRL.bit.SWRST != 0) {}
+    while (RTC->MODE0.CTRL.bit.SWRST != 0) {
+    }
 
     RTC->MODE0.CTRL.reg = RTC_MODE0_CTRL_ENABLE |
-                     RTC_MODE0_CTRL_MODE_COUNT32 |
-                     RTC_MODE0_CTRL_PRESCALER_DIV2;
-#endif
-#ifdef SAM_D5X_E5X
+        RTC_MODE0_CTRL_MODE_COUNT32 |
+        RTC_MODE0_CTRL_PRESCALER_DIV2;
+    #endif
+    #ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
     RTC->MODE0.CTRLA.bit.SWRST = true;
-    while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {}
+    while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {
+    }
 
     RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_ENABLE |
-                     RTC_MODE0_CTRLA_MODE_COUNT32 |
-                     RTC_MODE0_CTRLA_PRESCALER_DIV2 |
-                     RTC_MODE0_CTRLA_COUNTSYNC;
-#endif
+        RTC_MODE0_CTRLA_MODE_COUNT32 |
+        RTC_MODE0_CTRLA_PRESCALER_DIV2 |
+        RTC_MODE0_CTRLA_COUNTSYNC;
+    #endif
 
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_OVF;
 
@@ -201,14 +207,14 @@ static void rtc_init(void) {
     #endif
     NVIC_ClearPendingIRQ(RTC_IRQn);
     NVIC_EnableIRQ(RTC_IRQn);
-#if CIRCUITPY_RTC
+    #if CIRCUITPY_RTC
     rtc_reset();
-#endif
+    #endif
 
 }
 
 safe_mode_t port_init(void) {
-#if defined(SAMD21)
+    #if defined(SAMD21)
 
     // Set brownout detection.
     // Disable while changing level.
@@ -217,17 +223,17 @@ safe_mode_t port_init(void) {
     SYSCTRL->BOD33.bit.ENABLE = 1;
 
     #ifdef ENABLE_MICRO_TRACE_BUFFER
-        REG_MTB_POSITION = ((uint32_t) (mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
-        REG_MTB_FLOW = (((uint32_t) mtb - REG_MTB_BASE) + TRACE_BUFFER_SIZE_BYTES) & 0xFFFFFFF8;
-        REG_MTB_MASTER = 0x80000000 + (TRACE_BUFFER_MAGNITUDE_PACKETS - 1);
+    REG_MTB_POSITION = ((uint32_t)(mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
+    REG_MTB_FLOW = (((uint32_t)mtb - REG_MTB_BASE) + TRACE_BUFFER_SIZE_BYTES) & 0xFFFFFFF8;
+    REG_MTB_MASTER = 0x80000000 + (TRACE_BUFFER_MAGNITUDE_PACKETS - 1);
     #else
-        // Triple check that the MTB is off. Switching between debug and non-debug
-        // builds can leave it set over reset and wreak havok as a result.
-        REG_MTB_MASTER = 0x00000000 + 6;
+    // Triple check that the MTB is off. Switching between debug and non-debug
+    // builds can leave it set over reset and wreak havok as a result.
+    REG_MTB_MASTER = 0x00000000 + 6;
     #endif
-#endif
+    #endif
 
-#if defined(SAM_D5X_E5X)
+    #if defined(SAM_D5X_E5X)
     // Set brownout detection.
     // Disable while changing level.
     SUPC->BOD33.bit.ENABLE = 0;
@@ -240,7 +246,7 @@ safe_mode_t port_init(void) {
     // Leaving this code here disabled,
     // because it was hard enough to figure out, and maybe there's
     // a mistake that could make it work in the future.
-#if 0
+    #if 0
     // Designate QSPI memory mapped region as not cachable.
 
     // Turn off MPU in case it is on.
@@ -252,15 +258,15 @@ safe_mode_t port_init(void) {
     MPU->RBAR = QSPI_AHB;
     MPU->RASR =
         0b011 << MPU_RASR_AP_Pos |     // full read/write access for privileged and user mode
-        0b000 << MPU_RASR_TEX_Pos |    // caching not allowed, strongly ordered
-        1 << MPU_RASR_S_Pos |          // sharable
-        0 << MPU_RASR_C_Pos |          // not cachable
-        0 << MPU_RASR_B_Pos |          // not bufferable
-        0b10111 << MPU_RASR_SIZE_Pos | // 16MB region size
-        1 << MPU_RASR_ENABLE_Pos       // enable this region
-        ;
+            0b000 << MPU_RASR_TEX_Pos | // caching not allowed, strongly ordered
+            1 << MPU_RASR_S_Pos |      // sharable
+            0 << MPU_RASR_C_Pos |      // not cachable
+            0 << MPU_RASR_B_Pos |      // not bufferable
+            0b10111 << MPU_RASR_SIZE_Pos | // 16MB region size
+            1 << MPU_RASR_ENABLE_Pos   // enable this region
+    ;
     // Turn off regions 1-7.
-    for (uint32_t i = 1; i < 8; i ++) {
+    for (uint32_t i = 1; i < 8; i++) {
         MPU->RNR = i;
         MPU->RBAR = 0;
         MPU->RASR = 0;
@@ -270,28 +276,28 @@ safe_mode_t port_init(void) {
     // map for all privileged access, so we don't have to set up other regions
     // besides QSPI.
     MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
-#endif
+    #endif
 
     samd_peripherals_enable_cache();
-#endif
+    #endif
 
-#ifdef SAMD21
+    #ifdef SAMD21
     hri_nvmctrl_set_CTRLB_RWS_bf(NVMCTRL, 2);
     _pm_init();
-#endif
+    #endif
 
-#if CALIBRATE_CRYSTALLESS
+    #if CALIBRATE_CRYSTALLESS
     uint32_t fine = DEFAULT_DFLL48M_FINE_CALIBRATION;
     // The fine calibration data is stored in an NVM page after the text and data storage but before
     // the optional file system. The first 16 bytes are the identifier for the section.
-    if (strcmp((char*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
-        fine = ((uint16_t *) CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
+    if (strcmp((char *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        fine = ((uint16_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
     }
     clock_init(BOARD_HAS_CRYSTAL, fine);
-#else
+    #else
     // Use a default fine value
     clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
-#endif
+    #endif
 
     rtc_init();
 
@@ -319,48 +325,48 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-#if CIRCUITPY_BUSIO
+    #if CIRCUITPY_BUSIO
     reset_sercoms();
-#endif
-#if CIRCUITPY_AUDIOIO
+    #endif
+    #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
-#endif
-#if CIRCUITPY_AUDIOBUSIO
-    //pdmin_reset();
-#endif
-#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    #endif
+    #if CIRCUITPY_AUDIOBUSIO
+    // pdmin_reset();
+    #endif
+    #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     i2sout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
+    #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
-#endif
+    #endif
     eic_reset();
-#if CIRCUITPY_PULSEIO
+    #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
-#endif
-#if CIRCUITPY_PWMIO
+    #endif
+    #if CIRCUITPY_PWMIO
     pwmout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_ANALOGIO
+    #if CIRCUITPY_ANALOGIO
     analogin_reset();
     analogout_reset();
-#endif
+    #endif
 
     reset_gclks();
 
-#if CIRCUITPY_GAMEPAD
+    #if CIRCUITPY_GAMEPAD
     gamepad_reset();
-#endif
-#if CIRCUITPY_GAMEPADSHIFT
+    #endif
+    #if CIRCUITPY_GAMEPADSHIFT
     gamepadshift_reset();
-#endif
-#if CIRCUITPY_PEW
+    #endif
+    #if CIRCUITPY_PEW
     pew_reset();
-#endif
+    #endif
 
     reset_event_system();
 
@@ -375,11 +381,11 @@ void reset_port(void) {
     // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
     // #endif
 
-#if CALIBRATE_CRYSTALLESS
+    #if CALIBRATE_CRYSTALLESS
     if (tud_cdc_connected()) {
         save_usb_clock_calibration();
     }
-#endif
+    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -413,10 +419,10 @@ uint32_t *port_heap_get_top(void) {
 
 // Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.
 #ifdef SAMD21
-uint32_t* safe_word = (uint32_t*) (HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
+uint32_t *safe_word = (uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
 #endif
 #ifdef SAM_D5X_E5X
-uint32_t* safe_word = (uint32_t*) (HSRAM_ADDR + HSRAM_SIZE - 0x2000);
+uint32_t *safe_word = (uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 0x2000);
 #endif
 
 void port_set_saved_word(uint32_t value) {
@@ -434,14 +440,16 @@ static volatile uint64_t overflowed_ticks = 0;
 static volatile bool _ticks_enabled = false;
 #endif
 
-static uint32_t _get_count(uint64_t* overflow_count) {
+static uint32_t _get_count(uint64_t *overflow_count) {
     #ifdef SAM_D5X_E5X
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
+    }
     #endif
     #ifdef SAMD21
     // Request a read so we don't stall the bus later. See section 14.3.1.5 Read Request
     RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | 0x0010;
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {
+    }
     #endif
     // Disable interrupts so we can grab the count and the overflow.
     common_hal_mcu_disable_interrupts();
@@ -460,11 +468,11 @@ static void _port_interrupt_after_ticks(uint32_t ticks) {
         // We'll interrupt sooner with an overflow.
         return;
     }
-#ifdef SAMD21
+    #ifdef SAMD21
     if (hold_interrupt) {
         return;
     }
-#endif
+    #endif
     RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
@@ -476,7 +484,7 @@ void RTC_Handler(void) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_OVF;
         // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
         // tick.
-        overflowed_ticks += (1L<< (32 - 4));
+        overflowed_ticks += (1L << (32 - 4));
     #ifdef SAM_D5X_E5X
     } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
@@ -502,7 +510,7 @@ void RTC_Handler(void) {
     }
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t overflow_count;
     uint32_t current_ticks = _get_count(&overflow_count);
     if (subticks != NULL) {
@@ -551,9 +559,9 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 void port_idle_until_interrupt(void) {
     #ifdef SAM_D5X_E5X
     // Clear the FPU interrupt because it can prevent us from sleeping.
-    if (__get_FPSCR()  & ~(0x9f)) {
-        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
-        (void) __get_FPSCR();
+    if (__get_FPSCR() & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
     }
     #endif
     common_hal_mcu_disable_interrupts();
@@ -567,16 +575,15 @@ void port_idle_until_interrupt(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
-__attribute__((used)) void HardFault_Handler(void)
-{
-#ifdef ENABLE_MICRO_TRACE_BUFFER
+__attribute__((used)) void HardFault_Handler(void) {
+    #ifdef ENABLE_MICRO_TRACE_BUFFER
     // Turn off the micro trace buffer so we don't fill it up in the infinite
     // loop below.
     REG_MTB_MASTER = 0x00000000 + 6;
-#endif
+    #endif
 
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("nop;");
+        asm ("nop;");
     }
 }

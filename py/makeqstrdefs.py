@@ -27,9 +27,9 @@ elif platform.python_version_tuple()[0] == "3":
     unichr = chr
 # end compatibility code
 
-# Blacklist of qstrings that are specially handled in further
+# Blocklist of qstrings that are specially handled in further
 # processing and should be ignored
-QSTRING_BLACK_LIST = set(["NULL", "number_of"])
+QSTRING_BLOCK_LIST = set(["NULL", "number_of"])
 
 # add some custom names to map characters that aren't in HTML
 name2codepoint["hyphen"] = ord("-")
@@ -108,7 +108,7 @@ def process_file(f):
             continue
         for match in re_qstr.findall(line):
             name = match.replace("MP_QSTR_", "")
-            if name not in QSTRING_BLACK_LIST:
+            if name not in QSTRING_BLOCK_LIST:
                 output.append("Q(" + qstr_unescape(name) + ")")
         for match in re_translate.findall(line):
             output.append('TRANSLATE("' + match[0] + '")')

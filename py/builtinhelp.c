@@ -92,10 +92,6 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_WEAK_LINKS
-    mp_help_add_from_map(list, &mp_builtin_module_weak_links_map);
-    #endif
-
     #if MICROPY_MODULE_FROZEN_STR
     mp_help_add_from_names(list, mp_frozen_str_names);
     #endif
@@ -151,7 +147,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     }
     #endif
 
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
     const compressed_string_t *compressed = translate("object ");

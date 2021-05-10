@@ -19,17 +19,8 @@ except AttributeError:
     # Effectively skip subtests
     print(True)
 
-try:
-    raise SystemExit
-except SystemExit as e:
-    print("SystemExit", e.args)
-
-try:
-    sys.exit()
-except SystemExit as e:
-    print("SystemExit", e.args)
-
-try:
-    sys.exit(42)
-except SystemExit as e:
-    print("SystemExit", e.args)
+if hasattr(sys.implementation, 'mpy'):
+    print(type(sys.implementation.mpy))
+else:
+    # Effectively skip subtests
+    print(int)
