@@ -2185,11 +2185,7 @@ msgid "UART write error"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr ""
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
+msgid "USB busy"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2198,6 +2194,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c

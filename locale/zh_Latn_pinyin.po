@@ -2225,12 +2225,8 @@ msgid "UART write error"
 msgstr "UART xiě cuòwù"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB máng"
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "USB Cuòwù"
+msgid "USB busy"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2239,6 +2235,10 @@ msgstr "USB shè bèi xū yào de zhōng duān bǐ kě yòng de yào duō."
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
 msgstr "USB shè bèi zhǐ dìng le tài duō de jiè miàn míng chēng."
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -4379,6 +4379,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB máng"
+
+#~ msgid "USB Error"
+#~ msgstr "USB Cuòwù"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"

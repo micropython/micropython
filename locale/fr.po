@@ -2259,12 +2259,8 @@ msgid "UART write error"
 msgstr "Erreur d'écriture UART"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB occupé"
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "Erreur USB"
+msgid "USB busy"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2272,6 +2268,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -4436,6 +4436,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB occupé"
+
+#~ msgid "USB Error"
+#~ msgstr "Erreur USB"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "indices %q doivent être des chiffres entier, et non %q"
