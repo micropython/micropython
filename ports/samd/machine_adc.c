@@ -38,12 +38,18 @@
 #include "machine_pin.h"
 
 // --- ADC helper ----------------------------------------------------------------------
+STATIC uint8_t adc_bit_width;
+
+void adc_sync(){
+    // wait the ADC to be sync with BUS 
+    while (ADC->STATUS.bit.SYNCBUSY) {};
+}
 
 void adc_initialize(){
     // Enable APB Clock for ADC
     PM->APBCMASK.reg |= PM_APBCMASK_ADC;
     // Enable GCLK1 for ADC
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_ID_ADC ;
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0_Val | GCLK_CLKCTRL_ID_ADC ; //GCLK_CLKCTRL_GEN_GCLK1
     // Wait for Synch
     while (GCLK->STATUS.bit.SYNCBUSY) {};
     // Reload calibration data
@@ -54,18 +60,51 @@ void adc_initialize(){
     while (GCLK->STATUS.bit.SYNCBUSY) {};
     // Write calibration data
     ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity); 
+    // Wait for Synch
+    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    // Use internal VCC reference. 1/2 * VCCA = 1/2 * 3.3V = 1.65v
+    mp_printf( MP_PYTHON_PRINTER, "DBG: REFCTRL\n" );
+    ADC->REFCTRL.reg = ADC_REFCTRL_REFSEL_INTVCC1;
+    // Capture only one sample to calculate average value
+    mp_printf( MP_PYTHON_PRINTER, "DBG: AVGCTRL\n" );
+    ADC->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_1;
+    // clock prescaler @ 512 --> sample at 8Mhz / 512 = 31.25 KHz
+    // 12 bits resolution
+    mp_printf( MP_PYTHON_PRINTER, "DBG: Prescaler\n" );
+    ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV4 | ADC_CTRLB_RESSEL_12BIT;
+    mp_printf( MP_PYTHON_PRINTER, "DBG: Gain setting\n" );
+    // Minimal ADC input configuration
+    // (GAIN_DIV2 minimal because of VCC reference, compare to Ground)
+    //ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND;
+    mp_printf( MP_PYTHON_PRINTER, "DBG: done\n" );
 }
 
+void adc_configure_pin() { // TODO: add parameters
+    // Configure the Pin and PMux for ADC Input function
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin\n" );
+    PORT->Group[0].DIRCLR.reg = PORT_PA08;
+    PORT->Group[0].PINCFG[8].reg |= PORT_PINCFG_PMUXEN;
+    PORT->Group[0].PMUX[11].reg = PORT_PMUX_PMUXO_B; // Switch to function B (Analog function)
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin done\n" );
+}
 
+void adc_select_pin() { // TODO: add parameter
+    // Connect the Pin to the ADC for reading
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin\n" );
+    adc_sync();
+    ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND | ADC_INPUTCTRL_MUXPOS_PIN16;
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin done\n" );
+}
 // --- ADC class implementation --------------------------------------------------------
-STATIC uint8_t adc_bit_width;
 
 STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *args) {
 
     static int initialized = 0;
     if (!initialized) {
+        mp_printf( MP_PYTHON_PRINTER, "DBG: adc_initialize()\n" );
         adc_initialize();
+        mp_printf( MP_PYTHON_PRINTER, "DBG: adc_initialize() done\n" );
 //        #if CONFIG_IDF_TARGET_ESP32S2
 //        adc1_config_width(ADC_WIDTH_BIT_13);
 //        #else
@@ -88,6 +127,12 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     if (!self) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid Pin for ADC"));
     }
+
+    // configure the Pin & PMUX for ADC
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin()" );
+    adc_configure_pin(); //TODO: pass the Pin object & ADC Object
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin() done" );
+
 // TODO: 
 //    esp_err_t err = adc1_config_channel_atten(self->adc1_id, ADC_ATTEN_0db);
 //    if (err == ESP_OK) {
@@ -98,15 +143,40 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
 STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     madc_obj_t *self = self_in;
-    mp_printf(print, "ADC(Pin(%u))", self->gpio_id);
+    char _port = 'z';
+    // gpio_id identifies a pin as PIN_PA08 
+    for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_obj); ++i) {
+        if (machine_pin_obj[i].id == self->gpio_id) {
+            _port = (char)(65+(uint8_t)(PORTPA_NR(machine_pin_obj[i].port_shift)));
+            break;
+        }
+    }
+    mp_printf(print, "ADC(Pin(cpu=P%c%02d))", _port, self->gpio_id);
 }
 
 // read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
     // TODO: madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // TODO: uint32_t raw = adc1_get_raw(self->adc1_id);
+    adc_select_pin();
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc Enable \n" );
+    adc_sync();
+    ADC->CTRLA.bit.ENABLE = true; // Enable ADC
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc soft trigger" );
+    adc_sync();
+    ADC->SWTRIG.bit.START = true; // start ADC with software trigger
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc wait result" );
+    while (ADC->INTFLAG.bit.RESRDY == 0); // wait result to be ready
+    ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY; // clear the flag
+    
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc get result" );
     // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
-    uint32_t u16 = 0; //TODO: raw << (16 - adc_bit_width) | raw >> (2 * adc_bit_width - 16);
+    uint32_t u16 = ADC->RESULT.reg; //TODO: raw << (16 - adc_bit_width) | raw >> (2 * adc_bit_width - 16);
+    
+    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc disable" );
+    //adc_sync();
+    //ADC->CTRLA.bit.ENABLE = false; // Disable ADC
+
     return MP_OBJ_NEW_SMALL_INT(u16);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_u16_obj, madc_read_u16);
