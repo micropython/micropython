@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-11 23:12+0000\n"
+"PO-Revision-Date: 2021-05-12 14:07+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3567,7 +3567,7 @@ msgstr "name no definido"
 
 #: py/asmthumb.c
 msgid "native method too big"
-msgstr ""
+msgstr "método nativo muy grande"
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3612,7 +3612,7 @@ msgstr "no hay empaquetador por defecto"
 
 #: extmod/modurandom.c
 msgid "no default seed"
-msgstr ""
+msgstr "sin semilla por omisión"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4190,7 +4190,7 @@ msgstr "demasiados índices"
 
 #: py/asmthumb.c
 msgid "too many locals for native method"
-msgstr ""
+msgstr "muchas llamadas locales para método nativo"
 
 #: py/runtime.c
 #, c-format
