@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-10 11:33+0000\n"
+"PO-Revision-Date: 2021-05-11 23:12+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -2249,7 +2249,7 @@ msgstr "Error de escritura UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
-msgstr ""
+msgstr "USB ocupado"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2261,7 +2261,7 @@ msgstr "Dispositivos USB especifica demasiados nombres de interfaz."
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
-msgstr ""
+msgstr "error USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
