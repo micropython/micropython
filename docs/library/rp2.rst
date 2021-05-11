@@ -38,7 +38,7 @@ For running PIO programs, see :class:`rp2.StateMachine`.
     - *sideset_init* configures the pins used side-setting. There can be at
       most 5.
 
-    The following parameters are used by default, but can be overriden in
+    The following parameters are used by default, but can be overridden in
     `StateMachine.init()`:
 
     - *in_shiftdir* is the default direction the ISR will shift, either
