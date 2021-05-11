@@ -3536,6 +3536,10 @@ msgstr "naam '%q' is niet gedefinieerd"
 msgid "name not defined"
 msgstr "naam is niet gedefinieerd"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "natuurlijke opbrengst (native yield)"
@@ -3575,6 +3579,10 @@ msgstr "geen binding voor nonlocal gevonden"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4147,6 +4155,10 @@ msgstr ""
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "te veel indices"
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
 
 #: py/runtime.c
 #, c-format

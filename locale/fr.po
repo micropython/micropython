@@ -3587,6 +3587,10 @@ msgstr "nom '%q' non défini"
 msgid "name not defined"
 msgstr "nom non défini"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "'yield' natif"
@@ -3627,6 +3631,10 @@ msgstr "pas de lien trouvé pour nonlocal"
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
 msgstr "aucun emballeur par défault"
+
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4203,6 +4211,10 @@ msgstr "Trop de dimensions"
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "trop d'indices"
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
 
 #: py/runtime.c
 #, c-format

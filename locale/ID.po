@@ -3526,6 +3526,10 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3565,6 +3569,10 @@ msgstr "tidak ada ikatan/bind pada temuan nonlocal"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4134,6 +4142,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
+msgstr ""
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
 msgstr ""
 
 #: py/runtime.c

@@ -3536,6 +3536,10 @@ msgstr "míngchēng '%q' wèi dìngyì"
 msgid "name not defined"
 msgstr "míngchēng wèi dìngyì"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "yuán chǎn"
@@ -3576,6 +3580,10 @@ msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
 msgstr "wú mò rèn bāo zhuāng jī"
+
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4146,6 +4154,10 @@ msgstr "chǐ cùn tài duō"
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "suǒyǐn tài duō"
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
 
 #: py/runtime.c
 #, c-format

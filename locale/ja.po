@@ -3505,6 +3505,10 @@ msgstr "名前 '%q' は定義されていません"
 msgid "name not defined"
 msgstr "名前が定義されていません"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3544,6 +3548,10 @@ msgstr "nonlocalの対象が見つかりません"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4116,6 +4124,10 @@ msgstr ""
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "インデクスが多すぎます"
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
 
 #: py/runtime.c
 #, c-format

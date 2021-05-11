@@ -3522,6 +3522,10 @@ msgstr "name '%q' ay hindi defined"
 msgid "name not defined"
 msgstr "name hindi na define"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "native yield"
@@ -3561,6 +3565,10 @@ msgstr "no binding para sa nonlocal, nahanap"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4135,6 +4143,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
+msgstr ""
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
 msgstr ""
 
 #: py/runtime.c
