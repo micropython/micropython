@@ -87,6 +87,7 @@
 #define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
+#define MICROPY_PY_DELATTR_SETATTR  (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (1)
@@ -347,11 +348,16 @@ void mp_unix_mark_exec(void);
 #endif
 
 #if MICROPY_PY_THREAD
-#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0)
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0xffffffff)
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
-#define MICROPY_EVENT_POLL_HOOK mp_hal_delay_us(500);
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        mp_hal_delay_us(500); \
+    } while (0);
 
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();

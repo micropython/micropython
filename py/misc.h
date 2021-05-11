@@ -55,12 +55,8 @@ typedef unsigned int uint;
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 
-// Explicit fallthrough delcarations for case statements
-#ifdef __GNUC__
-#define FALLTHROUGH __attribute__((fallthrough))
-#else
-#define FALLTHROUGH ((void)0) /* FALLTHROUGH */
-#endif
+// Round-up integer division
+#define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
 
 /** memory allocation ******************************************/
 

@@ -23,7 +23,7 @@ def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--dirty", "--always", "--tags"],
+            ["git", "describe", "--dirty", "--always", "--tags", "--match", "[1-9].*"],
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         ).strip()
@@ -90,6 +90,12 @@ def make_version_header(filename):
         version_string = git_hash
     else:
         version_string = ".".join(ver)
+
+    build_date = datetime.date.today()
+    if "SOURCE_DATE_EPOCH" in os.environ:
+        build_date = datetime.datetime.utcfromtimestamp(
+            int(os.environ["SOURCE_DATE_EPOCH"])
+        ).date()
 
     # Generate the file with the git and version info
     file_data = """\

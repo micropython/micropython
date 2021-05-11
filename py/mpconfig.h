@@ -285,6 +285,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE (0)
 #endif
 
+// Whether to support saving persistent code to a file via mp_raw_code_save_file
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
@@ -304,6 +309,11 @@
 // Whether to emit thumb native code
 #ifndef MICROPY_EMIT_THUMB
 #define MICROPY_EMIT_THUMB (0)
+#endif
+
+// Whether to emit ARMv7-M instruction support in thumb native code
+#ifndef MICROPY_EMIT_THUMB_ARMV7M
+#define MICROPY_EMIT_THUMB_ARMV7M (1)
 #endif
 
 // Whether to enable the thumb inline assembler
@@ -459,6 +469,11 @@
 // Whether to enable debugging versions of MP_OBJ_NULL/STOP_ITERATION/SENTINEL
 #ifndef MICROPY_DEBUG_MP_OBJ_SENTINELS
 #define MICROPY_DEBUG_MP_OBJ_SENTINELS (0)
+#endif
+
+// Whether to print parse rule names (rather than integers) in mp_parse_node_print
+#ifndef MICROPY_DEBUG_PARSE_RULE_NAME
+#define MICROPY_DEBUG_PARSE_RULE_NAME (0)
 #endif
 
 // Whether to enable a simple VM stack overflow check
@@ -1196,6 +1211,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_MODF_FIX_NEGZERO (0)
 #endif
 
+// Whether to provide fix for pow(1, NaN) and pow(NaN, 0), which both should be 1 not NaN.
+#ifndef MICROPY_PY_MATH_POW_FIX_NAN
+#define MICROPY_PY_MATH_POW_FIX_NAN (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
@@ -1647,6 +1667,13 @@ typedef double mp_float_t;
 #else
 #define MP_UNREACHABLE for (;;);
 #endif
+#endif
+
+// Explicitly annotate switch case fall throughs
+#if defined(__GNUC__) && __GNUC__ >= 7
+#define MP_FALLTHROUGH __attribute__((fallthrough));
+#else
+#define MP_FALLTHROUGH
 #endif
 
 #ifndef MP_HTOBE16

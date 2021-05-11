@@ -14,7 +14,11 @@ except AttributeError:
 
 gc.disable()
 
+_NUM_TASKS = 10000
+_TIMEOUT_MS = 10000
+
 n = 0  # How many times the task successfully ran.
+t = None  # Start time of test, assigned here to preallocate entry in globals dict.
 
 
 def task(x):
@@ -33,9 +37,6 @@ def thread():
 
 for i in range(8):
     _thread.start_new_thread(thread, ())
-
-_NUM_TASKS = const(10000)
-_TIMEOUT_MS = const(10000)
 
 # Wait up to 10 seconds for 10000 tasks to be scheduled.
 t = utime.ticks_ms()

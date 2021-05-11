@@ -34,7 +34,7 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized -Wdouble-promotion -Wsign-compare -Wfloat-conversion
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
@@ -42,9 +42,11 @@ ifdef DEBUG
 COPT ?= -O0
 else
 COPT ?= -Os
-COPT += -fdata-sections -ffunction-sections
 COPT += -DNDEBUG
 endif
+
+# Remove unused sections.
+COPT += -fdata-sections -ffunction-sections
 
 # Always enable symbols -- They're occasionally useful, and don't make it into the
 # final .bin/.hex/.dfu so the extra size doesn't matter.
@@ -168,7 +170,6 @@ SRC_C += \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
-	coverage.c \
 	fatfs_port.c \
 	supervisor/stub/filesystem.c \
 	supervisor/stub/safe_mode.c \
@@ -184,13 +185,17 @@ LIB_SRC_C += $(addprefix lib/,\
 	utils/gchelper_generic.c \
 	)
 
+SRC_CXX += \
+	$(SRC_MOD_CXX)
+
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -202,6 +207,14 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
+
+HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
+ifeq ($(HASCPP17), 1)
+	CXXFLAGS += -std=c++17
+else
+	CXXFLAGS += -std=c++11
+endif
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
