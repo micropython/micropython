@@ -30,6 +30,10 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+#endif // __GNUC__ >= 5
 
 #include "supervisor/linker.h"
 
@@ -129,3 +133,6 @@ static entry_table_type const PLACE_IN_DTCM_DATA(entry_table[256]) = {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif // __GNUC__ >= 5

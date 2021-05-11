@@ -261,7 +261,7 @@ int readline_process_char(int c) {
         #endif
         } else if (32 <= c) {
             // printable character
-            char lcp = rl.line->buf[rl.cursor_pos];
+            uint8_t lcp = rl.line->buf[rl.cursor_pos];
             uint8_t cont_need = 0;
             if (!UTF8_IS_CONT(c)) {
                 // ASCII or Lead code point

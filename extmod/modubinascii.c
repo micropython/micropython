@@ -19,8 +19,8 @@ static void check_not_unicode(const mp_obj_t arg) {
 }
 
 STATIC mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
-    // Second argument is for an extension to allow a separator to be used
-    // between values.
+    // First argument is the data to convert.
+    // Second argument is an optional separator to be used between values.
     const char *sep = NULL;
     mp_buffer_info_t bufinfo;
     check_not_unicode(args[0]);

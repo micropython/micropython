@@ -41,6 +41,8 @@ SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
 	)
 else
 CFLAGS_MOD += -DMICROPY_VFS_LFS2=0
+
+$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
 endif
 
 ################################################################################
