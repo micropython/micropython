@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-10 11:33+0000\n"
+"PO-Revision-Date: 2021-05-12 21:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2255,7 +2255,7 @@ msgstr "Houve um erro na gravação UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
-msgstr ""
+msgstr "USB ocupado"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2268,7 +2268,7 @@ msgstr "Os dispositivos USB definiram nomes demais para as interfaces."
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
-msgstr ""
+msgstr "Erro na USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3579,7 +3579,7 @@ msgstr "nome não definido"
 
 #: py/asmthumb.c
 msgid "native method too big"
-msgstr ""
+msgstr "o método nativo é grande demais"
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3624,7 +3624,7 @@ msgstr "nenhum empacotador padrão"
 
 #: extmod/modurandom.c
 msgid "no default seed"
-msgstr ""
+msgstr "nenhuma semente padrão"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4203,7 +4203,7 @@ msgstr "índices demais"
 
 #: py/asmthumb.c
 msgid "too many locals for native method"
-msgstr ""
+msgstr "locais demais para o método nativo"
 
 #: py/runtime.c
 #, c-format
