@@ -18,7 +18,7 @@ parser.add_argument("--font", type=str, help="Font path", required=True)
 parser.add_argument("--extra_characters", type=str, help="Unicode string of extra characters")
 parser.add_argument(
     "--sample_file",
-    type=argparse.FileType("r"),
+    type=argparse.FileType("r", encoding="utf-8"),
     help="Text file that includes strings to support.",
 )
 parser.add_argument("--output_c_file", type=argparse.FileType("w"), required=True)
