@@ -419,7 +419,6 @@ def compute_huffman_coding(translations, compression_filename):
 
     print("//", values, lengths)
     values = [(atom if len(atom) == 1 else chr(0x80 + words.index(atom))) for atom in values]
-    print("//", values, lengths)
     max_translation_encoded_length = max(
         len(translation.encode("utf-8")) for (original, translation) in translations
     )
