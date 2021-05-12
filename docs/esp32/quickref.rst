@@ -58,7 +58,7 @@ The :mod:`esp32` module::
     import esp32
 
     esp32.hall_sensor()     # read the internal hall sensor
-    esp32.raw_temperature() # read the internal temperature of the MCU, in Farenheit
+    esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
     esp32.ULP()             # access to the Ultra-Low-Power Co-processor
 
 Note that the temperature sensor in the ESP32 will typically read higher than
@@ -170,6 +170,33 @@ Notes:
 
 * The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
   consumption during deepsleep.
+
+UART (serial bus)
+-----------------
+
+See :ref:`machine.UART <machine.UART>`. ::
+
+    from machine import UART
+
+    uart1 = UART(1, baudrate=9600, tx=33, rx=32)
+    uart1.write('hello')  # write 5 bytes
+    uart1.read(5)         # read up to 5 bytes
+
+The ESP32 has three hardware UARTs: UART0, UART1 and UART2.
+They each have default GPIO assigned to them, however depending on your
+ESP32 variant and board, these pins may conflict with embedded flash,
+onboard PSRAM or peripherals.
+
+Any GPIO can be used for hardware UARTs using the GPIO matrix, so to avoid
+conflicts simply provide ``tx`` and ``rx`` pins when constructing. The default
+pins listed below.
+
+=====  =====  =====  =====
+\      UART0  UART1  UART2
+=====  =====  =====  =====
+tx     1      10     17
+rx     3      9      16
+=====  =====  =====  =====
 
 PWM (pulse width modulation)
 ----------------------------
@@ -357,6 +384,17 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
 
+WDT (Watchdog timer)
+--------------------
+
+See :ref:`machine.WDT <machine.WDT>`. ::
+
+    from machine import WDT
+
+    # enable the WDT with a timeout of 5s (1s is the minimum)
+    wdt = WDT(timeout=5000)
+    wdt.feed()
+
 Deep-sleep mode
 ---------------
 
@@ -385,6 +423,21 @@ Notes:
   it is an output pin) via::
 
     p1 = Pin(4, Pin.OUT, None)
+
+SD card
+-------
+
+See :ref:`machine.SDCard <machine.SDCard>`. ::
+
+    import machine, uos
+
+    # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
+    sd = machine.SDCard(slot=2)
+    uos.mount(sd, "/sd")  # mount
+
+    uos.listdir('/sd')    # list directory contents
+
+    uos.umount('/sd')     # eject
 
 RMT
 ---

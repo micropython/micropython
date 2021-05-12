@@ -171,6 +171,9 @@ STATIC void *thread_entry(void *args_in) {
     mp_pystack_init(mini_pystack, &mini_pystack[128]);
     #endif
 
+    // The GC starts off unlocked on this thread.
+    ts.gc_lock_depth = 0;
+
     // set locals and globals from the calling context
     mp_locals_set(args->dict_locals);
     mp_globals_set(args->dict_globals);

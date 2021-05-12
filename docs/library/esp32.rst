@@ -162,7 +162,7 @@ used to transmit or receive many other types of digital signals::
 The input to the RMT module is an 80MHz clock (in the future it may be able to
 configure the input clock but, for now, it's fixed). ``clock_div`` *divides*
 the clock input which determines the resolution of the RMT channel. The
-numbers specificed in ``write_pulses`` are multiplied by the resolution to
+numbers specified in ``write_pulses`` are multiplied by the resolution to
 define the pulses.
 
 ``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by

@@ -40,10 +40,6 @@
 // Flags for poll()
 #define FLAG_ONESHOT (1)
 
-/// \module select - Provides select function to wait for events on a stream
-///
-/// This module provides the select function.
-
 typedef struct _poll_obj_t {
     mp_obj_t obj;
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
@@ -111,7 +107,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
     return n_ready;
 }
 
-/// \function select(rlist, wlist, xlist[, timeout])
+// select(rlist, wlist, xlist[, timeout])
 STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
     size_t rwx_len[3];
@@ -178,8 +174,6 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 
-/// \class Poll - poll class
-
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
     mp_map_t poll_map;
@@ -190,7 +184,7 @@ typedef struct _mp_obj_poll_t {
     mp_obj_t ret_tuple;
 } mp_obj_poll_t;
 
-/// \method register(obj[, eventmask])
+// register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t flags;
@@ -204,7 +198,7 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 
-/// \method unregister(obj)
+// unregister(obj)
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
@@ -213,7 +207,7 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 
-/// \method modify(obj, eventmask)
+// modify(obj, eventmask)
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
@@ -348,7 +342,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
     .locals_dict = (void *)&poll_locals_dict,
 };
 
-/// \function poll()
+// poll()
 STATIC mp_obj_t select_poll(void) {
     mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
     poll->base.type = &mp_type_poll;

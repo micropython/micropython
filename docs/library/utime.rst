@@ -173,7 +173,7 @@ Functions
    long sleep), then once you finally look again, it may seem to you that only 1 hour
    has passed. To avoid this mistake, just look at the clock regularly. Your application
    should do the same. "Too long sleep" metaphor also maps directly to application
-   behavior: don't let your application run any single task for too long. Run tasks
+   behaviour: don't let your application run any single task for too long. Run tasks
    in steps, and do time-keeping inbetween.
 
    `ticks_diff()` is designed to accommodate various usage patterns, among them:

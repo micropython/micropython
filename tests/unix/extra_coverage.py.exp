@@ -27,12 +27,26 @@ RuntimeError:
 RuntimeError: 
 # repl
 ame__
+mport 
 
-__class__       __name__        argv            atexit
-byteorder       exc_info        exit            getsizeof
-implementation  maxsize         modules         path
-platform        print_exception                 stderr
-stdin           stdout          version         version_info
+builtins        micropython     _thread         _uasyncio
+btree           cexample        cmath           cppexample
+ffi             framebuf        gc              math
+termios         uarray          ubinascii       ucollections
+ucryptolib      uctypes         uerrno          uhashlib
+uheapq          uio             ujson           umachine
+uos             urandom         ure             uselect
+usocket         ussl            ustruct         usys
+utime           utimeq          uwebsocket      uzlib
+ime
+
+utime           utimeq
+
+argv            atexit          byteorder       exc_info
+exit            getsizeof       implementation  maxsize
+modules         path            platform        print_exception
+stderr          stdin           stdout          version
+version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
