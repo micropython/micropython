@@ -40,6 +40,11 @@
 #include "dfu.h"
 #include "pack.h"
 
+// Whether the bootloader will leave via reset, or direct jump to the application.
+#ifndef MBOOT_LEAVE_BOOTLOADER_VIA_RESET
+#define MBOOT_LEAVE_BOOTLOADER_VIA_RESET (1)
+#endif
+
 // This option selects whether to use explicit polling or IRQs for USB events.
 // In some test cases polling mode can run slightly faster, but it uses more power.
 // Polling mode will also cause failures with the mass-erase command because USB
@@ -1329,6 +1334,45 @@ static int get_reset_mode(void) {
     return reset_mode;
 }
 
+NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
+    __asm volatile (
+        "ldr r2, [r1, #0]\n"    // get address of stack pointer
+        "msr msp, r2\n"         // set stack pointer
+        "ldr r2, [r1, #4]\n"    // get address of destination
+        "bx r2\n"               // branch to application
+        );
+    MP_UNREACHABLE;
+}
+
+static void try_enter_application(int reset_mode) {
+    uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
+    if ((msp & APP_VALIDITY_BITS) != 0) {
+        // Application is invalid.
+        return;
+    }
+
+    // undo our DFU settings
+    // TODO probably should disable all IRQ sources first
+    #if defined(MBOOT_BOARD_CLEANUP)
+    MBOOT_BOARD_CLEANUP(reset_mode);
+    #endif
+    #if USE_CACHE && defined(STM32F7)
+    SCB_DisableICache();
+    SCB_DisableDCache();
+    #endif
+
+    // Jump to the application.
+    branch_to_application(reset_mode, APPLICATION_ADDR);
+}
+
+static void leave_bootloader(void) {
+    #if !MBOOT_LEAVE_BOOTLOADER_VIA_RESET
+    // Try to enter the application via a jump, if it's valid.
+    try_enter_application(BOARDCTRL_RESET_MODE_BOOTLOADER);
+    #endif
+    NVIC_SystemReset();
+}
+
 static void do_reset(void) {
     led_state_all(0);
     mp_hal_delay_ms(50);
@@ -1337,7 +1381,7 @@ static void do_reset(void) {
     i2c_slave_shutdown(MBOOT_I2Cx, I2Cx_EV_IRQn);
     #endif
     mp_hal_delay_ms(50);
-    NVIC_SystemReset();
+    leave_bootloader();
 }
 
 extern PCD_HandleTypeDef pcd_fs_handle;
@@ -1402,17 +1446,11 @@ void stm32_main(int initial_r0) {
     }
 
     int reset_mode = get_reset_mode();
-    uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
-    if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER && (msp & APP_VALIDITY_BITS) == 0) {
-        // not DFU mode so jump to application, passing through reset_mode
-        // undo our DFU settings
-        // TODO probably should disable all IRQ sources first
-        #if USE_CACHE && defined(STM32F7)
-        SCB_DisableICache();
-        SCB_DisableDCache();
-        #endif
-        __set_MSP(msp);
-        ((void (*)(uint32_t)) *((volatile uint32_t*)(APPLICATION_ADDR + 4)))(reset_mode);
+    if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER) {
+        // Bootloader mode was not selected so try to enter the application,
+        // passing through the reset_mode.  This will return if the application
+        // is invalid.
+        try_enter_application(reset_mode);
     }
 
 enter_bootloader:
@@ -1461,7 +1499,7 @@ enter_bootloader:
         }
         // Always reset because the application is expecting to resume
         led_state_all(0);
-        NVIC_SystemReset();
+        leave_bootloader();
     }
     #endif
 
