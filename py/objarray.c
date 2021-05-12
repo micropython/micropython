@@ -258,6 +258,16 @@ STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
+STATIC int typecode_for_comparison(int typecode) {
+    if (typecode == BYTEARRAY_TYPECODE) {
+        typecode = 'B';
+    }
+    if (typecode <= 'Z') {
+        typecode += 32; // to lowercase
+    }
+    return typecode;
+}
+
 STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_array_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
@@ -319,7 +329,20 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             if (!mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
                 return mp_const_false;
             }
-            return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+            // mp_seq_cmp_bytes is used so only compatible representations can be correctly compared.
+            // The type doesn't matter: array/bytearray/str/bytes all have the same buffer layout, so
+            // just check if the typecodes are compatible; for testing equality the types should have the
+            // same code except for signedness, and not be floating point because nan never equals nan.
+            // Note that typecode_for_comparison always returns lowercase letters to save code size.
+            // No need for (& TYPECODE_MASK) here: xxx_get_buffer already takes care of that.
+            const int lhs_code = typecode_for_comparison(lhs_bufinfo.typecode);
+            const int rhs_code = typecode_for_comparison(rhs_bufinfo.typecode);
+            if (lhs_code == rhs_code && lhs_code != 'f' && lhs_code != 'd') {
+                return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+            }
+            // mp_obj_equal_not_equal treats returning MP_OBJ_NULL as 'fall back to pointer comparison'
+            // for MP_BINARY_OP_EQUAL but that is incompatible with CPython.
+            mp_raise_NotImplementedError(NULL);
         }
 
         default:
