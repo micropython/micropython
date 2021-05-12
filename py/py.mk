@@ -50,7 +50,7 @@ $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 LVGL_MPY: $(LVGL_MPY)
 
 CFLAGS_MOD += -Wno-unused-function
-SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
+SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_DIR)/examples $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
 
 #lodepng
 LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
