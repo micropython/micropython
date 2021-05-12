@@ -38,6 +38,7 @@
 #include "extmod/mpbthci.h"
 #include "extmod/btstack/btstack_hci_uart.h"
 #include "extmod/btstack/modbluetooth_btstack.h"
+#include "mpbthciport.h"
 
 // The IRQ functionality in btstack_run_loop_embedded.c is not used, so the
 // following three functions are empty.
@@ -75,6 +76,10 @@ void mp_bluetooth_hci_poll(void) {
 
     // Call the BTstack run loop.
     btstack_run_loop_embedded_execute_once();
+
+    // Call this function again in 128ms to check for new events.
+    // TODO: improve this by only calling back when needed.
+    mp_bluetooth_hci_poll_in_ms(128);
 }
 
 void mp_bluetooth_btstack_port_init(void) {

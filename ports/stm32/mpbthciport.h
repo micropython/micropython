@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2021 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_SYSTICK_H
-#define MICROPY_INCLUDED_STM32_SYSTICK_H
+#ifndef MICROPY_INCLUDED_STM32_MPBTHCIPORT_H
+#define MICROPY_INCLUDED_STM32_MPBTHCIPORT_H
 
-// Works for x between 0 and 16 inclusive
-#define POW2_CEIL(x) ((((x) - 1) | ((x) - 1) >> 1 | ((x) - 1) >> 2 | ((x) - 1) >> 3) + 1)
+// Initialise the HCI subsystem (should be called once, early on).
+void mp_bluetooth_hci_init(void);
 
-enum {
-    SYSTICK_DISPATCH_DMA = 0,
-    #if MICROPY_HW_ENABLE_STORAGE
-    SYSTICK_DISPATCH_STORAGE,
-    #endif
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    SYSTICK_DISPATCH_LWIP,
-    #endif
-    SYSTICK_DISPATCH_MAX
-};
+// Poll the HCI now, or after a certain timeout.
+void mp_bluetooth_hci_poll_now(void);
+void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
 
-#define SYSTICK_DISPATCH_NUM_SLOTS POW2_CEIL(SYSTICK_DISPATCH_MAX)
+// Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
+// Request new data from the uart and pass to the stack, and run pending events/callouts.
+// This is a low-level function and should not be called directly, use
+// mp_bluetooth_hci_poll_now/mp_bluetooth_hci_poll_in_ms instead.
+void mp_bluetooth_hci_poll(void);
 
-typedef void (*systick_dispatch_t)(uint32_t);
-
-extern systick_dispatch_t systick_dispatch_table[SYSTICK_DISPATCH_NUM_SLOTS];
-
-static inline void systick_enable_dispatch(size_t slot, systick_dispatch_t f) {
-    systick_dispatch_table[slot] = f;
-}
-
-static inline void systick_disable_dispatch(size_t slot) {
-    systick_dispatch_table[slot] = NULL;
-}
-
-void systick_wait_at_least(uint32_t stc, uint32_t delay_ms);
-bool systick_has_passed(uint32_t stc, uint32_t delay_ms);
-
-#endif // MICROPY_INCLUDED_STM32_SYSTICK_H
+#endif // MICROPY_INCLUDED_STM32_MPBTHCIPORT_H
