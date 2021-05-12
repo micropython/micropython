@@ -105,7 +105,7 @@ void mp_init(void) {
     #endif
 
     // init global module dict
-    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
+    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), MICROPY_LOADED_MODULES_DICT_SIZE);
 
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
@@ -389,7 +389,9 @@ mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t r
                     if (rhs_val < 0) {
                         // negative shift not allowed
                         mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
-                    } else if (rhs_val >= (mp_int_t)BITS_PER_WORD || lhs_val > (MP_SMALL_INT_MAX >> rhs_val) || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
+                    } else if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)
+                               || lhs_val > (MP_SMALL_INT_MAX >> rhs_val)
+                               || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
                         // left-shift will overflow, so use higher precision integer
                         lhs = mp_obj_new_int_from_ll(lhs_val);
                         goto generic_binary_op;
@@ -406,10 +408,10 @@ mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t r
                         mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
                     } else {
                         // standard precision is enough for right-shift
-                        if (rhs_val >= (mp_int_t)BITS_PER_WORD) {
+                        if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)) {
                             // Shifting to big amounts is underfined behavior
                             // in C and is CPU-dependent; propagate sign bit.
-                            rhs_val = BITS_PER_WORD - 1;
+                            rhs_val = sizeof(lhs_val) * MP_BITS_PER_BYTE - 1;
                         }
                         lhs_val >>= rhs_val;
                     }
