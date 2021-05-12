@@ -231,7 +231,7 @@ static void usb_build_configuration_descriptor(void) {
     configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = current_interface;
 
     // Did we run out of endpoints?
-    if (current_endpoint - 1 > USB_NUM_EP) {
+    if (current_endpoint > USB_NUM_EP) {
         reset_into_safe_mode(USB_TOO_MANY_ENDPOINTS);
     }
 

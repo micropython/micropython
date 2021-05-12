@@ -117,13 +117,17 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
 
 
 
-#define FILE_AN_ISSUE translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n")
-
 void print_safe_mode_message(safe_mode_t reason) {
     if (reason == NO_SAFE_MODE) {
         return;
     }
-    serial_write("\n");
+
+    serial_write("\r\n");
+    serial_write_compressed(translate("You are in safe mode because:\n"));
+
+    const compressed_string_t *message = NULL;
+
+    // First check for safe mode reasons that do not necessarily reflect bugs.
 
     switch (reason) {
         case USER_SAFE_MODE:
@@ -133,40 +137,40 @@ void print_safe_mode_message(safe_mode_t reason) {
             serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
             serial_write_compressed(translate("To exit, please reset the board without "));
             serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-            #else
-            break;
             #endif
-            return;
+            break;
         case MANUAL_SAFE_MODE:
-            serial_write_compressed(translate("CircuitPython is in safe mode because you pressed the reset button during boot. Press again to exit safe mode.\n"));
-            return;
+            message = translate("You pressed the reset button during boot. Press again to exit safe mode.");
+            break;
         case PROGRAMMATIC_SAFE_MODE:
-            serial_write_compressed(translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.\n"));
-            return;
+            message = translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.");
+            break;
+        case BROWNOUT:
+            message = translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).");
+            break;
+        case USB_TOO_MANY_ENDPOINTS:
+            message = translate("USB devices need more endpoints than are available.");
+            break;
+        case USB_TOO_MANY_INTERFACE_NAMES:
+            message = translate("USB devices specify too many interface names.");
+            break;
+        case WATCHDOG_RESET:
+            message = translate("Watchdog timer expired.");
+            break;
         default:
             break;
     }
 
-    serial_write_compressed(translate("You are in safe mode: something unanticipated happened.\n"));
-    switch (reason) {
-        case BROWNOUT:
-            serial_write_compressed(translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"));
-            return;
-        case HEAP_OVERWRITTEN:
-            serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\nPlease increase the stack size if you know how, or if not:"));
-            serial_write_compressed(FILE_AN_ISSUE);
-            return;
-        case NO_HEAP:
-            serial_write_compressed(translate("CircuitPython was unable to allocate the heap.\n"));
-            serial_write_compressed(FILE_AN_ISSUE);
-            return;
-        default:
-            break;
+    if (message) {
+        serial_write_compressed(message);
+        serial_write("\r\n");
+        return;
     }
+
+    // Something worse happened.
 
     serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
 
-    const compressed_string_t *message = NULL;
     switch (reason) {
         case HARD_CRASH:
             message = translate("Crash into the HardFault_Handler.");
@@ -176,6 +180,12 @@ void print_safe_mode_message(safe_mode_t reason) {
             break;
         case MICROPY_FATAL_ERROR:
             message = translate("Fatal error.");
+            break;
+        case NO_HEAP:
+            message = translate("CircuitPython was unable to allocate the heap.");
+            break;
+        case HEAP_OVERWRITTEN:
+            message = translate("The CircuitPython heap was corrupted because the stack was too small.\nIncrease the stack size if you know how. If not:");
             break;
         case GC_ALLOC_OUTSIDE_VM:
             message = translate("Attempted heap allocation when VM not running.");
@@ -193,19 +203,10 @@ void print_safe_mode_message(safe_mode_t reason) {
         case MEM_MANAGE:
             message = translate("Invalid memory access.");
             break;
-        case WATCHDOG_RESET:
-            message = translate("Watchdog timer expired.");
-            break;
-        case USB_TOO_MANY_ENDPOINTS:
-            message = translate("USB devices need more endpoints than are available.");
-            break;
-        case USB_TOO_MANY_INTERFACE_NAMES:
-            message = translate("USB devices specify too many interface names.");
-            break;
         default:
             message = translate("Unknown reason.");
             break;
     }
     serial_write_compressed(message);
-    serial_write_compressed(FILE_AN_ISSUE);
+    serial_write_compressed(translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n"));
 }
