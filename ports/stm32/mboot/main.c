@@ -374,12 +374,27 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 /******************************************************************************/
 // LED
 
+#if defined(MBOOT_LED1)
+#define LED0 MBOOT_LED1
+#elif defined(MICROPY_HW_LED1)
 #define LED0 MICROPY_HW_LED1
+#endif
+
+#if defined(MBOOT_LED2)
+#define LED1 MBOOT_LED2
+#elif defined(MICROPY_HW_LED2)
 #define LED1 MICROPY_HW_LED2
-#ifdef MICROPY_HW_LED3
+#endif
+
+#if defined(MBOOT_LED3)
+#define LED2 MBOOT_LED3
+#elif defined(MICROPY_HW_LED3)
 #define LED2 MICROPY_HW_LED3
 #endif
-#ifdef MICROPY_HW_LED4
+
+#if defined(MBOOT_LED4)
+#define LED3 MBOOT_LED4
+#elif defined(MICROPY_HW_LED4)
 #define LED3 MICROPY_HW_LED4
 #endif
 
@@ -397,28 +412,45 @@ static uint32_t led0_ms_interval = 0;
 static int led0_toggle_count = 0;
 
 MP_WEAK void led_init(void) {
+    #if defined(MBOOT_BOARD_LED_INIT)
+    // Custom LED init function provided by the board.
+    MBOOT_BOARD_LED_INIT();
+    #else
+    // Init LEDs using GPIO calls.
     mp_hal_pin_output(LED0);
+    #ifdef LED1
     mp_hal_pin_output(LED1);
+    #endif
     #ifdef LED2
     mp_hal_pin_output(LED2);
     #endif
     #ifdef LED3
     mp_hal_pin_output(LED3);
     #endif
+    #endif
+
     led0_cur_state = LED0_STATE_OFF;
 }
 
 MP_WEAK void led_state(uint32_t led, int val) {
+    #if defined(MBOOT_BOARD_LED_STATE)
+    // Custom LED state function provided by the board.
+    return MBOOT_BOARD_LED_STATE(led, val);
+    #else
+    // Set LEDs using GPIO calls.
     if (val) {
         MICROPY_HW_LED_ON(led);
     } else {
         MICROPY_HW_LED_OFF(led);
     }
+    #endif
 }
 
 void led_state_all(unsigned int mask) {
     led_state(LED0, mask & 1);
+    #ifdef LED1
     led_state(LED1, mask & 2);
+    #endif
     #ifdef LED2
     led_state(LED2, mask & 4);
     #endif
@@ -443,17 +475,6 @@ void led0_update() {
         }
         led_state(LED0, (led0_cur_state & (led0_toggle_count == 0 ? 1 : 2)));
     }
-}
-
-/******************************************************************************/
-// USR BUTTON
-
-static void usrbtn_init(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
-}
-
-static int usrbtn_state(void) {
-    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
 }
 
 /******************************************************************************/
@@ -1287,6 +1308,14 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
+#if defined(MBOOT_BOARD_GET_RESET_MODE)
+
+static inline int mboot_get_reset_mode(void) {
+    return MBOOT_BOARD_GET_RESET_MODE();
+}
+
+#else
+
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
 #ifdef LED2
@@ -1299,7 +1328,15 @@ static int pyb_usbdd_shutdown(void) {
 #define RESET_MODE_LED_STATES 0x3210
 #endif
 
-static int get_reset_mode(void) {
+static void usrbtn_init(void) {
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
+}
+
+static int usrbtn_state(void) {
+    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
+}
+
+static int mboot_get_reset_mode(void) {
     usrbtn_init();
     int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
@@ -1333,6 +1370,8 @@ static int get_reset_mode(void) {
     }
     return reset_mode;
 }
+
+#endif
 
 NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
@@ -1445,7 +1484,7 @@ void stm32_main(int initial_r0) {
         goto enter_bootloader;
     }
 
-    int reset_mode = get_reset_mode();
+    int reset_mode = mboot_get_reset_mode();
     if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER) {
         // Bootloader mode was not selected so try to enter the application,
         // passing through the reset_mode.  This will return if the application
@@ -1455,7 +1494,7 @@ void stm32_main(int initial_r0) {
 
 enter_bootloader:
 
-    // Init subsystems (get_reset_mode() may call these, calling them again is ok)
+    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
     led_init();
 
     // set the system clock to be HSE
