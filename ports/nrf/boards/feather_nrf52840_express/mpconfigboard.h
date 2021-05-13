@@ -30,7 +30,7 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather nRF52840 Express"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-// #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
+#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
 #define MICROPY_HW_LED_STATUS       (&pin_P1_15)
 

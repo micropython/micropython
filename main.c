@@ -485,11 +485,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 time_to_next_change = MIN(time_to_next_change, time_to_epaper_refresh);
             }
             #endif
-            if (time_to_next_change > 0) {
-                // time_to_next_change is in ms and ticks are slightly shorter so
-                // we'll undersleep just a little. It shouldn't matter.
-                port_interrupt_after_ticks(time_to_next_change);
-            }
+
+            // time_to_next_change is in ms and ticks are slightly shorter so
+            // we'll undersleep just a little. It shouldn't matter.
+            port_interrupt_after_ticks(time_to_next_change);
             #endif
             port_idle_until_interrupt();
         }
