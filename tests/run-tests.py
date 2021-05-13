@@ -294,9 +294,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     has_complex = True
     has_coverage = False
 
-    if pyb:
-        num_threads = 1
-
     upy_float_precision = 32
 
     # If we're asked to --list-tests, we can't assume that there's a
@@ -619,8 +616,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         test_count.increment()
 
-    if args.list_tests:
-        return True
+    if pyb or args.list_tests:
+        num_threads = 1
 
     if num_threads > 1:
         pool = ThreadPool(num_threads)
@@ -628,6 +625,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     else:
         for test in tests:
             run_one_test(test)
+
+    if args.list_tests:
+        return True
 
     print(
         "{} tests performed ({} individual testcases)".format(
