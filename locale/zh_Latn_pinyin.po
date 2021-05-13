@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-10 11:33+0000\n"
+"PO-Revision-Date: 2021-05-12 21:48+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -2225,12 +2225,8 @@ msgid "UART write error"
 msgstr "UART xiě cuòwù"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB máng"
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "USB Cuòwù"
+msgid "USB busy"
+msgstr "USB fán máng"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2239,6 +2235,10 @@ msgstr "USB shè bèi xū yào de zhōng duān bǐ kě yòng de yào duō."
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
 msgstr "USB shè bèi zhǐ dìng le tài duō de jiè miàn míng chēng."
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
+msgstr "USB cuò wù"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3536,6 +3536,10 @@ msgstr "míngchēng '%q' wèi dìngyì"
 msgid "name not defined"
 msgstr "míngchēng wèi dìngyì"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr "yuán shēng fāng fǎ tài dà"
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "yuán chǎn"
@@ -3576,6 +3580,10 @@ msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
 msgstr "wú mò rèn bāo zhuāng jī"
+
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr "wú mò rèn zhǒng zi"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4147,6 +4155,10 @@ msgstr "chǐ cùn tài duō"
 msgid "too many indices"
 msgstr "suǒyǐn tài duō"
 
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr "běn de fāng fǎ de dāng dì rén tài duō"
+
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
@@ -4379,6 +4391,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB máng"
+
+#~ msgid "USB Error"
+#~ msgstr "USB Cuòwù"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"

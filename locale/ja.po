@@ -2204,12 +2204,8 @@ msgid "UART write error"
 msgstr "UART書き込みエラー"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USBビジー"
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "USBエラー"
+msgid "USB busy"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2217,6 +2213,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -3505,6 +3505,10 @@ msgstr "名前 '%q' は定義されていません"
 msgid "name not defined"
 msgstr "名前が定義されていません"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3544,6 +3548,10 @@ msgstr "nonlocalの対象が見つかりません"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4117,6 +4125,10 @@ msgstr ""
 msgid "too many indices"
 msgstr "インデクスが多すぎます"
 
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
@@ -4349,6 +4361,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "USB Busy"
+#~ msgstr "USBビジー"
+
+#~ msgid "USB Error"
+#~ msgstr "USBエラー"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "%q インデクスは %q でなく整数でなければなりません"

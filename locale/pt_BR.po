@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-10 11:33+0000\n"
+"PO-Revision-Date: 2021-05-12 21:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2254,12 +2254,8 @@ msgid "UART write error"
 msgstr "Houve um erro na gravação UART"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB ocupada"
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "Erro na USB"
+msgid "USB busy"
+msgstr "USB ocupado"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2269,6 +2265,10 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
 msgstr "Os dispositivos USB definiram nomes demais para as interfaces."
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
+msgstr "Erro na USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3577,6 +3577,10 @@ msgstr "o nome '%q' não está definido"
 msgid "name not defined"
 msgstr "nome não definido"
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr "o método nativo é grande demais"
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr "rendimento nativo"
@@ -3617,6 +3621,10 @@ msgstr "nenhuma ligação para nonlocal foi encontrada"
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
 msgstr "nenhum empacotador padrão"
+
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr "nenhuma semente padrão"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4193,6 +4201,10 @@ msgstr "dimensões demais"
 msgid "too many indices"
 msgstr "índices demais"
 
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr "locais demais para o método nativo"
+
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
@@ -4425,6 +4437,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB ocupada"
+
+#~ msgid "USB Error"
+#~ msgstr "Erro na USB"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "Os indicadores %q devem ser inteiros, não %q"

@@ -2182,11 +2182,7 @@ msgid "UART write error"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr ""
-
-#: shared-module/usb_hid/Device.c
-msgid "USB Error"
+msgid "USB busy"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2195,6 +2191,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+msgid "USB error"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -3477,6 +3477,10 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
+
 #: py/emitnative.c
 msgid "native yield"
 msgstr ""
@@ -3516,6 +3520,10 @@ msgstr ""
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "no default seed"
 msgstr ""
 
 #: py/builtinimport.c
@@ -4084,6 +4092,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
+msgstr ""
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
 msgstr ""
 
 #: py/runtime.c
