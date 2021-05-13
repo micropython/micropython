@@ -67,7 +67,7 @@ def main():
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
 
-    # Note pyboard support is copied over from run-tests, not testes, and likely needs revamping
+    # Note pyboard support is copied over from run-tests.py, not tests, and likely needs revamping
     if args.pyboard:
         import pyboard
 

@@ -264,6 +264,10 @@ def get_event_loop(runq_len=0, waitq_len=0):
     return Loop
 
 
+def current_task():
+    return cur_task
+
+
 def new_event_loop():
     global _task_queue, _io_queue
     # TaskQueue of Task instances
