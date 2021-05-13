@@ -50,7 +50,7 @@ static bool pins_configured = false;
 extern uint32_t reset_reason_saved;
 extern void dbg_dump_GPIOregs(void);
 
-void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
+void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
         mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
     }
@@ -62,7 +62,7 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu
     self->pull = pull;
 }
 
-mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
+const mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
     return self->pin;
 }
 

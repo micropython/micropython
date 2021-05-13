@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,23 +28,17 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
+#include "lib/utils/interrupt_char.h"
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
-#include "shared-bindings/alarm/touch/TouchAlarm.h"
 
-#include "shared-bindings/wifi/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/port.h"
-#include "supervisor/shared/workflow.h"
-
-#include "esp_sleep.h"
-
-#include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
-#include "components/driver/include/driver/uart.h"
+#include "supervisor/workflow.h"
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -54,51 +47,52 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
+STATIC stm_sleep_source_t true_deep_wake_reason;
+STATIC mp_obj_t most_recent_alarm;
+
 void alarm_reset(void) {
-    alarm_sleep_memory_reset();
+    most_recent_alarm = NULL;
+    // Reset the alarm flag
+    STM_ALARM_FLAG = 0x00;
     alarm_pin_pinalarm_reset();
     alarm_time_timealarm_reset();
-    alarm_touch_touchalarm_reset();
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
-STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
+// Kind of a hack, required as RTC is reset in port.c
+// TODO: in the future, don't reset it at all, just override critical flags
+void alarm_set_wakeup_reason(stm_sleep_source_t reason) {
+    true_deep_wake_reason = reason;
+}
+
+STATIC stm_sleep_source_t _get_wakeup_cause(void) {
+    // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_us_up()) {
-        return ESP_SLEEP_WAKEUP_GPIO;
+        return STM_WAKEUP_GPIO;
     }
     if (alarm_time_timealarm_woke_us_up()) {
-        return ESP_SLEEP_WAKEUP_TIMER;
+        return STM_WAKEUP_RTC;
     }
-    if (alarm_touch_touchalarm_woke_us_up()) {
-        return ESP_SLEEP_WAKEUP_TOUCHPAD;
+    // Check to see if we woke from deep sleep (reason set in port_init)
+    if (true_deep_wake_reason) {
+        return true_deep_wake_reason;
     }
-    return esp_sleep_get_wakeup_cause();
+    return STM_WAKEUP_UNDEF;
 }
 
 bool common_hal_alarm_woken_from_sleep(void) {
-    return _get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED;
+    return _get_wakeup_cause() != STM_WAKEUP_UNDEF;
 }
 
-// When called to populate the global dict, the module functions create new alarm objects.
-// Otherwise, they scan the existing alarms for matches.
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    esp_sleep_wakeup_cause_t cause = _get_wakeup_cause();
+    stm_sleep_source_t cause = _get_wakeup_cause();
     switch (cause) {
-        case ESP_SLEEP_WAKEUP_TIMER: {
+        case STM_WAKEUP_RTC: {
             return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
         }
-
-        case ESP_SLEEP_WAKEUP_GPIO:
-        case ESP_SLEEP_WAKEUP_EXT0:
-        case ESP_SLEEP_WAKEUP_EXT1: {
+        case STM_WAKEUP_GPIO: {
             return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
         }
-
-        case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-            return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
-        }
-
-        case ESP_SLEEP_WAKEUP_UNDEFINED:
+        case STM_WAKEUP_UNDEF:
         default:
             // Not a deep sleep reset.
             break;
@@ -106,9 +100,11 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     return mp_const_none;
 }
 
-// This function is used to create a new alarm object for the global dict after deep sleep,
-// rather than finding an existing one during runtime.
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
+    // If we woke from light sleep, override with that alarm
+    if (most_recent_alarm != NULL) {
+        return most_recent_alarm;
+    }
     return _get_wake_alarm(0, NULL);
 }
 
@@ -116,17 +112,14 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
-    alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
 STATIC void _idle_until_alarm(void) {
     // Poll for alarms.
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
-        // Allow ctrl-C interrupt.
+        // Detect if interrupt was alarm or ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
-            // This saves the return of common_hal_alarm_get_wake_alarm through Shared Bindings
-            shared_alarm_save_wake_alarm();
             return;
         }
         port_idle_until_interrupt();
@@ -134,38 +127,62 @@ STATIC void _idle_until_alarm(void) {
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    _setup_sleep_alarms(false, n_alarms, alarms);
-
-    // We cannot esp_light_sleep_start() here because it shuts down all non-RTC peripherals.
-    _idle_until_alarm();
-
-    if (mp_hal_is_interrupted()) {
-        return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
+    // If USB is active, only pretend to sleep. Otherwise, light sleep
+    if (supervisor_workflow_active()) {
+        _setup_sleep_alarms(false, n_alarms, alarms);
+        _idle_until_alarm();
+    } else {
+        _setup_sleep_alarms(false, n_alarms, alarms);
+        port_disable_tick();
+        HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+        port_enable_tick();
     }
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
-    alarm_reset();
+
+    // TODO: make assignment to global array less roundabout
+    most_recent_alarm = wake_alarm;
+    shared_alarm_save_wake_alarm();
+
+    // Can't use alarm_reset since it resets most_recent_alarm
+    alarm_pin_pinalarm_reset();
+    alarm_time_timealarm_reset();
     return wake_alarm;
 }
 
 void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    most_recent_alarm = NULL;
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    alarm_touch_touchalarm_prepare_for_deep_sleep();
+    alarm_time_timealarm_prepare_for_deep_sleep();
+    port_disable_tick();
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 
-    // Disable brownout detection, which appears to be triggered sometimes when
-    // waking from deep sleep.
-    // See https://www.esp32.com/viewtopic.php?f=13&t=19208#p71084
-    // and https://github.com/adafruit/circuitpython/issues/4025#issuecomment-771027606
-    // TODO: We can remove this workaround when ESP-IDF handles this.
-    CLEAR_PERI_REG_MASK(RTC_CNTL_BROWN_OUT_REG, RTC_CNTL_BROWN_OUT_RST_ENA);
+    // Set a flag in the backup registers to indicate sleep wakeup
+    STM_ALARM_FLAG = 0x01;
 
-    // The ESP-IDF caches the deep sleep settings and applies them before sleep.
-    // We don't need to worry about resetting them in the interim.
-    esp_deep_sleep_start();
+    HAL_PWR_EnterSTANDBYMode();
+
+    // The above shuts down RAM, so we should never hit this
+    while (1) {
+        ;
+    }
+}
+
+void common_hal_alarm_pretending_deep_sleep(void) {
+    // Re-enable the WKUP pin (PA00) since VM cleanup resets it
+    // If there are no PinAlarms, EXTI won't be turned on, and this won't do anything
+    // TODO: replace with `prepare_for_fake_deep_sleep` if other WKUP are added.
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = pin_mask(0);
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    port_idle_until_interrupt();
 }
 
 void common_hal_alarm_gc_collect(void) {

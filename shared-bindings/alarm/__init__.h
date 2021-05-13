@@ -40,7 +40,7 @@ extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const
 // call alarm_woken_from_sleep to see if we've been woken by an alarm and if so,
 // it will exit idle as if deep sleep was exited.
 extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
-
+// Deep sleep is entered outside of the VM so we omit the `common_hal_` prefix.
 extern NORETURN void common_hal_alarm_enter_deep_sleep(void);
 extern void common_hal_alarm_pretending_deep_sleep(void);
 

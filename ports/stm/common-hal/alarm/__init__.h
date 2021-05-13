@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Junji Sakai
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM__INIT__H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM__INIT__H
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-} alarm_pin_pinalarm_obj_t;
+#include "common-hal/alarm/SleepMemory.h"
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_us_up(void);
+extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+
+typedef enum {
+    STM_WAKEUP_UNDEF,
+    STM_WAKEUP_GPIO,
+    STM_WAKEUP_RTC
+} stm_sleep_source_t;
+
+#define STM_ALARM_FLAG      (RTC->BKP0R)
+
+extern void alarm_set_wakeup_reason(stm_sleep_source_t reason);
+extern void alarm_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM__INIT__H

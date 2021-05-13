@@ -297,13 +297,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
+
+        // Prepare the VM state. Includes an alarm check/reset for sleep.
         start_mp(heap);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
         #endif
 
+        // This is where the user's python code is actually executed:
         found_main = maybe_run_list(supported_filenames, &result);
+        // If that didn't work, double check the extensions
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -313,6 +317,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {

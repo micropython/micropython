@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Junji Sakai
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,26 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include <string.h>
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-} alarm_pin_pinalarm_obj_t;
+#include "py/runtime.h"
+#include "common-hal/alarm/SleepMemory.h"
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_us_up(void);
+void alarm_sleep_memory_reset(void) {
+
+}
+
+uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    return 0;
+}
+
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t *values, uint32_t len) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    return false;
+}
+
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t *values, uint32_t len) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    return;
+}

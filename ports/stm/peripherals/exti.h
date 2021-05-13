@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Junji Sakai
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
+#define __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool value;
-    bool pull;
-} alarm_pin_pinalarm_obj_t;
+#include STM32_HAL_H
 
-void alarm_pin_pinalarm_reset(void);
-void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
-void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
-bool alarm_pin_pinalarm_woke_us_up(void);
+#define STM32_GPIO_PORT_SIZE 16
+
+void exti_reset(void);
+void stm_peripherals_exti_never_reset(uint8_t num);
+void stm_peripherals_exti_reset_exti(uint8_t num);
+bool stm_peripherals_exti_is_free(uint8_t num);
+bool stm_peripherals_exti_reserve(uint8_t num);
+void stm_peripherals_exti_enable(uint8_t num);
+void stm_peripherals_exti_disable(uint8_t num);
+void stm_peripherals_exti_set_callback(void (*callback)(uint8_t num), uint8_t number);
+void stm_peripherals_exti_free(uint8_t num);
+IRQn_Type stm_peripherals_exti_get_irq(uint8_t num);
+
+#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_EXTI_H__
