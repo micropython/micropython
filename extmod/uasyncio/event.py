@@ -14,6 +14,8 @@ class Event:
 
     def set(self):
         # Event becomes set, schedule any tasks waiting on it
+        # Note: This must not be called from anything except the thread running
+        # the asyncio loop (i.e. neither hard or soft IRQ, or a different thread).
         while self.waiting.peek():
             core._task_queue.push_head(self.waiting.pop_head())
         self.state = True

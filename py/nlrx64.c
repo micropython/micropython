@@ -89,7 +89,7 @@ NORETURN void nlr_jump(void *val) {
         "movq   %0, %%rcx           \n" // %rcx points to nlr_buf
         #if MICROPY_NLR_OS_WINDOWS
         "movq   88(%%rcx), %%rsi    \n" // load saved %rsi
-        "movq   80(%%rcx), %%rdi    \n" // load saved %rdr
+        "movq   80(%%rcx), %%rdi    \n" // load saved %rdi
         #endif
         "movq   72(%%rcx), %%r15    \n" // load saved %r15
         "movq   64(%%rcx), %%r14    \n" // load saved %r14
