@@ -177,6 +177,7 @@ endif
 # BTstack is enabled.
 GIT_SUBMODULES += lib/btstack
 include $(TOP)/extmod/btstack/btstack.mk
+SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 else
 
