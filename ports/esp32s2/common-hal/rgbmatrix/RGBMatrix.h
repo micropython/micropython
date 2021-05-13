@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 microDev
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-#include "driver/timer.h"
+#include "shared-module/rgbmatrix/RGBMatrix.h"
 
-typedef struct {
-    timg_dev_t *hw;
-    timer_idx_t idx;
-    timer_group_t group;
-} timer_index_t;
+void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self);
+void common_hal_rgbmatrix_timer_enable(void *);
+void common_hal_rgbmatrix_timer_disable(void *);
+void common_hal_rgbmatrix_timer_free(void *);
 
-extern bool peripherals_timer_init(const timer_config_t *config, timer_index_t *timer);
-extern void peripherals_timer_deinit(timer_index_t *timer);
-extern void peripherals_timer_reset(void);
-extern void peripherals_timer_never_reset(timer_index_t *timer);
-
-#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
+#endif
