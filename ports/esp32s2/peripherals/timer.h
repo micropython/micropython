@@ -30,6 +30,7 @@
 #include "driver/timer.h"
 
 typedef struct {
+    timg_dev_t *hw;
     timer_idx_t idx;
     timer_group_t group;
 } timer_index_t;

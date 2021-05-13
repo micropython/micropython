@@ -68,6 +68,8 @@ void peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) 
         }
     }
 
+    timer->hw = (timer->group == 0) ? &TIMERG0 : &TIMERG1;
+
     // initialize timer module
     timer_init(timer->group, timer->idx, config);
     timer_set_counter_value(timer->group, timer->idx, 0);
