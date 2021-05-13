@@ -47,7 +47,7 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
-STATIC uint8_t true_deep_wake_reason;
+STATIC stm_sleep_source_t true_deep_wake_reason;
 STATIC mp_obj_t most_recent_alarm;
 
 void alarm_reset(void) {
@@ -60,11 +60,11 @@ void alarm_reset(void) {
 
 // Kind of a hack, required as RTC is reset in port.c
 // TODO: in the future, don't reset it at all, just override critical flags
-void alarm_set_wakeup_reason(uint8_t reason) {
+void alarm_set_wakeup_reason(stm_sleep_source_t reason) {
     true_deep_wake_reason = reason;
 }
 
-STATIC uint8_t _get_wakeup_cause(void) {
+STATIC stm_sleep_source_t _get_wakeup_cause(void) {
     // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_us_up()) {
         return STM_WAKEUP_GPIO;
@@ -84,7 +84,7 @@ bool common_hal_alarm_woken_from_sleep(void) {
 }
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    uint8_t cause = _get_wakeup_cause();
+    stm_sleep_source_t cause = _get_wakeup_cause();
     switch (cause) {
         case STM_WAKEUP_RTC: {
             return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
