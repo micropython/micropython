@@ -94,6 +94,11 @@ else
   CFLAGS += -flto -flto-partition=none
 endif
 
+ifeq ($(NRF_DEBUG_PRINT), 1)
+  CFLAGS += -DNRF_DEBUG_PRINT=1
+  SRC_SUPERVISOR += supervisor/debug_uart.c
+endif
+
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
@@ -156,17 +161,6 @@ SRC_C += \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	bluetooth/ble_drv.c \
 	common-hal/_bleio/bonding.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/ccsbcs.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/buffer_helper.c \
-	lib/utils/context_manager_helpers.c \
-	lib/utils/interrupt_char.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	peripherals/nrf/cache.c \
 	peripherals/nrf/clocks.c \
@@ -174,9 +168,9 @@ SRC_C += \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
         peripherals/nrf/nvm.c \
 	peripherals/nrf/timers.c \
-	sd_mutex.c \
-	supervisor/shared/memory.c
+	sd_mutex.c
 
+ifneq ($(CIRCUITPY_USB),0)
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
@@ -187,6 +181,7 @@ ifeq ($(MCU_SUB_VARIANT),nrf52833)
 SRC_C += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
+endif # CIRCUITPY_USB
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1
@@ -235,6 +230,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
 ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
+OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 

@@ -43,6 +43,9 @@ print(
     )
 )
 
+# \g immediately followed by another \g
+print(re.sub("(abc)", r"\g<1>\g<1>", "abc"))
+
 # no matches at all
 print(re.sub("a", "b", "c"))
 
@@ -60,3 +63,15 @@ try:
     re.sub("(a)", "b\\199999999999999999999999999999999999999", "a")
 except:
     print("invalid group")
+
+# Module function takes str/bytes/re.
+print(re.sub("a", "a", "a"))
+print(re.sub(b".", b"a", b"a"))
+print(re.sub(re.compile("a"), "a", "a"))
+try:
+    re.sub(123, "a", "a")
+except TypeError:
+    print("TypeError")
+
+# Include \ in the sub replacement
+print(re.sub("b", "\\\\b", "abc"))

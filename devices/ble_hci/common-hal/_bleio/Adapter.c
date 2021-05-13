@@ -886,10 +886,10 @@ uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *att
     uint16_t handle = (uint16_t)adapter->attributes->len;
     mp_obj_list_append(adapter->attributes, attribute);
 
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_service_type)) {
+    if (mp_obj_is_type(attribute, &bleio_service_type)) {
         adapter->last_added_service_handle = handle;
     }
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+    if (mp_obj_is_type(attribute, &bleio_characteristic_type)) {
         adapter->last_added_characteristic_handle = handle;
     }
 

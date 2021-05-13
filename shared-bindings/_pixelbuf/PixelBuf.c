@@ -1,5 +1,5 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
@@ -120,7 +120,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
 }
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
-    if (!MP_OBJ_IS_STR(byteorder_obj)) {
+    if (!mp_obj_is_str(byteorder_obj)) {
         mp_raise_TypeError(translate("byteorder is not a string"));
     }
 
@@ -167,8 +167,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_g
 const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_bpp_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 
@@ -200,7 +200,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_brightness_obj,
               (mp_obj_t)&pixelbuf_pixelbuf_set_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     auto_write: bool
@@ -222,7 +222,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_auto_write_obj,
               (mp_obj_t)&pixelbuf_pixelbuf_set_auto_write_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     byteorder: str
@@ -236,8 +236,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf
 const mp_obj_property_t pixelbuf_pixelbuf_byteorder_str = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_byteorder_str,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -306,7 +306,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
     if (0) {
     #if MICROPY_PY_BUILTINS_SLICE
-    } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+    } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);

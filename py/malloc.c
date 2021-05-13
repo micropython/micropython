@@ -62,6 +62,13 @@
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
 #else
+
+// GC is disabled.  Use system malloc/realloc/free.
+
+#if MICROPY_ENABLE_FINALISER
+#error MICROPY_ENABLE_FINALISER requires MICROPY_ENABLE_GC
+#endif
+
 #define malloc_ll(b, ll) malloc(b)
 #define malloc_with_finaliser(b) malloc((b))
 
@@ -75,6 +82,7 @@ STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
         return NULL;
     }
 }
+
 #endif // MICROPY_ENABLE_GC
 
 void *m_malloc(size_t num_bytes, bool long_lived) {

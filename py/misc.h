@@ -49,11 +49,14 @@ typedef unsigned int uint;
 #endif
 
 // Classical double-indirection stringification of preprocessor macro's value
-#define _MP_STRINGIFY(x) #x
-#define MP_STRINGIFY(x) _MP_STRINGIFY(x)
+#define MP_STRINGIFY_HELPER(x) #x
+#define MP_STRINGIFY(x) MP_STRINGIFY_HELPER(x)
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+
+// Round-up integer division
+#define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
 
 /** memory allocation ******************************************/
 
@@ -158,6 +161,7 @@ bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
 bool unichar_isident(unichar c);
+bool unichar_isalnum(unichar c);
 bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
@@ -234,14 +238,37 @@ extern mp_uint_t mp_verbose_flag;
 /** float internals *************/
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MP_FLOAT_EXP_BITS (11)
 #define MP_FLOAT_FRAC_BITS (52)
+typedef uint64_t mp_float_uint_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MP_FLOAT_EXP_BITS (8)
 #define MP_FLOAT_FRAC_BITS (23)
+typedef uint32_t mp_float_uint_t;
 #endif
+
 #define MP_FLOAT_EXP_BIAS ((1 << (MP_FLOAT_EXP_BITS - 1)) - 1)
+
+typedef union _mp_float_union_t {
+    mp_float_t f;
+    #if MP_ENDIANNESS_LITTLE
+    struct {
+        mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
+        mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
+        mp_float_uint_t sgn : 1;
+    } p;
+    #else
+    struct {
+        mp_float_uint_t sgn : 1;
+        mp_float_uint_t exp : MP_FLOAT_EXP_BITS;
+        mp_float_uint_t frc : MP_FLOAT_FRAC_BITS;
+    } p;
+    #endif
+    mp_float_uint_t i;
+} mp_float_union_t;
+
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

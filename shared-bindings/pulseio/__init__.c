@@ -33,17 +33,12 @@
 #include "shared-bindings/pulseio/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pwmio/PWMOut.h"
 
 //| """Support for individual pulse based protocols
 //|
 //| The `pulseio` module contains classes to provide access to basic pulse IO.
 //| Individual pulses are commonly used in infrared remotes and in DHT
 //| temperature sensors.
-//|
-//|
-//| .. warning:: PWMOut is moving to `pwmio` and will be removed from `pulseio`
-//|    in CircuitPython 7.
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -55,7 +50,6 @@ STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pulseio) },
     { MP_ROM_QSTR(MP_QSTR_PulseIn), MP_ROM_PTR(&pulseio_pulsein_type) },
     { MP_ROM_QSTR(MP_QSTR_PulseOut), MP_ROM_PTR(&pulseio_pulseout_type) },
-    { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&pwmio_pwmout_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pulseio_module_globals, pulseio_module_globals_table);

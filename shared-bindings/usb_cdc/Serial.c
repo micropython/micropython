@@ -160,8 +160,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_connected_obj, usb_cdc_serial_get_c
 const mp_obj_property_t usb_cdc_serial_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_connected_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     in_waiting: int
@@ -176,8 +176,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_in_waiting_obj, usb_cdc_serial_get_
 const mp_obj_property_t usb_cdc_serial_in_waiting_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_in_waiting_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     out_waiting: int
@@ -192,8 +192,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_out_waiting_obj, usb_cdc_serial_get
 const mp_obj_property_t usb_cdc_serial_out_waiting_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_out_waiting_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def reset_input_buffer(self) -> None:
@@ -241,7 +241,7 @@ const mp_obj_property_t usb_cdc_serial_timeout_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_timeout_obj,
               (mp_obj_t)&usb_cdc_serial_set_timeout_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     write_timeout: Optional[float]
@@ -268,7 +268,7 @@ const mp_obj_property_t usb_cdc_serial_write_timeout_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&usb_cdc_serial_get_write_timeout_obj,
               (mp_obj_t)&usb_cdc_serial_set_write_timeout_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 

@@ -61,19 +61,19 @@ void displayio_display_core_construct(displayio_display_core_t *self,
 
     // (framebufferdisplay already validated its 'bus' is a buffer-protocol object)
     if (bus) {
-        if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
+        if (mp_obj_is_type(bus, &displayio_parallelbus_type)) {
             self->bus_reset = common_hal_displayio_parallelbus_reset;
             self->bus_free = common_hal_displayio_parallelbus_bus_free;
             self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
             self->send = common_hal_displayio_parallelbus_send;
             self->end_transaction = common_hal_displayio_parallelbus_end_transaction;
-        } else if (MP_OBJ_IS_TYPE(bus, &displayio_fourwire_type)) {
+        } else if (mp_obj_is_type(bus, &displayio_fourwire_type)) {
             self->bus_reset = common_hal_displayio_fourwire_reset;
             self->bus_free = common_hal_displayio_fourwire_bus_free;
             self->begin_transaction = common_hal_displayio_fourwire_begin_transaction;
             self->send = common_hal_displayio_fourwire_send;
             self->end_transaction = common_hal_displayio_fourwire_end_transaction;
-        } else if (MP_OBJ_IS_TYPE(bus, &displayio_i2cdisplay_type)) {
+        } else if (mp_obj_is_type(bus, &displayio_i2cdisplay_type)) {
             self->bus_reset = common_hal_displayio_i2cdisplay_reset;
             self->bus_free = common_hal_displayio_i2cdisplay_bus_free;
             self->begin_transaction = common_hal_displayio_i2cdisplay_begin_transaction;

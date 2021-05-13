@@ -21,10 +21,12 @@ for r in base_values:
         if r != 0.0 and i != 0.0:
             test_values_non_zero.append(complex(-r, -i))
 
-functions = [("log10", log10, test_values_non_zero)]
+functions = [
+    ("log10", log10, test_values_non_zero),
+]
 
 for f_name, f, test_vals in functions:
     print(f_name)
     for val in test_vals:
         ret = f(val)
-        print("complex(%.5g, %.5g)" % (ret.real, ret.imag))
+        print("complex(%.4g, %.4g)" % (ret.real, ret.imag))

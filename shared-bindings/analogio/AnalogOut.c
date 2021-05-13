@@ -119,9 +119,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(analogio_analogout_set_value_obj, analogio_analogout_o
 
 const mp_obj_property_t analogio_analogout_value_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mp_const_none_obj,
+    .proxy = {MP_ROM_NONE,
               (mp_obj_t)&analogio_analogout_set_value_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {

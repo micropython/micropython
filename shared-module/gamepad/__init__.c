@@ -39,7 +39,7 @@ void gamepad_tick(void) {
     uint8_t bit = 1;
 
     void *singleton = MP_STATE_VM(gamepad_singleton);
-    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
+    if (singleton == NULL || !mp_obj_is_type(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
         return;
     }
 

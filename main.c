@@ -60,6 +60,7 @@
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
+#include "supervisor/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -94,8 +95,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_USB_CDC
-#include "shared-module/usb_cdc/__init__.h"
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -188,7 +189,10 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
+
+    #if CIRCUITPY_USB
     usb_background();
+    #endif
 
     gc_deinit();
 }
@@ -293,9 +297,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
+
+        // Prepare the VM state. Includes an alarm check/reset for sleep.
         start_mp(heap);
 
+        #if CIRCUITPY_USB
+        usb_setup_with_vm();
+        #endif
+
+        // This is where the user's python code is actually executed:
         found_main = maybe_run_list(supported_filenames, &result);
+        // If that didn't work, double check the extensions
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -305,6 +317,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -330,17 +343,19 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool fake_sleeping = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
+
+        // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
                 board_init();
             }
             #endif
-            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
+        // If interrupted by keyboard, return
         if (serial_connected() && serial_bytes_available()) {
             #if CIRCUITPY_ALARM
             if (fake_sleeping) {
@@ -367,6 +382,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        // If messages haven't been printed yet, print them
         if (!printed_press_any_key && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
@@ -423,6 +439,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             // it may also return due to another interrupt, that's why we check
             // for deep sleep alarms above. If it wasn't a deep sleep alarm,
             // then we'll idle here again.
+
             #if CIRCUITPY_ALARM
                 common_hal_alarm_pretending_deep_sleep();
             #else
@@ -435,11 +452,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 FIL* boot_output_file;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    // If not in safe mode, run boot before initing USB and capture output in a
-    // file.
-    if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    // If not in safe mode, run boot before initing USB and capture output in a file.
 
+    // There is USB setup to do even if boot.py is not actually run.
+    const bool ok_to_run = filesystem_present()
+        && safe_mode == NO_SAFE_MODE
+        && MP_STATE_VM(vfs_mount_table) != NULL;
+
+    static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    bool skip_boot_output = false;
+
+    if (ok_to_run) {
         new_status_color(BOOT_RUNNING);
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
@@ -450,8 +473,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
 
         bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
-
-        bool skip_boot_output = false;
 
         // If there's no boot.py file that might write some changing output,
         // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
@@ -492,12 +513,21 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
         filesystem_flush();
-        supervisor_allocation* heap = allocate_remaining_memory();
-        start_mp(heap);
+    }
 
-        // TODO(tannewt): Re-add support for flashing boot error output.
+    // Do USB setup even if boot.py is not run.
+
+    supervisor_allocation* heap = allocate_remaining_memory();
+    start_mp(heap);
+
+#if CIRCUITPY_USB
+    // Set up default USB values after boot.py VM starts but before running boot.py.
+    usb_set_defaults();
+#endif
+
+    // TODO(tannewt): Re-add support for flashing boot error output.
+    if (ok_to_run) {
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;
 
@@ -508,9 +538,28 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         boot_output_file = NULL;
         #endif
-
-        cleanup_after_vm(heap);
     }
+
+
+#if CIRCUITPY_USB
+
+    // Some data needs to be carried over from the USB settings in boot.py
+    // to the next VM, while the heap is still available.
+    // Its size can vary, so save it temporarily on the stack,
+    // and then when the heap goes away, copy it in into a
+    // storage_allocation.
+
+    size_t size = usb_boot_py_data_size();
+    uint8_t usb_boot_py_data[size];
+    usb_get_boot_py_data(usb_boot_py_data, size);
+#endif
+
+    cleanup_after_vm(heap);
+
+#if CIRCUITPY_USB
+    // Now give back the data we saved from the heap going away.
+    usb_return_boot_py_data(usb_boot_py_data, size);
+#endif
 }
 
 STATIC int run_repl(void) {
@@ -519,6 +568,11 @@ STATIC int run_repl(void) {
     filesystem_flush();
     supervisor_allocation* heap = allocate_remaining_memory();
     start_mp(heap);
+
+    #if CIRCUITPY_USB
+    usb_setup_with_vm();
+    #endif
+
     autoreload_suspend();
     new_status_color(REPL_RUNNING);
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -578,7 +632,14 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start serial and HID after giving boot.py a chance to tweak behavior.
+    // Start USB after giving boot.py a chance to tweak behavior.
+    #if CIRCUITPY_USB
+    // Setup USB connection after heap is available.
+    // It needs the heap to build descriptors.
+    usb_init();
+    #endif
+
+    // Set up any other serial connection.
     serial_init();
 
     #if CIRCUITPY_BLEIO
@@ -592,6 +653,7 @@ int __attribute__((used)) main(void) {
     for (;;) {
         if (!skip_repl) {
             exit_code = run_repl();
+            supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
@@ -629,6 +691,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_BLEIO
     common_hal_bleio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_gc_collect();
     #endif
 
     #if CIRCUITPY_WIFI

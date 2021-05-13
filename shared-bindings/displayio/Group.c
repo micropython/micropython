@@ -73,7 +73,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
 // Helper to ensure we have the native super class instead of a subclass.
 displayio_group_t *native_group(mp_obj_t group_obj) {
-    mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
+    mp_obj_t native_group = mp_obj_cast_to_native_base(group_obj, &displayio_group_type);
     if (native_group == MP_OBJ_NULL) {
         mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
     }
@@ -103,7 +103,7 @@ const mp_obj_property_t displayio_group_hidden_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_group_get_hidden_obj,
               (mp_obj_t)&displayio_group_set_hidden_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     scale: int
@@ -132,7 +132,7 @@ const mp_obj_property_t displayio_group_scale_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_group_get_scale_obj,
               (mp_obj_t)&displayio_group_set_scale_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     x: int
@@ -157,7 +157,7 @@ const mp_obj_property_t displayio_group_x_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_group_get_x_obj,
               (mp_obj_t)&displayio_group_set_x_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     y: int
@@ -182,7 +182,7 @@ const mp_obj_property_t displayio_group_y_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_group_get_y_obj,
               (mp_obj_t)&displayio_group_set_y_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def append(self, layer: Union[vectorio.VectorShape, Group, TileGrid]) -> None:
@@ -309,7 +309,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     displayio_group_t *self = native_group(self_in);
 
-    if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+    if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         mp_raise_NotImplementedError(translate("Slices not supported"));
     } else {
         size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);

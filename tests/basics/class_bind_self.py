@@ -40,10 +40,17 @@ print(c.f2(2))
 print(c.f3())
 print(next(c.f4(4)))
 print(c.f5(5))
-#print(c.f6(-6)) not working in uPy
+print(c.f6(-6))
 print(c.f7(7))
 print(c.f8(8))
 print(c.f9(9))
+
+# test calling the functions accessed via the class itself
+print(C.f5(10))
+print(C.f6(-11))
+print(C.f7(12))
+print(C.f8(13))
+print(C.f9(14))
 
 # not working in uPy
 #class C(list):

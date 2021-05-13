@@ -56,8 +56,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_enabled_obj, samd_clock_get_enabled);
 const mp_obj_property_t samd_clock_enabled_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&samd_clock_get_enabled_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj,},
+              MP_ROM_NONE,
+              MP_ROM_NONE,},
 };
 
 //|     parent: Union[Clock, None]
@@ -85,8 +85,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_parent_obj, samd_clock_get_parent);
 const mp_obj_property_t samd_clock_parent_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&samd_clock_get_parent_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj,},
+              MP_ROM_NONE,
+              MP_ROM_NONE,},
 };
 
 //|     frequency: int
@@ -102,8 +102,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_frequency_obj, samd_clock_get_frequency
 const mp_obj_property_t samd_clock_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&samd_clock_get_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj,},
+              MP_ROM_NONE,
+              MP_ROM_NONE,},
 };
 
 //|     calibration: int
@@ -134,7 +134,7 @@ const mp_obj_property_t samd_clock_calibration_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&samd_clock_get_calibration_obj,
               (mp_obj_t)&samd_clock_set_calibration_obj,
-              (mp_obj_t)&mp_const_none_obj,},
+              MP_ROM_NONE,},
 };
 
 STATIC const mp_rom_map_elem_t samd_clock_locals_dict_table[] = {

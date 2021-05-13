@@ -82,8 +82,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_address_obj, bleio_scanentr
 const mp_obj_property_t bleio_scanentry_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_scanentry_get_address_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     advertisement_bytes: bytes
@@ -98,8 +98,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_advertisement_bytes_obj, sc
 const mp_obj_property_t bleio_scanentry_advertisement_bytes_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_scanentry_get_advertisement_bytes_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     rssi: int
@@ -114,8 +114,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_rssi_obj, scanentry_get_rss
 const mp_obj_property_t bleio_scanentry_rssi_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_scanentry_get_rssi_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     connectable: bool
@@ -130,8 +130,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_connectable_obj, scanentry_
 const mp_obj_property_t bleio_scanentry_connectable_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_scanentry_get_connectable_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     scan_response: bool
@@ -146,8 +146,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_scan_response_obj, scanentr
 const mp_obj_property_t bleio_scanentry_scan_response_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_scanentry_get_scan_response_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {

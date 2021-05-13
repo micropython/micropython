@@ -78,7 +78,7 @@
 STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
-    if (!MP_OBJ_IS_TYPE(pos_args[0], &mp_type_fileio)) {
+    if (!mp_obj_is_type(pos_args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
@@ -103,8 +103,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_width_obj, displayio_ondisk
 const mp_obj_property_t displayio_ondiskbitmap_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 
 };
 
@@ -122,8 +122,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_height_obj, displayio_ondis
 const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 
 };
 

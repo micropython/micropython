@@ -57,8 +57,7 @@
 #define RULE_ARG_RULE           (0x2000)
 #define RULE_ARG_OPT_RULE       (0x3000)
 
-// (un)comment to use rule names; for debugging
-// #define USE_RULE_NAME (1)
+// *FORMAT-OFF*
 
 enum {
 // define rules with a compile function
@@ -137,8 +136,8 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 #define RULE_EXPAND(x) x
 #define RULE_PADDING(rule, ...) RULE_PADDING2(rule, __VA_ARGS__, RULE_PADDING_IDS(rule))
 #define RULE_PADDING2(rule, ...) RULE_EXPAND(RULE_PADDING3(rule, __VA_ARGS__))
-#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, ...) __VA_ARGS__
-#define RULE_PADDING_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
+#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) __VA_ARGS__
+#define RULE_PADDING_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
 
 // Use an enum to create constants specifying how much room a rule takes in rule_arg_combined_table
 enum {
@@ -157,8 +156,8 @@ enum {
 // Macro to compute the start of a rule in rule_arg_combined_table
 #define RULE_ARG_OFFSET(rule, ...) RULE_ARG_OFFSET2(rule, __VA_ARGS__, RULE_ARG_OFFSET_IDS(rule))
 #define RULE_ARG_OFFSET2(rule, ...) RULE_EXPAND(RULE_ARG_OFFSET3(rule, __VA_ARGS__))
-#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) _13
-#define RULE_ARG_OFFSET_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
+#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, ...) _14
+#define RULE_ARG_OFFSET_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
 
 // Use the above enum values to create a table of offsets for each rule's arg
 // data, which indexes rule_arg_combined_table.  The offsets require 9 bits of
@@ -192,7 +191,7 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #undef DEF_RULE_NC
     0;
 
-#if defined(USE_RULE_NAME) && USE_RULE_NAME
+#if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
@@ -209,8 +208,10 @@ STATIC const char *const rule_name_table[] = {
 };
 #endif
 
+// *FORMAT-ON*
+
 typedef struct _rule_stack_t {
-    size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number
+    size_t src_line : (8 * sizeof(size_t) - 8); // maximum bits storing source line number
     size_t rule_id : 8; // this must be large enough to fit largest rule number
     size_t arg_i; // this dictates the maximum nodes in a "list" of things
 } rule_stack_t;
@@ -344,13 +345,13 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
         #else
         *o = (mp_obj_t)pns->nodes[0];
         #endif
-        return MP_OBJ_IS_INT(*o);
+        return mp_obj_is_int(*o);
     } else {
         return false;
     }
 }
 
-int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
+size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -370,35 +371,35 @@ int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_nod
 }
 
 #if MICROPY_DEBUG_PRINTERS
-void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
+void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        printf("[% 4d] ", (int)((mp_parse_node_struct_t *)pn)->source_line);
+        mp_printf(print, "[% 4d] ", (int)((mp_parse_node_struct_t *)pn)->source_line);
     } else {
-        printf("       ");
+        mp_printf(print, "       ");
     }
     for (size_t i = 0; i < indent; i++) {
-        printf(" ");
+        mp_printf(print, " ");
     }
     if (MP_PARSE_NODE_IS_NULL(pn)) {
-        printf("NULL\n");
+        mp_printf(print, "NULL\n");
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
-        printf("int(" INT_FMT ")\n", arg);
+        mp_printf(print, "int(" INT_FMT ")\n", arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID:
-                printf("id(%s)\n", qstr_str(arg));
+                mp_printf(print, "id(%s)\n", qstr_str(arg));
                 break;
             case MP_PARSE_NODE_STRING:
-                printf("str(%s)\n", qstr_str(arg));
+                mp_printf(print, "str(%s)\n", qstr_str(arg));
                 break;
             case MP_PARSE_NODE_BYTES:
-                printf("bytes(%s)\n", qstr_str(arg));
+                mp_printf(print, "bytes(%s)\n", qstr_str(arg));
                 break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
-                printf("tok(%u)\n", (uint)arg);
+                mp_printf(print, "tok(%u)\n", (uint)arg);
                 break;
         }
     } else {
@@ -406,19 +407,19 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-            printf("literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+            mp_printf(print, "literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
             #else
-            printf("literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
+            mp_printf(print, "literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            #if defined(USE_RULE_NAME) && USE_RULE_NAME
-            printf("%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
+            #if MICROPY_DEBUG_PARSE_RULE_NAME
+            mp_printf(print, "%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #else
-            printf("rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
+            mp_printf(print, "rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #endif
             for (size_t i = 0; i < n; i++) {
-                mp_parse_node_print(pns->nodes[i], indent + 2);
+                mp_parse_node_print(print, pns->nodes[i], indent + 2);
             }
         }
     }
@@ -426,10 +427,10 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
 #endif // MICROPY_DEBUG_PRINTERS
 
 /*
-STATIC void result_stack_show(parser_t *parser) {
-    printf("result stack, most recent first\n");
+STATIC void result_stack_show(const mp_print_t *print, parser_t *parser) {
+    mp_printf(print, "result stack, most recent first\n");
     for (ssize_t i = parser->result_stack_top - 1; i >= 0; i--) {
-        mp_parse_node_print(parser->result_stack[i], 0);
+        mp_parse_node_print(print, parser->result_stack[i], 0);
     }
 }
 */
@@ -484,16 +485,13 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     mp_parse_node_t pn;
     mp_lexer_t *lex = parser->lexer;
     if (lex->tok_kind == MP_TOKEN_NAME) {
-        if (lex->vstr.len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
-            mp_raise_msg(&mp_type_SyntaxError, translate("Name too long"));
-        }
         qstr id = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         #if MICROPY_COMP_CONST
         // if name is a standalone identifier, look it up in the table of dynamic constants
         mp_map_elem_t *elem;
         if (rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            if (MP_OBJ_IS_SMALL_INT(elem->value)) {
+            if (mp_obj_is_small_int(elem->value)) {
                 pn = mp_parse_node_new_small_int_checked(parser, elem->value);
             } else {
                 pn = make_node_const_object(parser, lex->tok_line, elem->value);
@@ -507,7 +505,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
-        if (MP_OBJ_IS_SMALL_INT(o)) {
+        if (mp_obj_is_small_int(o)) {
             pn = mp_parse_node_new_small_int_checked(parser, o);
         } else {
             pn = make_node_const_object(parser, lex->tok_line, o);
@@ -518,7 +516,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
         // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
-        qstr qst = MP_QSTR_NULL;
+        qstr qst = MP_QSTRnull;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
             // intern short strings
             qst = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
@@ -526,7 +524,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
             // check if this string is already interned
             qst = qstr_find_strn(lex->vstr.buf, lex->vstr.len);
         }
-        if (qst != MP_QSTR_NULL) {
+        if (qst != MP_QSTRnull) {
             // qstr exists, make a leaf node
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
@@ -623,8 +621,9 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     mp_obj_t arg0;
     if (rule_id == RULE_expr
         || rule_id == RULE_xor_expr
-        || rule_id == RULE_and_expr) {
-        // folding for binary ops: | ^ &
+        || rule_id == RULE_and_expr
+        || rule_id == RULE_power) {
+        // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -634,8 +633,10 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             op = MP_BINARY_OP_OR;
         } else if (rule_id == RULE_xor_expr) {
             op = MP_BINARY_OP_XOR;
-        } else {
+        } else if (rule_id == RULE_and_expr) {
             op = MP_BINARY_OP_AND;
+        } else {
+            op = MP_BINARY_OP_POWER;
         }
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
@@ -643,12 +644,16 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
                 return false;
             }
+            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
+                // ** can't have negative rhs
+                return false;
+            }
             arg0 = mp_binary_op(op, arg0, arg1);
         }
     } else if (rule_id == RULE_shift_expr
                || rule_id == RULE_arith_expr
                || rule_id == RULE_term) {
-        // folding for binary ops: << >> + - * / % //
+        // folding for binary ops: << >> + - * @ / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -660,23 +665,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            static const uint8_t token_to_op[] = {
-                MP_BINARY_OP_ADD,
-                MP_BINARY_OP_SUBTRACT,
-                MP_BINARY_OP_MULTIPLY,
-                255,// MP_BINARY_OP_POWER,
-                255,// MP_BINARY_OP_TRUE_DIVIDE,
-                MP_BINARY_OP_FLOOR_DIVIDE,
-                MP_BINARY_OP_MODULO,
-                255,// MP_BINARY_OP_LESS
-                MP_BINARY_OP_LSHIFT,
-                255,// MP_BINARY_OP_MORE
-                MP_BINARY_OP_RSHIFT,
-            };
-            mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_PLUS];
-            if (op == (mp_binary_op_t)255) {
+            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH) {
+                // Can't fold @ or /
                 return false;
             }
+            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
             int rhs_sign = mp_obj_int_sign(arg1);
             if (op <= MP_BINARY_OP_RSHIFT) {
                 // << and >> can't have negative rhs
@@ -699,13 +692,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
         mp_unary_op_t op;
-        if (tok == MP_TOKEN_OP_PLUS) {
-            op = MP_UNARY_OP_POSITIVE;
-        } else if (tok == MP_TOKEN_OP_MINUS) {
-            op = MP_UNARY_OP_NEGATIVE;
-        } else {
-            assert(tok == MP_TOKEN_OP_TILDE); // should be
+        if (tok == MP_TOKEN_OP_TILDE) {
             op = MP_UNARY_OP_INVERT;
+        } else {
+            assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS); // should be
+            op = MP_UNARY_OP_POSITIVE + (tok - MP_TOKEN_OP_PLUS);
         }
         arg0 = mp_unary_op(op, arg0);
 
@@ -733,9 +724,9 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 mp_obj_t value;
                 if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                        translate("constant must be an integer"));
+                        MP_ERROR_TEXT("constant must be an integer"));
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
-                        ((mp_parse_node_struct_t *)pn1)->source_line, MP_QSTR_NULL);
+                        ((mp_parse_node_struct_t *)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
                 }
 
@@ -784,7 +775,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(dest[0] != MP_OBJ_NULL && MP_OBJ_IS_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
+        if (!(dest[0] != MP_OBJ_NULL && mp_obj_is_int(dest[0]) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = dest[0];
@@ -799,7 +790,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     for (size_t i = num_args; i > 0; i--) {
         pop_result(parser);
     }
-    if (MP_OBJ_IS_SMALL_INT(arg0)) {
+    if (mp_obj_is_small_int(arg0)) {
         push_result_node(parser, mp_parse_node_new_small_int_checked(parser, arg0));
     } else {
         // TODO reuse memory for parse node struct?
@@ -875,7 +866,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
     }
     if (parser.rule_stack == NULL || parser.result_stack == NULL) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Unable to init parser"));
+        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Unable to init parser"));
     }
 
     parser.lexer = lex;
@@ -1184,37 +1175,37 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         switch (lex->tok_kind) {
             case MP_TOKEN_INDENT:
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    translate("unexpected indent"));
+                    MP_ERROR_TEXT("unexpected indent"));
                 break;
             case MP_TOKEN_DEDENT_MISMATCH:
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    translate("unindent does not match any outer indentation level"));
+                    MP_ERROR_TEXT("unindent does not match any outer indentation level"));
                 break;
                 #if MICROPY_COMP_FSTRING_LITERAL
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
             case MP_TOKEN_FSTRING_BACKSLASH:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string expression part cannot include a backslash"));
+                    MP_ERROR_TEXT("f-string expression part cannot include a backslash"));
                 break;
             case MP_TOKEN_FSTRING_COMMENT:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string expression part cannot include a '#'"));
+                    MP_ERROR_TEXT("f-string expression part cannot include a '#'"));
                 break;
             case MP_TOKEN_FSTRING_UNCLOSED:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: expecting '}'"));
+                    MP_ERROR_TEXT("f-string: expecting '}'"));
                 break;
             case MP_TOKEN_FSTRING_UNOPENED:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: single '}' is not allowed"));
+                    MP_ERROR_TEXT("f-string: single '}' is not allowed"));
                 break;
             case MP_TOKEN_FSTRING_EMPTY_EXP:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("f-string: empty expression not allowed"));
+                    MP_ERROR_TEXT("f-string: empty expression not allowed"));
                 break;
             case MP_TOKEN_FSTRING_RAW:
                 exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    translate("raw f-strings are not implemented"));
+                    MP_ERROR_TEXT("raw f-strings are not implemented"));
                 break;
             #else
             case MP_TOKEN_FSTRING_BACKSLASH:
@@ -1224,18 +1215,18 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             case MP_TOKEN_FSTRING_EMPTY_EXP:
             case MP_TOKEN_FSTRING_RAW:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("malformed f-string"));
+                    MP_ERROR_TEXT("malformed f-string"));
                 break;
             #endif
                 #endif
             default:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    translate("invalid syntax"));
+                    MP_ERROR_TEXT("invalid syntax"));
                 break;
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this
-        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
         nlr_raise(exc);
     }
 

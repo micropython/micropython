@@ -43,6 +43,7 @@ extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const
 // call alarm_woken_from_sleep to see if we've been woken by an alarm and if so,
 // it will exit idle as if deep sleep was exited
 extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
+
 extern NORETURN void common_hal_alarm_enter_deep_sleep(void);
 
 // May be used to re-initialize peripherals like GPIO, if the VM reset returned

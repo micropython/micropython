@@ -130,7 +130,9 @@
 //
 // 1 = SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_ENABLE_LFN      (1)
-#define MICROPY_FATFS_LFN_CODE_PAGE   (437)
+// Don't use parens on the value below because it gets combined with a prefix in
+// the preprocessor.
+#define MICROPY_FATFS_LFN_CODE_PAGE   437
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
@@ -202,6 +204,7 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+#define MICROPY_EPOCH_IS_1970                 (0)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -412,6 +415,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
 #if CIRCUITPY_ERRNO
 #define MICROPY_PY_UERRNO (1)
 // Uses about 80 bytes.
@@ -484,6 +494,13 @@ extern const struct _mp_obj_module_t i2cperipheral_module;
 #define I2CPERIPHERAL_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cperipheral), (mp_obj_t)&i2cperipheral_module },
 #else
 #define I2CPERIPHERAL_MODULE
+#endif
+
+#if CIRCUITPY_IMAGECAPTURE
+extern const struct _mp_obj_module_t imagecapture_module;
+#define IMAGECAPTURE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_imagecapture), (mp_obj_t)&imagecapture_module },
+#else
+#define IMAGECAPTURE_MODULE
 #endif
 
 #if CIRCUITPY_IPADDRESS
@@ -572,13 +589,6 @@ extern const struct _mp_obj_module_t os_module;
 #else
 #define OS_MODULE
 #define OS_MODULE_ALT_NAME
-#endif
-
-#if CIRCUITPY_DUALBANK
-extern const struct _mp_obj_module_t dualbank_module;
-#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
-#else
-#define DUALBANK_MODULE
 #endif
 
 #if CIRCUITPY_PEW
@@ -728,6 +738,13 @@ extern const struct _mp_obj_module_t supervisor_module;
 #define SUPERVISOR_MODULE
 #endif
 
+#if CIRCUITPY_SYNTHIO
+#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
+extern const struct _mp_obj_module_t synthio_module;
+#else
+#define SYNTHIO_MODULE
+#endif
+
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
@@ -853,6 +870,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
+    DUALBANK_MODULE \
     FONTIO_MODULE \
     TERMINALIO_MODULE \
     VECTORIO_MODULE \
@@ -865,6 +883,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
+    IMAGECAPTURE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
@@ -875,7 +894,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     NETWORK_MODULE \
     SOCKET_MODULE \
     WIZNET_MODULE \
-    DUALBANK_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -897,6 +915,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
+    SYNTHIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_CDC_MODULE \
@@ -975,5 +994,58 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #define CIRCUITPY_VERBOSE_BLE 0
+
+// USB settings
+
+// If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
+
+#ifndef USB_CDC_EP_NUM_NOTIFICATION
+#define USB_CDC_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_OUT
+#define USB_CDC_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_IN
+#define USB_CDC_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_NOTIFICATION
+#define USB_CDC2_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_OUT
+#define USB_CDC2_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_IN
+#define USB_CDC2_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_OUT
+#define USB_MSC_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_IN
+#define USB_MSC_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_OUT
+#define USB_HID_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_IN
+#define USB_HID_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_OUT
+#define USB_MIDI_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_IN
+#define USB_MIDI_EP_NUM_IN (0)
+#endif
+
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

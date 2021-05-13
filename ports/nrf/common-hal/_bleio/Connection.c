@@ -645,7 +645,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
         mp_obj_t iterable = mp_getiter(service_uuids_whitelist, &iter_buf);
         mp_obj_t uuid_obj;
         while ((uuid_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+            if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
                 mp_raise_TypeError(translate("non-UUID found in service_uuids_whitelist"));
             }
             bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);

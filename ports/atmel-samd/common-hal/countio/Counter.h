@@ -9,7 +9,7 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t pin_a;
-    uint8_t eic_channel_a:4;
+    uint8_t eic_channel_a : 4;
     mp_int_t count;
 } countio_counter_obj_t;
 

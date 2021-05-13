@@ -57,7 +57,7 @@ const mp_obj_property_t vectorio_circle_radius_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_circle_get_radius_obj,
               (mp_obj_t)&vectorio_circle_set_radius_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 

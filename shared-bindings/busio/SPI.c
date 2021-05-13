@@ -396,8 +396,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_get_frequency_obj, busio_spi_obj_get_frequen
 const mp_obj_property_t busio_spi_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&busio_spi_get_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
@@ -424,7 +424,7 @@ const mp_obj_type_t busio_spi_type = {
 };
 
 busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &busio_spi_type)) {
+    if (!mp_obj_is_type(obj, &busio_spi_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), busio_spi_type.name);
     }
     return MP_OBJ_TO_PTR(obj);

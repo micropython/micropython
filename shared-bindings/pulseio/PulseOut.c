@@ -70,7 +70,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     self->base.type = &pulseio_pulseout_type;
 
     mp_obj_t carrier_obj = pos_args[0];
-    if (MP_OBJ_IS_TYPE(carrier_obj, &pwmio_pwmout_type)) {
+    if (mp_obj_is_type(carrier_obj, &pwmio_pwmout_type)) {
         // Use a PWMOut Carrier
         mp_arg_check_num(n_args, kw_args, 1, 1, false);
         common_hal_pulseio_pulseout_construct(self, (pwmio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj), NULL, 0, 0);

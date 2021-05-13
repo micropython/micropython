@@ -15,9 +15,6 @@ test("@micropython.viper\ndef f() -> 1: pass")
 # unknown type
 test("@micropython.viper\ndef f(x:unknown_type): pass")
 
-# too many arguments
-test("@micropython.viper\ndef f(a, b, c, d, e): pass")
-
 # local used before type known
 test(
     """
@@ -55,6 +52,7 @@ test("@micropython.viper\ndef f() -> int: return []")
 
 # can't do binary op between incompatible types
 test("@micropython.viper\ndef f(): 1 + []")
+test("@micropython.viper\ndef f(x:int, y:uint): x < y")
 
 # can't load
 test("@micropython.viper\ndef f(): 1[0]")
@@ -76,6 +74,8 @@ test("@micropython.viper\ndef f(x:int): -x")
 test("@micropython.viper\ndef f(x:int): ~x")
 
 # binary op not implemented
+test("@micropython.viper\ndef f(x:uint, y:uint): res = x // y")
+test("@micropython.viper\ndef f(x:uint, y:uint): res = x % y")
 test("@micropython.viper\ndef f(x:int): res = x in x")
 
 # yield (from) not implemented

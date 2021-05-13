@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-04-11 01:30+0000\n"
+"PO-Revision-Date: 2021-05-06 17:51+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -81,7 +81,7 @@ msgstr "Échec de %q : %d"
 msgid "%q in use"
 msgstr "%q en cours d'utilisation"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
@@ -91,12 +91,16 @@ msgid "%q index out of range"
 msgstr "index %q hors de portée"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr "indices %q doivent être des chiffres entier, et non %q"
+msgid "%q indices must be integers, not %s"
+msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "La liste %q doit être une liste"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr ""
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -109,6 +113,10 @@ msgstr "%q doit être >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q doit être >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or 1-255"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -140,25 +148,9 @@ msgstr "%s erreur 0x%x"
 msgid "'%q' argument required"
 msgstr "paramètre '%q' requis"
 
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
-
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
 msgstr "l'objet '%q' ne supporte pas '%q'"
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr "l'objet '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -171,10 +163,6 @@ msgstr "l'objet '%q' ne peut pas être appelé"
 #: py/runtime.c
 msgid "'%q' object is not iterable"
 msgstr "l'objet '%q' n'est pas itérable"
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr "l'objet '%q' n'est pas souscriptable"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -218,13 +206,32 @@ msgstr "'%s' attend {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' le chiffre entier %d n'est pas dans la portée %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
+msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' le chiffre entier 0x%x ne correspond pas au masque 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "l'objet '%s' n'a pas d'attribut '%q'"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
+msgstr ""
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -361,7 +368,7 @@ msgstr "Tous les canaux d'événements sont utilisés"
 msgid "All state machines in use"
 msgstr "Tous les automates finis sont utilisés"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Tout les canaux d'événements sync sont utilisés"
 
@@ -453,6 +460,12 @@ msgstr "Tentative d'allocation de %d blocs"
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
 msgstr ""
+"Tentative d'allocation à la pile quand la Machine Virtuelle n'est pas en "
+"exécution."
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr "AuthMode.OPEN n'est pas utilisé avec un mot de passe"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -619,6 +632,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Impossible de définir CCCD sur une caractéristique locale"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
@@ -664,8 +682,8 @@ msgid "Cannot record to a file"
 msgstr "Impossible d'enregistrer vers un fichier"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "'/' ne peut être remonté quand l'USB est actif."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -696,15 +714,12 @@ msgstr "On ne peut faire de sous-classes de tranches"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO."
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisée"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Ne peut reveillé sur le board de broche. Seuleument à niveau."
 
@@ -765,10 +780,6 @@ msgstr ""
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Fichier .mpy corrompu"
-
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Code brut corrompu"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
@@ -909,6 +920,11 @@ msgstr "ESP-IDF échec d'allocation de la mémoire"
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Erreur dans le flot MIDI à la position %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
@@ -1041,7 +1057,7 @@ msgstr "Échec de l'écriture vers flash interne."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "Erreurre fatale."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1116,10 +1132,6 @@ msgstr "périphérique I2C utilisé"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1228,6 +1240,7 @@ msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
@@ -1242,6 +1255,10 @@ msgstr "Sélection de broche %q invalide"
 msgid "Invalid ADC Unit value"
 msgstr "Valeur d'unité ADC non valide"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr "AuthMode invalide"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Fichier BMP invalide"
@@ -1254,6 +1271,10 @@ msgstr "BSSID invalide"
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
+
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Fichier MIDI invalide"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1294,6 +1315,11 @@ msgstr "Période de capture invalide. Portée valide : 1 à 500"
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "data_count invalide %d"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
 msgstr "Direction invalide."
@@ -1326,7 +1352,8 @@ msgstr "Phase invalide"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
@@ -1417,14 +1444,6 @@ msgstr "Couche déjà dans un groupe."
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "'Layer' doit être un 'Group' ou une sous-classe 'TileGrid'."
 
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "Length doit être un chiffre entier (int)"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr "Length ne doit pas être négatif"
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
 msgstr "Adresse physique (MAC) invalide"
@@ -1501,13 +1520,13 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "Saut NLR échoué. Corruption de mémoire probable."
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "Erreur NVS"
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Nom trop long"
 
@@ -1605,6 +1624,11 @@ msgstr "Aucune clé n'a été spécifiée"
 msgid "No long integer support"
 msgstr "Pas de support pour chiffre entier long"
 
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Aucun réseau avec ce ssid"
@@ -1647,6 +1671,7 @@ msgstr "Logiciel systême Nordic hors de mémoire"
 msgid "Not a valid IP string"
 msgstr "Chaîne IP non valide"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1711,6 +1736,7 @@ msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Seulement une alarme alarm.time peut être réglée."
 
@@ -2201,9 +2227,8 @@ msgid "Too many displays"
 msgstr "Trop d'affichages"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
-msgstr ""
-"Le nombre total de données à écrire est supérieur à outgoing_packet_length"
+msgid "Total data to write is larger than %q"
+msgstr "Quantité de données à écrire est plus que %q"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2234,12 +2259,20 @@ msgid "UART write error"
 msgstr "Erreur d'écriture UART"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB occupé"
+msgid "USB busy"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "Erreur USB"
+msgid "USB error"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -2380,11 +2413,6 @@ msgstr "Longueur de la valeur > max_length"
 msgid "Version was invalid"
 msgstr "Version est invalide"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-"les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
-
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr "La lecture de la tension a expiré"
@@ -2473,11 +2501,6 @@ msgstr "un objet 'bytes-like' est requis"
 msgid "abort() called"
 msgstr "abort() appelé"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "l'adresse %08x n'est pas alignée sur %d octets"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adresse hors limites"
@@ -2486,9 +2509,17 @@ msgstr "adresse hors limites"
 msgid "addresses is empty"
 msgstr "adresses vides"
 
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr "l'annotation doit être un identificateur"
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
+
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2501,6 +2532,10 @@ msgstr "argsort n'est pas mis en œuvre pour les matrices aplatis"
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "l'argument est d'un mauvais type"
+
+#: py/compile.c
+msgid "argument name reused"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2585,10 +2620,6 @@ msgstr "branche hors-bornes"
 msgid "buffer is smaller than requested size"
 msgstr "tampon est plus petit que la taille demandée"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "le tampon doit être un objet bytes-like"
-
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "taille du tampon doit être un multiple de la taille de l'élement"
@@ -2613,10 +2644,6 @@ msgstr "tampon trop petit pour le nombre d'octets demandé"
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "les boutons doivent être des digitalio.DigitalInOut"
-
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "bytecode non implémenté"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -2655,10 +2682,6 @@ msgstr "il peut y avoir jusqu'à 4 paramètres pour l'assemblage Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maximum 4 paramètres pour l'assembleur Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "ne peut sauvegarder que du bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2668,10 +2691,23 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "ne peut pas assigner à une expression"
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "impossible de convertir %q en %q"
+
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr "ne peut convertir %q à int"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "ne peut convertir %s en nombre complexe"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2680,6 +2716,14 @@ msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "impossible de convertir en %q"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "ne peut convertir en nombre complexe"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "ne peut convertir en entier 'int'"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2720,12 +2764,6 @@ msgstr "impossible de charger depuis '%q'"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "impossible de charger avec l'indice '%q'"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr ""
-"on ne peut effectuer une action de type 'pend throw' sur un générateur "
-"fraîchement démarré"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2787,6 +2825,10 @@ msgstr "ne peut pas importer le nom %q"
 msgid "cannot perform relative import"
 msgstr "ne peut pas réaliser un import relatif"
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "typage"
@@ -2835,6 +2877,10 @@ msgstr "la couleur doit être entre 0x000000 et 0xffffff"
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
 msgstr "la couleur doit être un entier 'int'"
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
+msgstr ""
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2888,6 +2934,11 @@ msgstr "les données doivent être les objets iterables"
 msgid "data must be of equal length"
 msgstr "les données doivent être de longueur égale"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "broche de donnée #%d utilisée"
+
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
 msgstr "le type de donnée n'est pas reconnu"
@@ -2936,7 +2987,15 @@ msgstr "differentiation order hors de portée"
 msgid "dimensions do not match"
 msgstr "les dimensions ne correspondent pas"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "division par zéro"
@@ -2945,7 +3004,7 @@ msgstr "division par zéro"
 msgid "empty"
 msgstr "vide"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "tas vide"
 
@@ -3045,7 +3104,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string : single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -3085,6 +3144,10 @@ msgstr "le paramêtre flip doit être un ndarray"
 msgid "float too big"
 msgstr "nombre à virgule flottante trop grand"
 
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr "valeures flotantes non supportées"
+
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
 msgstr "la police doit être longue de 2048 octets"
@@ -3098,8 +3161,8 @@ msgid "full"
 msgstr "plein"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "la fonction ne prend pas d'arguments nommés"
+msgid "function doesn't take keyword arguments"
+msgstr "la fonction n'accepte pas de paramètre nommés"
 
 #: py/argcheck.c
 #, c-format
@@ -3153,6 +3216,10 @@ msgstr "générateur déjà en cours d'exécution"
 msgid "generator ignored GeneratorExit"
 msgstr "le générateur a ignoré GeneratorExit"
 
+#: py/objgenerator.c py/runtime.c
+msgid "generator raised StopIteration"
+msgstr "générateur (generator) à surlevé StopIteration"
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic doit être long de 2048 octets"
@@ -3168,6 +3235,14 @@ msgstr "identifiant redéfini comme global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifiant redéfini comme nonlocal"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr "import * n'est pas au niveau du module"
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr "architecture native .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3289,6 +3364,10 @@ msgstr "interp est défini pour les matrices 1D de longueur égale"
 msgid "interval must be in range %s-%s"
 msgstr "interval doit être dans la portée %s-%s"
 
+#: py/compile.c
+msgid "invalid architecture"
+msgstr "architecture invalide"
+
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "arguments invalides"
@@ -3297,18 +3376,6 @@ msgstr "arguments invalides"
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificat invalide"
-
-#: py/compile.c
-msgid "invalid decorator"
-msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "index invalide pour dupterm"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3331,10 +3398,6 @@ msgstr "spécification de format invalide"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "hostname incorrect"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "clé invalide"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3360,10 +3423,6 @@ msgstr "syntaxe invalide pour un entier de base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io doit être rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3528,9 +3587,9 @@ msgstr "nom '%q' non défini"
 msgid "name not defined"
 msgstr "nom non défini"
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr "nom réutilisé comme paramètre"
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3540,6 +3599,10 @@ msgstr "'yield' natif"
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "nécessite plus de %d valeurs à dégrouper"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr "factoriel négatif"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3569,6 +3632,10 @@ msgstr "pas de lien trouvé pour nonlocal"
 msgid "no default packer"
 msgstr "aucun emballeur par défault"
 
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
@@ -3582,9 +3649,13 @@ msgstr "pas de broche de réinitialisation disponible"
 msgid "no response from SD card"
 msgstr "pas de réponse de la carte SD"
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3637,24 +3708,25 @@ msgid "object "
 msgstr "objet "
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr "l'objet '%q' n'est pas un tuple ou une list"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item assignment"
-msgstr "l'objet ne supporte pas l'assignation d'éléments"
+msgid "object doesn't support item assignment"
+msgstr ""
 
 #: py/obj.c
-msgid "object does not support item deletion"
-msgstr "l'objet ne supporte pas la suppression d'éléments"
+msgid "object doesn't support item deletion"
+msgstr ""
 
 #: py/obj.c
 msgid "object has no len"
 msgstr "l'objet n'a pas de 'len'"
 
 #: py/obj.c
-msgid "object is not subscriptable"
-msgstr "l'objet n'est pas sous-scriptable"
+msgid "object isn't subscriptable"
+msgstr ""
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3673,8 +3745,9 @@ msgid "object not iterable"
 msgstr "objet non itérable"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr "len() indéfinie pour un objet de type '%q'"
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "l'objet de type '%s' n'a pas de len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3712,6 +3785,10 @@ msgstr "seul sample_rate = 16000 est pris en charge"
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
+
+#: py/vm.c
+msgid "opcode"
+msgstr "opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
 #: extmod/ulab/code/numpy/vector/vector.c
@@ -3774,10 +3851,6 @@ msgstr "la palette doit être longue de 32 octets"
 msgid "palette_index should be an int"
 msgstr "palette_index devrait être un entier 'int'"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "l'annotation du paramètre doit être un identifiant"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
@@ -3833,6 +3906,8 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3857,6 +3932,10 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
+
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr "appuyer le bouton de gauche au démarage\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
@@ -3935,12 +4014,16 @@ msgid "sampling rate out of range"
 msgstr "taux d'échantillonage hors bornes"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "pile de planification pleine"
+msgid "schedule queue full"
+msgstr "file de schédule pleine"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
+
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
@@ -3974,9 +4057,13 @@ msgstr "la longueur de sleep ne doit pas être négative"
 msgid "slice step can't be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
+
+#: py/nativeglue.c
+msgid "slice unsupported"
+msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4040,8 +4127,12 @@ msgstr ""
 "chaîne de carac. non supportée; utilisez des bytes ou une matrice de bytes"
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "struct : indexage impossible"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct : index hors limites"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -4121,6 +4212,10 @@ msgstr "Trop de dimensions"
 msgid "too many indices"
 msgstr "trop d'indices"
 
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
@@ -4133,10 +4228,6 @@ msgstr "trapz est définie pour matrices à une dimension"
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz n'est défini que pour des matrices 1D de longueur égales"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "niveau du déclencheur doit être 0 ou 1"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4219,7 +4310,7 @@ msgstr "code de formatage inconnu '%c' pour objet de type '%q'"
 msgid "unknown type"
 msgstr "type inconnu"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "type '%q' inconnu"
 
@@ -4271,10 +4362,6 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflit au réveil"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -4361,6 +4448,139 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB occupé"
+
+#~ msgid "USB Error"
+#~ msgstr "Erreur USB"
+
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "indices %q doivent être des chiffres entier, et non %q"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "l'objet '%q' n'as pas d'attribut '%q'"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "l'objet '%q' n'est pas souscriptable"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' le chiffre entier %d n'est pas dans la portée %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' le chiffre entier 0x%x ne correspond pas au masque 0x%x"
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
+
+#~ msgid "Length must be an int"
+#~ msgstr "Length doit être un chiffre entier (int)"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Length ne doit pas être négatif"
+
+#~ msgid "incompatible .mpy file"
+#~ msgstr "Fichier .mpy incompatible"
+
+#~ msgid "invalid decorator"
+#~ msgstr "décorateur invalide"
+
+#~ msgid "name reused for argument"
+#~ msgstr "nom réutilisé comme paramètre"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "l'objet '%q' n'est pas un tuple ou une list"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "l'objet ne supporte pas l'assignation d'éléments"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "l'objet ne supporte pas la suppression d'éléments"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "l'objet n'est pas sous-scriptable"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "len() indéfinie pour un objet de type '%q'"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct : indexage impossible"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "'/' ne peut être remonté quand l'USB est actif."
+
+#~ msgid "Timeout waiting for DRDY"
+#~ msgstr "Délais expiré en attandant DRDY"
+
+#~ msgid "Timeout waiting for VSYNC"
+#~ msgstr "Délais expiré en attandant VSYNC"
+
+#~ msgid "byte code not implemented"
+#~ msgstr "bytecode non implémenté"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr ""
+#~ "on ne peut effectuer une action de type 'pend throw' sur un générateur "
+#~ "fraîchement démarré"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "index invalide pour dupterm"
+
+#~ msgid "schedule stack full"
+#~ msgstr "pile de planification pleine"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Code brut corrompu"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "ne peut sauvegarder que du bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificat invalide"
+
+#~ msgid "invalid key"
+#~ msgstr "clé invalide"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr ""
+#~ "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "l'adresse %08x n'est pas alignée sur %d octets"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "la fonction ne prend pas d'arguments nommés"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "l'annotation du paramètre doit être un identifiant"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr ""
+#~ "Le nombre total de données à écrire est supérieur à outgoing_packet_length"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "le tampon doit être un objet bytes-like"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io doit être rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "niveau du déclencheur doit être 0 ou 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflit au réveil"
 
 #~ msgid "Attempted heap allocation when MicroPython VM not running."
 #~ msgstr ""
@@ -4565,9 +4785,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tuple ou liste requis en partie droite"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "les indices %q doivent être des entiers, pas %s"
-
 #~ msgid "'%s' object cannot assign attribute '%q'"
 #~ msgstr "L'objet '%s' ne peut pas attribuer '%q'"
 
@@ -4579,9 +4796,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "'%s' object does not support item deletion"
 #~ msgstr "l'objet '%s' ne supporte pas la suppression d'éléments"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "l'objet '%s' n'a pas d'attribut '%q'"
 
 #~ msgid "'%s' object is not an iterator"
 #~ msgstr "l'objet '%s' n'est pas un itérateur"
@@ -4616,9 +4830,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() doit retourner None, pas '%s'"
 
-#~ msgid "can't convert %s to complex"
-#~ msgstr "ne peut convertir %s en nombre complexe"
-
 #~ msgid "can't convert %s to float"
 #~ msgstr "ne peut convertir %s en nombre à virgule flottante 'float'"
 
@@ -4634,20 +4845,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "can't convert inf to int"
 #~ msgstr "on ne peut convertir l'infini 'inf' en entier 'int'"
 
-#~ msgid "can't convert to complex"
-#~ msgstr "ne peut convertir en nombre complexe"
-
 #~ msgid "can't convert to float"
 #~ msgstr "ne peut convertir en nombre à virgule flottante 'float'"
 
-#~ msgid "can't convert to int"
-#~ msgstr "ne peut convertir en entier 'int'"
-
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "l'objet '%s' n'est pas un tuple ou une liste"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "l'objet de type '%s' n'a pas de len()"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "'pop' d'un ensemble set vide"
@@ -4664,9 +4866,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "string indices must be integers, not %s"
 #~ msgstr ""
 #~ "les indices de chaîne de caractères doivent être des entiers, pas %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct : index hors limites"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "code de format '%c' inconnu pour un objet de type '%s'"

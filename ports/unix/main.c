@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +47,6 @@
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
-#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
@@ -64,9 +64,8 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
-    ssize_t dummy = write(STDERR_FILENO, str, len);
-    mp_uos_dupterm_tx_strn(str, len);
-    (void)dummy;
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -133,31 +132,27 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         // allow to print the parse tree in the coverage build
         if (mp_verbose_flag >= 3) {
             printf("----------------\n");
-            mp_parse_node_print(parse_tree.root, 0);
+            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
             printf("----------------\n");
         }
         #endif
 
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
         if (!compile_only) {
             // execute it
             mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
         }
 
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(true);
         nlr_pop();
         return 0;
 
     } else {
         // uncaught exception
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(false);
         return handle_uncaught_exception(nlr.ret_val);
     }
 }
@@ -301,11 +296,15 @@ STATIC int do_str(const char *str) {
     return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int usage(char **argv) {
+STATIC void print_help(char **argv) {
     printf(
-        "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+        "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
+        "-h : print this help message\n"
+        "-i : enable inspection via REPL after running command/module/file\n"
+        #if MICROPY_DEBUG_PRINTERS
         "-v : verbose (trace various operations); can be multiple\n"
+        #endif
         "-O[N] : apply bytecode optimizations of level N\n"
         "\n"
         "Implementation specific options (-X):\n", argv[0]
@@ -313,7 +312,11 @@ STATIC int usage(char **argv) {
     int impl_opts_cnt = 0;
     printf(
         "  compile-only                 -- parse and compile only\n"
+        #if MICROPY_EMIT_NATIVE
         "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        #else
+        "  emit=bytecode                -- set the default code emitter\n"
+        #endif
         );
     impl_opts_cnt++;
     #if MICROPY_ENABLE_GC
@@ -326,7 +329,10 @@ STATIC int usage(char **argv) {
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
     }
+}
 
+STATIC int invalid_args(void) {
+    fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
@@ -334,19 +340,28 @@ STATIC int usage(char **argv) {
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
+            if (strcmp(argv[a], "-c") == 0 || strcmp(argv[a], "-m") == 0) {
+                break; // Everything after this is a command/module and arguments for it
+            }
+            if (strcmp(argv[a], "-h") == 0) {
+                print_help(argv);
+                exit(0);
+            }
             if (strcmp(argv[a], "-X") == 0) {
                 if (a + 1 >= argc) {
-                    exit(usage(argv));
+                    exit(invalid_args());
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
                 #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
@@ -374,7 +389,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                         goto invalid_arg;
                     }
                     if (word_adjust) {
-                        heap_size = heap_size * BYTES_PER_WORD / 4;
+                        heap_size = heap_size * MP_BYTES_PER_OBJ_WORD / 4;
                     }
                     // If requested size too small, we'll crash anyway
                     if (heap_size < 700) {
@@ -383,11 +398,12 @@ STATIC void pre_process_options(int argc, char **argv) {
                 #endif
                 } else {
                 invalid_arg:
-                    printf("Invalid option\n");
-                    exit(usage(argv));
+                    exit(invalid_args());
                 }
                 a++;
             }
+        } else {
+            break; // Not an option but a file
         }
     }
 }
@@ -434,7 +450,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
     pre_process_options(argc, argv);
 
@@ -449,6 +465,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_init();
+
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
 
     #if MICROPY_VFS_POSIX
     {
@@ -511,15 +534,14 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
-
-
-
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
     #if defined(MICROPY_UNIX_COVERAGE)
     {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
-        mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
+        mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
     #endif
 
@@ -532,9 +554,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // test_obj.attr = 42
     //
     // mp_obj_t test_class_type, test_class_instance;
-    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    // test_class_type = mp_obj_new_type(qstr_from_str("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(qstr_from_str("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, qstr_from_str("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
@@ -552,16 +574,15 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 inspect = true;
             } else if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
+                set_sys_argv(argv, a + 1, a); // The -c becomes first item of sys.argv, as in CPython
+                set_sys_argv(argv, argc, a + 2); // Then what comes after the command
                 ret = do_str(argv[a + 1]);
-                if (ret & FORCED_EXIT) {
-                    break;
-                }
-                a += 1;
+                break;
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
                 mp_obj_t import_args[4];
                 import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
@@ -578,7 +599,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
-                bool subpkg_tried = false;
+
+                // Allocating subpkg_tried on the stack can lead to compiler warnings about this
+                // variable being clobbered when nlr is implemented using setjmp/longjmp.  Its
+                // value must be preserved across calls to setjmp/longjmp.
+                static bool subpkg_tried;
+                subpkg_tried = false;
 
             reimport:
                 if (nlr_push(&nlr) == 0) {
@@ -617,7 +643,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     }
                 }
             } else {
-                return usage(argv);
+                return invalid_args();
             }
         } else {
             char *pathbuf = malloc(PATH_MAX);
@@ -640,8 +666,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    const char *inspect_env = getenv("MICROPYINSPECT");
+    if (inspect_env && inspect_env[0] != '\0') {
+        inspect = true;
+    }
     if (ret == NOTHING_EXECUTED || inspect) {
-        if (isatty(0)) {
+        if (isatty(0) || inspect) {
             prompt_read_history();
             ret = do_repl();
             prompt_write_history();
@@ -650,10 +680,25 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
+    if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
+        mp_call_function_0(MP_STATE_VM(sys_exitfunc));
+    }
+    #endif
+
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     if (mp_verbose_flag) {
         mp_micropython_mem_info(0, NULL);
     }
+    #endif
+
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
     #endif
 
     #if defined(MICROPY_UNIX_COVERAGE)
@@ -684,9 +729,27 @@ uint mp_import_stat(const char *path) {
     }
     return MP_IMPORT_STAT_NO_EXIST;
 }
+
+#if MICROPY_PY_IO
+// Factory function for I/O stream classes, only needed if generic VFS subsystem isn't used.
+// Note: buffering and encoding are currently ignored.
+mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kwargs) {
+    enum { ARG_file, ARG_mode };
+    STATIC const mp_arg_t allowed_args[] = {
+        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
+        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+#endif
 #endif
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught NLR %p\n", val);
+    fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }

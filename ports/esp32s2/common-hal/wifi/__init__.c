@@ -50,11 +50,21 @@ static void event_handler(void *arg, esp_event_base_t event_base,
                 ESP_LOGW(TAG, "scan");
                 xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
                 break;
+            case WIFI_EVENT_AP_START:
+                ESP_LOGW(TAG, "ap start");
+                break;
+            case WIFI_EVENT_AP_STOP:
+                ESP_LOGW(TAG, "ap stop");
+                break;
+            case WIFI_EVENT_AP_STACONNECTED:
+                break;
+            case WIFI_EVENT_AP_STADISCONNECTED:
+                break;
             case WIFI_EVENT_STA_START:
-                ESP_LOGW(TAG, "start");
+                ESP_LOGW(TAG, "sta start");
                 break;
             case WIFI_EVENT_STA_STOP:
-                ESP_LOGW(TAG, "stop");
+                ESP_LOGW(TAG, "sta stop");
                 break;
             case WIFI_EVENT_STA_CONNECTED:
                 ESP_LOGW(TAG, "connected");
@@ -109,6 +119,7 @@ void common_hal_wifi_init(void) {
 
     wifi_radio_obj_t *self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
+    self->ap_netif = esp_netif_create_default_wifi_ap();
     self->started = false;
 
     // Even though we just called esp_netif_create_default_wifi_sta,
@@ -137,6 +148,9 @@ void common_hal_wifi_init(void) {
     } else if (result != ESP_OK) {
         mp_raise_RuntimeError(translate("Failed to init wifi"));
     }
+    // set station mode to avoid the default SoftAP
+    esp_wifi_set_mode(WIFI_MODE_STA);
+    // start wifi
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
@@ -155,10 +169,12 @@ void wifi_reset(void) {
     ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
     radio->netif = NULL;
+    esp_netif_destroy(radio->ap_netif);
+    radio->ap_netif = NULL;
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
-    if (!MP_OBJ_IS_TYPE(ip_address, &ipaddress_ipv4address_type)) {
+    if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
         mp_raise_ValueError(translate("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);

@@ -44,7 +44,7 @@ extern const mp_obj_type_t mp_type_textio;
 
 STATIC const mp_obj_type_t mp_type_iobase;
 
-STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
+STATIC const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
 STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
@@ -59,12 +59,17 @@ STATIC mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int 
     mp_load_method(obj, qst, dest);
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
     dest[2] = MP_OBJ_FROM_PTR(&ar);
-    mp_obj_t ret = mp_call_method_n_kw(1, 0, dest);
-    if (ret == mp_const_none) {
+    mp_obj_t ret_obj = mp_call_method_n_kw(1, 0, dest);
+    if (ret_obj == mp_const_none) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
+    }
+    mp_int_t ret = mp_obj_get_int(ret_obj);
+    if (ret >= 0) {
+        return ret;
     } else {
-        return mp_obj_get_int(ret);
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
     }
 }
 STATIC mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
@@ -148,6 +153,7 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         buf = (byte *)buf + rem;
         size -= rem;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->alloc, errcode);
+        (void)out_sz;
         if (*errcode != 0) {
             return MP_STREAM_ERROR;
         }
@@ -166,6 +172,7 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
     if (self->len != 0) {
         int err;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->len, &err);
+        (void)out_sz;
         // TODO: try to recover from a case of non-blocking stream, e.g. move
         // remaining chunk to the beginning of buffer.
         assert(out_sz == self->len);
@@ -190,7 +197,7 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t bufwriter_type = {
+STATIC const mp_obj_type_t mp_type_bufwriter = {
     { &mp_type_type },
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
@@ -208,15 +215,8 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     // package parameter being None, the path_in is interpreted as a
     // raw path.
     if (package_in != mp_const_none) {
-        mp_obj_t args[5];
-        args[0] = package_in;
-        args[1] = mp_const_none; // TODO should be globals
-        args[2] = mp_const_none; // TODO should be locals
-        args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-        args[4] = MP_OBJ_NEW_SMALL_INT(0);
-
-        // TODO lookup __import__ and call that instead of going straight to builtin implementation
-        mp_obj_t pkg = mp_builtin___import__(5, args);
+        // Pass "True" as sentinel value in fromlist to force returning of leaf module
+        mp_obj_t pkg = mp_import_name(mp_obj_str_get_qstr(package_in), mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
 
         mp_obj_t dest[2];
         mp_load_method_maybe(pkg, MP_QSTR___path__, dest);
@@ -272,7 +272,7 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BytesIO), MP_ROM_PTR(&mp_type_bytesio) },
     #endif
     #if MICROPY_PY_IO_BUFFEREDWRITER
-    { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&bufwriter_type) },
+    { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&mp_type_bufwriter) },
     #endif
 };
 

@@ -44,6 +44,8 @@ typedef enum {
     FLASH_WRITE_FAIL,
     MEM_MANAGE,
     WATCHDOG_RESET,
+    USB_TOO_MANY_ENDPOINTS,
+    USB_TOO_MANY_INTERFACE_NAMES,
     NO_HEAP,
 } safe_mode_t;
 

@@ -34,8 +34,15 @@
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-module/usb_cdc/__init__.h"
 
 #include "tusb.h"
+
+#ifdef NRF_DEBUG_PRINT
+// XXX  these functions are in nrf/supervisor/debug_uart.c
+extern void _debug_uart_init(void);
+extern void _debug_print_substr(const char *text, uint32_t length);
+#endif
 
 /*
  * Note: DEBUG_UART currently only works on STM32,
@@ -64,10 +71,17 @@ void serial_early_init(void) {
         buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
     #endif
+
+    #ifdef NRF_DEBUG_PRINT
+    _debug_uart_init();
+    #endif
 }
 
 void serial_init(void) {
-    usb_init();
+    // USB serial is set up separately.
+    #ifdef NRF_DEBUG_PRINT
+    _debug_uart_init();
+    #endif
 }
 
 bool serial_connected(void) {
@@ -79,6 +93,8 @@ bool serial_connected(void) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
+    #elif CIRCUITPY_USB_CDC
+    return usb_cdc_console_enabled() && tud_cdc_connected();
     #else
     return tud_cdc_connected();
     #endif
@@ -101,9 +117,12 @@ char serial_read(void) {
     char text;
     common_hal_busio_uart_read(&debug_uart, (uint8_t *)&text, 1, &uart_errcode);
     return text;
-    #else
-    return (char)tud_cdc_read_char();
+    #elif CIRCUITPY_USB_CDC
+    if (!usb_cdc_console_enabled()) {
+        return -1;
+    }
     #endif
+    return (char)tud_cdc_read_char();
 }
 
 bool serial_bytes_available(void) {
@@ -115,9 +134,12 @@ bool serial_bytes_available(void) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
-    #else
-    return tud_cdc_available() > 0;
+    #elif CIRCUITPY_USB_CDC
+    if (!usb_cdc_console_enabled()) {
+        return 0;
+    }
     #endif
+    return tud_cdc_available() > 0;
 }
 void serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
@@ -134,6 +156,12 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
+    #if CIRCUITPY_USB_CDC
+    if (!usb_cdc_console_enabled()) {
+        return;
+    }
+    #endif
+
     uint32_t count = 0;
     while (count < length && tud_cdc_connected()) {
         count += tud_cdc_write(text + count, length - count);
@@ -146,8 +174,14 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     int uart_errcode;
+
     common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
+
+    #ifdef NRF_DEBUG_PRINT
+    _debug_print_substr(text, length);
+    #endif
+
 }
 
 void serial_write(const char *text) {

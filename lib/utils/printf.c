@@ -26,8 +26,6 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_USE_INTERNAL_PRINTF
-
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
@@ -38,6 +36,18 @@
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "py/formatfloat.h"
 #endif
+
+#if MICROPY_DEBUG_PRINTERS
+int DEBUG_printf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(MICROPY_DEBUG_PRINTER, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
+#if MICROPY_USE_INTERNAL_PRINTF
 
 #undef putchar  // Some stdlibs have a #define for putchar
 int printf(const char *fmt, ...);
@@ -58,20 +68,6 @@ int printf(const char *fmt, ...) {
 int vprintf(const char *fmt, va_list ap) {
     return mp_vprintf(&mp_plat_print, fmt, ap);
 }
-
-#if MICROPY_DEBUG_PRINTERS
-extern const mp_print_t MICROPY_DEBUG_PRINTER_DEST;
-int DEBUG_printf(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    #ifndef MICROPY_DEBUG_PRINTER_DEST
-    #define MICROPY_DEBUG_PRINTER_DEST mp_plat_print
-    #endif
-    int ret = mp_vprintf(&MICROPY_DEBUG_PRINTER_DEST, fmt, ap);
-    va_end(ap);
-    return ret;
-}
-#endif
 
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {

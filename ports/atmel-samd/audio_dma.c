@@ -45,7 +45,15 @@ static volatile bool audio_dma_pending[AUDIO_DMA_CHANNEL_COUNT];
 
 static bool audio_dma_allocated[AUDIO_DMA_CHANNEL_COUNT];
 
-uint8_t audio_dma_allocate_channel(void) {
+uint8_t find_sync_event_channel_raise() {
+    uint8_t event_channel = find_sync_event_channel();
+    if (event_channel >= EVSYS_SYNCH_NUM) {
+        mp_raise_RuntimeError(translate("All sync event channels in use"));
+    }
+    return event_channel;
+}
+
+uint8_t dma_allocate_channel(void) {
     uint8_t channel;
     for (channel = 0; channel < AUDIO_DMA_CHANNEL_COUNT; channel++) {
         if (!audio_dma_allocated[channel]) {
@@ -56,7 +64,7 @@ uint8_t audio_dma_allocate_channel(void) {
     return channel; // i.e., return failure
 }
 
-void audio_dma_free_channel(uint8_t channel) {
+void dma_free_channel(uint8_t channel) {
     assert(channel < AUDIO_DMA_CHANNEL_COUNT);
     assert(audio_dma_allocated[channel]);
     audio_dma_disable_channel(channel);
@@ -180,7 +188,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     bool output_signed,
     uint32_t output_register_address,
     uint8_t dma_trigger_source) {
-    uint8_t dma_channel = audio_dma_allocate_channel();
+    uint8_t dma_channel = dma_allocate_channel();
     if (dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return AUDIO_DMA_DMA_BUSY;
     }
@@ -230,11 +238,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
 
         // We're likely double buffering so set up the block interrupts.
         turn_on_event_system();
-        dma->event_channel = find_sync_event_channel();
-
-        if (dma->event_channel >= EVSYS_SYNCH_NUM) {
-            mp_raise_RuntimeError(translate("All sync event channels in use"));
-        }
+        dma->event_channel = find_sync_event_channel_raise();
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it
@@ -302,7 +306,7 @@ void audio_dma_stop(audio_dma_t *dma) {
         disable_event_channel(dma->event_channel);
         MP_STATE_PORT(playing_audio)[channel] = NULL;
         audio_dma_state[channel] = NULL;
-        audio_dma_free_channel(dma->dma_channel);
+        dma_free_channel(dma->dma_channel);
     }
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }

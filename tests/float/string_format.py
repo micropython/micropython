@@ -25,6 +25,9 @@ test("{:06e}", float("inf"))
 test("{:06e}", float("-inf"))
 test("{:06e}", float("nan"))
 
+test("{:f}", False)
+test("{:f}", True)
+
 # The following fails right now
 # test("{:10.1}", 0.0)
 

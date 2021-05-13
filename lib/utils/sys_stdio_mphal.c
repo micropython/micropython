@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,12 +86,9 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
 }
 
 STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-
-    // For now, pretend we actually flush the stdio stream.
-    if (request == MP_STREAM_FLUSH) {
-        return 0;
+    (void)self_in;
+    if (request == MP_STREAM_POLL) {
+        return mp_hal_stdio_poll(arg);
     } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
@@ -162,6 +159,7 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
+    .ioctl = stdio_ioctl,
     .is_text = false,
 };
 
@@ -172,7 +170,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_t)&stdio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
 };
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused

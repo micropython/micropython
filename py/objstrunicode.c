@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
     #endif
     if (kind == PRINT_STR) {
-        mp_printf(print, "%.*s", str_len, str_data);
+        print->print_strn(print->data, (const char *)str_data, str_len);
     } else {
         uni_print_quoted(print, str_data, str_len);
     }
@@ -115,7 +115,7 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
     size_t offset) {
     if (offset > self_len) {
-        mp_raise_ValueError(translate("offset out of bounds"));
+        mp_raise_ValueError(MP_ERROR_TEXT("offset out of bounds"));
     }
 
     if (type == &mp_type_bytes) {
@@ -148,10 +148,10 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     // Copied from mp_get_index; I don't want bounds checking, just give me
     // the integer as-is. (I can't bounds-check without scanning the whole
     // string; an out-of-bounds index will be caught in the loops below.)
-    if (MP_OBJ_IS_SMALL_INT(index)) {
+    if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(translate("string indices must be integers, not %q"), mp_obj_get_type_qstr(index));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("string indices must be integers, not %q"), mp_obj_get_type_qstr(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0) {
@@ -161,7 +161,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
+                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -180,7 +180,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
+                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
             }
             // Then check completion
             if (i-- == 0) {
@@ -197,17 +197,21 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
     assert(type == &mp_type_str);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
         #if MICROPY_PY_BUILTINS_SLICE
-        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_t ostart, ostop, ostep;
-            mp_obj_slice_get(index, &ostart, &ostop, &ostep);
+            mp_obj_slice_t *slice = MP_OBJ_TO_PTR(index);
+            ostart = slice->start;
+            ostop = slice->stop;
+            ostep = slice->step;
+
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
 
             const byte *pstart, *pstop;
@@ -264,7 +268,9 @@ STATIC const mp_rom_map_elem_t struni_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rstrip), MP_ROM_PTR(&str_rstrip_obj) },
     { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj) },
     { MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj) },
+    #if MICROPY_PY_BUILTINS_STR_COUNT
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
+    #endif
     #if MICROPY_PY_BUILTINS_STR_PARTITION
     { MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj) },
     { MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj) },

@@ -31,7 +31,7 @@
 #include "shared-module/msgpack/__init__.h"
 #include "shared-bindings/msgpack/ExtType.h"
 
-#define MP_OBJ_IS_METH(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_bound_method))
+#define MP_OBJ_IS_METH(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_bound_method))
 
 //| """Pack object in msgpack format
 //|
@@ -105,7 +105,7 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t handler = args[ARG_default].u_obj;
-    if (handler != mp_const_none && !MP_OBJ_IS_FUN(handler) && !MP_OBJ_IS_METH(handler)) {
+    if (handler != mp_const_none && !mp_obj_is_fun(handler) && !MP_OBJ_IS_METH(handler)) {
         mp_raise_ValueError(translate("default is not a function"));
     }
 
@@ -138,7 +138,7 @@ STATIC mp_obj_t mod_msgpack_unpack(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t hook = args[ARG_ext_hook].u_obj;
-    if (hook != mp_const_none && !MP_OBJ_IS_FUN(hook) && !MP_OBJ_IS_METH(hook)) {
+    if (hook != mp_const_none && !mp_obj_is_fun(hook) && !MP_OBJ_IS_METH(hook)) {
         mp_raise_ValueError(translate("ext_hook is not a function"));
     }
 

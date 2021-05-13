@@ -198,7 +198,7 @@ const mp_obj_property_t frequencyio_frequencyin_capture_period_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&frequencyio_frequency_get_capture_period_obj,
               (mp_obj_t)&frequencyio_frequency_set_capture_period_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     def __get__(self, index: int) -> int:
@@ -217,8 +217,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_get_value_obj, frequencyio_fre
 const mp_obj_property_t frequencyio_frequencyin_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&frequencyio_frequencyin_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {

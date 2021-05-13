@@ -202,7 +202,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
-    mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &displayio_display_type);
+    mp_obj_t native_display = mp_obj_cast_to_native_base(display_obj, &displayio_display_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
@@ -300,7 +300,7 @@ const mp_obj_property_t displayio_display_auto_refresh_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_auto_refresh_obj,
               (mp_obj_t)&displayio_display_set_auto_refresh_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     brightness: float
@@ -337,7 +337,7 @@ const mp_obj_property_t displayio_display_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_brightness_obj,
               (mp_obj_t)&displayio_display_set_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     auto_brightness: bool
@@ -365,7 +365,7 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_auto_brightness_obj,
               (mp_obj_t)&displayio_display_set_auto_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 
@@ -383,8 +383,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_width_obj, displayio_display_obj
 const mp_obj_property_t displayio_display_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     height: int
@@ -399,8 +399,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_height_obj, displayio_display_ob
 const mp_obj_property_t displayio_display_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     rotation: int
@@ -423,7 +423,7 @@ const mp_obj_property_t displayio_display_rotation_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_rotation_obj,
               (mp_obj_t)&displayio_display_set_rotation_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     bus: _DisplayBus
@@ -439,8 +439,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_bus_obj, displayio_display_obj_g
 const mp_obj_property_t displayio_display_bus_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_bus_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 

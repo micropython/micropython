@@ -29,7 +29,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_points_list].u_obj, &mp_type_list)) {
+    if (!mp_obj_is_type(args[ARG_points_list].u_obj, &mp_type_list)) {
         mp_raise_TypeError_varg(translate("%q list must be a list"), MP_QSTR_point);
     }
 
@@ -63,7 +63,7 @@ const mp_obj_property_t vectorio_polygon_points_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&vectorio_polygon_get_points_obj,
               (mp_obj_t)&vectorio_polygon_set_points_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t vectorio_polygon_locals_dict_table[] = {

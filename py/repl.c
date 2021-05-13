@@ -153,7 +153,7 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
     } else {
         // try builtin module
         return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
-            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) != NULL;
     }
 }
 
@@ -265,7 +265,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
 
         // a complete word, lookup in current object
         qstr q = qstr_find_strn(s_start, s_len);
-        if (q == MP_QSTR_NULL) {
+        if (q == MP_QSTRnull) {
             // lookup will fail
             return 0;
         }
@@ -281,6 +281,12 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
         ++str;
     }
 
+    // after "import", suggest built-in modules
+    static const char import_str[] = "import ";
+    if (len >= 7 && !memcmp(org_str, import_str, 7)) {
+        obj = MP_OBJ_NULL;
+    }
+
     // look for matches
     size_t match_len;
     qstr q_first, q_last;
@@ -291,18 +297,11 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
     if (q_first == 0) {
         // If there're no better alternatives, and if it's first word
         // in the line, try to complete "import".
-        static const char import_str[] = "import ";
         if (s_start == org_str && s_len > 0) {
             if (memcmp(s_start, import_str, s_len) == 0) {
                 *compl_str = import_str + s_len;
                 return sizeof(import_str) - 1 - s_len;
             }
-        }
-        // after "import", suggest built-in modules
-        if (len >= 7 && !memcmp(org_str, import_str, 7)) {
-            obj = NULL;
-            match_str = find_completions(
-                s_start, s_len, obj, &match_len, &q_first, &q_last);
         }
         if (q_first == 0) {
             *compl_str = "    ";

@@ -108,7 +108,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type,
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_obj_deinit(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_type));
     i2cperipheral_i2c_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_i2cperipheral_i2c_peripheral_deinit(self);
     return mp_const_none;
@@ -127,7 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(i2cperipheral_i2c_peripheral_deinit_obj, i2cperipheral
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cperipheral_i2c_peripheral_type));
+    mp_check_self(mp_obj_is_type(args[0], &i2cperipheral_i2c_peripheral_type));
     i2cperipheral_i2c_peripheral_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_i2cperipheral_i2c_peripheral_deinit(self);
     return mp_const_none;
@@ -142,7 +142,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral___exit__
 //|         :rtype: ~i2cperipheral.I2CPeripheralRequest"""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cperipheral_i2c_peripheral_type));
+    mp_check_self(mp_obj_is_type(pos_args[0], &i2cperipheral_i2c_peripheral_type));
     i2cperipheral_i2c_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     if (common_hal_i2cperipheral_i2c_peripheral_deinited(self)) {
         raise_deinited_error();
@@ -253,7 +253,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_make_new(const mp_obj_type_
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(args[0], &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_i2cperipheral_i2c_peripheral_close(self->peripheral);
     return mp_const_none;
@@ -264,7 +264,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral_request_
 //|     """The I2C address of the request."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_address(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(self->address);
 }
@@ -274,7 +274,7 @@ MP_DEFINE_CONST_PROP_GET(i2cperipheral_i2c_peripheral_request_address_obj, i2cpe
 //|     """The I2C main controller is reading from this peripheral."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_is_read(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->is_read);
 }
@@ -284,7 +284,7 @@ MP_DEFINE_CONST_PROP_GET(i2cperipheral_i2c_peripheral_request_is_read_obj, i2cpe
 //|     """Is Repeated Start Condition."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_is_restart(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->is_restart);
 }
@@ -300,7 +300,7 @@ MP_DEFINE_CONST_PROP_GET(i2cperipheral_i2c_peripheral_request_is_restart_obj, i2
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(pos_args[0], &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     enum { ARG_n, ARG_ack };
     static const mp_arg_t allowed_args[] = {
@@ -358,7 +358,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(i2cperipheral_i2c_peripheral_request_read_obj, 1, i2c
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_write(mp_obj_t self_in, mp_obj_t buf_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (!self->is_read) {
@@ -392,7 +392,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2cperipheral_i2c_peripheral_request_write_obj,
 //|         ...
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_ack(uint n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(args[0], &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     bool ack = (n_args == 1) ? true : mp_obj_is_true(args[1]);
 
@@ -406,7 +406,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_ack(uint n_args, const mp_o
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral_request_ack_obj, 1, 2, i2cperipheral_i2c_peripheral_request_ack);
 
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_close(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cperipheral_i2c_peripheral_request_type));
+    mp_check_self(mp_obj_is_type(self_in, &i2cperipheral_i2c_peripheral_request_type));
     i2cperipheral_i2c_peripheral_request_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     common_hal_i2cperipheral_i2c_peripheral_close(self->peripheral);

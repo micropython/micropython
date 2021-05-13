@@ -125,8 +125,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_tim
 const mp_obj_property_t alarm_time_timealarm_monotonic_time_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {

@@ -49,8 +49,8 @@ typedef struct {
 
 typedef struct {
     PWM_Type *pwm;
-    pwm_submodule_t submodule:4;
-    pwm_channels_t channel:4;
+    pwm_submodule_t submodule : 4;
+    pwm_channels_t channel : 4;
     uint8_t mux_mode;
     uint8_t input_idx;
     uint32_t input_reg;
@@ -59,9 +59,9 @@ typedef struct {
 
 #define PWM_PIN(p_pwm, p_submodule, p_channel, p_iomuxc, p_pin) \
     PWM_PIN_(p_pwm, p_submodule, p_channel, p_iomuxc, p_pin)
-                                                //----------------------------------------------------------//
-                                                // supplied by the expansion of p_iomuxc into multiple args //
-#define PWM_PIN_(p_pwm, p_submodule, p_channel, p_mux_reg, p_mux_mode, p_input_reg, p_input_idx, p_config_reg, p_pin)\
+// ----------------------------------------------------------//
+// supplied by the expansion of p_iomuxc into multiple args //
+#define PWM_PIN_(p_pwm, p_submodule, p_channel, p_mux_reg, p_mux_mode, p_input_reg, p_input_idx, p_config_reg, p_pin) \
     { \
         .pwm = p_pwm, \
         .submodule = p_submodule, \

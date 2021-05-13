@@ -183,7 +183,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         }
     }
 
-    //Channel/PWM init
+    // Channel/PWM init
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
     self->chan_handle.Pulse = timer_get_internal_duty(duty, period);
     self->chan_handle.OCPolarity = TIM_OCPOLARITY_HIGH;

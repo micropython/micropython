@@ -78,6 +78,10 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
     return self->service;
 }
 
+size_t common_hal_bleio_characteristic_get_max_length(bleio_characteristic_obj_t *self) {
+    return self->max_length;
+}
+
 size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t *buf, size_t len) {
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
@@ -209,9 +213,9 @@ bool bleio_characteristic_set_local_value(bleio_characteristic_obj_t *self, mp_b
 
     self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 
-    if (MP_OBJ_IS_TYPE(self->observer, &bleio_characteristic_buffer_type)) {
+    if (mp_obj_is_type(self->observer, &bleio_characteristic_buffer_type)) {
         bleio_characteristic_buffer_update(MP_OBJ_FROM_PTR(self->observer), bufinfo);
-    } else if (MP_OBJ_IS_TYPE(self->observer, &bleio_packet_buffer_type)) {
+    } else if (mp_obj_is_type(self->observer, &bleio_packet_buffer_type)) {
         bleio_packet_buffer_update(MP_OBJ_FROM_PTR(self->observer), bufinfo);
     } else {
         return false;

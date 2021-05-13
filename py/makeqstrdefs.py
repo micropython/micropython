@@ -7,9 +7,12 @@ This script works with Python 2.6, 2.7, 3.3 and 3.4.
 
 from __future__ import print_function
 
-import re
-import sys
+import io
 import os
+import re
+import subprocess
+import sys
+import multiprocessing, multiprocessing.dummy
 
 # Python 2/3 compatibility:
 #   - iterating through bytes is different
@@ -26,9 +29,9 @@ elif platform.python_version_tuple()[0] == "3":
     unichr = chr
 # end compatibility code
 
-# Blacklist of qstrings that are specially handled in further
+# Blocklist of qstrings that are specially handled in further
 # processing and should be ignored
-QSTRING_BLACK_LIST = set(["NULL", "number_of"])
+QSTRING_BLOCK_LIST = set(["NULL", "number_of"])
 
 # add some custom names to map characters that aren't in HTML
 name2codepoint["hyphen"] = ord("-")
@@ -64,6 +67,47 @@ del name2codepoint["and"]
 del name2codepoint["or"]
 
 
+def preprocess():
+    if any(src in args.dependencies for src in args.changed_sources):
+        sources = args.sources
+    elif any(args.changed_sources):
+        sources = args.changed_sources
+    else:
+        sources = args.sources
+    csources = []
+    cxxsources = []
+    for source in sources:
+        if source.endswith(".cpp"):
+            cxxsources.append(source)
+        else:
+            csources.append(source)
+    try:
+        os.makedirs(os.path.dirname(args.output[0]))
+    except OSError:
+        pass
+
+    def pp(flags):
+        def run(files):
+            return subprocess.check_output(args.pp + flags + files)
+
+        return run
+
+    try:
+        cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        cpus = 1
+    p = multiprocessing.dummy.Pool(cpus)
+    with open(args.output[0], "wb") as out_file:
+        for flags, sources in (
+            (args.cflags, csources),
+            (args.cxxflags, cxxsources),
+        ):
+            batch_size = (len(sources) + cpus - 1) // cpus
+            chunks = [sources[i : i + batch_size] for i in range(0, len(sources), batch_size or 1)]
+            for output in p.imap(pp(flags), chunks):
+                out_file.write(output)
+
+
 def write_out(fname, output):
     if output:
         for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
@@ -95,10 +139,9 @@ def process_file(f):
         if line.startswith(("# ", "#line")):
             m = re_line.match(line)
             assert m is not None
-            # print(m.groups())
             lineno = int(m.group(1))
             fname = m.group(2)
-            if not fname.endswith(".c"):
+            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
@@ -107,13 +150,14 @@ def process_file(f):
             continue
         for match in re_qstr.findall(line):
             name = match.replace("MP_QSTR_", "")
-            if name not in QSTRING_BLACK_LIST:
+            if name not in QSTRING_BLOCK_LIST:
                 output.append("Q(" + qstr_unescape(name) + ")")
         for match in re_translate.findall(line):
             output.append('TRANSLATE("' + match[0] + '")')
         lineno += 1
 
-    write_out(last_fname, output)
+    if last_fname:
+        write_out(last_fname, output)
     return ""
 
 
@@ -175,7 +219,7 @@ if __name__ == "__main__":
         pass
 
     if args.command == "split":
-        with open(args.input_filename) as infile:
+        with io.open(args.input_filename, encoding="utf-8") as infile:
             process_file(infile)
 
     if args.command == "cat":

@@ -38,7 +38,7 @@
 #include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 
-void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
+void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
         mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
     }
@@ -51,7 +51,7 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu
     self->pull = pull;
 }
 
-mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
+const mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
     return self->pin;
 }
 
@@ -103,7 +103,7 @@ bool alarm_pin_pinalarm_woke_this_cycle(void) {
 mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     uint64_t pin_status = ((uint64_t)pin_63_32_status) << 32 | pin_31_0_status;
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
@@ -186,7 +186,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
 
     for (size_t i = 0; i < n_alarms; i++) {
         // TODO: Check for ULP or touch alarms because they can't coexist with GPIO alarms.
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
+        if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);

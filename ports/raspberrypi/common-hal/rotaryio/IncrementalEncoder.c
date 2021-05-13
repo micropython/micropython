@@ -84,6 +84,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         3, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         NULL, 0, 0, 0x1f, // sideset pins
+        0, // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // Wait for txstall

@@ -225,7 +225,7 @@ const mp_obj_property_t digitalio_digitalio_direction_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&digitalio_digitalinout_get_direction_obj,
               (mp_obj_t)&digitalio_digitalinout_set_direction_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     value: bool
@@ -255,7 +255,7 @@ const mp_obj_property_t digitalio_digitalinout_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&digitalio_digitalinout_get_value_obj,
               (mp_obj_t)&digitalio_digitalinout_set_value_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     drive_mode: DriveMode
@@ -299,7 +299,7 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&digitalio_digitalinout_get_drive_mode_obj,
               (mp_obj_t)&digitalio_digitalinout_set_drive_mode_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     pull: Optional[Pull]
@@ -324,7 +324,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     } else if (pull == PULL_DOWN) {
         return (mp_obj_t)&digitalio_pull_down_obj;
     }
-    return (mp_obj_t)&mp_const_none_obj;
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_pull_obj, digitalio_digitalinout_obj_get_pull);
 
@@ -352,7 +352,7 @@ const mp_obj_property_t digitalio_digitalio_pull_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&digitalio_digitalinout_get_pull_obj,
               (mp_obj_t)&digitalio_digitalinout_set_pull_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
@@ -381,7 +381,7 @@ const mp_obj_type_t digitalio_digitalinout_type = {
 
 // Helper for validating digitalio.DigitalInOut arguments
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
+    if (!mp_obj_is_type(obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(obj);

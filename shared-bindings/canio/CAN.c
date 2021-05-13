@@ -257,7 +257,7 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     canio_match_obj_t *matches[nmatch];
     for (size_t i = 0; i < nmatch; i++) {
-        mp_obj_type_t *type = mp_obj_get_type(match_objects[i]);
+        const mp_obj_type_t *type = mp_obj_get_type(match_objects[i]);
         if (type != &canio_match_type) {
             mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Match, type->name);
         }
@@ -300,7 +300,7 @@ STATIC const mp_obj_property_t canio_can_loopback_obj = {
 STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
-    mp_obj_type_t *message_type = mp_obj_get_type(message_in);
+    const mp_obj_type_t *message_type = mp_obj_get_type(message_in);
     if (message_type != &canio_message_type && message_type != &canio_remote_transmission_request_type) {
         mp_raise_TypeError_varg(translate("expected '%q' or '%q' but got '%q'"), MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
     }

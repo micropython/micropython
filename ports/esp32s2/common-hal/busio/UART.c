@@ -291,13 +291,14 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         mp_raise_ValueError(translate("No TX pin"));
     }
 
-    while (len > 0) {
-        int count = uart_tx_chars(self->uart_num, (const char *)data, len);
+    size_t left_to_write = len;
+    while (left_to_write > 0) {
+        int count = uart_tx_chars(self->uart_num, (const char *)data, left_to_write);
         if (count < 0) {
             *errcode = MP_EAGAIN;
             return MP_STREAM_ERROR;
         }
-        len -= count;
+        left_to_write -= count;
         data += count;
         RUN_BACKGROUND_TASKS;
     }

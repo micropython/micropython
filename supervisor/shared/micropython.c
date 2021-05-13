@@ -31,6 +31,7 @@
 #include "py/mpconfig.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 
 #include "supervisor/shared/status_leds.h"
 
@@ -46,7 +47,7 @@ int mp_hal_stdin_rx_chr(void) {
         #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
         #endif
-        mp_handle_pending();
+        mp_handle_pending(true);
         if (serial_bytes_available()) {
             toggle_rx_led();
             return serial_read();
@@ -65,4 +66,12 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #endif
 
     serial_write_substring(str, len);
+}
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if ((poll_flags & MP_STREAM_POLL_RD) && serial_bytes_available()) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
 }

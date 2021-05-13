@@ -46,8 +46,8 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
         // Try to detect raw code.
         mp_raw_code_t *raw_code = MP_OBJ_TO_PTR(fun_bc->const_table[i]);
         if (raw_code->kind == MP_CODE_BYTECODE) {
-            raw_code->data.u_byte.bytecode = gc_make_long_lived((byte *)raw_code->data.u_byte.bytecode);
-            raw_code->data.u_byte.const_table = gc_make_long_lived((byte *)raw_code->data.u_byte.const_table);
+            raw_code->fun_data = gc_make_long_lived((byte *)raw_code->fun_data);
+            raw_code->const_table = gc_make_long_lived((byte *)raw_code->const_table);
         }
         ((mp_uint_t *)fun_bc->const_table)[i] = (mp_uint_t)make_obj_long_lived(
             (mp_obj_t)fun_bc->const_table[i], max_depth - 1);
@@ -62,7 +62,7 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
         if (fun_bc->extra_args[i] == NULL) {
             continue;
         }
-        if (MP_OBJ_IS_TYPE(fun_bc->extra_args[i], &mp_type_dict)) {
+        if (mp_obj_is_type(fun_bc->extra_args[i], &mp_type_dict)) {
             fun_bc->extra_args[i] = make_dict_long_lived(fun_bc->extra_args[i], max_depth - 1);
         } else {
             fun_bc->extra_args[i] = make_obj_long_lived(fun_bc->extra_args[i], max_depth - 1);
@@ -103,7 +103,7 @@ mp_obj_dict_t *make_dict_long_lived(mp_obj_dict_t *dict, uint8_t max_depth) {
     // copies.
     dict->map.table = gc_make_long_lived(dict->map.table);
     for (size_t i = 0; i < dict->map.alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+        if (mp_map_slot_is_filled(&dict->map, i)) {
             mp_obj_t value = dict->map.table[i].value;
             dict->map.table[i].value = make_obj_long_lived(value, max_depth - 1);
         }
@@ -131,16 +131,16 @@ mp_obj_t make_obj_long_lived(mp_obj_t obj, uint8_t max_depth) {
     if (!VERIFY_PTR((void *)obj)) {
         return obj;
     }
-    if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_bc)) {
+    if (mp_obj_is_type(obj, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_fun_bc_long_lived(fun_bc, max_depth));
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_property)) {
+    } else if (mp_obj_is_type(obj, &mp_type_property)) {
         mp_obj_property_t *prop = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_property_long_lived(prop, max_depth));
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_str) || MP_OBJ_IS_TYPE(obj, &mp_type_bytes)) {
+    } else if (mp_obj_is_type(obj, &mp_type_str) || mp_obj_is_type(obj, &mp_type_bytes)) {
         mp_obj_str_t *str = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_str_long_lived(str));
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_type)) {
+    } else if (mp_obj_is_type(obj, &mp_type_type)) {
         // Types are already long lived during creation.
         return obj;
     } else {

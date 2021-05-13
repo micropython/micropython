@@ -128,7 +128,7 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
     if (vfs == NULL) {
         return false;
     }
-    if (vfs->writeblocks[0] == MP_OBJ_NULL || !filesystem_is_writable_by_usb(vfs)) {
+    if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL || !filesystem_is_writable_by_usb(vfs)) {
         return false;
     }
     return true;
@@ -161,11 +161,11 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
     // Since by getting here we assume the mount is read-only to
     // MicroPython let's update the cached FatFs sector if it's the one
     // we just wrote.
-    #if _MAX_SS != _MIN_SS
+    #if FF_MAX_SS != FF_MIN_SS
     if (vfs->ssize == MSC_FLASH_BLOCK_SIZE) {
     #else
     // The compiler can optimize this away.
-    if (_MAX_SS == FILESYSTEM_BLOCK_SIZE) {
+    if (FF_MAX_SS == FILESYSTEM_BLOCK_SIZE) {
         #endif
         if (lba == vfs->fatfs.winsect && lba > 0) {
             memcpy(vfs->fatfs.win,

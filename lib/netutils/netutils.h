@@ -29,6 +29,10 @@
 
 #define NETUTILS_IPV4ADDR_BUFSIZE    4
 
+#define NETUTILS_TRACE_IS_TX        (0x0001)
+#define NETUTILS_TRACE_PAYLOAD      (0x0002)
+#define NETUTILS_TRACE_NEWLINE      (0x0004)
+
 typedef enum _netutils_endian_t {
     NETUTILS_LITTLE,
     NETUTILS_BIG,
@@ -46,5 +50,7 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
 // Takes an address of the form ('192.168.0.1', 8080), returns the port and
 // puts IP in out_ip (which must take at least IPADDR_BUF_SIZE bytes).
 mp_uint_t netutils_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian);
+
+void netutils_ethernet_trace(const mp_print_t *print, size_t len, const uint8_t *buf, unsigned int flags);
 
 #endif // MICROPY_INCLUDED_LIB_NETUTILS_NETUTILS_H

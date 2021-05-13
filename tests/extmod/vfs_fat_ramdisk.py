@@ -33,9 +33,9 @@ class RAMFS:
 
     def ioctl(self, op, arg):
         # print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # BP_IOCTL_SEC_COUNT
+        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return len(self.data) // self.SEC_SIZE
-        if op == 5:  # BP_IOCTL_SEC_SIZE
+        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
 
 
@@ -67,7 +67,7 @@ with vfs.open("foo_file.txt", "w") as f:
     f.write("hello!")
 print(list(vfs.ilistdir()))
 
-print("stat root:", vfs.stat("/"))
+print("stat root:", vfs.stat("/")[:-3])  # timestamps differ across runs
 print("stat file:", vfs.stat("foo_file.txt")[:-3])  # timestamps differ across runs
 
 print(b"FOO_FILETXT" in bdev.data)

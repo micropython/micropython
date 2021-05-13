@@ -104,8 +104,8 @@ typedef uint8_t card_version_t; /**< Type of card version */
 
 /** Card detect setting */
 typedef struct sd_mmc_detect {
-	int16_t  pin; /**< Detection pin, -1 if no such pin */
-	uint16_t val; /**< Detection value */
+    int16_t pin;      /**< Detection pin, -1 if no such pin */
+    uint16_t val;     /**< Detection value */
 } sd_mmc_detect_t;
 
 /** This SD MMC stack uses the maximum block size autorized (512 bytes) */
@@ -281,7 +281,7 @@ sd_mmc_err_t sdio_write_direct(uint8_t slot, uint8_t func_num, uint32_t addr, ui
  *         otherwise return an error code (\ref sd_mmc_err_t).
  */
 sd_mmc_err_t sdio_read_extended(uint8_t slot, uint8_t func_num, uint32_t addr, uint8_t inc_addr, uint8_t *dest,
-                                uint16_t size);
+    uint16_t size);
 
 /**
  * \brief Write bytes to SDIO using RW_EXTENDED command.
@@ -298,7 +298,7 @@ sd_mmc_err_t sdio_read_extended(uint8_t slot, uint8_t func_num, uint32_t addr, u
  *         otherwise return an error code (\ref sd_mmc_err_t).
  */
 sd_mmc_err_t sdio_write_extended(uint8_t slot, uint8_t func_num, uint32_t addr, uint8_t inc_addr, uint8_t *src,
-                                 uint16_t size);
+    uint16_t size);
 #endif /* SDIO_SUPPORT_ENABLE */
 
 /** @} */

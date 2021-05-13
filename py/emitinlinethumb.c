@@ -99,17 +99,17 @@ STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit, mp_uint_t type_s
 
 STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
-        emit_inline_thumb_error_msg(emit, translate("can only have up to 4 parameters to Thumb assembly"));
+        emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("can only have up to 4 parameters to Thumb assembly"));
         return 0;
     }
     for (mp_uint_t i = 0; i < n_params; i++) {
         if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
-            emit_inline_thumb_error_msg(emit, translate("parameters must be registers in sequence r0 to r3"));
+            emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence r0 to r3"));
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
-        if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
-            emit_inline_thumb_error_msg(emit, translate("parameters must be registers in sequence r0 to r3"));
+        if (!(strlen(p) == 2 && p[0] == 'r' && (mp_uint_t)p[1] == '0' + i)) {
+            emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence r0 to r3"));
             return 0;
         }
     }
@@ -189,7 +189,7 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
             if (r->reg > max_reg) {
                 emit_inline_thumb_error_exc(emit,
                     mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                        translate("'%s' expects at most r%d"), op, max_reg));
+                        MP_ERROR_TEXT("'%s' expects at most r%d"), op, max_reg));
                 return 0;
             } else {
                 return r->reg;
@@ -198,7 +198,7 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     }
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-            translate("'%s' expects a register"), op));
+            MP_ERROR_TEXT("'%s' expects a register"), op));
     return 0;
 }
 
@@ -212,7 +212,7 @@ STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp
     }
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-            translate("'%s' expects a special register"), op));
+            MP_ERROR_TEXT("'%s' expects a special register"), op));
     return 0;
 }
 
@@ -231,7 +231,7 @@ STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_pars
         if (regno > 31) {
             emit_inline_thumb_error_exc(emit,
                 mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                    translate("'%s' expects at most r%d"), op, 31));
+                    MP_ERROR_TEXT("'%s' expects at most r%d"), op, 31));
             return 0;
         } else {
             return regno;
@@ -240,7 +240,7 @@ STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_pars
 malformed:
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-            translate("'%s' expects an FPU register"), op));
+            MP_ERROR_TEXT("'%s' expects an FPU register"), op));
     return 0;
 }
 #endif
@@ -293,19 +293,19 @@ STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_par
     return reglist;
 
 bad_arg:
-    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects {r0, r1, ...}"), op));
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects {r0, r1, ...}"), op));
     return 0;
 }
 
 STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint32_t fit_mask) {
     mp_obj_t o;
     if (!mp_parse_node_get_int_maybe(pn, &o)) {
-        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects an integer"), op));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects an integer"), op));
         return 0;
     }
     uint32_t i = mp_obj_get_int_truncated(o);
     if ((i & (~fit_mask)) != 0) {
-        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' integer 0x%x does not fit in mask 0x%x"), op, i, fit_mask));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' integer 0x%x doesn't fit in mask 0x%x"), op, i, fit_mask));
         return 0;
     }
     return i;
@@ -329,13 +329,13 @@ STATIC bool get_arg_addr(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return true;
 
 bad_arg:
-    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects an address of the form [a, b]"), op));
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects an address of the form [a, b]"), op));
     return false;
 }
 
 STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
-        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("'%s' expects a label"), op));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects a label"), op));
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
@@ -346,7 +346,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     }
     // only need to have the labels on the last pass
     if (emit->pass == MP_PASS_EMIT) {
-        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("label '%q' not defined"), label_qstr));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("label '%q' not defined"), label_qstr));
     }
     return 0;
 }
@@ -533,8 +533,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else {
             goto unknown_op;
         }
-    } else
+        return;
+    }
     #endif
+
     if (n_args == 0) {
         if (op == MP_QSTR_nop) {
             asm_thumb_op16(&emit->as, ASM_THUMB_OP_NOP);
@@ -571,7 +573,11 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, op_len == 5 && op_str[4] == 'w')) {
+            bool wide = op_len == 5 && op_str[4] == 'w';
+            if (wide && !ARMV7M) {
+                goto unknown_op;
+            }
+            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, wide)) {
                 goto branch_not_in_range;
             }
         } else if (ARMV7M && op_str[0] == 'i' && op_str[1] == 't') {
@@ -699,23 +705,24 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (op == MP_QSTR_sub) {
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
-            } else if (ARMV7M && op == MP_QSTR_movw) {
+            #if ARMV7M
+            } else if (op == MP_QSTR_movw) {
                 op_code = ASM_THUMB_OP_MOVW;
                 mp_uint_t reg_dest;
             op_movw_movt:
                 reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, op_code, reg_dest, i_src);
-            } else if (ARMV7M && op == MP_QSTR_movt) {
+            } else if (op == MP_QSTR_movt) {
                 op_code = ASM_THUMB_OP_MOVT;
                 goto op_movw_movt;
-            } else if (ARMV7M && op == MP_QSTR_movwt) {
+            } else if (op == MP_QSTR_movwt) {
                 // this is a convenience instruction
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 uint32_t i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src & 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0xffff);
-            } else if (ARMV7M && op == MP_QSTR_ldrex) {
+            } else if (op == MP_QSTR_ldrex) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;
                 if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
@@ -723,6 +730,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                     asm_thumb_op32(&emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
+            #endif
             } else {
                 // search table for ldr/str instructions
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_9_10_op_table); i++) {
@@ -815,15 +823,20 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     return;
 
 unknown_op:
-    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, translate("unsupported Thumb instruction '%s' with %d arguments"), op_str, n_args));
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("unsupported Thumb instruction '%s' with %d arguments"), op_str, n_args));
     return;
 
 branch_not_in_range:
-    emit_inline_thumb_error_msg(emit, translate("branch not in range"));
+    emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("branch not in range"));
     return;
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_thumb_new,
+    emit_inline_thumb_free,
+    #endif
+
     emit_inline_thumb_start_pass,
     emit_inline_thumb_end_pass,
     emit_inline_thumb_count_params,

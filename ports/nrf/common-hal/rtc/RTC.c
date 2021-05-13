@@ -42,7 +42,7 @@ __attribute__((section(".uninitialized"))) static uint32_t rtc_offset[3];
 // the system crashes or reboots, these values will remain undisturbed and the
 // RTC offset will remain valid.
 //
-// If Circuit Python is updated or these symbols shift around, the prefix and
+// If CircuitPython is updated or these symbols shift around, the prefix and
 // suffix will no longer match, and the time will no longer be valid.
 #define RTC_OFFSET_CHECK_PREFIX 0x25ea7e2a
 #define RTC_OFFSET_CHECK_SUFFIX 0x2b80b69e

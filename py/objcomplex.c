@@ -84,12 +84,12 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, co
             return mp_obj_new_complex(0, 0);
 
         case 1:
-            if (MP_OBJ_IS_STR(args[0])) {
+            if (mp_obj_is_str(args[0])) {
                 // a string, parse it
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, true, true, NULL);
-            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+            } else if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 // a complex, just return it
                 return args[0];
             } else {
@@ -100,13 +100,13 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, co
         case 2:
         default: {
             mp_float_t real, imag;
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+            if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 mp_obj_complex_get(args[0], &real, &imag);
             } else {
                 real = mp_obj_get_float(args[0]);
                 imag = 0;
             }
-            if (MP_OBJ_IS_TYPE(args[1], &mp_type_complex)) {
+            if (mp_obj_is_type(args[1], &mp_type_complex)) {
                 mp_float_t real2, imag2;
                 mp_obj_complex_get(args[1], &real2, &imag2);
                 real -= imag2;
@@ -157,6 +157,7 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_complex = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_complex,
     .print = complex_print,
     .make_new = complex_make_new,
@@ -174,7 +175,7 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
 }
 
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_complex));
+    assert(mp_obj_is_type(self_in, &mp_type_complex));
     mp_obj_complex_t *self = MP_OBJ_TO_PTR(self_in);
     *real = self->real;
     *imag = self->imag;
@@ -182,7 +183,10 @@ void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
 
 mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in) {
     mp_float_t rhs_real, rhs_imag;
-    mp_obj_get_complex(rhs_in, &rhs_real, &rhs_imag); // can be any type, this function will convert to float (if possible)
+    if (!mp_obj_get_complex_maybe(rhs_in, &rhs_real, &rhs_imag)) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:
@@ -205,13 +209,13 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
         }
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            mp_raise_TypeError(translate("can't do truncated division of a complex number"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't do truncated division of a complex number"));
 
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
             if (rhs_imag == 0) {
                 if (rhs_real == 0) {
-                    mp_raise_msg(&mp_type_ZeroDivisionError, translate("complex division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("complex division by zero"));
                 }
                 lhs_real /= rhs_real;
                 lhs_imag /= rhs_real;
@@ -239,7 +243,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
                 if (rhs_imag == 0 && rhs_real >= 0) {
                     lhs_real = (rhs_real == 0);
                 } else {
-                    mp_raise_msg(&mp_type_ZeroDivisionError, translate("0.0 to a complex power"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("0.0 to a complex power"));
                 }
             } else {
                 mp_float_t ln1 = MICROPY_FLOAT_C_FUN(log)(abs1);

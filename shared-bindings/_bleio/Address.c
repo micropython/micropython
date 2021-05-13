@@ -104,8 +104,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get
 const mp_obj_property_t bleio_address_address_bytes_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_address_get_address_bytes_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     type: int
@@ -124,8 +124,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_type_obj, bleio_address_get_type);
 const mp_obj_property_t bleio_address_type_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_address_get_type_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __eq__(self, other: object) -> bool:
@@ -136,7 +136,7 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_BINARY_OP_EQUAL:
-            if (MP_OBJ_IS_TYPE(rhs_in, &bleio_address_type)) {
+            if (mp_obj_is_type(rhs_in, &bleio_address_type)) {
                 bleio_address_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
                 bleio_address_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 return mp_obj_new_bool(

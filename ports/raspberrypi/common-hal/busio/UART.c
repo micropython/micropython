@@ -191,12 +191,13 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         mp_raise_ValueError(translate("No TX pin"));
     }
 
-    while (len > 0) {
-        while (uart_is_writable(self->uart) && len > 0) {
+    size_t left_to_write = len;
+    while (left_to_write > 0) {
+        while (uart_is_writable(self->uart) && left_to_write > 0) {
             // Write and advance.
             uart_get_hw(self->uart)->dr = *data++;
             // Decrease how many chars left to write.
-            len--;
+            left_to_write--;
         }
         RUN_BACKGROUND_TASKS;
     }

@@ -36,6 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     bool dither;
+    uint8_t input_colorspace;
     uint32_t transparent_color;
 } displayio_colorconverter_t;
 

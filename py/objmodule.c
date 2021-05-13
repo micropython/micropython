@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/gc.h"
@@ -64,27 +66,33 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_MODULE_GETATTR
+        } else if (attr != MP_QSTR___getattr__) {
+            elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            }
+        #endif
         }
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
         if (dict->map.is_fixed) {
             mp_map_elem_t *elem = mp_map_lookup(&dict->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            #if MICROPY_CAN_OVERRIDE_BUILTINS
+            if (dict == &mp_module_builtins_globals) {
+                if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
+                    MP_STATE_VM(mp_module_builtins_override_dict) = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(1)));
+                }
+                dict = MP_STATE_VM(mp_module_builtins_override_dict);
+            } else
+            #endif
             // Return success if the given value is already in the dictionary. This is the case for
             // native packages with native submodules.
             if (elem != NULL && elem->value == dest[1]) {
                 dest[0] = MP_OBJ_NULL; // indicate success
                 return;
-            } else
-            #if MICROPY_CAN_OVERRIDE_BUILTINS
-            if (dict == &mp_module_builtins_globals) {
-                if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
-                    MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
-                }
-                dict = MP_STATE_VM(mp_module_builtins_override_dict);
-            } else
-            #endif
-            {
+            } else {
                 // can't delete or store to fixed map
                 return;
             }
@@ -134,13 +142,13 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 }
 
 mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
+    assert(mp_obj_is_type(self_in, &mp_type_module));
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     return self->globals;
 }
 
 void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
+    assert(mp_obj_is_type(self_in, &mp_type_module));
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     self->globals = globals;
 }
@@ -252,18 +260,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_USELECT
     { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
     #endif
-    #if MICROPY_PY_USSL
-    { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
-    #endif
-    #if MICROPY_PY_LWIP
-    { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
-    #endif
-    #if MICROPY_PY_WEBSOCKET
-    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
-    #endif
-    #if MICROPY_PY_WEBREPL
-    { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },
-    #endif
     #if MICROPY_PY_FRAMEBUF
     { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },
     #endif
@@ -285,14 +281,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
-
-#if MICROPY_MODULE_WEAK_LINKS
-STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
-    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-};
-
-MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
-#endif
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {
@@ -317,6 +305,21 @@ void mp_module_register(qstr qst, mp_obj_t module) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }
+
+#if MICROPY_MODULE_WEAK_LINKS
+// Search for u"foo" in built-in modules, return MP_OBJ_NULL if not found
+mp_obj_t mp_module_search_umodule(const char *module_str) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mp_builtin_module_table); ++i) {
+        const mp_map_elem_t *entry = (const mp_map_elem_t *)&mp_builtin_module_table[i];
+        const char *key = qstr_str(MP_OBJ_QSTR_VALUE(entry->key));
+        if (key[0] == 'u' && strcmp(&key[1], module_str) == 0) {
+            return (mp_obj_t)entry->value;
+        }
+
+    }
+    return MP_OBJ_NULL;
+}
+#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {

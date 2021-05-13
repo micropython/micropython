@@ -42,7 +42,7 @@
 //|         The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``
 //|         objects connected to the shift register controlling the buttons.
 //|
-//|         They button presses are accumulated, until the ``get_pressed`` method
+//|         The button presses are accumulated, until the ``get_pressed`` method
 //|         is called, at which point the button state is cleared, and the new
 //|         button presses start to be recorded.
 //|
@@ -69,7 +69,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
 
     gamepadshift_obj_t *gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
-        !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton),
+        !mp_obj_is_type(MP_OBJ_FROM_PTR(gamepad_singleton),
             &gamepadshift_type)) {
         gamepad_singleton = m_new_ll_obj(gamepadshift_obj_t);
         gamepad_singleton->base.type = &gamepadshift_type;

@@ -73,7 +73,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(0, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     common_hal_alarm_pin_pinalarm_construct(self,
         pin,
@@ -89,7 +89,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_make_new(const mp_obj_type_t *type, mp_uint_t
 //|
 STATIC mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
     alarm_pin_pinalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);
+    const mcu_pin_obj_t *pin = common_hal_alarm_pin_pinalarm_get_pin(self);
     if (pin == NULL) {
         return mp_const_none;
     }
@@ -100,8 +100,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_pin_obj, alarm_pin_pinalarm_obj
 const mp_obj_property_t alarm_pin_pinalarm_pin_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_pin_pinalarm_get_pin_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     value: bool
@@ -116,8 +116,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_value_obj, alarm_pin_pinalarm_o
 const mp_obj_property_t alarm_pin_pinalarm_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_pin_pinalarm_get_value_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {

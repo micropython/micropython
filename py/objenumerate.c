@@ -78,7 +78,7 @@ const mp_obj_type_t mp_type_enumerate = {
 };
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_enumerate));
+    assert(mp_obj_is_type(self_in, &mp_type_enumerate));
     mp_obj_enumerate_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t next = mp_iternext(self->iter);
     if (next == MP_OBJ_STOP_ITERATION) {

@@ -103,11 +103,28 @@ void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t *self,
 
 __attribute__((always_inline))
 static inline uint32_t add16signed(uint32_t a, uint32_t b) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __QADD16(a, b);
+    #else
+    uint32_t result = 0;
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = a >> (sizeof(int16_t) * 8 * i);
+        int16_t bi = b >> (sizeof(int16_t) * 8 * i);
+        int32_t intermediate = (int32_t)ai + bi;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t)intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 __attribute__((always_inline))
 static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     mul <<= 16;
     int32_t hi, lo;
     enum { bits = 16 }; // saturate to 16 bits
@@ -118,18 +135,46 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     asm volatile ("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
     asm volatile ("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1 << 15) - 1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i));
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        intermediate &= 0x0000FFFF;
+        result |= (((uint32_t)intermediate)) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 static inline uint32_t tounsigned8(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD8(val, 0x80808080);
+    #else
+    return val ^ 0x80808080;
+    #endif
 }
 
 static inline uint32_t tounsigned16(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
+    #else
+    return val ^ 0x80008000;
+    #endif
 }
 
 static inline uint32_t tosigned16(uint32_t val) {
+    #if (defined(__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))
     return __UADD16(val, 0x80008000);
+    #else
+    return val ^ 0x80008000;
+    #endif
 }
 
 static inline uint32_t unpack8(uint16_t val) {

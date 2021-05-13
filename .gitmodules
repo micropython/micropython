@@ -113,7 +113,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
 [submodule "extmod/ulab"]
 	path = extmod/ulab
-	url = https://github.com/v923z/micropython-ulab
+	url = https://github.com/adafruit/circuitpython-ulab
 [submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
 	path = frozen/Adafruit_CircuitPython_ESP32SPI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI

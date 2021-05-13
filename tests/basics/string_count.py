@@ -1,3 +1,9 @@
+try:
+    str.count
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
 print("".count(""))
 print("".count("a"))
 print("a".count(""))

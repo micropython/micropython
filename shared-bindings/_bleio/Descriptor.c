@@ -85,12 +85,12 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t characteristic_obj = args[ARG_characteristic].u_obj;
-    if (!MP_OBJ_IS_TYPE(characteristic_obj, &bleio_characteristic_type)) {
+    if (!mp_obj_is_type(characteristic_obj, &bleio_characteristic_type)) {
         mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 
@@ -153,8 +153,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_uuid_obj, bleio_descriptor_get_uu
 const mp_obj_property_t bleio_descriptor_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_descriptor_get_uuid_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     characteristic: Characteristic
@@ -170,8 +170,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_
 const mp_obj_property_t bleio_descriptor_characteristic_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_descriptor_get_characteristic_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     value: bytearray
@@ -202,7 +202,7 @@ const mp_obj_property_t bleio_descriptor_value_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_descriptor_get_value_obj,
                (mp_obj_t)&bleio_descriptor_set_value_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {

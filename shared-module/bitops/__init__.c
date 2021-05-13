@@ -1,5 +1,5 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
@@ -30,11 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __GNUC__
-#define FALLTHROUGH __attribute__((fallthrough))
-#else
-#define FALLTHROUGH ((void)0) /* FALLTHROUGH */
-#endif
+#include "py/mpconfig.h"
 
 // adapted from "Hacker's Delight" - Figure 7-2 Transposing an 8x8-bit matrix
 // basic idea is:
@@ -55,23 +51,23 @@ static void transpose_var(uint32_t *result, const uint8_t *src, int src_stride, 
         case 7:
             x |= *src << 16;
             src -= src_stride;
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case 6:
             x |= *src << 8;
             src -= src_stride;
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case 5:
             x |= *src;
             src -= src_stride;
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case 4:
             y |= *src << 24;
             src -= src_stride;
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case 3:
             y |= *src << 16;
             src -= src_stride;
-            FALLTHROUGH;
+            MP_FALLTHROUGH;
         case 2:
             y |= *src << 8;
             src -= src_stride;

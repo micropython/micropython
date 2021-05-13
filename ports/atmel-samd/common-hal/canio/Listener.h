@@ -30,9 +30,9 @@
 #include "shared-module/canio/Match.h"
 
 typedef struct {
-  __IO CAN_RXF0C_Type            RXFC;       /**< \brief (R/W 32) Rx FIFO n Configuration */
-  __I  CAN_RXF0S_Type            RXFS;       /**< \brief (R/  32) Rx FIFO n Status */
-  __IO CAN_RXF0A_Type            RXFA;       /**< \brief (R/W 32) Rx FIFO n Acknowledge */
+    __IO CAN_RXF0C_Type RXFC;                /**< \brief (R/W 32) Rx FIFO n Configuration */
+    __I CAN_RXF0S_Type RXFS;                 /**< \brief (R/  32) Rx FIFO n Status */
+    __IO CAN_RXF0A_Type RXFA;                /**< \brief (R/W 32) Rx FIFO n Acknowledge */
 } canio_rxfifo_reg_t;
 
 typedef struct canio_listener_obj {

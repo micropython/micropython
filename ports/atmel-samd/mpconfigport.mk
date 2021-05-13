@@ -20,8 +20,6 @@ endif
 
 INTERNAL_LIBM = 1
 
-USB_SERIAL_NUMBER_LENGTH = 32
-
 # Number of USB endpoint pairs.
 USB_NUM_EP = 8
 
@@ -34,27 +32,33 @@ ifeq ($(CHIP_FAMILY),samd21)
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
+# Some of these are on by default with CIRCUITPY_FULL_BUILD, but don't
+# fit in 256kB of flash
+
 CIRCUITPY_AUDIOMIXER ?= 0
 CIRCUITPY_BINASCII ?= 0
+CIRCUITPY_BITBANGIO ?= 0
+CIRCUITPY_BITMAPTOOLS ?= 0
+CIRCUITPY_BUSDEVICE ?= 0
 CIRCUITPY_AUDIOMP3 ?= 0
+CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_BUILTINS_POW3 ?= 0
 CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
-CIRCUITPY_FREQUENCYIO ?= 0
-CIRCUITPY_JSON ?= 0
-CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
-
-# No room for HCI _bleio on SAMD21.
-CIRCUITPY_BLEIO_HCI = 0
-
-CIRCUITPY_SDCARDIO ?= 0
-
+CIRCUITPY_COUNTIO ?= 0
 # Not enough RAM for framebuffers
 CIRCUITPY_FRAMEBUFFERIO ?= 0
-
-# Not enough room in 192kB or 256kB builds for secondary CDC.
-CIRCUITPY_USB_CDC ?= 0
-
+CIRCUITPY_FREQUENCYIO ?= 0
+CIRCUITPY_I2CPERIPHERAL ?= 0
+CIRCUITPY_JSON ?= 0
+CIRCUITPY_MSGPACK ?= 0
+CIRCUITPY_RE ?= 0
+CIRCUITPY_SDCARDIO ?= 0
+CIRCUITPY_SYNTHIO ?= 0
+CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 CIRCUITPY_ULAB = 0
+CIRCUITPY_VECTORIO = 0
+
+MICROPY_PY_ASYNC_AWAIT = 0
 
 ifeq ($(TRANSLATION), ja)
 RELEASE_NEEDS_CLEAN_BUILD = 1
@@ -64,6 +68,14 @@ endif
 ifeq ($(TRANSLATION), ko)
 RELEASE_NEEDS_CLEAN_BUILD = 1
 CIRCUITPY_TERMINALIO = 0
+endif
+
+SUPEROPT_GC = 0
+SUPEROPT_VM = 0
+
+ifeq ($(CIRCUITPY_FULL_BUILD),0)
+# On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
+CFLAGS_BOARD = -fweb -frename-registers
 endif
 
 endif # samd21

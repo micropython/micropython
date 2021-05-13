@@ -32,6 +32,7 @@
 #include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"
+#include "py/runtime.h"
 
 #include "supervisor/linker.h"
 
@@ -57,6 +58,10 @@
 #define QSTR_EXIT()
 #endif
 
+// Initial number of entries for qstr pool, set so that the first dynamically
+// allocated pool is twice this size.  The value here must be <= MP_QSTRnumber_of.
+#define MICROPY_ALLOC_QSTR_ENTRIES_INIT (10)
+
 // this must match the equivalent function in makeqstrdata.py
 mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
@@ -73,19 +78,19 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
 }
 
 const qstr_attr_t mp_qstr_const_attr[] = {
-        #ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) { hash, len },
 #define TRANSLATION(id, length, compressed ...)
-        #include "genhdr/qstrdefs.generated.h"
+    #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION
 #undef QDEF
-        #endif
+    #endif
 };
 
 const qstr_pool_t mp_qstr_const_pool = {
     NULL,               // no previous pool
     0,                  // no previous pool
-    10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
+    MICROPY_ALLOC_QSTR_ENTRIES_INIT,
     MP_QSTRnumber_of,   // corresponds to number of strings in array just below
     (qstr_attr_t *)mp_qstr_const_attr,
     {
@@ -110,7 +115,7 @@ void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
     #endif
 }
@@ -118,7 +123,7 @@ void qstr_init(void) {
 STATIC const char *find_qstr(qstr q, qstr_attr_t *attr) {
     // search pool for this qstr
     // total_prev_len==0 in the final pool, so the loop will always terminate
-    qstr_pool_t *pool = MP_STATE_VM(last_pool);
+    const qstr_pool_t *pool = MP_STATE_VM(last_pool);
     while (q < pool->total_prev_len) {
         pool = pool->prev;
     }
@@ -138,14 +143,20 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
         if (new_pool_length > MICROPY_QSTR_POOL_MAX_ENTRIES) {
             new_pool_length = MICROPY_QSTR_POOL_MAX_ENTRIES;
         }
-        mp_uint_t pool_size = sizeof(qstr_pool_t) + sizeof(const char *) * new_pool_length;
-        void *chunk = m_malloc_maybe(pool_size + sizeof(qstr_attr_t) * new_pool_length, true);
-        if (chunk == NULL) {
+        #ifdef MICROPY_QSTR_EXTRA_POOL
+        // Put a lower bound on the allocation size in case the extra qstr pool has few entries
+        if (new_pool_length < MICROPY_ALLOC_QSTR_ENTRIES_INIT) {
+            new_pool_length = MICROPY_ALLOC_QSTR_ENTRIES_INIT;
+        }
+        #endif
+        mp_uint_t pool_size = sizeof(qstr_pool_t)
+            + (sizeof(const char *) + sizeof(qstr_attr_t)) * new_pool_length;
+        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size, true);
+        if (pool == NULL) {
             QSTR_EXIT();
             m_malloc_fail(new_pool_length);
         }
-        qstr_pool_t *pool = (qstr_pool_t *)chunk;
-        pool->attrs = (qstr_attr_t *)(void *)((char *)chunk + pool_size);
+        pool->attrs = (qstr_attr_t *)(pool->qstrs + new_pool_length);
         pool->prev = MP_STATE_VM(last_pool);
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
         pool->alloc = new_pool_length;
@@ -170,7 +181,7 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
     mp_uint_t str_hash = qstr_compute_hash((const byte *)str, str_len);
 
     // search pools for the data
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
         qstr_attr_t *attrs = pool->attrs;
         for (mp_uint_t at = 0, top = pool->len; at < top; at++) {
             if (attrs[at].hash == str_hash && attrs[at].len == str_len && memcmp(pool->qstrs[at], str, str_len) == 0) {
@@ -188,11 +199,16 @@ qstr qstr_from_str(const char *str) {
 }
 
 qstr qstr_from_strn(const char *str, size_t len) {
-    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     QSTR_ENTER();
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         // qstr does not exist in interned pool so need to add it
+
+        // check that len is not too big
+        if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
+            QSTR_EXIT();
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Name too long"));
+        }
 
         // compute number of bytes needed to intern this string
         size_t n_bytes = len + 1;
@@ -274,7 +290,7 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
     *n_qstr = 0;
     *n_str_data_bytes = 0;
     *n_total_bytes = 0;
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const qstr_attr_t *q = pool->attrs, *q_top = pool->attrs + pool->len; q < q_top; q++) {
@@ -294,8 +310,8 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 void qstr_dump_data(void) {
     QSTR_ENTER();
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
-        for (const char **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
+        for (const char *const *q = pool->qstrs, *const *q_top = pool->qstrs + pool->len; q < q_top; q++) {
             mp_printf(&mp_plat_print, "Q(%s)\n", *q);
         }
     }

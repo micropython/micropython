@@ -59,15 +59,19 @@ STATIC supervisor_run_reason_t _run_reason;
 //|     """Returns the USB enumeration status (read-only)."""
 //|
 STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
+    #if CIRCUITPY_USB
     return mp_obj_new_bool(tud_ready());
+    #else
+    return mp_const_false;
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_usb_connected_obj, supervisor_runtime_get_usb_connected);
 
 const mp_obj_property_t supervisor_runtime_usb_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_runtime_get_usb_connected_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     serial_connected: bool
@@ -81,8 +85,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, superviso
 const mp_obj_property_t supervisor_runtime_serial_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_connected_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     serial_bytes_available: int
@@ -98,8 +102,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, sup
 const mp_obj_property_t supervisor_runtime_serial_bytes_available_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_bytes_available_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     run_reason: RunReason
@@ -113,8 +117,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_run_reason_obj, supervisor_runt
 const mp_obj_property_t supervisor_runtime_run_reason_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_runtime_get_run_reason_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {

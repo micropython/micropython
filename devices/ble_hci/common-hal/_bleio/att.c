@@ -539,7 +539,7 @@ void att_remove_connection(uint16_t conn_handle, uint8_t reason) {
                 .len = sizeof(zero),
             };
 
-            if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_descriptor_type)) {
+            if (mp_obj_is_type(attribute_obj, &bleio_descriptor_type)) {
                 bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
                 if (bleio_uuid_get_uuid16_or_unknown(descriptor->uuid) == BLE_UUID_CCCD) {
                     common_hal_bleio_descriptor_set_value(descriptor, &zero_cccd_value);
@@ -800,7 +800,7 @@ STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
         // Fetch the uuid for the given attribute, which might be a characteristic or a descriptor.
         bleio_uuid_obj_t *uuid;
 
-        if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_characteristic_type)) {
+        if (mp_obj_is_type(attribute_obj, &bleio_characteristic_type)) {
             bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
             if (characteristic->handle != handle) {
                 // If the handles don't match, this is the characteristic definition attribute.
@@ -971,7 +971,7 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
         }
 
         mp_obj_t *attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
-        if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_service_type)) {
+        if (mp_obj_is_type(attribute_obj, &bleio_service_type)) {
             bleio_service_obj_t *service = MP_OBJ_TO_PTR(attribute_obj);
 
             // Is this a 16-bit or a 128-bit uuid? It must match in size with any previous attribute
@@ -1083,7 +1083,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
     size_t rsp_length = sizeof(rsp_t);
 
     mp_obj_t *attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
-    if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_service_type)) {
+    if (mp_obj_is_type(attribute_obj, &bleio_service_type)) {
         if (offset) {
             send_error(conn_handle, BT_ATT_ERR_ATTRIBUTE_NOT_LONG, handle, BT_ATT_ERR_INVALID_PDU);
             return;
@@ -1095,7 +1095,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
         common_hal_bleio_uuid_pack_into(service->uuid, rsp->r.value);
         rsp_length += sizeof_service_uuid;
 
-    } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_characteristic_type)) {
+    } else if (mp_obj_is_type(attribute_obj, &bleio_characteristic_type)) {
         bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
         if (characteristic->decl_handle == handle) {
             // Read characteristic declaration. Return properties, value handle, and uuid.
@@ -1135,7 +1135,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
             memcpy(rsp->r.value, bufinfo.buf + offset, value_length);
             rsp_length += value_length;
         }
-    } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_descriptor_type)) {
+    } else if (mp_obj_is_type(attribute_obj, &bleio_descriptor_type)) {
         bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
 
         mp_buffer_info_t bufinfo;
@@ -1203,7 +1203,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
         mp_obj_t *attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
 
         if (type_uuid == BLE_UUID_CHARACTERISTIC &&
-            MP_OBJ_IS_TYPE(attribute_obj, &bleio_characteristic_type)) {
+            mp_obj_is_type(attribute_obj, &bleio_characteristic_type)) {
             // Request is for characteristic declarations.
             bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
 
@@ -1250,7 +1250,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
             rsp_length += data_length;
             no_data = false;
 
-        } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_descriptor_type)) {
+        } else if (mp_obj_is_type(attribute_obj, &bleio_descriptor_type)) {
             // See if request is for a descriptor value with a 16-bit UUID, such as the CCCD.
             bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
             if (bleio_uuid_get_uuid16_or_unknown(descriptor->uuid) == type_uuid) {
@@ -1271,7 +1271,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
                 break;
             }
 
-        } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_characteristic_type)) {
+        } else if (mp_obj_is_type(attribute_obj, &bleio_characteristic_type)) {
             // See if request is for a characteristic value with a 16-bit UUID.
             bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
             if (bleio_uuid_get_uuid16_or_unknown(characteristic->uuid) == type_uuid) {
@@ -1359,7 +1359,7 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
 
     mp_obj_t attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, req->handle);
 
-    if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_characteristic_type)) {
+    if (mp_obj_is_type(attribute_obj, &bleio_characteristic_type)) {
         bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute_obj);
 
         //  Don't write the characteristic declaration.
@@ -1377,7 +1377,7 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
         // Just change the local value. Don't fire off notifications, etc.
         bleio_characteristic_set_local_value(characteristic, &bufinfo);
 
-    } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_descriptor_type)) {
+    } else if (mp_obj_is_type(attribute_obj, &bleio_descriptor_type)) {
         bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
         // Only CCCD's are writable.
         if (bleio_uuid_get_uuid16_or_unknown(descriptor->uuid) != BLE_UUID_CCCD) {
@@ -1427,7 +1427,7 @@ STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_
 
     mp_obj_t *attribute = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
 
-    if (!MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+    if (!mp_obj_is_type(attribute, &bleio_characteristic_type)) {
         send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTRIBUTE_NOT_LONG);
         return;
     }

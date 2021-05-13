@@ -99,6 +99,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
         NULL, 0, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin
         write, 1, 0, 1, // first sideset pin
+        0, // wait gpio pins
         true, // exclusive pin usage
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
         false, // wait for TX stall

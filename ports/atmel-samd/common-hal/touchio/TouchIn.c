@@ -57,15 +57,15 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     return adafruit_ptc_get_conversion_result(PTC);
 }
 
-void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     if (!pin->has_touch) {
         mp_raise_ValueError(translate("Invalid pin"));
     }
     claim_pin(pin);
 
     // Turn on the PTC if its not in use. We won't turn it off until reset.
-    if ((( Ptc *) PTC)->CTRLA.bit.ENABLE == 0) {
+    if (((Ptc *)PTC)->CTRLA.bit.ENABLE == 0) {
         // We run the PTC at 8mhz so divide the 48mhz clock by 6.
         uint8_t gclk = find_free_gclk(6);
         if (gclk > GCLK_GEN_NUM) {
@@ -95,11 +95,11 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     self->threshold = get_raw_reading(self) + 100;
 }
 
-bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
+bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t *self) {
     return self->config.pin == NO_PIN;
 }
 
-void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
+void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t *self) {
     // TODO(tannewt): Reset the PTC.
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
@@ -111,13 +111,15 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
 }
 
 void touchin_reset() {
-    Ptc* ptc = ((Ptc *) PTC);
+    Ptc *ptc = ((Ptc *)PTC);
     if (ptc->CTRLA.bit.ENABLE == 1) {
         ptc->CTRLA.bit.ENABLE = 0;
-        while (ptc->CTRLA.bit.ENABLE == 1) {}
+        while (ptc->CTRLA.bit.ENABLE == 1) {
+        }
 
         ptc->CTRLA.bit.SWRESET = 1;
-        while (ptc->CTRLA.bit.SWRESET == 1) {}
+        while (ptc->CTRLA.bit.SWRESET == 1) {
+        }
     }
 }
 

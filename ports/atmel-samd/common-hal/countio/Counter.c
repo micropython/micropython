@@ -8,8 +8,8 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-void common_hal_countio_counter_construct(countio_counter_obj_t* self,
-    const mcu_pin_obj_t* pin_a) {
+void common_hal_countio_counter_construct(countio_counter_obj_t *self,
+    const mcu_pin_obj_t *pin_a) {
     if (!pin_a->has_extint) {
         mp_raise_RuntimeError(translate("Pin must support hardware interrupts"));
     }
@@ -31,7 +31,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     gpio_set_pin_function(self->pin_a, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_pull_mode(self->pin_a, GPIO_PULL_UP);
 
-    set_eic_channel_data(self->eic_channel_a, (void*) self);
+    set_eic_channel_data(self->eic_channel_a, (void *)self);
 
     self->count = 0;
 
@@ -44,11 +44,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
 
 }
 
-bool common_hal_countio_counter_deinited(countio_counter_obj_t* self) {
+bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
     return self->pin_a == NO_PIN;
 }
 
-void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
+void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     if (common_hal_countio_counter_deinited(self)) {
         return;
     }
@@ -62,21 +62,21 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
 
 }
 
-mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {
+mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
     return self->count;
 }
 
-void common_hal_countio_counter_set_count(countio_counter_obj_t* self,
-        mp_int_t new_count) {
+void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
+    mp_int_t new_count) {
     self->count = new_count;
 }
 
-void common_hal_countio_counter_reset(countio_counter_obj_t* self){
-   self->count = 0;
+void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
+    self->count = 0;
 }
 
 void counter_interrupt_handler(uint8_t channel) {
-    countio_counter_obj_t* self = get_eic_channel_data(channel);
+    countio_counter_obj_t *self = get_eic_channel_data(channel);
 
     self->count += 1;
 

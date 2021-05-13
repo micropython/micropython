@@ -41,8 +41,8 @@
 // Number of times to try to send packet if failed.
 #define ATTEMPTS 2
 
-Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
-                            uint8_t *sercom_index, uint32_t *sda_pinmux, uint32_t *scl_pinmux) {
+Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
+    uint8_t *sercom_index, uint32_t *sda_pinmux, uint32_t *scl_pinmux) {
     *sda_pinmux = 0;
     *scl_pinmux = 0;
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
@@ -50,7 +50,7 @@ Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
         if (*sercom_index >= SERCOM_INST_NUM) {
             continue;
         }
-        Sercom* potential_sercom = sercom_insts[*sercom_index];
+        Sercom *potential_sercom = sercom_insts[*sercom_index];
         if (potential_sercom->I2CM.CTRLA.bit.ENABLE != 0 ||
             sda->sercom[i].pad != 0) {
             continue;
@@ -68,15 +68,15 @@ Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
-    Sercom* sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
+    Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
 
-#if CIRCUITPY_REQUIRE_I2C_PULLUPS
+    #if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     gpio_set_pin_function(sda->number, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_function(scl->number, GPIO_PIN_FUNCTION_OFF);
@@ -99,7 +99,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
-#endif
+    #endif
 
     gpio_set_pin_function(sda->number, sda_pinmux);
     gpio_set_pin_function(scl->number, scl_pinmux);
@@ -164,10 +164,10 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
     bool grabbed_lock = false;
     CRITICAL_SECTION_ENTER()
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
     CRITICAL_SECTION_LEAVE();
     return grabbed_lock;
 }
@@ -181,7 +181,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
 
     uint16_t attempts = ATTEMPTS;
     int32_t status;
@@ -189,8 +189,8 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         struct _i2c_m_msg msg;
         msg.addr = addr;
         msg.len = len;
-        msg.flags  = transmit_stop_bit ? I2C_M_STOP : 0;
-        msg.buffer = (uint8_t *) data;
+        msg.flags = transmit_stop_bit ? I2C_M_STOP : 0;
+        msg.buffer = (uint8_t *)data;
         status = _i2c_m_sync_transfer(&self->i2c_desc.device, &msg);
 
         // Give up after ATTEMPTS tries.
@@ -207,16 +207,16 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-        uint8_t *data, size_t len) {
+    uint8_t *data, size_t len) {
 
     uint16_t attempts = ATTEMPTS;
     int32_t status;
     do {
         struct _i2c_m_msg msg;
-	msg.addr   = addr;
-	msg.len    = len;
-	msg.flags  = I2C_M_STOP | I2C_M_RD;
-	msg.buffer = data;
+        msg.addr = addr;
+        msg.len = len;
+        msg.flags = I2C_M_STOP | I2C_M_RD;
+        msg.buffer = data;
         status = _i2c_m_sync_transfer(&self->i2c_desc.device, &msg);
 
         // Give up after ATTEMPTS tries.

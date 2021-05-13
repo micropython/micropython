@@ -85,7 +85,7 @@ const mp_obj_type_t mcu_pin_type = {
 };
 
 mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
+    if (!mp_obj_is_type(obj, &mcu_pin_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), mcu_pin_type.name);
     }
     return MP_OBJ_TO_PTR(obj);

@@ -142,6 +142,10 @@ bool unichar_isident(unichar c) {
     return c < 128 && ((attr[c] & (FL_ALPHA | FL_DIGIT)) != 0 || c == '_');
 }
 
+bool unichar_isalnum(unichar c) {
+    return c < 128 && ((attr[c] & (FL_ALPHA | FL_DIGIT)) != 0);
+}
+
 bool unichar_isupper(unichar c) {
     return c < 128 && (attr[c] & FL_UPPER) != 0;
 }
@@ -182,7 +186,7 @@ bool utf8_check(const byte *p, size_t len) {
     for (; p < end; p++) {
         byte c = *p;
         if (need) {
-            if (c >= 0x80) {
+            if (UTF8_IS_CONT(c)) {
                 need--;
             } else {
                 // mismatch

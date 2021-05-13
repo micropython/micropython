@@ -31,7 +31,7 @@
 
 void gamepadshift_tick(void) {
     void *singleton = MP_STATE_VM(gamepad_singleton);
-    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
+    if (singleton == NULL || !mp_obj_is_type(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
         return;
     }
 

@@ -75,9 +75,9 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t *buffer = bufinfo.buf;
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
-    mp_obj_t native_display = mp_instance_cast_to_native_base(args[6],
+    mp_obj_t native_display = mp_obj_cast_to_native_base(args[6],
         &displayio_display_type);
-    if (!MP_OBJ_IS_TYPE(native_display, &displayio_display_type)) {
+    if (!mp_obj_is_type(native_display, &displayio_display_type)) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);

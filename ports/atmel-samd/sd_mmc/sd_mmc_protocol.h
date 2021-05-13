@@ -97,43 +97,43 @@ extern "C" {
  * @{
  */
 
-//! Value to define a SD/MMC/SDIO command
+// ! Value to define a SD/MMC/SDIO command
 typedef uint32_t sdmmc_cmd_def_t;
 
-//! \name Flags used to define a SD/MMC/SDIO command
-//! @{
+// ! \name Flags used to define a SD/MMC/SDIO command
+// ! @{
 #define SDMMC_CMD_GET_INDEX(cmd) (cmd & 0x3F)
-//! Have response (MCI only)
+// ! Have response (MCI only)
 #define SDMMC_RESP_PRESENT (1lu << 8)
-//! 8 bit response (SPI only)
+// ! 8 bit response (SPI only)
 #define SDMMC_RESP_8 (1lu << 9)
-//! 32 bit response (SPI only)
+// ! 32 bit response (SPI only)
 #define SDMMC_RESP_32 (1lu << 10)
-//! 136 bit response (MCI only)
+// ! 136 bit response (MCI only)
 #define SDMMC_RESP_136 (1lu << 11)
-//! Expect valid crc (MCI only)
+// ! Expect valid crc (MCI only)
 #define SDMMC_RESP_CRC (1lu << 12)
-//! Card may send busy
+// ! Card may send busy
 #define SDMMC_RESP_BUSY (1lu << 13)
 // Open drain for a braodcast command (bc)
 // or to enter in inactive state (MCI only)
 #define SDMMC_CMD_OPENDRAIN (1lu << 14)
-//! To signal a data write operation
+// ! To signal a data write operation
 #define SDMMC_CMD_WRITE (1lu << 15)
-//! To signal a SDIO tranfer in multi byte mode
+// ! To signal a SDIO tranfer in multi byte mode
 #define SDMMC_CMD_SDIO_BYTE (1lu << 16)
-//! To signal a SDIO tranfer in block mode
+// ! To signal a SDIO tranfer in block mode
 #define SDMMC_CMD_SDIO_BLOCK (1lu << 17)
-//! To signal a data transfer in stream mode
+// ! To signal a data transfer in stream mode
 #define SDMMC_CMD_STREAM (1lu << 18)
-//! To signal a data transfer in single block mode
+// ! To signal a data transfer in single block mode
 #define SDMMC_CMD_SINGLE_BLOCK (1lu << 19)
-//! To signal a data transfer in multi block mode
+// ! To signal a data transfer in multi block mode
 #define SDMMC_CMD_MULTI_BLOCK (1lu << 20)
-//! @}
+// ! @}
 
-//! \name Set of flags to define a reponse type
-//! @{
+// ! \name Set of flags to define a reponse type
+// ! @{
 #define SDMMC_CMD_NO_RESP (0)
 #define SDMMC_CMD_R1 (SDMMC_RESP_PRESENT | SDMMC_RESP_CRC)
 #define SDMMC_CMD_R1B (SDMMC_RESP_PRESENT | SDMMC_RESP_CRC | SDMMC_RESP_BUSY)
@@ -143,14 +143,14 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDMMC_CMD_R5 (SDMMC_RESP_PRESENT | SDMMC_RESP_8 | SDMMC_RESP_CRC)
 #define SDMMC_CMD_R6 (SDMMC_RESP_PRESENT | SDMMC_RESP_CRC)
 #define SDMMC_CMD_R7 (SDMMC_RESP_PRESENT | SDMMC_RESP_32 | SDMMC_RESP_CRC)
-//! @}
+// ! @}
 
-//! \name SD/MMC/SDIO command definitions
-//! SDMMC_CMDx are include in SD and MMC norms
-//! MMC_CMDx   are include in MMC norms only
-//! SD_CMDx    are include in SD norms only
-//! SDIO_CMDx  are include in SDIO norms only
-//! @{
+// ! \name SD/MMC/SDIO command definitions
+// ! SDMMC_CMDx are include in SD and MMC norms
+// ! MMC_CMDx   are include in MMC norms only
+// ! SD_CMDx    are include in SD norms only
+// ! SDIO_CMDx  are include in SDIO norms only
+// ! @{
 
 /*
  * --- Basic commands and read-stream command (class 0 and class 1) ---
@@ -351,21 +351,21 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_CMD53_IO_W_BYTE_EXTENDED (53 | SDMMC_CMD_R5 | SDMMC_CMD_SDIO_BYTE | SDMMC_CMD_WRITE)
 #define SDIO_CMD53_IO_R_BLOCK_EXTENDED (53 | SDMMC_CMD_R5 | SDMMC_CMD_SDIO_BLOCK)
 #define SDIO_CMD53_IO_W_BLOCK_EXTENDED (53 | SDMMC_CMD_R5 | SDMMC_CMD_SDIO_BLOCK | SDMMC_CMD_WRITE)
-//! @}
-//! @}
+// ! @}
+// ! @}
 
-//! \name Macros for command argument definition
-//! @{
+// ! \name Macros for command argument definition
+// ! @{
 
-//! \name MMC CMD6 argument structure
-//! @{
-//! [31:26] Set to 0
-//! [25:24] Access
+// ! \name MMC CMD6 argument structure
+// ! @{
+// ! [31:26] Set to 0
+// ! [25:24] Access
 #define MMC_CMD6_ACCESS_COMMAND_SET (0lu << 24)
 #define MMC_CMD6_ACCESS_SET_BITS (1lu << 24)
 #define MMC_CMD6_ACCESS_CLEAR_BITS (2lu << 24)
 #define MMC_CMD6_ACCESS_WRITE_BYTE (3lu << 24)
-//! [23:16] Index for Mode Segment
+// ! [23:16] Index for Mode Segment
 #define MMC_CMD6_INDEX_CMD_SET (EXT_CSD_CMD_SET_INDEX << 16)
 #define MMC_CMD6_INDEX_CMD_SET_REV (EXT_CSD_CMD_SET_REV_INDEX << 16)
 #define MMC_CMD6_INDEX_POWER_CLASS (EXT_CSD_POWER_CLASS_INDEX << 16)
@@ -375,61 +375,61 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define MMC_CMD6_INDEX_BOOT_CONFIG (EXT_CSD_BOOT_CONFIG_INDEX << 16)
 #define MMC_CMD6_INDEX_BOOT_BUS_WIDTH (EXT_CSD_BOOT_BUS_WIDTH_INDEX << 16)
 #define MMC_CMD6_INDEX_ERASE_GROUP_DEF (EXT_CSD_ERASE_GROUP_DEF_INDEX << 16)
-//! [15:8] Value
+// ! [15:8] Value
 #define MMC_CMD6_VALUE_BUS_WIDTH_1BIT (0x0lu << 8)
 #define MMC_CMD6_VALUE_BUS_WIDTH_4BIT (0x1lu << 8)
 #define MMC_CMD6_VALUE_BUS_WIDTH_8BIT (0x2lu << 8)
 #define MMC_CMD6_VALUE_HS_TIMING_ENABLE (0x1lu << 8)
 #define MMC_CMD6_VALUE_HS_TIMING_DISABLE (0x0lu << 8)
-//! [7:3] Set to 0
-//! [2:0] Cmd Set
-//! @}
+// ! [7:3] Set to 0
+// ! [2:0] Cmd Set
+// ! @}
 
-//! \name SD CMD6 argument structure
-//! @{
-//! CMD6 arg[ 3: 0] function group 1, access mode
+// ! \name SD CMD6 argument structure
+// ! @{
+// ! CMD6 arg[ 3: 0] function group 1, access mode
 #define SD_CMD6_GRP1_HIGH_SPEED (0x1lu << 0)
 #define SD_CMD6_GRP1_DEFAULT (0x0lu << 0)
-//! CMD6 arg[ 7: 4] function group 2, command system
+// ! CMD6 arg[ 7: 4] function group 2, command system
 #define SD_CMD6_GRP2_NO_INFLUENCE (0xFlu << 4)
 #define SD_CMD6_GRP2_DEFAULT (0x0lu << 4)
-//! CMD6 arg[11: 8] function group 3, 0xF or 0x0
+// ! CMD6 arg[11: 8] function group 3, 0xF or 0x0
 #define SD_CMD6_GRP3_NO_INFLUENCE (0xFlu << 8)
 #define SD_CMD6_GRP3_DEFAULT (0x0lu << 8)
-//! CMD6 arg[15:12] function group 4, 0xF or 0x0
+// ! CMD6 arg[15:12] function group 4, 0xF or 0x0
 #define SD_CMD6_GRP4_NO_INFLUENCE (0xFlu << 12)
 #define SD_CMD6_GRP4_DEFAULT (0x0lu << 12)
-//! CMD6 arg[19:16] function group 5, 0xF or 0x0
+// ! CMD6 arg[19:16] function group 5, 0xF or 0x0
 #define SD_CMD6_GRP5_NO_INFLUENCE (0xFlu << 16)
 #define SD_CMD6_GRP5_DEFAULT (0x0lu << 16)
-//! CMD6 arg[23:20] function group 6, 0xF or 0x0
+// ! CMD6 arg[23:20] function group 6, 0xF or 0x0
 #define SD_CMD6_GRP6_NO_INFLUENCE (0xFlu << 20)
 #define SD_CMD6_GRP6_DEFAULT (0x0lu << 20)
-//! CMD6 arg[30:24] reserved 0
-//! CMD6 arg[31   ] Mode, 0: Check, 1: Switch
+// ! CMD6 arg[30:24] reserved 0
+// ! CMD6 arg[31   ] Mode, 0: Check, 1: Switch
 #define SD_CMD6_MODE_CHECK (0lu << 31)
 #define SD_CMD6_MODE_SWITCH (1lu << 31)
-//! @}
+// ! @}
 
-//! \name SD CMD8 argument structure
-//! @{
+// ! \name SD CMD8 argument structure
+// ! @{
 #define SD_CMD8_PATTERN 0xAA
 #define SD_CMD8_MASK_PATTERN 0xFF
 #define SD_CMD8_HIGH_VOLTAGE 0x100
 #define SD_CMD8_MASK_VOLTAGE 0xF00
-//! @}
+// ! @}
 
-//! \name SD ACMD41 arguments
-//! @{
-#define SD_ACMD41_HCS (1lu << 30) //!< (SD) Host Capacity Support
-                                  //! @}
-//! @}
+// ! \name SD ACMD41 arguments
+// ! @{
+#define SD_ACMD41_HCS (1lu << 30) // !< (SD) Host Capacity Support
+                                  // ! @}
+// ! @}
 
-//! \name SDIO definitions
-//! @{
+// ! \name SDIO definitions
+// ! @{
 
-//! \name SDIO state (in R5)
-//! @{
+// ! \name SDIO state (in R5)
+// ! @{
 #define SDIO_R5_COM_CRC_ERROR (1lu << 15)                                            /**< CRC check error */
 #define SDIO_R5_ILLEGAL_COMMAND (1lu << 14)                                          /**< Illegal command */
 #define SDIO_R5_STATE (3lu << 12)                                                    /**< SDIO R5 state mask */
@@ -440,11 +440,11 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_R5_ERROR (1lu << 11)                                                    /**< General error */
 #define SDIO_R5_FUNC_NUM (1lu << 9)                                                  /**< Invalid function number */
 #define SDIO_R5_OUT_OF_RANGE (1lu << 8)                                              /**< Argument out of range */
-#define SDIO_R5_STATUS_ERR (SDIO_R5_ERROR | SDIO_R5_FUNC_NUM | SDIO_R5_OUT_OF_RANGE) //!< Errro status bits mask
-                                                                                     //! @}
+#define SDIO_R5_STATUS_ERR (SDIO_R5_ERROR | SDIO_R5_FUNC_NUM | SDIO_R5_OUT_OF_RANGE) // !< Errro status bits mask
+                                                                                     // ! @}
 
-//! \name SDIO state (in R6)
-//! @{
+// ! \name SDIO state (in R6)
+// ! @{
 /** The CRC check of the previous command failed. */
 #define SDIO_R6_COM_CRC_ERROR (1lu << 15)
 /** Command not legal for the card state. */
@@ -453,30 +453,30 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_R6_ERROR (1lu << 13)
 /** Status bits mask for SDIO R6 */
 #define SDIO_STATUS_R6 (SDIO_R6_COM_CRC_ERROR | SDIO_R6_ILLEGAL_COMMAND | SDIO_R6_ERROR)
-//! @}
+// ! @}
 
-//! \name SDIO CMD52 argument bit offset
-//! @{
-//! CMD52 arg[ 7: 0] Write data or stuff bits
+// ! \name SDIO CMD52 argument bit offset
+// ! @{
+// ! CMD52 arg[ 7: 0] Write data or stuff bits
 #define SDIO_CMD52_WR_DATA 0
-//! CMD52 arg[    8] Reserved
+// ! CMD52 arg[    8] Reserved
 #define SDIO_CMD52_STUFF0 8
-//! CMD52 arg[25: 9] Register address
+// ! CMD52 arg[25: 9] Register address
 #define SDIO_CMD52_REG_ADRR 9
-//! CMD52 arg[   26] Reserved
+// ! CMD52 arg[   26] Reserved
 #define SDIO_CMD52_STUFF1 26
-//! CMD52 arg[   27] Read after Write flag
+// ! CMD52 arg[   27] Read after Write flag
 #define SDIO_CMD52_RAW_FLAG 27
-//! CMD52 arg[30:28] Number of the function
+// ! CMD52 arg[30:28] Number of the function
 #define SDIO_CMD52_FUNCTION_NUM 28
-//! CMD52 arg[   31] Direction, 1:write, 0:read.
+// ! CMD52 arg[   31] Direction, 1:write, 0:read.
 #define SDIO_CMD52_RW_FLAG 31
 #define SDIO_CMD52_READ_FLAG 0
 #define SDIO_CMD52_WRITE_FLAG 1
-//! @}
+// ! @}
 
-//! \name SDIO CMD53 argument structure
-//! @{
+// ! \name SDIO CMD53 argument structure
+// ! @{
 /**
  * [ 8: 0] Byte mode: number of bytes to transfer,
  *                    0 cause 512 bytes transfer.
@@ -484,22 +484,22 @@ typedef uint32_t sdmmc_cmd_def_t;
  *                    0 set count to infinite.
  */
 #define SDIO_CMD53_COUNT 0
-//! CMD53 arg[25: 9] Start Address I/O register
+// ! CMD53 arg[25: 9] Start Address I/O register
 #define SDIO_CMD53_REG_ADDR 9
-//! CMD53 arg[   26] 1:Incrementing address, 0: fixed
+// ! CMD53 arg[   26] 1:Incrementing address, 0: fixed
 #define SDIO_CMD53_OP_CODE 26
-//! CMD53 arg[   27] (Optional) 1:block mode
+// ! CMD53 arg[   27] (Optional) 1:block mode
 #define SDIO_CMD53_BLOCK_MODE 27
-//! CMD53 arg[30:28] Number of the function
+// ! CMD53 arg[30:28] Number of the function
 #define SDIO_CMD53_FUNCTION_NUM 28
-//! CMD53 arg[   31] Direction, 1:WR, 0:RD
+// ! CMD53 arg[   31] Direction, 1:WR, 0:RD
 #define SDIO_CMD53_RW_FLAG 31
 #define SDIO_CMD53_READ_FLAG 0
 #define SDIO_CMD53_WRITE_FLAG 1
-//! @}
+// ! @}
 
-//! \name SDIO Functions
-//! @{
+// ! \name SDIO Functions
+// ! @{
 #define SDIO_CIA 0 /**< SDIO Function 0 (CIA) */
 #define SDIO_FN0 0 /**< SDIO Function 0 */
 #define SDIO_FN1 1 /**< SDIO Function 1 */
@@ -509,10 +509,10 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_FN5 5 /**< SDIO Function 5 */
 #define SDIO_FN6 6 /**< SDIO Function 6 */
 #define SDIO_FN7 7 /**< SDIO Function 7 */
-                   //! @}
+// ! @}
 
-//! \name SDIO Card Common Control Registers (CCCR)
-//! @{
+// ! \name SDIO Card Common Control Registers (CCCR)
+// ! @{
 #define SDIO_CCCR_SDIO_REV 0x00         /**< CCCR/SDIO revision (RO) */
 #define SDIO_CCCR_REV (0xFlu << 0)      /**< CCCR/FBR Version */
 #define SDIO_CCCR_REV_1_00 (0x0lu << 0) /**< CCCR/FBR Version 1.00 */
@@ -652,10 +652,10 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_CCCR_HS 0x13         /**< High-Speed */
 #define SDIO_SHS (0x1lu << 0)     /**< Support High-Speed (RO) */
 #define SDIO_EHS (0x1lu << 1)     /**< Enable High-Speed (R/W) */
-                                  //! @}
+// ! @}
 
-//! \name SDIO Function Basic Registers (FBR)
-//! @{
+// ! \name SDIO Function Basic Registers (FBR)
+// ! @{
 #define SDIO_FBR_ADDR(fn, x) (0x100 * (fn) + (x))
 #define SDIO_FBR_CSA_IF 0x0          /**< CSA and function interface code (RO) */
 #define SDIO_IFC (0xFUL << 0)        /**< Standard SDIO Fun Interface Code */
@@ -679,10 +679,10 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_FBR_CSA_PTR 0xC         /**< Address pointer to CSA (3B, LSB first) (R/W) */
 #define SDIO_FBR_CSA_DATA 0xF        /**< Read/Write fifo to CSA (R/W) */
 #define SDIO_FBR_BLK_SIZ 0x10        /**< Block size (2B, LSB first) (R/W) */
-                                     //! @}
+// ! @}
 
-//! \name SDIO Card Metaformat
-//! @{
+// ! \name SDIO Card Metaformat
+// ! @{
 /** Null tuple (PCMCIA 3.1.9) */
 #define SDIO_CISTPL_NULL 0x00
 /** Device tuple (PCMCIA 3.2.2) */
@@ -705,38 +705,37 @@ typedef uint32_t sdmmc_cmd_def_t;
 #define SDIO_CISTPL_SDIO_EXT 0x92
 /** The End-of-chain Tuple (PCMCIA 3.1.2) */
 #define SDIO_CISTPL_END 0xFF
-//! @}
+// ! @}
 
-//! @}
+// ! @}
 
-//! \name CSD, OCR, SCR, Switch status, extend CSD definitions
-//! @{
+// ! \name CSD, OCR, SCR, Switch status, extend CSD definitions
+// ! @{
 
 /**
  * \brief Macro function to extract a bits field from a large SD MMC register
  * Used by : CSD, SCR, Switch status
  */
-static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint16_t pos, uint8_t size)
-{
-	uint32_t value;
-	value = reg[((reg_size - pos + 7) / 8) - 1] >> (pos % 8);
-	if (((pos % 8) + size) > 8) {
-		value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 2] << (8 - (pos % 8));
-	}
-	if (((pos % 8) + size) > 16) {
-		value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 3] << (16 - (pos % 8));
-	}
-	if (((pos % 8) + size) > 24) {
-		value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 3] << (24 - (pos % 8));
-	}
-	value &= ((uint32_t)1 << size) - 1;
-	return value;
+static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint16_t pos, uint8_t size) {
+    uint32_t value;
+    value = reg[((reg_size - pos + 7) / 8) - 1] >> (pos % 8);
+    if (((pos % 8) + size) > 8) {
+        value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 2] << (8 - (pos % 8));
+    }
+    if (((pos % 8) + size) > 16) {
+        value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 3] << (16 - (pos % 8));
+    }
+    if (((pos % 8) + size) > 24) {
+        value |= (uint32_t)reg[((reg_size - pos + 7) / 8) - 3] << (24 - (pos % 8));
+    }
+    value &= ((uint32_t)1 << size) - 1;
+    return value;
 }
 
-	//! \name CSD Fields
-	//! @{
-#define CSD_REG_BIT_SIZE 128                 //!< 128 bits
-#define CSD_REG_BSIZE (CSD_REG_BIT_SIZE / 8) //!< 16 bytes
+// ! \name CSD Fields
+// ! @{
+#define CSD_REG_BIT_SIZE 128                 // !< 128 bits
+#define CSD_REG_BSIZE (CSD_REG_BIT_SIZE / 8) // !< 16 bytes
 #define CSD_STRUCTURE(csd, pos, size) SDMMC_UNSTUFF_BITS(csd, CSD_REG_BIT_SIZE, pos, size)
 #define CSD_STRUCTURE_VERSION(csd) CSD_STRUCTURE(csd, 126, 2)
 #define SD_CSD_VER_1_0 0
@@ -753,10 +752,10 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define MMC_CSD_C_SIZE_MULT(csd) CSD_STRUCTURE(csd, 47, 3)
 #define MMC_CSD_READ_BL_LEN(csd) CSD_STRUCTURE(csd, 80, 4)
 #define MMC_CSD_SPEC_VERS(csd) CSD_STRUCTURE(csd, 122, 4)
-	//! @}
+// ! @}
 
-	//! \name OCR Register Fields
-	//! @{
+// ! \name OCR Register Fields
+// ! @{
 #define OCR_REG_BSIZE (32 / 8) /**< 32 bits, 4 bytes */
 #define OCR_VDD_170_195 (1lu << 7)
 #define OCR_VDD_20_21 (1lu << 8)
@@ -783,12 +782,12 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define OCR_ACCESS_MODE_SECTOR (2lu << 29) /**< (MMC) Sector access mode */
 #define OCR_CCS (1lu << 30)                /**< (SD) Card Capacity Status */
 #define OCR_POWER_UP_BUSY (1lu << 31)      /**< Card power up status bit */
-	                                       //! @}
+// ! @}
 
-	//! \name SD SCR Register Fields
-	//! @{
-#define SD_SCR_REG_BIT_SIZE 64                     //!< 64 bits
-#define SD_SCR_REG_BSIZE (SD_SCR_REG_BIT_SIZE / 8) //!< 8 bytes
+// ! \name SD SCR Register Fields
+// ! @{
+#define SD_SCR_REG_BIT_SIZE 64                     // !< 64 bits
+#define SD_SCR_REG_BSIZE (SD_SCR_REG_BIT_SIZE / 8) // !< 8 bytes
 #define SD_SCR_STRUCTURE(scr, pos, size) SDMMC_UNSTUFF_BITS(scr, SD_SCR_REG_BIT_SIZE, pos, size)
 #define SD_SCR_SCR_STRUCTURE(scr) SD_SCR_STRUCTURE(scr, 60, 4)
 #define SD_SCR_SCR_STRUCTURE_1_0 0
@@ -810,14 +809,14 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define SD_SCR_SD_SPEC_3_00 1
 #define SD_SCR_SD_EX_SECURITY(scr) SD_SCR_STRUCTURE(scr, 43, 4)
 #define SD_SCR_SD_CMD_SUPPORT(scr) SD_SCR_STRUCTURE(scr, 32, 2)
-	//! @}
+// ! @}
 
-	//! \name SD Switch Status Fields
-	//! @{
-#define SD_SW_STATUS_BIT_SIZE 512                      //!< 512 bits
-#define SD_SW_STATUS_BSIZE (SD_SW_STATUS_BIT_SIZE / 8) //!< 64 bytes
+// ! \name SD Switch Status Fields
+// ! @{
+#define SD_SW_STATUS_BIT_SIZE 512                      // !< 512 bits
+#define SD_SW_STATUS_BSIZE (SD_SW_STATUS_BIT_SIZE / 8) // !< 64 bytes
 #define SD_SW_STATUS_STRUCTURE(sd_sw_status, pos, size)                                                                \
-	SDMMC_UNSTUFF_BITS(sd_sw_status, SD_SW_STATUS_BIT_SIZE, pos, size)
+    SDMMC_UNSTUFF_BITS(sd_sw_status, SD_SW_STATUS_BIT_SIZE, pos, size)
 #define SD_SW_STATUS_MAX_CURRENT_CONSUMPTION(status) SD_SW_STATUS_STRUCTURE(status, 496, 16)
 #define SD_SW_STATUS_FUN_GRP6_INFO(status) SD_SW_STATUS_STRUCTURE(status, 480, 16)
 #define SD_SW_STATUS_FUN_GRP5_INFO(status) SD_SW_STATUS_STRUCTURE(status, 464, 16)
@@ -839,10 +838,10 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define SD_SW_STATUS_FUN_GRP3_BUSY(status) SD_SW_STATUS_STRUCTURE(status, 304, 16)
 #define SD_SW_STATUS_FUN_GRP2_BUSY(status) SD_SW_STATUS_STRUCTURE(status, 288, 16)
 #define SD_SW_STATUS_FUN_GRP1_BUSY(status) SD_SW_STATUS_STRUCTURE(status, 272, 16)
-	//! @}
+// ! @}
 
-	//! \name Card Status Fields
-	//! @{
+// ! \name Card Status Fields
+// ! @{
 #define CARD_STATUS_APP_CMD (1lu << 5)
 #define CARD_STATUS_SWITCH_ERROR (1lu << 7)
 #define CARD_STATUS_READY_FOR_DATA (1lu << 8)
@@ -876,17 +875,17 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define CARD_STATUS_ADDR_OUT_OF_RANGE (1lu << 31)
 
 #define CARD_STATUS_ERR_RD_WR                                                                                          \
-	(CARD_STATUS_ADDR_OUT_OF_RANGE | CARD_STATUS_ADDRESS_MISALIGN | CARD_STATUS_BLOCK_LEN_ERROR                        \
-	 | CARD_STATUS_WP_VIOLATION | CARD_STATUS_ILLEGAL_COMMAND | CARD_STATUS_CC_ERROR | CARD_STATUS_ERROR)
-	//! @}
+    (CARD_STATUS_ADDR_OUT_OF_RANGE | CARD_STATUS_ADDRESS_MISALIGN | CARD_STATUS_BLOCK_LEN_ERROR                        \
+    | CARD_STATUS_WP_VIOLATION | CARD_STATUS_ILLEGAL_COMMAND | CARD_STATUS_CC_ERROR | CARD_STATUS_ERROR)
+// ! @}
 
-	//! \name SD Status Field
-	//! @{
+// ! \name SD Status Field
+// ! @{
 #define SD_STATUS_BSIZE (512 / 8) /**< 512 bits, 64bytes */
-	                              //! @}
+// ! @}
 
-	//! \name MMC Extended CSD Register Field
-	//! @{
+// ! \name MMC Extended CSD Register Field
+// ! @{
 #define EXT_CSD_BSIZE 512 /**< 512 bytes. */
 /* Below belongs to Properties Segment */
 #define EXT_CSD_S_CMD_SET_INDEX 504lu
@@ -928,18 +927,18 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define EXT_CSD_BOOT_CONFIG_INDEX 179lu
 #define EXT_CSD_BOOT_BUS_WIDTH_INDEX 177lu
 #define EXT_CSD_ERASE_GROUP_DEF_INDEX 175lu
-	//! @}
-//! @}
+// ! @}
+// ! @}
 
-//! \name Definition for SPI mode only
-//! @{
+// ! \name Definition for SPI mode only
+// ! @{
 
-//! SPI commands start with a start bit "0" and a transmit bit "1"
+// ! SPI commands start with a start bit "0" and a transmit bit "1"
 #define SPI_CMD_ENCODE(x) (0x40 | (x & 0x3F))
 
-//! \name Register R1 definition for SPI mode
-//! The R1 register is always send after a command.
-//! @{
+// ! \name Register R1 definition for SPI mode
+// ! The R1 register is always send after a command.
+// ! @{
 #define R1_SPI_IDLE (1lu << 0)
 #define R1_SPI_ERASE_RESET (1lu << 1)
 #define R1_SPI_ILLEGAL_COMMAND (1lu << 2)
@@ -949,11 +948,11 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define R1_SPI_PARAMETER (1lu << 6)
 // R1 bit 7 is always zero, reuse this bit for error
 #define R1_SPI_ERROR (1lu << 7)
-//! @}
+// ! @}
 
-//! \name Register R2 definition for SPI mode
-//! The R2 register can be send after R1 register.
-//! @{
+// ! \name Register R2 definition for SPI mode
+// ! The R2 register can be send after R1 register.
+// ! @{
 #define R2_SPI_CARD_LOCKED (1lu << 0)
 #define R2_SPI_WP_ERASE_SKIP (1lu << 1)
 #define R2_SPI_LOCK_UNLOCK_FAIL R2_SPI_WP_ERASE_SKIP
@@ -964,35 +963,35 @@ static inline uint32_t SDMMC_UNSTUFF_BITS(uint8_t *reg, uint16_t reg_size, uint1
 #define R2_SPI_ERASE_PARAM (1lu << 6)
 #define R2_SPI_OUT_OF_RANGE (1lu << 7)
 #define R2_SPI_CSD_OVERWRITE R2_SPI_OUT_OF_RANGE
-//! @}
+// ! @}
 
-//! \name Control Tokens in SPI Mode
-//! @{
-//! \name Tokens used for a read operation
-//! @{
+// ! \name Control Tokens in SPI Mode
+// ! @{
+// ! \name Tokens used for a read operation
+// ! @{
 #define SPI_TOKEN_SINGLE_MULTI_READ 0xFE
-#define SPI_TOKEN_DATA_ERROR_VALID(token) (((token)&0xF0) == 0)
+#define SPI_TOKEN_DATA_ERROR_VALID(token) (((token) & 0xF0) == 0)
 #define SPI_TOKEN_DATA_ERROR_ERRORS (0x0F)
 #define SPI_TOKEN_DATA_ERROR_ERROR (1lu << 0)
 #define SPI_TOKEN_DATA_ERROR_CC_ERROR (1lu << 1)
 #define SPI_TOKEN_DATA_ERROR_ECC_ERROR (1lu << 2)
 #define SPI_TOKEN_DATA_ERROR_OUT_RANGE (1lu << 3)
-	//! @}
-	//! \name Tokens used for a write operation
-	//! @{
+// ! @}
+// ! \name Tokens used for a write operation
+// ! @{
 #define SPI_TOKEN_SINGLE_WRITE 0xFE
 #define SPI_TOKEN_MULTI_WRITE 0xFC
 #define SPI_TOKEN_STOP_TRAN 0xFD
 #define SPI_TOKEN_DATA_RESP_VALID(token) ((((token) & (1 << 4)) == 0) && (((token) & (1 << 0)) == 1))
-#define SPI_TOKEN_DATA_RESP_CODE(token) ((token)&0x1E)
+#define SPI_TOKEN_DATA_RESP_CODE(token) ((token) & 0x1E)
 #define SPI_TOKEN_DATA_RESP_ACCEPTED (2lu << 1)
 #define SPI_TOKEN_DATA_RESP_CRC_ERR (5lu << 1)
 #define SPI_TOKEN_DATA_RESP_WRITE_ERR (6lu << 1)
-	//! @}
-	//! @}
-	//! @}
+// ! @}
+// ! @}
+// ! @}
 
-	//! @} end of sd_mmc_protocol
+// ! @} end of sd_mmc_protocol
 
 #ifdef __cplusplus
 }

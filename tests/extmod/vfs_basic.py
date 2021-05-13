@@ -10,8 +10,9 @@ except (ImportError, AttributeError):
 
 
 class Filesystem:
-    def __init__(self, id):
+    def __init__(self, id, fail=0):
         self.id = id
+        self.fail = fail
 
     def mount(self, readonly, mkfs):
         print(self.id, "mount", readonly, mkfs)
@@ -25,6 +26,8 @@ class Filesystem:
 
     def chdir(self, dir):
         print(self.id, "chdir", dir)
+        if self.fail:
+            raise OSError(self.fail)
 
     def getcwd(self):
         print(self.id, "getcwd")
@@ -70,6 +73,14 @@ print(uos.statvfs("/")[9] >= 32)
 
 # getcwd when in root dir
 print(uos.getcwd())
+
+# test operations on the root directory with nothing mounted, they should all fail
+for func in ("chdir", "listdir", "mkdir", "remove", "rmdir", "stat"):
+    for arg in ("x", "/x"):
+        try:
+            getattr(uos, func)(arg)
+        except OSError:
+            print(func, arg, "OSError")
 
 # basic mounting and listdir
 uos.mount(Filesystem(1), "/test_mnt")
@@ -158,3 +169,18 @@ uos.chdir("/")
 uos.umount("/")
 print(uos.listdir("/"))
 uos.umount("/mnt")
+
+# chdir to a non-existent mount point (current directory should remain unchanged)
+try:
+    uos.chdir("/foo")
+except OSError:
+    print("OSError")
+print(uos.getcwd())
+
+# chdir to a non-existent subdirectory in a mounted filesystem
+uos.mount(Filesystem(5, 1), "/mnt")
+try:
+    uos.chdir("/mnt/subdir")
+except OSError:
+    print("OSError")
+print(uos.getcwd())

@@ -38,9 +38,9 @@ for name, f, args in (
 
 # double argument functions
 for name, f, args in (
-    ("pow", math.pow, ((0, 2), (-1, 2), (0, -1), (-1, 2.3))),
-    ("fmod", math.fmod, ((1.2, inf), (1.2, 0), (inf, 1.2))),
-    ("atan2", math.atan2, ((0, 0),)),
+    ("pow", math.pow, ((0, 2), (-1, 2), (0, -1), (-1, 2.3), (nan, 0), (1, nan))),
+    ("fmod", math.fmod, ((1.2, inf), (1.2, -inf), (1.2, 0), (inf, 1.2))),
+    ("atan2", math.atan2, ((0, 0), (-inf, inf), (-inf, -inf), (inf, -inf))),
     ("copysign", math.copysign, ()),
 ):
     for x in args + ((0, inf), (inf, 0), (inf, inf), (inf, nan), (nan, inf), (nan, nan)):

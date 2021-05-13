@@ -36,13 +36,23 @@ enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
         // stack + heap
         2
+
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
         #endif
-        #if CIRCUITPY_USB_MIDI
-        + 1
+
+        #if CIRCUITPY_USB
+        + 1 // device_descriptor_allocation
+        + 1 // configuration_descriptor_allocation
+        + 1 // string_descriptors_allocation
+        #endif
+
+        #if CIRCUITPY_USB_HID
+        + 1 // hid_report_descriptor_allocation
+        + 1 // hid_devices_allocation
         #endif
     ,
+
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
         0
         #if CIRCUITPY_DISPLAYIO
@@ -61,6 +71,7 @@ enum {
             )
         #endif
     ,
+
     CIRCUITPY_SUPERVISOR_ALLOC_COUNT = CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT + CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT
 };
 
@@ -308,9 +319,11 @@ void supervisor_move_memory(void) {
 
     // Notify clients that their movable allocations may have moved.
     old_allocations = &old_allocations_array[0];
+
     #if CIRCUITPY_DISPLAYIO
     supervisor_display_move_memory();
     #endif
+
     // Add calls to further clients here.
     old_allocations = NULL;
 }
