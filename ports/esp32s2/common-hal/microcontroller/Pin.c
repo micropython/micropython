@@ -72,6 +72,10 @@ void reset_pin_number(gpio_num_t pin_number) {
     floating_gpio_reset(pin_number);
 }
 
+void common_hal_mcu_pin_reset_number(uint8_t i) {
+    reset_pin_number((gpio_num_t)i);
+}
+
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
     if (pin == NULL) {
         return;
@@ -108,4 +112,8 @@ bool pin_number_is_free(gpio_num_t pin_number) {
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     return pin_number_is_free(pin->number);
+}
+
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t *pin) {
+    return pin ? pin->number : NO_PIN;
 }
