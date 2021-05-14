@@ -732,8 +732,8 @@ msgstr ""
 "chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython wúfǎ fēnpèi duī.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython wúfǎ fēnpèi duī."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
