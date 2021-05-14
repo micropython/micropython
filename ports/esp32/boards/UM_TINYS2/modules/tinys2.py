@@ -38,7 +38,7 @@ DAC2 = const(18)
 
 # Helper functions
 def set_pixel_power(state):
-    """Enable or Disable power to the onboard NeoPixel to either show colour, or to reduce power fro deep sleep."""
+    """Enable or Disable power to the onboard NeoPixel to either show colour, or to reduce power for deep sleep."""
     Pin(RGB_PWR, Pin.OUT).value(state)
 
 
@@ -59,7 +59,7 @@ def get_vbus_present():
     return Pin(VBUS_SENSE, Pin.IN).value() == 1
 
 
-# Dotstar rainbow colour wheel
+# NeoPixel rainbow colour wheel
 def rgb_color_wheel(wheel_pos):
     """Color wheel to allow for cycling through the rainbow of RGB colors."""
     wheel_pos = wheel_pos % 255
@@ -74,9 +74,9 @@ def rgb_color_wheel(wheel_pos):
         return wheel_pos * 3, 255 - wheel_pos * 3, 0
 
 
-# Go into deep sleep but shut down the APA first to save power
-# Use this if you want lowest deep  sleep current
+# Go into deep sleep but shut down the RGB LED first to save power
+# Use this if you want lowest deep sleep current
 def go_deepsleep(t):
-    """Deep sleep helper that also powers down the on-board Dotstar."""
+    """Deep sleep helper that also powers down the on-board NeoPixel."""
     set_pixel_power(False)
     machine.deepsleep(t)
