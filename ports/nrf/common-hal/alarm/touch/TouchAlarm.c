@@ -35,7 +35,11 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
     (void)pin;
 }
 
-mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
+    return mp_const_none;
+}
+
+mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
     return mp_const_none;
 }
 
@@ -45,7 +49,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
 void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
 }
 
-bool alarm_touch_touchalarm_woke_us_up(void) {
+bool alarm_touch_touchalarm_woke_this_cycle(void) {
     return false;
 }
 
