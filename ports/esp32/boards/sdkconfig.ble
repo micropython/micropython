@@ -9,9 +9,15 @@ CONFIG_BT_NIMBLE_ENABLED=y
 CONFIG_BT_NIMBLE_MAX_CONNECTIONS=4
 
 # Pin to the same core as MP.
-# Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
-# with the ringbuffer and scheduler MP needs to be on the same core.
-# See https://github.com/micropython/micropython/issues/5489
+# Prior to IDF 4.2+, we needed to pin NimBLE to core 0 for 
+# synchronization with the ringbuffer. This 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
+CONFIG_BT_NIMBLE_PINNED_TO_CORE_0=n
+CONFIG_BT_NIMBLE_PINNED_TO_CORE_1=y
+CONFIG_BT_NIMBLE_PINNED_TO_CORE=1
+#else
 CONFIG_BT_NIMBLE_PINNED_TO_CORE_0=y
 CONFIG_BT_NIMBLE_PINNED_TO_CORE_1=n
 CONFIG_BT_NIMBLE_PINNED_TO_CORE=0
+#endif
+
