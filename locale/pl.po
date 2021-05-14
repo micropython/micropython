@@ -717,14 +717,6 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython jest w trybie awaryjnym, ponieważ podczas rozruchu naciśnięto "
-"przycisk resetowania. Naciśnij ponownie, aby wyjść z trybu awaryjnego.\n"
-
-#: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
 msgstr "CircuitPython nie mógł przydzielić sterty."
 
@@ -1651,10 +1643,6 @@ msgstr "Nie podłączono"
 msgid "Not playing"
 msgstr "Nic nie jest odtwarzane"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr ""
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr ""
@@ -1977,8 +1965,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Rzędy muszą być digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr ""
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2102,13 +2090,13 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -2119,7 +2107,7 @@ msgstr ""
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2423,7 +2411,12 @@ msgid "Writes not supported on Characteristic"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -4375,6 +4368,14 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython jest w trybie awaryjnym, ponieważ podczas rozruchu "
+#~ "naciśnięto przycisk resetowania. Naciśnij ponownie, aby wyjść z trybu "
+#~ "awaryjnego.\n"
+
 #~ msgid "USB Busy"
 #~ msgstr "USB Zajęte"
 
@@ -4565,10 +4566,6 @@ msgstr ""
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Uruchomiony tryb bezpieczeństwa! Samo-przeładowanie wyłączone.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr ""
-#~ "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() powinien zwracać None, nie '%s'"

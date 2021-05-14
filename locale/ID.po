@@ -727,15 +727,7 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Kode inti CircuitPython mengalami crash. Aduh!\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython dalam mode aman karena Anda menekan tombol reset saat boot. "
-"Tekan lagi untuk keluar dari mode aman.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
+msgid "CircuitPython was unable to allocate the heap."
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -1660,10 +1652,6 @@ msgstr "Tidak terhubung"
 msgid "Not playing"
 msgstr "Tidak berfungsi"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "Tidak menjalankan kode yang disimpan.\n"
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr ""
@@ -1998,8 +1986,10 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Entri baris harus digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
+msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
+"Berjalan di mode aman(safe mode)! Tidak menjalankan kode yang disimpan.\n"
+"Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2123,18 +2113,14 @@ msgstr "Waktu baca suhu habis"
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"heap dari CircuitPython rusak karena stack terlalu kecil.\n"
-"Harap tambah ukuran stack jika Anda tahu caranya, atau jika tidak:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"Modul `microcontroller` digunakan untukboot ke mode aman. Tekan reset untuk "
-"keluar dari mode aman.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2144,11 +2130,8 @@ msgstr ""
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"Kekuatan mikrokontroler menurun. Pastikan catu daya Anda menyediakan\n"
-"daya yang cukup untuk seluruh rangkaian dan tekan reset (setelah "
-"mengeluarkan CIRCUITPY).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2453,8 +2436,13 @@ msgid "Writes not supported on Characteristic"
 msgstr "Menulis tidak didukung pada Karakteristik"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Anda berada dalam mode aman: sesuatu yang tidak terduga terjadi.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4403,6 +4391,42 @@ msgstr "zi harus berjenis float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython dalam mode aman karena Anda menekan tombol reset saat boot. "
+#~ "Tekan lagi untuk keluar dari mode aman.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Tidak menjalankan kode yang disimpan.\n"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "heap dari CircuitPython rusak karena stack terlalu kecil.\n"
+#~ "Harap tambah ukuran stack jika Anda tahu caranya, atau jika tidak:"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "Modul `microcontroller` digunakan untukboot ke mode aman. Tekan reset "
+#~ "untuk keluar dari mode aman.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "Kekuatan mikrokontroler menurun. Pastikan catu daya Anda menyediakan\n"
+#~ "daya yang cukup untuk seluruh rangkaian dan tekan reset (setelah "
+#~ "mengeluarkan CIRCUITPY).\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Anda berada dalam mode aman: sesuatu yang tidak terduga terjadi.\n"
+
 #~ msgid "Pin number already reserved by EXTI"
 #~ msgstr "Nomor pin sudah dipesan oleh EXTI"
 
@@ -4579,10 +4603,6 @@ msgstr ""
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Berjalan di mode aman(safe mode)! Tidak menjalankan kode yang disimpan.\n"
-#~ "Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' atau 'async with' di luar fungsi async"

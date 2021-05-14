@@ -730,14 +730,6 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "El código central de CircuitPython se estrelló con fuerza. ¡Whoops!\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython está en modo seguro porque presionó el botón de reinicio "
-"durante el arranque. Presione nuevamente para salir del modo seguro.\n"
-
-#: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
 msgstr "CircuitPython no puedo encontrar el montículo."
 
@@ -1676,10 +1668,6 @@ msgstr "No conectado"
 msgid "Not playing"
 msgstr "No reproduciendo"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "No ejecutando el código almacenado.\n"
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr "No configurable"
@@ -2020,8 +2008,10 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr "¡Corriendo en modo seguro! "
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr ""
+"Ejecutando en modo seguro!  No ejecutando el código almacenado.\n"
+"Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2145,18 +2135,14 @@ msgstr "Lectura de temperatura expirada"
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"El heap de CircuitPython se dañó porque la pila era demasiado pequeña.\n"
-"Aumente el tamaño de la pila si sabe cómo, o si no:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"El módulo de `microcontroller` fue utilizado para arrancar en modo seguro. "
-"Presiona reset para salir del modo seguro.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2166,12 +2152,8 @@ msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"La alimentación del microntrolador bajó. Asegúrate que tu fuente de "
-"alimentación\n"
-"pueda aportar suficiente energía para todo el circuito y presiona reset "
-"(luego de expulsar CIRCUITPY)\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2481,8 +2463,13 @@ msgid "Writes not supported on Characteristic"
 msgstr "Escrituras no admitidas en Characteristic"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Estás en modo seguro: algo inesperado ha sucedido.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4447,6 +4434,46 @@ msgstr "zi debe ser de tipo flotante"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython está en modo seguro porque presionó el botón de reinicio "
+#~ "durante el arranque. Presione nuevamente para salir del modo seguro.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "No ejecutando el código almacenado.\n"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "¡Corriendo en modo seguro! "
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "El heap de CircuitPython se dañó porque la pila era demasiado pequeña.\n"
+#~ "Aumente el tamaño de la pila si sabe cómo, o si no:"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "El módulo de `microcontroller` fue utilizado para arrancar en modo "
+#~ "seguro. Presiona reset para salir del modo seguro.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "La alimentación del microntrolador bajó. Asegúrate que tu fuente de "
+#~ "alimentación\n"
+#~ "pueda aportar suficiente energía para todo el circuito y presiona reset "
+#~ "(luego de expulsar CIRCUITPY)\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Estás en modo seguro: algo inesperado ha sucedido.\n"
+
 #~ msgid "Pin number already reserved by EXTI"
 #~ msgstr "Número de pin ya reservado por EXTI"
 
@@ -4818,10 +4845,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Ejecutando en modo seguro!  No ejecutando el código almacenado.\n"
-#~ "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() deberia devolver None, no '%s'"

@@ -724,14 +724,6 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython de héxīn chūxiàn gùzhàng. Āiyā!\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn xiàle "
-"chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
-
-#: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
 msgstr "CircuitPython wúfǎ fēnpèi duī."
 
@@ -1662,10 +1654,6 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr "bù kě shè zhì"
@@ -2000,8 +1988,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr "Zài ānquán móshì xià yùnxíng! "
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2125,18 +2113,14 @@ msgstr "Wēndù dòu qǔ chāoshí"
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
-"Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě tuìchū "
-"ānquán móshì.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2146,11 +2130,8 @@ msgstr "Rgb_pins de chángdù bìxū wèi 6,12,18,24 huò 30"
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
-"diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
-"zhīhòu).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2456,8 +2437,13 @@ msgid "Writes not supported on Characteristic"
 msgstr "Tèzhēng bù zhīchí xiě rù"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4414,6 +4400,45 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn "
+#~ "xiàle chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "Zài ānquán móshì xià yùnxíng! "
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
+#~ "Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě "
+#~ "tuìchū ānquán móshì.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
+#~ "diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
+#~ "zhīhòu).\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
+
 #~ msgid "Pin number already reserved by EXTI"
 #~ msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
 
@@ -4761,9 +4786,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
