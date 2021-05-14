@@ -874,6 +874,10 @@ msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 msgid "Data too large for advertisement packet"
 msgstr "Os dados são grandes demais para o pacote de publicidade"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "A capacidade do destino é menor que destination_length."
@@ -1712,6 +1716,10 @@ msgstr ""
 "O BMP descompactado é compatível apenas no formato Windows: o tamanho do "
 "cabeçalho é %d"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1727,6 +1735,7 @@ msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Apenas um alarme alarm.time pode ser definido."
 
@@ -1806,6 +1815,10 @@ msgstr "O periférico está em uso"
 msgid "Permission denied"
 msgstr "Permissão negada"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
 msgstr "A contagem dos pinos deve ser com pelo menos 1"
@@ -1824,6 +1837,11 @@ msgstr "A contagem dos pinos é muito grande"
 msgid "Pin does not have ADC capabilities"
 msgstr "O pino não tem recursos de ADC"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
+
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
@@ -1836,10 +1854,6 @@ msgstr "O pino deve estar no canal B do PWM"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "O pino deve ser compatível com as interrupções do hardware"
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
-msgstr "Número do PIN já está reservado através da EXTI"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -2074,6 +2088,10 @@ msgstr ""
 msgid "Size not supported"
 msgstr "O tamanho não é suportado"
 
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
+
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Fatie e avalie os diferentes comprimentos."
@@ -2224,6 +2242,10 @@ msgstr "Exibições demais"
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "O total dos dados que serão escritos é maior do que %q"
+
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -4437,6 +4459,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "Número do PIN já está reservado através da EXTI"
 
 #~ msgid "USB Busy"
 #~ msgstr "USB ocupada"
