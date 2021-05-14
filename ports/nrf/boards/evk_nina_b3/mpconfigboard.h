@@ -25,9 +25,9 @@
  */
 
 //Boar data
-#define MICROPY_HW_BOARD_NAME       "EVK_NINA_B3"	//Board name
+#define MICROPY_HW_BOARD_NAME       "EVK-NINA-B3"	//Board name
 #define MICROPY_HW_MCU_NAME         "NRF52840"	//Microcontroller name
-#define MICROPY_PY_SYS_PLATFORM     "nrf52840"	//Returns when you call sys.ṕlatform
+#define MICROPY_PY_SYS_PLATFORM     "nrf52"	//Returns when you call sys.ṕlatform
 
 //Peripherals Config
 #define MICROPY_PY_MACHINE_UART     (1)	// Enabels UART
@@ -71,14 +71,18 @@
 #define MICROPY_HW_SPI0_MOSI        (14)	// MOSI Pin
 #define MICROPY_HW_SPI0_MISO        (15)	// MISO Pin
 
+// PWM Names
 #define MICROPY_HW_PWM0_NAME        "PWM0"	// PWM0 Name
 #define MICROPY_HW_PWM1_NAME        "PWM1"	// PWM1 Name
 #define MICROPY_HW_PWM2_NAME        "PWM2"	// PWM2 Name
 
+// How Many LED indexes appear in the help() message
 #define HELP_TEXT_BOARD_LED         "1,2,3"
 
-// #define MICROPY_EMIT_ARM	     (1)
-//#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-//#define MICROPY_PY_SYS_STDFILES     (1)
+// Enable @viper and @native
+#define MICROPY_EMIT_THUMB          (1)
+#define MICROPY_EMIT_INLINE_THUMB   (1)
 
-
+// Enable optional modules
+#define MICROPY_PY_UERRNO           (1)     // Enable uerrno for working better with Pymakr Extension
+#define MICROPY_PY_UHASHLIB         (1)     // Enable uhashlib for working better with Pymakr Extension
