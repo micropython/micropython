@@ -716,7 +716,7 @@ msgid ""
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
+msgid "CircuitPython was unable to allocate the heap."
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c

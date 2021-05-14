@@ -745,8 +745,8 @@ msgstr ""
 "mode sans échec.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython n'as pu faire l'allocation de la pile.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython n'as pu faire l'allocation de la pile."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."

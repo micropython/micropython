@@ -113,11 +113,11 @@ size_t usb_hid_descriptor_length(void) {
 static const char usb_hid_interface_name[] = USB_INTERFACE_NAME " HID";
 
 // This is the interface descriptor, not the report descriptor.
-size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, uint16_t report_descriptor_length) {
+size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, uint16_t report_descriptor_length) {
     memcpy(descriptor_buf, usb_hid_descriptor_template, sizeof(usb_hid_descriptor_template));
 
-    descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = *current_interface;
-    (*current_interface)++;
+    descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_counts->current_interface++;
 
     usb_add_interface_string(*current_interface_string, usb_hid_interface_name);
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_STRING_INDEX] = *current_interface_string;
@@ -126,9 +126,13 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interfac
     descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX] = report_descriptor_length & 0xFF;
     descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX + 1] = (report_descriptor_length >> 8);
 
-    descriptor_buf[HID_IN_ENDPOINT_INDEX] = 0x80 | (USB_HID_EP_NUM_IN ? USB_HID_EP_NUM_IN : *current_endpoint);
-    descriptor_buf[HID_OUT_ENDPOINT_INDEX] = USB_HID_EP_NUM_OUT ? USB_HID_EP_NUM_OUT : *current_endpoint;
-    (*current_endpoint)++;
+    descriptor_buf[HID_IN_ENDPOINT_INDEX] =
+        0x80 | (USB_HID_EP_NUM_IN ? USB_HID_EP_NUM_IN : descriptor_counts->current_endpoint);
+    descriptor_counts->num_in_endpoints++;
+    descriptor_buf[HID_OUT_ENDPOINT_INDEX] =
+        USB_HID_EP_NUM_OUT ? USB_HID_EP_NUM_OUT : descriptor_counts->current_endpoint;
+    descriptor_counts->num_out_endpoints++;
+    descriptor_counts->current_endpoint++;
 
     return sizeof(usb_hid_descriptor_template);
 }

@@ -725,8 +725,8 @@ msgstr ""
 "het opstarten. Druk nogmaals om veilige modus te verlaten\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython kon het heap geheugen niet toewijzen.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython kon het heap geheugen niet toewijzen."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."

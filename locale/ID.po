@@ -4538,7 +4538,7 @@ msgstr ""
 #~ msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
 
 #~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr ""
+#~ msgstr "Berjalan di mode aman(safe mode)! Tidak menjalankan kode yang disimpan.\n"
 #~ "Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
 #~ msgid "'async for' or 'async with' outside async function"

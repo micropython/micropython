@@ -743,8 +743,8 @@ msgstr ""
 "de segurança.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "O CircuitPython não conseguiu alocar o heap.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "O CircuitPython não conseguiu alocar o heap."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -4818,7 +4818,7 @@ msgstr "zi deve estar na forma (n_section, 2)"
 #~ msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 
 #~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
+#~ msgstr "Rodando em modo seguro! O código salvo não está em execução.\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "O __init__() deve retornar Nenhum, não '%s'"

@@ -729,8 +729,8 @@ msgstr ""
 "boot. Press again to exit safe mode.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython was unable to allocate the heap.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython was unable to allocate the heap."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."

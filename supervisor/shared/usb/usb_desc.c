@@ -184,9 +184,16 @@ static void usb_build_configuration_descriptor(void) {
     configuration_descriptor[CONFIG_TOTAL_LENGTH_HI_INDEX] = (total_descriptor_length >> 8) & 0xFF;
 
     // Number interfaces and endpoints.
-    // Endpoint 0 is already used for USB control, so start with 1.
-    uint8_t current_interface = 0;
-    uint8_t current_endpoint = 1;
+    // Endpoint 0 is already used for USB control,
+    // so start with 1 for the current endpoint and for the number of in and out endpoints
+    // already in use.
+
+    descriptor_counts_t descriptor_counts = {
+        .current_interface = 0,
+        .current_endpoint = 1,
+        .num_in_endpoints = 1,
+        .num_out_endpoints = 1,
+    };
 
     uint8_t *descriptor_buf_remaining = configuration_descriptor + sizeof(configuration_descriptor_template);
 
@@ -194,12 +201,13 @@ static void usb_build_configuration_descriptor(void) {
     if (usb_cdc_console_enabled()) {
         // Concatenate and fix up the CDC REPL descriptor.
         descriptor_buf_remaining += usb_cdc_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string, true);
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string, true /*console*/);
+
     }
     if (usb_cdc_data_enabled()) {
         // Concatenate and fix up the CDC data descriptor.
         descriptor_buf_remaining += usb_cdc_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string, false);
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string, false /*console*/);
     }
     #endif
 
@@ -207,14 +215,14 @@ static void usb_build_configuration_descriptor(void) {
     if (storage_usb_enabled()) {
         // Concatenate and fix up the MSC descriptor.
         descriptor_buf_remaining += storage_usb_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
         descriptor_buf_remaining += usb_hid_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string,
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
             usb_hid_report_descriptor_length());
     }
     #endif
@@ -223,18 +231,19 @@ static void usb_build_configuration_descriptor(void) {
     if (usb_midi_enabled()) {
         // Concatenate and fix up the MIDI descriptor.
         descriptor_buf_remaining += usb_midi_add_descriptor(
-            descriptor_buf_remaining, &current_interface, &current_endpoint, &current_interface_string);
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif
 
     // Now we know how many interfaces have been used.
-    configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = current_interface;
+    configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = descriptor_counts.current_interface;
 
     // Did we run out of endpoints?
-    if (current_endpoint > USB_NUM_EP) {
+    if (descriptor_counts.current_endpoint > USB_NUM_ENDPOINT_PAIRS ||
+        descriptor_counts.num_in_endpoints > USB_NUM_IN_ENDPOINTS ||
+        descriptor_counts.num_out_endpoints > USB_NUM_OUT_ENDPOINTS) {
         reset_into_safe_mode(USB_TOO_MANY_ENDPOINTS);
     }
-
 }
 
 // str must not be on the heap.

@@ -725,8 +725,8 @@ msgstr ""
 "przycisk resetowania. Naciśnij ponownie, aby wyjść z trybu awaryjnego.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython nie mógł przydzielić sterty.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython nie mógł przydzielić sterty."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."

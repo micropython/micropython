@@ -21,7 +21,7 @@ endif
 INTERNAL_LIBM = 1
 
 # Number of USB endpoint pairs.
-USB_NUM_EP = 8
+USB_NUM_ENDPOINT_PAIRS = 8
 
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 

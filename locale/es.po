@@ -738,8 +738,8 @@ msgstr ""
 "durante el arranque. Presione nuevamente para salir del modo seguro.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython no puedo encontrar el montículo.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython no puedo encontrar el montículo."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -4777,7 +4777,7 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
 #~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr ""
+#~ msgstr "Ejecutando en modo seguro!  No ejecutando el código almacenado.\n"
 #~ "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
 #~ msgid "__init__() should return None, not '%s'"

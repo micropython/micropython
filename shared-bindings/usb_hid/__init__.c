@@ -37,12 +37,21 @@
 //|
 
 //| devices: Tuple[Device, ...]
-//| """Tuple of all active HID device interfaces."""
+//| """Tuple of all active HID device interfaces.
+//| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
+//| On boards where `usb_hid` is disabled by default, `devices` is an empty tuple.
+//| """
 //|
 
 //| def disable() -> None:
 //|     """Do not present any USB HID devices to the host computer.
-//|     Can be called in ``boot.py``, before USB is connected."""
+//|     Can be called in ``boot.py``, before USB is connected.
+//|     The HID composite device is normally enabled by default,
+//|     but on some boards with limited endpoints, including STM32F4,
+//|     it is disabled by default. You must turn off another USB device such
+//|     as `usb_cdc` or `storage` to free up endpoints for use by `usb_hid`.
+//|     """
+//|
 STATIC mp_obj_t usb_hid_disable(void) {
     if (!common_hal_usb_hid_disable()) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
@@ -59,6 +68,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|       If `devices` is empty, HID is disabled. The order of the ``Devices``
 //|       may matter to the host. For instance, for MacOS, put the mouse device
 //|       before any Gamepad or Digitizer HID device or else it will not work.
+//|
+//|     If you enable too many devices at once, you will run out of USB endpoints.
+//|     The number of available endpoints varies by microcontroller.
+//|     CircuitPython will go into safe mode after running boot.py to inform you if
+//|     not enough endpoints are available.
 //|     """
 //|     ...
 //|

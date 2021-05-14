@@ -10,7 +10,7 @@ MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
 INTERNAL_LIBM = 1
 
 # Number of USB endpoint pairs.
-USB_NUM_EP = 8
+USB_NUM_ENDPOINT_PAIRS = 8
 
 # All nRF ports have longints.
 LONGINT_IMPL = MPZ
