@@ -33,15 +33,18 @@
 
 // BOARD_FLASH_SIZE is defined in mpconfigport.h
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
-#define PAGE_SIZE_BYTES 256
-// #define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
+#define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
+
+extern uint8_t __vfs_start;
+extern uint8_t __vfs_end;
+extern uint8_t __flash_start;
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BYTES
-#define MICROPY_HW_FLASH_STORAGE_BYTES  (1408 * 1024)
+#define MICROPY_HW_FLASH_STORAGE_BYTES (((uint32_t)&__vfs_end) - ((uint32_t)&__vfs_start))
 #endif
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
-#define MICROPY_HW_FLASH_STORAGE_BASE (BOARD_FLASH_SIZE - MICROPY_HW_FLASH_STORAGE_BYTES)
+#define MICROPY_HW_FLASH_STORAGE_BASE (((uint32_t)&__vfs_start) - ((uint32_t)&__flash_start))
 #endif
 
 // static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= BOARD_FLASH_SIZE "MICROPY_HW_FLASH_STORAGE_BYTES too big");
@@ -54,31 +57,36 @@ typedef struct _mimxrt_flash_obj_t {
 } mimxrt_flash_obj_t;
 
 STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
-    .base = { &mimxrt_flash_type },
-    .flash_base = MICROPY_HW_FLASH_STORAGE_BASE,
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES,
+    .base = { &mimxrt_flash_type }
 };
+
+// flash_read_block(dest_addr, flash_src_addr_bytes, data_length)
+// reads length data from flash
+void flash_read_block(uint8_t *dest, uint8_t *src, uint32_t len) __attribute__((section(".ram_functions")));
+void flash_read_block(uint8_t *dest, uint8_t *src, uint32_t len) {
+    uint32_t primask = __get_PRIMASK();
+    __set_PRIMASK(1);
+    memcpy(dest, src, len);
+    __DSB();
+    __set_PRIMASK(primask);
+}
 
 // flash_erase_block(erase_addr_bytes)
 // erases the 4k sector starting at adddr
 
-bool flash_erase_block(uint32_t erase_addr)__attribute__((section(".ram_code"))) ;
-bool flash_erase_block(uint32_t erase_addr) {
-      	SCB_CleanInvalidateDCache();
-    	SCB_DisableDCache();
-		uint32_t primask = __get_PRIMASK();
-		__set_PRIMASK(1);
-        // disable execute
-        // MPU->RBAR = ARM_MPU_RBAR(11, 0x600a0000U);
-        // MPU->RASR = ARM_MPU_RASR(1, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_8MB);
-        // flexspi_nor_reset();
-        flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
-        // enable execute
-        // MPU->RBAR = ARM_MPU_RBAR(11, 0x600a0000U);
-        // MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_8MB);             
-		__set_PRIMASK(primask);
-	    SCB_EnableDCache();
-		return true;
+status_t flash_erase_block(uint32_t erase_addr) __attribute__((section(".ram_functions")));
+status_t flash_erase_block(uint32_t erase_addr) {
+    status_t status;
+    SCB_CleanInvalidateDCache();
+    SCB_DisableDCache();
+    uint32_t primask = __get_PRIMASK();
+    __set_PRIMASK(1);
+    __disable_irq();
+    status = flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
+    __enable_irq();
+    __set_PRIMASK(primask);
+    SCB_EnableDCache();
+    return status;
 }
 
 // flash_write_block(flash_dest_addr_bytes, data_source, length_bytes)
@@ -86,31 +94,26 @@ bool flash_erase_block(uint32_t erase_addr) {
 // length is a multiple of the page size = 256
 // the vfs driver takes care for erasing the sector if required
 
-bool flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_code"))) ;
-bool flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
-      	SCB_CleanInvalidateDCache();
-    	SCB_DisableDCache();
-		uint32_t primask = __get_PRIMASK();
-		__set_PRIMASK(1);
-        // disable execute
-        MPU->RBAR = ARM_MPU_RBAR(11, 0x600a0000U);
-        MPU->RASR = ARM_MPU_RASR(11, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_8MB);         
-        // flexspi_nor_reset();
-        // write sector in pages of 256 bytes
-        status_t status = kStatus_Success;
-        for (int i = 0; i < length; i += PAGE_SIZE_BYTES) {
-            status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr + i, (uint32_t*)(src + i), PAGE_SIZE_BYTES);	
-            if (status != kStatus_Success) {
-                status = false;
-                break;
-            }
+status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_functions")));
+status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
+    status_t status;
+    SCB_CleanInvalidateDCache();
+    SCB_DisableDCache();
+    uint32_t primask = __get_PRIMASK();
+    __set_PRIMASK(1);
+    // write sector in pages of 256 bytes
+    for (int i = 0; i < length; i += PAGE_SIZE_BYTES) {
+        __disable_irq();
+        status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr + i, (uint32_t *)(src + i), PAGE_SIZE_BYTES);
+        __enable_irq();
+        if (status != kStatus_Success) {
+            break;
         }
-        // enable execute
-        MPU->RBAR = ARM_MPU_RBAR(7, 0x600a0000U);
-        MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_8MB);  
-		__set_PRIMASK(primask);
-	    SCB_EnableDCache();
-		return status;
+    }
+    // enable execute
+    __set_PRIMASK(primask);
+    SCB_EnableDCache();
+    return status;
 }
 
 
@@ -118,11 +121,20 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
     // Check args.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
-    // Upload the custom flash confguration
-    FLEXSPI_UpdateLUT(FLEXSPI, 0, 
-        qspiflash_config.memConfig.lookupTable, 
+    // Upload the custom flash configuration
+    // This should be performed by the boot ROM but for some reason it is not.
+    FLEXSPI_UpdateLUT(FLEXSPI, 0,
+        qspiflash_config.memConfig.lookupTable,
         sizeof(qspiflash_config.memConfig.lookupTable) / sizeof(qspiflash_config.memConfig.lookupTable[0]));
-    // flexspi_nor_enable_quad_mode(FLEXSPI);
+
+    // Configure FLEXSPI IP FIFO access
+    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
+    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
+    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
+    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
+
+    mimxrt_flash_obj.flash_base = MICROPY_HW_FLASH_STORAGE_BASE;
+    mimxrt_flash_obj.flash_size = MICROPY_HW_FLASH_STORAGE_BYTES;
 
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&mimxrt_flash_obj);
@@ -134,10 +146,10 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
     if (n_args == 4) {
         mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
-                  n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
+            n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
     } else {
         mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, len = %d\n",
-                  n_args, mp_obj_get_int(args[1]), bufinfo.len);
+            n_args, mp_obj_get_int(args[1]), bufinfo.len);
     }
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     if (n_args == 4) {
@@ -149,27 +161,33 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_readblocks_obj, 3, 4, mimxrt_flash_readblocks);
 
 STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+    status_t status;
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    status_t status = kStatus_Success;
-
     if (n_args == 4) {
         mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
-                  n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
+            n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
     } else {
         mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, len = %d\n",
-                  n_args, mp_obj_get_int(args[1]), bufinfo.len);
+            n_args, mp_obj_get_int(args[1]), bufinfo.len);
     }
+
     if (n_args == 3) {
         status = flash_erase_block(self->flash_base + offset);
-        // TODO check return value
+
+        if (status != kStatus_Success) {
+            mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Flash erase command failed with %d"), status);
+        }
     } else {
         offset += mp_obj_get_int(args[3]);
     }
-    if (status == kStatus_Success) {
-        status = flash_write_block(self->flash_base + offset, bufinfo.buf, bufinfo.len);
+
+    status = flash_write_block(self->flash_base + offset, bufinfo.buf, bufinfo.len);
+
+    if (status != kStatus_Success) {
+        mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Flash block write command failed with %d"), status);
     }
 
     return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);

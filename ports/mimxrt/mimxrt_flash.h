@@ -27,9 +27,7 @@
 #define MICROPY_INCLUDED_MIMXRT_MODMIMXRT_H
 
 #include "py/obj.h"
-// Use just one of the includes for the definition of qspiflash_config
-// Which one does not matter.
-#include "boards/TEENSY40/teensy40_flexspi_nor_config.h"
+#include BOARD_FLASH_CONFIG_HEADER_H
 
 extern const mp_obj_type_t mimxrt_flash_type;
 extern flexspi_nor_config_t qspiflash_config;

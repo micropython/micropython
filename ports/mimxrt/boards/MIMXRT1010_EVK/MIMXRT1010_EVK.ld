@@ -1,0 +1,1 @@
+flash_size = 16M;

@@ -212,6 +212,7 @@ typedef struct _FlexSPIConfig
 } flexspi_mem_config_t;
 
 /*  */
+
 #define NOR_CMD_INDEX_READ CMD_INDEX_READ               //!< 0
 #define NOR_CMD_INDEX_READSTATUS CMD_INDEX_READSTATUS   //!< 1
 #define NOR_CMD_INDEX_WRITEENABLE CMD_INDEX_WRITEENABLE //!< 2
@@ -220,7 +221,7 @@ typedef struct _FlexSPIConfig
 #define NOR_CMD_INDEX_CHIPERASE 5                       //!< 5
 #define NOR_CMD_INDEX_DUMMY 6                           //!< 6
 #define NOR_CMD_INDEX_ERASEBLOCK 7                      //!< 7
-
+/*
 #define NOR_CMD_LUT_SEQ_IDX_READ CMD_LUT_SEQ_IDX_READ //!< 0  READ LUT sequence id in lookupTable stored in config block
 #define NOR_CMD_LUT_SEQ_IDX_READSTATUS \
     CMD_LUT_SEQ_IDX_READSTATUS //!< 1  Read Status LUT sequence id in lookupTable stored in config block
@@ -240,7 +241,7 @@ typedef struct _FlexSPIConfig
     14 //!< 14 Restore 0-4-4/0-8-8 mode sequence id in lookupTable stored in config block
 #define NOR_CMD_LUT_SEQ_IDX_EXIT_NOCMD \
     15 //!< 15 Exit 0-4-4/0-8-8 mode sequence id in lookupTable stored in config blobk
-
+*/
 /*
  *  Serial NOR configuration block
  */

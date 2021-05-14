@@ -25,7 +25,7 @@ include $(TOP)/py/py.mk
 GIT_SUBMODULES = lib/tinyusb lib/nxp_driver
 
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
-LD_FILES = boards/$(MCU_SERIES).ld $(TOP)/$(MCU_DIR)/gcc/$(MCU_SERIES)xxxxx_flexspi_nor.ld
+LD_FILES = boards/$(BOARD)/$(BOARD).ld boards/$(MCU_SERIES).ld linker/common.ld
 
 # mcu driver cause following warnings
 #CFLAGS += -Wno-error=float-equal -Wno-error=nested-externs
@@ -53,7 +53,7 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>'
 
-LDFLAGS = $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
+LDFLAGS = $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref --print-memory-usage
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization

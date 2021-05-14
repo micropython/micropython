@@ -68,7 +68,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
 
-    if (! initialized) {
+    if (!initialized) {
         trng_config_t trngConfig;
 
         TRNG_GetDefaultConfig(&trngConfig);

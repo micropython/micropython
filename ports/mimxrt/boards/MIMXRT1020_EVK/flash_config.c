@@ -32,10 +32,8 @@ const flexspi_nor_config_t qspiflash_config = {
             .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
             .csHoldTime       = 3u,
             .csSetupTime      = 3u,
-
             .busyOffset = 0u,     // Status bit 0 indicates busy.
             .busyBitPolarity = 0u,     // Busy when the bit is 1.
-
             .deviceModeCfgEnable = 1u,
             .deviceModeType = kDeviceConfigCmdType_QuadEnable,
             .deviceModeSeq = {
@@ -43,6 +41,7 @@ const flexspi_nor_config_t qspiflash_config = {
                 .seqNum = 1u,
             },
             .deviceModeArg = 0x40,
+            // Enable DDR mode, Wordaddassable, Safe configuration, Differential clock
             .deviceType = kFlexSpiDeviceType_SerialNOR,
             .sflashPadType = kSerialFlash_4Pads,
             .serialClkFreq = kFlexSpiSerialClk_100MHz,
@@ -50,16 +49,8 @@ const flexspi_nor_config_t qspiflash_config = {
             .lookupTable =
                 {
                     // 0 Read LUTs 0 -> 0
-                    // Quad Version
-                    // FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0xEB, RADDR_SDR, FLEXSPI_4PAD, 0x18),
-                    // FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 0x06, READ_SDR, FLEXSPI_4PAD, 0x04),
-                    // FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
-                    // FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
-
-                    // 0 Read LUTs 0 -> 0
-                    // Singe Version
-                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x0B, RADDR_SDR, FLEXSPI_1PAD, 0x18),
-                    FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_1PAD, 0x06, READ_SDR, FLEXSPI_1PAD, 0x04),
+                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0xEB, RADDR_SDR, FLEXSPI_4PAD, 0x18),
+                    FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 0x06, READ_SDR, FLEXSPI_4PAD, 0x04),
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
@@ -69,7 +60,7 @@ const flexspi_nor_config_t qspiflash_config = {
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
-                    // 2 Fast read quad mode - SDR 
+                    // 2 Fast read quad mode - SDR
                     FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x6B, RADDR_SDR, FLEXSPI_1PAD, 0x18),
                     FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 0x08, READ_SDR, FLEXSPI_4PAD, 0x04),
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
@@ -88,8 +79,7 @@ const flexspi_nor_config_t qspiflash_config = {
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
                     // 5 Erase Sector -> 5
-                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x20, RADDR_SDR, FLEXSPI_1PAD, 0x18),
-//                    FLEXSPI_LUT_SEQ(STOP, FLEXSPI_1PAD, 0, DUMMY_SDR, FLEXSPI_1PAD, 0x18),
+                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x20, RADDR_SDR, FLEXSPI_1PAD, 24),
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
@@ -107,14 +97,14 @@ const flexspi_nor_config_t qspiflash_config = {
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
                     // 8 Read ID
-                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x90, DUMMY_SDR, FLEXSPI_1PAD, 0x18),
-                    FLEXSPI_LUT_SEQ(READ_SDR, FLEXSPI_1PAD, 0x04, STOP, FLEXSPI_1PAD, 0),
+                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x90, DUMMY_SDR, FLEXSPI_1PAD, 24),
+                    FLEXSPI_LUT_SEQ(READ_SDR, FLEXSPI_1PAD, 0x00, 0, 0, 0),
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
                     // 9 Page Program - single mode -> 9
-                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x02, RADDR_SDR, FLEXSPI_1PAD, 0x18),
-                    FLEXSPI_LUT_SEQ(WRITE_SDR, FLEXSPI_1PAD, 0x04, STOP, FLEXSPI_1PAD, 0),
+                    FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x02, RADDR_SDR, FLEXSPI_1PAD, 24),
+                    FLEXSPI_LUT_SEQ(WRITE_SDR, FLEXSPI_1PAD, 0, 0, 0, 0),
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
 
@@ -135,11 +125,12 @@ const flexspi_nor_config_t qspiflash_config = {
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
                     FLEXSPI_LUT_SEQ(0, 0, 0, 0, 0, 0), // Filler
-                },        },
+                },
+        },
     .pageSize           = 256u,
     .sectorSize         = 4u * 1024u,
-    .ipcmdSerialClkFreq = kFlexSpiSerialClk_30MHz,
-    .blockSize = 0x00010000,
-    .isUniformBlockSize = false,
+    .blockSize          = 256u * 1024u,
+    .isUniformBlockSize = true,
+    .ipcmdSerialClkFreq = kFlexSpiSerialClk_100MHz,
 };
 #endif /* XIP_BOOT_HEADER_ENABLE */
