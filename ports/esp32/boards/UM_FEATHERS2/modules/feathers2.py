@@ -22,12 +22,12 @@ DOTSTAR_DATA = const(40)
 
 # SPI
 SPI_MOSI = const(35)
-SPI_MISO = const(36)
-SPI_CLK = const(37)
+SPI_MISO = const(37)
+SPI_CLK = const(36)
 
 # I2C
-I2C_SDA = const(38)
-I2C_SCL = const(33)
+I2C_SDA = const(8)
+I2C_SCL = const(9)
 
 # DAC
 DAC1 = const(17)
