@@ -10,6 +10,7 @@
 #define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1
 #define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PA07     1
 #define IGNORE_PIN_PA08     1
 #define IGNORE_PIN_PA09     1
 #define IGNORE_PIN_PA10     1
