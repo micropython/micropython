@@ -38,6 +38,8 @@ MEMORY
 SECTIONS
 {
   __flash_start = flash_start;
+  __vfs_start = ORIGIN(m_vfs);
+  __vfs_end = __vfs_start + LENGTH(m_vfs);  
   
   .flash_config :
   {
@@ -154,7 +156,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
   } > m_text
-
+  
   __etext = .;    /* define a global symbol at end of code */
   __DATA_ROM = .; /* Symbol is used by startup for data initialization */
 
@@ -163,7 +165,6 @@ SECTIONS
     . = ALIGN(4);
     __DATA_RAM = .;
     __data_start__ = .;      /* create a global symbol at data start */
-    *(.ram_code)
     *(m_usb_dma_init_data)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
@@ -172,7 +173,18 @@ SECTIONS
     __data_end__ = .;        /* define a global symbol at data end */
   } > m_dtcm
 
-  __NDATA_ROM = __DATA_ROM + (__data_end__ - __data_start__);
+  __RAM_FUNCTIONS_ROM = __DATA_ROM + (__data_end__ - __data_start__);
+  .ram_functions : AT(__RAM_FUNCTIONS_ROM)
+  {
+    . = ALIGN(4);
+    __ram_function_start__ = .;
+    *fsl_flexspi.o(.text*)
+    *(.ram_functions*)
+    . = ALIGN(4);
+    __ram_function_end__ = .;
+  } > m_itcm  
+
+  __NDATA_ROM = __DATA_ROM + (__ram_function_end__ - __data_start__);
   .ncache.init : AT(__NDATA_ROM)
   {
     __noncachedata_start__ = .;   /* create a global symbol at ncache data start */
@@ -191,18 +203,6 @@ SECTIONS
   __DATA_END = __NDATA_ROM + (__noncachedata_init_end__ - __noncachedata_start__);
   text_end = ORIGIN(m_text) + LENGTH(m_text);
   ASSERT(__DATA_END <= text_end, "region m_text overflowed with text and data")
-
-  .ram_functions :
-  {
-    . = ALIGN(4);
-    __ram_function_start__ = .;
-    *fsl_flexspi.o(.text*)
-    *(.ram_functions*)
-    __ram_function_end__ = .;
-  } > m_itcm
-
-    __vfs_start = ORIGIN(m_vfs);
-    __vfs_end = __vfs_start + LENGTH(m_vfs);
 
   /* Uninitialized data section */
   .bss :

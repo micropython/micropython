@@ -44,7 +44,7 @@ const flexspi_nor_config_t qspiflash_config = {
             // Enable DDR mode, Wordaddassable, Safe configuration, Differential clock
             .deviceType = kFlexSpiDeviceType_SerialNOR,
             .sflashPadType = kSerialFlash_4Pads,
-            .serialClkFreq = kFlexSpiSerialClk_100MHz,
+            .serialClkFreq = kFlexSpiSerialClk_30MHz,
             .sflashA1Size  = 8u * 1024u * 1024u,
             .lookupTable =
                 {
@@ -130,7 +130,7 @@ const flexspi_nor_config_t qspiflash_config = {
     .pageSize           = 256u,
     .sectorSize         = 4u * 1024u,
     .blockSize          = 256u * 1024u,
-    .isUniformBlockSize = true,
-    .ipcmdSerialClkFreq = kFlexSpiSerialClk_100MHz,
+    .isUniformBlockSize = false,
+    .ipcmdSerialClkFreq = kFlexSpiSerialClk_30MHz,
 };
 #endif /* XIP_BOOT_HEADER_ENABLE */
