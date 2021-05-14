@@ -50,6 +50,9 @@ void adc_initialize(){
     PM->APBCMASK.reg |= PM_APBCMASK_ADC;
     // Enable GCLK1 for ADC
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0_Val | GCLK_CLKCTRL_ID_ADC ; //GCLK_CLKCTRL_GEN_GCLK1
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc Enable \n" );
+    adc_sync();
+    ADC->CTRLA.bit.ENABLE = true; // Enable ADC
     // Wait for Synch
     while (GCLK->STATUS.bit.SYNCBUSY) {};
     // Reload calibration data
@@ -59,6 +62,7 @@ void adc_initialize(){
     // Wait for Synch
     while (GCLK->STATUS.bit.SYNCBUSY) {};
     // Write calibration data
+    mp_printf( MP_PYTHON_PRINTER, "Disable calibration setting %u, %u\n", linearity, bias );
     ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity); 
     // Wait for Synch
     while (GCLK->STATUS.bit.SYNCBUSY) {};
@@ -67,11 +71,12 @@ void adc_initialize(){
     ADC->REFCTRL.reg = ADC_REFCTRL_REFSEL_INTVCC1;
     // Capture only one sample to calculate average value
     mp_printf( MP_PYTHON_PRINTER, "DBG: AVGCTRL\n" );
-    ADC->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_1;
-    // clock prescaler @ 512 --> sample at 8Mhz / 512 = 31.25 KHz
+    ADC->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_256 | ADC_AVGCTRL_ADJRES(4); // ADC_AVGCTRL_SAMPLENUM_1; 
+    // DIV4 : clock prescaler @ 512 --> sample at 8Mhz / 512 = 31.25 KHz
+    // DIV16 : clock prescaler for imput impedance @ 12.4 KOhms (see https://blog.thea.codes/getting-the-most-out-of-the-samd21-adc/ )
     // 12 bits resolution
     mp_printf( MP_PYTHON_PRINTER, "DBG: Prescaler\n" );
-    ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV4 | ADC_CTRLB_RESSEL_12BIT;
+    ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV16 | ADC_CTRLB_RESSEL_12BIT; // was DIV4
     mp_printf( MP_PYTHON_PRINTER, "DBG: Gain setting\n" );
     // Minimal ADC input configuration
     // (GAIN_DIV2 minimal because of VCC reference, compare to Ground)
@@ -90,10 +95,11 @@ void adc_configure_pin() { // TODO: add parameters
 
 void adc_select_pin() { // TODO: add parameter
     // Connect the Pin to the ADC for reading
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin\n" );
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin\n" );
     adc_sync();
     ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND | ADC_INPUTCTRL_MUXPOS_PIN16;
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin done\n" );
+    //ADC->SAMPCTRL.reg = 0x02;
+    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin done\n" );
 }
 // --- ADC class implementation --------------------------------------------------------
 
@@ -159,9 +165,6 @@ STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
     // TODO: madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // TODO: uint32_t raw = adc1_get_raw(self->adc1_id);
     adc_select_pin();
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc Enable \n" );
-    adc_sync();
-    ADC->CTRLA.bit.ENABLE = true; // Enable ADC
     //mp_printf( MP_PYTHON_PRINTER, "DBG: adc soft trigger" );
     adc_sync();
     ADC->SWTRIG.bit.START = true; // start ADC with software trigger
