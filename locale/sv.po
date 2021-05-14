@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-10 11:33+0000\n"
+"PO-Revision-Date: 2021-05-14 18:25+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -865,7 +865,7 @@ msgstr "Data för stor för annonseringspaket"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
+msgstr "Deep sleep-pinnar måste använda en stigande flank med pulldown"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1701,7 +1701,7 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1798,7 +1798,7 @@ msgstr "Åtkomst nekad"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "Pinnen kan inte väcka från djup sömn"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
@@ -1821,7 +1821,7 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "Pinnavbrott används redan"
 
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2067,7 +2067,7 @@ msgstr "Storleken stöds inte"
 
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
-msgstr ""
+msgstr "Sömnminne inte tillgängligt"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2219,7 +2219,7 @@ msgstr "Totala data att skriva är större än %q"
 
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "Touchalarm är inte tillgängligt"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2251,7 +2251,7 @@ msgstr "UART skrivfel"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
-msgstr ""
+msgstr "USB upptaget"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
@@ -2263,7 +2263,7 @@ msgstr "USB-enheter anger för många gränssnittsnamn."
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
-msgstr ""
+msgstr "USB-fel"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -3563,7 +3563,7 @@ msgstr "namn inte definierat"
 
 #: py/asmthumb.c
 msgid "native method too big"
-msgstr ""
+msgstr "inbyggd metod för stor"
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3608,7 +3608,7 @@ msgstr "ingen standardpackare"
 
 #: extmod/modurandom.c
 msgid "no default seed"
-msgstr ""
+msgstr "inget standard seed"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -4183,7 +4183,7 @@ msgstr "för många index"
 
 #: py/asmthumb.c
 msgid "too many locals for native method"
-msgstr ""
+msgstr "för många locals för nativ metod"
 
 #: py/runtime.c
 #, c-format
