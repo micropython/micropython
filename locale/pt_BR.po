@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-12 21:48+0000\n"
+"PO-Revision-Date: 2021-05-14 18:25+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -876,7 +876,7 @@ msgstr "Os dados são grandes demais para o pacote de publicidade"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
+msgstr "Os pinos deep sleep devem usar uma borda ascendente com pulldown"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1718,7 +1718,7 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "Apenas a detecção de borda está disponível neste hardware"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1817,7 +1817,7 @@ msgstr "Permissão negada"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "O pinto não pode acordar do deep sleep"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
@@ -1840,7 +1840,7 @@ msgstr "O pino não tem recursos de ADC"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "A interrupção do pino já está em uso"
 
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2090,7 +2090,7 @@ msgstr "O tamanho não é suportado"
 
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
-msgstr ""
+msgstr "Sleep memory não está disponível"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2245,7 +2245,7 @@ msgstr "O total dos dados que serão escritos é maior do que %q"
 
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "Alarmes de toque não estão disponíveis"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
