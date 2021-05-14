@@ -20,8 +20,6 @@ CIRCUITPY_AUDIOCORE = 0
 CIRCUITPY_BUSIO = 0
 
 CIRCUITPY_PIXELBUF = 1
-CIRCUITPY_USB_MIDI = 1
-CIRCUITPY_TOUCHIO = 1
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
