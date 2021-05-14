@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-12 14:07+0000\n"
+"PO-Revision-Date: 2021-05-15 15:52+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -864,7 +864,7 @@ msgstr "Data es muy grande para el paquete de anuncio"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
+msgstr "Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1706,7 +1706,7 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "Este hardware solo tiene capacidad para detección de borde"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1803,7 +1803,7 @@ msgstr "Permiso denegado"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "El Pin no se puede despertar de un sueño profundo"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
@@ -1826,7 +1826,7 @@ msgstr "Pin no tiene capacidad ADC"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "Interrupción de Pin ya está en uso"
 
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2010,8 +2010,7 @@ msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
-"Ejecutando en modo seguro!  No ejecutando el código almacenado.\n"
-"Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
+"¡Ejecutando en modo seguro! No se esta ejecutando el código almacenado.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2075,7 +2074,7 @@ msgstr "Sin capacidades para el tamaño"
 
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
-msgstr ""
+msgstr "Memoria de sueño no disponible"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2137,12 +2136,16 @@ msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
+"El montículo de CircuitPython está corrupto porque la pila era muy pequeña.\n"
+"Aumente el tamaño de pila si sabe como. De lo contrario:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
 msgstr ""
+"El módulo de `microcontroller` se usó para un arranque en modo seguro. "
+"Presione reset para salir del modo seguro."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2154,6 +2157,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
+"La corriente eléctrica de la microcontroladora bajó. Asegúrate que tu fuente "
+"de poder provee\n"
+"suficiente corriente para todo el circuito y presiones reset (luego de "
+"expulsar CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2221,7 +2228,7 @@ msgstr "La cantidad total de datos es mas grande que %q"
 
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "Alarmas táctiles no disponibles"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2464,12 +2471,14 @@ msgstr "Escrituras no admitidas en Characteristic"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr ""
+msgstr "Estás en modo seguro por la razón:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
+"Has presionado el botón de reset durante el arranque. Presiones de nuevo "
+"para salir del modo seguro."
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
