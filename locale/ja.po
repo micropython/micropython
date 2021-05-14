@@ -727,8 +727,8 @@ msgstr ""
 "度押すとセーフモードを終了します。\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPythonはヒープを確保できませんでした\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPythonはヒープを確保できませんでした"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -1980,8 +1980,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Rowの各要素は digitalio.DigitalInOut でなければなりません"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr "セーフモードで実行中！ "
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "セーフモードで実行中！ 保存されたコードは実行していません。\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"

@@ -176,7 +176,13 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|     """Enabled presenting ``CIRCUITPY`` as a USB mass storage device.
 //|     By default, the device is enabled and ``CIRCUITPY`` is visible,
 //|     so you do not normally need to call this function.
-//|     Can be called in ``boot.py``, before USB is connected."""
+//|     Can be called in ``boot.py``, before USB is connected.
+//|
+//|     If you enable too many devices at once, you will run out of USB endpoints.
+//|     The number of available endpoints varies by microcontroller.
+//|     CircuitPython will go into safe mode after running boot.py to inform you if
+//|     not enough endpoints are available.
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t storage_enable_usb_drive(void) {

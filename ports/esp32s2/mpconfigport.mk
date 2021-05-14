@@ -27,11 +27,6 @@ CIRCUITPY_ROTARYIO = 1
 CIRCUITPY_NVM = 1
 CIRCUITPY_PS2IO ?= 1
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
-# We don't have enough endpoints to include MIDI.
-CIRCUITPY_USB_MIDI ?= 0
-CIRCUITPY_USB_HID ?= 1
-# We have borrowed the VENDOR nomenclature from tinyusb. VENDOR AKA WEBUSB
-CIRCUITPY_USB_VENDOR ?= 0
 CIRCUITPY_WIFI = 1
 CIRCUITPY_WATCHDOG ?= 1
 
@@ -39,4 +34,14 @@ CIRCUITPY_ESPIDF = 1
 
 CIRCUITPY_MODULE ?= none
 
-USB_NUM_EP = 5
+# From the ESP32-S2 datasheet:
+#
+# Endpoint number 0 always present (bi-directional, consisting of EP0 IN and EP0 OUT)
+# Six additional endpoints (endpoint numbers 1 to 6), configurable as IN or OUT
+# Maximum of five IN endpoints concurrently active at any time (including EP0 IN)
+#
+# Due to the limited number of endpoints, some USB devices will be off by default.
+# For instance MIDI is available, but the device is turned off. It can be turned on
+# only if something else is turned off, such as HID.
+USB_NUM_ENDPOINT_PAIRS = 7
+USB_NUM_IN_ENDPOINTS = 5
