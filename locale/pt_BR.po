@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-14 18:25+0000\n"
+"PO-Revision-Date: 2021-05-15 15:52+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2139,12 +2139,17 @@ msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
+"A área de alocação dinâmica de variáveis (heap) do CircuitPython foi "
+"corrompido pois a pilha era muito pequena.\n"
+"Aumente o tamanho da pilha se souber como. Senão:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
 msgstr ""
+"O módulo `microcontrolador` foi utilizado para iniciar em modo seguro. "
+"Pressione reset para encerrar do modo de segurança."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2156,6 +2161,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
+"O alimentação do micro controlador diminuiu. Certifique-se de que a sua "
+"fonte de alimentação fornece\n"
+"corrente suficiente para todo o circuito e pressione reset (depois de ejetar "
+"o CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2468,12 +2477,14 @@ msgstr "A escrita não é compatível na Característica"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr ""
+msgstr "Você está no modo de segurança pois:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
+"Você pressionou o botão reset durante a inicialização. Pressione-o novamente "
+"para sair do modo de segurança."
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
