@@ -1,6 +1,6 @@
 /* Memory configuration */
 flash_start         = 0x60000000;
-flash_end           = ((flash_start) + (flash_size));
+flash_end           = DEFINED(reserved_size) ? ((flash_start) + (flash_size - reserved_size)) : ((flash_start) + (flash_size));
 flash_config_start  = 0x60000400;
 flash_config_size   = 0x00000C00;
 ivt_start           = 0x60001000;
