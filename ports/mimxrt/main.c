@@ -62,6 +62,18 @@ int main(void) {
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
 
+        // Execute user scripts.
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+        }
+
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
                 if (pyexec_raw_repl() != 0) {
@@ -74,6 +86,7 @@ int main(void) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         gc_sweep_all();
         mp_deinit();

@@ -47,9 +47,6 @@ extern uint8_t __flash_start;
 #define MICROPY_HW_FLASH_STORAGE_BASE (((uint32_t)&__vfs_start) - ((uint32_t)&__flash_start))
 #endif
 
-// static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= BOARD_FLASH_SIZE "MICROPY_HW_FLASH_STORAGE_BYTES too big");
-// static_assert(MICROPY_HW_FLASH_STORAGE_BASE + MICROPY_HW_FLASH_STORAGE_BYTES <= BOARD_FLASH_SIZE, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
-
 typedef struct _mimxrt_flash_obj_t {
     mp_obj_base_t base;
     uint32_t flash_base;
@@ -60,17 +57,6 @@ STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
     .base = { &mimxrt_flash_type }
 };
 
-// flash_read_block(dest_addr, flash_src_addr_bytes, data_length)
-// reads length data from flash
-void flash_read_block(uint8_t *dest, uint8_t *src, uint32_t len) __attribute__((section(".ram_functions")));
-void flash_read_block(uint8_t *dest, uint8_t *src, uint32_t len) {
-    uint32_t primask = __get_PRIMASK();
-    __set_PRIMASK(1);
-    memcpy(dest, src, len);
-    __DSB();
-    __set_PRIMASK(primask);
-}
-
 // flash_erase_block(erase_addr_bytes)
 // erases the 4k sector starting at adddr
 
@@ -79,12 +65,9 @@ status_t flash_erase_block(uint32_t erase_addr) {
     status_t status;
     SCB_CleanInvalidateDCache();
     SCB_DisableDCache();
-    uint32_t primask = __get_PRIMASK();
-    __set_PRIMASK(1);
     __disable_irq();
     status = flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
     __enable_irq();
-    __set_PRIMASK(primask);
     SCB_EnableDCache();
     return status;
 }
@@ -99,8 +82,6 @@ status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t leng
     status_t status;
     SCB_CleanInvalidateDCache();
     SCB_DisableDCache();
-    uint32_t primask = __get_PRIMASK();
-    __set_PRIMASK(1);
     // write sector in pages of 256 bytes
     for (int i = 0; i < length; i += PAGE_SIZE_BYTES) {
         __disable_irq();
@@ -111,8 +92,6 @@ status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t leng
         }
     }
     // enable execute
-    __set_PRIMASK(primask);
-    SCB_EnableDCache();
     return status;
 }
 
@@ -135,7 +114,6 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     mimxrt_flash_obj.flash_base = MICROPY_HW_FLASH_STORAGE_BASE;
     mimxrt_flash_obj.flash_size = MICROPY_HW_FLASH_STORAGE_BYTES;
-
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&mimxrt_flash_obj);
 }
@@ -144,13 +122,13 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
-    if (n_args == 4) {
-        mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
-            n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
-    } else {
-        mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, len = %d\n",
-            n_args, mp_obj_get_int(args[1]), bufinfo.len);
-    }
+    // if (n_args == 4) {
+    //     mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
+    //         n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
+    // } else {
+    //     mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, len = %d\n",
+    //         n_args, mp_obj_get_int(args[1]), bufinfo.len);
+    // }
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     if (n_args == 4) {
         offset += mp_obj_get_int(args[3]);
@@ -166,13 +144,13 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    if (n_args == 4) {
-        mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
-            n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
-    } else {
-        mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, len = %d\n",
-            n_args, mp_obj_get_int(args[1]), bufinfo.len);
-    }
+    // if (n_args == 4) {
+    //     mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
+    //         n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
+    // } else {
+    //     mp_printf(MP_PYTHON_PRINTER, "writeblocks: nargs = %d, block = %d, len = %d\n",
+    //         n_args, mp_obj_get_int(args[1]), bufinfo.len);
+    // }
 
     if (n_args == 3) {
         status = flash_erase_block(self->flash_base + offset);
@@ -213,9 +191,8 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
             return MP_OBJ_NEW_SMALL_INT(SECTOR_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in) * SECTOR_SIZE_BYTES;
-            mp_printf(MP_PYTHON_PRINTER, "erase sector: address=%x\n", self->flash_base + offset);
+            // mp_printf(MP_PYTHON_PRINTER, "erase sector: address=%x\n", self->flash_base + offset);
             status = flash_erase_block(self->flash_base + offset);
-            mp_printf(MP_PYTHON_PRINTER, "Status = %d\n", status);
             return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
         }
         default:
