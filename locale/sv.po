@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-14 18:25+0000\n"
+"PO-Revision-Date: 2021-05-15 15:52+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2117,12 +2117,16 @@ msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
+"CircuitPython-heapen blev korrupt eftersom stacken är för liten.\n"
+"Öka stackstorleken om du vet hur, eller om inte:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
 msgstr ""
+"Modulen `microcontroller` användes för att starta upp i felsäkert läge. "
+"Tryck på reset för att avsluta felsäkert läget."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2134,6 +2138,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
+"Mikrokontrollerns matningsspänning sjönk. Se till att strömförsörjningen "
+"ger\n"
+"tillräckligt med ström för hela kretsen och tryck på reset (efter utmatning "
+"av CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2439,12 +2447,14 @@ msgstr "Skrivning stöds inte på karaktäristik"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr ""
+msgstr "Du är i felsäkert läge eftersom:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
+"Du tryckte på resetknappen under uppstarten. Tryck igen för att avsluta "
+"felsäkert läge."
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
