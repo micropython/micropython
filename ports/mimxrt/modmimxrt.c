@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "mimxrt_flash.h"
+#include "mimxrt.h"
 
 STATIC const mp_rom_map_elem_t mimxrt_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_mimxrt) },

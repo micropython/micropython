@@ -29,8 +29,8 @@
 
 #include "py/runtime.h"
 #include "extmod/vfs.h"
-#include "mimxrt_flash.h"
-#include "hal/flash.h"
+#include "mimxrt.h"
+#include "hal/flexspi_nor_flash.h"
 
 extern flexspi_nor_config_t qspiflash_config;
 

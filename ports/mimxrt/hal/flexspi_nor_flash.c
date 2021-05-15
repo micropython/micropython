@@ -26,7 +26,7 @@
  */
 #include <assert.h>
 #include "fsl_common.h"
-#include "flash.h"
+#include "flexspi_nor_flash.h"
 
 /*******************************************************************************
 * Definitions

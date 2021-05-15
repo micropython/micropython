@@ -105,7 +105,7 @@ SRC_C = \
 	modmimxrt.c \
 	mimxrt_flash.c \
 	$(BOARD_DIR)/flash_config.c \
-	hal/flash.c \
+	hal/flexspi_nor_flash.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(BOARD_DIR)/pins.c \
