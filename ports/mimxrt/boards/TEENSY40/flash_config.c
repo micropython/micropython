@@ -33,8 +33,8 @@ const flexspi_nor_config_t qspiflash_config = {
             .csHoldTime       = 3u,
             .csSetupTime      = 3u,
 
-            .busyOffset = 0u,     // Status bit 0 indicates busy.
-            .busyBitPolarity = 0u,     // Busy when the bit is 1.
+            .busyOffset = FLASH_BUSY_STATUS_OFFSET,     // Status bit 0 indicates busy.
+            .busyBitPolarity = FLASH_BUSY_STATUS_POL,   // Busy when the bit is 1.
 
             .deviceModeCfgEnable = 1u,
             .deviceModeType = kDeviceConfigCmdType_QuadEnable,

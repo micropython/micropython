@@ -28,6 +28,11 @@
 #define _FLASH_H_
 
 #include "fsl_flexspi.h"
+#include "mpconfigport.h"
+#include BOARD_FLASH_CONFIG_HEADER_H
+
+// Defined in boards flash_config.c
+extern flexspi_nor_config_t qspiflash_config;
 
 status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
 status_t flexspi_nor_init(void);

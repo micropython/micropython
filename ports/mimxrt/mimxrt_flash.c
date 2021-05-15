@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020-2021 Damien P. George
+ * Copyright (c) 2021 Philipp Ebensberger
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +32,13 @@
 #include "mimxrt_flash.h"
 #include "hal/flash.h"
 
+extern flexspi_nor_config_t qspiflash_config;
+
 // BOARD_FLASH_SIZE is defined in mpconfigport.h
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
 #define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
 
+// Linker symbols
 extern uint8_t __vfs_start;
 extern uint8_t __vfs_end;
 extern uint8_t __flash_start;
@@ -59,7 +63,6 @@ STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
 
 // flash_erase_block(erase_addr_bytes)
 // erases the 4k sector starting at adddr
-
 status_t flash_erase_block(uint32_t erase_addr) __attribute__((section(".ram_functions")));
 status_t flash_erase_block(uint32_t erase_addr) {
     status_t status;
@@ -76,13 +79,12 @@ status_t flash_erase_block(uint32_t erase_addr) {
 // writes length_byte data to the destination address
 // length is a multiple of the page size = 256
 // the vfs driver takes care for erasing the sector if required
-
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_functions")));
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
     status_t status;
     SCB_CleanInvalidateDCache();
     SCB_DisableDCache();
-    // write sector in pages of 256 bytes
+    // write sector in page size chunks
     for (int i = 0; i < length; i += PAGE_SIZE_BYTES) {
         __disable_irq();
         status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr + i, (uint32_t *)(src + i), PAGE_SIZE_BYTES);
@@ -91,7 +93,7 @@ status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t leng
             break;
         }
     }
-    // enable execute
+    SCB_EnableDCache();
     return status;
 }
 
@@ -106,18 +108,22 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
         qspiflash_config.memConfig.lookupTable,
         sizeof(qspiflash_config.memConfig.lookupTable) / sizeof(qspiflash_config.memConfig.lookupTable[0]));
 
-    // Configure FLEXSPI IP FIFO access
+    // Configure FLEXSPI IP FIFO access.
     FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
     FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
     FLEXSPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
     FLEXSPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
 
+    // Update information based on linker symbols.
     mimxrt_flash_obj.flash_base = MICROPY_HW_FLASH_STORAGE_BASE;
     mimxrt_flash_obj.flash_size = MICROPY_HW_FLASH_STORAGE_BYTES;
+
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&mimxrt_flash_obj);
 }
 
+// readblocks(block_num, buf, [offset])
+// read size of buffer number of bytes from block (with offset) into buffer
 STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t bufinfo;
@@ -129,7 +135,9 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     //     mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, len = %d\n",
     //         n_args, mp_obj_get_int(args[1]), bufinfo.len);
     // }
+    // Calculate read offset from block number.
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
+    // Add optional offset
     if (n_args == 4) {
         offset += mp_obj_get_int(args[3]);
     }
@@ -138,10 +146,13 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_readblocks_obj, 3, 4, mimxrt_flash_readblocks);
 
+// writeblocks(block_num, buf, [offset])
+// Erase block based on block_num and write buffer size number of bytes from buffer into block. If additional offset
+// parameter is provided only write operation at block start + offset will be performed.
+// This requires a prior erase operation of the block!
 STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     status_t status;
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     // if (n_args == 4) {
@@ -152,6 +163,9 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     //         n_args, mp_obj_get_int(args[1]), bufinfo.len);
     // }
 
+    // Calculate read offset from block number.
+    uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
+
     if (n_args == 3) {
         status = flash_erase_block(self->flash_base + offset);
 
@@ -159,6 +173,7 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
             mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Flash erase command failed with %d"), status);
         }
     } else {
+        // Add optional offset
         offset += mp_obj_get_int(args[3]);
     }
 
@@ -168,10 +183,11 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Flash block write command failed with %d"), status);
     }
 
-    return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
+    return mp_obj_new_bool(status != kStatus_Success);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_writeblocks_obj, 3, 4, mimxrt_flash_writeblocks);
 
+// ioctl(op, arg)
 STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
@@ -191,7 +207,6 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
             return MP_OBJ_NEW_SMALL_INT(SECTOR_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in) * SECTOR_SIZE_BYTES;
-            // mp_printf(MP_PYTHON_PRINTER, "erase sector: address=%x\n", self->flash_base + offset);
             status = flash_erase_block(self->flash_base + offset);
             return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
         }

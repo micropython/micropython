@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2021 Philipp Ebensberger
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,28 +28,10 @@
 #include "fsl_common.h"
 #include "flash.h"
 
-
 /*******************************************************************************
 * Definitions
 ******************************************************************************/
 
-#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL 0
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUSREG 1
-#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD 2
-#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE 3
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUS_XPI 4
-#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR 5
-#define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG 6
-#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD 7
-#define NOR_CMD_LUT_SEQ_IDX_READID 8
-#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM 9
-#define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
-#define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11
-#define NOR_CMD_LUT_SEQ_IDX_EXITQPI 12
-
-#define FLASH_BUSY_STATUS_POL 1
-#define FLASH_BUSY_STATUS_OFFSET 0
-#define FLASH_WRITE_ENABLE_OFFSET (1)
 
 /*******************************************************************************
 * Prototypes
@@ -113,15 +96,15 @@ status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base) {
         }
         if (FLASH_BUSY_STATUS_POL) {
             if (readValue & (1U << FLASH_BUSY_STATUS_OFFSET)) {
-                isBusy = true;
-            } else {
                 isBusy = false;
+            } else {
+                isBusy = true;
             }
         } else {
             if (readValue & (1U << FLASH_BUSY_STATUS_OFFSET)) {
-                isBusy = false;
-            } else {
                 isBusy = true;
+            } else {
+                isBusy = false;
             }
         }
     } while (isBusy);
@@ -164,8 +147,6 @@ status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) {
 status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) __attribute__((section(".ram_functions"))) ;
 status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     status_t status;
-    uint32_t readValue;
-    bool write_enabled = false;
     flexspi_transfer_t flashXfer;
 
     /* Write enable */
@@ -174,29 +155,6 @@ status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     if (status != kStatus_Success) {
         return status;
     }
-
-    /* Check if write enable flag has been set */
-    flashXfer.deviceAddress = address;
-    flashXfer.port = kFLEXSPI_PortA1;
-    flashXfer.cmdType = kFLEXSPI_Read;
-    flashXfer.SeqNumber = 1;
-    flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_READSTATUSREG;
-    flashXfer.data = &readValue;
-    flashXfer.dataSize = 1;
-
-    do {
-        status = FLEXSPI_TransferBlocking(base, &flashXfer);
-
-        if (status != kStatus_Success) {
-            return status;
-        }
-
-        if (readValue & (1U << FLASH_WRITE_ENABLE_OFFSET)) {
-            write_enabled = true;
-        } else {
-            write_enabled = false;
-        }
-    } while(!write_enabled);
 
     /* Erase sector */
     flashXfer.deviceAddress = address;
@@ -220,8 +178,6 @@ status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) __attribute__((section(".ram_functions"))) ;
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) {
     status_t status;
-    uint32_t readValue;
-    bool write_enabled = false;
     flexspi_transfer_t flashXfer;
 
     /* Write enable */
@@ -230,29 +186,6 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
     if (status != kStatus_Success) {
         return status;
     }
-
-    /* Check if write enable flag has been set */
-    flashXfer.deviceAddress = dstAddr;
-    flashXfer.port = kFLEXSPI_PortA1;
-    flashXfer.cmdType = kFLEXSPI_Read;
-    flashXfer.SeqNumber = 1;
-    flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_READSTATUSREG;
-    flashXfer.data = &readValue;
-    flashXfer.dataSize = 1;
-
-    do {
-        status = FLEXSPI_TransferBlocking(base, &flashXfer);
-
-        if (status != kStatus_Success) {
-            return status;
-        }
-
-        if (readValue & (1U << FLASH_WRITE_ENABLE_OFFSET)) {
-            write_enabled = true;
-        } else {
-            write_enabled = false;
-        }
-    } while(!write_enabled);
 
     /* Prepare page program command */
     flashXfer.deviceAddress = dstAddr;
