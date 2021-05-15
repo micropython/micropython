@@ -183,7 +183,7 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Flash block write command failed with %d"), status);
     }
 
-    return mp_obj_new_bool(status != kStatus_Success);
+    return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_writeblocks_obj, 3, 4, mimxrt_flash_writeblocks);
 
