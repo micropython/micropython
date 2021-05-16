@@ -192,11 +192,9 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     status_t status;
-    uint8_t vendor_id = 0;
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:
-            flexspi_nor_get_vendor_id(FLEXSPI, &vendor_id);
-            return MP_OBJ_NEW_SMALL_INT(vendor_id);
+            return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_DEINIT:
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_SYNC:
