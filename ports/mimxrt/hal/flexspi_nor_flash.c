@@ -1,7 +1,16 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * Based largely on examples provided by NXP:
+ *
+ * Copyright (c) 2016, Freescale Semiconductor, Inc.
+ * Copyright 2016-2020 NXP
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Port-specific extensions and adaptions:
  *
  * The MIT License (MIT)
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * Copyright (c) 2021 Damien P. George
  * Copyright (c) 2021 Philipp Ebensberger

@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef _FLASH_H_
-#define _FLASH_H_
+#ifndef _FLEXSPI_NOR_FLASH_H_
+#define _FLEXSPI_NOR_FLASH_H_
 
 #include "fsl_flexspi.h"
 #include "mpconfigport.h"
