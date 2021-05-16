@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2021 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
-#define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+#ifndef MICROPY_INCLUDED_MIMXRT_TICKS_H
+#define MICROPY_INCLUDED_MIMXRT_TICKS_H
 
-#include <stdint.h>
-#include "ticks.h"
+void ticks_init(void);
+uint32_t ticks_us32(void);
+uint64_t ticks_us64(void);
+uint32_t ticks_ms32(void);
+void ticks_delay_us64(uint64_t us);
 
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
-#define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
-
-void mp_hal_set_interrupt_char(int c);
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return ticks_ms32();
-}
-
-static inline mp_uint_t mp_hal_ticks_us(void) {
-    return ticks_us32();
-}
-
-static inline void mp_hal_delay_ms(mp_uint_t ms) {
-    uint64_t us = (uint64_t)ms * 1000;
-    ticks_delay_us64(us);
-}
-
-static inline void mp_hal_delay_us(mp_uint_t us) {
-    ticks_delay_us64(us);
-}
-
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
-}
-
-#endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+#endif // MICROPY_INCLUDED_MIMXRT_TICKS_H

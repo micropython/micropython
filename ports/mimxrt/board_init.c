@@ -53,9 +53,6 @@ void board_init(void) {
     // Enable IOCON clock
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
-    // 1ms tick timer
-    SysTick_Config(SystemCoreClock / 1000);
-
     // ------------- USB0 ------------- //
 
     // Clock
@@ -83,10 +80,6 @@ void board_init(void) {
     // USB1
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
-}
-
-void SysTick_Handler(void) {
-    systick_ms++;
 }
 
 void USB_OTG1_IRQHandler(void) {
