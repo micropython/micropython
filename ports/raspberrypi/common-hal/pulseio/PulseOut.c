@@ -50,9 +50,9 @@ void pulse_finish(void) {
     if (pulse_index >= pulse_length) {
         return;
     }
-    add_alarm_in_us( pulse_buffer[pulse_index], pulseout_interrupt_handler, NULL, false);
+    add_alarm_in_us(pulse_buffer[pulse_index], pulseout_interrupt_handler, NULL, false);
     if (pulse_index % 2 == 0) {
-      common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
+        common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
     }
 }
 
@@ -76,7 +76,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     current_duty_cycle = common_hal_pwmio_pwmout_get_duty_cycle(pwmout_obj);
     self->pin = carrier->pin->number;
     self->slice = carrier->slice;
-    pwm_set_enabled (pwmout_obj->slice,false);
+    pwm_set_enabled(pwmout_obj->slice,false);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -96,14 +96,14 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     pulse_index = 0;
     pulse_length = length;
 
-    add_alarm_in_us( pulses[0], pulseout_interrupt_handler, NULL, false);
+    add_alarm_in_us(pulses[0], pulseout_interrupt_handler, NULL, false);
     common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
-    pwm_set_enabled (pwmout_obj->slice,true);
+    pwm_set_enabled(pwmout_obj->slice,true);
 
-    while(pulse_index < length) {
+    while (pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
         RUN_BACKGROUND_TASKS;
     }
-    pwm_set_enabled (pwmout_obj->slice,false);
+    pwm_set_enabled(pwmout_obj->slice,false);
 }
