@@ -113,7 +113,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     }
 
     // Handle configuration for GPIO
-    if ((mode == PIN_MODE_IN) || (mode == PIN_MODE_OUT)) {
+    if ((mode == PIN_MODE_IN) || (mode == PIN_MODE_OUT) || (mode == PIN_MODE_OPEN_DRAIN)) {
         gpio_pin_config_t pin_config;
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
@@ -143,7 +143,12 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 
         pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);  // Slow Slew Rate
         pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);  // medium(100MHz)
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
+
+        if (mode == PIN_MODE_OPEN_DRAIN) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
+        } else {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
+        }
 
         if (pull == PIN_PULL_DISABLED) {
             pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
@@ -283,6 +288,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),      MP_ROM_INT(PIN_MODE_IN) },
     { MP_ROM_QSTR(MP_QSTR_OUT),     MP_ROM_INT(PIN_MODE_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(PIN_MODE_OPEN_DRAIN) },
 
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(PIN_PULL_UP_100K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP_47K), MP_ROM_INT(PIN_PULL_UP_47K) },

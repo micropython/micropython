@@ -35,6 +35,7 @@
 
 #define IS_GPIO_MODE(MODE) (((MODE) == PIN_MODE_IN) || \
     ((MODE) == PIN_MODE_OUT) || \
+    ((MODE) == PIN_MODE_OPEN_DRAIN) || \
     ((MODE) == PIN_MODE_ALT))
 
 #define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == PIN_DRIVE_OFF) || \
@@ -51,6 +52,7 @@
 enum {
     PIN_MODE_IN = 0,
     PIN_MODE_OUT,
+    PIN_MODE_OPEN_DRAIN,
     PIN_MODE_ALT,
 };
 
