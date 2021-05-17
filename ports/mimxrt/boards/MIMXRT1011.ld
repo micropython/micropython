@@ -1,7 +1,7 @@
-/* 24kiB stack. */
-__stack_size__ = 0x4000;
-_estack = __StackTop;
-_sstack = __StackLimit;
+/* 20kiB stack. */
+__stack_size__ = 0x5000;
+ _estack = __StackTop;
+ _sstack = __StackLimit;
 
 /* Do not use the traditional C heap. */
 __heap_size__ = 0;
