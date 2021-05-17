@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "src/common/pico_time/include/pico/time.h"
 
 #include "py/obj.h"
 
@@ -36,9 +37,10 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t pin;
+    uint8_t slice;
 } pulseio_pulseout_obj_t;
 
 void pulseout_reset(void);
-void pulseout_interrupt_handler(uint8_t index);
+int64_t pulseout_interrupt_handler(alarm_id_t id, void *user_data);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H

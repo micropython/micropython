@@ -27,31 +27,38 @@
 #include "common-hal/pulseio/PulseOut.h"
 
 #include <stdint.h>
-
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-
 #include "mpconfigport.h"
-#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
+#include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
+#include "src/common/pico_time/include/pico/time.h"
 
 static uint8_t refcount = 0;
-
-
 static uint16_t *pulse_buffer = NULL;
 static volatile uint16_t pulse_index = 0;
 static uint16_t pulse_length;
-static volatile uint32_t current_compare = 0;
+pwmio_pwmout_obj_t *pwmout_obj;
+volatile uint16_t current_duty_cycle;
 
 void pulse_finish(void) {
     pulse_index++;
-
-    // Always turn it off.
+    // Turn pwm pin off by settting duty cyle to 1.
+    common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,1);
     if (pulse_index >= pulse_length) {
         return;
     }
-    current_compare = (current_compare + pulse_buffer[pulse_index] * 3 / 4) & 0xffff;
+    add_alarm_in_us( pulse_buffer[pulse_index], pulseout_interrupt_handler, NULL, false);
+    if (pulse_index % 2 == 0) {
+      common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
+    }
+}
+
+int64_t pulseout_interrupt_handler(alarm_id_t id, void *user_data) {
+    pulse_finish();
+    return 0;
 }
 
 void pulseout_reset() {
@@ -63,12 +70,13 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
-    mp_raise_NotImplementedError(translate("Unsupported operation"));
 
     refcount++;
-
+    pwmout_obj = (pwmio_pwmout_obj_t *)carrier;
+    current_duty_cycle = common_hal_pwmio_pwmout_get_duty_cycle(pwmout_obj);
     self->pin = carrier->pin->number;
-
+    self->slice = carrier->slice;
+    pwm_set_enabled (pwmout_obj->slice,false);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -79,8 +87,6 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     if (common_hal_pulseio_pulseout_deinited(self)) {
         return;
     }
-
-
     refcount--;
     self->pin = NO_PIN;
 }
@@ -90,6 +96,14 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     pulse_index = 0;
     pulse_length = length;
 
-    current_compare = pulses[0] * 3 / 4;
+    add_alarm_in_us( pulses[0], pulseout_interrupt_handler, NULL, false);
+    common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
+    pwm_set_enabled (pwmout_obj->slice,true);
 
+    while(pulse_index < length) {
+        // Do other things while we wait. The interrupts will handle sending the
+        // signal.
+        RUN_BACKGROUND_TASKS;
+    }
+    pwm_set_enabled (pwmout_obj->slice,false);
 }
