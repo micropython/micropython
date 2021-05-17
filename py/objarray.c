@@ -201,11 +201,7 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
     mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
-    self->base.type = &mp_type_memoryview;
-    self->typecode = typecode;
-    self->memview_offset = 0;
-    self->len = nitems;
-    self->items = items;
+    mp_obj_memoryview_init(self, typecode, 0, nitems, items);
     return MP_OBJ_FROM_PTR(self);
 }
 
