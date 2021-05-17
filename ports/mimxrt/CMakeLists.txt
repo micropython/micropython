@@ -13,13 +13,7 @@ get_filename_component(MICROPY_DIR "../.." ABSOLUTE)
 if (MIMXRT_SDK_PATH_OVERRIDE)
     set(MIMXRT_SDK_PATH ${MIMXRT_SDK_PATH_OVERRIDE})
 else()
-    set(MIMXRT_SDK_PATH ../../lib/nxp_driver/sdk/devices)
-endif()
-
-if (MIMXRT_CMSIS_PATH_OVERRIDE)
-    set(MIMXRT_CMSIS_PATH ${MIMXRT_CMSIS_PATH_OVERRIDE})
-else()
-    set(MIMXRT_CMSIS_PATH ../../lib/nxp_driver/sdk/CMSIS)
+    set(MIMXRT_SDK_PATH ${MICROPY_DIR}/lib/nxp_driver/sdk/devices)
 endif()
 
 # Set the location of this port's directory.
@@ -44,7 +38,7 @@ include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
-include(${MICROPY_DIR}/extmod/extmod.cmake)
+#include(${MICROPY_DIR}/extmod/extmod.cmake)
 
 # Define the top-level project
 project(${MICROPY_TARGET})
@@ -70,16 +64,35 @@ set(MICROPY_SOURCE_DRIVERS
 
 )
 
+set(TINY_USB_SOURCE
+    ${MICROPY_DIR}/lib/tinyusb/src/tusb.c
+    ${MICROPY_DIR}/lib/tinyusb/src/common/tusb_fifo.c
+    ${MICROPY_DIR}/lib/tinyusb/src/device/usbd.c
+    ${MICROPY_DIR}/lib/tinyusb/src/device/usbd_control.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/msc/msc_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/cdc/cdc_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/dfu/dfu_rt_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/hid/hid_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/midi/midi_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/usbtmc/usbtmc_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/class/vendor/vendor_device.c
+    ${MICROPY_DIR}/lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c
+)
+
 set(MICROPY_SOURCE_PORT
+    board_init.c
     led.c
-    pin.c
     machine_led.c
     main.c
     modmachine.c
-    board_init.c
     modutime.c
     mphalport.c
+    pin.c
     tusb_port.c
+    ${MICROPY_BOARD_DIR}/flash_config.c
+    ${MICROPY_BOARD_DIR}/pins.c
+    ${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/startup_${MCU_SERIES}.S
+    ${MICROPY_DIR}/lib/utils/gchelper_m3.s
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/system_${MCU_SERIES}.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/xip/fsl_flexspi_nor_boot.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/project_template/clock_config.c
@@ -88,9 +101,13 @@ set(MICROPY_SOURCE_PORT
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/drivers/fsl_common.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/drivers/fsl_lpuart.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/drivers/fsl_flexram.c
+    ${TINY_USB_SOURCE}
 )
 
 set(MICROPY_SOURCE_QSTR
+    ${MICROPY_SOURCE_PY}
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
     ${PROJECT_SOURCE_DIR}/machine_led.c
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/modmachine.c
@@ -114,13 +131,19 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PORT}
 )
 
+target_link_libraries(${MICROPY_TARGET} usermod)
+
 target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
     ${MICROPY_INC_USERMOD}
     ${MICROPY_BOARD_DIR}
-    ${MIMXRT_CMSIS_PATH}/Include
+    ${MICROPY_DIR}/lib/cmsis/inc
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/drivers
+    ${MIMXRT_SDK_PATH}/${MCU_SERIES}/project_template
+    ${MICROPY_DIR}/lib/tinyusb/src
+    ${MICROPY_DIR}/lib/tinyusb/hw
+    ${MICROPY_DIR}/lib/tinyusb/hw/bsp/teensy_40
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}"
 )
@@ -142,6 +165,30 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -ffunction-sections
 )
 
+target_link_options(${MICROPY_TARGET} PRIVATE
+    -T${MICROPY_PORT_DIR}/boards/${MCU_SERIES}.ld
+    -T${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/${MCU_SERIES}xxxxx_flexspi_nor.ld
+    -mtune=cortex-m7
+    -mcpu=cortex-m7
+    -mfloat-abi=hard
+    -mfpu=fpv5-d16
+    -Wall
+    -Werror
+    -Wdouble-promotion
+    -Wfloat-conversion
+    -std=c99
+    -nostdlib
+    -mthumb
+    -Wno-error=unused-parameter
+    -fdata-sections
+    -ffunction-sections
+    -lc
+    -lm
+    -lnosys
+    -Wl,-Map=${PROJECT_NAME}.map,--cref
+    -Wl,--gc-sections
+)
+
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
     CPU_${MCU_SERIES}
     CPU_${MCU_VARIANT}
@@ -151,14 +198,6 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     XIP_EXTERNAL_FLASH=1
     XIP_BOOT_HEADER_ENABLE=1
     CFG_TUSB_MCU=OPT_MCU_MIMXRT10XX
-)
-
-set_target_properties(${MICROPY_TARGET}
-    PROPERTIES LINK_DEPENDS ${MICROPY_PORT_DIR}/boards/${MCU_SERIES}.ld
-)
-
-set_target_properties(${MICROPY_TARGET}
-    PROPERTIES LINK_DEPENDS ${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/${MCU_SERIES}xxxxx_flexspi_nor.ld
 )
 
 # Include the main MicroPython cmake rules.
