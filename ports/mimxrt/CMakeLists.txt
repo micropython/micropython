@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-set( CMAKE_VERBOSE_MAKEFILE on )
+set( CMAKE_VERBOSE_MAKEFILE off )
 enable_language(C ASM)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -111,12 +111,9 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_led.c
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/modmachine.c
+    ${PROJECT_SOURCE_DIR}/mphalport.c
     ${PROJECT_SOURCE_DIR}/pin.c
     ${MICROPY_BOARD_DIR}/pins.c
-)
-
-set(MIMXRT_SDK_COMPONENTS
-
 )
 
 # Define mpy-cross flags and frozen manifest
