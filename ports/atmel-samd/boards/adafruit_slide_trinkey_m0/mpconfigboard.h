@@ -1,7 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Slide Trinkey M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_HW_NEOPIXEL (&pin_PA06)
+#define MICROPY_HW_NEOPIXEL (&pin_PA04)
 
 #define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
@@ -9,10 +9,9 @@
 
 #define IGNORE_PIN_PA00     1
 #define IGNORE_PIN_PA01     1
-#define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1
-#define IGNORE_PIN_PA04     1
 #define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PA06     1
 #define IGNORE_PIN_PA08     1
 #define IGNORE_PIN_PA09     1
 #define IGNORE_PIN_PA10     1

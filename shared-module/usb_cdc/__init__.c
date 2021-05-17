@@ -173,37 +173,39 @@ size_t usb_cdc_descriptor_length(void) {
     return sizeof(usb_cdc_descriptor_template);
 }
 
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string, bool console) {
+size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console) {
     memcpy(descriptor_buf, usb_cdc_descriptor_template, sizeof(usb_cdc_descriptor_template));
 
     // Store comm interface number.
-    descriptor_buf[CDC_FIRST_INTERFACE_INDEX] = *current_interface;
-    descriptor_buf[CDC_COMM_INTERFACE_INDEX] = *current_interface;
-    descriptor_buf[CDC_UNION_MASTER_INTERFACE_INDEX] = *current_interface;
-    (*current_interface)++;
+    descriptor_buf[CDC_FIRST_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_buf[CDC_COMM_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_buf[CDC_UNION_MASTER_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_counts->current_interface++;
 
     // Now store data interface number.
-    descriptor_buf[CDC_CALL_MANAGEMENT_DATA_INTERFACE_INDEX] = *current_interface;
-    descriptor_buf[CDC_UNION_SLAVE_INTERFACE_INDEX] = *current_interface;
-    descriptor_buf[CDC_DATA_INTERFACE_INDEX] = *current_interface;
-    (*current_interface)++;
+    descriptor_buf[CDC_CALL_MANAGEMENT_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_buf[CDC_UNION_SLAVE_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_buf[CDC_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_counts->current_interface++;
 
     descriptor_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = 0x80 | (
         console
-        ? (USB_CDC_EP_NUM_NOTIFICATION ? USB_CDC_EP_NUM_NOTIFICATION : *current_endpoint)
-        : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : *current_endpoint));
-    (*current_endpoint)++;
-
-    descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
-        console
-        ? (USB_CDC_EP_NUM_DATA_OUT ? USB_CDC_EP_NUM_DATA_OUT : *current_endpoint)
-        : (USB_CDC2_EP_NUM_DATA_OUT ? USB_CDC2_EP_NUM_DATA_OUT : *current_endpoint);
+        ? (USB_CDC_EP_NUM_NOTIFICATION ? USB_CDC_EP_NUM_NOTIFICATION : descriptor_counts->current_endpoint)
+        : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : descriptor_counts->current_endpoint));
+    descriptor_counts->num_in_endpoints++;
+    descriptor_counts->current_endpoint++;
 
     descriptor_buf[CDC_DATA_IN_ENDPOINT_INDEX] = 0x80 | (
         console
-        ? (USB_CDC_EP_NUM_DATA_IN ? USB_CDC_EP_NUM_DATA_IN : *current_endpoint)
-        : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : *current_endpoint));
-    (*current_endpoint)++;
+        ? (USB_CDC_EP_NUM_DATA_IN ? USB_CDC_EP_NUM_DATA_IN : descriptor_counts->current_endpoint)
+        : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : descriptor_counts->current_endpoint));
+    descriptor_counts->num_in_endpoints++;
+    descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
+        console
+        ? (USB_CDC_EP_NUM_DATA_OUT ? USB_CDC_EP_NUM_DATA_OUT : descriptor_counts->current_endpoint)
+        : (USB_CDC2_EP_NUM_DATA_OUT ? USB_CDC2_EP_NUM_DATA_OUT : descriptor_counts->current_endpoint);
+    descriptor_counts->num_out_endpoints++;
+    descriptor_counts->current_endpoint++;
 
     usb_add_interface_string(*current_interface_string,
         console ? console_cdc_comm_interface_name : data_cdc_comm_interface_name);

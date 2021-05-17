@@ -724,16 +724,8 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython de héxīn chūxiàn gùzhàng. Āiyā!\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn xiàle "
-"chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython wúfǎ fēnpèi duī.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython wúfǎ fēnpèi duī."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -861,6 +853,10 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1658,10 +1654,6 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr "bù kě shè zhì"
@@ -1697,6 +1689,10 @@ msgstr ""
 "Jǐn zhīchí Windows géshì, zhīchí wèi yāsuō de BMP: Gěi dìng de biāo tóu "
 "dàxiǎo wèi %d"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1712,6 +1708,7 @@ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mi
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 
@@ -1788,6 +1785,10 @@ msgstr "shǐ yòng zhōng de wài shè"
 msgid "Permission denied"
 msgstr "Quánxiàn bèi jùjué"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
 msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
@@ -1806,6 +1807,11 @@ msgstr "yǐn jiǎo jì shù tài dà"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin méiyǒu ADC nénglì"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
+
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
@@ -1818,10 +1824,6 @@ msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
-msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1986,8 +1988,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr "Zài ānquán móshì xià yùnxíng! "
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2049,6 +2051,10 @@ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
 
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
+
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Qiēpiàn hé zhí bùtóng chángdù."
@@ -2107,18 +2113,14 @@ msgstr "Wēndù dòu qǔ chāoshí"
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
-"Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě tuìchū "
-"ānquán móshì.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2128,11 +2130,8 @@ msgstr "Rgb_pins de chángdù bìxū wèi 6,12,18,24 huò 30"
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
-"diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
-"zhīhòu).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2195,6 +2194,10 @@ msgstr "Xiǎnshì tài duō"
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
+
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2434,8 +2437,13 @@ msgid "Writes not supported on Characteristic"
 msgstr "Tèzhēng bù zhīchí xiě rù"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4392,6 +4400,48 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn "
+#~ "xiàle chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "Zài ānquán móshì xià yùnxíng! "
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
+#~ "Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě "
+#~ "tuìchū ānquán móshì.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
+#~ "diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
+#~ "zhīhòu).\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
+
 #~ msgid "USB Busy"
 #~ msgstr "USB máng"
 
@@ -4736,9 +4786,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"

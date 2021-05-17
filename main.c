@@ -261,18 +261,20 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
         serial_write_compressed(translate("Auto-reload is off.\n"));
     }
     if (safe_mode != NO_SAFE_MODE) {
-        serial_write_compressed(translate("Running in safe mode! "));
-        serial_write_compressed(translate("Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
     }
 }
 
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
+    bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
-    serial_write("\n");
-    print_code_py_status_message(safe_mode);
-    print_safe_mode_message(safe_mode);
-    serial_write("\n");
+    if (serial_connected_at_start) {
+        serial_write("\r\n");
+        print_code_py_status_message(safe_mode);
+        print_safe_mode_message(safe_mode);
+        printed_safe_mode_message = true;
+    }
     #endif
 
     pyexec_result_t result;
@@ -388,8 +390,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 print_code_py_status_message(safe_mode);
             }
 
-            print_safe_mode_message(safe_mode);
-            serial_write("\n");
+            if (!printed_safe_mode_message) {
+                print_safe_mode_message(safe_mode);
+                printed_safe_mode_message = true;
+            }
+            serial_write("\r\n");
             serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
             printed_press_any_key = true;
         }
@@ -526,7 +531,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_set_defaults();
 #endif
 
-    // TODO(tannewt): Re-add support for flashing boot error output.
     if (ok_to_run) {
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;

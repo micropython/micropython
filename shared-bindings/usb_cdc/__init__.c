@@ -82,7 +82,13 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_cdc_disable_obj, usb_cdc_disable);
 //|     :param console bool: Enable or disable the `console` USB serial device.
 //|       True to enable; False to disable. Enabled by default.
 //|     :param data bool: Enable or disable the `data` USB serial device.
-//|       True to enable; False to disable. *Disabled* by default."""
+//|       True to enable; False to disable. *Disabled* by default.
+//|
+//|     If you enable too many devices at once, you will run out of USB endpoints.
+//|     The number of available endpoints varies by microcontroller.
+//|     CircuitPython will go into safe mode after running boot.py to inform you if
+//|     not enough endpoints are available.
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t usb_cdc_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

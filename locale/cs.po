@@ -713,13 +713,7 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
+msgid "CircuitPython was unable to allocate the heap."
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -847,6 +841,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
+msgstr ""
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1637,10 +1635,6 @@ msgstr ""
 msgid "Not playing"
 msgstr ""
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr ""
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr ""
@@ -1673,6 +1667,10 @@ msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1686,6 +1684,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1761,6 +1760,10 @@ msgstr ""
 msgid "Permission denied"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
 msgstr ""
@@ -1779,6 +1782,11 @@ msgstr ""
 msgid "Pin does not have ADC capabilities"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
+
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
@@ -1790,10 +1798,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
-msgstr ""
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -1953,7 +1957,7 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr ""
 
 #: main.c
-msgid "Running in safe mode! "
+msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
@@ -2016,6 +2020,10 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
+
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -2074,13 +2082,13 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -2091,7 +2099,7 @@ msgstr ""
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2154,6 +2162,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
+msgstr ""
+
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
 msgstr ""
 
 #: py/obj.c
@@ -2385,7 +2397,12 @@ msgid "Writes not supported on Characteristic"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
