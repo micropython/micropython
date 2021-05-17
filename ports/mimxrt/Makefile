@@ -3,6 +3,9 @@ BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 BOARD_LOADER ?= teensy_loader_cli
 
+PORT ?= /dev/ttyACM0
+MPREMOTE ?= mpremote
+
 CROSS_COMPILE ?= arm-none-eabi-
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
