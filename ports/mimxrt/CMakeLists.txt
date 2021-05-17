@@ -123,7 +123,17 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PORT}
 )
 
-#target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+target_compile_options(micropy_extmod_btree PRIVATE
+    -mtune=cortex-m7
+    -mcpu=cortex-m7
+    -mfloat-abi=hard
+    -mfpu=fpv5-d16
+    -mthumb
+    -Os
+    -DNDEBUG
+)
+
 target_link_libraries(${MICROPY_TARGET} usermod)
 target_link_libraries(${MICROPY_TARGET} -lgcc)
 
