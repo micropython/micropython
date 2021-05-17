@@ -2,6 +2,8 @@ BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 
+PORT ?= /dev/ttyACM0
+
 CROSS_COMPILE ?= arm-none-eabi-
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
