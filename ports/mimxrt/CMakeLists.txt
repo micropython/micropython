@@ -125,7 +125,7 @@ set(MICROPY_CROSS_FLAGS -march=armv7-m)
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_compile_options(micropy_extmod_btree PRIVATE
     -march=armv7-m
-    -mcpu=cortex-m7
+    -mtune=cortex-m7
     -mfloat-abi=hard
     -mfpu=fpv5-d16
     -mthumb
