@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.12)
 
 set( CMAKE_VERBOSE_MAKEFILE OFF)
 enable_language(C ASM)
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
 
 # Set main target and component locations
@@ -53,6 +50,7 @@ set(MICROPY_QSTRDEFS_PORT
 set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/mp-readline/readline.c
     ${MICROPY_DIR}/lib/libc/string0.c
+    ${MICROPY_DIR}/lib/utils/gchelper_m3.s
     ${MICROPY_DIR}/lib/utils/gchelper_native.c
     ${MICROPY_DIR}/lib/utils/printf.c
     ${MICROPY_DIR}/lib/utils/pyexec.c
@@ -79,19 +77,18 @@ set(TINY_USB_SOURCE
 )
 
 set(MICROPY_SOURCE_PORT
-    ${MICROPY_PORT_DIR}/board_init.c
-    ${MICROPY_PORT_DIR}/led.c
-    ${MICROPY_PORT_DIR}/machine_led.c
-    ${MICROPY_PORT_DIR}/main.c
-    ${MICROPY_PORT_DIR}/modmachine.c
-    ${MICROPY_PORT_DIR}/modutime.c
-    ${MICROPY_PORT_DIR}/mphalport.c
-    ${MICROPY_PORT_DIR}/pin.c
-    ${MICROPY_PORT_DIR}/tusb_port.c
+    board_init.c
+    led.c
+    machine_led.c
+    main.c
+    modmachine.c
+    modutime.c
+    mphalport.c
+    pin.c
+    tusb_port.c
     ${MICROPY_BOARD_DIR}/flash_config.c
     ${MICROPY_BOARD_DIR}/pins.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/startup_${MCU_SERIES}.S
-    ${MICROPY_DIR}/lib/utils/gchelper_m3.s
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/system_${MCU_SERIES}.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/xip/fsl_flexspi_nor_boot.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/project_template/clock_config.c
@@ -108,24 +105,26 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_USERMOD}
-    ${MICROPY_SOURCE_PORT}
+    ${MICROPY_PORT_DIR}/board_init.c
+    ${MICROPY_PORT_DIR}/led.c
+    ${MICROPY_PORT_DIR}/machine_led.c
+    ${MICROPY_PORT_DIR}/main.c
+    ${MICROPY_PORT_DIR}/modmachine.c
+    ${MICROPY_PORT_DIR}/modutime.c
+    ${MICROPY_PORT_DIR}/mphalport.c
+    ${MICROPY_PORT_DIR}/pin.c
+    ${MICROPY_PORT_DIR}/tusb_port.c
+    ${MICROPY_BOARD_DIR}/flash_config.c
+    ${MICROPY_BOARD_DIR}/pins.c
 )
 
 # Define mpy-cross flags and frozen manifest
-set(MICROPY_CROSS_FLAGS -march=armv7m)
+set(MICROPY_CROSS_FLAGS -march=armv7-m)
 #set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
-
-target_sources(${MICROPY_TARGET} PRIVATE
-    ${MICROPY_SOURCE_PY}
-    ${MICROPY_SOURCE_EXTMOD}
-    ${MICROPY_SOURCE_LIB}
-    ${MICROPY_SOURCE_DRIVERS}
-    ${MICROPY_SOURCE_PORT}
-)
 
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_compile_options(micropy_extmod_btree PRIVATE
-    -mtune=cortex-m7
+    -march=armv7-m
     -mcpu=cortex-m7
     -mfloat-abi=hard
     -mfpu=fpv5-d16
@@ -136,6 +135,14 @@ target_compile_options(micropy_extmod_btree PRIVATE
 
 target_link_libraries(${MICROPY_TARGET} usermod)
 target_link_libraries(${MICROPY_TARGET} -lgcc)
+
+target_sources(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_SOURCE_PY}
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_LIB}
+    ${MICROPY_SOURCE_DRIVERS}
+    ${MICROPY_SOURCE_PORT}
+)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
