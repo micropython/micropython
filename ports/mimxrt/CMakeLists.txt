@@ -127,7 +127,7 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -mtune=cortex-m7
-    -marm=cortex-m7
+    -mcpu=cortex-m7
     -mfloat-abi=hard
     -mfpu=fpv5-d16
     -Wall
