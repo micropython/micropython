@@ -37,7 +37,7 @@
 // so define these before #include'ing that file.
 #define USB_CDC_EP_NUM_NOTIFICATION (3)
 #define USB_CDC_EP_NUM_DATA_OUT (2)
-#define USB_CDC_EP_NUM_DATA_IN (2)
+#define USB_CDC_EP_NUM_DATA_IN (1)
 #define USB_MSC_EP_NUM_OUT (5)
 #define USB_MSC_EP_NUM_IN (4)
 
