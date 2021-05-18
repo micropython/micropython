@@ -37,7 +37,6 @@ typedef struct {
 mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
 mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void);
 
-// Check for the wake up alarm from pretend deep sleep.
 bool alarm_time_timealarm_woke_this_cycle(void);
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 void alarm_time_timealarm_reset(void);
