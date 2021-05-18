@@ -2,6 +2,7 @@
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA18)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_PA15)
 
 #define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)

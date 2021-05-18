@@ -31,6 +31,12 @@
 #include "supervisor/shared/tick.h"
 #include "py/obj.h"
 
+
+#ifdef CIRCUITPY_STATUS_LED_POWER
+#include "shared-bindings/digitalio/DigitalInOut.h"
+static digitalio_digitalinout_obj_t _status_power;
+#endif
+
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
     #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -115,6 +121,11 @@ void status_led_init() {
         return;
     }
     status_led_init_in_progress = true;
+
+    #ifdef CIRCUITPY_STATUS_LED_POWER
+    common_hal_digitalio_digitalinout_construct(&_status_power, CIRCUITPY_STATUS_LED_POWER);
+    common_hal_digitalio_digitalinout_switch_to_output(&_status_power, true, DRIVE_MODE_PUSH_PULL);
+    #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
     common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
@@ -211,6 +222,10 @@ void status_led_deinit() {
 
     #elif defined(MICROPY_HW_LED_STATUS)
     common_hal_digitalio_digitalinout_deinit(&single_color_led);
+    #endif
+
+    #ifdef CIRCUITPY_STATUS_LED_POWER
+    common_hal_digitalio_digitalinout_deinit(&_status_power);
     #endif
 }
 

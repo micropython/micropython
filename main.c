@@ -338,6 +338,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_STATUS_LED
     uint32_t color;
     uint8_t blink_count;
+    bool led_active = false;
     #if CIRCUITPY_ALARM
     if (result.return_code & PYEXEC_DEEP_SLEEP) {
         color = BLACK;
@@ -360,9 +361,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     size_t single_blink_time = (OFF_ON_RATIO + 1) * BLINK_TIME_MS;
     size_t blink_time = single_blink_time * blink_count;
     size_t total_time = blink_time + LED_SLEEP_TIME_MS;
-    if (blink_count > 0) {
-        status_led_init();
-    }
     #endif
 
     #if CIRCUITPY_ALARM
@@ -432,7 +430,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 common_hal_alarm_pretending_deep_sleep();
             } else if (connecting_delay_ticks < 0) {
                 // Entering deep sleep (may be fake or real.)
-                new_status_color(BLACK);
                 board_deinit();
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
@@ -469,15 +466,28 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             if (tick_diff < blink_time) {
                 uint32_t blink_diff = tick_diff % (single_blink_time);
                 if (blink_diff >= BLINK_TIME_MS) {
-                    new_status_color(BLACK);
+                    if (led_active) {
+                        new_status_color(BLACK);
+                        status_led_deinit();
+                        led_active = false;
+                    }
                     time_to_next_change = single_blink_time - blink_diff;
                 } else {
-                    new_status_color(color);
+                    if (!led_active) {
+                        status_led_init();
+                        new_status_color(color);
+                        led_active = true;
+                    }
                     time_to_next_change = BLINK_TIME_MS - blink_diff;
                 }
             } else if (tick_diff > total_time) {
                 pattern_start = supervisor_ticks_ms32();
             } else {
+                if (led_active) {
+                    new_status_color(BLACK);
+                    status_led_deinit();
+                    led_active = false;
+                }
                 time_to_next_change = total_time - tick_diff;
             }
             #if CIRCUITPY_DISPLAYIO
@@ -495,8 +505,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     }
     // Done waiting, start the board back up.
     #if CIRCUITPY_STATUS_LED
-    new_status_color(BLACK);
-    status_led_deinit();
+    if (led_active) {
+        new_status_color(BLACK);
+        status_led_deinit();
+    }
     #endif
 
     #if CIRCUITPY_ALARM
