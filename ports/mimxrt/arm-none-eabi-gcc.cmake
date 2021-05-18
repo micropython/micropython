@@ -18,6 +18,9 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Set initial compiler flags
+set(CMAKE_C_FLAGS_INIT "-mcpu=cortex-m7 -mtune=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -mthumb")
+
 get_filename_component(ARM_TOOLCHAIN_DIR ${BINUTILS_PATH} DIRECTORY)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 

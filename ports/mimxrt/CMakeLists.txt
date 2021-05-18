@@ -123,15 +123,6 @@ set(MICROPY_CROSS_FLAGS -march=armv7-m)
 #set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
-target_compile_options(micropy_extmod_btree PRIVATE
-    -march=armv7-m
-    -mtune=cortex-m7
-    -mfloat-abi=hard
-    -mfpu=fpv5-d16
-    -mthumb
-    -Os
-    -DNDEBUG
-)
 
 target_link_libraries(${MICROPY_TARGET} usermod)
 target_link_libraries(${MICROPY_TARGET} -lgcc)
@@ -160,17 +151,12 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 )
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
-    -mtune=cortex-m7
-    -mcpu=cortex-m7
-    -mfloat-abi=hard
-    -mfpu=fpv5-d16
     -Wall
     -Werror
     -Wdouble-promotion
     -Wfloat-conversion
     -std=c99
     -nostdlib
-    -mthumb
     -Wno-error=unused-parameter
     -fdata-sections
     -ffunction-sections
@@ -179,8 +165,8 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
 target_link_options(${MICROPY_TARGET} PRIVATE
     -T${MICROPY_PORT_DIR}/boards/${MCU_SERIES}.ld
     -T${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/${MCU_SERIES}xxxxx_flexspi_nor.ld
-    -mtune=cortex-m7
     -mcpu=cortex-m7
+    -mtune=cortex-m7
     -mfloat-abi=hard
     -mfpu=fpv5-d16
     -Wall
