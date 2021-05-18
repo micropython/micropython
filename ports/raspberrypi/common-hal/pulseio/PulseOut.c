@@ -45,7 +45,7 @@ volatile uint16_t current_duty_cycle;
 
 void pulse_finish(void) {
     pulse_index++;
-    // Turn pwm pin off by settting duty cyle to 1.
+    // Turn pwm pin off by setting duty cyle to 1.
     common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,1);
     if (pulse_index >= pulse_length) {
         return;
