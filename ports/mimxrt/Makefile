@@ -109,6 +109,8 @@ SRC_C = \
 	$(BOARD_DIR)/flash_config.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_timer.c \
+	$(MCU_DIR)/drivers/fsl_pit.c \
 	modutime.c \
 	modmachine.c \
 	mphalport.c \
@@ -129,6 +131,7 @@ SRC_S = lib/utils/gchelper_m3.s \
 SRC_QSTR += \
 	machine_led.c \
 	machine_pin.c \
+	machine_timer.c \
 	modutime.c \
 	modmachine.c \
 	pin.c \

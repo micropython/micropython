@@ -35,6 +35,7 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
+#include "machine_timer.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -70,6 +71,7 @@ int main(void) {
         }
 
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        machine_timer_deinit_all(); // Stop all active timers.
         gc_sweep_all();
         mp_deinit();
     }

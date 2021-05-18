@@ -47,6 +47,8 @@
 #define MICROPY_ENABLE_SOURCE_LINE          (1)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
+#define MICROPY_ENABLE_SCHEDULER                (1)
+#define MICROPY_SCHEDULER_DEPTH                 (8)
 
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_STR_COUNT       (0)
