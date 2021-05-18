@@ -32,11 +32,17 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp32/rom/rtc.h"
-#include "esp32/clk.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
 #include "driver/touch_pad.h"
+
+#if CONFIG_IDF_TARGET_ESP32
+#include "esp32/rom/rtc.h"
+#include "esp32/clk.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#include "esp32s2/clk.h"
+#endif
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -71,7 +77,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
             mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         }
+        #if CONFIG_IDF_TARGET_ESP32
         esp_pm_config_esp32_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32S2
+        esp_pm_config_esp32s2_t pm;
+        #endif
         pm.max_freq_mhz = freq;
         pm.min_freq_mhz = freq;
         pm.light_sleep_enable = false;
@@ -260,7 +270,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
+    #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_hw_i2c_type) },

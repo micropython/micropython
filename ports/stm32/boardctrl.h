@@ -44,20 +44,12 @@
 #define MICROPY_BOARD_TOP_SOFT_RESET_LOOP boardctrl_top_soft_reset_loop
 #endif
 
-#ifndef MICROPY_BOARD_BEFORE_BOOT_PY
-#define MICROPY_BOARD_BEFORE_BOOT_PY boardctrl_before_boot_py
+#ifndef MICROPY_BOARD_RUN_BOOT_PY
+#define MICROPY_BOARD_RUN_BOOT_PY boardctrl_run_boot_py
 #endif
 
-#ifndef MICROPY_BOARD_AFTER_BOOT_PY
-#define MICROPY_BOARD_AFTER_BOOT_PY boardctrl_after_boot_py
-#endif
-
-#ifndef MICROPY_BOARD_BEFORE_MAIN_PY
-#define MICROPY_BOARD_BEFORE_MAIN_PY boardctrl_before_main_py
-#endif
-
-#ifndef MICROPY_BOARD_AFTER_MAIN_PY
-#define MICROPY_BOARD_AFTER_MAIN_PY boardctrl_after_main_py
+#ifndef MICROPY_BOARD_RUN_MAIN_PY
+#define MICROPY_BOARD_RUN_MAIN_PY boardctrl_run_main_py
 #endif
 
 #ifndef MICROPY_BOARD_START_SOFT_RESET
@@ -68,20 +60,20 @@
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
 #endif
 
+enum {
+    BOARDCTRL_CONTINUE,
+    BOARDCTRL_GOTO_SOFT_RESET_EXIT,
+};
+
 typedef struct _boardctrl_state_t {
     uint8_t reset_mode;
-    bool run_boot_py;
-    bool run_main_py;
     bool log_soft_reset;
-    int last_ret;
 } boardctrl_state_t;
 
 void boardctrl_before_soft_reset_loop(boardctrl_state_t *state);
 void boardctrl_top_soft_reset_loop(boardctrl_state_t *state);
-void boardctrl_before_boot_py(boardctrl_state_t *state);
-void boardctrl_after_boot_py(boardctrl_state_t *state);
-void boardctrl_before_main_py(boardctrl_state_t *state);
-void boardctrl_after_main_py(boardctrl_state_t *state);
+int boardctrl_run_boot_py(boardctrl_state_t *state);
+int boardctrl_run_main_py(boardctrl_state_t *state);
 void boardctrl_start_soft_reset(boardctrl_state_t *state);
 void boardctrl_end_soft_reset(boardctrl_state_t *state);
 

@@ -634,7 +634,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t array_it_type = {
+STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
@@ -645,7 +645,7 @@ STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_bu
     assert(sizeof(mp_obj_array_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_array_t *array = MP_OBJ_TO_PTR(array_in);
     mp_obj_array_it_t *o = (mp_obj_array_it_t *)iter_buf;
-    o->base.type = &array_it_type;
+    o->base.type = &mp_type_array_it;
     o->array = array;
     o->offset = 0;
     o->cur = 0;

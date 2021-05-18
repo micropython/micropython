@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 #include "boardctrl.h"
@@ -140,13 +141,21 @@ void boardctrl_top_soft_reset_loop(boardctrl_state_t *state) {
     led_state(4, 0);
 }
 
-void boardctrl_before_boot_py(boardctrl_state_t *state) {
-    state->run_boot_py = state->reset_mode == 1 || state->reset_mode == 3;
-}
+int boardctrl_run_boot_py(boardctrl_state_t *state) {
+    bool run_boot_py = state->reset_mode == 1 || state->reset_mode == 3;
 
-void boardctrl_after_boot_py(boardctrl_state_t *state) {
-    if (state->run_boot_py && !state->last_ret) {
-        flash_error(4);
+    if (run_boot_py) {
+        // Run boot.py, if it exists.
+        const char *boot_py = "boot.py";
+        int ret = pyexec_file_if_exists(boot_py);
+
+        // Take action based on the execution result.
+        if (ret & PYEXEC_FORCED_EXIT) {
+            return BOARDCTRL_GOTO_SOFT_RESET_EXIT;
+        }
+        if (!ret) {
+            flash_error(4);
+        }
     }
 
     // Turn boot-up LEDs off
@@ -160,17 +169,34 @@ void boardctrl_after_boot_py(boardctrl_state_t *state) {
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
+
+    return BOARDCTRL_CONTINUE;
 }
 
-void boardctrl_before_main_py(boardctrl_state_t *state) {
-    state->run_main_py = (state->reset_mode == 1 || state->reset_mode == 3)
+int boardctrl_run_main_py(boardctrl_state_t *state) {
+    bool run_main_py = (state->reset_mode == 1 || state->reset_mode == 3)
         && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL;
-}
 
-void boardctrl_after_main_py(boardctrl_state_t *state) {
-    if (state->run_main_py && !state->last_ret) {
-        flash_error(3);
+    if (run_main_py) {
+        // Run main.py (or what it was configured to be), if it exists.
+        const char *main_py;
+        if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
+            main_py = "main.py";
+        } else {
+            main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
+        }
+        int ret = pyexec_file_if_exists(main_py);
+
+        // Take action based on the execution result.
+        if (ret & PYEXEC_FORCED_EXIT) {
+            return BOARDCTRL_GOTO_SOFT_RESET_EXIT;
+        }
+        if (!ret) {
+            flash_error(3);
+        }
     }
+
+    return BOARDCTRL_CONTINUE;
 }
 
 void boardctrl_start_soft_reset(boardctrl_state_t *state) {

@@ -24,17 +24,14 @@
  * THE SOFTWARE.
  */
 
-
-#include <stdio.h>
-
-#include "esp_log.h"
-
-#include "driver/gpio.h"
-#include "driver/touch_pad.h"
-
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
+
+#if CONFIG_IDF_TARGET_ESP32
+
+#include "driver/gpio.h"
+#include "driver/touch_pad.h"
 
 typedef struct _mtp_obj_t {
     mp_obj_base_t base;
@@ -120,3 +117,5 @@ const mp_obj_type_t machine_touchpad_type = {
     .make_new = mtp_make_new,
     .locals_dict = (mp_obj_t)&mtp_locals_dict,
 };
+
+#endif // CONFIG_IDF_TARGET_ESP32

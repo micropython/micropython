@@ -711,16 +711,11 @@ uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
 }
 
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
-    // This formula assumes UART_OVERSAMPLING_16
-    uint32_t source_freq = uart_get_source_freq(self);
-    #if defined(LPUART1)
-    if (self->uart_id == PYB_LPUART_1) {
-        return source_freq / (self->uartx->BRR >> 8);
-    } else
-    #endif
-    {
-        return source_freq / self->uartx->BRR;
-    }
+    return LL_USART_GetBaudRate(self->uartx, uart_get_source_freq(self),
+        #if defined(STM32H7) || defined(STM32WB)
+        self->uartx->PRESC,
+        #endif
+        LL_USART_OVERSAMPLING_16);
 }
 
 void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate) {

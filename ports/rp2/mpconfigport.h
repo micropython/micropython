@@ -31,8 +31,9 @@
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
 
+#include "mpconfigboard.h"
+
 // Board and hardware specific configuration
-#define MICROPY_HW_BOARD_NAME                   "Raspberry Pi Pico"
 #define MICROPY_HW_MCU_NAME                     "RP2040"
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (1)
@@ -174,6 +175,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
     void *machine_pin_irq_obj[30]; \
     void *rp2_pio_irq_obj[2]; \
     void *rp2_state_machine_irq_obj[8]; \
+    void *rp2_uart_rx_buffer[2]; \
+    void *rp2_uart_tx_buffer[2]; \
 
 #define MP_STATE_PORT MP_STATE_VM
 

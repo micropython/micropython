@@ -310,6 +310,25 @@
 #endif
 #endif
 
+// Configure the default bus clock divider values
+#ifndef MICROPY_HW_CLK_AHB_DIV
+#if defined(STM32H7)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_HCLK_DIV2)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_APB1_DIV2)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_APB2_DIV2)
+#define MICROPY_HW_CLK_APB3_DIV (RCC_APB3_DIV2)
+#define MICROPY_HW_CLK_APB4_DIV (RCC_APB4_DIV2)
+#elif defined(STM32L4)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV1)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV1)
+#else
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV4)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV2)
+#endif
+#endif
+
 // If disabled then try normal (non-bypass) LSE first, with fallback to LSI.
 // If enabled first try LSE in bypass mode.  If that fails to start, try non-bypass mode, with fallback to LSI.
 #ifndef MICROPY_HW_RTC_USE_BYPASS

@@ -4,6 +4,8 @@ set(MICROPY_EXTMOD_DIR "${MICROPY_DIR}/extmod")
 set(MICROPY_OOFATFS_DIR "${MICROPY_DIR}/lib/oofatfs")
 
 set(MICROPY_SOURCE_EXTMOD
+    ${MICROPY_DIR}/lib/embed/abort_.c
+    ${MICROPY_DIR}/lib/utils/printf.c
     ${MICROPY_EXTMOD_DIR}/machine_i2c.c
     ${MICROPY_EXTMOD_DIR}/machine_mem.c
     ${MICROPY_EXTMOD_DIR}/machine_pulse.c
@@ -43,3 +45,49 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/virtpin.c
     ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
 )
+
+# Library for btree module and associated code
+
+set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
+
+if(EXISTS "${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c")
+    add_library(micropy_extmod_btree OBJECT
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_debug.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_delete.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_get.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_open.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_overflow.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_page.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_put.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_search.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_seq.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_split.c
+        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_utils.c
+        ${MICROPY_LIB_BERKELEY_DIR}/mpool/mpool.c
+    )
+
+    target_include_directories(micropy_extmod_btree PRIVATE
+        ${MICROPY_LIB_BERKELEY_DIR}/PORT/include
+    )
+
+    target_compile_definitions(micropy_extmod_btree PRIVATE
+        __DBINTERFACE_PRIVATE=1
+        mpool_error=printf
+        abort=abort_
+        "virt_fd_t=void*"
+    )
+
+    # The include directories and compile definitions below are needed to build
+    # modbtree.c and should be added to the main MicroPython target.
+
+    list(APPEND MICROPY_INC_CORE
+        "${MICROPY_LIB_BERKELEY_DIR}/PORT/include"
+    )
+
+    list(APPEND MICROPY_DEF_CORE
+        __DBINTERFACE_PRIVATE=1
+        "virt_fd_t=void*"
+    )
+endif()

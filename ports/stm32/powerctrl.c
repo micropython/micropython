@@ -50,6 +50,22 @@
 #define RCC_SR_RMVF     RCC_CSR_RMVF
 #endif
 
+// Whether this MCU has an independent PLL which can generate 48MHz for USB.
+#if defined(STM32F413xx)
+// STM32F413 uses PLLI2S as secondary PLL.
+#define HAVE_PLL48 1
+#define RCC_CR_PLL48_ON RCC_CR_PLLI2SON
+#define RCC_CR_PLL48_RDY RCC_CR_PLLI2SRDY
+#elif defined(STM32F7)
+// STM32F7 uses PLLSAI as secondary PLL.
+#define HAVE_PLL48 1
+#define RCC_CR_PLL48_ON RCC_CR_PLLSAION
+#define RCC_CR_PLL48_RDY RCC_CR_PLLSAIRDY
+#else
+// MCU does not have a secondary PLL.
+#define HAVE_PLL48 0
+#endif
+
 // Location in RAM of bootloader state (just after the top of the stack)
 extern uint32_t _estack[];
 #define BL_STATE ((uint32_t *)&_estack)
@@ -141,13 +157,24 @@ STATIC int powerctrl_config_vos(uint32_t sysclk_mhz) {
 }
 
 // Assumes that PLL is used as the SYSCLK source
-int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai) {
+int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pll48) {
     uint32_t flash_latency;
 
-    #if defined(STM32F7)
-    if (need_pllsai) {
-        // Configure PLLSAI at 48MHz for those peripherals that need this freq
-        // (calculation assumes it can get an integral value of PLLSAIN)
+    #if HAVE_PLL48
+    if (need_pll48) {
+        // Configure secondary PLL at 48MHz for those peripherals that need this freq
+        // (the calculation assumes it can get an integral value of PLL-N).
+
+        #if defined(STM32F413xx)
+        const uint32_t plli2sm = HSE_VALUE / 1000000;
+        const uint32_t plli2sq = 2;
+        const uint32_t plli2sr = 2;
+        const uint32_t plli2sn = 48 * plli2sq;
+        RCC->PLLI2SCFGR = plli2sr << RCC_PLLI2SCFGR_PLLI2SR_Pos
+            | plli2sq << RCC_PLLI2SCFGR_PLLI2SQ_Pos
+            | plli2sn << RCC_PLLI2SCFGR_PLLI2SN_Pos
+            | plli2sm << RCC_PLLI2SCFGR_PLLI2SM_Pos;
+        #else
         const uint32_t pllm = (RCC->PLLCFGR >> RCC_PLLCFGR_PLLM_Pos) & 0x3f;
         const uint32_t pllsaip = 4;
         const uint32_t pllsaiq = 2;
@@ -155,13 +182,18 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
         RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
             | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
             | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
-        RCC->CR |= RCC_CR_PLLSAION;
+        #endif
+
+        // Turn on the PLL and wait for it to be ready.
+        RCC->CR |= RCC_CR_PLL48_ON;
         uint32_t ticks = mp_hal_ticks_ms();
-        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+        while (!(RCC->CR & RCC_CR_PLL48_RDY)) {
             if (mp_hal_ticks_ms() - ticks > 200) {
                 return -MP_ETIMEDOUT;
             }
         }
+
+        // Select the alternate 48MHz source.
         RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
     }
     #endif
@@ -317,7 +349,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     // Default PLL parameters that give 48MHz on PLL48CK
     uint32_t m = MICROPY_HW_CLK_VALUE / 1000000, n = 336, p = 2, q = 7;
     uint32_t sysclk_source;
-    bool need_pllsai = false;
+    bool need_pll48 = false;
 
     // Search for a valid PLL configuration that keeps USB at 48MHz
     uint32_t sysclk_mhz = sysclk / 1000000;
@@ -338,8 +370,8 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
                 uint32_t vco_out = sys * p;
                 n = vco_out * m / (MICROPY_HW_CLK_VALUE / 1000000);
                 q = vco_out / 48;
-                #if defined(STM32F7)
-                need_pllsai = vco_out % 48 != 0;
+                #if HAVE_PLL48
+                need_pll48 = vco_out % 48 != 0;
                 #endif
             }
             goto set_clk;
@@ -377,8 +409,8 @@ set_clk:
     RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
     #if defined(STM32H7)
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
+    RCC_ClkInitStruct.APB4CLKDivider = MICROPY_HW_CLK_APB4_DIV;
     #endif
 
     #if MICROPY_HW_CLK_LAST_FREQ
@@ -393,11 +425,11 @@ set_clk:
         return -MP_EIO;
     }
 
-    #if defined(STM32F7)
+    #if HAVE_PLL48
     // Deselect PLLSAI as 48MHz source if we were using it
     RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
     // Turn PLLSAI off because we are changing PLLM (which drives PLLSAI)
-    RCC->CR &= ~RCC_CR_PLLSAION;
+    RCC->CR &= ~RCC_CR_PLL48_ON;
     #endif
 
     // Re-configure PLL
@@ -440,7 +472,7 @@ set_clk:
     // Set PLL as system clock source if wanted
     if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-        int ret = powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai);
+        int ret = powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pll48);
         if (ret != 0) {
             return ret;
         }
@@ -607,11 +639,11 @@ void powerctrl_enter_stop_mode(void) {
 
     powerctrl_disable_hsi_if_unused();
 
-    #if defined(STM32F7)
+    #if HAVE_PLL48
     if (RCC->DCKCFGR2 & RCC_DCKCFGR2_CK48MSEL) {
         // Enable PLLSAI if it is selected as 48MHz source
-        RCC->CR |= RCC_CR_PLLSAION;
-        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+        RCC->CR |= RCC_CR_PLL48_ON;
+        while (!(RCC->CR & RCC_CR_PLL48_RDY)) {
         }
     }
     #endif
