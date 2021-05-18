@@ -199,11 +199,16 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     ${BOARD_COMPILE_DEFINITIONS}
 )
 
+# Print size of generated target
 add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
     COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
+
+# Generate .hex and .bin files
+generate_hex_output(${MICROPY_TARGET})
+generate_bin_output(${MICROPY_TARGET})
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
