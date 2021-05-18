@@ -647,6 +647,11 @@ STATIC int run_repl(void) {
         exit_code = pyexec_friendly_repl();
     }
     cleanup_after_vm(heap);
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
+    new_status_color(BLACK);
+    status_led_deinit();
+    #endif
     autoreload_resume();
     return exit_code;
 }
