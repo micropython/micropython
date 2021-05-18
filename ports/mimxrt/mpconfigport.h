@@ -53,6 +53,8 @@
 #define MICROPY_MODULE_BUILTIN_INIT         (1)
 #define MICROPY_MODULE_WEAK_LINKS           (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
+#define MICROPY_ENABLE_SCHEDULER            (1)
+#define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
 #define MICROPY_MODULE_FROZEN_MPY           (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
@@ -109,8 +111,11 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
 
+#define MICROPY_HW_PIT_NUM_CHANNELS 3
+
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+    struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS];
 
 #define MP_STATE_PORT MP_STATE_VM
 
