@@ -64,7 +64,7 @@ void alarm_set_wakeup_reason(stm_sleep_source_t reason) {
     true_deep_wake_reason = reason;
 }
 
-STATIC stm_sleep_source_t _get_wakeup_cause(void) {
+stm_sleep_source_t alarm_get_wakeup_cause(void) {
     // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_us_up()) {
         return STM_WAKEUP_GPIO;
@@ -73,18 +73,18 @@ STATIC stm_sleep_source_t _get_wakeup_cause(void) {
         return STM_WAKEUP_RTC;
     }
     // Check to see if we woke from deep sleep (reason set in port_init)
-    if (true_deep_wake_reason) {
+    if (true_deep_wake_reason != STM_WAKEUP_UNDEF) {
         return true_deep_wake_reason;
     }
     return STM_WAKEUP_UNDEF;
 }
 
 bool common_hal_alarm_woken_from_sleep(void) {
-    return _get_wakeup_cause() != STM_WAKEUP_UNDEF;
+    return alarm_get_wakeup_cause() != STM_WAKEUP_UNDEF;
 }
 
 STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
-    stm_sleep_source_t cause = _get_wakeup_cause();
+    stm_sleep_source_t cause = alarm_get_wakeup_cause();
     switch (cause) {
         case STM_WAKEUP_RTC: {
             return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
@@ -156,6 +156,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
+    alarm_set_wakeup_reason(STM_WAKEUP_UNDEF);
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
     port_disable_tick();
@@ -181,6 +182,8 @@ void common_hal_alarm_pretending_deep_sleep(void) {
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    alarm_set_wakeup_reason(STM_WAKEUP_UNDEF);
 
     port_idle_until_interrupt();
 }
