@@ -205,7 +205,7 @@ STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, bleio_connection_get_connection_interval);
 
-//|     attribute: int
+//|     max_packet_length: int
 //|     """The maximum number of data bytes that can be sent in a single transmission,
 //|     not including overhead bytes.
 //|

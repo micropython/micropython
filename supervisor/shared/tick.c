@@ -90,11 +90,6 @@ void supervisor_background_tasks(void *unused) {
     #endif
     filesystem_background();
 
-    #if CIRCUITPY_BLEIO
-    supervisor_bluetooth_background();
-    bleio_background();
-    #endif
-
     port_background_task();
 
     assert_heap_ok();

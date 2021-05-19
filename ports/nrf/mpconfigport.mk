@@ -47,6 +47,11 @@ CIRCUITPY_WATCHDOG ?= 1
 # Sleep and Wakeup
 CIRCUITPY_ALARM ?= 1
 
+# Turn on the BLE file service
+CIRCUITPY_BLE_FILE_SERVICE ?= 1
+
+CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
+
 # nRF52840-specific
 
 ifeq ($(MCU_CHIP),nrf52840)

@@ -78,6 +78,11 @@ void usb_setup_with_vm(void);
 void usb_msc_mount(void);
 void usb_msc_umount(void);
 bool usb_msc_ejected(void);
+
+// Locking MSC prevents presenting the drive on plug-in when in use by something
+// else (likely BLE.)
+bool usb_msc_lock(void);
+void usb_msc_unlock(void);
 #endif
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_USB_H
