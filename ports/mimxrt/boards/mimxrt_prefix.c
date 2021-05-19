@@ -21,8 +21,6 @@
         .pin = (uint32_t)(_pin), \
         .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
         .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
-        .mode = PIN_MODE_IN, \
-        .af_mode = PIN_AF_MODE_ALT5, \
         .af_list_len = (size_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
         .af_list = (_af_list), \
     } \

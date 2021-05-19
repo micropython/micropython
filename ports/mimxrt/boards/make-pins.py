@@ -73,7 +73,7 @@ class Pin(object):
         if self.alt_fn:
             self.print_pin_af()
             print(
-                "machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{3});\n".format(
+                "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{3});\n".format(
                     self.name, self.gpio, int(self.pin), self.name + "_af"
                 )
             )
@@ -127,8 +127,8 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
-                pin = self.find_pin_by_name(row[1])  # TODO: create replacement for magic number
-                if pin and row[0]:  # TODO: create replacement for magic number
+                pin = self.find_pin_by_name(row[1])
+                if pin and row[0]:  # Only add board pins that have a name
                     self.board_pins.append(NamedPin(row[0], pin.pad, pin.idx))
 
     def parse_af_file(self, filename, pad_col, af_start_col):
@@ -148,16 +148,7 @@ class Pins(object):
                 for af_idx, af in enumerate(row[af_start_col:af_end_col]):
                     if af and af_supported(af):
                         pin.add_af(AlternateFunction(af_idx, af))
-                """
-                    af_splitted = af.split("_")
-                    fn_name = af_splitted[0].rstrip("0123456789")
-                    if fn_name in SUPPORTED_AFS:
-                        type_name = af_splitted[1]
-                        if type_name in SUPPORTED_AFS[fn_name]:
-                            unit_idx = af_splitted[0][-1]
-                            pin.add_af(AF(af, af_idx, fn_name, int(unit_idx), type_name))
-                    af_idx += 1
-                """
+
                 self.cpu_pins.append(pin)
 
     @staticmethod
@@ -183,11 +174,11 @@ class Pins(object):
             pin.print()
 
         print("")
-        print("machine_pin_obj_t* machine_pin_cpu_pin_obj [] = {")
-        for pin in self.cpu_pins:
-            print("    &pin_{},".format(pin.name))
+        print("const machine_pin_obj_t* machine_pin_board_pins [] = {")
+        for pin in self.board_pins:
+            print("    &pin_{},".format(pin.pad))
         print("};")
-        print("const uint32_t machine_pin_num_of_cpu_pins = {:d};".format(len(self.cpu_pins)))
+        print("const uint32_t num_board_pins = {:d};".format(len(self.board_pins)))
         # Print Pin mapping dictionaries
         self.print_named("cpu", self.cpu_pins)
         self.print_named("board", self.board_pins)
@@ -196,9 +187,9 @@ class Pins(object):
     def print_header(self, hdr_filename):
         with open(hdr_filename, "w") as hdr_file:
             for pin in self.cpu_pins:
-                hdr_file.write("extern machine_pin_obj_t pin_{};\n".format(pin.name))
-            hdr_file.write("extern machine_pin_obj_t* machine_pin_cpu_pin_obj[];\n")
-            hdr_file.write("extern const uint32_t machine_pin_num_of_cpu_pins;\n")
+                hdr_file.write("extern const machine_pin_obj_t pin_{};\n".format(pin.name))
+            hdr_file.write("extern const machine_pin_obj_t* machine_pin_board_pins[];\n")
+            hdr_file.write("extern const uint32_t num_board_pins;\n")
             hdr_file.write("extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;\n")
             hdr_file.write("extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;\n")
 
@@ -214,13 +205,14 @@ def main():
         "--af",
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
-        default="mimxrt1021.csv",
+        default="mimxrt1021_af.csv",
     )
     parser.add_argument(
         "-b",
         "--board",
         dest="board_filename",
         help="Specifies the board file",
+        default="MIMXRT1020_EVK/pins.csv",
     )
     parser.add_argument(
         "-p",

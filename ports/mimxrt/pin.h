@@ -104,8 +104,6 @@ typedef struct {
     uint32_t pin;  // pin number
     uint32_t muxRegister;
     uint32_t configRegister;
-    uint32_t mode;  // current pin mode
-    uint32_t af_mode;  // current alternate function mode
     size_t af_list_len;  // length of available alternate functions list
     const machine_pin_af_obj_t *af_list;  // pointer tolist with alternate functions
 } machine_pin_obj_t;
@@ -120,6 +118,9 @@ extern const mp_obj_type_t machine_pin_af_type;
 // Include board specific pins
 #include "genhdr/pins.h"  // pins.h must included at this location
 
+extern const machine_pin_obj_t *machine_pin_board_pins[];
+extern const uint32_t num_board_pins;
+
 extern const mp_obj_type_t machine_pin_board_pins_obj_type;
 extern const mp_obj_type_t machine_pin_cpu_pins_obj_type;
 
@@ -130,10 +131,9 @@ extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 void pin_init(void);
 uint32_t pin_get_mode(const machine_pin_obj_t *pin);
-uint32_t pin_get_pull(const machine_pin_obj_t *pin);
 uint32_t pin_get_af(const machine_pin_obj_t *pin);
-machine_pin_obj_t *pin_find(mp_obj_t user_obj);
-machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const machine_pin_obj_t *pin_find(mp_obj_t user_obj);
+const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
 const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn);
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
 const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);

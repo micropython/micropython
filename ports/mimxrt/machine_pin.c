@@ -34,7 +34,7 @@
 #include "mphalport.h"
 
 // Local functions
-STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // Class Methods
@@ -90,7 +90,7 @@ STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint
     }
 }
 
-STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -132,9 +132,6 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
         if (af_obj == NULL) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("requested AF %d not available for pin %d"), PIN_AF_MODE_ALT5, mode);
         }
-
-        // Update machine pin object
-        self->mode = mode;
 
         // Generate pad configuration
         if (args[PIN_INIT_ARG_PULL].u_obj != mp_const_none) {
@@ -184,13 +181,13 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 }
 
 STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_pin_obj_t *self = self_in;
+    const machine_pin_obj_t *self = self_in;
     mp_printf(print, "<Pin.%q>", self->name);
 }
 
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
+    const machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
     mp_printf(print, "PIN(%s)", qstr_str(self->name));
 }
 
@@ -198,7 +195,7 @@ STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_
 STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    machine_pin_obj_t *pin = pin_find(args[0]);
+    const machine_pin_obj_t *pin = pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -235,7 +232,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 // pin.mode()
 STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
-    return mp_obj_new_int(self->mode);
+    return mp_obj_new_int(pin_get_mode(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_mode_obj, machine_pin_mode);
 
