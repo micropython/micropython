@@ -34,8 +34,13 @@
 // Implemented purely as inline assembly; inside a function, we have to deal with undoing the prologue, restoring
 // SP and LR. This way, we don't.
 __asm(
+    #if defined(__APPLE__) && defined(__MACH__)
+    "_nlr_push:              \n"
+    ".global _nlr_push       \n"
+    #else
     "nlr_push:               \n"
     ".global nlr_push        \n"
+    #endif
     "mov x9, sp              \n"
     "stp lr,  x9,  [x0,  #16]\n" // 16 == offsetof(nlr_buf_t, regs)
     "stp x19, x20, [x0,  #32]\n"
@@ -44,7 +49,11 @@ __asm(
     "stp x25, x26, [x0,  #80]\n"
     "stp x27, x28, [x0,  #96]\n"
     "str x29,      [x0, #112]\n"
+    #if defined(__APPLE__) && defined(__MACH__)
+    "b _nlr_push_tail        \n" // do the rest in C
+    #else
     "b nlr_push_tail         \n" // do the rest in C
+    #endif
     );
 
 NORETURN void nlr_jump(void *val) {

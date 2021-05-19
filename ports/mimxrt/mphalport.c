@@ -27,6 +27,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "ticks.h"
 #include "tusb.h"
 
 #include CPU_HEADER_H
@@ -59,23 +60,6 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     }
     #endif
     return ret;
-}
-
-void mp_hal_delay_ms(mp_uint_t ms) {
-    ms += 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
-    }
-}
-
-void mp_hal_delay_us(mp_uint_t us) {
-    uint32_t ms = us / 1000 + 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
-        // __WFI();
-    }
 }
 
 int mp_hal_stdin_rx_chr(void) {
