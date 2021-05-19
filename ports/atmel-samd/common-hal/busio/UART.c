@@ -255,21 +255,18 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 }
 
 void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
-#if (1)
-    never_reset_sercom(self->usart_desc.device.hw);
-    never_reset_pin_number(self->rx_pin);
-    never_reset_pin_number(self->tx_pin);
-    return;
-#else
-    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
-        if (mcu_uart_banks[i] == self->handle.Instance) {
-            never_reset_uart[i] = true;
-            never_reset_pin_number(self->tx->pin->port, self->tx->pin->number);
-            never_reset_pin_number(self->rx->pin->port, self->rx->pin->number);
-            break;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(sercom_insts); i++) {
+        const Sercom *sercom = sercom_insts[i];
+        Sercom *hw = (Sercom *)(self->usart_desc.device.hw);
+
+        // Reserve pins for active UART only
+        if (sercom == hw) {
+            never_reset_sercom(hw);
+            never_reset_pin_number(self->rx_pin);
+            never_reset_pin_number(self->tx_pin);
         }
     }
-#endif
+    return;
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
