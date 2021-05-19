@@ -383,6 +383,9 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]; \
     \
+    /* USB_VCP IRQ callbacks (if they have been set) */ \
+    mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]; \
+    \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
     \
