@@ -63,11 +63,11 @@ static const uint8_t usb_msc_descriptor_template[] = {
     0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define MSC_IN_ENDPOINT_INDEX (11)
     0x02,        // 12 bmAttributes (Bulk)
-#if USB_HIGHSPEED
+    #if USB_HIGHSPEED
     0x00, 0x02,  // 13,14 wMaxPacketSize 512
-#else
+    #else
     0x40, 0x00,  // 13,14 wMaxPacketSize 64
-#endif
+    #endif
     0x00,        // 15 bInterval 0 (unit depends on device speed)
 
     // MSC Endpoint OUT Descriptor
@@ -76,11 +76,11 @@ static const uint8_t usb_msc_descriptor_template[] = {
     0xFF,        // 18 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
 #define MSC_OUT_ENDPOINT_INDEX (18)
     0x02,        // 19 bmAttributes (Bulk)
-#if USB_HIGHSPEED
+    #if USB_HIGHSPEED
     0x00, 0x02,  // 20,21 wMaxPacketSize 512
-#else
+    #else
     0x40, 0x00,  // 20,21 wMaxPacketSize 64
-#endif
+    #endif
     0x00,        // 22 bInterval 0 (unit depends on device speed)
 };
 
