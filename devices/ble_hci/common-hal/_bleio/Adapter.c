@@ -794,7 +794,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     }
 
     if (tx_power != 0) {
-        mp_raise_NotImplementedError();
+        mp_raise_NotImplementedError(translate("Only tx_power=0 supported"));
     }
 
     const uint32_t result = _common_hal_bleio_adapter_start_advertising(
