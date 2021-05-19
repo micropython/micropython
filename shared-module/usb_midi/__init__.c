@@ -127,7 +127,11 @@ static const uint8_t usb_midi_descriptor_template[] = {
     0xFF,        // 66 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
 #define MIDI_STREAMING_OUT_ENDPOINT_INDEX (66)
     0x02,        // 67 bmAttributes (Bulk)
+    #if USB_HIGHSPEED
+    0x00, 0x02,  // 68,69 wMaxPacketSize (512)
+    #else
     0x40, 0x00,  // 68,69 wMaxPacketSize (64)
+    #endif
     0x00,        // 70 bInterval 0 (unit depends on device speed)
 
     // MIDI Data Endpoint Descriptor
@@ -143,7 +147,11 @@ static const uint8_t usb_midi_descriptor_template[] = {
     0xFF,        // 78 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
 #define MIDI_STREAMING_IN_ENDPOINT_INDEX (78)
     0x02,        // 79 bmAttributes (Bulk)
-    0x40, 0x00,  // 8081 wMaxPacketSize 64
+    #if USB_HIGHSPEED
+    0x00, 0x02,  // 80, 81 wMaxPacketSize (512)
+    #else
+    0x40, 0x00,  // 80, 81 wMaxPacketSize (64)
+    #endif
     0x00,        // 82 bInterval 0 (unit depends on device speed)
 
     // MIDI Data Endpoint Descriptor
