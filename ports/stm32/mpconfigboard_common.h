@@ -47,6 +47,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
+#ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)

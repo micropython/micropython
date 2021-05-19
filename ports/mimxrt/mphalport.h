@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
 
 #include <stdint.h>
+#include "ticks.h"
 #include "pin.h"
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
@@ -35,8 +36,6 @@
 #define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
 #define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
 #define mp_hal_pin_read(p) (GPIO_PinRead(p->gpio, p->pin))
-
-extern volatile uint32_t systick_ms;
 
 void mp_hal_set_interrupt_char(int c);
 
@@ -46,11 +45,20 @@ static inline uint64_t  mp_hal_time_ns(void) {
 }
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
+    return ticks_ms32();
 }
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
-    return systick_ms * 1000;
+    return ticks_us32();
+}
+
+static inline void mp_hal_delay_ms(mp_uint_t ms) {
+    uint64_t us = (uint64_t)ms * 1000;
+    ticks_delay_us64(us);
+}
+
+static inline void mp_hal_delay_us(mp_uint_t us) {
+    ticks_delay_us64(us);
 }
 
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
