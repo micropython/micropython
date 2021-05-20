@@ -108,6 +108,7 @@ SRC_TINYUSB_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
+	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 
 SRC_C = \
@@ -120,6 +121,7 @@ SRC_C = \
 	$(BOARD_DIR)/flash_config.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_rtc.c \
 	machine_timer.c \
 	mimxrt_flash.c \
 	modutime.c \
@@ -146,6 +148,7 @@ SRC_S = lib/utils/gchelper_m3.s \
 SRC_QSTR += \
 	machine_led.c \
 	machine_pin.c \
+	machine_rtc.c \
 	machine_timer.c \
 	mimxrt_flash.c \
 	modutime.c \
