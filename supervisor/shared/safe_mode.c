@@ -78,7 +78,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     #endif
     uint64_t start_ticks = supervisor_ticks_ms64();
     uint64_t diff = 0;
-    while (diff < 700) {
+    while (diff < 1000) {
         #ifdef MICROPY_HW_LED_STATUS
         // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
         common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
