@@ -122,7 +122,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_UART6_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART6_CTS        (pyb_pin_BT_CTS)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_NAME        "X"
 #define MICROPY_HW_I2C1_SCL         (pyb_pin_X9)
 #define MICROPY_HW_I2C1_SDA         (pyb_pin_X10)
@@ -130,7 +130,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_I2C2_SCL         (pyb_pin_Y9)
 #define MICROPY_HW_I2C2_SDA         (pyb_pin_Y10)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NAME        "X"
 #define MICROPY_HW_SPI1_NSS         (pyb_pin_X5)
 #define MICROPY_HW_SPI1_SCK         (pyb_pin_X6)
@@ -146,7 +146,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SPI3_MISO        (pyb_pin_W50)
 #define MICROPY_HW_SPI3_MOSI        (pyb_pin_W46)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_NAME        "X"
 #define MICROPY_HW_CAN1_TX          (pyb_pin_X10)
 #define MICROPY_HW_CAN1_RX          (pyb_pin_X9)

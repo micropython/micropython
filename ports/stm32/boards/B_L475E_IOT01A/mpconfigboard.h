@@ -28,20 +28,20 @@
 // USART3 config for internal use
 #define MICROPY_HW_UART3_TX     (pin_D8)
 #define MICROPY_HW_UART3_RX     (pin_D9)
-// USART4 config 
+// USART4 config
 #define MICROPY_HW_UART4_TX     (pin_A0)
 #define MICROPY_HW_UART4_RX     (pin_A1)
 // USART 1 is connected to the virtual com port on the ST-LINK
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B8)
 #define MICROPY_HW_I2C1_SDA (pin_B9)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS     (pin_A4)
 #define MICROPY_HW_SPI1_SCK     (pin_A5)
 #define MICROPY_HW_SPI1_MISO    (pin_A6)
