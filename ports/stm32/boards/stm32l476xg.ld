@@ -1,12 +1,13 @@
 /*
-    GNU linker script for STM32L476XG
+    GNU linker script for STM32L471xG, STM32L475xG, STM32L476xG, STM32L486xG with File System.
+    FLASH 1024K with 2K blocks, RAM 128K.
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* sectors 0-255 */
-    FLASH_FS (r)    : ORIGIN = 0x08080000, LENGTH = 512K /* sectors 256-511 */
+    FLASH (rx)      : ORIGIN = 0x08000000,                      LENGTH = 512K
+    FLASH_FS (r)    : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH),   LENGTH = 512K
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 96K
     SRAM2 (xrw)     : ORIGIN = 0x10000000, LENGTH = 32K /* not contiguous with RAM */
 }
