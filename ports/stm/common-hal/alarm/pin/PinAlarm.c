@@ -85,11 +85,11 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
     return self->pull;
 }
 
-bool alarm_pin_pinalarm_woke_us_up(void) {
+bool alarm_pin_pinalarm_woke_this_cycle(void) {
     return woke_up;
 }
 
-mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
         if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
@@ -99,8 +99,10 @@ mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *al
             return alarms[i];
         }
     }
+    return mp_const_none;
+}
 
-    // If the above isn't true, we woke from deep sleep, so create a new alarm
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void) {
     alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
     alarm->base.type = &alarm_pin_pinalarm_type;
     // TODO: replace this if/when other WKUP pins are supported
