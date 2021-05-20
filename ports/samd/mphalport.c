@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "samd_soc.h"
 #include "tusb.h"
+#include "py/stream.h"
 
 #if MICROPY_KBD_EXCEPTION
 
@@ -35,7 +36,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
     (void)wanted_char;
     tud_cdc_read_char(); // discard interrupt char
-    mp_sched_keyboard_interrupt();
+    mp_keyboard_interrupt();
 }
 
 void mp_hal_set_interrupt_char(int c) {
@@ -60,6 +61,7 @@ void mp_hal_delay_us(mp_uint_t us) {
     }
 }
 
+
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         if (USARTx->USART.INTFLAG.bit.RXC) {
@@ -80,15 +82,16 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     if (tud_cdc_connected()) {
         for (size_t i = 0; i < len;) {
             uint32_t n = len - i;
-            if (n > CFG_TUD_CDC_EP_BUFSIZE) {
-                n = CFG_TUD_CDC_EP_BUFSIZE;
-            }
-            while (n > tud_cdc_write_available()) {
-                __WFI();
-            }
             uint32_t n2 = tud_cdc_write(str + i, n);
-            tud_cdc_write_flush();
+            if (n2 < n) {
+                while (!tud_cdc_write_flush()) {
+                    __WFI();
+                }
+            }
             i += n2;
+        }
+        while (!tud_cdc_write_flush()) {
+            __WFI();
         }
     }
     while (len--) {
@@ -96,4 +99,13 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
         USARTx->USART.DATA.bit.DATA = *str++;
     }
+}
+
+// Added to remove 'undefined' error
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (tud_cdc_connected() && tud_cdc_available()) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
 }
