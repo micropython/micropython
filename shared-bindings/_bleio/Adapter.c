@@ -190,7 +190,7 @@ const mp_obj_property_t bleio_adapter_name_obj = {
                MP_ROM_NONE },
 };
 
-//|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> None:
+//|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1, tx_power: int = 0) -> None:
 //|         """Starts advertising until `stop_advertising` is called or if connectable, another device
 //|         connects to us.
 //|
@@ -205,13 +205,14 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
 //|         :param int timeout:  If set, we will only advertise for this many seconds. Zero means no timeout.
-//|         :param float interval:  advertising interval, in seconds"""
+//|         :param float interval:  advertising interval, in seconds
+//|         :param tx_power int: transmitter power while advertising in dBm"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_timeout, ARG_interval };
+    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_timeout, ARG_interval, ARG_tx_power };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scan_response, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -219,6 +220,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         { MP_QSTR_anonymous, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tx_power, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -251,7 +253,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
-        &data_bufinfo, &scan_response_bufinfo);
+        &data_bufinfo, &scan_response_bufinfo, args[ARG_tx_power].u_int);
 
     return mp_const_none;
 }
