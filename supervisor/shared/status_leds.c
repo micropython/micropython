@@ -124,7 +124,8 @@ void status_led_init() {
 
     #ifdef CIRCUITPY_STATUS_LED_POWER
     common_hal_digitalio_digitalinout_construct(&_status_power, CIRCUITPY_STATUS_LED_POWER);
-    common_hal_digitalio_digitalinout_switch_to_output(&_status_power, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output(&_status_power,
+        CIRCUITPY_STATUS_LED_POWER_INVERTED == 0, DRIVE_MODE_PUSH_PULL);
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL

@@ -991,6 +991,10 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PROCESSOR_COUNT (1)
 #endif
 
+#ifndef CIRCUITPY_STATUS_LED_POWER_INVERTED
+#define CIRCUITPY_STATUS_LED_POWER_INVERTED (0)
+#endif
+
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #define CIRCUITPY_VERBOSE_BLE 0
