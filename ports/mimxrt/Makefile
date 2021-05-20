@@ -122,6 +122,8 @@ SRC_C = \
 	machine_pin.c \
 	machine_timer.c \
 	mimxrt_flash.c \
+	machine_rtc.c \
+	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
@@ -137,7 +139,7 @@ SRC_C = \
 	lib/utils/sys_stdio_mphal.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_TINYUSB_IMX_C) \
-
+	
 SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 
 SRC_S = lib/utils/gchelper_m3.s \
@@ -148,6 +150,7 @@ SRC_QSTR += \
 	machine_pin.c \
 	machine_timer.c \
 	mimxrt_flash.c \
+	machine_rtc.c \
 	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
