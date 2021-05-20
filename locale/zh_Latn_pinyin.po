@@ -1232,6 +1232,10 @@ msgstr "Wúxiào de ADC dānwèi zhí"
 msgid "Invalid AuthMode"
 msgstr "wú xiào AuthMode"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Wúxiào de BMP wénjiàn"
@@ -2352,7 +2356,7 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Bù zhīchí de cāozuò"
 

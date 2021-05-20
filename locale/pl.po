@@ -1222,6 +1222,10 @@ msgstr ""
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Zły BMP"
@@ -2327,7 +2331,7 @@ msgstr "Zły typ magistrali wyświetlaczy"
 msgid "Unsupported format"
 msgstr "Zły format"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Zła operacja"
 

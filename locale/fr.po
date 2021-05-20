@@ -1254,6 +1254,10 @@ msgstr "Valeur d'unité ADC non valide"
 msgid "Invalid AuthMode"
 msgstr "AuthMode invalide"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Fichier BMP invalide"
@@ -2388,7 +2392,7 @@ msgstr "Type de bus d'affichage non supporté"
 msgid "Unsupported format"
 msgstr "Format non supporté"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Opération non supportée"
 
