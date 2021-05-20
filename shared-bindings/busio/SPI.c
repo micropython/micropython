@@ -81,6 +81,7 @@
 
 // TODO(tannewt): Support LSB SPI.
 STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_BUSIO_SPI
     busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
     self->base.type = &busio_spi_type;
     enum { ARG_clock, ARG_MOSI, ARG_MISO };
@@ -102,8 +103,12 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
 
     common_hal_busio_spi_construct(self, clock, mosi, miso);
     return MP_OBJ_FROM_PTR(self);
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif // CIRCUITPY_BUSIO_SPI
 }
 
+#if CIRCUITPY_BUSIO_SPI
 //|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
@@ -399,8 +404,11 @@ const mp_obj_property_t busio_spi_frequency_obj = {
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
+#endif // CIRCUITPY_BUSIO_SPI
+
 
 STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
+    #if CIRCUITPY_BUSIO_SPI
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_spi_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&busio_spi_obj___exit___obj) },
@@ -413,6 +421,7 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&busio_spi_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&busio_spi_write_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&busio_spi_frequency_obj) }
+    #endif // CIRCUITPY_BUSIO_SPI
 };
 STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 

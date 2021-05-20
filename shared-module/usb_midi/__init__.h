@@ -27,11 +27,13 @@
 #ifndef SHARED_MODULE_USB_MIDI___INIT___H
 #define SHARED_MODULE_USB_MIDI___INIT___H
 
+#include "supervisor/usb.h"
+
 bool usb_midi_enabled(void);
 void usb_midi_set_defaults(void);
 void usb_midi_setup_ports(void);
 
 size_t usb_midi_descriptor_length(void);
-size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, uint8_t *current_interface, uint8_t *current_endpoint, uint8_t *current_interface_string);
+size_t usb_midi_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
 
 #endif /* SHARED_MODULE_USB_MIDI___INIT___H */

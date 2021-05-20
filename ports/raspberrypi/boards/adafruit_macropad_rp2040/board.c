@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#include "supervisor/board.h"
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+void board_init(void) {
+}
 
-// CXD56 architecture uses fixed endpoint numbers.
-// Override default definitions in circuitpy_mpconfig.h,
-// so define these before #include'ing that file.
-#define USB_CDC_EP_NUM_NOTIFICATION (3)
-#define USB_CDC_EP_NUM_DATA_OUT (2)
-#define USB_CDC_EP_NUM_DATA_IN (1)
-#define USB_MSC_EP_NUM_OUT (5)
-#define USB_MSC_EP_NUM_IN (4)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+void reset_board(void) {
+}

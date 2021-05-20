@@ -196,13 +196,13 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
+extern uint32_t __scratch_x_start__;
 void port_set_saved_word(uint32_t value) {
-    // NOTE: This doesn't survive pressing the reset button (aka toggling RUN).
-    watchdog_hw->scratch[0] = value;
+    __scratch_x_start__ = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return watchdog_hw->scratch[0];
+    return __scratch_x_start__;
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {

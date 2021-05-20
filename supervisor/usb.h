@@ -50,6 +50,14 @@ void init_usb_hardware(void);
 // Temporary hook for code after init. Only used for RP2040.
 void post_usb_init(void);
 
+// Indexes and counts updated as descriptors are built.
+typedef struct {
+    size_t current_interface;
+    size_t current_endpoint;
+    size_t num_in_endpoints;
+    size_t num_out_endpoints;
+} descriptor_counts_t;
+
 // Shared implementation.
 bool usb_enabled(void);
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]);

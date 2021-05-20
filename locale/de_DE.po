@@ -723,17 +723,8 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Der CircuitPython-Kerncode ist hart abgestürzt. Hoppla!\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython befindet sich im abgesicherten Modus, da Sie beim Booten die "
-"Reset-Taste gedrückt haben. Drücken Sie erneut, um den abgesicherten Modus "
-"zu verlassen.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython war es nicht möglich heap-Speicher zu allozieren.\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython war es nicht möglich heap-Speicher zu allozieren."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -863,6 +854,10 @@ msgstr "Dem fmt Block muss ein Datenblock folgen"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Zu vielen Daten für das advertisement packet"
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1658,10 +1653,6 @@ msgstr "Nicht verbunden"
 msgid "Not playing"
 msgstr "Spielt nicht ab"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "Gespeicherter Code wird nicht ausgeführt.\n"
-
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
 msgstr ""
@@ -1698,6 +1689,10 @@ msgstr ""
 "Nur Windows-Format, unkomprimiertes BMP unterstützt: die gegebene Header-"
 "Größe ist %d"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1713,6 +1708,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1788,6 +1784,10 @@ msgstr ""
 msgid "Permission denied"
 msgstr "Zugang verweigert"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
 msgstr ""
@@ -1806,6 +1806,11 @@ msgstr ""
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin hat keine ADC Funktionalität"
 
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
+
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
@@ -1818,10 +1823,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "Pin muss Hardware-Interrupts unterstützen"
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
-msgstr "PIN-Nummer bereits von EXTI reserviert"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1985,8 +1986,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Zeileneintrag muss ein digitalio.DigitalInOut sein"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr ""
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -2048,6 +2049,10 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
+
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice und Wert (value) haben unterschiedliche Längen."
@@ -2106,18 +2111,14 @@ msgstr "Zeitüberschreitung beim Auslesen der Temperatur"
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"Der CircuitPython-Heap wurde beschädigt, weil der Stapel zu klein war.\n"
-"Bitte erhöhen Sie die Stapelgröße, wenn Sie wissen wie oder wenn nicht:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"Das `Mikrocontroller` Modul wurde benutzt, um in den Sicherheitsmodus zu "
-"starten. Drücke Reset um den Sicherheitsmodus zu verlassen.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2127,13 +2128,8 @@ msgstr ""
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"Die Spannungsversorgung des Mikrocontrollers hat den minimal Wert "
-"unterschritten.\n"
-"Stellen Sie sicher, dass Ihr Netzteil genug Strom bereitstellt für den "
-"gesamten Stromkreis und drücken Sie Reset (nach dem Auswerfen von "
-"CIRCUITPY).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2198,6 +2194,10 @@ msgstr "Zu viele displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
+msgstr ""
+
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
 msgstr ""
 
 #: py/obj.c
@@ -2442,10 +2442,13 @@ msgid "Writes not supported on Characteristic"
 msgstr "Schreiben nicht unterstüzt für diese Charakteristik"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
+msgid "You are in safe mode because:\n"
 msgstr ""
-"Sie befinden sich im abgesicherten Modus: Es ist etwas Unerwartetes "
-"passiert.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4424,6 +4427,50 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython befindet sich im abgesicherten Modus, da Sie beim Booten "
+#~ "die Reset-Taste gedrückt haben. Drücken Sie erneut, um den abgesicherten "
+#~ "Modus zu verlassen.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Gespeicherter Code wird nicht ausgeführt.\n"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "Der CircuitPython-Heap wurde beschädigt, weil der Stapel zu klein war.\n"
+#~ "Bitte erhöhen Sie die Stapelgröße, wenn Sie wissen wie oder wenn nicht:"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "Das `Mikrocontroller` Modul wurde benutzt, um in den Sicherheitsmodus zu "
+#~ "starten. Drücke Reset um den Sicherheitsmodus zu verlassen.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "Die Spannungsversorgung des Mikrocontrollers hat den minimal Wert "
+#~ "unterschritten.\n"
+#~ "Stellen Sie sicher, dass Ihr Netzteil genug Strom bereitstellt für den "
+#~ "gesamten Stromkreis und drücken Sie Reset (nach dem Auswerfen von "
+#~ "CIRCUITPY).\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr ""
+#~ "Sie befinden sich im abgesicherten Modus: Es ist etwas Unerwartetes "
+#~ "passiert.\n"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "PIN-Nummer bereits von EXTI reserviert"
+
 #~ msgid "USB Busy"
 #~ msgstr "USB beschäftigt"
 
@@ -4716,9 +4763,6 @@ msgstr ""
 
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() sollte None zurückgeben, nicht '%s'"

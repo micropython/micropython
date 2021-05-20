@@ -21,7 +21,7 @@ endif
 INTERNAL_LIBM = 1
 
 # Number of USB endpoint pairs.
-USB_NUM_EP = 8
+USB_NUM_ENDPOINT_PAIRS = 8
 
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 
@@ -60,14 +60,19 @@ CIRCUITPY_VECTORIO = 0
 
 MICROPY_PY_ASYNC_AWAIT = 0
 
+# We don't have room for the fonts for terminalio for ja and ko
+# so turn off terminalio, and if it's off and displayio is on,
+# force a clean build.
+# Note that we cannot test $(CIRCUITPY_DISPLAYIO) directly with an
+# ifeq, because it's not set yet.
 ifeq ($(TRANSLATION), ja)
-RELEASE_NEEDS_CLEAN_BUILD = 1
 CIRCUITPY_TERMINALIO = 0
+RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
 endif
 
 ifeq ($(TRANSLATION), ko)
-RELEASE_NEEDS_CLEAN_BUILD = 1
 CIRCUITPY_TERMINALIO = 0
+RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
 endif
 
 SUPEROPT_GC = 0
