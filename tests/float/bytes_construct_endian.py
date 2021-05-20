@@ -1,4 +1,4 @@
-# test construction of bytearray from array with float type
+# test construction of bytes from array with float type
 
 try:
     from uarray import array
