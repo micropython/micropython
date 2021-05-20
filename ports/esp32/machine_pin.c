@@ -177,7 +177,11 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{NULL}, -1}, // 23 not a pin
     {{NULL}, -1}, // 24 not a pin
     {{NULL}, -1}, // 25 not a pin
-    {{NULL}, -1}, // 26 FLASH/PSRAM
+    #if CONFIG_SPIRAM
+    {{NULL}, -1}, // 26 PSRAM
+    #else
+    {{&machine_pin_type}, GPIO_NUM_26},
+    #endif
     {{NULL}, -1}, // 27 FLASH/PSRAM
     {{NULL}, -1}, // 28 FLASH/PSRAM
     {{NULL}, -1}, // 29 FLASH/PSRAM
@@ -618,7 +622,11 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{NULL}, -1}, // 23 not a pin
     {{NULL}, -1}, // 24 not a pin
     {{NULL}, -1}, // 25 not a pin
-    {{NULL}, -1}, // 26 FLASH/PSRAM
+    #if CONFIG_SPIRAM
+    {{NULL}, -1}, // 26 PSRAM
+    #else
+    {{&machine_pin_irq_type}, GPIO_NUM_26},
+    #endif
     {{NULL}, -1}, // 27 FLASH/PSRAM
     {{NULL}, -1}, // 28 FLASH/PSRAM
     {{NULL}, -1}, // 29 FLASH/PSRAM
