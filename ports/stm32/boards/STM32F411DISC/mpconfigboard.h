@@ -26,7 +26,7 @@
 #define MICROPY_HW_UART6_TX     (pin_C6)
 #define MICROPY_HW_UART6_RX     (pin_C7)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B9)
 //#define MICROPY_HW_I2C2_SCL (pin_B10)
@@ -34,7 +34,7 @@
 #define MICROPY_HW_I2C3_SCL (pin_A8)
 #define MICROPY_HW_I2C3_SDA (pin_A9)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS  (pin_A4)
 #define MICROPY_HW_SPI1_SCK  (pin_A5)
 #define MICROPY_HW_SPI1_MISO (pin_A6)
