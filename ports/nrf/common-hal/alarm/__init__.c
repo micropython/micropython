@@ -69,15 +69,18 @@ void alarm_reset(void) {
 
 extern uint32_t reset_reason_saved;
 STATIC nrf_sleep_source_t _get_wakeup_cause(void) {
-    if (alarm_pin_pinalarm_woke_us_up()) {
+    // First check if the modules remember what last woke up
+    if (alarm_pin_pinalarm_woke_this_cycle()) {
         return NRF_SLEEP_WAKEUP_GPIO;
     }
-    if (alarm_time_timealarm_woke_us_up()) {
+    if (alarm_time_timealarm_woke_this_cycle()) {
         return NRF_SLEEP_WAKEUP_TIMER;
     }
-    if (alarm_touch_touchalarm_woke_us_up()) {
+    if (alarm_touch_touchalarm_woke_this_cycle()) {
         return NRF_SLEEP_WAKEUP_TOUCHPAD;
     }
+    // If waking from true deep sleep, modules will have lost their state,
+    // so check the deep wakeup cause manually
     if (reset_reason_saved & NRF_POWER_RESETREAS_RESETPIN_MASK) {
         return NRF_SLEEP_WAKEUP_RESETPIN;
     } else if (reset_reason_saved & NRF_POWER_RESETREAS_OFF_MASK) {
@@ -116,27 +119,24 @@ bool common_hal_alarm_woken_from_sleep(void) {
            || cause == NRF_SLEEP_WAKEUP_TOUCHPAD;
 }
 
-STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+    // If woken from deep sleep, create a copy alarm similar to what would have
+    // been passed in originally. Otherwise, just return none
     nrf_sleep_source_t cause = _get_wakeup_cause();
     switch (cause) {
         case NRF_SLEEP_WAKEUP_TIMER: {
-            return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_time_timealarm_create_wakeup_alarm();
         }
         case NRF_SLEEP_WAKEUP_TOUCHPAD: {
-            return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_touch_touchalarm_create_wakeup_alarm();
         }
         case NRF_SLEEP_WAKEUP_GPIO: {
-            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_pin_pinalarm_create_wakeup_alarm();
         }
         default:
             break;
     }
     return mp_const_none;
-}
-
-mp_obj_t common_hal_alarm_get_wake_alarm(void) {
-    mp_obj_t obj = _get_wake_alarm(0, NULL);
-    return obj;
 }
 
 // Set up light sleep or deep sleep alarms.
@@ -257,7 +257,7 @@ void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    mp_obj_t wake_alarm;
+    mp_obj_t wake_alarm = mp_const_none;
     alarm_time_timealarm_clear_wakeup_time();
     _setup_sleep_alarms(false, n_alarms, alarms);
 
@@ -271,7 +271,23 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     if (mp_hal_is_interrupted()) {
         wake_alarm = mp_const_none;
     } else {
-        wake_alarm = _get_wake_alarm(n_alarms, alarms);
+        if (common_hal_alarm_woken_from_sleep()) {
+            nrf_sleep_source_t cause = _get_wakeup_cause();
+            switch (cause) {
+                case NRF_SLEEP_WAKEUP_TIMER: {
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                case NRF_SLEEP_WAKEUP_GPIO: {
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                default:
+                    // Should not reach this, if all light sleep types are covered correctly
+                    break;
+            }
+            shared_alarm_save_wake_alarm(wake_alarm);
+        }
     }
     alarm_reset();
     return wake_alarm;

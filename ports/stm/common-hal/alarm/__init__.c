@@ -48,10 +48,8 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
 };
 
 STATIC stm_sleep_source_t true_deep_wake_reason;
-STATIC mp_obj_t most_recent_alarm;
 
 void alarm_reset(void) {
-    most_recent_alarm = NULL;
     // Reset the alarm flag
     STM_ALARM_FLAG = 0x00;
     alarm_pin_pinalarm_reset();
@@ -66,10 +64,10 @@ void alarm_set_wakeup_reason(stm_sleep_source_t reason) {
 
 stm_sleep_source_t alarm_get_wakeup_cause(void) {
     // If in light/fake sleep, check modules
-    if (alarm_pin_pinalarm_woke_us_up()) {
+    if (alarm_pin_pinalarm_woke_this_cycle()) {
         return STM_WAKEUP_GPIO;
     }
-    if (alarm_time_timealarm_woke_us_up()) {
+    if (alarm_time_timealarm_woke_this_cycle()) {
         return STM_WAKEUP_RTC;
     }
     // Check to see if we woke from deep sleep (reason set in port_init)
@@ -83,14 +81,16 @@ bool common_hal_alarm_woken_from_sleep(void) {
     return alarm_get_wakeup_cause() != STM_WAKEUP_UNDEF;
 }
 
-STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t common_hal_alarm_create_wake_alarm(void) {
+    // If woken from deep sleep, create a copy alarm similar to what would have
+    // been passed in originally. Otherwise, just return none
     stm_sleep_source_t cause = alarm_get_wakeup_cause();
     switch (cause) {
         case STM_WAKEUP_RTC: {
-            return alarm_time_timealarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_time_timealarm_create_wakeup_alarm();
         }
         case STM_WAKEUP_GPIO: {
-            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_pin_pinalarm_create_wakeup_alarm();
         }
         case STM_WAKEUP_UNDEF:
         default:
@@ -100,58 +100,51 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     return mp_const_none;
 }
 
-mp_obj_t common_hal_alarm_get_wake_alarm(void) {
-    // If we woke from light sleep, override with that alarm
-    if (most_recent_alarm != NULL) {
-        return most_recent_alarm;
-    }
-    return _get_wake_alarm(0, NULL);
-}
-
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
 }
 
-STATIC void _idle_until_alarm(void) {
-    // Poll for alarms.
+mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    _setup_sleep_alarms(false, n_alarms, alarms);
+    mp_obj_t wake_alarm = mp_const_none;
+
+    // TODO: add more dynamic clock shutdown/restart logic
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         // Detect if interrupt was alarm or ctrl-C interrupt.
         if (common_hal_alarm_woken_from_sleep()) {
-            return;
+            stm_sleep_source_t cause = alarm_get_wakeup_cause();
+            switch (cause) {
+                case STM_WAKEUP_RTC: {
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                case STM_WAKEUP_GPIO: {
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    break;
+                }
+                default:
+                    // Should not reach this, if all light sleep types are covered correctly
+                    break;
+            }
+            shared_alarm_save_wake_alarm(wake_alarm);
+            break;
         }
+        // HAL_PWR_EnterSLEEPMode is just a WFI anyway so don't bother
         port_idle_until_interrupt();
     }
-}
 
-mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    // If USB is active, only pretend to sleep. Otherwise, light sleep
-    if (supervisor_workflow_active()) {
-        _setup_sleep_alarms(false, n_alarms, alarms);
-        _idle_until_alarm();
-    } else {
-        _setup_sleep_alarms(false, n_alarms, alarms);
-        port_disable_tick();
-        HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-        port_enable_tick();
+    if (mp_hal_is_interrupted()) {
+        return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
     }
 
-    mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
-
-    // TODO: make assignment to global array less roundabout
-    most_recent_alarm = wake_alarm;
-    shared_alarm_save_wake_alarm();
-
-    // Can't use alarm_reset since it resets most_recent_alarm
-    alarm_pin_pinalarm_reset();
-    alarm_time_timealarm_reset();
+    alarm_reset();
     return wake_alarm;
 }
 
 void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    most_recent_alarm = NULL;
     _setup_sleep_alarms(true, n_alarms, alarms);
 }
 
