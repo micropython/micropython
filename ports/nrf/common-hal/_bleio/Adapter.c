@@ -619,8 +619,6 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     return mp_const_none;
 }
 
-// The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
-uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 STATIC void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
@@ -628,6 +626,9 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
     }
 }
+
+// The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
+uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
@@ -647,7 +648,10 @@ STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     return true;
 }
 
-uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
+uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable,
+    bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data,
+    uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len,
+    mp_int_t tx_power) {
     if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
         return NRF_ERROR_BUSY;
     }
@@ -725,7 +729,10 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     }
 
     ble_drv_add_event_handler(advertising_on_ble_evt, self);
-
+    err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, adv_handle, tx_power);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
     vm_used_ble = true;
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
@@ -736,7 +743,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 }
 
 
-void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo, mp_int_t tx_power) {
     if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
         mp_raise_bleio_BluetoothError(translate("Already advertising."));
     }
@@ -784,7 +791,8 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         self->advertising_data,
         advertising_data_bufinfo->len,
         self->scan_response_data,
-        scan_response_data_bufinfo->len));
+        scan_response_data_bufinfo->len,
+        tx_power));
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {

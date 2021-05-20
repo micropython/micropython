@@ -645,7 +645,7 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 //     return true;
 // }
 
-uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
+uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len, mp_int_t tx_power) {
     check_enabled(self);
 
     if (self->now_advertising) {
@@ -769,7 +769,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     return 0;
 }
 
-void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo, mp_int_t tx_power) {
     check_enabled(self);
 
     // interval value has already been validated.
@@ -793,12 +793,17 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         }
     }
 
+    if (tx_power != 0) {
+        mp_raise_NotImplementedError(translate("Only tx_power=0 supported"));
+    }
+
     const uint32_t result = _common_hal_bleio_adapter_start_advertising(
         self, connectable, anonymous, timeout, interval,
         advertising_data_bufinfo->buf,
         advertising_data_bufinfo->len,
         scan_response_data_bufinfo->buf,
-        scan_response_data_bufinfo->len);
+        scan_response_data_bufinfo->len,
+        tx_power);
 
     if (result) {
         mp_raise_bleio_BluetoothError(translate("Already advertising"));

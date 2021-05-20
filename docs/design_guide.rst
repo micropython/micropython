@@ -332,6 +332,32 @@ To add different types outside CircuitPython you need to include them in the int
 The intersphinx_mapping above includes references to Python, BusDevice and CircuitPython
 Documentation
 
+When the parameter have two different types, you should reference them as follows::
+
+
+    class Character_LCD:
+        """Base class for character LCD
+
+           :param ~digitalio.DigitalInOut rs: The reset data line
+           :param ~pwmio.PWMOut,~digitalio.DigitalInOut blue: Blue RGB Anode
+
+        """
+
+        def __init__(self, rs, blue):
+            self._rc = rs
+            self.blue = blue
+
+
+Renders as:
+
+.. py:class:: Character_LCD(rs, blue)
+    :noindex:
+
+    Base class for character LCD
+
+    :param ~digitalio.DigitalInOut rs: The reset data line
+    :param ~pwmio.PWMOut,~digitalio.DigitalInOut blue: Blue RGB Anode
+
 
 param_name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

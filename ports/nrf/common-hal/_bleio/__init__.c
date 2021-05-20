@@ -52,6 +52,9 @@ void check_nrf_error(uint32_t err_code) {
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
+        case NRF_ERROR_INVALID_PARAM:
+            mp_raise_ValueError(translate("Invalid BLE parameter"));
+            return;
         case BLE_ERROR_INVALID_CONN_HANDLE:
             mp_raise_ConnectionError(translate("Not connected"));
             return;
