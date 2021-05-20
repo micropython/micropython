@@ -35,9 +35,12 @@ endif
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(ZEPHYR_BASE)/micropython
 INC += -I$(ZEPHYR_BASE)/net/ip
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
+INC += -I$(ZEPHYR_BASE)/kernel/include
+INC += -I$(ZEPHYR_BASE)/arch/arm/include
 
 SRC_C = main.c \
 	help.c \
@@ -60,6 +63,22 @@ SRC_C = main.c \
 	lib/utils/interrupt_char.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
+
+# lv binding
+SRC_C +=  $(ZEPHYR_BASE)/lib/gui/lvgl/lvgl_display_16bit.c \
+    $(ZEPHYR_BASE)/lib/gui/lvgl/lvgl_display_24bit.c \
+    $(ZEPHYR_BASE)/lib/gui/lvgl/lvgl_display_32bit.c \
+    $(ZEPHYR_BASE)/lib/gui/lvgl/lvgl_display.c \
+    $(ZEPHYR_BASE)/lib/gui/lvgl/lvgl_display_mono.c \
+    build/lvgl/lv_mpy.c
+
+INC += -I$(ZEPHYR_BASE)
+INC += -I$(TOP)/lib/lv_bindings
+INC += -I$(TOP)/lib/lv_bindings/driver/zephyr
+INC += -I$(ZEPHYR_BASE)/include
+INC += -I$(ZEPHYR_BASE)/lib/gui/lvgl/
+INC += -I$(TOP)/lib/lv_bindings/lvgl
+
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C)
