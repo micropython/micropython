@@ -76,7 +76,7 @@ bool ipaddress_parse_ipv4address(const char *str_data, size_t str_len, uint32_t 
     return true;
 }
 
-//| def ip_address(obj: Union[int]) -> IPv4Address:
+//| def ip_address(obj: Union[int, str]) -> IPv4Address:
 //|     """Return a corresponding IP address object or raise ValueError if not possible."""
 //|     ...
 //|
@@ -91,7 +91,7 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
             mp_raise_ValueError(translate("Not a valid IP string"));
         }
     } else {
-        mp_raise_ValueError(translate("Only raw int supported for ip"));
+        mp_raise_ValueError(translate("Only raw int or string supported for ip"));
     }
 
     return common_hal_ipaddress_new_ipv4address(value);

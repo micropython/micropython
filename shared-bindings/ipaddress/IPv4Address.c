@@ -60,12 +60,13 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     uint8_t *buf = NULL;
     if (mp_obj_get_int_maybe(address, (mp_int_t *)&value)) {
         // We're done.
-        buf = (uint8_t *)value;
+        buf = (uint8_t *)&value;
     } else if (mp_obj_is_str(address)) {
         GET_STR_DATA_LEN(address, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
             mp_raise_ValueError(translate("Not a valid IP string"));
         }
+        buf = (uint8_t *)&value;
     } else {
         mp_buffer_info_t buf_info;
         if (mp_get_buffer(address, &buf_info, MP_BUFFER_READ)) {
