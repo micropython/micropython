@@ -60,7 +60,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
         "        movs r6, #3; d2: sub r6, #1; bne d2;"          // delay 3
         #endif
         #ifdef SAM_D5X_E5X
-        "        movs r6, #3; d2: subs r6, #1; bne d2;"          // delay 3
+        "        movs r6, #16; d2: subs r6, #1; bne d2;"          // delay 3
         #endif
         "        tst r4, r5;"                                   // mask&r5
         "        bne skipclr;"
@@ -70,7 +70,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
         "        movs r6, #6; d0: sub r6, #1; bne d0;"          // delay 6
         #endif
         #ifdef SAM_D5X_E5X
-        "        movs r6, #6; d0: subs r6, #1; bne d0;"          // delay 6
+        "        movs r6, #16; d0: subs r6, #1; bne d0;"          // delay 6
         #endif
         "        str r1, [r0, #0];"            // clr (possibly again, doesn't matter)
         #ifdef SAMD21
@@ -85,10 +85,13 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
         "        movs r6, #2; d1: sub r6, #1; bne d1;"          // delay 2
         #endif
         #ifdef SAM_D5X_E5X
-        "        movs r6, #2; d1: subs r6, #1; bne d1;"          // delay 2
+        "        movs r6, #15; d1: subs r6, #1; bne d1;"          // delay 2
         #endif
         "        b       loopBit;"
         "nextbyte:"
+        #ifdef SAM_D5X_E5X
+        "        movs r6, #12; d3: subs r6, #1; bne d3;"          // delay 2
+        #endif
         "        cmp r2, r3;"
         "        bcs neopixel_stop;"
         "        b loopLoad;"
@@ -114,41 +117,11 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
 
-
-    #ifdef SAM_D5X_E5X
-    // When this routine is positioned at certain addresses, the timing logic
-    // below can be too fast by about 2.5x. This is some kind of (un)fortunate code
-    // positioning with respect to a cache line.
-    // Theoretically we should turn on off the CMCC caches and the
-    // NVM caches to ensure consistent timing. Testing shows the the NVMCTRL
-    // cache disabling seems to make the difference. But turn both off to make sure.
-    // It's difficult to test because additions to the code before the timing loop
-    // below change instruction placement. (though this should be less true now that
-    // the main code is in the cache-aligned function neopixel_send_buffer_core)
-    // Testing was done by adding cache changes below the loop (so only the
-    // first time through is wrong).
-    //
-    // Turn off instruction, data, and NVM caches to force consistent timing.
-    // Invalidate existing cache entries.
-    hri_cmcc_set_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
-    hri_cmcc_write_MAINT0_reg(CMCC, CMCC_MAINT0_INVALL);
-    hri_nvmctrl_set_CTRLA_CACHEDIS0_bit(NVMCTRL);
-    hri_nvmctrl_set_CTRLA_CACHEDIS1_bit(NVMCTRL);
-    #endif
-
     uint32_t pin = digitalinout->pin->number;
     port = &PORT->Group[GPIO_PORT(pin)];      // Convert GPIO # to port register
     pinMask = (1UL << (pin % 32));   // From port_pin_set_output_level ASF code.
     volatile uint32_t *clr = &(port->OUTCLR.reg);
     neopixel_send_buffer_core(clr, pinMask, pixels, numBytes);
-
-    #ifdef SAM_D5X_E5X
-    // Turn instruction, data, and NVM caches back on.
-    hri_cmcc_clear_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
-    hri_nvmctrl_clear_CTRLA_CACHEDIS0_bit(NVMCTRL);
-    hri_nvmctrl_clear_CTRLA_CACHEDIS1_bit(NVMCTRL);
-
-    #endif
 
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;

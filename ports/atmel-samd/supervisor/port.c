@@ -462,6 +462,8 @@ static uint32_t _get_count(uint64_t *overflow_count) {
     return count;
 }
 
+volatile bool _woken_up;
+
 static void _port_interrupt_after_ticks(uint32_t ticks) {
     uint32_t current_ticks = _get_count(NULL);
     if (ticks > 1 << 28) {
@@ -473,9 +475,16 @@ static void _port_interrupt_after_ticks(uint32_t ticks) {
         return;
     }
     #endif
-    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    uint32_t target = current_ticks + (ticks << 4);
+    RTC->MODE0.COMP[0].reg = target;
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP0)) != 0) {
+    }
+    #endif
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+    current_ticks = _get_count(NULL);
+    _woken_up = current_ticks >= target;
 }
 
 void RTC_Handler(void) {
@@ -485,15 +494,18 @@ void RTC_Handler(void) {
         // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
         // tick.
         overflowed_ticks += (1L << (32 - 4));
+    }
     #ifdef SAM_D5X_E5X
-    } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
+    if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
         // Do things common to all ports when the tick occurs
         supervisor_tick();
+    }
     #endif
-    } else if (intflag & RTC_MODE0_INTFLAG_CMP0) {
+    if (intflag & RTC_MODE0_INTFLAG_CMP0) {
         // Clear the interrupt because we may have hit a sleep and _ticks_enabled
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+        _woken_up = true;
         #ifdef SAMD21
         if (_ticks_enabled) {
             // Do things common to all ports when the tick occurs.
@@ -565,7 +577,7 @@ void port_idle_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready() && !hold_interrupt) {
+    if (!tud_task_event_ready() && !hold_interrupt && !_woken_up) {
         __DSB();
         __WFI();
     }

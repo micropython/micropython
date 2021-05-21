@@ -36,7 +36,7 @@
 
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
-#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/tick.h"
 
@@ -65,11 +65,9 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
     // Wait for a while to allow for reset.
-    temp_status_color(SAFE_MODE);
-    #ifdef MICROPY_HW_LED_STATUS
-    digitalio_digitalinout_obj_t status_led;
-    common_hal_digitalio_digitalinout_construct(&status_led, MICROPY_HW_LED_STATUS);
-    common_hal_digitalio_digitalinout_switch_to_output(&status_led, true, DRIVE_MODE_PUSH_PULL);
+
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
     #endif
     #ifdef CIRCUITPY_BOOT_BUTTON
     digitalio_digitalinout_obj_t boot_button;
@@ -78,22 +76,32 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     #endif
     uint64_t start_ticks = supervisor_ticks_ms64();
     uint64_t diff = 0;
+    bool boot_in_safe_mode = false;
     while (diff < 1000) {
-        #ifdef MICROPY_HW_LED_STATUS
+        #ifdef CIRCUITPY_STATUS_LED
         // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
+        bool led_on = diff > 100 && diff / 100 != 2 && diff / 100 != 4;
+        if (led_on) {
+            new_status_color(SAFE_MODE);
+        } else {
+            new_status_color(BLACK);
+        }
         #endif
         #ifdef CIRCUITPY_BOOT_BUTTON
         if (!common_hal_digitalio_digitalinout_get_value(&boot_button)) {
-            return USER_SAFE_MODE;
+            boot_in_safe_mode = true;
+            break;
         }
         #endif
         diff = supervisor_ticks_ms64() - start_ticks;
     }
-    #ifdef MICROPY_HW_LED_STATUS
-    common_hal_digitalio_digitalinout_deinit(&status_led);
+    #if CIRCUITPY_STATUS_LED
+    new_status_color(BLACK);
+    status_led_deinit();
     #endif
-    clear_temp_status();
+    if (boot_in_safe_mode) {
+        return USER_SAFE_MODE;
+    }
     port_set_saved_word(SAFE_MODE_DATA_GUARD);
     return NO_SAFE_MODE;
 }

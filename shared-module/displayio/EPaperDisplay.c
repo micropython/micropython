@@ -409,7 +409,7 @@ void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t *self) {
     gc_collect_ptr((void *)self->stop_sequence);
 }
 
-bool maybe_refresh_epaperdisplay(void) {
+size_t maybe_refresh_epaperdisplay(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].epaper_display.base.type != &displayio_epaperdisplay_type ||
             displays[i].epaper_display.core.current_group != &circuitpython_splash) {
@@ -417,11 +417,16 @@ bool maybe_refresh_epaperdisplay(void) {
             continue;
         }
         displayio_epaperdisplay_obj_t *display = &displays[i].epaper_display;
-        if (common_hal_displayio_epaperdisplay_get_time_to_refresh(display) != 0) {
-            return false;
+        size_t time_to_refresh = common_hal_displayio_epaperdisplay_get_time_to_refresh(display);
+        if (time_to_refresh > 0) {
+            return time_to_refresh;
         }
-        return common_hal_displayio_epaperdisplay_refresh(display);
+        if (common_hal_displayio_epaperdisplay_refresh(display)) {
+            return 0;
+        }
+        // If we could refresh but it failed, then we want to retry.
+        return 1;
     }
-    // Return true if no ePaper displays are available to pretend it was updated.
-    return true;
+    // Return 0 if no ePaper displays are available to pretend it was updated.
+    return 0;
 }

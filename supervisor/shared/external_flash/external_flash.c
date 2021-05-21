@@ -39,7 +39,6 @@
 #include "lib/oofatfs/ff.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/memory.h"
-#include "supervisor/shared/rgb_led_status.h"
 
 #define NO_SECTOR_LOADED 0xFFFFFFFF
 
@@ -467,7 +466,6 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #ifdef MICROPY_HW_LED_MSC
     port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
     #endif
-    temp_status_color(ACTIVE_WRITE);
     // If we've cached to the flash itself flush from there.
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         flush_scratch_flash();
@@ -475,7 +473,6 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
         flush_ram_cache(keep_cache);
     }
     current_sector = NO_SECTOR_LOADED;
-    clear_temp_status();
     #ifdef MICROPY_HW_LED_MSC
     port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif
