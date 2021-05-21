@@ -491,7 +491,7 @@ function ci_zephyr_setup {
 }
 
 function ci_zephyr_install {
-    docker exec zephyr-ci west init --mr v2.5.0 /zephyrproject
+    docker exec zephyr-ci west init --mr v2.6.0 /zephyrproject
     docker exec -w /zephyrproject zephyr-ci west update
     docker exec -w /zephyrproject zephyr-ci west zephyr-export
 }
