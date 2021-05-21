@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-20 13:02+0000\n"
+"PO-Revision-Date: 2021-05-22 17:58+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1720,7 +1720,7 @@ msgstr "Bara en färg kan vara genomskinlig i taget"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int or string supported for ip"
-msgstr ""
+msgstr "Enbart int eller string stöds för ip"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
