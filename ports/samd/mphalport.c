@@ -31,6 +31,7 @@
 #include "py/stream.h"
 
 #if MICROPY_KBD_EXCEPTION
+void mp_keyboard_interrupt(void);
 
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
