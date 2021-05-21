@@ -40,6 +40,7 @@ typedef enum {
 #define STM_ALARM_FLAG      (RTC->BKP0R)
 
 extern void alarm_set_wakeup_reason(stm_sleep_source_t reason);
+stm_sleep_source_t alarm_get_wakeup_cause(void);
 extern void alarm_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32_COMMON_HAL_ALARM__INIT__H

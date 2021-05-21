@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/rgb_led_status.h"
 
 static bool spi_never_reset[SOC_SPI_PERIPH_NUM];
 

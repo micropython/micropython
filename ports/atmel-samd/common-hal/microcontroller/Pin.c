@@ -32,15 +32,7 @@
 #include "hal/include/hal_gpio.h"
 
 #include "samd/pins.h"
-#include "supervisor/shared/rgb_led_status.h"
 
-#ifdef MICROPY_HW_NEOPIXEL
-bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-bool apa102_sck_in_use;
-bool apa102_mosi_in_use;
-#endif
 #ifdef SPEAKER_ENABLE_PIN
 bool speaker_enable_in_use;
 #endif
@@ -90,14 +82,6 @@ void reset_all_pins(void) {
     gpio_set_pin_function(PIN_PA31, GPIO_PIN_FUNCTION_G);
     #endif
 
-    #ifdef MICROPY_HW_NEOPIXEL
-    neopixel_in_use = false;
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    apa102_sck_in_use = false;
-    apa102_mosi_in_use = false;
-    #endif
-
     // After configuring SWD because it may be shared.
     #ifdef SPEAKER_ENABLE_PIN
     speaker_enable_in_use = false;
@@ -121,25 +105,6 @@ void reset_pin_number(uint8_t pin_number) {
     }
 
     never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin_number == MICROPY_HW_NEOPIXEL->number) {
-        neopixel_in_use = false;
-        rgb_led_status_init();
-        return;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin_number == MICROPY_HW_APA102_MOSI->number ||
-        pin_number == MICROPY_HW_APA102_SCK->number) {
-        apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
-        apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
-        if (!apa102_sck_in_use && !apa102_mosi_in_use) {
-            rgb_led_status_init();
-        }
-        return;
-    }
-    #endif
 
     if (pin_number == PIN_PA30
         #ifdef SAM_D5X_E5X
@@ -176,20 +141,6 @@ void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        neopixel_in_use = true;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI) {
-        apa102_mosi_in_use = true;
-    }
-    if (pin == MICROPY_HW_APA102_SCK) {
-        apa102_sck_in_use = true;
-    }
-    #endif
-
     #ifdef SPEAKER_ENABLE_PIN
     if (pin == SPEAKER_ENABLE_PIN) {
         speaker_enable_in_use = true;
@@ -223,26 +174,6 @@ bool pin_number_is_free(uint8_t pin_number) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        // Special case for Metro M0 where the NeoPixel is also SWCLK
-#ifndef IGNORE_PIN_PA30
-        if (MICROPY_HW_NEOPIXEL == &pin_PA30 && DSU->STATUSB.bit.DBGPRES == 1) {
-            return false;
-        }
-#endif
-        return !neopixel_in_use;
-    }
-    #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI) {
-        return !apa102_mosi_in_use;
-    }
-    if (pin == MICROPY_HW_APA102_SCK) {
-        return !apa102_sck_in_use;
-    }
-    #endif
-
     #ifdef SPEAKER_ENABLE_PIN
     if (pin == SPEAKER_ENABLE_PIN) {
         return !speaker_enable_in_use;
