@@ -77,8 +77,3 @@
 
 #define HELP_TEXT_BOARD_LED         "1,2,3"
 
-// #define MICROPY_EMIT_ARM	     (1)
-//#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-//#define MICROPY_PY_SYS_STDFILES     (1)
-
-

@@ -171,6 +171,10 @@ Notes:
 * The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
   consumption during deepsleep.
 
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``on()`` or ``value(1)``.
+
 UART (serial bus)
 -----------------
 
@@ -483,10 +487,10 @@ Be sure to put a 4.7k pull-up resistor on the data line.  Note that
 the ``convert_temp()`` method must be called each time you want to
 sample the temperature.
 
-NeoPixel driver
----------------
+NeoPixel and APA106 driver
+--------------------------
 
-Use the ``neopixel`` module::
+Use the ``neopixel`` and ``apa106`` modules::
 
     from machine import Pin
     from neopixel import NeoPixel
@@ -496,6 +500,13 @@ Use the ``neopixel`` module::
     np[0] = (255, 255, 255) # set the first pixel to white
     np.write()              # write data to all pixels
     r, g, b = np[0]         # get first pixel colour
+
+
+The APA106 driver extends NeoPixel, but internally uses a different colour order::
+
+    from apa106 import APA106
+    ap = APA106(pin, 8)
+    r, g, b = ap[0]
 
 For low-level driving of a NeoPixel::
 
@@ -508,6 +519,7 @@ For low-level driving of a NeoPixel::
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
 
+APA102 (DotStar) uses a different driver as it has an additional clock pin.
 
 Capacitive touch
 ----------------

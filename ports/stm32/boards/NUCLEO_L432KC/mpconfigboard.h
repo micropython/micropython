@@ -42,13 +42,13 @@
 
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_A9)
 #define MICROPY_HW_I2C1_SDA (pin_A10)
 #define MICROPY_HW_I2C3_SCL (pin_A7)
 #define MICROPY_HW_I2C3_SDA (pin_B4)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS     (pin_B0)
 #define MICROPY_HW_SPI1_SCK     (pin_A5)
 #define MICROPY_HW_SPI1_MISO    (pin_A6)

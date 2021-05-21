@@ -32,6 +32,7 @@
 #include "py/stackctrl.h"
 #include "lib/utils/gchelper.h"
 #include "lib/utils/pyexec.h"
+#include "ticks.h"
 #include "tusb.h"
 #include "led.h"
 
@@ -41,6 +42,7 @@ void board_init(void);
 
 int main(void) {
     board_init();
+    ticks_init();
     tusb_init();
     led_init();
 

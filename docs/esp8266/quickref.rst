@@ -138,6 +138,10 @@ Also note that Pin(16) is a special pin (used for wakeup from deepsleep
 mode) and may be not available for use with higher-level classes like
 ``Neopixel``.
 
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``on()`` or ``value(1)``.
+
 UART (serial bus)
 -----------------
 
@@ -419,6 +423,20 @@ The DHT driver is implemented in software and works on all pins::
     d.measure()
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
+
+SSD1306 driver
+--------------
+
+Driver for SSD1306 monochrome OLED displays. See tutorial :ref:`ssd1306`. ::
+
+    from machine import Pin, I2C
+    import ssd1306
+
+    i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+    display.text('Hello World', 0, 0, 1)
+    display.show()
 
 WebREPL (web browser interactive prompt)
 ----------------------------------------

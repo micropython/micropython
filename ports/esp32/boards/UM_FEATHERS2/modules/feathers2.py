@@ -22,12 +22,12 @@ DOTSTAR_DATA = const(40)
 
 # SPI
 SPI_MOSI = const(35)
-SPI_MISO = const(36)
-SPI_CLK = const(37)
+SPI_MISO = const(37)
+SPI_CLK = const(36)
 
 # I2C
-I2C_SDA = const(38)
-I2C_SCL = const(33)
+I2C_SDA = const(8)
+I2C_SCL = const(9)
 
 # DAC
 DAC1 = const(17)
@@ -50,7 +50,7 @@ def toggle_led(state):
     l.value(not l.value())
 
 
-# Create ADC and set attenuation and return teh ambient light value from the onboard sensor
+# Create ADC and set attenuation and return the ambient light value from the onboard sensor
 def get_amb_light():
     adc = ADC(Pin(AMB_LIGHT))
     adc.atten(ADC.ATTN_11DB)
@@ -62,7 +62,7 @@ def get_amb_light():
 # prevent parasitic power from lighting the LED even with the LDO off, causing current use.
 # The DotStar is a beautiful LED, but parasitic power makes it a terrible choice for battery use :(
 def set_ldo2_power(state):
-    """Set the power for the on-board Dostar to allow no current draw when not needed."""
+    """Set the power for the on-board Dotstar to allow no current draw when not needed."""
     # Set the power pin to the inverse of state
     ldo2 = Pin(LDO2, Pin.OUT)
     ldo2.value(state)

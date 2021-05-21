@@ -64,7 +64,7 @@ Constructors
    the bus, if any).  If extra arguments are given, the bus is initialised.
    See ``init`` for parameters of initialisation.
 
-   The physical pins of the I2C busses on Pyboards V1.0 and V1.1 are:
+   The physical pins of the I2C buses on Pyboards V1.0 and V1.1 are:
 
      - ``I2C(1)`` is on the X position: ``(SCL, SDA) = (X9, X10) = (PB6, PB7)``
      - ``I2C(2)`` is on the Y position: ``(SCL, SDA) = (Y9, Y10) = (PB10, PB11)``

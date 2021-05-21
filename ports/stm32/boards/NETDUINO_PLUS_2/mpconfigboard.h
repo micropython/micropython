@@ -39,11 +39,11 @@ void NETDUINO_PLUS_2_board_early_init(void);
 #define MICROPY_HW_UART6_TX     (pin_C6)
 #define MICROPY_HW_UART6_RX     (pin_C7)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI2_NSS  (pin_B12)
 #define MICROPY_HW_SPI2_SCK  (pin_B13)
 #define MICROPY_HW_SPI2_MISO (pin_B14)

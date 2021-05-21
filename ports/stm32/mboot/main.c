@@ -106,8 +106,6 @@ static volatile uint32_t systick_ms;
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
-static void do_reset(void);
-
 uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
 }
@@ -771,7 +769,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
         memcpy(buf + 12 + sizeof(MICROPY_HW_MCU_NAME), MICROPY_HW_BOARD_NAME, sizeof(MICROPY_HW_BOARD_NAME) - 1);
         len = 12 + sizeof(MICROPY_HW_MCU_NAME) + sizeof(MICROPY_HW_BOARD_NAME) - 1;
     } else if (buf[0] == I2C_CMD_RESET && len == 0) {
-        do_reset();
+        dfu_context.leave_dfu = true;
     } else if (buf[0] == I2C_CMD_GETLAYOUT && len == 0) {
         len = strlen(FLASH_LAYOUT_STR);
         memcpy(buf, FLASH_LAYOUT_STR, len);
@@ -864,6 +862,7 @@ static void dfu_init(void) {
     dfu_context.cmd = DFU_CMD_NONE;
     dfu_context.status = DFU_STATUS_OK;
     dfu_context.error = 0;
+    dfu_context.leave_dfu = false;
     dfu_context.addr = 0x08000000;
 }
 
@@ -931,7 +930,8 @@ static void dfu_handle_rx(int cmd, int arg, int len, const void *buf) {
 
 static void dfu_process(void) {
     if (dfu_context.state == DFU_STATE_MANIFEST) {
-        do_reset();
+        // Set a flag to leave DFU mode from the main thread (here we are in an IRQ handler).
+        dfu_context.leave_dfu = true;
     }
 
     if (dfu_context.state == DFU_STATE_BUSY) {
@@ -1412,17 +1412,6 @@ static void leave_bootloader(void) {
     NVIC_SystemReset();
 }
 
-static void do_reset(void) {
-    led_state_all(0);
-    mp_hal_delay_ms(50);
-    pyb_usbdd_shutdown();
-    #if defined(MBOOT_I2C_SCL)
-    i2c_slave_shutdown(MBOOT_I2Cx, I2Cx_EV_IRQn);
-    #endif
-    mp_hal_delay_ms(50);
-    leave_bootloader();
-}
-
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
@@ -1561,7 +1550,7 @@ enter_bootloader:
     #if MBOOT_USB_RESET_ON_DISCONNECT
     bool has_connected = false;
     #endif
-    for (;;) {
+    while (!dfu_context.leave_dfu) {
         #if USE_USB_POLLING
         #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
         if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
@@ -1585,10 +1574,20 @@ enter_bootloader:
             has_connected = true;
         }
         if (has_connected && pyb_usbdd.hUSBDDevice.dev_state == USBD_STATE_SUSPENDED) {
-            do_reset();
+            break;
         }
         #endif
     }
+
+    // Shutdown and leave the bootloader.
+    led_state_all(0);
+    mp_hal_delay_ms(50);
+    pyb_usbdd_shutdown();
+    #if defined(MBOOT_I2C_SCL)
+    i2c_slave_shutdown(MBOOT_I2Cx, I2Cx_EV_IRQn);
+    #endif
+    mp_hal_delay_ms(50);
+    leave_bootloader();
 }
 
 void NMI_Handler(void) {

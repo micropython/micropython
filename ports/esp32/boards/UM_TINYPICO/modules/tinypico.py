@@ -80,7 +80,7 @@ def get_battery_charging():
 # need to be able to cut power to it to minimise power consumption during deep sleep or with general battery powered use
 # to minimise unneeded battery drain
 def set_dotstar_power(state):
-    """Set the power for the on-board Dostar to allow no current draw when not needed."""
+    """Set the power for the on-board Dotstar to allow no current draw when not needed."""
     # Set the power pin to the inverse of state
     if state:
         Pin(DOTSTAR_PWR, Pin.OUT, None)  # Break the PULL_HOLD on the pin
