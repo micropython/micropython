@@ -1226,6 +1226,10 @@ msgstr ""
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Mali ang BMP file"
@@ -2338,7 +2342,7 @@ msgstr "Hindi supportadong tipo ng bitmap"
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Hindi sinusuportahang operasyon"
 

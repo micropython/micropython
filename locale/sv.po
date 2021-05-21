@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-15 15:52+0000\n"
+"PO-Revision-Date: 2021-05-20 13:02+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1230,6 +1230,10 @@ msgstr "Ogiltigt ADC-enhetsvärde"
 msgid "Invalid AuthMode"
 msgstr "Ogiltig AuthMode"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr "Ogiltig BLE-parameter"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Ogiltig BMP-fil"
@@ -2362,7 +2366,7 @@ msgstr "Busstyp för display stöds inte"
 msgid "Unsupported format"
 msgstr "Formatet stöds inte"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Åtgärd som inte stöds"
 

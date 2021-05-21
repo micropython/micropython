@@ -864,7 +864,8 @@ msgstr "Data es muy grande para el paquete de anuncio"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr "Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
+msgstr ""
+"Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1242,6 +1243,10 @@ msgstr "Valor de unidad de ADC no válido"
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
 msgstr "AuthMode invalido"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -2383,7 +2388,7 @@ msgstr "Sin capacidad de bus tipo display"
 msgid "Unsupported format"
 msgstr "Formato no soportado"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operación no soportada"
 
