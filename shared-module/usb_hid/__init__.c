@@ -257,9 +257,13 @@ void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t rep
 void usb_hid_gc_collect(void) {
     gc_collect_ptr(hid_devices_tuple);
 
-    // Mark any heap pointers in the static device list as in use.
+    // Mark possible heap pointers in the static device list as in use.
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
-        gc_collect_ptr(&hid_devices[i]);
+        // Cast away the const for .report_descriptor. It could be in flash or on the heap.
+        // The const is necessary to have the bytes be placed only in flash.
+        gc_collect_ptr((void *)hid_devices[i].report_descriptor);
+        gc_collect_ptr(hid_devices[i].in_report_buffer);
+        gc_collect_ptr(hid_devices[i].out_report_buffer);
     }
 }
 
