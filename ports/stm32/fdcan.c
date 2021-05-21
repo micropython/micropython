@@ -158,10 +158,11 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             return false;
     }
 
-    __HAL_FDCAN_ENABLE_IT(&can_obj->can, FDCAN_IT_BUS_OFF | FDCAN_IT_ERROR_WARNING | FDCAN_IT_ERROR_PASSIVE);
-    __HAL_FDCAN_ENABLE_IT(&can_obj->can, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
-    __HAL_FDCAN_ENABLE_IT(&can_obj->can, FDCAN_IT_RX_FIFO0_MESSAGE_LOST | FDCAN_IT_RX_FIFO1_MESSAGE_LOST);
-    __HAL_FDCAN_ENABLE_IT(&can_obj->can, FDCAN_IT_RX_FIFO0_FULL | FDCAN_IT_RX_FIFO1_FULL);
+    uint32_t ActiveITs = FDCAN_IT_BUS_OFF | FDCAN_IT_ERROR_WARNING | FDCAN_IT_ERROR_PASSIVE;
+	ActiveITs |= FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE;
+	ActiveITs |= FDCAN_IT_RX_FIFO0_MESSAGE_LOST | FDCAN_IT_RX_FIFO1_MESSAGE_LOST;
+	ActiveITs |= FDCAN_IT_RX_FIFO0_FULL | FDCAN_IT_RX_FIFO1_FULL;
+	HAL_FDCAN_ActivateNotification(&can_obj->can, ActiveITs, 0);
 
     return true;
 }
