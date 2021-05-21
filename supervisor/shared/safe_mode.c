@@ -136,7 +136,7 @@ void print_safe_mode_message(safe_mode_t reason) {
             serial_write_compressed(translate("You requested starting safe mode by "));
             serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
             serial_write_compressed(translate("To exit, please reset the board without "));
-            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
+            message = BOARD_USER_SAFE_MODE_ACTION;
             #endif
             break;
         case MANUAL_SAFE_MODE:
