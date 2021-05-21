@@ -160,10 +160,12 @@ bool common_hal_usb_hid_enable(const mp_obj_t devices) {
         return false;
     }
 
-    hid_devices_num = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices));
-    if (hid_devices_num > MAX_HID_DEVICES) {
+    const mp_int_t num_devices = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices));
+    if (num_devices > MAX_HID_DEVICES) {
         mp_raise_ValueError_varg(translate("No more than %d HID devices allowed"), MAX_HID_DEVICES);
     }
+
+    hid_devices_num = num_devices;
 
     // Remember the devices in static storage so they live across VMs.
     for (mp_int_t i = 0; i < hid_devices_num; i++) {
