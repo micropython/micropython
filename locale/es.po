@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-15 15:52+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-05-21 17:47+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1246,7 +1246,7 @@ msgstr "AuthMode invalido"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
-msgstr ""
+msgstr "Parámetro BLE invalido"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
