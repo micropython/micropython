@@ -1722,8 +1722,8 @@ msgid "Only one color can be transparent at a time"
 msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 
 #: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "Ip jǐn zhīchí raw int"
+msgid "Only raw int or string supported for ip"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -4413,6 +4413,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Ip jǐn zhīchí raw int"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "
