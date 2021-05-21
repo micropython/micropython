@@ -39,13 +39,13 @@
     ((MODE) == PIN_MODE_ALT))
 
 #define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == PIN_DRIVE_OFF) || \
-    ((DRIVE) == PIN_DRIVE_LOWEST_POWER) || \
-    ((DRIVE) == PIN_DRIVE_LOW_POWER) || \
-    ((DRIVE) == PIN_DRIVE_LOWER_POWER) || \
-    ((DRIVE) == PIN_DRIVE_MED_POWER) || \
-    ((DRIVE) == PIN_DRIVE_HIGHER_POWER) || \
-    ((DRIVE) == PIN_DRIVE_HIGH_POWER) || \
-    ((DRIVE) == PIN_DRIVE_HIGHEST_POWER))
+    ((DRIVE) == PIN_DRIVE_POWER_0) || \
+    ((DRIVE) == PIN_DRIVE_POWER_1) || \
+    ((DRIVE) == PIN_DRIVE_POWER_2) || \
+    ((DRIVE) == PIN_DRIVE_POWER_3) || \
+    ((DRIVE) == PIN_DRIVE_POWER_4) || \
+    ((DRIVE) == PIN_DRIVE_POWER_5) || \
+    ((DRIVE) == PIN_DRIVE_POWER_6))
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
@@ -78,14 +78,17 @@ enum {
 
 enum {
     PIN_DRIVE_OFF = 0b000,
-    PIN_DRIVE_LOWEST_POWER,
-    PIN_DRIVE_LOW_POWER,
-    PIN_DRIVE_LOWER_POWER,
-    PIN_DRIVE_MED_POWER,
-    PIN_DRIVE_HIGHER_POWER,
-    PIN_DRIVE_HIGH_POWER,
-    PIN_DRIVE_HIGHEST_POWER,
+    PIN_DRIVE_POWER_0, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    PIN_DRIVE_POWER_1, // R0/2
+    PIN_DRIVE_POWER_2, // R0/3
+    PIN_DRIVE_POWER_3, // R0/4
+    PIN_DRIVE_POWER_4, // R0/5
+    PIN_DRIVE_POWER_5, // R0/6
+    PIN_DRIVE_POWER_6, // R0/7
 };
+
+
+
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

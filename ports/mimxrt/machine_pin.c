@@ -35,7 +35,6 @@
 
 // Local functions
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // Class Methods
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
@@ -46,9 +45,7 @@ STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_arg
 STATIC mp_obj_t machine_pin_off(mp_obj_t self_in);
 STATIC mp_obj_t machine_pin_on(mp_obj_t self_in);
 STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args);
-STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in);
 STATIC mp_obj_t machine_pin_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
-STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args);
 
 // Local data
 enum {
@@ -62,14 +59,12 @@ enum {
 const mp_obj_type_t machine_pin_cpu_pins_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_cpu,
-    .print = named_pin_obj_print,
     .locals_dict = (mp_obj_t)&machine_pin_cpu_pins_locals_dict,
 };
 
 const mp_obj_type_t machine_pin_board_pins_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_board,
-    .print = named_pin_obj_print,
     .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
 };
 
@@ -81,11 +76,7 @@ STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
     } else {
-        if (mp_obj_is_true(args[0])) {
-            mp_hal_pin_high(self);
-        } else {
-            mp_hal_pin_low(self);
-        }
+        mp_hal_pin_write(self, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -95,7 +86,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_MED_POWER}},
+        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_POWER_3}},
         // TODO: Implement additional arguments
         /*
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
@@ -180,15 +171,10 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     return mp_const_none;
 }
 
-STATIC void named_pin_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    const machine_pin_obj_t *self = self_in;
-    mp_printf(print, "<Pin.%q>", self->name);
-}
-
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     const machine_pin_obj_t *self = MP_OBJ_TO_PTR(o);
-    mp_printf(print, "PIN(%s)", qstr_str(self->name));
+    mp_printf(print, "Pin(%s)", qstr_str(self->name));
 }
 
 // pin(id, mode, pull, ...)
@@ -229,44 +215,11 @@ STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
-// pin.mode()
-STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
-    machine_pin_obj_t *self = self_in;
-    return mp_obj_new_int(pin_get_mode(self));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_mode_obj, machine_pin_mode);
-
 // pin.init(mode, pull, [kwargs])
 STATIC mp_obj_t machine_pin_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_init);
-
-// pin.drive([drive])
-STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
-    machine_pin_obj_t *self = args[0];
-    uint32_t pad_config = *((volatile uint32_t *)self->configRegister);
-
-    if (n_args == 1) {
-        pad_config &= IOMUXC_SW_PAD_CTL_PAD_DSE_MASK;
-        pad_config = pad_config >> IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT;
-        return MP_OBJ_NEW_SMALL_INT(pad_config);
-    } else {
-        uint drive = MP_OBJ_SMALL_INT_VALUE(args[1]);
-
-        if (!IS_GPIO_DRIVE(drive)) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
-        }
-
-        // Update drive settings of pad configuration
-        pad_config &= ~IOMUXC_SW_PAD_CTL_PAD_DSE_MASK;
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive);
-
-        IOMUXC_SetPinConfig(0, 0, 0, 0, self->configRegister, pad_config);
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_drive_obj, 1, 2, machine_pin_drive);
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // TODO: Implement class locals dictionary
@@ -276,9 +229,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&machine_pin_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&machine_pin_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_drive),   MP_ROM_PTR(&machine_pin_drive_obj) },
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&machine_pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&machine_pin_cpu_pins_obj_type) },
@@ -294,13 +245,13 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(PIN_PULL_HOLD) },
 
     { MP_ROM_QSTR(MP_QSTR_DRIVER_OFF), MP_ROM_INT(PIN_DRIVE_OFF) },
-    { MP_ROM_QSTR(MP_QSTR_LOWEST_POWER), MP_ROM_INT(PIN_DRIVE_LOWEST_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_LOW_POWER), MP_ROM_INT(PIN_DRIVE_LOW_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_LOWER_POWER), MP_ROM_INT(PIN_DRIVE_LOWER_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_MED_POWER), MP_ROM_INT(PIN_DRIVE_MED_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_HIGHER_POWER), MP_ROM_INT(PIN_DRIVE_HIGHER_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_HIGH_POWER), MP_ROM_INT(PIN_DRIVE_HIGH_POWER) },
-    { MP_ROM_QSTR(MP_QSTR_HIGHEST_POWER), MP_ROM_INT(PIN_DRIVE_HIGHEST_POWER) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_0), MP_ROM_INT(PIN_DRIVE_POWER_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_1), MP_ROM_INT(PIN_DRIVE_POWER_1) }, // R0/2
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_2), MP_ROM_INT(PIN_DRIVE_POWER_2) }, // R0/3
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_3), MP_ROM_INT(PIN_DRIVE_POWER_3) }, // R0/4
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_4), MP_ROM_INT(PIN_DRIVE_POWER_4) }, // R0/5
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_5), MP_ROM_INT(PIN_DRIVE_POWER_5) }, // R0/6
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_POWER_6), MP_ROM_INT(PIN_DRIVE_POWER_6) }, // R0/7
 
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);

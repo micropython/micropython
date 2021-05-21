@@ -34,6 +34,7 @@
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 #define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
 #define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
+#define mp_hal_pin_write(p, value) (GPIO_PinWrite(p->gpio, p->pin, value))
 #define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
 #define mp_hal_pin_read(p) (GPIO_PinRead(p->gpio, p->pin))
 
