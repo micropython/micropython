@@ -32,19 +32,28 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO6) },
     { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_RSTN_NINA), MP_ROM_PTR(&pin_GPIO3) },
+<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO4) },
     { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO9) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO7) },
+=======
+    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO8) },
+    { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO9) },
+    { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO11) },
+>>>>>>> 352281e23e803088209c27f8780a4e1e9d9503b1
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO12) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO13) },
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO6) },
 
+<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_SPIV_CS), MP_ROM_PTR(&pin_GPIO9) },
     { MP_ROM_QSTR(MP_QSTR_SPIV_CLK), MP_ROM_PTR(&pin_GPIO14) },
     { MP_ROM_QSTR(MP_QSTR_SPIV_DI), MP_ROM_PTR(&pin_GPIO8) },
     { MP_ROM_QSTR(MP_QSTR_RESET_N), MP_ROM_PTR(&pin_GPIO3) },
     { MP_ROM_QSTR(MP_QSTR_GPIO33), MP_ROM_PTR(&pin_GPIO10) },
 
+=======
+>>>>>>> 352281e23e803088209c27f8780a4e1e9d9503b1
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
