@@ -1,5 +1,6 @@
-USB_VID = 0x2E8A
-USB_PID = 0x0003
+USB_VID = 0x239A
+USB_PID = 0x00CF
+
 USB_PRODUCT = "Arduino Nano RP2040 Connect"
 USB_MANUFACTURER = "Arduino"
 
