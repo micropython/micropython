@@ -10,6 +10,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ESP_GPIO0), MP_ROM_PTR(&pin_GPIO2) },    // ESP32 FW boot state pin (confusingly named GPIO0)
     { MP_ROM_QSTR(MP_QSTR_ESP_RESET), MP_ROM_PTR(&pin_GPIO3) },
     { MP_ROM_QSTR(MP_QSTR_ESP_BUSY), MP_ROM_PTR(&pin_GPIO10) },
+    { MP_ROM_QSTR(MP_QSTR_ESP_CS), MP_ROM_PTR(&pin_GPIO9) },
 
     // Primary SPI
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO6) },
