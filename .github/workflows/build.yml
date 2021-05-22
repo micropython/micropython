@@ -190,6 +190,7 @@ jobs:
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
         - "arduino_nano_33_iot"
+        - "arduino_nano_rp2040_connect"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "bastble"
