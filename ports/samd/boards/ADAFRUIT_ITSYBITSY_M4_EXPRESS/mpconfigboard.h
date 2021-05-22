@@ -5,3 +5,15 @@
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
 #define MICROPY_PY_MATH                 (0)
 #define MICROPY_PY_CMATH                (0)
+
+// MicroPython configs
+// samd_flash.c flash parameters
+// Build a 128k Flash storage at top. 512k-128k=384k=0x60000
+// 512*1024= 0x80000 minus 128*1024= 0x20000 =  0x60000
+#define MICROPY_HW_FLASH_STORAGE_BASE       (0x60000)
+#define MICROPY_HW_FLASH_STORAGE_BYTES      (0x1FFFF)
+#define VFS_BLOCK_SIZE_BYTES                (1536) //
+
+// ASF4 MCU package specific Pin definitions
+#include "samd51g19a.h"
+
