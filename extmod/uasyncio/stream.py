@@ -103,7 +103,7 @@ class Server:
     async def wait_closed(self):
         await self.task
 
-    async def _serve(self, cb, host, port, backlog):
+    async def _serve(self, cb, host, port, backlog, ssl):
         import usocket as socket
 
         ai = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
@@ -122,7 +122,13 @@ class Server:
                 s.close()
                 return
             try:
-                s2, addr = s.accept()
+                s2r, addr = s.accept()
+                if ssl is not None:
+                    s2 = ssl(s2r)
+                    if s2 is None:
+                        raise
+                else:
+                    s2 = s2r
             except:
                 # Ignore a failed accept
                 continue
@@ -133,9 +139,14 @@ class Server:
 
 # Helper function to start a TCP stream server, running as a new task
 # TODO could use an accept-callback on socket read activity instead of creating a task
-async def start_server(cb, host, port, backlog=5):
+async def start_server(cb, host, port, backlog=5, **k):
+    if "ssl" not in k:
+        ssl = None
+    else:
+        ssl = k["ssl"]
+
     s = Server()
-    core.create_task(s._serve(cb, host, port, backlog))
+    core.create_task(s._serve(cb, host, port, backlog, ssl))
     return s
 
 
