@@ -67,7 +67,7 @@ extern mp_obj_t machine_uart_init(void) {
 
     // Set the register bits as needed 
     // (CMODE (async),CHSIZE (8),FORM (no parity),SBMODE (1 stop) already 0).
-    USARTx->USART.CTRLA.reg =   // USARTx = SERCOMx is set in 'samd_soc.h'
+    USARTx->USART.CTRLA.reg =   // USARTx = SERCOMx set in "boards/$(BOARD)/mpconfigboard.h"
         SERCOM_USART_CTRLA_DORD // Data order
         | SERCOM_USART_CTRLA_RXPO(rxpo) // Set Pad#
         | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
