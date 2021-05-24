@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-21 17:47+0000\n"
+"PO-Revision-Date: 2021-05-25 17:41+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -1700,7 +1700,7 @@ msgstr "cǐ yìng jiàn shàng jǐn tí gòng biān yuán jiǎn cè"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only int or string supported for ip"
-msgstr ""
+msgstr "jǐn zhī chí IP de zhěng shù huò zì fú chuàn"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
