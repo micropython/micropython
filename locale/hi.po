@@ -1672,6 +1672,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1691,10 +1695,6 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int or string supported for ip"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
