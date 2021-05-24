@@ -19,8 +19,8 @@
 #define MP_TX_PIN 22 //'n'
 #define MP_RX_PIN 23
 #define MP_PERIPHERAL_MUX 11 // 'n'th group of 2 pins
-#define USARTx SERCOM5 // SERCOM4:XIAO_M0 tx/rx
-#define MP_PORT_FUNC 0x33 // Sets PMUXE & PMUXO to the Alternative Function.A-H=0-7
+#define USARTx SERCOM5 // SERCOM5: tx/rx
+#define MP_PORT_FUNC 0x33 // Sets PMUXE & PMUXO to the Alternative Function.(A-H=0-7)
 #define MP_RXPO_PAD 3 // RXPO- Receive Data Pinout
 #define MP_TXPO_PAD 2 // TXPO- Tranmit Data Pinout
 #define MP_SERCOMx SERCOM5_ // APBCMASK
