@@ -1712,8 +1712,8 @@ msgid "Only one color can be transparent at a time"
 msgstr "Er kan maar één kleur per keer transparant zijn"
 
 #: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "Alleen raw int ondersteund voor IP"
+msgid "Only raw int or string supported for ip"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -4403,6 +4403,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Alleen raw int ondersteund voor IP"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "
