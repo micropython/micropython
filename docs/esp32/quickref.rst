@@ -85,6 +85,10 @@ The :mod:`network` module::
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
+Note that on the ESP32, ``wlan.connect()`` will attempt to reconnect to the access point
+**forever** even when wrong credentials are given or when no AP is in range.
+Under these circumstances, ``wlan.isconnected()`` will **always** return false until the connection attempt gets cancelled using ``wlan.disconnect()`` or ``wlan.active(False)``.
+
 A useful function for connecting to your local WiFi network is::
 
     def do_connect():
