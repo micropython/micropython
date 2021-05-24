@@ -38,6 +38,6 @@ typedef struct _machine_led_obj_t {
 } machine_led_obj_t;
 
 // MUST explicitly hold array # of rows, else machine_pin.c wont compile.
-extern const machine_pin_obj_t machine_pin_obj[41];
+extern const machine_pin_obj_t machine_pin_obj[48];
 extern const machine_led_obj_t machine_led_obj[1];
 
