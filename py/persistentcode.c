@@ -826,7 +826,7 @@ STATIC bool mp_raw_code_has_native(mp_raw_code_t *rc) {
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     // header contains:
-    //  byte  'M'
+    //  byte  'C'
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
