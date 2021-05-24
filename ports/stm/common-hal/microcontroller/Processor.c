@@ -27,6 +27,9 @@
 #include <math.h>
 #include "py/runtime.h"
 
+#if CIRCUITPY_ALARM
+#include "common-hal/alarm/__init__.h"
+#endif
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 #include "supervisor/shared/translate.h"
@@ -143,5 +146,10 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 }
 
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    #if CIRCUITPY_ALARM
+    if (alarm_get_wakeup_cause() != STM_WAKEUP_UNDEF) {
+        return RESET_REASON_DEEP_SLEEP_ALARM;
+    }
+    #endif
     return RESET_REASON_UNKNOWN;
 }

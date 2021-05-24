@@ -143,7 +143,9 @@ void reset_board_busses(void) {
         }
     }
     #endif
+    // make sure I2C lock is not held over a soft reset
     if (i2c_singleton != NULL) {
+        common_hal_busio_i2c_unlock(i2c_singleton);
         if (!display_using_i2c) {
             common_hal_busio_i2c_deinit(i2c_singleton);
             i2c_singleton = NULL;

@@ -31,9 +31,9 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 // RGB LEDs use PWM peripheral, avoid using them to save energy
-// #define CP_RGB_STATUS_R             (&pin_P0_30)
-// #define CP_RGB_STATUS_G             (&pin_P0_29)
-// #define CP_RGB_STATUS_B             (&pin_P0_31)
+#define CIRCUITPY_RGB_STATUS_R             (&pin_P0_30)
+#define CIRCUITPY_RGB_STATUS_G             (&pin_P0_29)
+#define CIRCUITPY_RGB_STATUS_B             (&pin_P0_31)
 
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 10)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1, 14)

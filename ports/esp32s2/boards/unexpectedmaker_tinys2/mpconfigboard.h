@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
