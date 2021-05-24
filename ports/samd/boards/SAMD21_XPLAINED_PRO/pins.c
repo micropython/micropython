@@ -58,8 +58,8 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PB13}, // PIN8_PWM(-)
     {{&machine_pin_type}, PIN_PB14}, // PIN9_IRQ/GPIO
     {{&machine_pin_type}, PIN_PB15}, // PIN10_SPI_SS_B/GPIO
-    //{{&machine_pin_type}, PIN_PA08}, // PIN11_TWI_SDA
-    //{{&machine_pin_type}, PIN_PA09}, // PIN12_TWI_SCL
+    {{NULL}, -1}, // PIN_PA08/ PIN11_TWI_SDA already defined
+    {{NULL}, -1}, // PIN_PA09/ PIN12_TWI_SCL already defined
     {{&machine_pin_type}, PIN_PB11}, // PIN13_UART_RX
     {{&machine_pin_type}, PIN_PB10}, // PIN14_UART_TX
     {{&machine_pin_type}, PIN_PA17}, // PIN15_SPI_SS_A
@@ -70,16 +70,16 @@ const machine_pin_obj_t machine_pin_obj[] = {
     // EXT3
     {{&machine_pin_type}, PIN_PA02}, // PIN3_ADC(+)
     {{&machine_pin_type}, PIN_PA03}, // PIN4_ADC(-)
-    //{{&machine_pin_type}, PIN_PB30}, // PIN5_GPIO
+    {{NULL}, -1}, // PIN_PB30/ PIN5_GPIO already defined
     {{&machine_pin_type}, PIN_PA15}, // PIN6_GPIO; USER_BUTTON
     {{&machine_pin_type}, PIN_PA12}, // PIN7_PWM(+)
     {{&machine_pin_type}, PIN_PA13}, // PIN8_PWM(-)
     {{&machine_pin_type}, PIN_PA28}, // PIN9_IRQ/GPIO
     {{&machine_pin_type}, PIN_PA27}, // PIN10_SPI_SS_B/GPIO
-    //{{&machine_pin_type}, PIN_PA08}, // PIN11_TWI_SDA
-    //{{&machine_pin_type}, PIN_PA09}, // PIN12_TWI_SCL
-    //{{&machine_pin_type}, PIN_PB11}, // PIN13_UART_RX
-    //{{&machine_pin_type}, PIN_PB10}, // PIN14_UART_TX
+    {{NULL}, -1}, // PIN_PA08/ PIN11_TWI_SDA already defined
+    {{NULL}, -1}, // PIN_PA09/ PIN12_TWI_SCL already defined
+    {{NULL}, -1}, // PIN_PB11/ PIN13_UART_RX already defined
+    {{NULL}, -1}, // PIN_PB10/ PIN14_UART_TX already defined
     {{&machine_pin_type}, PIN_PB17}, // PIN15_SPI_SS_A
     {{&machine_pin_type}, PIN_PB22}, // PIN16_SPI_MOSI
     {{&machine_pin_type}, PIN_PB16}, // PIN17_SPI_MISO
