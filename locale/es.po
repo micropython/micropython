@@ -1713,6 +1713,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr "Este hardware solo tiene capacidad para detección de borde"
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1735,10 +1739,6 @@ msgstr "Solamente una alarm.time puede ser configurada."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Solo un color puede ser transparente a la vez"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int or string supported for ip"
-msgstr "Para ip solo puede con un entero o una cadena"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -4447,6 +4447,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Only raw int or string supported for ip"
+#~ msgstr "Para ip solo puede con un entero o una cadena"
 
 #~ msgid "Only raw int supported for ip"
 #~ msgstr "Solo se aceptan enteros crudos para ip"

@@ -1695,6 +1695,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1717,10 +1721,6 @@ msgstr "Endast ett alarm.time kan ställas in."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Bara en färg kan vara genomskinlig i taget"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int or string supported for ip"
-msgstr "Enbart int eller string stöds för ip"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -4416,6 +4416,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Only raw int or string supported for ip"
+#~ msgstr "Enbart int eller string stöds för ip"
 
 #~ msgid "Only raw int supported for ip"
 #~ msgstr "Endast raw int stöds för ip"
