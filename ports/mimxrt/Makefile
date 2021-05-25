@@ -151,6 +151,7 @@ SRC_S = lib/utils/gchelper_m3.s \
 SRC_QSTR += \
 	machine_led.c \
 	machine_pin.c \
+	machine_adc.c \
 	machine_rtc.c \
 	machine_timer.c \
 	mimxrt_flash.c \
@@ -159,6 +160,7 @@ SRC_QSTR += \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
+	adc.c \	
 	lib/utils/sys_stdio_mphal.c \
 	$(GEN_PINS_SRC) \
 

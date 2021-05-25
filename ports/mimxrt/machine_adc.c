@@ -51,7 +51,7 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // Extract arguments
-    ADC_Type* adc_instance = adcBases[0];  // FIXME: get correct instance from pin
+    ADC_Type* adc_instance = adcBases[1];  // FIXME: get correct instance from pin
     
     // Configure ADC perpheral
     adc_config_t config;
@@ -66,14 +66,35 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);
 
     // Create ADC Instance
+    test_adc_instance.base.type = &machine_adc_type;
     test_adc_instance.adc = adc_instance;
     test_adc_instance.channel = 0;
+    test_adc_instance.channel_group = 0;
 
     return MP_OBJ_FROM_PTR(&test_adc_instance);
 }
 
 
+// read_u16()
+STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // Initiate conversion
+    self->adc->HC[0] |= ADC_HC_ADCH((1 << self->channel_group));
+
+    // Wait for conversion to finish
+    while(ADC_GetChannelStatusFlags(self->adc, self->channel_group)) {};
+    // TODO: investigate why this loop sometimes freezes
+
+    // Read out measured value
+    uint32_t value = ADC_GetChannelConversionValue(self->adc, self->channel_group);
+
+    return MP_OBJ_NEW_SMALL_INT(value * 65535 / 1024);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
+
 STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);

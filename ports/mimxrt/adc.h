@@ -34,6 +34,7 @@ typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
     ADC_Type* adc;
     uint32_t channel;
+    uint32_t channel_group;
 } machine_adc_obj_t;
 
 extern const mp_obj_type_t machine_adc_type;
