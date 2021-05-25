@@ -68,6 +68,20 @@ const mp_obj_type_t machine_pin_board_pins_obj_type = {
     .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
 };
 
+// Simplified mode setting used by the extmod modules
+void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
+    gpio_pin_config_t pin_config = {kGPIO_DigitalInput, 1, kGPIO_NoIntmode};
+
+    pin_config.direction = (mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput);
+    GPIO_PinInit(self->gpio, self->pin, &pin_config);
+    if (mode == PIN_MODE_OPEN_DRAIN) {
+        uint32_t pad_config = *(uint32_t *)self->configRegister;
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1) | IOMUXC_SW_PAD_CTL_PAD_DSE(0b110);
+        IOMUXC_SetPinMux(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
+        IOMUXC_SetPinConfig(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, pad_config);
+    }
+}
+
 STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;

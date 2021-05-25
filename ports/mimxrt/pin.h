@@ -140,5 +140,6 @@ const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_
 const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn);
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
 const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
+void machine_pin_set_mode(const machine_pin_obj_t *pin, uint8_t mode);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H
