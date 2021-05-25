@@ -113,12 +113,15 @@ SRC_TINYUSB_IMX_C += \
 
 SRC_C = \
 	main.c \
+	adc.c \
 	led.c \
 	pin.c \
 	ticks.c \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
+	$(MCU_DIR)/drivers/fsl_adc.c \
+	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
