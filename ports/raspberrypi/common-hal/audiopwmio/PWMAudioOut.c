@@ -126,17 +126,14 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self
 }
 
 void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
-    if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
-        common_hal_audiopwmio_pwmaudioout_stop(self);
-    }
 
     // TODO: Share pacing timers based on frequency.
     size_t pacing_timer = NUM_DMA_TIMERS;
     for (size_t i = 0; i < NUM_DMA_TIMERS; i++) {
         if (dma_hw->timer[i] == 0) {
             pacing_timer = i;
+            break;
         }
-        break;
     }
     if (pacing_timer == NUM_DMA_TIMERS) {
         mp_raise_RuntimeError(translate("No DMA pacing timer found"));

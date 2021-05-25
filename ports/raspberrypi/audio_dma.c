@@ -368,7 +368,6 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
     }
     if (!dma_channel_is_busy(dma->channel[0]) &&
         !dma_channel_is_busy(dma->channel[1])) {
-        audio_dma_stop(dma);
         return false;
     }
 
