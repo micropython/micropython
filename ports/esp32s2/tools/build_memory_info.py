@@ -5,72 +5,75 @@
 #
 # SPDX-License-Identifier: MIT
 
+import os
 import re
 import sys
 
-# Handle size constants with K or M suffixes (allowed in .ld but not in Python).
-K_PATTERN = re.compile(r"([0-9]+)[kK]")
-K_REPLACE = r"(\1*1024)"
-
-M_PATTERN = re.compile(r"([0-9]+)[mM]")
-M_REPLACE = r"(\1*1024*1024)"
+from elftools.elf.elffile import ELFFile
 
 print()
 
-text = 0
-data = 0
-bss = 0
-# stdin is the linker output.
-for line in sys.stdin:
-    # Uncomment to see linker output.
-    # print(line)
-    line = line.strip()
-    if not line.startswith("text"):
-        text, data, bss = map(int, line.split()[:3])
+internal_memory = [
+    # Name, Start, Length
+    ("RTC Fast Memory", (0x3FF9_E000, 0x4007_0000), 8 * 1024),
+    ("RTC Slow Memory", (0x5000_0000,), 8 * 1024),
+    ("Internal SRAM 0", (0x3FFB_0000, 0x4002_0000), 32 * 1024),
+    ("Internal SRAM 1", (0x3FFB_8000, 0x4002_8000), 288 * 1024),
+]
 
 
 def partition_size(arg):
     if "4MB" in arg:
-        return "1408K"
+        return 1408 * 1024
     else:
-        return "2048K"
+        return 2048 * 1024
 
 
-regions = {}
-# This file is the linker script.
-with open(sys.argv[1], "r") as f:
+def align(n, m):
+    return m * ((n + m - 1) // m)
+
+
+regions = dict((name, 0) for name, _, _ in internal_memory)
+
+# This file is the elf
+with open(sys.argv[1], "rb") as stream:
+    elffile = ELFFile(stream)
+    for section in elffile.iter_sections():
+        start = section["sh_addr"]
+        size = section["sh_size"]
+        offset = section["sh_offset"]
+        if not size or not start:
+            continue
+        for name, starts, length in internal_memory:
+            for mem_start in starts:
+                mem_end = mem_start + length
+                if start >= mem_start and start < mem_end:
+                    regions[name] = max(regions.get(name, 0), size)
+                    # print("# putting %s in %s (start=0x%x, size=%d)" % (section.name, name, start, size))
+
+# This file is the sdkconfig
+with open(sys.argv[2], "r") as f:
     for line in f:
         line = line.strip()
-        if line.startswith("CONFIG_SPIRAM_SIZE"):
-            regions["RAM"] = line.split("=")[-1]
         if line.startswith("CONFIG_PARTITION_TABLE_FILENAME"):
-            regions["FLASH_FIRMWARE"] = partition_size(line.split("=")[-1])
+            firmware_region = int(partition_size(line.split("=")[-1]))
 
-for region in regions:
-    space = regions[region]
-    if "/*" in space:
-        space = space.split("/*")[0]
-    space = K_PATTERN.sub(K_REPLACE, space)
-    space = M_PATTERN.sub(M_REPLACE, space)
-    regions[region] = int(eval(space))
+# This file is the bin
+used_flash = os.stat(sys.argv[3]).st_size
 
-firmware_region = regions["FLASH_FIRMWARE"]
-ram_region = regions["RAM"]
-
-used_flash = data + text
 free_flash = firmware_region - used_flash
-used_ram = data + bss
-free_ram = ram_region - used_ram
 print(
-    "{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(
+    "{:7} bytes used, {:7} bytes free in flash firmware space out of {} bytes ({}kB).".format(
         used_flash, free_flash, firmware_region, firmware_region / 1024
     )
 )
-print(
-    "{} bytes used, {} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(
-        used_ram, free_ram, ram_region, ram_region / 1024
-    )
-)
+for name, mem_start, length in internal_memory:
+    if name in regions:
+        print(
+            "{:7} bytes used, {:7} bytes free in '{}' out of {} bytes ({}kB).".format(
+                regions[name], length - regions[name], name, length, length / 1024
+            )
+        )
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data
