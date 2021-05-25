@@ -40,11 +40,6 @@
 
 void mp_hal_set_interrupt_char(int c);
 
-static inline uint64_t  mp_hal_time_ns(void) {
-    // FIXME: Implement hal time ns
-    return 0UL;
-}
-
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return ticks_ms32();
 }

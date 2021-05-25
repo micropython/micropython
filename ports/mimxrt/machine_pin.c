@@ -222,7 +222,6 @@ STATIC mp_obj_t machine_pin_init(size_t n_args, const mp_obj_t *args, mp_map_t *
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_init_obj, 1, machine_pin_init);
 
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
-    // TODO: Implement class locals dictionary
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
