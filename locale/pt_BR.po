@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-22 17:58+0000\n"
+"PO-Revision-Date: 2021-05-25 17:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1713,7 +1713,7 @@ msgstr "Apenas a detecção de borda está disponível neste hardware"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only int or string supported for ip"
-msgstr ""
+msgstr "Apenas int ou string é suportado para ip"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
