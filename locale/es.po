@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-22 17:58+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2021-05-24 21:25+0000\n"
+"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1713,6 +1713,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr "Este hardware solo tiene capacidad para detección de borde"
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr "Solamente int or string son permitados para una ip"
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1735,10 +1739,6 @@ msgstr "Solamente una alarm.time puede ser configurada."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Solo un color puede ser transparente a la vez"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int or string supported for ip"
-msgstr "Para ip solo puede con un entero o una cadena"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -4447,6 +4447,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Only raw int or string supported for ip"
+#~ msgstr "Para ip solo puede con un entero o una cadena"
 
 #~ msgid "Only raw int supported for ip"
 #~ msgstr "Solo se aceptan enteros crudos para ip"
