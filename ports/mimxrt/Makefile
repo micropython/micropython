@@ -15,6 +15,9 @@ include $(BOARD_DIR)/mpconfigboard.mk
 QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
+# MicroPython feature configurations
+FROZEN_MANIFEST ?= boards/manifest.py
+
 # Include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -89,6 +92,8 @@ LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+
 # TinyUSB Stack source
 SRC_TINYUSB_C += \
 	lib/tinyusb/src/tusb.c \
@@ -134,6 +139,11 @@ SRC_C = \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
+	extmod/machine_i2c.c \
+	extmod/machine_spi.c \
+	extmod/machine_signal.c \
+	drivers/bus/softspi.c \
+	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_TINYUSB_IMX_C) \
 
@@ -241,6 +251,7 @@ SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
 	pin.c \
+	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \
 
 OBJ += $(PY_O)

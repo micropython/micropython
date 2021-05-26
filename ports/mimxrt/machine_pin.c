@@ -39,7 +39,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 // Class Methods
 STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
 STATIC mp_obj_t machine_pin_obj_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
-STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 // Instance Methods
 STATIC mp_obj_t machine_pin_off(mp_obj_t self_in);
@@ -191,7 +191,7 @@ STATIC void machine_pin_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_
 }
 
 // pin(id, mode, pull, ...)
-STATIC mp_obj_t machine_pin_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     const machine_pin_obj_t *pin = pin_find(args[0]);
@@ -273,7 +273,7 @@ const mp_obj_type_t machine_pin_type = {
     .name = MP_QSTR_Pin,
     .print = machine_pin_obj_print,
     .call = machine_pin_obj_call,
-    .make_new = machine_pin_obj_make_new,
+    .make_new = mp_pin_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
 
@@ -282,6 +282,6 @@ const mp_obj_type_t machine_pin_af_type = {
     {&mp_type_type},
     .name = MP_QSTR_PinAF,
     .print = machine_pin_obj_print,
-    .make_new = machine_pin_obj_make_new,
+    .make_new = mp_pin_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
