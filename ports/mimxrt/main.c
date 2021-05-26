@@ -128,7 +128,7 @@ const char mimxrt_help_text[] =
     "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
     "    methods: init(..), value([v]), high(), low())\n"
     "\n"
-    "Pin IO modes are: Pin.IN, Pin.OUT\n"
+    "Pin IO modes are: Pin.IN, Pin.OUT, Pin.OPEN_DRAIN\n"
     "Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
     "\n"
     "Useful control commands:\n"

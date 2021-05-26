@@ -48,6 +48,9 @@
 #define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 
+#define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
+#define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
+
 void mp_hal_set_interrupt_char(int c);
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
