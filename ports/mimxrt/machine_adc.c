@@ -29,7 +29,7 @@
 #include "adc.h"
 
 
-STATIC machine_adc_obj_t test_adc_instance;
+STATIC machine_adc_obj_t adc_test_object;
 static ADC_Type *const adcBases[] = ADC_BASE_PTRS;
 
 
@@ -38,21 +38,20 @@ STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t k
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
 
     // Get ADC instance id
-    for (int i = 0; i < sizeof(adcBases)/sizeof(ADC_Type*); ++i)
+    for (int i = 1; i < sizeof(adcBases) / sizeof(ADC_Type *); ++i)
     {
-        if (adcBases[i] == self->adc)
-        {
+        if (adcBases[i] == self->adc) {
             mp_printf(print, "ADC(%u, channel=%u)", i, self->channel);
         }
-    }    
+    }
 }
 
 STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // Extract arguments
-    ADC_Type* adc_instance = adcBases[1];  // FIXME: get correct instance from pin
-    
+    ADC_Type *adc_instance = adcBases[1];  // FIXME: get correct instance from pin
+
     // Configure ADC perpheral
     adc_config_t config;
     ADC_GetDefaultConfig(&config);  // FIXME: generate configuration based on user input
@@ -60,18 +59,19 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Configure ADC peripheral channel
     adc_channel_config_t channel_config = {
-        .channelNumber=0,
-        .enableInterruptOnConversionCompleted=false,
+        .channelNumber = 0,
+        .enableInterruptOnConversionCompleted = false,
     };
     ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);
 
     // Create ADC Instance
-    test_adc_instance.base.type = &machine_adc_type;
-    test_adc_instance.adc = adc_instance;
-    test_adc_instance.channel = 0;
-    test_adc_instance.channel_group = 0;
+    adc_test_object.base.type = &machine_adc_type;
+    adc_test_object.adc = adc_instance;
+    adc_test_object.channel = 0;
+    adc_test_object.channel_group = 0;
+    adc_test_object.resolution = 4096;
 
-    return MP_OBJ_FROM_PTR(&test_adc_instance);
+    return MP_OBJ_FROM_PTR(&adc_test_object);
 }
 
 
@@ -80,16 +80,12 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Initiate conversion
-    self->adc->HC[0] |= ADC_HC_ADCH((1 << self->channel_group));
+    adc_start_conversion(self);
 
-    // Wait for conversion to finish
-    while(ADC_GetChannelStatusFlags(self->adc, self->channel_group)) {};
-    // TODO: investigate why this loop sometimes freezes
+    // Measure input voltage
+    uint32_t value = adc_read_result(self);
 
-    // Read out measured value
-    uint32_t value = ADC_GetChannelConversionValue(self->adc, self->channel_group);
-
-    return MP_OBJ_NEW_SMALL_INT(value * 65535 / 1024);
+    return MP_OBJ_NEW_SMALL_INT(value * 65535 / self->resolution);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 

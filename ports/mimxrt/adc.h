@@ -27,16 +27,22 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_ADC_H
 #define MICROPY_INCLUDED_MIMXRT_ADC_H
 
+#include <stdint.h>
+#include "py/obj.h"
 #include "fsl_adc.h"
 
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
-    ADC_Type* adc;
-    uint32_t channel;
-    uint32_t channel_group;
+    ADC_Type *adc;
+    uint8_t channel;
+    uint8_t channel_group;
+    uint16_t resolution;
 } machine_adc_obj_t;
 
 extern const mp_obj_type_t machine_adc_type;
+
+void adc_start_conversion(machine_adc_obj_t *adc);
+uint32_t adc_read_result(machine_adc_obj_t *adc);
 
 #endif // MICROPY_INCLUDED_MIMXRT_ADC_H
