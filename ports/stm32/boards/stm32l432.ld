@@ -6,7 +6,7 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 230K /* sectors 0-114 */
-    FLASH_FS (r)    : ORIGIN = 0x08060000, LENGTH = 26K /* sectors 115-127 */
+    FLASH_FS (r)    : ORIGIN = 0x08039800, LENGTH = 26K /* sectors 115-127 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 64K /* SRAM1, 48K + SRAM2, 16K */
 }
 
