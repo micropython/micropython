@@ -146,6 +146,7 @@ function ci_mimxrt_setup {
 }
 
 function ci_mimxrt_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/mimxrt submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
