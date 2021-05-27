@@ -24,4 +24,29 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+#include "py/mphal.h"
+
 #include "adc.h"
+
+
+void adc_init(void) {
+    ADC_Type *const adcBases[] = ADC_BASE_PTRS;
+
+    for (int i = 1; i < sizeof(adcBases) / sizeof(ADC_Type *); ++i)
+    {
+        ADC_Type *adc_instance = adcBases[i];
+
+        // Configure ADC perpheral
+        adc_config_t config;
+        ADC_GetDefaultConfig(&config);
+        ADC_Init(adc_instance, &config);
+
+        // Perform calibration
+        status_t calib_state = ADC_DoAutoCalibration(adc_instance);
+
+        if (calib_state == kStatus_Fail) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Calibration for ADC Instance %d failed", i));
+        }
+    }
+}

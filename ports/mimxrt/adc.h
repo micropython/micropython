@@ -42,4 +42,6 @@ typedef struct _machine_adc_obj_t {
 
 extern const mp_obj_type_t machine_adc_type;
 
+void adc_init(void);
+
 #endif // MICROPY_INCLUDED_MIMXRT_ADC_H

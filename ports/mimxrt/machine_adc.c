@@ -29,19 +29,17 @@
 
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
-
 #include "adc.h"
 
 
-STATIC machine_adc_obj_t adc_test_object;
-static ADC_Type *const adcBases[] = ADC_BASE_PTRS;
+STATIC ADC_Type *const adcBases[] = ADC_BASE_PTRS;
 
 
 STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
 
-    // Get ADC instance id
+    // Get ADC adc id
     for (int i = 1; i < sizeof(adcBases) / sizeof(ADC_Type *); ++i)
     {
         if (adcBases[i] == self->adc) {
@@ -62,34 +60,24 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Extract arguments
     ADC_Type *adc_instance = pin->adc_list[0].instance;  // NOTE: we only use the first ADC assignment - multiple assignments are not supported for now
-    uint32_t channel = (uint32_t)pin->adc_list[0].channel;
-
-    // Configure ADC perpheral
-    adc_config_t config;
-    ADC_GetDefaultConfig(&config);  // FIXME: generate configuration based on user input
-    ADC_Init(adc_instance, &config);
+    uint8_t channel = pin->adc_list[0].channel;
 
     // Configure ADC peripheral channel
     adc_channel_config_t channel_config = {
-        .channelNumber = channel,
+        .channelNumber = (uint32_t)channel,
         .enableInterruptOnConversionCompleted = false,
     };
-    ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0'
-
-    status_t calib_state = ADC_DoAutoCalibration(adc_instance);
-
-    if (calib_state == kStatus_Fail) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Calibration for ADC Instance failed"));
-    }
+    ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0' since we only perform software triggered conversion
 
     // Create ADC Instance
-    adc_test_object.base.type = &machine_adc_type;
-    adc_test_object.adc = adc_instance;
-    adc_test_object.channel = channel;
-    adc_test_object.channel_group = 0;
-    adc_test_object.resolution = 4096;  // NOTE: currently only 12bit resolution supported
+    machine_adc_obj_t *o = m_new_obj(machine_adc_obj_t);
+    o->base.type = &machine_adc_type;
+    o->adc = adc_instance;
+    o->channel = (uint8_t)channel;
+    o->channel_group = 0;
+    o->resolution = 4096;  // NOTE: currently only 12bit resolution supported
 
-    return MP_OBJ_FROM_PTR(&adc_test_object);
+    return MP_OBJ_FROM_PTR(o);
 }
 
 
