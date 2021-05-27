@@ -104,7 +104,6 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self,
 
     if (stat == PROTOMATTER_OK) {
         _PM_protoPtr = &self->protomatter;
-        // common_hal_mcu_disable_interrupts();
         common_hal_rgbmatrix_timer_enable(self->timer);
         stat = _PM_begin(&self->protomatter);
 
@@ -112,9 +111,6 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self,
             _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
             _PM_swapbuffer_maybe(&self->protomatter);
         }
-        // common_hal_mcu_enable_interrupts();
-        // if (stat == PROTOMATTER_OK) {
-        // }
     }
 
     if (stat != PROTOMATTER_OK) {
