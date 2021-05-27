@@ -1,0 +1,106 @@
+name: windows port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/unix/**'
+      - 'ports/windows/**'
+
+jobs:
+  build:
+    runs-on: windows-2019
+    defaults:
+      run:
+        # We define a custom shell script here, although `msys2.cmd` does neither exist nor is it available in the PATH yet
+        shell: msys2 {0}
+    steps:
+
+    # We want to change the configuration of the git command that actions/checkout will be using (since it is not possible to set autocrlf through the action yet, see actions/checkout#226).
+    - run: git config --global core.autocrlf input
+      shell: bash
+
+    - name: Check python coding (cmd)
+      run: |
+        python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+      shell: cmd
+
+    # We use a JS Action, which calls the system terminal or other custom terminals directly, if required
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: base-devel git wget unzip gcc python-pip
+
+    # The goal of this was to test how things worked when the default file
+    # encoding (locale.getpreferedencoding()) was not UTF-8.  However, msys2
+    # python does use utf-8 as the preferred file encoding, and using
+    # actions/setup-python python3.8 gave a broken build, so we're not really
+    # testing what we wanted to test.
+    #
+    # however, commandline length limits are being tested so that does some
+    # good.
+    - name: Check python coding (msys2)
+      run: |
+        locale -v
+        which python; python --version
+        python -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+        which python3; python3 --version
+        python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
+
+    - name: Install dependencies
+      run: |
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+        unzip -q -d /tmp gcc-arm.zip
+        tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
+        pip install wheel
+        # requirements_dev.txt doesn't install on windows. (with msys2 python)
+        # instead, pick a subset for what we want to do
+        pip install cascadetoml jinja2 typer
+        # check that installed packages work....?
+        which python; python --version; python -c "import cascadetoml"
+        which python3; python3 --version; python3 -c "import cascadetoml"
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: |
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+
+    - name: build mpy-cross
+      run: make -j2 -C mpy-cross
+
+    - name: build rp2040
+      run: make -j2 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
+
+    - name: build samd21
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
+
+    - name: build samd51
+      run: make -j2 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
+
+    - name: build nrf
+      run: make -j2 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
+
+    - name: build stm
+      run: make -j2 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
+
+# I gave up trying to do esp32 builds on windows when I saw
+# ERROR: Platform MINGW64_NT-10.0-17763-x86_64 appears to be unsupported
+# https://github.com/espressif/esp-idf/issues/7062
+#
+#    - name: prepare esp
+#      run: ports/esp32s2/esp-idf/install.bat
+#      shell: cmd
+#
+#    - name: build esp
+#      run: . ports/esp32s2/esp-idf/export.sh && make -j2 -C ports/esp32s2 BOARD=adafruit_metro_esp32s2
