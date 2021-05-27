@@ -243,6 +243,7 @@ def trace_instance_output(instance_idx, line):
     if cmd_args.trace_output:
         t_ms = round((time.time() - trace_t0) * 1000)
         print("{:6} i{} :".format(t_ms, instance_idx), line)
+        sys.stdout.flush()
 
 
 def run_test_on_instances(test_file, num_instances, instances):

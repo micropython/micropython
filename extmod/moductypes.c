@@ -34,38 +34,10 @@
 
 #if MICROPY_PY_UCTYPES
 
-/// \module uctypes - Access data structures in memory
-///
-/// The module allows to define layout of raw data structure (using terms
-/// of C language), and then access memory buffers using this definition.
-/// The module also provides convenience functions to access memory buffers
-/// contained in Python objects or wrap memory buffers in Python objects.
-/// \constant UINT8_1 - uint8_t value type
-
-/// \class struct - C-like structure
-///
-/// Encapsulalation of in-memory data structure. This class doesn't define
-/// any methods, only attribute access (for structure fields) and
-/// indexing (for pointer and array fields).
-///
-/// Usage:
-///
-///     # Define layout of a structure with 2 fields
-///     # 0 and 4 are byte offsets of fields from the beginning of struct
-///     # they are logically ORed with field type
-///     FOO_STRUCT = {"a": 0 | uctypes.UINT32, "b": 4 | uctypes.UINT8}
-///
-///     # Example memory buffer to access (contained in bytes object)
-///     buf = b"\x64\0\0\0\0x14"
-///
-///     # Create structure object referring to address of
-///     # the data in the buffer above
-///     s = uctypes.struct(FOO_STRUCT, uctypes.addressof(buf))
-///
-///     # Access fields
-///     print(s.a, s.b)
-///     # Result:
-///     # 100, 20
+// The uctypes module allows defining the layout of a raw data structure (using
+// terms of the C language), and then access memory buffers using this definition.
+// The module also provides convenience functions to access memory buffers
+// contained in Python objects or wrap memory buffers in Python objects.
 
 #define LAYOUT_LITTLE_ENDIAN (0)
 #define LAYOUT_BIG_ENDIAN    (1)
@@ -75,6 +47,7 @@
 #define BITF_LEN_BITS 5
 #define BITF_OFF_BITS 5
 #define OFFSET_BITS 17
+#define LEN_BITS (OFFSET_BITS + BITF_OFF_BITS)
 #if VAL_TYPE_BITS + BITF_LEN_BITS + BITF_OFF_BITS + OFFSET_BITS != 31
 #error Invalid encoding field length
 #endif
@@ -191,7 +164,7 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
             mp_uint_t item_s;
             if (t->len == 2) {
                 // Elements of array are scalar
-                item_s = GET_SCALAR_SIZE(val_type);
+                item_s = uctypes_struct_scalar_size(val_type);
                 if (item_s > *max_field_size) {
                     *max_field_size = item_s;
                 }
@@ -419,10 +392,8 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
-// printf("scalar type=%d offset=%x\n", val_type, offset);
 
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
-//            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
             if (self->flags == LAYOUT_NATIVE) {
                 if (set_val == MP_OBJ_NULL) {
                     return get_aligned(val_type, self->addr + offset, 0);
@@ -439,9 +410,9 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 }
             }
         } else if (val_type >= BFUINT8 && val_type <= BFINT32) {
-            uint bit_offset = (offset >> 17) & 31;
-            uint bit_len = (offset >> 22) & 31;
-            offset &= (1 << 17) - 1;
+            uint bit_offset = (offset >> OFFSET_BITS) & 31;
+            uint bit_len = (offset >> LEN_BITS) & 31;
+            offset &= (1 << OFFSET_BITS) - 1;
             mp_uint_t val;
             if (self->flags == LAYOUT_NATIVE) {
                 val = get_aligned_basic(val_type & 6, self->addr + offset);
@@ -489,7 +460,6 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
-// printf("agg type=%d offset=%x\n", agg_type, offset);
 
     switch (agg_type) {
         case STRUCT: {
@@ -514,7 +484,6 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
-// printf("PTR/ARR base addr=%p\n", o->addr);
             return MP_OBJ_FROM_PTR(o);
         }
     }
@@ -572,7 +541,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                         return value; // just !MP_OBJ_NULL
                     }
                 } else {
-                    byte *p = self->addr + GET_SCALAR_SIZE(val_type) * index;
+                    byte *p = self->addr + uctypes_struct_scalar_size(val_type) * index;
                     if (value == MP_OBJ_SENTINEL) {
                         return get_unaligned(val_type, p, self->flags);
                     } else {
@@ -647,9 +616,8 @@ STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
     return 0;
 }
 
-/// \function addressof()
-/// Return address of object's data (applies to object providing buffer
-/// interface).
+// addressof()
+// Return address of object's data (applies to objects providing the buffer interface).
 STATIC mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -657,24 +625,19 @@ STATIC mp_obj_t uctypes_struct_addressof(mp_obj_t buf) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_addressof_obj, uctypes_struct_addressof);
 
-/// \function bytearray_at()
-/// Capture memory at given address of given size as bytearray. Memory is
-/// captured by reference (and thus memory pointed by bytearray may change
-/// or become invalid at later time). Use bytes_at() to capture by value.
+// bytearray_at()
+// Capture memory at given address of given size as bytearray.
 STATIC mp_obj_t uctypes_struct_bytearray_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void *)(uintptr_t)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytearray_at_obj, uctypes_struct_bytearray_at);
 
-/// \function bytes_at()
-/// Capture memory at given address of given size as bytes. Memory is
-/// captured by value, i.e. copied. Use bytearray_at() to capture by reference
-/// ("zero copy").
+// bytes_at()
+// Capture memory at given address of given size as bytes.
 STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
     return mp_obj_new_bytes((void *)(uintptr_t)mp_obj_int_get_truncated(ptr), mp_obj_int_get_truncated(size));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
-
 
 STATIC const mp_obj_type_t uctypes_struct_type = {
     { &mp_type_type },
@@ -695,81 +658,63 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bytes_at), MP_ROM_PTR(&uctypes_struct_bytes_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytearray_at), MP_ROM_PTR(&uctypes_struct_bytearray_at_obj) },
 
-    /// \moduleref uctypes
-
-    /// \constant NATIVE - Native structure layout - native endianness,
-    /// platform-specific field alignment
     { MP_ROM_QSTR(MP_QSTR_NATIVE), MP_ROM_INT(LAYOUT_NATIVE) },
-    /// \constant LITTLE_ENDIAN - Little-endian structure layout, tightly packed
-    /// (no alignment constraints)
     { MP_ROM_QSTR(MP_QSTR_LITTLE_ENDIAN), MP_ROM_INT(LAYOUT_LITTLE_ENDIAN) },
-    /// \constant BIG_ENDIAN - Big-endian structure layout, tightly packed
-    /// (no alignment constraints)
     { MP_ROM_QSTR(MP_QSTR_BIG_ENDIAN), MP_ROM_INT(LAYOUT_BIG_ENDIAN) },
 
-    /// \constant VOID - void value type, may be used only as pointer target type.
     { MP_ROM_QSTR(MP_QSTR_VOID), MP_ROM_INT(TYPE2SMALLINT(UINT8, VAL_TYPE_BITS)) },
 
-    /// \constant UINT8 - uint8_t value type
-    { MP_ROM_QSTR(MP_QSTR_UINT8), MP_ROM_INT(TYPE2SMALLINT(UINT8, 4)) },
-    /// \constant INT8 - int8_t value type
-    { MP_ROM_QSTR(MP_QSTR_INT8), MP_ROM_INT(TYPE2SMALLINT(INT8, 4)) },
-    /// \constant UINT16 - uint16_t value type
-    { MP_ROM_QSTR(MP_QSTR_UINT16), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
-    /// \constant INT16 - int16_t value type
-    { MP_ROM_QSTR(MP_QSTR_INT16), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
-    /// \constant UINT32 - uint32_t value type
-    { MP_ROM_QSTR(MP_QSTR_UINT32), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
-    /// \constant INT32 - int32_t value type
-    { MP_ROM_QSTR(MP_QSTR_INT32), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
-    /// \constant UINT64 - uint64_t value type
-    { MP_ROM_QSTR(MP_QSTR_UINT64), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
-    /// \constant INT64 - int64_t value type
-    { MP_ROM_QSTR(MP_QSTR_INT64), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT8), MP_ROM_INT(TYPE2SMALLINT(UINT8, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_INT8), MP_ROM_INT(TYPE2SMALLINT(INT8, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT16), MP_ROM_INT(TYPE2SMALLINT(UINT16, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_INT16), MP_ROM_INT(TYPE2SMALLINT(INT16, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT32), MP_ROM_INT(TYPE2SMALLINT(UINT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_INT32), MP_ROM_INT(TYPE2SMALLINT(INT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT64), MP_ROM_INT(TYPE2SMALLINT(UINT64, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_INT64), MP_ROM_INT(TYPE2SMALLINT(INT64, VAL_TYPE_BITS)) },
 
-    { MP_ROM_QSTR(MP_QSTR_BFUINT8), MP_ROM_INT(TYPE2SMALLINT(BFUINT8, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_BFINT8), MP_ROM_INT(TYPE2SMALLINT(BFINT8, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_BFUINT16), MP_ROM_INT(TYPE2SMALLINT(BFUINT16, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_BFINT16), MP_ROM_INT(TYPE2SMALLINT(BFINT16, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_BFUINT32), MP_ROM_INT(TYPE2SMALLINT(BFUINT32, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_BFINT32), MP_ROM_INT(TYPE2SMALLINT(BFINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT8), MP_ROM_INT(TYPE2SMALLINT(BFUINT8, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT8), MP_ROM_INT(TYPE2SMALLINT(BFINT8, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT16), MP_ROM_INT(TYPE2SMALLINT(BFUINT16, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT16), MP_ROM_INT(TYPE2SMALLINT(BFINT16, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT32), MP_ROM_INT(TYPE2SMALLINT(BFUINT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT32), MP_ROM_INT(TYPE2SMALLINT(BFINT32, VAL_TYPE_BITS)) },
 
-    { MP_ROM_QSTR(MP_QSTR_BF_POS), MP_ROM_INT(17) },
-    { MP_ROM_QSTR(MP_QSTR_BF_LEN), MP_ROM_INT(22) },
+    { MP_ROM_QSTR(MP_QSTR_BF_POS), MP_ROM_INT(OFFSET_BITS) },
+    { MP_ROM_QSTR(MP_QSTR_BF_LEN), MP_ROM_INT(LEN_BITS) },
 
     #if MICROPY_PY_BUILTINS_FLOAT
-    { MP_ROM_QSTR(MP_QSTR_FLOAT32), MP_ROM_INT(TYPE2SMALLINT(FLOAT32, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_FLOAT64), MP_ROM_INT(TYPE2SMALLINT(FLOAT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_FLOAT32), MP_ROM_INT(TYPE2SMALLINT(FLOAT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_FLOAT64), MP_ROM_INT(TYPE2SMALLINT(FLOAT64, VAL_TYPE_BITS)) },
     #endif
 
     #if MICROPY_PY_UCTYPES_NATIVE_C_TYPES
     // C native type aliases. These depend on GCC-compatible predefined
     // preprocessor macros.
     #if __SIZEOF_SHORT__ == 2
-    { MP_ROM_QSTR(MP_QSTR_SHORT), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_USHORT), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_SHORT), MP_ROM_INT(TYPE2SMALLINT(INT16, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_USHORT), MP_ROM_INT(TYPE2SMALLINT(UINT16, VAL_TYPE_BITS)) },
     #endif
     #if __SIZEOF_INT__ == 4
-    { MP_ROM_QSTR(MP_QSTR_INT), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_UINT), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_INT), MP_ROM_INT(TYPE2SMALLINT(INT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT), MP_ROM_INT(TYPE2SMALLINT(UINT32, VAL_TYPE_BITS)) },
     #endif
     #if __SIZEOF_LONG__ == 4
-    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT32, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT32, VAL_TYPE_BITS)) },
     #elif __SIZEOF_LONG__ == 8
-    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT64, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, VAL_TYPE_BITS)) },
     #endif
     #if __SIZEOF_LONG_LONG__ == 8
-    { MP_ROM_QSTR(MP_QSTR_LONGLONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
-    { MP_ROM_QSTR(MP_QSTR_ULONGLONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_LONGLONG), MP_ROM_INT(TYPE2SMALLINT(INT64, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONGLONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, VAL_TYPE_BITS)) },
     #endif
     #endif // MICROPY_PY_UCTYPES_NATIVE_C_TYPES
 
     { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
     { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(mp_module_uctypes_globals, mp_module_uctypes_globals_table);
 
 const mp_obj_module_t mp_module_uctypes = {

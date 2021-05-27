@@ -39,8 +39,6 @@
 
 #include "clock_config.h"
 
-#define LED_STATE_ON (0)
-
 volatile uint32_t systick_ms = 0;
 
 const uint8_t dcd_data[] = { 0x00 };
@@ -52,9 +50,6 @@ void board_init(void) {
 
     // Enable IOCON clock
     CLOCK_EnableClock(kCLOCK_Iomuxc);
-
-    // 1ms tick timer
-    SysTick_Config(SystemCoreClock / 1000);
 
     // ------------- USB0 ------------- //
 
@@ -83,10 +78,6 @@ void board_init(void) {
     // USB1
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
-}
-
-void SysTick_Handler(void) {
-    systick_ms++;
 }
 
 void USB_OTG1_IRQHandler(void) {

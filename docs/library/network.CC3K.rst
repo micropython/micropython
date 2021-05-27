@@ -25,7 +25,7 @@ For this example to work the CC3000 module must have the following connections:
     - VBEN connected to Y4
     - IRQ connected to Y3
 
-It is possible to use other SPI busses and other pins for CS, VBEN and IRQ.
+It is possible to use other SPI buses and other pins for CS, VBEN and IRQ.
 
 Constructors
 ------------

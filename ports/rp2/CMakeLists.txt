@@ -154,6 +154,7 @@ set(PICO_SDK_COMPONENTS
     pico_sync
     pico_time
     pico_unique_id
+    tinyusb_common
     tinyusb_device
 )
 

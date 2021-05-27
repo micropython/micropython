@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_DFU_H
 #define MICROPY_INCLUDED_STM32_MBOOT_DFU_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // DFU spec: https://www.usb.org/sites/default/files/DFU_1.1.pdf
@@ -106,6 +107,7 @@ typedef struct _dfu_state_t {
     dfu_cmd_t cmd;
     dfu_status_t status;
     uint8_t error;
+    bool leave_dfu;
     uint16_t wBlockNum;
     uint16_t wLength;
     uint32_t addr;

@@ -58,6 +58,7 @@
 #define MICROPY_PY_BUILTINS_FILTER          (0)
 #define MICROPY_PY_BUILTINS_REVERSED        (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX         (0)
+#define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_PY___FILE__                 (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)

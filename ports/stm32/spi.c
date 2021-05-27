@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 
-// Possible DMA configurations for SPI busses:
+// Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
 // SPI2_TX: DMA1_Stream4.CHANNEL_0

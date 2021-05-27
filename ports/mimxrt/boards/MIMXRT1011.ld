@@ -1,5 +1,5 @@
 /* 24kiB stack. */
-__stack_size__ = 0x6000;
+__stack_size__ = 0x4000;
 _estack = __StackTop;
 _sstack = __StackLimit;
 
