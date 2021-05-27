@@ -299,17 +299,3 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 
-Capacitive touch
-----------------
-
-Use the ``TouchPad`` class in the ``machine`` module::
-
-    from machine import TouchPad, Pin
-
-    t = TouchPad(Pin(14))
-    t.read()              # Returns a smaller number when touched
-
-``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
-the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
-no touch is present. However the values are *relative* and can vary depending on the board
-and surrounding composition so some calibration may be required.
