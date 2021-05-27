@@ -26,6 +26,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#include "fsl_gpio.h"
+#include "fsl_iomuxc.h"
+
 #include "adc.h"
 
 
@@ -49,8 +53,16 @@ STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t k
 STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
+    // Unpack and check parameter
+    const machine_pin_obj_t *pin = pin_find(args[0]);
+
+    if (pin->adc_list_len == 0) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) does not have ADC capabilities"), pin->name);
+    }
+
     // Extract arguments
-    ADC_Type *adc_instance = adcBases[1];  // FIXME: get correct instance from pin
+    ADC_Type *adc_instance = pin->adc_list[0].instance;  // NOTE: we only use the first ADC assignment - multiple assignments are not supported for now
+    uint32_t channel = (uint32_t)pin->adc_list[0].channel;
 
     // Configure ADC perpheral
     adc_config_t config;
@@ -59,17 +71,23 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Configure ADC peripheral channel
     adc_channel_config_t channel_config = {
-        .channelNumber = 0,
+        .channelNumber = channel,
         .enableInterruptOnConversionCompleted = false,
     };
-    ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);
+    ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0'
+
+    status_t calib_state = ADC_DoAutoCalibration(adc_instance);
+
+    if (calib_state == kStatus_Fail) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Calibration for ADC Instance failed"));
+    }
 
     // Create ADC Instance
     adc_test_object.base.type = &machine_adc_type;
     adc_test_object.adc = adc_instance;
-    adc_test_object.channel = 0;
+    adc_test_object.channel = channel;
     adc_test_object.channel_group = 0;
-    adc_test_object.resolution = 4096;
+    adc_test_object.resolution = 4096;  // NOTE: currently only 12bit resolution supported
 
     return MP_OBJ_FROM_PTR(&adc_test_object);
 }
@@ -80,11 +98,19 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // Initiate conversion
-    adc_start_conversion(self);
+    adc_channel_config_t channel_config = {
+        .channelNumber = self->channel,
+        .enableInterruptOnConversionCompleted = false,
+    };
+    ADC_SetChannelConfig(self->adc, (uint32_t)self->channel_group, &channel_config);
+
+    // Wait for conversion to finish
+    while (!ADC_GetChannelStatusFlags(self->adc, (uint32_t)self->channel_group)) {
+        // do nothing
+    }
 
     // Measure input voltage
-    uint32_t value = adc_read_result(self);
-
+    uint32_t value = ADC_GetChannelConversionValue(self->adc, (uint32_t)self->channel_group);
     return MP_OBJ_NEW_SMALL_INT(value * 65535 / self->resolution);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);

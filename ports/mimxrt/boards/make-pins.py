@@ -6,9 +6,11 @@ from __future__ import print_function
 import argparse
 import sys
 import csv
+import re
 
 SUPPORTED_AFS = {"GPIO"}
 MAX_AF = 10  # AF0 .. AF9
+ADC_COL = 11
 
 
 def parse_pad(pad_str):
@@ -38,7 +40,7 @@ class Pin(object):
         self.gpio = gpio
         self.pin = pin
         self.alt_fn = []
-        self.adc_channel = 0
+        self.adc_fns = []
         self.board_pin = False
 
     def set_is_board_pin(self):
@@ -48,7 +50,13 @@ class Pin(object):
         return self.board_pin
 
     def parse_adc(self, adc_str):
-        pass
+        adc_regex = r"ADC(?P<instance>\d*)_IN(?P<channel>\d*)"
+
+        matches = re.finditer(adc_regex, adc_str, re.MULTILINE)
+        for match in matches:
+            self.adc_fns.append(
+                AdcFunction(instance=match.group("instance"), channel=match.group("channel"))
+            )
 
     def parse_af(self, af_idx, af_strs_in):
         pass
@@ -69,19 +77,51 @@ class Pin(object):
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
+    def print_pin_adc(self):
+        if self.adc_fns:
+            print(
+                "static const machine_pin_adc_obj_t pin_{0}_adc[{1}] = {{".format(
+                    self.name, len(self.adc_fns)
+                )
+            )
+            for adc_fn in self.adc_fns:
+                adc_fn.print()
+            print("};")
+
     def print(self):
         if self.alt_fn:
             self.print_pin_af()
-            print(
-                "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{3});\n".format(
-                    self.name, self.gpio, int(self.pin), self.name + "_af"
+            self.print_pin_adc()
+
+            if self.adc_fns:
+                print(
+                    "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{0}_af, {3}, pin_{0}_adc);\n".format(
+                        self.name, self.gpio, int(self.pin), len(self.adc_fns)
+                    )
                 )
-            )
+            else:
+                print(
+                    "const machine_pin_obj_t pin_{0} = PIN({0}, {1}, {2}, pin_{0}_af, {3}, NULL);\n".format(
+                        self.name, self.gpio, int(self.pin), len(self.adc_fns)
+                    )
+                )
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
     def print_header(self, hdr_file):
         pass
+
+
+class AdcFunction(object):
+    """Holds the information associated with a pins ADC function."""
+
+    def __init__(self, instance, channel):
+        self.instance = instance
+        self.channel = channel
+
+    def print(self):
+        """Prints the C representation of this AF."""
+        print(f"    PIN_ADC(ADC{self.instance}, {self.channel}),")
 
 
 class AlternateFunction(object):
@@ -148,6 +188,8 @@ class Pins(object):
                 for af_idx, af in enumerate(row[af_start_col:af_end_col]):
                     if af and af_supported(af):
                         pin.add_af(AlternateFunction(af_idx, af))
+
+                pin.parse_adc(row[ADC_COL])
 
                 self.cpu_pins.append(pin)
 

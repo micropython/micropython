@@ -25,17 +25,3 @@
  */
 
 #include "adc.h"
-
-void adc_start_conversion(machine_adc_obj_t *adc) {
-    adc->adc->HC[0] |= ADC_HC_ADCH((1 << adc->channel));  // Only HC[0] allows software trigger
-}
-
-uint32_t adc_read_result(machine_adc_obj_t *adc) {
-    // Wait for conversion to finish
-    while (!ADC_GetChannelStatusFlags(adc->adc, (uint32_t)adc->channel_group)) {
-    }
-    ;
-
-    // Return measured value
-    return ADC_GetChannelConversionValue(adc->adc, (uint32_t)adc->channel_group);
-}
