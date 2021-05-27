@@ -32,7 +32,6 @@
 
 #include "supervisor/board.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "supervisor/shared/rgb_led_status.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "src/rp2_common/hardware_dma/include/hardware/dma.h"

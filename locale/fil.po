@@ -1226,6 +1226,10 @@ msgstr ""
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Mali ang BMP file"
@@ -1686,6 +1690,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1705,10 +1713,6 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
@@ -2338,7 +2342,7 @@ msgstr "Hindi supportadong tipo ng bitmap"
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Hindi sinusuportahang operasyon"
 

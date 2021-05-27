@@ -26,14 +26,7 @@
 
 #include "supervisor/board.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-
 void board_init(void) {
-    common_hal_never_reset_pin(&pin_GPIO11);
-    gpio_init(11);
-    gpio_set_dir(11, GPIO_OUT);
-    gpio_put(11, true);
 }
 
 bool board_requests_safe_mode(void) {

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-15 15:52+0000\n"
+"PO-Revision-Date: 2021-05-25 17:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1245,6 +1245,10 @@ msgstr "Valor inválido da unidade ADC"
 msgid "Invalid AuthMode"
 msgstr "AuthMode inválido"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr "Parâmetro BLE inválido"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Arquivo BMP inválido"
@@ -1707,6 +1711,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr "Apenas a detecção de borda está disponível neste hardware"
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr "Apenas int ou string é suportado para ip"
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1729,10 +1737,6 @@ msgstr "Apenas um alarme alarm.time pode ser definido."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Apenas uma cor pode ser transparente de cada vez"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "Apenas o int bruto é compatível para o ip"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -2388,7 +2392,7 @@ msgstr "Não há suporte para o tipo do display bus"
 msgid "Unsupported format"
 msgstr "Formato não suportado"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operação não suportada"
 
@@ -4453,6 +4457,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Only raw int or string supported for ip"
+#~ msgstr "Apenas int ou string bruto é compatível para o ip"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Apenas o int bruto é compatível para o ip"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "

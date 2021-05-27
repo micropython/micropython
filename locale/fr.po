@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-06 17:51+0000\n"
+"PO-Revision-Date: 2021-05-21 17:47+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -100,7 +100,7 @@ msgstr "La liste %q doit être une liste"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
-msgstr ""
+msgstr "%q doit être compris entre 1 et 255"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -116,7 +116,7 @@ msgstr "%q doit être >= 1"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or 1-255"
-msgstr ""
+msgstr "%q doit être None ou compris entre 1 et 255"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -217,7 +217,7 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "l'objet %s ne supporte pas l'assignation d'éléments"
 
 #: py/obj.c
 #, c-format
@@ -1254,6 +1254,10 @@ msgstr "Valeur d'unité ADC non valide"
 msgid "Invalid AuthMode"
 msgstr "AuthMode invalide"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Fichier BMP invalide"
@@ -1717,6 +1721,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1739,10 +1747,6 @@ msgstr "Seulement une alarme alarm.time peut être réglée."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Une seule couleur peut être transparente à la fois"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "IP n'accepte que les chiffres entiers bruts"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -1943,11 +1947,11 @@ msgstr "Mode RAISE n'est pas implémenté"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
-msgstr "Erreur de désinitiation du RNG (RNG DeInit)"
+msgstr "Erreur de désinitialisation du RNG"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr "Erreur d'initialisation du RNG (RNG Init)"
+msgstr "Erreur d'initialisation du RNG"
 
 #: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
@@ -2388,7 +2392,7 @@ msgstr "Type de bus d'affichage non supporté"
 msgid "Unsupported format"
 msgstr "Format non supporté"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Opération non supportée"
 
@@ -3716,7 +3720,7 @@ msgstr "objet "
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "l'objet '%s' n'est pas un tuple ou une liste"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
@@ -3724,7 +3728,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
-msgstr ""
+msgstr "l'objet ne supporte pas la suppression d'éléments"
 
 #: py/obj.c
 msgid "object has no len"
@@ -4454,6 +4458,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "IP n'accepte que les chiffres entiers bruts"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "

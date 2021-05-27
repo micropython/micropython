@@ -1226,6 +1226,10 @@ msgstr "Invalid ADC unit value"
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Invalid BMP file"
@@ -1685,6 +1689,10 @@ msgstr ""
 msgid "Only edge detection is available on this hardware"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1707,10 +1715,6 @@ msgstr "Only one alarm.time alarm can be set."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Only one colour can be transparent at a time"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "Only raw int supported for ip"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -2346,7 +2350,7 @@ msgstr "Unsupported display bus type"
 msgid "Unsupported format"
 msgstr "Unsupported format"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Unsupported operation"
 
@@ -4388,6 +4392,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Only raw int supported for ip"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "

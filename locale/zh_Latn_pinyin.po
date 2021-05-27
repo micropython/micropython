@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-12 21:48+0000\n"
+"PO-Revision-Date: 2021-05-25 17:41+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -857,6 +857,7 @@ msgstr "Guǎnggào bāo de shùjù tài dà"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
+"shēn dù shuì mián bié zhēn bì xū shǐ yòng xià lā shàng shēng de biān yuán"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1231,6 +1232,10 @@ msgstr "Wúxiào de ADC dānwèi zhí"
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
 msgstr "wú xiào AuthMode"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr "wú xiào BLE cān shù"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1691,7 +1696,11 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "cǐ yìng jiàn shàng jǐn tí gòng biān yuán jiǎn cè"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr "jǐn zhī chí IP de zhěng shù huò zì fú chuàn"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1715,10 +1724,6 @@ msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
-
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "Ip jǐn zhīchí raw int"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
@@ -1787,7 +1792,7 @@ msgstr "Quánxiàn bèi jùjué"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "yǐn jiǎo wú fǎ cóng shēn dù shuì mián zhōng huàn xǐng"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
@@ -1810,7 +1815,7 @@ msgstr "Pin méiyǒu ADC nénglì"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "yǐn jiǎo zhōng duàn yǐ zài shǐ yòng zhōng"
 
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2053,7 +2058,7 @@ msgstr "bù zhī chí dà xiǎo"
 
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
-msgstr ""
+msgstr "shuì mián jì yì bù kě yòng"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2115,12 +2120,16 @@ msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
+"diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
+"rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu："
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
 msgstr ""
+"`wēi kòng zhì qì` mó kuài yòng yú qǐ dòng dào ān quán mó shì. àn chóng zhì "
+"tuì chū ān quán mó shì."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -2132,6 +2141,9 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
+"wēi kòng zhì qì de gōng lǜ xià jiàng. què bǎo diàn yuán tí gòng\n"
+"zú gòu de gōng lǜ yòng yú zhěng gè diàn lù hé àn chóng zhì (tán chū "
+"CIRCUITPY hòu)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2197,7 +2209,7 @@ msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "bù kě yòng chù mō bào jǐng qì"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2352,7 +2364,7 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseOut.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Bù zhīchí de cāozuò"
 
@@ -2438,12 +2450,14 @@ msgstr "Tèzhēng bù zhīchí xiě rù"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr ""
+msgstr "nín chǔ yú ān quán mó shì shì yīn wéi:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
+"zài qǐ dòng guò chéng zhōng, nín àn xià le chóng zhì àn niǔ. zài cì àn xià "
+"yǐ tuì chū ān quán mó shì."
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -4399,6 +4413,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Ip jǐn zhīchí raw int"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "
