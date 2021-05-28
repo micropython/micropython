@@ -58,24 +58,30 @@
 // Not used elsewhere in the SDK for now, keep an eye on it
 #define RP_WKUP_SCRATCH_REG 0
 
-// Turn off nonvolatile Busio and other wake-only peripherals
+// Light sleep turns off nonvolatile Busio and other wake-only peripherals
 // TODO: this only saves about 2mA right now, expand with other non-essentials
 const uint32_t RP_LIGHTSLEEP_EN0_MASK = ~(
-    CLOCKS_SLEEP_EN0_CLK_SYS_SPI1_BITS &
-    CLOCKS_SLEEP_EN0_CLK_PERI_SPI1_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_SPI0_BITS &
-    CLOCKS_SLEEP_EN0_CLK_PERI_SPI0_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_PWM_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_PIO1_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_PIO0_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_I2C1_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_I2C0_BITS &
-    CLOCKS_SLEEP_EN0_CLK_SYS_ADC_BITS &
+    CLOCKS_SLEEP_EN0_CLK_SYS_SPI1_BITS |
+    CLOCKS_SLEEP_EN0_CLK_PERI_SPI1_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_SPI0_BITS |
+    CLOCKS_SLEEP_EN0_CLK_PERI_SPI0_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_PWM_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_PIO1_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_PIO0_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_I2C1_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_I2C0_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_ADC_BITS |
     CLOCKS_SLEEP_EN0_CLK_ADC_ADC_BITS
     );
-
 // This bank has the USB clocks in it, leave it for now
 const uint32_t RP_LIGHTSLEEP_EN1_MASK = CLOCKS_SLEEP_EN1_RESET;
+
+// Light sleeps used for TimeAlarm deep sleep turn off almost everything
+const uint32_t RP_LIGHTSLEEP_EN0_MASK_HARSH = (
+    CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS |
+    CLOCKS_SLEEP_EN0_CLK_SYS_PADS_BITS
+    );
+const uint32_t RP_LIGHTSLEEP_EN1_MASK_HARSH = 0x0;
 
 STATIC void prepare_for_dormant_xosc(void);
 
@@ -144,7 +150,6 @@ mp_obj_t common_hal_alarm_create_wake_alarm(void) {
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     _setup_sleep_alarms(false, n_alarms, alarms);
-    // alarm_pin_pinalarm_light_reset();
 
     mp_obj_t wake_alarm = mp_const_none;
 
@@ -173,7 +178,6 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         // Prune the clock for sleep
         clocks_hw->sleep_en0 &= RP_LIGHTSLEEP_EN0_MASK;
         clocks_hw->sleep_en1 = RP_LIGHTSLEEP_EN1_MASK;
-        // port_idle_until_interrupt();
 
         // Enable System Control Block (SCB) deep sleep
         uint save = scb_hw->scr;
@@ -195,8 +199,21 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
-    prepare_for_dormant_xosc();
-    xosc_dormant();
+    bool timealarm_set = alarm_time_timealarm_is_set();
+
+    // If there's a timealarm, just enter a very deep light sleep
+    if (timealarm_set) {
+        // Prune the clock for sleep
+        clocks_hw->sleep_en0 &= RP_LIGHTSLEEP_EN0_MASK_HARSH;
+        clocks_hw->sleep_en1 = RP_LIGHTSLEEP_EN1_MASK_HARSH;
+        // Enable System Control Block (SCB) deep sleep
+        uint save = scb_hw->scr;
+        scb_hw->scr = save | M0PLUS_SCR_SLEEPDEEP_BITS;
+        __wfi();
+    } else {
+        prepare_for_dormant_xosc();
+        xosc_dormant();
+    }
     // // TODO: support ROSC when available in SDK
     // rosc_set_dormant();
 

@@ -35,6 +35,7 @@
 #include "hardware/rtc.h"
 
 STATIC bool woke_up = false;
+STATIC bool _timealarm_set = false;
 
 void timer_callback(void) {
     woke_up = true;
@@ -92,7 +93,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         return;
     }
     if (deep_sleep) {
-        mp_raise_ValueError(translate("Cannot alarm from RTC in deep sleep"));
+        _timealarm_set = true;
     }
 
     // Compute how long to actually sleep, considering the time now.
@@ -122,4 +123,8 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     rtc_set_alarm(&t, &timer_callback);
 
     woke_up = false;
+}
+
+bool alarm_time_timealarm_is_set(void) {
+    return _timealarm_set;
 }

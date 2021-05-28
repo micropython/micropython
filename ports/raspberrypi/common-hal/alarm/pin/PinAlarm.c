@@ -38,6 +38,7 @@
 STATIC bool woke_up;
 STATIC uint64_t alarm_triggered_pins; // 36 actual pins
 STATIC uint64_t alarm_reserved_pins; // 36 actual pins
+STATIC bool _pinalarm_set = false;
 
 #define GPIO_IRQ_ALL_EVENTS 0x15u
 
@@ -152,6 +153,12 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (deep_sleep) {
                 gpio_set_dormant_irq_enabled((uint)alarm->pin->number, event, true);
             }
+
+            _pinalarm_set = true;
         }
     }
+}
+
+bool alarm_pin_pinalarm_is_set(void) {
+    return _pinalarm_set;
 }

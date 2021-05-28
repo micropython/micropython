@@ -40,7 +40,7 @@ void alarm_sleep_memory_reset(void) {
 }
 
 uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
-    return 0;//sizeof(_sleep_mem);
+    return 0;// sizeof(_sleep_mem);
 }
 
 bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t *values, uint32_t len) {

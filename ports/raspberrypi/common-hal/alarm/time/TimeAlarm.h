@@ -38,3 +38,4 @@ mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void);
 void alarm_time_timealarm_reset(void);
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 bool alarm_time_timealarm_woke_this_cycle(void);
+bool alarm_time_timealarm_is_set(void);
