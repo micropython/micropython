@@ -142,8 +142,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_pixel_shader_obj, displayio
 const mp_obj_property_t displayio_ondiskbitmap_pixel_shader_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_pixel_shader_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              (mp_obj_t)MP_ROM_NONE,
+              (mp_obj_t)MP_ROM_NONE},
 };
 
 
