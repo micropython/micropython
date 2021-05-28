@@ -1,13 +1,2 @@
 #define MICROPY_HW_BOARD_NAME "Cytron Maker Pi RP2040"
 #define MICROPY_HW_MCU_NAME "rp2040"
-
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
-
-#define MICROPY_HW_BAT_SENSE (&pin_GPIO29)
-
-#define MICROPY_HW_BUZZER (&pin_GPIO22)
-
-#define MICROPY_HW_MOTOR_M1A (&pin_GPIO8)
-#define MICROPY_HW_MOTOR_M1B (&pin_GPIO9)
-#define MICROPY_HW_MOTOR_M2A (&pin_GPIO10)
-#define MICROPY_HW_MOTOR_M2B (&pin_GPIO11)
