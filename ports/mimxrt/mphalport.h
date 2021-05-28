@@ -28,15 +28,39 @@
 #define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
 
 #include <stdint.h>
+<<<<<<< HEAD
 #include "ticks.h"
 #include "pin.h"
+=======
+#include "fsl_gpio.h"
+#include "pin.h"
+
+#define mp_hal_pin_obj_t pin_obj_t*
+>>>>>>> 0bd8a603e (mimxrt: Got it to link.)
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 #define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
 #define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
 #define mp_hal_pin_write(p, value) (GPIO_PinWrite(p->gpio, p->pin, value))
 #define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
+<<<<<<< HEAD
 #define mp_hal_pin_read(p) (GPIO_PinRead(p->gpio, p->pin))
+=======
+#define mp_hal_pin_od_high(p) (mp_hal_pin_high((p)))
+#define mp_hal_pin_od_low(p) (mp_hal_pin_low((p)))
+#define mp_hal_pin_read(p)(GPIO_PinRead(p->gpio, p->pin))
+
+static inline mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t o) {
+    // Todo: Implement pin_find function
+    return NULL;
+}
+
+// Todo: Analyse what this function is used for and adapt implementation if necessary!
+#define mp_hal_quiet_timing_enter() (1)
+#define mp_hal_quiet_timing_exit(irq_state) (void)(irq_state)
+
+extern volatile uint32_t systick_ms;
+>>>>>>> 0bd8a603e (mimxrt: Got it to link.)
 
 void mp_hal_set_interrupt_char(int c);
 
@@ -60,5 +84,8 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
+
+void mp_hal_delay_us_fast(mp_uint_t us);
+
 
 #endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H

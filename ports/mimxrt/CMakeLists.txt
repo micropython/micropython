@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
-set( CMAKE_VERBOSE_MAKEFILE off )
+set( CMAKE_VERBOSE_MAKEFILE OFF)
 enable_language(C ASM)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-set(toolchain_file "./arm-none-eabi-gcc.cmake")
+set(CMAKE_EXECUTABLE_SUFFIX .elf)
 
 # Set main target and component locations
 set(MICROPY_TARGET firmware)
@@ -33,12 +33,11 @@ if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 endif()
 
 # Include board config
-message(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
-#include(${MICROPY_DIR}/extmod/extmod.cmake)
+include(${MICROPY_DIR}/extmod/extmod.cmake)
 
 # Define the top-level project
 project(${MICROPY_TARGET})
@@ -80,15 +79,15 @@ set(TINY_USB_SOURCE
 )
 
 set(MICROPY_SOURCE_PORT
-    board_init.c
-    led.c
-    machine_led.c
-    main.c
-    modmachine.c
-    modutime.c
-    mphalport.c
-    pin.c
-    tusb_port.c
+    ${MICROPY_PORT_DIR}/board_init.c
+    ${MICROPY_PORT_DIR}/led.c
+    ${MICROPY_PORT_DIR}/machine_led.c
+    ${MICROPY_PORT_DIR}/main.c
+    ${MICROPY_PORT_DIR}/modmachine.c
+    ${MICROPY_PORT_DIR}/modutime.c
+    ${MICROPY_PORT_DIR}/mphalport.c
+    ${MICROPY_PORT_DIR}/pin.c
+    ${MICROPY_PORT_DIR}/tusb_port.c
     ${MICROPY_BOARD_DIR}/flash_config.c
     ${MICROPY_BOARD_DIR}/pins.c
     ${MIMXRT_SDK_PATH}/${MCU_SERIES}/gcc/startup_${MCU_SERIES}.S
@@ -107,13 +106,9 @@ set(MICROPY_SOURCE_PORT
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_USERMOD}
-    ${PROJECT_SOURCE_DIR}/machine_led.c
-    ${PROJECT_SOURCE_DIR}/modutime.c
-    ${PROJECT_SOURCE_DIR}/modmachine.c
-    ${PROJECT_SOURCE_DIR}/mphalport.c
-    ${PROJECT_SOURCE_DIR}/pin.c
-    ${MICROPY_BOARD_DIR}/pins.c
+    ${MICROPY_SOURCE_PORT}
 )
 
 # Define mpy-cross flags and frozen manifest
@@ -128,7 +123,9 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PORT}
 )
 
+#target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
+target_link_libraries(${MICROPY_TARGET} -lgcc)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_INC_CORE}
@@ -173,15 +170,16 @@ target_link_options(${MICROPY_TARGET} PRIVATE
     -Werror
     -Wdouble-promotion
     -Wfloat-conversion
+    -Wl,--print-memory-usage
     -std=c99
     -nostdlib
     -mthumb
+    -lm
+    -lc
+    -lnosys
     -Wno-error=unused-parameter
     -fdata-sections
     -ffunction-sections
-    -lc
-    -lm
-    -lnosys
     -Wl,-Map=${PROJECT_NAME}.map,--cref
     -Wl,--gc-sections
 )
@@ -195,6 +193,12 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     XIP_EXTERNAL_FLASH=1
     XIP_BOOT_HEADER_ENABLE=1
     CFG_TUSB_MCU=OPT_MCU_MIMXRT10XX
+)
+
+add_custom_command(TARGET ${MICROPY_TARGET}
+    POST_BUILD
+    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
+    VERBATIM
 )
 
 # Include the main MicroPython cmake rules.
