@@ -55,7 +55,7 @@
 //|
 //|       with open("/sample.bmp", "rb") as f:
 //|           odb = displayio.OnDiskBitmap(f)
-//|           face = displayio.TileGrid(odb, pixel_shader=displayio.ColorConverter())
+//|           face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)
 //|           splash.append(face)
 //|           # Wait for the image to load.
 //|           board.DISPLAY.refresh(target_frames_per_second=60)
@@ -127,8 +127,29 @@ const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
 
 };
 
+//|     pixel_shader: Union[ColorConverter, Palette]
+//|     """The image's pixel_shader.  The type depends on the underlying
+//|     bitmap's structure.  The pixel shadder can be modified (e.g., to set the
+//|     transparent pixel or, for paletted images, to update the palette"""
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_get_pixel_shader(mp_obj_t self_in) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_displayio_ondiskbitmap_get_pixel_shader(self);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_pixel_shader_obj, displayio_ondiskbitmap_obj_get_pixel_shader);
+
+const mp_obj_property_t displayio_ondiskbitmap_pixel_shader_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_pixel_shader_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskbitmap_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_ondiskbitmap_pixel_shader_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskbitmap_width_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);

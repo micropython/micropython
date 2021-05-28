@@ -25,6 +25,10 @@
  */
 
 #include "shared-bindings/displayio/OnDiskBitmap.h"
+#include "shared-bindings/displayio/ColorConverter.h"
+#include "shared-bindings/displayio/Palette.h"
+#include "shared-module/displayio/ColorConverter.h"
+#include "shared-module/displayio/Palette.h"
 
 #include <string.h>
 
@@ -63,6 +67,11 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     self->width = read_word(bmp_header, 9);
     self->height = read_word(bmp_header, 11);
 
+    displayio_colorconverter_t *colorconverter = m_new_obj(displayio_colorconverter_t);
+    colorconverter->base.type = &displayio_colorconverter_type;
+    common_hal_displayio_colorconverter_construct(colorconverter, false, DISPLAYIO_COLORSPACE_RGB888);
+    self->colorconverter = colorconverter;
+
     if (bits_per_pixel == 16) {
         if (((header_size >= 56)) || (self->bitfield_compressed)) {
             self->r_bitmask = read_word(bmp_header, 27);
@@ -74,25 +83,41 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             self->g_bitmask = 0x3e0;
             self->b_bitmask = 0x1f;
         }
-    } else if (indexed && self->bits_per_pixel != 1) {
+    } else if (indexed) {
         if (number_of_colors == 0) {
             number_of_colors = 1 << bits_per_pixel;
         }
-        uint16_t palette_size = number_of_colors * sizeof(uint32_t);
-        uint16_t palette_offset = 0xe + header_size;
 
-        self->palette_data = m_malloc(palette_size, false);
+        displayio_palette_t *palette = m_new_obj(displayio_palette_t);
+        palette->base.type = &displayio_palette_type;
+        common_hal_displayio_palette_construct(palette, number_of_colors);
 
-        f_rewind(&self->file->fp);
-        f_lseek(&self->file->fp, palette_offset);
+        if (number_of_colors > 1) {
+            uint16_t palette_size = number_of_colors * sizeof(uint32_t);
+            uint16_t palette_offset = 0xe + header_size;
 
-        UINT palette_bytes_read;
-        if (f_read(&self->file->fp, self->palette_data, palette_size, &palette_bytes_read) != FR_OK) {
-            mp_raise_OSError(MP_EIO);
+            uint32_t *palette_data = m_malloc(palette_size, false);
+
+            f_rewind(&self->file->fp);
+            f_lseek(&self->file->fp, palette_offset);
+
+            UINT palette_bytes_read;
+            if (f_read(&self->file->fp, palette_data, palette_size, &palette_bytes_read) != FR_OK) {
+                mp_raise_OSError(MP_EIO);
+            }
+            if (palette_bytes_read != palette_size) {
+                mp_raise_ValueError(translate("Unable to read color palette data"));
+            }
+            for (uint16_t i = 0; i < palette_size; i++) {
+                common_hal_displayio_palette_set_color(palette, i, palette_data[i]);
+            }
+            m_free(palette_data);
+        } else {
+            common_hal_displayio_palette_set_color(palette, 0, 0x0);
+            common_hal_displayio_palette_set_color(palette, 1, 0xffffff);
         }
-        if (palette_bytes_read != palette_size) {
-            mp_raise_ValueError(translate("Unable to read color palette data"));
-        }
+        self->palette = palette;
+
     } else if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124)) {
         mp_raise_ValueError_varg(translate("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
     }
@@ -148,15 +173,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
             uint8_t offset = (x % pixels_per_byte) * self->bits_per_pixel;
             uint8_t mask = (1 << self->bits_per_pixel) - 1;
 
-            uint8_t index = (pixel_data >> ((8 - self->bits_per_pixel) - offset)) & mask;
-            if (self->bits_per_pixel == 1) {
-                if (index == 1) {
-                    return 0xFFFFFF;
-                } else {
-                    return 0x000000;
-                }
-            }
-            return self->palette_data[index];
+            return (pixel_data >> ((8 - self->bits_per_pixel) - offset)) & mask;
         } else if (bytes_per_pixel == 2) {
             if (self->g_bitmask == 0x07e0) { // 565
                 red = ((pixel_data & self->r_bitmask) >> 11);
@@ -184,4 +201,8 @@ uint16_t common_hal_displayio_ondiskbitmap_get_height(displayio_ondiskbitmap_t *
 
 uint16_t common_hal_displayio_ondiskbitmap_get_width(displayio_ondiskbitmap_t *self) {
     return self->width;
+}
+
+mp_obj_t common_hal_displayio_ondiskbitmap_get_pixel_shader(displayio_ondiskbitmap_t *self) {
+    return MP_OBJ_FROM_PTR(self->pixel_shader_base);
 }
