@@ -69,16 +69,16 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = 0 } },
+        { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } },
         { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_report_descriptor].u_obj, &bufinfo, MP_BUFFER_READ);
-    mp_obj_t descriptor = mp_obj_new_bytearray(bufinfo.len, bufinfo.buf);
+    mp_buffer_info_t descriptor_bufinfo;
+    mp_get_buffer_raise(args[ARG_report_descriptor].u_obj, &descriptor_bufinfo, MP_BUFFER_READ);
+    mp_obj_t descriptor = mp_obj_new_bytearray(descriptor_bufinfo.len, descriptor_bufinfo.buf);
 
     const mp_int_t usage_page_arg = args[ARG_usage_page].u_int;
     if (usage_page_arg <= 0 || usage_page_arg > 255) {
@@ -99,8 +99,8 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const uint8_t in_report_length = in_report_length_arg;
 
     const mp_int_t out_report_length_arg = args[ARG_out_report_length].u_int;
-    if (out_report_length_arg <= 0 || out_report_length_arg > 255) {
-        mp_raise_ValueError_varg(translate("%q must be 1-255"), MP_QSTR_out_report_length);
+    if (out_report_length_arg < 0 || out_report_length_arg > 255) {
+        mp_raise_ValueError_varg(translate("%q must be 0-255"), MP_QSTR_out_report_length);
     }
     const uint8_t out_report_length = out_report_length_arg;
 
@@ -108,8 +108,9 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     uint8_t report_id_index = 0;
     if (report_id_index_arg != mp_const_none) {
         const mp_int_t report_id_index_int = mp_obj_int_get_checked(report_id_index_arg);
-        if (report_id_index_int <= 0 || report_id_index_int > 255) {
-            mp_raise_ValueError_varg(translate("%q must be None or 1-255"), MP_QSTR_report_id_index);
+        if (report_id_index_int <= 0 || (uint32_t)report_id_index_int >= descriptor_bufinfo.len) {
+            mp_raise_ValueError_varg(translate("%q must be None or between 1 and len(report_descriptor)-1"),
+                MP_QSTR_report_id_index);
         }
         report_id_index = report_id_index_int;
     }
