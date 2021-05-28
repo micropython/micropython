@@ -212,6 +212,7 @@ jobs:
         - "cp_sapling_m0"
         - "cp_sapling_m0_revb"
         - "cp_sapling_m0_spiflash"
+        - "cytron_maker_pi_rp2040"
         - "datalore_ip_m4"
         - "datum_distance"
         - "datum_imu"
