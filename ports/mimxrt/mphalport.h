@@ -32,7 +32,7 @@
 #include "fsl_gpio.h"
 #include "pin.h"
 
-#define mp_hal_pin_obj_t pin_obj_t *
+#define mp_hal_pin_obj_t machine_pin_obj_t *
 
 #define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
 #define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
@@ -76,7 +76,9 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
-void mp_hal_delay_us_fast(mp_uint_t us);
+static inline void mp_hal_delay_us_fast(mp_uint_t us) {
+    mp_hal_delay_us(us);
+}
 
 
 #endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
