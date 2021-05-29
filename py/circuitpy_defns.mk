@@ -178,6 +178,9 @@ endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
+endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
@@ -196,11 +199,11 @@ endif
 ifeq ($(CIRCUITPY_IPADDRESS),1)
 SRC_PATTERNS += ipaddress/%
 endif
+ifeq ($(CIRCUITPY_KEYPAD),1)
+SRC_PATTERNS += keypad/%
+endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
-endif
-ifeq ($(CIRCUITPY__EVE),1)
-SRC_PATTERNS += _eve/%
 endif
 ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
 SRC_PATTERNS += memorymonitor/%
@@ -512,6 +515,9 @@ SRC_SHARED_MODULE_ALL = \
 	framebufferio/__init__.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
+	keypad/__init__.c \
+	keypad/Keys.c \
+	keypad/State.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \
