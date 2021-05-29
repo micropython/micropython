@@ -127,6 +127,12 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self
 
 void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
 
+    if (self->dma.channel[0] < NUM_DMA_CHANNELS) {
+        if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
+            common_hal_audiopwmio_pwmaudioout_stop(self);
+	}
+    }
+
     // TODO: Share pacing timers based on frequency.
     size_t pacing_timer = NUM_DMA_TIMERS;
     for (size_t i = 0; i < NUM_DMA_TIMERS; i++) {

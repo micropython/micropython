@@ -352,6 +352,8 @@ bool audio_dma_get_paused(audio_dma_t *dma) {
 void audio_dma_init(audio_dma_t *dma) {
     dma->first_buffer = NULL;
     dma->second_buffer = NULL;
+    dma->channel[0] = NUM_DMA_CHANNELS;
+    dma->channel[1] = NUM_DMA_CHANNELS;
 }
 
 void audio_dma_deinit(audio_dma_t *dma) {
