@@ -255,6 +255,7 @@ class Pyboard:
     def __init__(
         self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
     ):
+        self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
@@ -348,8 +349,11 @@ class Pyboard:
             print(data)
             raise PyboardError("could not enter raw repl")
 
+        self.in_raw_repl = True
+
     def exit_raw_repl(self):
         self.serial.write(b"\r\x02")  # ctrl-B: enter friendly REPL
+        self.in_raw_repl = False
 
     def follow(self, timeout, data_consumer=None):
         # wait for normal output
