@@ -130,7 +130,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     if (self->dma.channel[0] < NUM_DMA_CHANNELS) {
         if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
             common_hal_audiopwmio_pwmaudioout_stop(self);
-	}
+        }
     }
 
     // TODO: Share pacing timers based on frequency.
