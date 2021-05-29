@@ -97,6 +97,10 @@ msgid "%q list must be a list"
 msgstr "A lista %q deve ser uma lista"
 
 #: shared-bindings/usb_hid/Device.c
+msgid "%q must be 0-255"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
 msgstr "%q deve ser 1-255"
 
@@ -113,8 +117,8 @@ msgid "%q must be >= 1"
 msgstr "%q deve ser >= 1"
 
 #: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or 1-255"
-msgstr "%q deve ser Nenhum ou 1-255"
+msgid "%q must be None or between 1 and len(report_descriptor)-1"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -4457,6 +4461,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q must be None or 1-255"
+#~ msgstr "%q deve ser Nenhum ou 1-255"
 
 #~ msgid "Only raw int or string supported for ip"
 #~ msgstr "Apenas int ou string bruto é compatível para o ip"

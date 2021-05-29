@@ -91,6 +91,10 @@ msgid "%q list must be a list"
 msgstr "Seznam %q musí být seznam"
 
 #: shared-bindings/usb_hid/Device.c
+msgid "%q must be 0-255"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
 msgstr ""
 
@@ -107,7 +111,7 @@ msgid "%q must be >= 1"
 msgstr "%q musí být > = 1"
 
 #: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or 1-255"
+msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
 #: shared-module/vectorio/Polygon.c
