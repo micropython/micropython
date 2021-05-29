@@ -156,8 +156,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         self->buffer_length = receiver_buffer_size;
         if (NULL != receiver_buffer) {
             self->buffer = receiver_buffer;
-        }
-        else {
+        } else {
             // Initially allocate the UART's buffer in the long-lived part of the
             // heap.  UARTs are generally long-lived objects, but the "make long-
             // lived" machinery is incapable of moving internal pointers like
