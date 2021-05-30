@@ -184,3 +184,6 @@
 [submodule "frozen/Adafruit_CircuitPython_MIDI"]
 	path = frozen/Adafruit_CircuitPython_MIDI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_MIDI
+[submodule "frozen/Adafruit_CircuitPython_SimpleIO"]
+	path = frozen/Adafruit_CircuitPython_SimpleIO
+	url = https://github.com/adafruit/adafruit_circuitpython_simpleio
