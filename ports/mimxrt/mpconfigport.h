@@ -64,6 +64,7 @@
 #define MICROPY_VFS                         (1)
 #define MICROPY_MODULE_FROZEN_MPY           (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
+#define MICROPY_STREAMS_NON_BLOCK           (1)
 
 // Control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
@@ -172,6 +173,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+// removed from the loop below:        __WFE(); 
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
