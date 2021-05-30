@@ -140,6 +140,7 @@ SRC_C = \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -263,6 +264,7 @@ SRC_QSTR += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
