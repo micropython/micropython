@@ -102,6 +102,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     }
 
     audio_dma_init(&self->dma);
+    self->pacing_timer = NUM_DMA_TIMERS;
 
     self->quiescent_value = quiescent_value;
 }
@@ -127,10 +128,8 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self
 
 void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
 
-    if (self->dma.channel[0] < NUM_DMA_CHANNELS) {
-        if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
-            common_hal_audiopwmio_pwmaudioout_stop(self);
-        }
+    if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
+        common_hal_audiopwmio_pwmaudioout_stop(self);
     }
 
     // TODO: Share pacing timers based on frequency.
