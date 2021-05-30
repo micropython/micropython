@@ -31,9 +31,21 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "py/nlr.h"
 
 #if MICROPY_PY_UJSON
+
+STATIC void mod_ujson_separators(mp_obj_t separators, mp_print_ext_t *print_ext) {
+    if (separators == mp_const_none) {
+        print_ext->item_separator = ", ";
+        print_ext->key_separator = ": ";
+    } else {
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(separators, 2, &items);
+
+        print_ext->item_separator = mp_obj_str_get_str(items[0]);
+        print_ext->key_separator = mp_obj_str_get_str(items[1]);
+    }
+}
 
 STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_separators};
@@ -44,9 +56,13 @@ STATIC mp_obj_t mod_ujson_dump(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    mp_print_ext_t print_ext = {
+        .base = {MP_OBJ_TO_PTR(pos_args[1]), mp_stream_write_adaptor}
+    };
+    mod_ujson_separators(args[ARG_separators].u_obj, &print_ext);
+
     mp_get_stream_raise(pos_args[1], MP_STREAM_OP_WRITE);
-    mp_print_t print = {MP_OBJ_TO_PTR(pos_args[1]), mp_stream_write_adaptor};
-    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+    mp_obj_print_helper(&print_ext.base, pos_args[0], PRINT_JSON);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dump_obj, 2, mod_ujson_dump);
@@ -61,9 +77,11 @@ STATIC mp_obj_t mod_ujson_dumps(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     vstr_t vstr;
-    mp_print_t print;
-    vstr_init_print(&vstr, 8, &print);
-    mp_obj_print_helper(&print, pos_args[0], PRINT_JSON);
+    mp_print_ext_t print_ext;
+    mod_ujson_separators(args[ARG_separators].u_obj, &print_ext);
+
+    vstr_init_print(&vstr, 8, &print_ext.base);
+    mp_obj_print_helper(&print_ext.base, pos_args[0], PRINT_JSON);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ujson_dumps_obj, 1, mod_ujson_dumps);
