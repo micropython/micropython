@@ -33,13 +33,7 @@ typedef struct {
     uint8_t pin_data[16];     /*!< Data pin of camera*/
     uint8_t vsync_invert;
     uint8_t hsync_invert;
-    union {
-        struct {
-            uint32_t width :   16;
-            uint32_t high :    16;
-        };
-        uint32_t val;
-    } size;                   /*!< size of camera  */
+    uint32_t size;            /*!< size of camera frame (width times height) */
     uint32_t max_buffer_size; /*!< DMA used */
     uint32_t task_stack;      /*!< The priority of the task at run time */
     uint8_t task_pri;

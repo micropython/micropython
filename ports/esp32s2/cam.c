@@ -51,8 +51,6 @@ typedef struct {
     uint32_t dma_size;
     uint32_t cnt;
     uint32_t total_cnt;
-    uint16_t width;
-    uint16_t high;
     lldesc_t *dma;
     uint8_t *buffer;
     uint8_t *frame1_buffer;
@@ -408,7 +406,7 @@ void cam_dma_config(const cam_config_t *config) {
         cam_obj->dma_size = 1024;
     } else {
         for (cnt = 0;; cnt++) { /*!< Find the divisible buffer size */
-            if ((config->size.width * config->size.high * 2) % (config->max_buffer_size - cnt) == 0) {
+            if ((config->size * 2) % (config->max_buffer_size - cnt) == 0) {
                 break;
             }
         }
@@ -428,7 +426,7 @@ void cam_dma_config(const cam_config_t *config) {
 
     cam_obj->node_cnt = (cam_obj->buffer_size) / cam_obj->dma_size; /*!< Number of DMA nodes */
     cam_obj->half_node_cnt = cam_obj->node_cnt / 2;
-    cam_obj->total_cnt = (config->size.width * config->size.high * 2) / cam_obj->half_buffer_size; /*!< Number of interrupt copies produced. Ping pong copies */
+    cam_obj->total_cnt = (config->size * 2) / cam_obj->half_buffer_size; /*!< Number of interrupt copies produced. Ping pong copies */
 
     ESP_LOGI(TAG, "cam_buffer_size: %d, cam_dma_size: %d, cam_dma_node_cnt: %d, cam_total_cnt: %d\n", cam_obj->buffer_size, cam_obj->dma_size, cam_obj->node_cnt, cam_obj->total_cnt);
 
@@ -473,8 +471,6 @@ esp_err_t cam_init(const cam_config_t *config) {
         return ESP_FAIL;
     }
 
-    cam_obj->width = config->size.width;
-    cam_obj->high = config->size.high;
     cam_obj->frame1_buffer = config->frame1_buffer;
     cam_obj->frame2_buffer = config->frame2_buffer;
     cam_obj->jpeg_mode = config->mode.jpeg;
