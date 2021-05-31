@@ -176,6 +176,7 @@ CFLAGS += -DCFG_TUD_VENDOR_RX_BUFSIZE=128 -DCFG_TUD_VENDOR_TX_BUFSIZE=128
 
 SRC_C += \
 	background.c \
+	cam.c \
 	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
