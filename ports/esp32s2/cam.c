@@ -430,8 +430,8 @@ void cam_dma_config(const cam_config_t *config) {
 
     ESP_LOGI(TAG, "cam_buffer_size: %d, cam_dma_size: %d, cam_dma_node_cnt: %d, cam_total_cnt: %d\n", cam_obj->buffer_size, cam_obj->dma_size, cam_obj->node_cnt, cam_obj->total_cnt);
 
-    cam_obj->dma = (lldesc_t *)heap_caps_malloc(cam_obj->node_cnt * sizeof(lldesc_t), MALLOC_CAP_DMA);
-    cam_obj->buffer = (uint8_t *)heap_caps_malloc(cam_obj->buffer_size * sizeof(uint8_t), MALLOC_CAP_DMA);
+    cam_obj->dma = (lldesc_t *)heap_caps_realloc(cam_obj->dma, cam_obj->node_cnt * sizeof(lldesc_t), MALLOC_CAP_DMA);
+    cam_obj->buffer = (uint8_t *)heap_caps_realloc(cam_obj->buffer, cam_obj->buffer_size * sizeof(uint8_t), MALLOC_CAP_DMA);
 
     for (uint32_t x = 0; x < cam_obj->node_cnt; x++) {
         cam_obj->dma[x].size = cam_obj->dma_size;
@@ -459,6 +459,8 @@ esp_err_t cam_deinit() {
     free(cam_obj->dma);
     free(cam_obj->buffer);
     free(cam_obj);
+
+    cam_obj = NULL;
 
     return ESP_OK;
 }
