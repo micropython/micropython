@@ -435,13 +435,13 @@ void cam_dma_config(const cam_config_t *config) {
     cam_obj->dma = (lldesc_t *)heap_caps_malloc(cam_obj->node_cnt * sizeof(lldesc_t), MALLOC_CAP_DMA);
     cam_obj->buffer = (uint8_t *)heap_caps_malloc(cam_obj->buffer_size * sizeof(uint8_t), MALLOC_CAP_DMA);
 
-    for (int x = 0; x < cam_obj->node_cnt; x++) {
+    for (uint32_t x = 0; x < cam_obj->node_cnt; x++) {
         cam_obj->dma[x].size = cam_obj->dma_size;
         cam_obj->dma[x].length = cam_obj->dma_size;
         cam_obj->dma[x].eof = 0;
         cam_obj->dma[x].owner = 1;
         cam_obj->dma[x].buf = (cam_obj->buffer + cam_obj->dma_size * x);
-        cam_obj->dma[x].empty = &cam_obj->dma[(x + 1) % cam_obj->node_cnt];
+        cam_obj->dma[x].empty = (intptr_t)&cam_obj->dma[(x + 1) % cam_obj->node_cnt];
     }
 
     I2S0.in_link.addr = ((uint32_t)&cam_obj->dma[0]) & 0xfffff;
