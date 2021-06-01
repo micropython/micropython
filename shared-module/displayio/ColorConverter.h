@@ -33,7 +33,7 @@
 #include "py/obj.h"
 #include "shared-module/displayio/Palette.h"
 
-typedef struct {
+typedef struct displayio_colorconverter {
     mp_obj_base_t base;
     bool dither;
     uint8_t input_colorspace;
