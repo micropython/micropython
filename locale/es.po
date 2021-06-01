@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-24 21:25+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2021-05-30 13:32+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -100,7 +100,7 @@ msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
-msgstr ""
+msgstr "%q debe ser de 0-255"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
@@ -120,7 +120,7 @@ msgstr "%q debe ser >= 1"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
+msgstr "%q debe ser None o entre 1 y len(report_descriptor)-1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
