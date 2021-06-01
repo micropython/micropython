@@ -29,12 +29,14 @@
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "machine_rtc.h"
+#include "ticks.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
 } machine_rtc_obj_t;
 
+STATIC uint64_t us_time_offset;
 
 // singleton RTC object
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
@@ -68,11 +70,11 @@ STATIC mp_obj_t machine_get_time() {
         mp_obj_new_int(srtcDate.year),
         mp_obj_new_int(srtcDate.month),
         mp_obj_new_int(srtcDate.day),
-        mp_obj_new_int(weekday(srtcDate.year, srtcDate.month, srtcDate.day)),
         mp_obj_new_int(srtcDate.hour),
         mp_obj_new_int(srtcDate.minute),
         mp_obj_new_int(srtcDate.second),
-        mp_obj_new_int(0)
+        mp_obj_new_int((ticks_us64() + us_time_offset) % 1000000),
+        mp_const_none,
     };
     return mp_obj_new_tuple(8, tuple);
 }
@@ -119,6 +121,16 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
+STATIC mp_obj_t machine_rtc_weekday(mp_obj_t self_in) {
+    (void)self_in; // unused
+    int day;
+    snvs_lp_srtc_datetime_t srtcDate;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &srtcDate);
+    day = weekday(srtcDate.year, srtcDate.month, srtcDate.day);
+    return MP_OBJ_NEW_SMALL_INT((day + 6) % 7);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_weekday_obj, machine_rtc_weekday);
+
 // calibration(cal)
 // When the argument falls in a number in the range [-16 to 15],
 // set the calibration value.
@@ -142,6 +154,7 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
+    { MP_ROM_QSTR(MP_QSTR_weekday), MP_ROM_PTR(&machine_rtc_weekday_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&machine_rtc_calibration_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
