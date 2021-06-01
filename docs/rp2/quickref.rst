@@ -59,7 +59,16 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-How do they work?
+The system timer peripheral on RP2040 provides a global microsecond timebase for the system, and generates
+interrupts based on this timebase. It supports • A single 64-bit counter, incrementing once per microsecond;• This counter can be read from a pair of latching registers, for race-free reads over a 32-bit bus;• Four alarms: match on the lower 32 bits of counter, IRQ on match.The timer uses a one microsecond reference that is generated in the watchdog and derived from the refernce clock,which itself is usually connected to the crystal oscillator.The 64-bit counter effectively can not overflow (thousands of years at 1 MHz), so the system timer is completely monotonic in practice.
+
+The system timer is intended to provide a global timebase for software. RP2040 has a number of other programmable counter resources which can provide regular interrupts, or trigger DMA transfers.The PWM contains 8× 16-bit programmable counters, which run at up to system speed, can generate
+interrupts, and can be continuously reprogrammed via the DMA, or trigger DMA transfers to other peripherals. 8× PIO state machines can count 32-bit values at system speed, and generate interrupts.
+The DMA (Section 2.5) has four internal pacing timers, which trigger transfers at regular intervals.
+Each Cortex-M0+ core (Section 2.4) has a standard 24-bit SysTick timer, counting either the microsecond tic or the system clock.
+
+
+
 
 .. _rp2_Pins_and_GPIO:
 
@@ -92,11 +101,27 @@ See :ref:`machine.UART <machine.UART>`. ::
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
 
+.. note::
+ 	
+	REPL over UART is disabled by default.You can see the :ref:`rp2_intro` for details on how to 		enable REPL ober UART.
+
 
 PWM (pulse width modulation)
 ----------------------------
 
-How does PWM work on the RPi RP2xxx?
+It has 8 almost independent channels – because they share the same 125MHz input clock (but have independent dividers) and can be started synchronously to run in lock-step for power control.
+
+Each channel has two outputs – so 16 PWM channels over all – that can be used to drive any of the 30 i-o pins.
+
+The channel clock dividers allows the 16bit PWMs to be clocked anywhere from 125MHz to 7Hz with 8-integer 4-fractional divide.
+
+Also included in the dividers is phase advance and retard.
+
+In some circumstances the outputs can be controlled from 0% to 100% modulation.
+
+The channels also share a feature of general purpose timers on other MCUs – they can also be clocked by external sources, with an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
+
+For more information on this topic you can see the PWM module in the rp2040 datasheet.
 
 Use the ``machine.PWM`` class::
 
@@ -112,8 +137,9 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
-How does the ADC module work?
+An analogue-to-digital converter (ADC) measures some analogue signal and encodes it as a digital number. The ADC on RP2040 measures voltages.An ADC has two key features: its resolution, measured in digital bits, and its channels, or how many analogue signals it can accept and convert at once. The ADC on RP2040 has a resolution of 12-bits, meaning that it can transform an analogue signal into a digital signal as a number ranging from 0 to 4095 – though this is handled in MicroPython transformed to a 16-bit number ranging from 0 to 65,535, so that it behaves the same as the ADC on other MicroPython microcontrollers.
 
+RP2040 has five ADC channels total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins, and the fourth can be used to measure the VSYS voltage on the board.The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
@@ -208,7 +234,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
-Is there a watchdog timer?
+The RP2XXX port even has a Watchdog.The watchdog is a countdown timer that can restart parts of the chip if it reaches zero. This can be used to restart the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
