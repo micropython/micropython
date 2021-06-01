@@ -148,6 +148,12 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_ValueError(MP_ERROR_TEXT("Timer does not exist"));
     }
 
+    // check, if a timer exists at that channel and stop it first
+    if (MP_STATE_PORT(timer_table)[id] != NULL) {
+        PIT_StopTimer(PIT, channel_no[id]);
+        MP_STATE_PORT(timer_table)[id] = NULL;
+    }
+
     // Set initial values
     self->id = id;
     self->channel = channel_no[id];
