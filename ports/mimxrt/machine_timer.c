@@ -31,7 +31,6 @@
 #include "fsl_pit.h"
 #include "modmachine.h"
 
-#define ALARM_ID_INVALID (-1)
 #define TIMER_MODE_ONE_SHOT (0)
 #define TIMER_MODE_PERIODIC (1)
 #define TIMER_MIN_PERIOD 1
@@ -96,8 +95,6 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    MP_STATE_PORT(timer_table)[self->id] = self;  // Insert into the table
-
     self->mode = args[ARG_mode].u_int;
     if (args[ARG_freq].u_obj != mp_const_none) {
         // Frequency specified in Hz
@@ -133,9 +130,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    machine_timer_obj_t *self = m_new_obj_with_finaliser(machine_timer_obj_t);
-    self->base.type = &machine_timer_type;
-    self->id = ALARM_ID_INVALID;
+    machine_timer_obj_t *self;
 
     // Get timer id in the range of 0..2
     mp_int_t id = 0;
@@ -146,6 +141,16 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
     if (id < 0 || id >= MICROPY_HW_PIT_NUM_CHANNELS) {
         mp_raise_ValueError(MP_ERROR_TEXT("Timer does not exist"));
+    }
+
+    // check, if a timer exists at that channel and stop it first
+    if (MP_STATE_PORT(timer_table)[id] != NULL) {
+        PIT_StopTimer(PIT, channel_no[id]);
+        self = MP_STATE_PORT(timer_table)[id];
+    } else {
+        self = m_new_obj_with_finaliser(machine_timer_obj_t);
+        self->base.type = &machine_timer_type;
+        MP_STATE_PORT(timer_table)[id] = self;
     }
 
     // Set initial values
@@ -162,6 +167,14 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
+STATIC mp_obj_t machine_timer___del__(mp_obj_t self_in) {
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    PIT_StopTimer(PIT, self->channel);
+    MP_STATE_PORT(timer_table)[self->id] = NULL;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer___del___obj, machine_timer___del__);
+
 STATIC mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     PIT_StopTimer(PIT, self->channel);
@@ -172,7 +185,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init)
 STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     PIT_StopTimer(PIT, self->channel);
-    MP_STATE_PORT(timer_table)[self->id] = NULL;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
@@ -192,7 +204,7 @@ void machine_timer_init_PIT(void) {
 }
 
 STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer___del___obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
 
