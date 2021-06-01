@@ -205,25 +205,8 @@ static void cam_set_pin(const cam_config_t *config) {
         gpio_matrix_in(config->pin_data[i], I2S0I_DATA_IN0_IDX + (16 - config->bit_width) + i, false);
     }
 
-    ledc_timer_config_t ledc_timer = {
-        .duty_resolution = LEDC_TIMER_1_BIT,
-        .freq_hz = config->xclk_fre,
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .timer_num = LEDC_TIMER_1
-    };
-    ledc_timer_config(&ledc_timer);
-    ledc_channel_config_t ledc_channel = {
-        .channel = LEDC_CHANNEL_2,
-        .duty = 1,
-        .gpio_num = config->pin.xclk,
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .timer_sel = LEDC_TIMER_1,
-        .hpoint = 0
-    };
-    ledc_channel_config(&ledc_channel);
-
     gpio_matrix_in(0x38, I2S0I_H_ENABLE_IDX, false);
-    ESP_LOGI(TAG, "cam_xclk_pin setup\n");
+    ESP_LOGI(TAG, "cam_set_pin\n");
 }
 
 static void cam_vsync_intr_enable(uint8_t en) {

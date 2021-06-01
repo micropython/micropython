@@ -14,16 +14,16 @@
 
 #pragma once
 
+#include "esp_err.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct {
     uint8_t bit_width;
-    uint32_t xclk_fre;
     union {
         struct {
-            uint32_t xclk :   8;
             uint32_t pclk :   8;
             uint32_t vsync :  8;
             uint32_t hsync :  8;
