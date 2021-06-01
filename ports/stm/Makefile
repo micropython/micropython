@@ -280,7 +280,8 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)echo $^ > $(BUILD)/firmware.objs
+	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
