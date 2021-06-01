@@ -185,6 +185,8 @@ void reset_displays(void) {
             rgbmatrix_rgbmatrix_obj_t *pm = &displays[i].rgbmatrix;
             if (!any_display_uses_this_framebuffer(&pm->base)) {
                 common_hal_rgbmatrix_rgbmatrix_deinit(pm);
+            } else {
+                common_hal_rgbmatrix_rgbmatrix_set_paused(pm, true);
             }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
