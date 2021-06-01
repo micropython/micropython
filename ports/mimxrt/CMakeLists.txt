@@ -107,7 +107,6 @@ set(MICROPY_SOURCE_PORT
     ${MICROPY_PORT_DIR}/board_init.c
     ${MICROPY_PORT_DIR}/led.c
     ${MICROPY_PORT_DIR}/machine_led.c
-    ${GEN_PINS_SRC}
     ${MICROPY_PORT_DIR}/pin.c
     ${MICROPY_PORT_DIR}/machine_pin.c
     ${MICROPY_PORT_DIR}/ticks.c
@@ -124,6 +123,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_USERMOD}
     ${MICROPY_SOURCE_PORT}
+    ${GEN_PINS_SRC}
     ${GEN_PINS_HDR}
 )
 
@@ -141,6 +141,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_PORT}
+    ${GEN_PINS_SRC}
 )
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
