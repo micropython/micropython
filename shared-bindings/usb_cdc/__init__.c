@@ -52,9 +52,9 @@
 //| """The `console` `Serial` object is used for the REPL, and for `sys.stdin` and `sys.stdout`.
 //|    `console` is ``None`` if disabled.
 //|
-//| However, note that`sys.stdin` and `sys.stdout` are text-based streams,
+//| However, note that `sys.stdin` and `sys.stdout` are text-based streams,
 //| and the `console` object is a binary stream.
-//| You do not normally need to write to `console` unless you wnat to write binary data.
+//| You do not normally need to write to `console` unless you want to write binary data.
 //| """
 //|
 //| data: Optional[Serial]
