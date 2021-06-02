@@ -59,3 +59,6 @@ bool port_i2s_playing(i2s_t *self);
 bool port_i2s_paused(i2s_t *self);
 void port_i2s_pause(i2s_t *self);
 void port_i2s_resume(i2s_t *self);
+
+// some uses (imagecapture) can only operate on i2s0 and need their own init code
+void port_i2s_allocate_i2s0(void);

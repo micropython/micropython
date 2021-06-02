@@ -115,6 +115,10 @@ msgstr ""
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
+#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+msgid "%q must be between %d and %d"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -3825,6 +3829,7 @@ msgstr ""
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
@@ -3832,7 +3837,8 @@ msgstr ""
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h

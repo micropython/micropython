@@ -27,7 +27,13 @@
 #pragma once
 
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
+#include "cam.h"
 
 struct imagecapture_parallelimagecapture_obj {
     mp_obj_base_t base;
+    cam_config_t config;
+    gpio_num_t data_clock;
+    gpio_num_t vertical_sync;
+    gpio_num_t horizontal_reference;
+    uint8_t data_count;
 };
