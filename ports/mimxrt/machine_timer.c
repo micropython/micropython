@@ -37,7 +37,7 @@
 #define TIMER_MIN_PERIOD 1
 
 #define alarm_callback PIT_IRQHandler
-#define PIT_SOURCE_CLOCK CLOCK_GetFreq(kCLOCK_OscClk)
+#define PIT_SOURCE_CLOCK CLOCK_GetIpgFreq()
 #define PIT_IRQ_ID PIT_IRQn
 
 typedef struct _machine_timer_obj_t {
@@ -188,8 +188,6 @@ void machine_timer_init_PIT(void) {
     // PIT timer
     // Enable clock gate for GPIO1
     CLOCK_EnableClock(kCLOCK_Gpio1); // ?
-    // Set PERCLK_CLK source to OSC_CLK
-    CLOCK_SetMux(kCLOCK_PerclkMux, 1U);
     // Set PERCLK_CLK divider to 1
     CLOCK_SetDiv(kCLOCK_PerclkDiv, 0U);
 
