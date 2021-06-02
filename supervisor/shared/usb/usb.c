@@ -77,10 +77,14 @@ void usb_init(void) {
 
     post_usb_init();
 
-    #if MICROPY_KBD_EXCEPTION
+    #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
     // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
-    tud_cdc_set_wanted_char(CHAR_CTRL_C);
+
+    // Don't watch for ctrl-C if there is no REPL.
+    if (usb_cdc_console_enabled()) {
+        tud_cdc_set_wanted_char(CHAR_CTRL_C);
+    }
     #endif
 }
 
@@ -103,7 +107,7 @@ void usb_set_defaults(void) {
     #endif
 };
 
-// Some dynamic USB data must be saved after boot.py. How much is needed
+// Some dynamic USB data must be saved after boot.py. How much is needed?
 size_t usb_boot_py_data_size(void) {
     size_t size = 0;
 
@@ -151,7 +155,10 @@ void usb_background(void) {
         #if CFG_TUSB_OS == OPT_OS_NONE
         tud_task();
         #endif
-        tud_cdc_write_flush();
+        // No need to flush if there's no REPL.
+        if (usb_cdc_console_enabled()) {
+            tud_cdc_write_flush();
+        }
     }
 }
 
@@ -274,13 +281,13 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
  * @param itf           Interface index (for multiple cdc interfaces)
  * @param wanted_char   The wanted char (set previously)
  */
-void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    (void)itf;  // not used
 
+// Only called when console is enabled.
+void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Workaround for using lib/utils/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
-        tud_cdc_read_flush();    // flush read fifo
+        tud_cdc_n_read_flush(itf);    // flush read fifo
         mp_keyboard_interrupt();
     }
 }
