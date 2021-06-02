@@ -142,6 +142,9 @@ static inline size_t mpz_max_num_bits(const mpz_t *z) {
     return z->len * MPZ_DIG_SIZE;
 }
 static inline size_t mpz_num_bits(const mpz_t *z) {
+    if (mpz_is_zero(z)) {
+	return 0;
+    }
     size_t last_bits = (8 * (sizeof(long) - sizeof(mpz_dig_t))) - __builtin_clzl(z->dig[z->len - 1]);
     return z->len * MPZ_DIG_SIZE + last_bits;
 }
