@@ -96,8 +96,6 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    MP_STATE_PORT(timer_table)[self->id] = self;  // Insert into the table
-
     self->mode = args[ARG_mode].u_int;
     if (args[ARG_freq].u_obj != mp_const_none) {
         // Frequency specified in Hz
@@ -133,9 +131,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    machine_timer_obj_t *self = m_new_obj_with_finaliser(machine_timer_obj_t);
-    self->base.type = &machine_timer_type;
-    self->id = ALARM_ID_INVALID;
+    machine_timer_obj_t *self;
 
     // Get timer id in the range of 0..2
     mp_int_t id = 0;
@@ -151,10 +147,14 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     // check, if a timer exists at that channel and stop it first
     if (MP_STATE_PORT(timer_table)[id] != NULL) {
         PIT_StopTimer(PIT, channel_no[id]);
-        MP_STATE_PORT(timer_table)[id] = NULL;
+        self = MP_STATE_PORT(timer_table)[id];
+    } else {
+        self = m_new_obj_with_finaliser(machine_timer_obj_t);
+        MP_STATE_PORT(timer_table)[id] = self;  // Insert into the table
     }
 
     // Set initial values
+    self->base.type = &machine_timer_type;
     self->id = id;
     self->channel = channel_no[id];
 
