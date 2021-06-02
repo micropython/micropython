@@ -35,6 +35,9 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
+// LVGL
+#define MICROPY_PY_LVGL				(1)
+
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
@@ -54,6 +57,7 @@
 #define MICROPY_PY_BUILTINS_STR_COUNT (0)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
+#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_CMATH            (0)
@@ -119,6 +123,8 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
+	LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     void *machine_pin_irq_list; /* Linked list of pin irq objects */
 
@@ -128,6 +134,7 @@ extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_zephyr;
 extern const struct _mp_obj_module_t mp_module_zsensor;
+extern const struct _mp_obj_module_t mp_module_lvgl;
 
 #if MICROPY_PY_UOS
 #define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
@@ -159,6 +166,11 @@ extern const struct _mp_obj_module_t mp_module_zsensor;
 #define MICROPY_PY_ZSENSOR_DEF
 #endif
 
+
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#define MICROPY_PY_LVGL_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     MICROPY_PY_UOS_DEF \
@@ -166,6 +178,7 @@ extern const struct _mp_obj_module_t mp_module_zsensor;
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_ZEPHYR_DEF \
     MICROPY_PY_ZSENSOR_DEF \
+	MICROPY_PY_LVGL_DEF	\
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

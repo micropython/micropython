@@ -20,7 +20,7 @@
 	url = https://github.com/NordicSemiconductor/nrfx.git
 [submodule "lib/lv_bindings"]
 	path = lib/lv_bindings
-	url = https://github.com/littlevgl/lv_bindings.git
+	url = https://github.com/lvgl/lv_binding_micropython.git
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
