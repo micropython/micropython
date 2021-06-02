@@ -372,6 +372,13 @@ size_t cam_take(uint8_t **buffer_p) {
     return frame_buffer_event.len;
 }
 
+bool cam_ready(void) {
+    frame_buffer_event_t frame_buffer_event;
+    BaseType_t result = xQueuePeek(cam_obj->frame_buffer_queue, (void *)&frame_buffer_event, 0);
+    return result != pdFALSE;
+}
+
+
 void cam_give(uint8_t *buffer) {
     if (buffer == cam_obj->frame1_buffer) {
         cam_obj->frame1_buffer_en = 1;

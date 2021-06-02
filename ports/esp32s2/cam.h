@@ -67,6 +67,13 @@ void cam_stop(void);
 size_t cam_take(uint8_t **buffer_p);
 
 /**
+ * @brief Check whether a frame is available
+ *
+ * @return - true if cam_take() will complete immediately, false if it will block
+ */
+bool cam_ready(void);
+
+/**
  * @brief enable frame buffer to get the next frame data.
  *
  * @param buffer The address of the frame buffer pointer
