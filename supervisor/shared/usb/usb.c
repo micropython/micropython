@@ -83,6 +83,7 @@ void usb_init(void) {
 
     // Don't watch for ctrl-C if there is no REPL.
     if (usb_cdc_console_enabled()) {
+        // Console will always be itf 0.
         tud_cdc_set_wanted_char(CHAR_CTRL_C);
     }
     #endif
@@ -156,9 +157,12 @@ void usb_background(void) {
         tud_task();
         #endif
         // No need to flush if there's no REPL.
+        #if CIRCUITPY_USB_CDC
         if (usb_cdc_console_enabled()) {
+            // Console will always be itf 0.
             tud_cdc_write_flush();
         }
+        #endif
     }
 }
 
@@ -212,6 +216,7 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     // DTR = false is counted as disconnected
     if (!dtr) {
         cdc_line_coding_t coding;
+        // Use whichever CDC is itf 0.
         tud_cdc_get_line_coding(&coding);
 
         if (coding.bit_rate == 1200) {
