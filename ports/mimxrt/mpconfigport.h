@@ -173,7 +173,6 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
-// removed from the loop below:        __WFE(); 
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

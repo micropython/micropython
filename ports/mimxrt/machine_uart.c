@@ -46,7 +46,7 @@ typedef struct _machine_uart_obj_t {
 } machine_uart_obj_t;
 
 extern const mp_obj_type_t machine_uart_type;
-extern bool lpuart_set_iomux(int8_t uart); 
+extern bool lpuart_set_iomux(int8_t uart);
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
@@ -57,18 +57,17 @@ extern bool lpuart_set_iomux(int8_t uart);
 #define UART_INVERT_RX (2)
 #define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
 
-STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX; 
+STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
 STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
 
-uint32_t UART_SrcFreq(void)
-{
+uint32_t UART_SrcFreq(void) {
     uint32_t freq;
     /* To make it simple, we assume default PLL and divider settings, and the only variable
        from application is use PLL3 source or OSC source */
-    if (CLOCK_GetMux(kCLOCK_UartMux) == 0)  {/* PLL3 div6 80M */
+    if (CLOCK_GetMux(kCLOCK_UartMux) == 0) { /* PLL3 div6 80M */
         freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
     } else {
         freq = CLOCK_GetOscFreq() / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
@@ -242,7 +241,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     LPUART_GetDefaultConfig(&self->config);
 
     // Configure board-specifc Pin MUX based on the hardware device number
-    lpuart_set_iomux(uart_hw_id); 
+    lpuart_set_iomux(uart_hw_id);
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -302,7 +301,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     size_t avail;
     size_t nget;
 
-    for (size_t received = 0; received < size; ) {
+    for (size_t received = 0; received < size;) {
         // Wait for the first/next character
         while ((avail = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle)) <= 0) {
             if (ticks_us64() > t) {  // timed out
@@ -332,7 +331,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     uint64_t t = ticks_us64() + (uint64_t)self->timeout * 1000;
 
     // send the date
-    xfer.data     = (uint8_t *)buf_in;
+    xfer.data = (uint8_t *)buf_in;
     xfer.dataSize = size;
     LPUART_TransferSendNonBlocking(self->lpuart, &self->handle, &xfer);
 
