@@ -347,6 +347,7 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "sparkfun_samd51_micromod"
         - "sparkfun_samd51_thing_plus"
         - "sparkfun_thing_plus_rp2040"
         - "spresense"
