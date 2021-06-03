@@ -96,7 +96,7 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/class/vendor/vendor_device.c \
 	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c
 
-SRC_TINYUSB_IMX_C += \
+SRC_HAL_IMX_C += \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 	$(MCU_DIR)/project_template/clock_config.c \
@@ -110,17 +110,16 @@ SRC_TINYUSB_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
+	$(MCU_DIR)/drivers/fsl_adc.c \
 
 SRC_C = \
 	main.c \
-	adc.c \
 	led.c \
 	pin.c \
 	ticks.c \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
-	$(MCU_DIR)/drivers/fsl_adc.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
@@ -141,7 +140,7 @@ SRC_C = \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	$(SRC_TINYUSB_C) \
-	$(SRC_TINYUSB_IMX_C) \
+	$(SRC_HAL_IMX_C) \
 
 SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 
@@ -160,7 +159,6 @@ SRC_QSTR += \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
-	adc.c \	
 	lib/utils/sys_stdio_mphal.c \
 	$(GEN_PINS_SRC) \
 

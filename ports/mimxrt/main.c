@@ -36,7 +36,6 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
-#include "adc.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -47,7 +46,6 @@ int main(void) {
     ticks_init();
     tusb_init();
     led_init();
-    adc_init();
 
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);

@@ -29,7 +29,6 @@
 #include "extmod/machine_mem.h"
 #include "led.h"
 #include "pin.h"
-#include "adc.h"
 #include "modmachine.h"
 
 #include CPU_HEADER_H

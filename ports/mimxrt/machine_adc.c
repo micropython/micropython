@@ -24,15 +24,28 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#include "fsl_adc.h"
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
-#include "adc.h"
+
+#include "modmachine.h"
 
 
-STATIC ADC_Type *const adcBases[] = ADC_BASE_PTRS;
+typedef struct _machine_adc_obj_t {
+    mp_obj_base_t base;
+    ADC_Type *adc;
+    uint8_t channel;
+    uint8_t channel_group;
+    uint16_t resolution;
+} machine_adc_obj_t;
+
+
+STATIC ADC_Type *const adc_bases[] = ADC_BASE_PTRS;
 
 
 STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -40,9 +53,9 @@ STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t k
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
 
     // Get ADC adc id
-    for (int i = 1; i < sizeof(adcBases) / sizeof(ADC_Type *); ++i)
+    for (int i = 1; i < sizeof(adc_bases) / sizeof(ADC_Type *); ++i)
     {
-        if (adcBases[i] == self->adc) {
+        if (adc_bases[i] == self->adc) {
             mp_printf(print, "ADC(%u, channel=%u)", i, self->channel);
         }
     }
@@ -116,3 +129,25 @@ const mp_obj_type_t machine_adc_type = {
     .make_new = adc_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&adc_locals_dict,
 };
+
+
+void machine_adc_init(void) {
+    ADC_Type *const adcBases[] = ADC_BASE_PTRS;
+
+    for (int i = 1; i < sizeof(adcBases) / sizeof(ADC_Type *); ++i)
+    {
+        ADC_Type *adc_instance = adcBases[i];
+
+        // Configure ADC perpheral
+        adc_config_t config;
+        ADC_GetDefaultConfig(&config);
+        ADC_Init(adc_instance, &config);
+
+        // Perform calibration
+        status_t calib_state = ADC_DoAutoCalibration(adc_instance);
+
+        if (calib_state == kStatus_Fail) {
+            mp_printf(&mp_plat_print, "Calibration for ADC Instance %d failed", i);
+        }
+    }
+}
