@@ -9,8 +9,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PB00) },
     { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PB01) },
-    { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PA02) },
-    { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA03) },
+    { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PB02) },
+    { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PB03) },
 
     // DAC
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pin_PA02) },
@@ -45,14 +45,14 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     // PWM pins (PWM0, PWM1)
     { MP_ROM_QSTR(MP_QSTR_PWM0), MP_ROM_PTR(&pin_PB01) },
-    { MP_ROM_QSTR(MP_QSTR_PWM1), MP_ROM_PTR(&pin_PA02) },
+    { MP_ROM_QSTR(MP_QSTR_PWM1), MP_ROM_PTR(&pin_PB02) },
 
     // AUD (audio)
     { MP_ROM_QSTR(MP_QSTR_AUD_MCLK), MP_ROM_PTR(&pin_PB17) },
     { MP_ROM_QSTR(MP_QSTR_AUD_OUT), MP_ROM_PTR(&pin_PA21) },
     { MP_ROM_QSTR(MP_QSTR_AUD_IN), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_AUD_LRCLK), MP_ROM_PTR(&pin_PA20) },
-    { MP_ROM_QSTR(MP_QSTR_AUD_BCLK), MP_ROM_PTR(&pin_GPA16) },
+    { MP_ROM_QSTR(MP_QSTR_AUD_BCLK), MP_ROM_PTR(&pin_PB16) },
 
     // I2C
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA17) },
@@ -95,5 +95,3 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
-
-
