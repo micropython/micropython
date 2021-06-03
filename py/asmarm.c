@@ -38,25 +38,6 @@
 
 #define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
 
-void asm_arm_end_pass(asm_arm_t *as) {
-    if (as->base.pass == MP_ASM_PASS_EMIT) {
-        #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
-        char *start = mp_asm_base_get_code(&as->base);
-        char *end = start + mp_asm_base_get_code_size(&as->base);
-        __builtin___clear_cache(start, end);
-        #elif defined(__arm__)
-        // flush I- and D-cache
-        asm volatile (
-            "0:"
-            "mrc p15, 0, r15, c7, c10, 3\n" // test and clean D-cache
-            "bne 0b\n"
-            "mov r0, #0\n"
-            "mcr p15, 0, r0, c7, c7, 0\n" // invalidate I-cache and D-cache
-            : : : "r0", "cc");
-        #endif
-    }
-}
-
 // Insert word into instruction flow
 STATIC void emit(asm_arm_t *as, uint op) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
