@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "SparkFun Thing Plus - SAMD51"
+#define MICROPY_HW_BOARD_NAME "SparkFun MicroMod SAMD51"
 #define MICROPY_HW_MCU_NAME "samd51j20"
 
 #define CIRCUITPY_MCU_FAMILY samd51
