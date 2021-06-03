@@ -106,7 +106,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                             }
                         }
                         if (c == ';') {
-                            int16_t m = 0;
+                            uint16_t m = 0;
                             for (++j; j < 9; j++) {
                                 if ('0' <= i[j] && i[j] <= '9') {
                                     m = m * 10 + (i[j] - '0');
@@ -116,6 +116,12 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                                 }
                             }
                             if (c == 'H') {
+                                if (n > 0) {
+                                    n--;
+                                }
+                                if (m > 0) {
+                                    m--;
+                                }
                                 if (n >= self->tilegrid->height_in_tiles) {
                                     n = self->tilegrid->height_in_tiles - 1;
                                 }
