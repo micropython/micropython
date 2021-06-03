@@ -34,7 +34,6 @@
 #include "pin.h"
 #include "modmachine.h"
 #include "fsl_clock.h"
-#include "machine_uart.h"
 
 #include CPU_HEADER_H
 

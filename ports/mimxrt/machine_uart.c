@@ -28,9 +28,25 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-
-#include "machine_uart.h"
 #include "ticks.h"
+#include "fsl_common.h"
+#include "fsl_lpuart.h"
+#include "fsl_iomuxc.h"
+
+typedef struct _machine_uart_obj_t {
+    mp_obj_base_t base;
+    struct _lpuart_handle handle;
+    lpuart_config_t config;
+    LPUART_Type *lpuart;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    uint8_t id;
+    uint8_t invert;
+    bool new;
+} machine_uart_obj_t;
+
+extern const mp_obj_type_t machine_uart_type;
+extern bool lpuart_set_iomux(int8_t uart); 
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
