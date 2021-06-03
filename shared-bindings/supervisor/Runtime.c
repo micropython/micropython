@@ -33,7 +33,9 @@
 #include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
+#if (CIRCUITPY_USB)
 #include "tusb.h"
+#endif
 
 STATIC supervisor_run_reason_t _run_reason;
 
