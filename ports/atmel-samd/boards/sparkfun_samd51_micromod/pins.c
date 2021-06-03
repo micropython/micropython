@@ -64,7 +64,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     // I2C2
     { MP_ROM_QSTR(MP_QSTR_SDA2), MP_ROM_PTR(&pin_PA13) },
-    { MP_ROM_QSTR(MP_QSTR_SCL1), MP_ROM_PTR(&pin_PA12) },
+    { MP_ROM_QSTR(MP_QSTR_SCL2), MP_ROM_PTR(&pin_PA12) },
 
     // SPI
     { MP_ROM_QSTR(MP_QSTR_CIPO), MP_ROM_PTR(&pin_PA06) },
