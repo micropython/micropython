@@ -42,6 +42,9 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t id;
     uint8_t invert;
+    uint16_t tx_status;
+    uint8_t *txbuf;
+    uint16_t txbuf_len;
     bool new;
 } machine_uart_obj_t;
 
@@ -75,20 +78,32 @@ uint32_t UART_SrcFreq(void) {
     return freq;
 }
 
+/* LPUART user callback */
+void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *userData) {
+    machine_uart_obj_t *self = userData;
+    if (kStatus_LPUART_TxIdle == status) {
+        self->tx_status = kStatus_LPUART_TxIdle;
+    }
+
+    if (kStatus_LPUART_RxRingBufferOverrun == status) {
+        ; // Ringbuffer full, deassert RTS if flow control is enabled
+    }
+}
+
 // MicroPython bindings for UART
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
-        "rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
+        "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
         self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
         _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
-        self->handle.rxRingBufferSize, self->timeout, self->timeout_char,
+        self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
         _invert_name[self->invert]);
 }
 
 STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
-           ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf};
+           ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf, ARG_txbuf};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
@@ -98,6 +113,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse args
@@ -148,6 +164,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         self->invert = args[ARG_invert].u_int;
     }
 
+    self->tx_status = kStatus_LPUART_TxIdle;
     self->config.enableTx = true;
     self->config.enableRx = true;
 
@@ -163,15 +180,15 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     }
 
     // Set the TX buffer size if configured.
-    // size_t txbuf_len = DEFAULT_BUFFER_SIZE;
-    // if (args[ARG_txbuf].u_int > 0) {
-    //     txbuf_len = args[ARG_txbuf].u_int;
-    //     if (txbuf_len < MIN_BUFFER_SIZE) {
-    //         txbuf_len = MIN_BUFFER_SIZE;
-    //     } else if (txbuf_len > MAX_BUFFER_SIZE) {
-    //         mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
-    //     }
-    // }
+    size_t txbuf_len = DEFAULT_BUFFER_SIZE;
+    if (args[ARG_txbuf].u_int > 0) {
+        txbuf_len = args[ARG_txbuf].u_int;
+        if (txbuf_len < MIN_BUFFER_SIZE) {
+            txbuf_len = MIN_BUFFER_SIZE;
+        } else if (txbuf_len > MAX_BUFFER_SIZE) {
+            mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
+        }
+    }
 
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 1 || self->new) {
@@ -188,9 +205,11 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         }
 
         LPUART_Init(self->lpuart, &self->config, UART_SrcFreq()); // ??
-        LPUART_TransferCreateHandle(self->lpuart, &self->handle, NULL, NULL);
+        LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
         uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
         LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
+        self->txbuf = m_new(uint8_t, txbuf_len); // Allocate the TX buffer.
+        self->txbuf_len = txbuf_len;
 
         // The Uart supports inverting, but not the fsl API, so it has to coded directly
         // And it has to be done after LPUART_Init.
@@ -328,28 +347,59 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
 STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     lpuart_transfer_t xfer;
-    uint64_t t = ticks_us64() + (uint64_t)self->timeout * 1000;
+    uint64_t t;
+    size_t remaining = size;
+    size_t offset = 0;
+    uint8_t fifo_size = FSL_FEATURE_LPUART_FIFO_SIZEn(0);
 
-    // send the date
-    xfer.data = (uint8_t *)buf_in;
-    xfer.dataSize = size;
-    LPUART_TransferSendNonBlocking(self->lpuart, &self->handle, &xfer);
 
-    // Wait for the data to be sent
-    while (self->handle.txDataSize) {
-        // Wait for the first/next character to be sent.
-        if (ticks_us64() > t) {  // timed out
-            if (self->handle.txDataSize >= size) {
-                *errcode = MP_EAGAIN;
-                return MP_STREAM_ERROR;
-            } else {
-                return size - self->handle.txDataSize;
-            }
+    // First check if a previous transfer is still ongoing
+    // Then wait at least the number of remaining character times
+    t = ticks_us64() + (uint64_t)(self->handle.txDataSize + fifo_size) * (13000000 / self->config.baudRate_Bps + 1000);
+    while (self->tx_status != kStatus_LPUART_TxIdle) {
+        if (ticks_us64() > t) {  // timed out, hard error
+            *errcode = MP_ETIMEDOUT;
+            return MP_STREAM_ERROR;
         }
         MICROPY_EVENT_POLL_HOOK
     }
 
-    // Just in case the fifo was drained during refill of the ringbuf.
+    // Check, if the first part has to be sent semi-blocking
+    if (size > self->txbuf_len) {
+        // send the first block
+        xfer.data = (uint8_t *)buf_in;
+        offset = xfer.dataSize = size - self->txbuf_len;
+        self->tx_status = kStatus_LPUART_TxBusy;
+        LPUART_TransferSendNonBlocking(self->lpuart, &self->handle, &xfer);
+
+        // Wait at least the number of character times for this chunk
+        t = ticks_us64() + (uint64_t)xfer.dataSize * (13000000 / self->config.baudRate_Bps + 1000);
+        while (self->handle.txDataSize) {
+            // Wait for the first/next character to be sent.
+            if (ticks_us64() > t) {  // timed out
+                if (self->handle.txDataSize >= size) {
+                    *errcode = MP_ETIMEDOUT;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return size - self->handle.txDataSize;
+                }
+            }
+            MICROPY_EVENT_POLL_HOOK
+        }
+        remaining = self->txbuf_len;
+    } else {
+        // The data fits into the tx buffer
+        offset = 0;
+        remaining = size;
+    }
+
+    // send the remaining data without waiting for completion.
+    memcpy(self->txbuf, (uint8_t *)buf_in + offset, remaining);
+    xfer.data = self->txbuf;
+    xfer.dataSize = remaining;
+    self->tx_status = kStatus_LPUART_TxBusy;
+    LPUART_TransferSendNonBlocking(self->lpuart, &self->handle, &xfer);
+
     return size;
 }
 
