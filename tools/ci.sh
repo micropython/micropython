@@ -300,6 +300,12 @@ CI_UNIX_OPTS_QEMU_MIPS=(
     LDFLAGS_EXTRA="-static"
 )
 
+CI_UNIX_OPTS_QEMU_ARM=(
+    CROSS_COMPILE=arm-linux-gnueabi-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
@@ -504,6 +510,25 @@ function ci_unix_qemu_mips_run_tests {
     # - ffi tests do not work
     file ./ports/unix/micropython-coverage
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
+}
+
+function ci_unix_qemu_arm_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+    sudo apt-get install qemu-user
+    qemu-arm --version
+}
+
+function ci_unix_qemu_arm_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}"
+}
+
+function ci_unix_qemu_arm_run_tests {
+    # Issues with ARM tests:
+    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
+    export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
+    file ./ports/unix/micropython-coverage
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py')
 }
 
 ########################################################################################

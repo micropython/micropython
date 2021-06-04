@@ -200,3 +200,17 @@ jobs:
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures
+
+  qemu_arm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_unix_qemu_arm_setup
+    - name: Build
+      run: source tools/ci.sh && ci_unix_qemu_arm_build
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_qemu_arm_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests.py --print-failures
