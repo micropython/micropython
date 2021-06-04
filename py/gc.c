@@ -342,9 +342,19 @@ void gc_collect_start(void) {
     #endif
 }
 
+// Address sanitizer needs to know that the access to ptrs[i] must always be
+// considered OK, even if it's a load from an address that would normally be
+// prohibited (due to being undefined, in a red zone, etc).
+#ifdef __GNUC__
+__attribute__((no_sanitize_address))
+#endif
+static void *gc_get_ptr(void **ptrs, int i) {
+    return ptrs[i];
+}
+
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
-        void *ptr = ptrs[i];
+        void *ptr = gc_get_ptr(ptrs, i);
         if (VERIFY_PTR(ptr)) {
             size_t block = BLOCK_FROM_PTR(ptr);
             if (ATB_GET_KIND(block) == AT_HEAD) {

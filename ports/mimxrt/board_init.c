@@ -38,6 +38,7 @@
 #include "fsl_lpuart.h"
 
 #include "clock_config.h"
+#include "modmachine.h"
 
 volatile uint32_t systick_ms = 0;
 
@@ -78,6 +79,12 @@ void board_init(void) {
     // USB1
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
+
+    // ADC
+    machine_adc_init();
+
+    // PIT
+    machine_timer_init_PIT();
 }
 
 void USB_OTG1_IRQHandler(void) {

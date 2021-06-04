@@ -146,6 +146,7 @@ function ci_mimxrt_setup {
 }
 
 function ci_mimxrt_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/mimxrt submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
@@ -194,6 +195,8 @@ function ci_qemu_arm_build {
     make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu-arm clean
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
+    make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test clean
+    make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test BOARD=sabrelite test
 }
 
 ########################################################################################
@@ -288,6 +291,13 @@ CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS=(
     MICROPY_PY_FFI=0
     MICROPY_PY_USSL=0
     CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1"
+)
+
+CI_UNIX_OPTS_QEMU_MIPS=(
+    CROSS_COMPILE=mips-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+    LDFLAGS_EXTRA="-static"
 )
 
 function ci_unix_build_helper {
@@ -474,6 +484,26 @@ function ci_unix_macos_run_tests {
     # - import_pkg7 has a problem with relative imports
     # - urandom_basic has a problem with getrandbits(0)
     (cd tests && ./run-tests.py --exclude 'uasyncio_(basic|heaplock|lock|wait_task)' --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+}
+
+function ci_unix_qemu_mips_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-mips-linux-gnu g++-mips-linux-gnu
+    sudo apt-get install qemu-user
+    qemu-mips --version
+}
+
+function ci_unix_qemu_mips_build {
+    # qemu-mips on GitHub Actions will seg-fault if not linked statically
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_MIPS[@]}"
+}
+
+function ci_unix_qemu_mips_run_tests {
+    # Issues with MIPS tests:
+    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
+    # - ffi tests do not work
+    file ./ports/unix/micropython-coverage
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
 }
 
 ########################################################################################

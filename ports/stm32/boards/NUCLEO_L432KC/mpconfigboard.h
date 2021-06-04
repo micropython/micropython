@@ -13,13 +13,13 @@
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UTIMEQ           (0)
 
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (0) // requires a custom USB connector on PA11/PA12
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
+#define MICROPY_HW_HAS_FLASH        (1)
 
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)

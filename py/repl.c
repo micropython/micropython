@@ -297,7 +297,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
     if (q_first == 0) {
         // If there're no better alternatives, and if it's first word
         // in the line, try to complete "import".
-        if (s_start == org_str && s_len > 0) {
+        if (s_start == org_str && s_len > 0 && s_len < sizeof(import_str) - 1) {
             if (memcmp(s_start, import_str, s_len) == 0) {
                 *compl_str = import_str + s_len;
                 return sizeof(import_str) - 1 - s_len;

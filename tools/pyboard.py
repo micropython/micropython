@@ -255,6 +255,7 @@ class Pyboard:
     def __init__(
         self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
     ):
+        self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
@@ -321,7 +322,7 @@ class Pyboard:
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self):
+    def enter_raw_repl(self, soft_reset=True):
         self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -331,25 +332,33 @@ class Pyboard:
             n = self.serial.inWaiting()
 
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
-        if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
-            print(data)
-            raise PyboardError("could not enter raw repl")
 
-        self.serial.write(b"\x04")  # ctrl-D: soft reset
-        data = self.read_until(1, b"soft reboot\r\n")
-        if not data.endswith(b"soft reboot\r\n"):
-            print(data)
-            raise PyboardError("could not enter raw repl")
-        # By splitting this into 2 reads, it allows boot.py to print stuff,
-        # which will show up after the soft reboot and before the raw REPL.
+        if soft_reset:
+            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
+                print(data)
+                raise PyboardError("could not enter raw repl")
+
+            self.serial.write(b"\x04")  # ctrl-D: soft reset
+
+            # Waiting for "soft reboot" independently to "raw REPL" (done below)
+            # allows boot.py to print, which will show up after "soft reboot"
+            # and before "raw REPL".
+            data = self.read_until(1, b"soft reboot\r\n")
+            if not data.endswith(b"soft reboot\r\n"):
+                print(data)
+                raise PyboardError("could not enter raw repl")
+
         data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise PyboardError("could not enter raw repl")
 
+        self.in_raw_repl = True
+
     def exit_raw_repl(self):
         self.serial.write(b"\r\x02")  # ctrl-B: enter friendly REPL
+        self.in_raw_repl = False
 
     def follow(self, timeout, data_consumer=None):
         # wait for normal output

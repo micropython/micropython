@@ -7,3 +7,4 @@
 #define MICROPY_HW_LED1_PIN (pin_GPIO_B0_03)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
+#define BOARD_FLASH_CONFIG_HEADER_H "teensy40_flexspi_nor_config.h"

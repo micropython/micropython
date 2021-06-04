@@ -101,14 +101,21 @@ typedef struct {
 } machine_pin_af_obj_t;
 
 typedef struct {
+    ADC_Type *instance;
+    uint8_t channel;
+} machine_pin_adc_obj_t;
+
+typedef struct {
     mp_obj_base_t base;
     qstr name;  // pad name
     GPIO_Type *gpio;  // gpio instance for pin
     uint32_t pin;  // pin number
     uint32_t muxRegister;
     uint32_t configRegister;
-    size_t af_list_len;  // length of available alternate functions list
-    const machine_pin_af_obj_t *af_list;  // pointer tolist with alternate functions
+    uint8_t af_list_len;  // length of available alternate functions list
+    uint8_t adc_list_len; // length of available ADC options list
+    const machine_pin_af_obj_t *af_list;  // pointer to list with alternate functions
+    const machine_pin_adc_obj_t *adc_list; // pointer to list with ADC options
 } machine_pin_obj_t;
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -140,5 +147,6 @@ const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_
 const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn);
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
 const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
+void machine_pin_set_mode(const machine_pin_obj_t *pin, uint8_t mode);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H

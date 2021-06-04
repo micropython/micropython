@@ -1,0 +1,8 @@
+pkg __name__: pkg7
+pkg __name__: pkg7.subpkg1
+pkg __name__: pkg7.subpkg1.subpkg2
+mod1
+mod2
+mod1.foo
+mod2.bar
+ImportError

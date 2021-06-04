@@ -313,7 +313,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         // We must have some component left over to import from
         if (p == this_name) {
-            mp_raise_ValueError(MP_ERROR_TEXT("can't perform relative import"));
+            mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("can't perform relative import"));
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);

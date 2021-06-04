@@ -3,9 +3,16 @@
 // options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (512)
-#define MICROPY_EMIT_X64            (0)
+
+#if defined(__ARM_ARCH_ISA_ARM)
+#define MICROPY_EMIT_ARM            (1)
+#define MICROPY_EMIT_INLINE_THUMB   (1)
+#elif defined(__ARM_ARCH_ISA_THUMB)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#endif
+
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (0)
@@ -42,8 +49,6 @@
 #define MICROPY_VFS                 (1)
 
 // type definitions for the specific machine
-
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
