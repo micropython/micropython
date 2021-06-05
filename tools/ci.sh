@@ -313,6 +313,10 @@ function ci_unix_build_helper {
     make ${MAKEOPTS} -C ports/unix "$@"
 }
 
+function ci_unix_build_ffi_lib_helper {
+    $1 $2 -shared -o tests/unix/ffi_lib.so tests/unix/ffi_lib.c
+}
+
 function ci_unix_run_tests_helper {
     make -C ports/unix "$@" test
 }
@@ -359,6 +363,7 @@ function ci_unix_minimal_run_tests {
 
 function ci_unix_standard_build {
     ci_unix_build_helper VARIANT=standard
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_standard_run_tests {
@@ -379,6 +384,7 @@ function ci_unix_coverage_setup {
 
 function ci_unix_coverage_build {
     ci_unix_build_helper VARIANT=coverage
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_coverage_run_tests {
@@ -403,6 +409,7 @@ function ci_unix_32bit_setup {
 
 function ci_unix_coverage_32bit_build {
     ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
+    ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_coverage_32bit_run_tests {
@@ -416,6 +423,7 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 function ci_unix_nanbox_build {
     # Use Python 2 to check that it can run the build scripts
     ci_unix_build_helper PYTHON=python2 VARIANT=nanbox
+    ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_nanbox_run_tests {
@@ -424,6 +432,7 @@ function ci_unix_nanbox_run_tests {
 
 function ci_unix_float_build {
     ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_float_run_tests {
@@ -521,6 +530,7 @@ function ci_unix_qemu_arm_setup {
 
 function ci_unix_qemu_arm_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}"
+    ci_unix_build_ffi_lib_helper arm-linux-gnueabi-gcc
 }
 
 function ci_unix_qemu_arm_run_tests {
