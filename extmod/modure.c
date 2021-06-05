@@ -343,6 +343,9 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
                         const char *end_match = match->caps[match_no * 2 + 1];
                         vstr_add_strn(&vstr_return, start_match, end_match - start_match);
                     }
+                } else if (*repl == '\\') {
+                    // Add the \ character
+                    vstr_add_byte(&vstr_return, *repl++);
                 }
             } else {
                 // Just add the current byte from the replacement string

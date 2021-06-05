@@ -30,6 +30,18 @@ class Stream:
         yield core._io_queue.queue_read(self.s)
         return self.s.read(n)
 
+    async def readexactly(self, n):
+        r = b""
+        while n:
+            yield core._io_queue.queue_read(self.s)
+            r2 = self.s.read(n)
+            if r2 is not None:
+                if not len(r2):
+                    raise EOFError
+                r += r2
+                n -= len(r2)
+        return r
+
     async def readline(self):
         l = b""
         while True:
@@ -70,7 +82,7 @@ async def open_connection(host, port):
     try:
         s.connect(ai[-1])
     except OSError as er:
-        if er.args[0] != EINPROGRESS:
+        if er.errno != EINPROGRESS:
             raise er
     yield core._io_queue.queue_write(s)
     return ss, ss

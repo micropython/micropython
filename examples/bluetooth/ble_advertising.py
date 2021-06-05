@@ -47,7 +47,8 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
                 _append(_ADV_TYPE_UUID128_COMPLETE, b)
 
     # See org.bluetooth.characteristic.gap.appearance.xml
-    _append(_ADV_TYPE_APPEARANCE, struct.pack("<h", appearance))
+    if appearance:
+        _append(_ADV_TYPE_APPEARANCE, struct.pack("<h", appearance))
 
     return payload
 

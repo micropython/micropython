@@ -65,7 +65,6 @@ extern const spi_t spi_obj[6];
 
 extern const mp_spi_proto_t spi_proto;
 extern const mp_obj_type_t pyb_spi_type;
-extern const mp_obj_type_t machine_soft_spi_type;
 extern const mp_obj_type_t machine_hard_spi_type;
 
 // A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.

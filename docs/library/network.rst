@@ -55,10 +55,10 @@ parameter should be `id`.
         Activate ("up") or deactivate ("down") the network interface, if
         a boolean argument is passed. Otherwise, query current state if
         no argument is provided. Most other methods require an active
-        interface (behavior of calling them on inactive interface is
+        interface (behaviour of calling them on inactive interface is
         undefined).
 
-.. method:: AbstractNIC.connect([service_id, key=None, \*, ...])
+.. method:: AbstractNIC.connect([service_id, key=None, *, ...])
 
        Connect the interface to a network. This method is optional, and
        available only for interfaces which are not "always connected".
@@ -82,7 +82,7 @@ parameter should be `id`.
 
        Returns ``True`` if connected to network, otherwise returns ``False``.
 
-.. method:: AbstractNIC.scan(\*, ...)
+.. method:: AbstractNIC.scan(*, ...)
 
        Scan for the available network services/connections. Returns a
        list of tuples with discovered service parameters. For various

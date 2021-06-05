@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 
-// Possible DMA configurations for SPI busses:
+// Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
 // SPI2_TX: DMA1_Stream4.CHANNEL_0
@@ -167,45 +167,52 @@ void spi_init0(void) {
 }
 
 int spi_find_index(mp_obj_t id) {
+    int spi_id;
     if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {
         #ifdef MICROPY_HW_SPI1_NAME
         } else if (strcmp(port, MICROPY_HW_SPI1_NAME) == 0) {
-            return 1;
+            spi_id = 1;
         #endif
         #ifdef MICROPY_HW_SPI2_NAME
         } else if (strcmp(port, MICROPY_HW_SPI2_NAME) == 0) {
-            return 2;
+            spi_id = 2;
         #endif
         #ifdef MICROPY_HW_SPI3_NAME
         } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
-            return 3;
+            spi_id = 3;
         #endif
         #ifdef MICROPY_HW_SPI4_NAME
         } else if (strcmp(port, MICROPY_HW_SPI4_NAME) == 0) {
-            return 4;
+            spi_id = 4;
         #endif
         #ifdef MICROPY_HW_SPI5_NAME
         } else if (strcmp(port, MICROPY_HW_SPI5_NAME) == 0) {
-            return 5;
+            spi_id = 5;
         #endif
         #ifdef MICROPY_HW_SPI6_NAME
         } else if (strcmp(port, MICROPY_HW_SPI6_NAME) == 0) {
-            return 6;
+            spi_id = 6;
         #endif
+        } else {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%s) doesn't exist"), port);
         }
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%s) doesn't exist"), port);
     } else {
         // given an integer id
-        int spi_id = mp_obj_get_int(id);
-        if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(spi_obj)
-            && spi_obj[spi_id - 1].spi != NULL) {
-            return spi_id;
+        spi_id = mp_obj_get_int(id);
+        if (spi_id < 1 || spi_id > MP_ARRAY_SIZE(spi_obj) || spi_obj[spi_id - 1].spi == NULL) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
         }
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
+
+    // check if the SPI is reserved for system use or not
+    if (MICROPY_HW_SPI_IS_RESERVED(spi_id)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) is reserved"), spi_id);
+    }
+
+    return spi_id;
 }
 
 STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
@@ -626,7 +633,11 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
+            #if defined(STM32H7)
+            uint log_prescaler = (spi->Init.BaudRatePrescaler >> 28) + 1;
+            #else
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
+            #endif
             uint baudrate = spi_get_source_freq(spi) >> log_prescaler;
             if (legacy) {
                 mp_printf(print, ", SPI.MASTER");

@@ -133,7 +133,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         // allow to print the parse tree in the coverage build
         if (mp_verbose_flag >= 3) {
             printf("----------------\n");
-            mp_parse_node_print(parse_tree.root, 0);
+            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
             printf("----------------\n");
         }
         #endif
@@ -341,6 +341,9 @@ STATIC int invalid_args(void) {
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
+            if (strcmp(argv[a], "-c") == 0 || strcmp(argv[a], "-m") == 0) {
+                break; // Everything after this is a command/module and arguments for it
+            }
             if (strcmp(argv[a], "-h") == 0) {
                 print_help(argv);
                 exit(0);
@@ -387,7 +390,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                         goto invalid_arg;
                     }
                     if (word_adjust) {
-                        heap_size = heap_size * BYTES_PER_WORD / 4;
+                        heap_size = heap_size * MP_BYTES_PER_OBJ_WORD / 4;
                     }
                     // If requested size too small, we'll crash anyway
                     if (heap_size < 700) {
@@ -400,6 +403,8 @@ STATIC void pre_process_options(int argc, char **argv) {
                 }
                 a++;
             }
+        } else {
+            break; // Not an option but a file
         }
     }
 }
@@ -446,7 +451,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    // Define a reasonable stack limit to detect stack overflow.
+    mp_uint_t stack_limit = 40000 * (sizeof(void *) / 4);
+    #if defined(__arm__) && !defined(__thumb2__)
+    // ARM (non-Thumb) architectures require more stack.
+    stack_limit *= 2;
+    #endif
+    mp_stack_set_limit(stack_limit);
 
     pre_process_options(argc, argv);
 
@@ -531,7 +542,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if defined(MICROPY_UNIX_COVERAGE)
     {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
-        mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
+        mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
     #endif
 
@@ -544,9 +557,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // test_obj.attr = 42
     //
     // mp_obj_t test_class_type, test_class_instance;
-    // test_class_type = mp_obj_new_type(QSTR_FROM_STR_STATIC("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
-    // mp_store_name(QSTR_FROM_STR_STATIC("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
-    // mp_store_attr(test_class_instance, QSTR_FROM_STR_STATIC("attr"), mp_obj_new_int(42));
+    // test_class_type = mp_obj_new_type(qstr_from_str("TestClass"), mp_const_empty_tuple, mp_obj_new_dict(0));
+    // mp_store_name(qstr_from_str("test_obj"), test_class_instance = mp_call_function_0(test_class_type));
+    // mp_store_attr(test_class_instance, qstr_from_str("attr"), mp_obj_new_int(42));
 
     /*
     printf("bytes:\n");
@@ -566,11 +579,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 if (a + 1 >= argc) {
                     return invalid_args();
                 }
+                set_sys_argv(argv, a + 1, a); // The -c becomes first item of sys.argv, as in CPython
+                set_sys_argv(argv, argc, a + 2); // Then what comes after the command
                 ret = do_str(argv[a + 1]);
-                if (ret & FORCED_EXIT) {
-                    break;
-                }
-                a += 1;
+                break;
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
                     return invalid_args();
@@ -590,7 +602,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
-                bool subpkg_tried = false;
+
+                // Allocating subpkg_tried on the stack can lead to compiler warnings about this
+                // variable being clobbered when nlr is implemented using setjmp/longjmp.  Its
+                // value must be preserved across calls to setjmp/longjmp.
+                static bool subpkg_tried;
+                subpkg_tried = false;
 
             reimport:
                 if (nlr_push(&nlr) == 0) {

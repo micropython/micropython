@@ -24,45 +24,40 @@ SERVICE_B = (
 )
 SERVICES = (SERVICE_A, SERVICE_B)
 
-waiting_event = None
-waiting_data = None
+waiting_events = {}
 num_service_result = 0
 
 
 def irq(event, data):
-    global waiting_event, waiting_data, num_service_result
+    global num_service_result
     if event == _IRQ_CENTRAL_CONNECT:
         print("_IRQ_CENTRAL_CONNECT")
+        waiting_events[event] = data[0]
     elif event == _IRQ_CENTRAL_DISCONNECT:
         print("_IRQ_CENTRAL_DISCONNECT")
     elif event == _IRQ_PERIPHERAL_CONNECT:
         print("_IRQ_PERIPHERAL_CONNECT")
+        waiting_events[event] = data[0]
     elif event == _IRQ_PERIPHERAL_DISCONNECT:
         print("_IRQ_PERIPHERAL_DISCONNECT")
     elif event == _IRQ_GATTC_SERVICE_RESULT:
         if data[3] == UUID_A or data[3] == UUID_B:
             print("_IRQ_GATTC_SERVICE_RESULT", data[3])
             num_service_result += 1
+    elif event == _IRQ_GATTC_SERVICE_DONE:
+        print("_IRQ_GATTC_SERVICE_DONE")
 
-    if waiting_event is not None:
-        if (isinstance(waiting_event, int) and event == waiting_event) or (
-            not isinstance(waiting_event, int) and waiting_event(event, data)
-        ):
-            waiting_event = None
-            waiting_data = data
+    if event not in waiting_events:
+        waiting_events[event] = None
 
 
 def wait_for_event(event, timeout_ms):
-    global waiting_event, waiting_data
-    waiting_event = event
-    waiting_data = None
-
     t0 = time.ticks_ms()
     while time.ticks_diff(time.ticks_ms(), t0) < timeout_ms:
-        if waiting_data:
-            return True
+        if event in waiting_events:
+            return waiting_events.pop(event)
         machine.idle()
-    return False
+    raise ValueError("Timeout waiting for {}".format(event))
 
 
 # Acting in peripheral role.
@@ -85,14 +80,14 @@ def instance1():
     try:
         # Connect to peripheral and then disconnect.
         print("gap_connect")
-        ble.gap_connect(0, BDADDR)
-        if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
-            return
-        conn_handle, _, _ = waiting_data
+        ble.gap_connect(*BDADDR)
+        conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
 
         # Discover services.
         ble.gattc_discover_services(conn_handle)
-        wait_for_event(lambda event, data: num_service_result == 2, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_SERVICE_DONE, TIMEOUT_MS)
+
+        print("discovered:", num_service_result)
 
         # Disconnect from peripheral.
         print("gap_disconnect:", ble.gap_disconnect(conn_handle))

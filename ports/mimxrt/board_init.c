@@ -38,8 +38,7 @@
 #include "fsl_lpuart.h"
 
 #include "clock_config.h"
-
-#define LED_STATE_ON (0)
+#include "modmachine.h"
 
 volatile uint32_t systick_ms = 0;
 
@@ -52,9 +51,6 @@ void board_init(void) {
 
     // Enable IOCON clock
     CLOCK_EnableClock(kCLOCK_Iomuxc);
-
-    // 1ms tick timer
-    SysTick_Config(SystemCoreClock / 1000);
 
     // ------------- USB0 ------------- //
 
@@ -83,18 +79,22 @@ void board_init(void) {
     // USB1
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
-}
 
-void SysTick_Handler(void) {
-    systick_ms++;
+    // ADC
+    machine_adc_init();
+
+    // PIT
+    machine_timer_init_PIT();
 }
 
 void USB_OTG1_IRQHandler(void) {
-    tud_isr(0);
+    tud_int_handler(0);
     tud_task();
+    __SEV();
 }
 
 void USB_OTG2_IRQHandler(void) {
-    tud_isr(1);
+    tud_int_handler(1);
     tud_task();
+    __SEV();
 }

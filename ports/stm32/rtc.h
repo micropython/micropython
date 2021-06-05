@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_RTC_H
 #define MICROPY_INCLUDED_STM32_RTC_H
 
+#include "py/obj.h"
+
 extern RTC_HandleTypeDef RTCHandle;
 extern const mp_obj_type_t pyb_rtc_type;
 

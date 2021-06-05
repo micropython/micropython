@@ -34,7 +34,7 @@ async def gather_task():
 
 async def main():
     # Simple gather with return values
-    print(await asyncio.gather(factorial("A", 2), factorial("B", 3), factorial("C", 4),))
+    print(await asyncio.gather(factorial("A", 2), factorial("B", 3), factorial("C", 4)))
 
     # Cancel a multi gather
     # TODO doesn't work, Task should not forward cancellation from gather to sub-task

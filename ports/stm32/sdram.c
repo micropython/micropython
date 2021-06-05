@@ -49,8 +49,7 @@
 
 #ifdef FMC_SDRAM_BANK
 
-static void sdram_init_seq(SDRAM_HandleTypeDef
-    *hsdram, FMC_SDRAM_CommandTypeDef *command);
+static void sdram_init_seq(SDRAM_HandleTypeDef *hsdram, FMC_SDRAM_CommandTypeDef *command);
 extern void __fatal_error(const char *msg);
 
 bool sdram_init(void) {
@@ -74,7 +73,9 @@ bool sdram_init(void) {
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_SDNRAS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_SDNRAS);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_SDNWE, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_SDNWE);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_BA0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_BA0);
+    #ifdef MICROPY_HW_FMC_BA1
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_BA1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_BA1);
+    #endif
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_NBL0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_NBL0);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_NBL1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_NBL1);
     #ifdef MICROPY_HW_FMC_NBL2
@@ -92,7 +93,9 @@ bool sdram_init(void) {
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_A8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_A8);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_A9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_A9);
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_A10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_A10);
+    #ifdef MICROPY_HW_FMC_A11
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_A11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_A11);
+    #endif
     #ifdef MICROPY_HW_FMC_A12
     mp_hal_pin_config_alt_static_speed(MICROPY_HW_FMC_A12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_FMC_A12);
     #endif
@@ -252,6 +255,25 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     mpu_config_region(MPU_REGION_SDRAM2, SDRAM_START_ADDRESS, MPU_CONFIG_SDRAM(SDRAM_MPU_REGION_SIZE));
     mpu_config_end(irq_state);
     #endif
+}
+
+void sdram_enter_low_power(void) {
+    // Enter self-refresh mode.
+    // In self-refresh mode the SDRAM retains data with external clocking.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_SELFREFRESH_MODE |     // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number -1
+        (0 << 9U));                                                  // Mode Register Definition
+}
+
+void sdram_leave_low_power(void) {
+    // Exit self-refresh mode.
+    // Self-refresh mode is exited when the device is accessed or the mode bits are
+    // set to Normal mode, so technically it's not necessary to call this functions.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_NORMAL_MODE |          // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number - 1
+        (0 << 9U));                                                  // Mode Register Definition
 }
 
 bool sdram_test(bool fast) {

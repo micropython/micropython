@@ -250,6 +250,13 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 #define PYB_FLASH_NATIVE_BLOCK_SIZE (FLASH_BLOCK_SIZE)
 #endif
 
+#if defined(MICROPY_HW_BDEV_READBLOCKS_EXT)
+// Size of blocks is PYB_FLASH_NATIVE_BLOCK_SIZE
+int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint32_t len) {
+    return MICROPY_HW_BDEV_READBLOCKS_EXT(dest, block, offset, len);
+}
+#endif
+
 typedef struct _pyb_flash_obj_t {
     mp_obj_base_t base;
     uint32_t start; // in bytes
@@ -333,8 +340,12 @@ STATIC mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     else if (self != &pyb_flash_obj) {
         // Extended block read on a sub-section of the flash storage
         uint32_t offset = mp_obj_get_int(args[3]);
-        block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
-        ret = MICROPY_HW_BDEV_READBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        if ((block_num * PYB_FLASH_NATIVE_BLOCK_SIZE) >= self->len) {
+            ret = -MP_EFAULT; // Bad address
+        } else {
+            block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
+            ret = MICROPY_HW_BDEV_READBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        }
     }
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
@@ -356,8 +367,12 @@ STATIC mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     else if (self != &pyb_flash_obj) {
         // Extended block write on a sub-section of the flash storage
         uint32_t offset = mp_obj_get_int(args[3]);
-        block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
-        ret = MICROPY_HW_BDEV_WRITEBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        if ((block_num * PYB_FLASH_NATIVE_BLOCK_SIZE) >= self->len) {
+            ret = -MP_EFAULT; // Bad address
+        } else {
+            block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
+            ret = MICROPY_HW_BDEV_WRITEBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        }
     }
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
@@ -453,7 +468,9 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
+    #if MICROPY_FATFS_MULTI_PARTITION
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
+    #endif
     vfs->blockdev.readblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_readblocks_obj);
     vfs->blockdev.readblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
     vfs->blockdev.readblocks[2] = MP_OBJ_FROM_PTR(storage_read_blocks); // native version

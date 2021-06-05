@@ -11,6 +11,8 @@ EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
 INC += -I$(TOP)/$(BTSTACK_EXTMOD_DIR)
 
 CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
 
 BTSTACK_DIR = $(TOP)/lib/btstack
 
@@ -31,11 +33,30 @@ SRC_BTSTACK = \
 	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+	$(error Cannot specifiy both MICROPY_BLUETOOTH_BTSTACK_USB and MICROPY_BLUETOOTH_BTSTACK_H4)
+endif
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 SRC_BTSTACK += \
 	lib/btstack/platform/libusb/hci_transport_h2_libusb.c
 
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK_USB=1
+
 CFLAGS  += $(shell pkg-config libusb-1.0 --cflags)
 LDFLAGS += $(shell pkg-config libusb-1.0 --libs)
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+SRC_BTSTACK += \
+	lib/btstack/src/hci_transport_h4.c \
+	lib/btstack/chipset/zephyr/btstack_chipset_zephyr.c
+
+EXTMOD_SRC_C += \
+	extmod/btstack/btstack_hci_uart.c \
+
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK_H4=1
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC),1)
@@ -47,11 +68,12 @@ endif
 LIB_SRC_C += $(SRC_BTSTACK)
 
 # Suppress some warnings.
-BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wimplicit-fallthrough=0
 ifneq ($(CC),clang)
 BTSTACK_WARNING_CFLAGS += -Wno-format
 endif
 $(BUILD)/lib/btstack/src/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
+$(BUILD)/lib/btstack/platform/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
 
 endif
 endif

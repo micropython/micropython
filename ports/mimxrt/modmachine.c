@@ -27,7 +27,13 @@
 
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_i2c.h"
+#include "extmod/machine_signal.h"
+#include "extmod/machine_spi.h"
 #include "led.h"
+#include "pin.h"
+#include "modmachine.h"
+#include "fsl_clock.h"
 
 #include CPU_HEADER_H
 
@@ -38,7 +44,7 @@ STATIC mp_obj_t machine_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(0);
+    return MP_OBJ_NEW_SMALL_INT(CLOCK_GetFreq(kCLOCK_CpuClk));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 
@@ -52,6 +58,13 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if NUM_LEDS
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },
+    { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

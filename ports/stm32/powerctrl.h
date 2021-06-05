@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_POWERCTRL_H
 #define MICROPY_INCLUDED_STM32_POWERCTRL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 void SystemClock_Config(void);

@@ -6,7 +6,7 @@ except ImportError:
 
 desc = {
     "s0": uctypes.UINT16 | 0,
-    "sub": (0, {"b0": uctypes.UINT8 | 0, "b1": uctypes.UINT8 | 1,}),
+    "sub": (0, {"b0": uctypes.UINT8 | 0, "b1": uctypes.UINT8 | 1}),
     "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "bitf0": uctypes.BFUINT16 | 0 | 0 << uctypes.BF_POS | 8 << uctypes.BF_LEN,

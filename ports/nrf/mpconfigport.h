@@ -24,10 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef NRF5_MPCONFIGPORT_H__
-#define NRF5_MPCONFIGPORT_H__
-
 #include <mpconfigboard.h>
+
+#if defined(NRF51822)
+  #include "mpconfigdevice_nrf51822.h"
+#elif defined(NRF52832)
+  #include "mpconfigdevice_nrf52832.h"
+#elif defined(NRF52840)
+  #include "mpconfigdevice_nrf52840.h"
+#elif defined(NRF9160)
+  #include "mpconfigdevice_nrf9160.h"
+#else
+  #pragma error "Device not defined"
+#endif
 
 // options to control how MicroPython is built
 #ifndef MICROPY_VFS
@@ -35,8 +44,6 @@
 #endif
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
@@ -105,19 +112,15 @@
 #define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_IO_FILEIO        (0)
-#define MICROPY_PY_UERRNO           (0)
-#define MICROPY_PY_UBINASCII        (0)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_UCTYPES          (0)
@@ -125,11 +128,9 @@
 #define MICROPY_PY_UJSON            (0)
 #define MICROPY_PY_URE              (0)
 #define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
@@ -195,8 +196,6 @@
 #endif
 
 // type definitions for the specific machine
-
-#define BYTES_PER_WORD (4)
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
@@ -327,11 +326,7 @@ extern const struct _mp_obj_module_t ble_module;
         __WFI(); \
     } while (0);
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
-
-#endif

@@ -12,6 +12,14 @@ when created, or initialised later on.
 
 Printing the I2C object gives you information about its configuration.
 
+Both hardware and software I2C implementations exist via the
+:ref:`machine.I2C <machine.I2C>` and `machine.SoftI2C` classes.  Hardware I2C uses
+underlying hardware support of the system to perform the reads/writes and is
+usually efficient and fast but may have restrictions on which pins can be used.
+Software I2C is implemented by bit-banging and can be used on any pin but is not
+as efficient.  These classes have the same methods available and differ primarily
+in the way they are constructed.
+
 Example usage::
 
     from machine import I2C
@@ -33,26 +41,38 @@ Example usage::
 Constructors
 ------------
 
-.. class:: I2C(id=-1, \*, scl, sda, freq=400000)
+.. class:: I2C(id, *, scl, sda, freq=400000)
 
    Construct and return a new I2C object using the following parameters:
 
-      - *id* identifies a particular I2C peripheral.  The default
-        value of -1 selects a software implementation of I2C which can
-        work (in most cases) with arbitrary pins for SCL and SDA.
-        If *id* is -1 then *scl* and *sda* must be specified.  Other
-        allowed values for *id* depend on the particular port/board,
-        and specifying *scl* and *sda* may or may not be required or
-        allowed in this case.
+      - *id* identifies a particular I2C peripheral.  Allowed values for
+        depend on the particular port/board
       - *scl* should be a pin object specifying the pin to use for SCL.
       - *sda* should be a pin object specifying the pin to use for SDA.
       - *freq* should be an integer which sets the maximum frequency
         for SCL.
 
+   Note that some ports/boards will have default values of *scl* and *sda*
+   that can be changed in this constructor.  Others will have fixed values
+   of *scl* and *sda* that cannot be changed.
+
+.. _machine.SoftI2C:
+.. class:: SoftI2C(scl, sda, *, freq=400000, timeout=255)
+
+   Construct a new software I2C object.  The parameters are:
+
+      - *scl* should be a pin object specifying the pin to use for SCL.
+      - *sda* should be a pin object specifying the pin to use for SDA.
+      - *freq* should be an integer which sets the maximum frequency
+        for SCL.
+      - *timeout* is the maximum time in microseconds to wait for clock
+        stretching (SCL held low by another device on the bus), after
+        which an ``OSError(ETIMEDOUT)`` exception is raised.
+
 General Methods
 ---------------
 
-.. method:: I2C.init(scl, sda, \*, freq=400000)
+.. method:: I2C.init(scl, sda, *, freq=400000)
 
   Initialise the I2C bus with the given arguments:
 
@@ -79,7 +99,7 @@ The following methods implement the primitive I2C master bus operations and can
 be combined to make any I2C transaction.  They are provided if you need more
 control over the bus, otherwise the standard methods (see below) can be used.
 
-These methods are available on software I2C only.
+These methods are only available on the `machine.SoftI2C` class.
 
 .. method:: I2C.start()
 
@@ -153,14 +173,14 @@ from and written to.  In this case there are two addresses associated with an
 I2C transaction: the slave address and the memory address.  The following
 methods are convenience functions to communicate with such devices.
 
-.. method:: I2C.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
+.. method:: I2C.readfrom_mem(addr, memaddr, nbytes, *, addrsize=8)
 
    Read *nbytes* from the slave specified by *addr* starting from the memory
    address specified by *memaddr*.
    The argument *addrsize* specifies the address size in bits.
    Returns a `bytes` object with the data read.
 
-.. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
+.. method:: I2C.readfrom_mem_into(addr, memaddr, buf, *, addrsize=8)
 
    Read into *buf* from the slave specified by *addr* starting from the
    memory address specified by *memaddr*.  The number of bytes read is the
@@ -170,7 +190,7 @@ methods are convenience functions to communicate with such devices.
 
    The method returns ``None``.
 
-.. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
+.. method:: I2C.writeto_mem(addr, memaddr, buf, *, addrsize=8)
 
    Write *buf* to the slave specified by *addr* starting from the
    memory address specified by *memaddr*.

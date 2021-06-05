@@ -92,7 +92,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
     #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag >= 2) {
-        mp_bytecode_print(rc, code, len, const_table);
+        mp_bytecode_print(&mp_plat_print, rc, code, len, const_table);
     }
     #endif
 }
@@ -107,6 +107,31 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
 
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
+
+    // Some architectures require flushing/invalidation of the I/D caches,
+    // so that the generated native code which was created in data RAM will
+    // be available for execution from instruction RAM.
+    #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+    #if __ICACHE_PRESENT == 1
+    // Flush D-cache, so the code emitted is stored in RAM.
+    MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
+    // Invalidate I-cache, so the newly-created code is reloaded from RAM.
+    SCB_InvalidateICache();
+    #endif
+    #elif MICROPY_EMIT_ARM
+    #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
+    __builtin___clear_cache(fun_data, (uint8_t *)fun_data + fun_len);
+    #elif defined(__arm__)
+    // Flush I-cache and D-cache.
+    asm volatile (
+        "0:"
+        "mrc p15, 0, r15, c7, c10, 3\n" // test and clean D-cache
+        "bne 0b\n"
+        "mov r0, #0\n"
+        "mcr p15, 0, r0, c7, c7, 0\n" // invalidate I-cache and D-cache
+        : : : "r0", "cc");
+    #endif
+    #endif
 
     rc->kind = kind;
     rc->scope_flags = scope_flags;

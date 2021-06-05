@@ -37,6 +37,8 @@ SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
 	)
+
+$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
 endif
 
 ################################################################################

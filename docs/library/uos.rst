@@ -144,7 +144,7 @@ programs.  Ports that have this functionality provide the :func:`mount` and
 :func:`umount` functions, and possibly various filesystem implementations
 represented by VFS classes.
 
-.. function:: mount(fsobj, mount_point, \*, readonly)
+.. function:: mount(fsobj, mount_point, *, readonly)
 
     Mount the filesystem object *fsobj* at the location in the VFS given by the
     *mount_point* string.  *fsobj* can be a a VFS object that has a ``mount()``
@@ -178,7 +178,7 @@ represented by VFS classes.
 
         Build a FAT filesystem on *block_dev*.
 
-.. class:: VfsLfs1(block_dev)
+.. class:: VfsLfs1(block_dev, readsize=32, progsize=32, lookahead=32)
 
     Create a filesystem object that uses the `littlefs v1 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
@@ -187,23 +187,31 @@ represented by VFS classes.
 
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev)
+    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs1 filesystem on *block_dev*.
 
     .. note:: There are reports of littlefs v1 failing in certain situations,
               for details see `littlefs issue 347`_.
 
-.. class:: VfsLfs2(block_dev)
+.. class:: VfsLfs2(block_dev, readsize=32, progsize=32, lookahead=32, mtime=True)
 
     Create a filesystem object that uses the `littlefs v2 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
     support the :ref:`extended interface <block-device-interface>`.
     Objects created by this constructor can be mounted using :func:`mount`.
 
+    The *mtime* argument enables modification timestamps for files, stored using
+    littlefs attributes.  This option can be disabled or enabled differently each
+    mount time and timestamps will only be added or updated if *mtime* is enabled,
+    otherwise the timestamps will remain untouched.  Littlefs v2 filesystems without
+    timestamps will work without reformatting and timestamps will be added
+    transparently to existing files once they are opened for writing.  When *mtime*
+    is enabled `uos.stat` on files without timestamps will return 0 for the timestamp.
+
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev)
+    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs2 filesystem on *block_dev*.
 

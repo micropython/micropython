@@ -36,7 +36,6 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "extmod/vfs.h"
-#include "mpconfigport.h"
 
 #if MICROPY_MBFS
 

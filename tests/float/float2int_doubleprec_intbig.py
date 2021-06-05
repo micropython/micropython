@@ -2,10 +2,10 @@
 
 try:
     import ustruct as struct
+    import usys as sys
 except:
     import struct
-
-import sys
+    import sys
 
 maxsize_bits = 0
 maxsize = sys.maxsize

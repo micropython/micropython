@@ -245,7 +245,7 @@ Module contents
 
 .. data:: VOID
 
-   ``VOID`` is an alias for ``UINT8``, and is provided to conviniently define
+   ``VOID`` is an alias for ``UINT8``, and is provided to conveniently define
    C's void pointers: ``(uctypes.PTR, uctypes.VOID)``.
 
 .. data:: PTR

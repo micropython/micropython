@@ -5,7 +5,7 @@ Currently the Teensy 3.1 port of MicroPython builds under Linux and not under Wi
 The tool chain required for the build can be found at <https://launchpad.net/gcc-arm-embedded>.
 
 Download the current Linux *.tar.bz2 file. Instructions regarding unpacking the file and moving it to the correct location
-as well as adding the extracted folders to the enviroment variable can be found at
+as well as adding the extracted folders to the environment variable can be found at
 <http://eliaselectronics.com/stm32f4-tutorials/setting-up-the-stm32f4-arm-development-toolchain/>
 
 In order to download the firmware image to the teensy, you'll need to use the

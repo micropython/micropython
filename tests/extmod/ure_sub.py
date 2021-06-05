@@ -43,6 +43,9 @@ print(
     )
 )
 
+# \g immediately followed by another \g
+print(re.sub("(abc)", r"\g<1>\g<1>", "abc"))
+
 # no matches at all
 print(re.sub("a", "b", "c"))
 
@@ -69,3 +72,6 @@ try:
     re.sub(123, "a", "a")
 except TypeError:
     print("TypeError")
+
+# Include \ in the sub replacement
+print(re.sub("b", "\\\\b", "abc"))

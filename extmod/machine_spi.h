@@ -30,6 +30,19 @@
 #include "py/mphal.h"
 #include "drivers/bus/spi.h"
 
+// Temporary support for legacy construction of SoftSPI via SPI type.
+#define MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args) \
+    do { \
+        if (n_args == 0 || all_args[0] == MP_OBJ_NEW_SMALL_INT(-1)) { \
+            mp_print_str(MICROPY_ERROR_PRINTER, "Warning: SPI(-1, ...) is deprecated, use SoftSPI(...) instead\n"); \
+            if (n_args != 0) { \
+                --n_args; \
+                ++all_args; \
+            } \
+            return mp_machine_soft_spi_type.make_new(&mp_machine_soft_spi_type, n_args, n_kw, all_args); \
+        } \
+    } while (0)
+
 // SPI protocol
 typedef struct _mp_machine_spi_p_t {
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);

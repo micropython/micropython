@@ -42,7 +42,7 @@ DRESULT disk_read(void *pdrv, BYTE *buf, DWORD sector, UINT count) {
     vfs_fat_context_t *ctx = pdrv;
 
     if (0 <= sector && sector < ctx->bdev_byte_len / 512) {
-        do_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
+        hw_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
         return RES_OK;
     }
 
@@ -84,7 +84,7 @@ int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len)
     ctx->fatfs.drv = ctx;
     FRESULT res = f_mount(&ctx->fatfs);
     if (res != FR_OK) {
-        return -1;
+        return -MBOOT_ERRNO_VFS_FAT_MOUNT_FAILED;
     }
     return 0;
 }
@@ -93,7 +93,7 @@ static int vfs_fat_stream_open(void *stream_in, const char *fname) {
     vfs_fat_context_t *stream = stream_in;
     FRESULT res = f_open(&stream->fatfs, &stream->fp, fname, FA_READ);
     if (res != FR_OK) {
-        return -1;
+        return -MBOOT_ERRNO_VFS_FAT_OPEN_FAILED;
     }
     return 0;
 }

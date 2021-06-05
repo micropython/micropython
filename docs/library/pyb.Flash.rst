@@ -25,7 +25,7 @@ Constructors
 
    This constructor is deprecated and will be removed in a future version of MicroPython.
 
-.. class:: pyb.Flash(\*, start=-1, len=-1)
+.. class:: pyb.Flash(*, start=-1, len=-1)
    :noindex:
 
    Create and return a block device that accesses the flash at the specified offset. The length defaults to the remaining size of the device.

@@ -35,8 +35,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-// The core that the MicroPython task(s) are pinned to
-#define MP_TASK_COREID (1)
+// The core that the MicroPython task(s) are pinned to.
+// Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
+// with the ringbuffer and scheduler MP needs to be on the same core.
+// See https://github.com/micropython/micropython/issues/5489
+#define MP_TASK_COREID (0)
 
 extern TaskHandle_t mp_main_task_handle;
 

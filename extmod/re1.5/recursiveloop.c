@@ -22,6 +22,7 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 		case Char:
 			if(*sp != *pc++)
 				return 0;
+			MP_FALLTHROUGH
 		case Any:
 			sp++;
 			continue;

@@ -53,6 +53,9 @@ typedef unsigned int uint;
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
 
+// Round-up integer division
+#define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
+
 /** memory allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
@@ -261,6 +264,10 @@ typedef union _mp_float_union_t {
 
 #if MICROPY_ROM_TEXT_COMPRESSION
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+#error "MICROPY_ERROR_REPORTING_NONE requires MICROPY_ROM_TEXT_COMPRESSION disabled"
+#endif
+
 #ifdef NO_QSTR
 
 // Compression enabled but doing QSTR extraction.
@@ -272,7 +279,12 @@ typedef union _mp_float_union_t {
 // Map MP_COMPRESSED_ROM_TEXT to the compressed strings.
 
 // Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
-typedef struct {} *mp_rom_error_text_t;
+typedef struct {
+    #ifdef __clang__
+    // Fix "error: empty struct has size 0 in C, size 1 in C++".
+    char dummy;
+    #endif
+} *mp_rom_error_text_t;
 
 #include <string.h>
 

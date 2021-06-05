@@ -38,15 +38,14 @@
 #include <usb/usb_device.h>
 #endif
 
-#ifdef CONFIG_FLASH_MAP
 #include <storage/flash_map.h>
-#endif
 
 #include "py/mperrno.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "py/stackctrl.h"
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
@@ -125,6 +124,7 @@ int real_main(void) {
     mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
 
     init_zephyr();
+    mp_hal_init();
 
     #ifdef TEST
     static const char *argv[] = {"test"};

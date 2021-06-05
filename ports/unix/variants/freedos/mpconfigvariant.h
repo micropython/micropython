@@ -36,5 +36,3 @@
 #undef _DIRENT_HAVE_D_INO
 
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
-
-#include "variants/DEV/mpconfigvariant.h"

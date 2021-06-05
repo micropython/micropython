@@ -1,6 +1,6 @@
 # build synthetically fast interpreter for benchmarking
 
-COPT += "-fno-crossjumping -O2"
+COPT += -fno-crossjumping -O2
 
 PROG = micropython-fast
 

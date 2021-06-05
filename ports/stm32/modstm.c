@@ -30,6 +30,7 @@
 #include "py/obj.h"
 #include "py/objint.h"
 #include "extmod/machine_mem.h"
+#include "rfcore.h"
 #include "portmodules.h"
 
 #if MICROPY_PY_STM
@@ -44,6 +45,12 @@ STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
     #include "genhdr/modstm_const.h"
+
+    #if defined(STM32WB)
+    { MP_ROM_QSTR(MP_QSTR_rfcore_status), MP_ROM_PTR(&rfcore_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rfcore_fw_version), MP_ROM_PTR(&rfcore_fw_version_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rfcore_sys_hci), MP_ROM_PTR(&rfcore_sys_hci_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);

@@ -155,6 +155,34 @@ firmware.dfu.gz stored on the default FAT filesystem:
 The 0x80000000 value is the address understood by Mboot as the location of
 the external SPI flash, configured via `MBOOT_SPIFLASH_ADDR`.
 
+Signed and encrypted DFU support
+--------------------------------
+
+Mboot optionally supports signing and encrypting the binary firmware in the DFU file.
+In general this is referred to as a packed DFU file.  This requires additional settings
+in the board config and requires the `pyhy` Python module to be installed for `python3`
+to be used when building packed firmware, eg:
+
+    $ pip3 install pyhy
+
+In addition to the changes made to mpconfigboard.mk earlier, for encrypted
+support you also need to add:
+
+    MBOOT_ENABLE_PACKING = 1
+
+You will also need to generate signing and encryption keys which will be built into
+mboot and used for all subsequent installations of firmware.  This can be done via:
+
+    $ python3 ports/stm32/mboot/mboot_pack_dfu.py generate-keys
+
+This command generates a `mboot_keys.h` file which should be stored in the board
+definition folder (next to mpconfigboard.mk).
+
+Once you build the firmware, the `firmware.pack.dfu` file will contain the encrypted
+and signed firmware, and can be deployed via USB DFU, or by copying it to the device's
+internal filesystem (if `MBOOT_FSLOAD` is enabled). `firmware.dfu` is still unencrypted
+and can be directly flashed with jtag etc.
+
 Example: Mboot on PYBv1.x
 -------------------------
 

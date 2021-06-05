@@ -56,7 +56,7 @@ class BLETemperatureCentral:
     def __init__(self, ble):
         self._ble = ble
         self._ble.active(True)
-        self._ble.irq(handler=self._irq)
+        self._ble.irq(self._irq)
 
         self._reset()
 
@@ -87,7 +87,7 @@ class BLETemperatureCentral:
     def _irq(self, event, data):
         if event == _IRQ_SCAN_RESULT:
             addr_type, addr, adv_type, rssi, adv_data = data
-            if adv_type in (_ADV_IND, _ADV_DIRECT_IND,) and _ENV_SENSE_UUID in decode_services(
+            if adv_type in (_ADV_IND, _ADV_DIRECT_IND) and _ENV_SENSE_UUID in decode_services(
                 adv_data
             ):
                 # Found a potential device, remember it and stop scanning.
@@ -110,14 +110,14 @@ class BLETemperatureCentral:
 
         elif event == _IRQ_PERIPHERAL_CONNECT:
             # Connect successful.
-            conn_handle, addr_type, addr, = data
+            conn_handle, addr_type, addr = data
             if addr_type == self._addr_type and addr == self._addr:
                 self._conn_handle = conn_handle
                 self._ble.gattc_discover_services(self._conn_handle)
 
         elif event == _IRQ_PERIPHERAL_DISCONNECT:
             # Disconnect (either initiated by us or the remote end).
-            conn_handle, _, _, = data
+            conn_handle, _, _ = data
             if conn_handle == self._conn_handle:
                 # If it was initiated by us, it'll already be reset.
                 self._reset()

@@ -62,7 +62,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(\*, freq, prescaler, period)
+.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
    or by prescaler and period::

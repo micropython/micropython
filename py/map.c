@@ -40,17 +40,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// Fixed empty map. Useful when need to call kw-receiving functions
-// without any keywords from C, etc.
-const mp_map_t mp_const_empty_map = {
-    .all_keys_are_qstrs = 0,
-    .is_fixed = 1,
-    .is_ordered = 1,
-    .used = 0,
-    .alloc = 0,
-    .table = NULL,
-};
-
 // This table of sizes is used to control the growth of hash tables.
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be

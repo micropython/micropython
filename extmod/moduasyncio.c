@@ -146,6 +146,9 @@ STATIC const mp_obj_type_t task_queue_type = {
 /******************************************************************************/
 // Task class
 
+// For efficiency, the task object is stored to the coro entry when the task is done.
+#define TASK_IS_DONE(task) ((task)->coro == MP_OBJ_FROM_PTR(task))
+
 // This is the core uasyncio context with cur_task, _task_queue and CancelledError.
 STATIC mp_obj_t uasyncio_context = MP_OBJ_NULL;
 
@@ -164,10 +167,16 @@ STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
+STATIC mp_obj_t task_done(mp_obj_t self_in) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(TASK_IS_DONE(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_done_obj, task_done);
+
 STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     // Check if task is already finished.
-    if (self->coro == mp_const_none) {
+    if (TASK_IS_DONE(self)) {
         return mp_const_false;
     }
     // Can't cancel self (not supported yet).
@@ -209,6 +218,24 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
+STATIC mp_obj_t task_throw(mp_obj_t self_in, mp_obj_t value_in) {
+    // This task raised an exception which was uncaught; handle that now.
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    // Set the data because it was cleared by the main scheduling loop.
+    self->data = value_in;
+    if (self->waiting == mp_const_none) {
+        // Nothing await'ed on the task so call the exception handler.
+        mp_obj_t _exc_context = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR__exc_context));
+        mp_obj_dict_store(_exc_context, MP_OBJ_NEW_QSTR(MP_QSTR_exception), value_in);
+        mp_obj_dict_store(_exc_context, MP_OBJ_NEW_QSTR(MP_QSTR_future), self_in);
+        mp_obj_t Loop = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_Loop));
+        mp_obj_t call_exception_handler = mp_load_attr(Loop, MP_QSTR_call_exception_handler);
+        mp_call_function_1(call_exception_handler, _exc_context);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(task_throw_obj, task_throw);
+
 STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -218,11 +245,17 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR_data) {
             dest[0] = self->data;
         } else if (attr == MP_QSTR_waiting) {
-            if (self->waiting != mp_const_none) {
+            if (self->waiting != mp_const_none && self->waiting != mp_const_false) {
                 dest[0] = self->waiting;
             }
+        } else if (attr == MP_QSTR_done) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
+            dest[1] = self_in;
         } else if (attr == MP_QSTR_cancel) {
             dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_throw) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_throw_obj);
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
@@ -246,14 +279,21 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->waiting == mp_const_none) {
-        self->waiting = task_queue_make_new(&task_queue_type, 0, 0, NULL);
+        // The is the first access of the "waiting" entry.
+        if (TASK_IS_DONE(self)) {
+            // Signal that the completed-task has been await'ed on.
+            self->waiting = mp_const_false;
+        } else {
+            // Lazily allocate the waiting queue.
+            self->waiting = task_queue_make_new(&task_queue_type, 0, 0, NULL);
+        }
     }
     return self_in;
 }
 
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->coro == mp_const_none) {
+    if (TASK_IS_DONE(self)) {
         // Task finished, raise return value to caller so it can continue.
         nlr_raise(self->data);
     } else {

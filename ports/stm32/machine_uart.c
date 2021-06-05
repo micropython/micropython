@@ -73,81 +73,17 @@
 ///
 ///     uart.any()               # returns True if any characters waiting
 
-typedef struct _pyb_uart_irq_map_t {
-    uint16_t irq_en;
-    uint16_t flag;
-} pyb_uart_irq_map_t;
-
-STATIC const pyb_uart_irq_map_t mp_irq_map[] = {
-    { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
-    { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
-    { USART_CR1_TXEIE,  UART_FLAG_TXE},  // TX register empty
-    { USART_CR1_TCIE,   UART_FLAG_TC},   // TX complete
-    { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
-    #if 0
-    // For now only IRQs selected by CR1 are supported
-    #if defined(STM32F4)
-    { USART_CR2_LBDIE,  UART_FLAG_LBD},  // LIN break detection
-    #else
-    { USART_CR2_LBDIE,  UART_FLAG_LBDF}, // LIN break detection
-    #endif
-    { USART_CR3_CTSIE,  UART_FLAG_CTS},  // CTS
-    #endif
-};
-
-// OR-ed IRQ flags which should not be touched by the user
-STATIC const uint32_t mp_irq_reserved = UART_FLAG_RXNE;
-
-// OR-ed IRQ flags which are allowed to be used by the user
-STATIC const uint32_t mp_irq_allowed = UART_FLAG_IDLE;
-
-STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-
-STATIC void pyb_uart_irq_config(pyb_uart_obj_t *self, bool enable) {
-    if (self->mp_irq_trigger) {
-        for (size_t entry = 0; entry < MP_ARRAY_SIZE(mp_irq_map); ++entry) {
-            if (mp_irq_map[entry].flag & mp_irq_reserved) {
-                continue;
-            }
-            if (mp_irq_map[entry].flag & self->mp_irq_trigger) {
-                if (enable) {
-                    self->uartx->CR1 |= mp_irq_map[entry].irq_en;
-                } else {
-                    self->uartx->CR1 &= ~mp_irq_map[entry].irq_en;
-                }
-            }
-        }
-    }
-}
-
-STATIC mp_uint_t pyb_uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    pyb_uart_irq_config(self, false);
-    self->mp_irq_trigger = new_trigger;
-    pyb_uart_irq_config(self, true);
-    return 0;
-}
-
-STATIC mp_uint_t pyb_uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (info_type == MP_IRQ_INFO_FLAGS) {
-        return self->mp_irq_flags;
-    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
-        return self->mp_irq_trigger;
-    }
-    return 0;
-}
-
-STATIC const mp_irq_methods_t pyb_uart_irq_methods = {
-    .init = pyb_uart_irq,
-    .trigger = pyb_uart_irq_trigger,
-    .info = pyb_uart_irq_info,
-};
-
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
-        mp_printf(print, "UART(%u)", self->uart_id);
+        #ifdef LPUART1
+        if (self->uart_id == PYB_LPUART_1) {
+            mp_printf(print, "UART('LP1')");
+        } else
+        #endif
+        {
+            mp_printf(print, "UART(%u)", self->uart_id);
+        }
     } else {
         mp_int_t bits;
         uint32_t cr1 = self->uartx->CR1;
@@ -169,8 +105,16 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         if (cr1 & USART_CR1_PCE) {
             bits -= 1;
         }
-        mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-            self->uart_id, uart_get_baudrate(self), bits);
+        #ifdef LPUART1
+        if (self->uart_id == PYB_LPUART_1) {
+            mp_printf(print, "UART('LP1', baudrate=%u, bits=%u, parity=",
+                uart_get_baudrate(self), bits);
+        } else
+        #endif
+        {
+            mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
+                self->uart_id, uart_get_baudrate(self), bits);
+        }
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
         } else if (!(cr1 & USART_CR1_PS)) {
@@ -350,7 +294,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
 /// See `init` for parameters of initialisation.
 ///
-/// The physical pins of the UART busses are:
+/// The physical pins of the UART buses are:
 ///
 ///   - `UART(4)` is on `XA`: `(TX, RX) = (X1, X2) = (PA0, PA1)`
 ///   - `UART(1)` is on `XB`: `(TX, RX) = (X9, X10) = (PB6, PB7)`
@@ -406,6 +350,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
             uart_id = PYB_UART_10;
         #endif
+        #ifdef MICROPY_HW_LPUART1_NAME
+        } else if (strcmp(port, MICROPY_HW_LPUART1_NAME) == 0) {
+            uart_id = PYB_LPUART_1;
+        #endif
+        #ifdef LPUART1
+        } else if (strcmp(port, "LP1") == 0 && uart_exists(PYB_LPUART_1)) {
+            uart_id = PYB_LPUART_1;
+        #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%s) doesn't exist"), port);
         }
@@ -414,6 +366,11 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         if (!uart_exists(uart_id)) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
         }
+    }
+
+    // check if the UART is reserved for system use or not
+    if (MICROPY_HW_UART_IS_RESERVED(uart_id)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) is reserved"), uart_id);
     }
 
     pyb_uart_obj_t *self;
@@ -519,7 +476,7 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     if (self->mp_irq_obj == NULL) {
         self->mp_irq_trigger = 0;
-        self->mp_irq_obj = mp_irq_new(&pyb_uart_irq_methods, MP_OBJ_FROM_PTR(self));
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
     }
 
     if (n_args > 1 || kw_args->used != 0) {
@@ -531,17 +488,17 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
         // Check the trigger
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
-        mp_uint_t not_supported = trigger & ~mp_irq_allowed;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
         if (trigger != 0 && not_supported) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
         }
 
         // Reconfigure user IRQs
-        pyb_uart_irq_config(self, false);
+        uart_irq_config(self, false);
         self->mp_irq_obj->handler = handler;
         self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
         self->mp_irq_trigger = trigger;
-        pyb_uart_irq_config(self, true);
+        uart_irq_config(self, true);
     }
 
     return MP_OBJ_FROM_PTR(self->mp_irq_obj);

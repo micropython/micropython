@@ -30,7 +30,7 @@ Constructors
    the bus, if any).  If extra arguments are given, the bus is initialised.
    See :meth:`CAN.init` for parameters of initialisation.
 
-   The physical pins of the CAN busses are:
+   The physical pins of the CAN buses are:
 
      - ``CAN(1)`` is on ``YA``: ``(RX, TX) = (Y3, Y4) = (PB8, PB9)``
      - ``CAN(2)`` is on ``YB``: ``(RX, TX) = (Y5, Y6) = (PB12, PB13)``
@@ -49,7 +49,7 @@ Class Methods
 Methods
 -------
 
-.. method:: CAN.init(mode, extframe=False, prescaler=100, \*, sjw=1, bs1=6, bs2=8, auto_restart=False)
+.. method:: CAN.init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8, auto_restart=False, baudrate=0, sample_point=75)
 
    Initialise the CAN bus with the given parameters:
 
@@ -67,6 +67,11 @@ Methods
      - *auto_restart* sets whether the controller will automatically try and restart
        communications after entering the bus-off state; if this is disabled then
        :meth:`~CAN.restart()` can be used to leave the bus-off state
+     - *baudrate* if a baudrate other than 0 is provided, this function will try to automatically
+       calculate a CAN bit-timing (overriding *prescaler*, *bs1* and *bs2*) that satisfies both
+       the baudrate and the desired *sample_point*.
+     - *sample_point* given in a percentage of the bit time, the *sample_point* specifies the position
+       of the last bit sample with respect to the whole bit time. The default *sample_point* is 75%.
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
    prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);
@@ -135,7 +140,7 @@ Methods
    - number of pending RX messages on fifo 0
    - number of pending RX messages on fifo 1
 
-.. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr)
+.. method:: CAN.setfilter(bank, mode, fifo, params, *, rtr)
 
    Configure a filter bank:
 
@@ -187,7 +192,7 @@ Methods
 
    Return ``True`` if any message waiting on the FIFO, else ``False``.
 
-.. method:: CAN.recv(fifo, list=None, \*, timeout=5000)
+.. method:: CAN.recv(fifo, list=None, *, timeout=5000)
 
    Receive data on the bus:
 
@@ -220,7 +225,7 @@ Methods
         # No heap memory is allocated in the following call
         can.recv(0, lst)
 
-.. method:: CAN.send(data, id, \*, timeout=0, rtr=False)
+.. method:: CAN.send(data, id, *, timeout=0, rtr=False)
 
    Send a message on the bus:
 

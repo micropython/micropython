@@ -1,6 +1,9 @@
 # test sys module
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 
 print(sys.__name__)
 print(type(sys.path))
