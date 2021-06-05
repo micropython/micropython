@@ -1,5 +1,5 @@
 import uio
-import sys
+import usys
 
 try:
     uio.resource_stream
@@ -11,5 +11,5 @@ buf = uio.resource_stream("data", "file2")
 print(buf.read())
 
 # resource_stream(None, ...) look ups from current dir, hence sys.path[0] hack
-buf = uio.resource_stream(None, sys.path[0] + "/data/file2")
+buf = uio.resource_stream(None, usys.path[0] + "/data/file2")
 print(buf.read())

@@ -1,6 +1,6 @@
 # uPy behaviour only: builtin modules are read-only
-import sys
+import usys
 try:
-    sys.x = 1
+    usys.x = 1
 except AttributeError:
     print("AttributeError")

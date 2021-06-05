@@ -159,7 +159,7 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #endif
     #endif
     #if MICROPY_PY_SYS
-    { MP_ROM_QSTR(MP_QSTR_sys), MP_ROM_PTR(&mp_module_sys) },
+    { MP_ROM_QSTR(MP_QSTR_usys), MP_ROM_PTR(&mp_module_sys) },
     #endif
     #if MICROPY_PY_GC && MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },

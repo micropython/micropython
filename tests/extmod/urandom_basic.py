@@ -22,8 +22,11 @@ r = random.getrandbits(16)
 random.seed(1)
 print(random.getrandbits(16) == r)
 
-# check that it throws an error for zero bits
+# check that zero bits works
+print(random.getrandbits(0))
+
+# check that it throws an error for negative bits
 try:
-    random.getrandbits(0)
+    random.getrandbits(-1)
 except ValueError:
     print("ValueError")

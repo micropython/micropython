@@ -57,13 +57,13 @@ print("getcwd:", vfs.getcwd())
 try:
     vfs.stat("no_file.txt")
 except OSError as e:
-    print(e.args[0] == uerrno.ENOENT)
+    print(e.errno == uerrno.ENOENT)
 
 with vfs.open("foo_file.txt", "w") as f:
     f.write("hello!")
 print(list(vfs.ilistdir()))
 
-print("stat root:", vfs.stat("/"))
+print("stat root:", vfs.stat("/")[:-3])  # timestamps differ across runs
 print("stat file:", vfs.stat("foo_file.txt")[:-3])  # timestamps differ across runs
 
 print(b"FOO_FILETXT" in bdev.data)
@@ -80,7 +80,7 @@ with vfs.open("sub_file.txt", "w") as f:
 try:
     vfs.chdir("sub_file.txt")
 except OSError as e:
-    print(e.args[0] == uerrno.ENOENT)
+    print(e.errno == uerrno.ENOENT)
 
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
@@ -94,4 +94,4 @@ print(list(vfs.ilistdir(b"")))
 try:
     vfs.ilistdir(b"no_exist")
 except OSError as e:
-    print("ENOENT:", e.args[0] == uerrno.ENOENT)
+    print("ENOENT:", e.errno == uerrno.ENOENT)

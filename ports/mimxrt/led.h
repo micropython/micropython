@@ -42,7 +42,7 @@ typedef enum {
 typedef struct _machine_led_obj_t {
     mp_obj_base_t base;
     mp_uint_t led_id;
-    const pin_obj_t *led_pin;
+    const machine_pin_obj_t *led_pin;
 } machine_led_obj_t;
 
 void led_init(void);

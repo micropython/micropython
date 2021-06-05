@@ -1,7 +1,7 @@
 # This test is exactly like uctypes_le.py, but uses native structure layout.
 # Codepaths for packed vs native structures are different. This test only works
 # on little-endian machine (no matter if 32 or 64 bit).
-import sys
+import usys
 
 try:
     import uctypes
@@ -9,14 +9,14 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-if sys.byteorder != "little":
+if usys.byteorder != "little":
     print("SKIP")
     raise SystemExit
 
 
 desc = {
     "s0": uctypes.UINT16 | 0,
-    "sub": (0, {"b0": uctypes.UINT8 | 0, "b1": uctypes.UINT8 | 1,}),
+    "sub": (0, {"b0": uctypes.UINT8 | 0, "b1": uctypes.UINT8 | 1}),
     "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "bitf0": uctypes.BFUINT16 | 0 | 0 << uctypes.BF_POS | 8 << uctypes.BF_LEN,

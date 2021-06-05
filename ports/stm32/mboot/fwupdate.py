@@ -1,6 +1,7 @@
 # Update Mboot or MicroPython from a .dfu.gz file on the board's filesystem
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
+from micropython import const
 import struct, time
 import uzlib, machine, stm
 
@@ -8,6 +9,12 @@ import uzlib, machine, stm
 VFS_FAT = 1
 VFS_LFS1 = 2
 VFS_LFS2 = 3
+
+# Constants for creating mboot elements.
+_ELEM_TYPE_END = const(1)
+_ELEM_TYPE_MOUNT = const(2)
+_ELEM_TYPE_FSLOAD = const(3)
+_ELEM_TYPE_STATUS = const(4)
 
 FLASH_KEY1 = 0x45670123
 FLASH_KEY2 = 0xCDEF89AB
@@ -156,24 +163,36 @@ def update_mboot(filename):
     print("Programming finished, can now reset or turn off.")
 
 
-def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT):
-    # Check firmware is of .dfu.gz type
+def _create_element(kind, body):
+    return bytes([kind, len(body)]) + body
+
+
+def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT, fs_blocksize=0, status_addr=None):
+    # Check firmware is of .dfu or .dfu.gz type
     try:
         with open(filename, "rb") as f:
             hdr = uzlib.DecompIO(f, 16 + 15).read(6)
     except Exception:
-        hdr = None
+        with open(filename, "rb") as f:
+            hdr = f.read(6)
     if hdr != b"DfuSe\x01":
-        print("Firmware must be a .dfu.gz file.")
+        print("Firmware must be a .dfu(.gz) file.")
         return
 
-    ELEM_TYPE_END = 1
-    ELEM_TYPE_MOUNT = 2
-    ELEM_TYPE_FSLOAD = 3
+    if fs_type in (VFS_LFS1, VFS_LFS2) and not fs_blocksize:
+        raise Exception("littlefs requires fs_blocksize parameter")
+
     mount_point = 1
-    mount = struct.pack("<BBBBLL", ELEM_TYPE_MOUNT, 10, mount_point, fs_type, fs_base, fs_len)
-    fsup = struct.pack("<BBB", ELEM_TYPE_FSLOAD, 1 + len(filename), mount_point) + bytes(
-        filename, "ascii"
+    elems = _create_element(
+        _ELEM_TYPE_MOUNT,
+        struct.pack("<BBLLL", mount_point, fs_type, fs_base, fs_len, fs_blocksize),
     )
-    end = struct.pack("<BB", ELEM_TYPE_END, 0)
-    machine.bootloader(mount + fsup + end)
+    elems += _create_element(
+        _ELEM_TYPE_FSLOAD, struct.pack("<B", mount_point) + bytes(filename, "ascii")
+    )
+    if status_addr is not None:
+        # mboot will write 0 to status_addr on succes, or a negative number on failure
+        machine.mem32[status_addr] = 1
+        elems += _create_element(_ELEM_TYPE_STATUS, struct.pack("<L", status_addr))
+    elems += _create_element(_ELEM_TYPE_END, b"")
+    machine.bootloader(elems)

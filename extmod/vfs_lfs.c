@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,21 @@
  */
 
 #include "py/runtime.h"
+#include "py/mphal.h"
+#include "lib/timeutils/timeutils.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
 
 #if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
-enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead };
+enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead, LFS_MAKE_ARG_mtime };
 
 static const mp_arg_t lfs_make_allowed_args[] = {
-    { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ },
+    { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_readsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
     { MP_QSTR_progsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
     { MP_QSTR_lookahead, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
+    { MP_QSTR_mtime, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
 };
 
 #if MICROPY_VFS_LFS1
@@ -98,9 +101,13 @@ mp_obj_t mp_vfs_lfs1_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
 #define MP_TYPE_VFS_LFSx mp_type_vfs_lfs2
 #define MP_TYPE_VFS_LFSx_(s) mp_type_vfs_lfs2##s
 
+// Attribute ids for lfs2_attr.type.
+#define LFS_ATTR_MTIME (1) // 64-bit little endian, nanoseconds since 1970/1/1
+
 typedef struct _mp_obj_vfs_lfs2_t {
     mp_obj_base_t base;
     mp_vfs_blockdev_t blockdev;
+    bool enable_mtime;
     vstr_t cur_dir;
     struct lfs2_config config;
     lfs2_t lfs;
@@ -109,13 +116,25 @@ typedef struct _mp_obj_vfs_lfs2_t {
 typedef struct _mp_obj_vfs_lfs2_file_t {
     mp_obj_base_t base;
     mp_obj_vfs_lfs2_t *vfs;
+    uint8_t mtime[8];
     lfs2_file_t file;
     struct lfs2_file_config cfg;
+    struct lfs2_attr attrs[1];
     uint8_t file_buffer[0];
 } mp_obj_vfs_lfs2_file_t;
 
 const char *mp_vfs_lfs2_make_path(mp_obj_vfs_lfs2_t *self, mp_obj_t path_in);
 mp_obj_t mp_vfs_lfs2_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
+
+STATIC void lfs_get_mtime(uint8_t buf[8]) {
+    // On-disk storage of timestamps uses 1970 as the Epoch, so convert from host's Epoch.
+    uint64_t ns = timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(mp_hal_time_ns());
+    // Store "ns" to "buf" in little-endian format (essentially htole64).
+    for (size_t i = 0; i < 8; ++i) {
+        buf[i] = ns;
+        ns >>= 8;
+    }
+}
 
 #include "extmod/vfs_lfsx.c"
 #include "extmod/vfs_lfsx_file.c"

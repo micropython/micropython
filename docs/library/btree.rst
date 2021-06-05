@@ -76,7 +76,7 @@ Example::
 Functions
 ---------
 
-.. function:: open(stream, \*, flags=0, pagesize=0, cachesize=0, minkeypage=0)
+.. function:: open(stream, *, flags=0, pagesize=0, cachesize=0, minkeypage=0)
 
    Open a database from a random-access `stream` (like an open file). All
    other parameters are optional and keyword-only, and allow to tweak advanced
@@ -118,7 +118,7 @@ Methods
 .. method:: btree.__getitem__(key)
             btree.get(key, default=None, /)
             btree.__setitem__(key, val)
-            btree.__detitem__(key)
+            btree.__delitem__(key)
             btree.__contains__(key)
 
    Standard dictionary methods.

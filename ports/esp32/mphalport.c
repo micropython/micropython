@@ -28,14 +28,17 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if MICROPY_ESP_IDF_4
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/uart.h"
-#else
-#include "rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/uart.h"
 #endif
 
 #include "py/obj.h"
@@ -44,13 +47,15 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/utils/pyexec.h"
 #include "mphalport.h"
+#include "usb.h"
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[256];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+STATIC uint8_t stdin_ringbuf_array[260];
+ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 void check_esp_err(esp_err_t code) {
@@ -113,9 +118,13 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
+    #if CONFIG_USB_ENABLED
+    usb_tx_strn(str, len);
+    #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
@@ -193,6 +202,14 @@ void mp_hal_delay_us(uint32_t us) {
             mp_handle_pending(true);
         }
     }
+}
+
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t ns = tv.tv_sec * 1000000000ULL;
+    ns += (uint64_t)tv.tv_usec * 1000ULL;
+    return ns;
 }
 
 // Wake up the main task if it is sleeping

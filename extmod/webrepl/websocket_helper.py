@@ -1,4 +1,7 @@
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 
 try:
     import ubinascii as binascii

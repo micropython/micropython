@@ -90,7 +90,7 @@ for exist in ("", "/", "dir", "/dir", "dir/subdir"):
     try:
         uos.mkdir(exist)
     except OSError as er:
-        print("mkdir OSError", er.args[0] == 17)  # EEXIST
+        print("mkdir OSError", er.errno == 17)  # EEXIST
 
 uos.chdir("/")
 print(uos.stat("test5.txt")[:-3])
@@ -111,10 +111,10 @@ print(uos.listdir())
 print(uos.listdir("sys"))
 
 # test importing a file from a mounted FS
-import sys
+import usys
 
-sys.path.clear()
-sys.path.append("/sys")
+usys.path.clear()
+usys.path.append("/sys")
 with open("sys/test_module.py", "w") as f:
     f.write('print("test_module!")')
 import test_module

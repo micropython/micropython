@@ -177,7 +177,7 @@ Glossary
         typically accessible on a host PC via USB.
 
     stream
-        Also known as a "file-like object". An Python object which provides
+        Also known as a "file-like object". A Python object which provides
         sequential read-write access to the underlying data. A stream object
         implements a corresponding interface, which consists of methods like
         ``read()``, ``write()``, ``readinto()``, ``seek()``, ``flush()``,

@@ -49,4 +49,14 @@ typedef struct _mp_obj_array_t {
     void *items;
 } mp_obj_array_t;
 
+#if MICROPY_PY_BUILTINS_MEMORYVIEW
+static inline void mp_obj_memoryview_init(mp_obj_array_t *self, size_t typecode, size_t offset, size_t len, void *items) {
+    self->base.type = &mp_type_memoryview;
+    self->typecode = typecode;
+    self->free = offset;
+    self->len = len;
+    self->items = items;
+}
+#endif
+
 #endif // MICROPY_INCLUDED_PY_OBJARRAY_H

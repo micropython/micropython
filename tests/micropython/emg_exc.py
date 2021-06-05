@@ -1,7 +1,7 @@
 # test that emergency exceptions work
 
 import micropython
-import sys
+import usys
 
 try:
     import uio
@@ -26,7 +26,7 @@ def f():
 
     # print the exception
     buf = uio.StringIO()
-    sys.print_exception(exc, buf)
+    usys.print_exception(exc, buf)
     for l in buf.getvalue().split("\n"):
         if l.startswith("  File "):
             print(l.split('"')[2])

@@ -37,50 +37,6 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_APP
 
-    /* used by the startup to initialize data */
-    _sidata = LOADADDR(.data);
-
-    /* This is the initialized data section
-    The program executes knowing that the data is in the RAM
-    but the loader puts the initial values in the FLASH (inidata).
-    It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data :
-    {
-        . = ALIGN(4);
-        _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
-        *(.data*)          /* .data* sections */
-
-        . = ALIGN(4);
-        _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_APP
-
-    /* Uninitialized data section */
-    .bss :
-    {
-        . = ALIGN(4);
-        _sbss = .;         /* define a global symbol at bss start; used by startup code */
-        *(.bss*)
-        *(COMMON)
-
-        . = ALIGN(4);
-        _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
-    } >RAM
-
-    /* this is to define the start of the heap, and make sure we have a minimum size */
-    .heap :
-    {
-        . = ALIGN(4);
-        . = . + _minimum_heap_size;
-        . = ALIGN(4);
-    } >RAM
-
-    /* this just checks there is enough RAM for the stack */
-    .stack :
-    {
-        . = ALIGN(4);
-        . = . + _minimum_stack_size;
-        . = ALIGN(4);
-    } >RAM
-
-    .ARM.attributes 0 : { *(.ARM.attributes) }
+    INCLUDE common_extratext_data_in_flash_app.ld
+    INCLUDE common_bss_heap_stack.ld
 }

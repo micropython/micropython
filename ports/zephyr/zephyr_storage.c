@@ -146,7 +146,7 @@ typedef struct _zephyr_flash_area_obj_t {
     const struct flash_area *area;
     int block_size;
     int block_count;
-    u8_t id;
+    uint8_t id;
 } zephyr_flash_area_obj_t;
 
 STATIC void zephyr_flash_area_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

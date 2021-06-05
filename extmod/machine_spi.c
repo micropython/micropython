@@ -41,28 +41,6 @@
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
 
-STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-
-mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // check the id argument, if given
-    if (n_args > 0) {
-        if (args[0] != MP_OBJ_NEW_SMALL_INT(-1)) {
-            #if defined(MICROPY_PY_MACHINE_SPI_MAKE_NEW)
-            // dispatch to port-specific constructor
-            extern mp_obj_t MICROPY_PY_MACHINE_SPI_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-            return MICROPY_PY_MACHINE_SPI_MAKE_NEW(type, n_args, n_kw, args);
-            #else
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid SPI peripheral"));
-            #endif
-        }
-        --n_args;
-        ++args;
-    }
-
-    // software SPI
-    return mp_machine_soft_spi_make_new(type, n_args, n_kw, args);
-}
-
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
     mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
@@ -275,7 +253,7 @@ const mp_obj_type_t mp_machine_soft_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SoftSPI,
     .print = mp_machine_soft_spi_print,
-    .make_new = mp_machine_spi_make_new, // delegate to master constructor
+    .make_new = mp_machine_soft_spi_make_new,
     .protocol = &mp_machine_soft_spi_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

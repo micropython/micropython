@@ -50,7 +50,7 @@ print("const uint32_t mp_frozen_str_sizes[] = {")
 for f, st in modules:
     print("%d," % st.st_size)
 
-print("};")
+print("0};")
 
 print("const char mp_frozen_str_content[] = {")
 for f, st in modules:
@@ -82,4 +82,4 @@ for f, st in modules:
     chrs.append('\\0"')
     print("".join(chrs))
 
-print("};")
+print('"\\0"};')

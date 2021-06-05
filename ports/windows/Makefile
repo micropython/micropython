@@ -58,4 +58,9 @@ SRC_QSTR += $(SRC_C)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
+ifneq ($(FROZEN_MANIFEST),)
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
+MPY_CROSS_FLAGS += -mcache-lookup-bc
+endif
+
 include $(TOP)/py/mkrules.mk

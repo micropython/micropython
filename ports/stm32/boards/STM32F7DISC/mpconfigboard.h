@@ -38,20 +38,20 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// SPI
+// SPI buses
 #define MICROPY_HW_SPI2_NSS         (pin_I0)
 #define MICROPY_HW_SPI2_SCK         (pin_I1)
 #define MICROPY_HW_SPI2_MISO        (pin_B14)
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_TX          (pin_B9)
 #define MICROPY_HW_CAN1_RX          (pin_B8)
 #define MICROPY_HW_CAN2_TX          (pin_B13)

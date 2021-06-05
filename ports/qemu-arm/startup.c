@@ -28,6 +28,27 @@ void Default_Handler(void) {
     }
 }
 
+#if defined(__ARM_ARCH_ISA_ARM)
+
+// ARM architecture with standard ARM ISA.
+
+__attribute__((naked, section(".isr_vector"))) void isr_vector(void) {
+    __asm volatile (
+        "b Reset_Handler\n"
+        "b Default_Handler\n"
+        "b Default_Handler\n"
+        "b Default_Handler\n"
+        "b Default_Handler\n"
+        "nop\n"
+        "b Default_Handler\n"
+        "b Default_Handler\n"
+        );
+}
+
+#elif defined(__ARM_ARCH_ISA_THUMB)
+
+// ARM architecture with Thumb-only ISA.
+
 const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
     (uint32_t)&_estack,
     (uint32_t)&Reset_Handler,
@@ -46,6 +67,8 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
     (uint32_t)&Default_Handler, // PendSV_Handler
     (uint32_t)&Default_Handler, // SysTick_Handler
 };
+
+#endif
 
 void _start(void) {
     // Enable the UART
@@ -68,7 +91,11 @@ __attribute__((naked)) void exit(int status) {
         "ldr r1, =0x20026\n" // ADP_Stopped_ApplicationExit, a clean exit
         ".notclean:\n"
         "movs r0, #0x18\n" // SYS_EXIT
+        #if defined(__ARM_ARCH_ISA_ARM)
+        "svc 0x00123456\n"
+        #elif defined(__ARM_ARCH_ISA_THUMB)
         "bkpt 0xab\n"
+        #endif
         );
     for (;;) {
     }

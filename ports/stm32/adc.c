@@ -380,16 +380,14 @@ STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32
     adc_config_channel(adcHandle, channel);
     uint32_t raw_value = adc_read_channel(adcHandle);
 
-    #if defined(STM32F4) || defined(STM32F7)
     // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
     // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
     // conversions to work.  VBATE is enabled by the above call to read
     // the channel, and here we disable VBATE so a subsequent call for
     // TEMPSENSOR or VREFINT works correctly.
-    if (channel == ADC_CHANNEL_VBAT) {
-        ADC->CCR &= ~ADC_CCR_VBATE;
-    }
-    #endif
+    // It's also good to disable the VBAT switch to prevent battery drain,
+    // so disable it for all MCUs.
+    adc_deselect_vbat(adcHandle->Instance, channel);
 
     return raw_value;
 }

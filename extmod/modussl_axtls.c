@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 
@@ -53,6 +54,68 @@ struct ssl_args {
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
+
+// Table of error strings corresponding to SSL_xxx error codes.
+STATIC const char *const ssl_error_tab1[] = {
+    "NOT_OK",
+    "DEAD",
+    "CLOSE_NOTIFY",
+    "EAGAIN",
+};
+STATIC const char *const ssl_error_tab2[] = {
+    "CONN_LOST",
+    "RECORD_OVERFLOW",
+    "SOCK_SETUP_FAILURE",
+    NULL,
+    "INVALID_HANDSHAKE",
+    "INVALID_PROT_MSG",
+    "INVALID_HMAC",
+    "INVALID_VERSION",
+    "UNSUPPORTED_EXTENSION",
+    "INVALID_SESSION",
+    "NO_CIPHER",
+    "INVALID_CERT_HASH_ALG",
+    "BAD_CERTIFICATE",
+    "INVALID_KEY",
+    NULL,
+    "FINISHED_INVALID",
+    "NO_CERT_DEFINED",
+    "NO_CLIENT_RENOG",
+    "NOT_SUPPORTED",
+};
+
+STATIC NORETURN void ussl_raise_error(int err) {
+    MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
+    MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
+
+    // Check if err corresponds to something in one of the error string tables.
+    const char *errstr = NULL;
+    if (SSL_NOT_OK >= err && err >= SSL_EAGAIN) {
+        errstr = ssl_error_tab1[SSL_NOT_OK - err];
+    } else if (SSL_ERROR_CONN_LOST >= err && err >= SSL_ERROR_NOT_SUPPORTED) {
+        errstr = ssl_error_tab2[SSL_ERROR_CONN_LOST - err];
+    }
+
+    // Unknown error, just raise the error code.
+    if (errstr == NULL) {
+        mp_raise_OSError(err);
+    }
+
+    // Construct string object.
+    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+    if (o_str == NULL) {
+        mp_raise_OSError(err);
+    }
+    o_str->base.type = &mp_type_str;
+    o_str->data = (const byte *)errstr;
+    o_str->len = strlen((char *)o_str->data);
+    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+
+    // Raise OSError(err, str).
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
+    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+}
+
 
 STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
     #if MICROPY_PY_USSL_FINALISER
@@ -104,12 +167,15 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
 
         if (args->do_handshake.u_bool) {
-            int res = ssl_handshake_status(o->ssl_sock);
+            int r = ssl_handshake_status(o->ssl_sock);
 
-            if (res != SSL_OK) {
-                printf("ssl_handshake_status: %d\n", res);
-                ssl_display_error(res);
-                mp_raise_OSError(MP_EIO);
+            if (r != SSL_OK) {
+                if (r == SSL_CLOSE_NOTIFY) { // EOF
+                    r = MP_ENOTCONN;
+                } else if (r == SSL_EAGAIN) {
+                    r = MP_EAGAIN;
+                }
+                ussl_raise_error(r);
             }
         }
 
@@ -181,8 +247,24 @@ STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t siz
         return MP_STREAM_ERROR;
     }
 
-    mp_int_t r = ssl_write(o->ssl_sock, buf, size);
+    mp_int_t r;
+eagain:
+    r = ssl_write(o->ssl_sock, buf, size);
+    if (r == 0) {
+        // see comment in ussl_socket_read above
+        if (o->blocking) {
+            goto eagain;
+        } else {
+            r = SSL_EAGAIN;
+        }
+    }
     if (r < 0) {
+        if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) {
+            return 0; // EOF
+        }
+        if (r == SSL_EAGAIN) {
+            r = MP_EAGAIN;
+        }
         *errcode = r;
         return MP_STREAM_ERROR;
     }

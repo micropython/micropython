@@ -1,0 +1,14 @@
+name: Check commit message formatting
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: '100'
+    - uses: actions/setup-python@v1
+    - name: Check commit message formatting
+      run: source tools/ci.sh && ci_commit_formatting_run

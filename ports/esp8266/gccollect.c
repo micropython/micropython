@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "py/mpconfig.h"
 #include "py/gc.h"
 #include "gccollect.h"
 

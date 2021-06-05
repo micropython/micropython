@@ -22,7 +22,7 @@ for r in base_values:
             test_values_non_zero.append(complex(r, -i))
         if r != 0.0 and i != 0.0:
             test_values_non_zero.append(complex(-r, -i))
-test_values = [complex(0.0, 0.0),] + test_values_non_zero
+test_values = [complex(0.0, 0.0)] + test_values_non_zero
 print(test_values)
 
 functions = [

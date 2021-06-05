@@ -58,7 +58,7 @@ The :mod:`network` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.config('mac')      # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
@@ -138,6 +138,10 @@ Also note that Pin(16) is a special pin (used for wakeup from deepsleep
 mode) and may be not available for use with higher-level classes like
 ``Neopixel``.
 
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``on()`` or ``value(1)``.
+
 UART (serial bus)
 -----------------
 
@@ -214,15 +218,15 @@ Software SPI bus
 ----------------
 
 There are two SPI drivers. One is implemented in software (bit-banging)
-and works on all pins, and is accessed via the :ref:`machine.SPI <machine.SPI>`
+and works on all pins, and is accessed via the :ref:`machine.SoftSPI <machine.SoftSPI>`
 class::
 
-    from machine import Pin, SPI
+    from machine import Pin, SoftSPI
 
     # construct an SPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(-1, baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -258,7 +262,8 @@ I2C bus
 -------
 
 The I2C driver is implemented in software and works on all pins,
-and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
+and is accessed via the :ref:`machine.I2C <machine.I2C>` class (which is an
+alias of :ref:`machine.SoftI2C <machine.SoftI2C>`)::
 
     from machine import Pin, I2C
 
@@ -291,6 +296,17 @@ See :ref:`machine.RTC <machine.RTC>` ::
 .. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*) <RTC.irq>`
           (using a custom handler), `RTC.init()` and `RTC.deinit()` are
           currently not supported.
+
+WDT (Watchdog timer)
+--------------------
+
+See :ref:`machine.WDT <machine.WDT>`. ::
+
+    from machine import WDT
+
+    # enable the WDT
+    wdt = WDT()
+    wdt.feed()
 
 Deep-sleep mode
 ---------------
@@ -363,6 +379,13 @@ For low-level driving of a NeoPixel::
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
 
+.. Warning::
+   By default ``NeoPixel`` is configured to control the more popular *800kHz*
+   units. It is possible to use alternative timing to control other (typically
+   400kHz) devices by passing ``timing=0`` when constructing the
+   ``NeoPixel`` object.
+
+
 APA102 driver
 -------------
 
@@ -400,6 +423,20 @@ The DHT driver is implemented in software and works on all pins::
     d.measure()
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
+
+SSD1306 driver
+--------------
+
+Driver for SSD1306 monochrome OLED displays. See tutorial :ref:`ssd1306`. ::
+
+    from machine import Pin, I2C
+    import ssd1306
+
+    i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+    display.text('Hello World', 0, 0, 1)
+    display.show()
 
 WebREPL (web browser interactive prompt)
 ----------------------------------------

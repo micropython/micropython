@@ -50,7 +50,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
     }
 }
 
-STATIC const mp_obj_type_t range_it_type = {
+STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
@@ -60,7 +60,7 @@ STATIC const mp_obj_type_t range_it_type = {
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_range_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_range_it_t *o = (mp_obj_range_it_t *)iter_buf;
-    o->base.type = &range_it_type;
+    o->base.type = &mp_type_range_it;
     o->cur = cur;
     o->stop = stop;
     o->step = step;

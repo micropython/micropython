@@ -58,7 +58,7 @@ STATIC void sighandler(int signum) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         #endif
     }
 }
@@ -212,5 +212,25 @@ mp_uint_t mp_hal_ticks_us(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000 + tv.tv_usec;
+    #endif
+}
+
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    #ifdef MICROPY_EVENT_POLL_HOOK
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
+        MICROPY_EVENT_POLL_HOOK
+    }
+    #else
+    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
+    // "The useconds argument shall be less than one million."
+    usleep(ms * 1000);
     #endif
 }

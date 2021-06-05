@@ -77,7 +77,7 @@ mp_int_t mp_float_hash(mp_float_t src) {
             // number may have a fraction; xor the integer part with the fractional part
             val = (frc >> (MP_FLOAT_FRAC_BITS - adj_exp))
                 ^ (frc & (((mp_float_uint_t)1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
-        } else if ((unsigned int)adj_exp < BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
+        } else if ((unsigned int)adj_exp < MP_BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
             // the number is a (big) whole integer and will fit in val's signed-width
             val = (mp_int_t)frc << (adj_exp - MP_FLOAT_FRAC_BITS);
         } else {
@@ -293,13 +293,19 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             if (lhs_val == 0 && rhs_val < 0 && !isinf(rhs_val)) {
                 goto zero_division_error;
             }
-            if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val)) {
+            if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val) && !isnan(rhs_val)) {
                 #if MICROPY_PY_BUILTINS_COMPLEX
                 return mp_obj_complex_binary_op(MP_BINARY_OP_POWER, lhs_val, 0, rhs_in);
                 #else
                 mp_raise_ValueError(MP_ERROR_TEXT("complex values not supported"));
                 #endif
             }
+            #if MICROPY_PY_MATH_POW_FIX_NAN // Also see modmath.c.
+            if (lhs_val == MICROPY_FLOAT_CONST(1.0) || rhs_val == MICROPY_FLOAT_CONST(0.0)) {
+                lhs_val = MICROPY_FLOAT_CONST(1.0);
+                break;
+            }
+            #endif
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
             break;
         case MP_BINARY_OP_DIVMOD: {

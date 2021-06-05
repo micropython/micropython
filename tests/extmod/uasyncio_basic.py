@@ -36,8 +36,16 @@ async def main():
     t1 = ticks()
     await delay_print(0.04, "long")
     t2 = ticks()
+    await delay_print(-1, "negative")
+    t3 = ticks()
 
-    print("took {} {}".format(round(ticks_diff(t1, t0), -1), round(ticks_diff(t2, t1), -1)))
+    print(
+        "took {} {} {}".format(
+            round(ticks_diff(t1, t0), -1),
+            round(ticks_diff(t2, t1), -1),
+            round(ticks_diff(t3, t2), -1),
+        )
+    )
 
 
 asyncio.run(main())

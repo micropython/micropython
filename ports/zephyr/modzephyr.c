@@ -31,6 +31,8 @@
 #include <stdio.h>
 #include <zephyr.h>
 #include <debug/thread_analyzer.h>
+#include <shell/shell.h>
+#include <shell/shell_uart.h>
 
 #include "modzephyr.h"
 #include "py/runtime.h"
@@ -53,17 +55,14 @@ STATIC mp_obj_t mod_thread_analyze(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
 #endif
 
-#ifdef CONFIG_NET_SHELL
-
-// int net_shell_cmd_iface(int argc, char *argv[]);
-
-STATIC mp_obj_t mod_shell_net_iface(void) {
-    net_shell_cmd_iface(0, NULL);
+#ifdef CONFIG_SHELL_BACKEND_SERIAL
+STATIC mp_obj_t mod_shell_exec(mp_obj_t cmd_in) {
+    const char *cmd = mp_obj_str_get_str(cmd_in);
+    shell_execute_cmd(shell_backend_uart_get_ptr(), cmd);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_shell_net_iface_obj, mod_shell_net_iface);
-
-#endif // CONFIG_NET_SHELL
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_shell_exec_obj, mod_shell_exec);
+#endif // CONFIG_SHELL_BACKEND_SERIAL
 
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
@@ -72,9 +71,8 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #ifdef CONFIG_THREAD_ANALYZER
     { MP_ROM_QSTR(MP_QSTR_thread_analyze), MP_ROM_PTR(&mod_thread_analyze_obj) },
     #endif
-
-    #ifdef CONFIG_NET_SHELL
-    { MP_ROM_QSTR(MP_QSTR_shell_net_iface), MP_ROM_PTR(&mod_shell_net_iface_obj) },
+    #ifdef CONFIG_SHELL_BACKEND_SERIAL
+    { MP_ROM_QSTR(MP_QSTR_shell_exec), MP_ROM_PTR(&mod_shell_exec_obj) },
     #endif
     #ifdef CONFIG_DISK_ACCESS
     { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },

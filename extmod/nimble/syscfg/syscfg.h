@@ -2,12 +2,14 @@
 #define MICROPY_INCLUDED_EXTMOD_NIMBLE_SYSCFG_H
 
 #include "py/mphal.h"
-#include "uart.h"
+
+#include "mpnimbleport.h"
 
 void *nimble_malloc(size_t size);
 void nimble_free(void *ptr);
 void *nimble_realloc(void *ptr, size_t size);
 
+// Redirect NimBLE malloc to the GC heap.
 #define malloc(size) nimble_malloc(size)
 #define free(ptr) nimble_free(ptr)
 #define realloc(ptr, size) nimble_realloc(ptr, size)
@@ -88,6 +90,7 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_GATT_WRITE_NO_RSP (MYNEWT_VAL_BLE_ROLE_CENTRAL)
 #define MYNEWT_VAL_BLE_GATT_WRITE_RELIABLE (MYNEWT_VAL_BLE_ROLE_CENTRAL)
 #define MYNEWT_VAL_BLE_HOST (1)
+#define MYNEWT_VAL_BLE_HS_AUTO_START (1)
 #define MYNEWT_VAL_BLE_HS_DEBUG (0)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL (0)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL_ITVL (1000)
@@ -96,9 +99,11 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_HS_PHONY_HCI_ACKS (0)
 #define MYNEWT_VAL_BLE_HS_REQUIRE_OS (1)
 #define MYNEWT_VAL_BLE_HS_STOP_ON_SHUTDOWN_TIMEOUT (2000)
-#define MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM (0)
+#define MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM (1)
+#define MYNEWT_VAL_BLE_L2CAP_COC_MPS (MYNEWT_VAL_MSYS_1_BLOCK_SIZE - 8)
+#define MYNEWT_VAL_BLE_L2CAP_ENHANCED_COC (0)
 #define MYNEWT_VAL_BLE_L2CAP_JOIN_RX_FRAGS (1)
-#define MYNEWT_VAL_BLE_L2CAP_MAX_CHANS (3*MYNEWT_VAL_BLE_MAX_CONNECTIONS)
+#define MYNEWT_VAL_BLE_L2CAP_MAX_CHANS (3 * MYNEWT_VAL_BLE_MAX_CONNECTIONS)
 #define MYNEWT_VAL_BLE_L2CAP_RX_FRAG_TIMEOUT (30000)
 #define MYNEWT_VAL_BLE_L2CAP_SIG_MAX_PROCS (1)
 #define MYNEWT_VAL_BLE_MONITOR_CONSOLE_BUFFER_SIZE (128)
@@ -111,18 +116,19 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_MONITOR_UART_BUFFER_SIZE (64)
 #define MYNEWT_VAL_BLE_MONITOR_UART_DEV ("uart0")
 #define MYNEWT_VAL_BLE_RPA_TIMEOUT (300)
-#define MYNEWT_VAL_BLE_SM_BONDING (0)
-#define MYNEWT_VAL_BLE_SM_IO_CAP (BLE_HS_IO_NO_INPUT_OUTPUT)
 #define MYNEWT_VAL_BLE_SM_KEYPRESS (0)
 #define MYNEWT_VAL_BLE_SM_LEGACY (1)
 #define MYNEWT_VAL_BLE_SM_MAX_PROCS (1)
-#define MYNEWT_VAL_BLE_SM_MITM (0)
 #define MYNEWT_VAL_BLE_SM_OOB_DATA_FLAG (0)
-#define MYNEWT_VAL_BLE_SM_OUR_KEY_DIST (0)
-#define MYNEWT_VAL_BLE_SM_SC (1)
-#define MYNEWT_VAL_BLE_SM_THEIR_KEY_DIST (0)
+#define MYNEWT_VAL_BLE_SM_OUR_KEY_DIST (7)
+#define MYNEWT_VAL_BLE_SM_THEIR_KEY_DIST (7)
 #define MYNEWT_VAL_BLE_STORE_MAX_BONDS (3)
 #define MYNEWT_VAL_BLE_STORE_MAX_CCCDS (8)
+// These can be overridden at runtime with ble.config(le_secure, mitm, bond, io).
+#define MYNEWT_VAL_BLE_SM_SC (1)
+#define MYNEWT_VAL_BLE_SM_MITM (0)
+#define MYNEWT_VAL_BLE_SM_BONDING (0)
+#define MYNEWT_VAL_BLE_SM_IO_CAP (BLE_HS_IO_NO_INPUT_OUTPUT)
 
 /*** nimble/host/services/gap */
 #define MYNEWT_VAL_BLE_SVC_GAP_APPEARANCE (0)

@@ -1,10 +1,11 @@
 MicroPython port to Zephyr RTOS
 ===============================
 
-This is an work-in-progress port of MicroPython to Zephyr RTOS
+This is a work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-This port requires Zephyr version 1.8 or higher. All boards supported
+This port requires Zephyr version v2.5.0, and may also work on higher
+versions.  All boards supported
 by Zephyr (with standard level of features support, like UART console)
 should work with MicroPython (but not all were tested).
 
@@ -12,12 +13,14 @@ Features supported at this time:
 
 * REPL (interactive prompt) over Zephyr UART console.
 * `utime` module for time measurements and delays.
-* `machine.Pin` class for GPIO control.
+* `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
 * `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
+* virtual filesystem with FAT and littlefs formats, backed by either
+  DiskAccess or FlashArea (flash map).
 
 Over time, bindings for various Zephyr subsystems may be added.
 
@@ -28,44 +31,67 @@ Building
 Follow to Zephyr web site for Getting Started instruction of installing
 Zephyr SDK, getting Zephyr source code, and setting up development
 environment. (Direct link:
-https://www.zephyrproject.org/doc/getting_started/getting_started.html).
+https://docs.zephyrproject.org/latest/getting_started/index.html).
 You may want to build Zephyr's own sample applications to make sure your
 setup is correct.
 
-To build MicroPython port, in the port subdirectory (zephyr/), run:
+If you already have Zephyr installed but are having issues building the
+MicroPython port then try installing the correct version of Zephyr via:
 
-    make BOARD=<board>
+    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v2.5.0
 
-If you don't specify BOARD, the default is `qemu_x86` (x86 target running
-in QEMU emulator). Consult Zephyr documentation above for the list of
-supported boards.
+Alternatively, you don't have to redo the Zephyr installation to just
+switch from master to a tagged release, you can instead do:
 
+    $ cd zephyrproject/zephyr
+    $ git checkout v2.5.0
+    $ west update
+
+With Zephyr installed you may then need to configure your environment,
+for example by sourcing `zephyrproject/zephyr/zephyr-env.sh`.
+
+Once Zephyr is ready to use you can build the MicroPython port just like any
+other Zephyr application. You can do this anywhere in your file system, it does
+not have to be in the `ports/zephyr` directory. Assuming you have cloned the
+MicroPython repository into your home directory, you can build the Zephyr port
+for a frdm_k64f board like this:
+
+    $ west build -b frdm_k64f ~/micropython/ports/zephyr
+
+To build for QEMU instead:
+
+    $ west build -b qemu_x86 ~/micropython/ports/zephyr
+
+Consult the Zephyr documentation above for the list of
+supported boards.  Board configuration files appearing in `ports/zephyr/boards/`
+correspond to boards that have been tested with MicroPython and may have
+additional options enabled, like filesystem support.
 
 Running
 -------
 
+To flash the resulting firmware to your board:
+
+    $ west flash
+
+Or, to flash it to your board and start a gdb debug session:
+
+    $ west debug
+
 To run the resulting firmware in QEMU (for BOARDs like qemu_x86,
 qemu_cortex_m3):
 
-    make run
+    $ west build -t run
 
-With the default configuration, networking is now enabled, so you need to
-follow instructions in https://wiki.zephyrproject.org/view/Networking-with-Qemu
-to setup host side of TAP/SLIP networking. If you get error like:
+Networking is enabled with the default configuration, so you need to follow
+instructions in
+https://docs.zephyrproject.org/latest/guides/networking/qemu_setup.html#networking-with-qemu
+to setup the host side of TAP/SLIP networking. If you get an error like:
 
     could not connect serial device to character backend 'unix:/tmp/slip.sock'
 
-it's a sign that you didn't followed instructions above. If you would like
+it's a sign that you didn't follow the instructions above. If you would like
 to just run it quickly without extra setup, see "minimal" build below.
-
-For deploying/flashing a firmware on a real board, follow Zephyr
-documentation for a given board, including known issues for that board
-(if any). (Mind again that networking is enabled for the default build,
-so you should know if there're any special requirements in that regard,
-cf. for example QEMU networking requirements above; real hardware boards
-generally should not have any special requirements, unless there're known
-issues).
-
 
 Quick example
 -------------
@@ -88,6 +114,19 @@ starts from 0). You will need to adjust it for another board (using board's
 reference materials). To execute the above sample, copy it to clipboard, in
 MicroPython REPL enter "paste mode" using Ctrl+E, paste clipboard, press
 Ctrl+D to finish paste mode and start execution.
+
+To respond to Pin change IRQs, on a FRDM-K64F board run:
+
+    from machine import Pin
+
+    SW2 = Pin(("GPIO_2", 6), Pin.IN)
+    SW3 = Pin(("GPIO_0", 4), Pin.IN)
+
+    SW2.irq(lambda t: print("SW2 changed"))
+    SW3.irq(lambda t: print("SW3 changed"))
+
+    while True:
+        pass
 
 Example of using I2C to scan for I2C slaves:
 
@@ -113,9 +152,10 @@ enabled over time.
 
 To make a minimal build:
 
-    ./make-minimal BOARD=<board>
+    $ west build -b qemu_x86 ~/micropython/ports/zephyr -- -DCONF_FILE=prj_minimal.conf
 
 To run a minimal build in QEMU without requiring TAP networking setup
-run the following after you built image with the previous command:
+run the following after you built an image with the previous command:
 
-    ./make-minimal BOARD=<qemu_x86_nommu|qemu_x86|qemu_cortex_m3> run
+    $ west build -t run
+

@@ -1,9 +1,5 @@
 init
 aiter
-f start: 10
-coro yielded: 11
-coro yielded: 12
-f returned: 13
 anext
 f start: 20
 coro yielded: 21

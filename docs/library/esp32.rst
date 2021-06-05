@@ -162,7 +162,7 @@ used to transmit or receive many other types of digital signals::
 The input to the RMT module is an 80MHz clock (in the future it may be able to
 configure the input clock but, for now, it's fixed). ``clock_div`` *divides*
 the clock input which determines the resolution of the RMT channel. The
-numbers specificed in ``write_pulses`` are multiplied by the resolution to
+numbers specified in ``write_pulses`` are multiplied by the resolution to
 define the pulses.
 
 ``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by
@@ -186,7 +186,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, \*, pin=None, clock_div=8, carrier_freq=0, carrier_duty_percent=50)
+.. class:: RMT(channel, *, pin=None, clock_div=8, carrier_freq=0, carrier_duty_percent=50)
 
     This class provides access to one of the eight RMT channels. *channel* is
     required and identifies which RMT channel (0-7) will be configured. *pin*,
@@ -209,19 +209,21 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
 .. method:: RMT.wait_done(timeout=0)
 
-    Returns True if `RMT.write_pulses` has completed.
+    Returns ``True`` if the channel is currently transmitting a stream of pulses
+    started with a call to `RMT.write_pulses`.
 
     If *timeout* (defined in ticks of ``source_freq / clock_div``) is specified
-    the method will wait for *timeout* or until `RMT.write_pulses` is complete,
-    returning ``False`` if the channel continues to transmit.
-
-.. Warning::
-    Avoid using ``wait_done()`` if looping is enabled.
+    the method will wait for *timeout* or until transmission is complete,
+    returning ``False`` if the channel continues to transmit. If looping is
+    enabled with `RMT.loop` and a stream has started, then this method will
+    always (wait and) return ``False``.
 
 .. method:: RMT.loop(enable_loop)
 
-    Configure looping on the channel, allowing a stream of pulses to be
-    indefinitely repeated. *enable_loop* is bool, set to True to enable looping.
+    Configure looping on the channel. *enable_loop* is bool, set to ``True`` to
+    enable looping on the *next* call to `RMT.write_pulses`. If called with
+    ``False`` while a looping stream is currently being transmitted then the
+    current set of pulses will be completed before transmission stops.
 
 .. method:: RMT.write_pulses(pulses, start)
 
@@ -229,6 +231,15 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     length of each pulse is defined by a number to be multiplied by the channel
     resolution ``(1 / (source_freq / clock_div))``. *start* defines whether the
     stream starts at 0 or 1.
+
+    If transmission of a stream is currently in progress then this method will
+    block until transmission of that stream has ended before beginning sending
+    *pulses*.
+
+    If looping is enabled with `RMT.loop`, the stream of pulses will be repeated
+    indefinitely. Further calls to `RMT.write_pulses` will end the previous
+    stream - blocking until the last set of pulses has been transmitted -
+    before starting the next stream.
 
 
 Ultra-Low-Power co-processor
@@ -258,3 +269,51 @@ Constants
           esp32.WAKEUP_ANY_HIGH
 
    Selects the wake level for pins.
+
+Non-Volatile Storage
+--------------------
+
+This class gives access to the Non-Volatile storage managed by ESP-IDF. The NVS is partitioned
+into namespaces and each namespace contains typed key-value pairs. The keys are strings and the
+values may be various integer types, strings, and binary blobs. The driver currently only
+supports 32-bit signed integers and blobs.
+
+.. warning::
+
+    Changes to NVS need to be committed to flash by calling the commit method. Failure
+    to call commit results in changes being lost at the next reset.
+
+.. class:: NVS(namespace)
+
+    Create an object providing access to a namespace (which is automatically created if not
+    present).
+
+.. method:: NVS.set_i32(key, value)
+
+    Sets a 32-bit signed integer value for the specified key. Remember to call *commit*!
+
+.. method:: NVS.get_i32(key)
+
+    Returns the signed integer value for the specified key. Raises an OSError if the key does not
+    exist or has a different type.
+
+.. method:: NVS.set_blob(key, value)
+
+    Sets a binary blob value for the specified key. The value passed in must support the buffer
+    protocol, e.g. bytes, bytearray, str. (Note that esp-idf distinguishes blobs and strings, this
+    method always writes a blob even if a string is passed in as value.)
+    Remember to call *commit*!
+
+.. method:: NVS.get_blob(key, buffer)
+
+    Reads the value of the blob for the specified key into the buffer, which must be a bytearray.
+    Returns the actual length read. Raises an OSError if the key does not exist, has a different
+    type, or if the buffer is too small.
+
+.. method:: NVS.erase_key(key)
+
+    Erases a key-value pair.
+
+.. method:: NVS.commit()
+
+    Commits changes made by *set_xxx* methods to flash.

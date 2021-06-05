@@ -31,12 +31,18 @@
 #include "py/mphal.h"
 #include "pin_static_af.h"
 #include "uart.h"
-#include "extmod/modbluetooth_hci.h"
+#include "extmod/mpbthci.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 
 extern const char fw_4343WA1_7_45_98_50_start;
 #define CYWBT_FW_ADDR (&fw_4343WA1_7_45_98_50_start + 749 * 512 + 29 * 256)
+
+// Provided by the port.
+extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+
+// Provided by the port, and also possibly shared with the stack.
+extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
 /******************************************************************************/
 // CYW BT HCI low-level driver
@@ -49,7 +55,7 @@ STATIC void cywbt_wait_cts_low(void) {
         }
         mp_hal_delay_ms(1);
     }
-    mp_hal_pin_config_alt_static(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_USART6_CTS);
+    mp_hal_pin_config_alt(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_UART, mp_bluetooth_hci_uart_obj.uart_id);
 }
 
 STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
@@ -143,10 +149,14 @@ STATIC int cywbt_download_firmware(const uint8_t *firmware) {
     }
 
     // RF switch must select high path during BT patch boot
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     mp_hal_pin_config(pyb_pin_WL_GPIO_1, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    #endif
     mp_hal_delay_ms(10); // give some time for CTS to go high
     cywbt_wait_cts_low();
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     mp_hal_pin_config(pyb_pin_WL_GPIO_1, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_DOWN, 0); // Select chip antenna (could also select external)
+    #endif
 
     mp_bluetooth_hci_uart_set_baudrate(115200);
     cywbt_set_baudrate(3000000);
@@ -164,14 +174,12 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_output(pyb_pin_BT_DEV_WAKE);
     mp_hal_pin_low(pyb_pin_BT_DEV_WAKE);
 
+    #if MICROPY_HW_ENABLE_RF_SWITCH
     // TODO don't select antenna if wifi is enabled
     mp_hal_pin_config(pyb_pin_WL_GPIO_4, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0); // RF-switch power
     mp_hal_pin_high(pyb_pin_WL_GPIO_4); // Turn the RF-switch on
+    #endif
 
-    return 0;
-}
-
-int mp_bluetooth_hci_controller_activate(void) {
     uint8_t buf[256];
 
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
@@ -219,7 +227,7 @@ int mp_bluetooth_hci_controller_activate(void) {
     return 0;
 }
 
-int mp_bluetooth_hci_controller_deactivate(void) {
+int mp_bluetooth_hci_controller_deinit(void) {
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
 
     return 0;

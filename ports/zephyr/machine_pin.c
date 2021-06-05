@@ -58,7 +58,7 @@ void machine_pin_deinit(void) {
     MP_STATE_PORT(machine_pin_irq_list) = NULL;
 }
 
-STATIC void gpio_callback_handler(struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
+STATIC void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
     #if MICROPY_STACK_CHECK
@@ -132,7 +132,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_obj_get_array_fixed_n(args[0], 2, &items);
     const char *drv_name = mp_obj_str_get_str(items[0]);
     int wanted_pin = mp_obj_get_int(items[1]);
-    struct device *wanted_port = device_get_binding(drv_name);
+    const struct device *wanted_port = device_get_binding(drv_name);
     if (!wanted_port) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
     }
@@ -213,11 +213,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         }
         if (irq == NULL) {
             irq = m_new_obj(machine_pin_irq_obj_t);
-            irq->base.base.type = &mp_irq_type;
-            irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-            irq->base.parent = MP_OBJ_FROM_PTR(self);
-            irq->base.handler = mp_const_none;
-            irq->base.ishard = false;
+            mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
             irq->next = MP_STATE_PORT(machine_pin_irq_list);
             gpio_init_callback(&irq->callback, gpio_callback_handler, BIT(self->pin));
             int ret = gpio_add_callback(self->port, &irq->callback);
@@ -322,7 +318,6 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
 }
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods = {
-    .init = machine_pin_irq,
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };

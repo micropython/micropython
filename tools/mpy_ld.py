@@ -73,6 +73,7 @@ R_XTENSA_SLOT0_OP = 20
 R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
 R_ARM_GOT_BREL = 26  # aka R_ARM_GOT32
 R_ARM_THM_JUMP24 = 30
+R_X86_64_GOTPCREL = 9
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
 
@@ -132,7 +133,7 @@ ARCH_DATA = {
         | MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE,
         2,
         8,
-        (R_X86_64_REX_GOTPCRELX,),
+        (R_X86_64_GOTPCREL, R_X86_64_REX_GOTPCRELX),
         asm_jump_x86,
     ),
     "armv7m": ArchData(
@@ -536,7 +537,10 @@ def do_relocation_text(env, text_addr, r):
         # Relcation pointing to GOT
         reloc = addr = env.got_entries[s.name].offset
 
-    elif env.arch.name == "EM_X86_64" and r_info_type == R_X86_64_REX_GOTPCRELX:
+    elif env.arch.name == "EM_X86_64" and r_info_type in (
+        R_X86_64_GOTPCREL,
+        R_X86_64_REX_GOTPCRELX,
+    ):
         # Relcation pointing to GOT
         got_entry = env.got_entries[s.name]
         addr = env.got_section.addr + got_entry.offset
@@ -908,7 +912,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     # MPY: header
     out.write_bytes(
         bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS, QSTR_WINDOW_SIZE,]
+            [ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS, QSTR_WINDOW_SIZE]
         )
     )
 

@@ -28,13 +28,13 @@
 
 #include <sys/time.h>
 #include "lib/oofatfs/ff.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 
 DWORD get_fattime(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_2000_to_struct_time(tv.tv_sec, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(tv.tv_sec, &tm);
 
     return ((DWORD)(tm.tm_year - 1980) << 25) | ((DWORD)tm.tm_mon << 21) | ((DWORD)tm.tm_mday << 16) |
            ((DWORD)tm.tm_hour << 11) | ((DWORD)tm.tm_min << 5) | ((DWORD)tm.tm_sec >> 1);
