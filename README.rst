@@ -199,19 +199,18 @@ amongst ports including CircuitPython:
 Ports
 ~~~~~
 
-Ports include the code unique to a microcontroller line and also
-variations based on the board.
+Ports include the code unique to a microcontroller line.
 
 ================  ============================================================
 Supported         Support status
 ================  ============================================================
 atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
 cxd56             stable
-esp32s2           beta
+esp32s2           stable
 litex             alpha
 mimxrt10xx        alpha
 nrf               stable
-raspberrypi       beta
+raspberrypi       stable
 stm               ``F4`` stable | ``others`` beta
 unix              alpha
 ================  ============================================================
@@ -220,8 +219,13 @@ unix              alpha
 -  ``beta``   Being actively improved but may be missing functionality and have bugs.
 -  ``alpha``  Will have bugs and missing functionality.
 
-The remaining port directories not listed above are in the repo to maintain compatibility with the
-`MicroPython <https://github.com/micropython/micropython>`__ parent project.
+Boards
+~~~~~~
+
+-  Each ``port`` has a ``boards`` directory containing variations of boards
+   which belong to a specific microcontroller line.
+-  A list of native modules supported by a particular board can be found
+   `here <https://circuitpython.readthedocs.io/en/latest/shared-bindings/support_matrix.html>`__.
 
 `Back to Top <#circuitpython>`__
 
