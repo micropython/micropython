@@ -13,26 +13,25 @@ if(NOT JLINK_PATH)
 endif()
 set(JLINK_COMMANDER_SCRIPT ${CMAKE_BINARY_DIR}/script.jlink)
 
-if(NOT JLINK_IP)
+if(JLINK_IP)
 	set(JLINK_CONNECTION_SETTINGS "-IP ${LINK_IP}")	
 else()
-	set(JLINK_CONNECTION_SETTINGS "")
+	set(JLINK_CONNECTION_SETTINGS)
 endif()
 
 
-add_custom_target(deploy_jlink ${MICROPY_TARGET}
-	DEPENDS ${TARGET}.hex
+add_custom_target(deploy_jlink ALL
+	DEPENDS ${MICROPY_TARGET}
 	COMMAND echo "ExitOnError 1" > ${JLINK_COMMANDER_SCRIPT}
 	COMMAND echo "speed auto" >> ${JLINK_COMMANDER_SCRIPT}
 	COMMAND echo "r" >> ${JLINK_COMMANDER_SCRIPT}
 	COMMAND echo "st" >> ${JLINK_COMMANDER_SCRIPT}
-	COMMAND echo "loadfile \"${TARGET}.hex\"" >> ${JLINK_COMMANDER_SCRIPT}
+	COMMAND echo "loadfile \"${CMAKE_BINARY_DIR}/${MICROPY_TARGET}.hex\"" >> ${JLINK_COMMANDER_SCRIPT}
 	COMMAND echo "qc" >> ${JLINK_COMMANDER_SCRIPT}
-	${JLINK_PATH}JLinkExe -device ${MCU_VARIANT} -if SWD ${JLINK_CONNECTION_SETTINGS} -CommanderScript ${JLINK_COMMANDER_SCRIPT}
-
+	COMMAND ${JLINK_PATH}JLinkExe -device ${MCU_VARIANT} -if SWD ${JLINK_CONNECTION_SETTINGS} -CommanderScript ${JLINK_COMMANDER_SCRIPT}
 )
 
-add_custom_target(deploy ${MICROPY_TARGET}
-	DEPENDS ${TARGET}.bin
+add_custom_target(deploy ALL
+	DEPENDS ${MICROPY_TARGET}
 	COMMAND cp ${TARGET}.bin ${JLINK_PATH}
 )
