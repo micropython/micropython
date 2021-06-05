@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Philipp Ebensberger
+ * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,6 +135,14 @@ void GPIO4_Combined_0_15_IRQHandler(void) {
 
 void GPIO4_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 16);
+}
+
+void GPIO5_Combined_0_15_IRQHandler(void) {
+    call_handler(gpiobases[5], 5, 0);
+}
+
+void GPIO5_Combined_16_31_IRQHandler(void) {
+    call_handler(gpiobases[5], 5, 16);
 }
 
 // Simplified mode setting used by the extmod modules
