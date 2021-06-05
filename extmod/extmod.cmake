@@ -46,6 +46,14 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
 )
 
+
+if(${MICROPY_VFS_LFS2})
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/lib/littlefs/lfs2.c
+        ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+    )
+endif()
+
 # Library for btree module and associated code
 
 set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
