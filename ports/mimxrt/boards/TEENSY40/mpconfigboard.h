@@ -9,6 +9,8 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "teensy40_flexspi_nor_config.h"
 
+#define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
+
 // UART config: 7 UARTs at the pins for Teensy 4.0
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table) / sizeof(uart_index_table)[0])
 #define MICROPY_HW_UART_INDEX   { 0, 6, 4, 2, 3, 8, 1, 7 }

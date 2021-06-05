@@ -10,6 +10,8 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1020_flexspi_nor_config.h"
 
+#define MICROPY_HW_NUM_PIN_IRQS (3 * 32)
+
 // Define mapping logical UART # to hardware UART #
 // D3/D5   LPUART1  Not usable, Since D3 is blocked.
 // D0/D1   LPUART2 -> 1

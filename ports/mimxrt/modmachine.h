@@ -35,6 +35,7 @@ extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_uart_type;
 
 void machine_adc_init(void);
+void machine_pin_irq_deinit(void);
 void machine_timer_init_PIT(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
