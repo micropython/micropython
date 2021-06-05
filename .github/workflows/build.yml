@@ -43,6 +43,10 @@ jobs:
       run: |
         gcc --version
         python3 --version
+    - name: Check For setup.py
+      id: need-pypi
+      run: |
+        echo ::set-output name=setup-py::$( find . -wholename './setup.py' )
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
@@ -54,6 +58,19 @@ jobs:
       with:
         name: stubs
         path: circuitpython-stubs*
+    - name: Install pypi dependencies
+      if: contains(steps.need-pypi.outputs.setup-py, 'setup.py')
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Publish stubs
+      if: contains(steps.need-pypi.outputs.setup-py, 'setup.py')
+      env:
+        TWINE_USERNAME: ${{ secrets.pypi_username }}
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: |
+        python setup.py sdist
+        twine upload dist/*
     - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
     - uses: actions/upload-artifact@v2
