@@ -154,6 +154,7 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	lib/utils/mpirq.c \
 	drivers/bus/softspi.c \
 	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
@@ -270,6 +271,7 @@ SRC_QSTR += \
 	moduos.c \
 	pin.c \
 	lib/utils/sys_stdio_mphal.c \
+	lib/utils/mpirq.c \
 	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \
 

@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include "py/obj.h"
+#include "lib/utils/mpirq.h"
 #include "fsl_gpio.h"
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -87,7 +88,14 @@ enum {
     PIN_DRIVE_POWER_6, // R0/7
 };
 
-
+enum {
+    PIN_IRQ_NONE = 0,
+    PIN_IRQ_LOW = 1,
+    PIN_IRQ_HIGH = 2,
+    PIN_IRQ_RISING = 3,
+    PIN_IRQ_FALLING = 4,
+    PIN_IRQ_RISING_OR_FALLING = 0,
+};
 
 
 // ------------------------------------------------------------------------------------------------------------------ //
@@ -117,6 +125,12 @@ typedef struct {
     const machine_pin_af_obj_t *af_list;  // pointer to list with alternate functions
     const machine_pin_adc_obj_t *adc_list; // pointer to list with ADC options
 } machine_pin_obj_t;
+
+typedef struct _machine_pin_irq_obj_t {
+    mp_irq_obj_t base;
+    uint32_t flags;
+    uint32_t trigger;
+} machine_pin_irq_obj_t;
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
