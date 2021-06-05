@@ -56,6 +56,9 @@ float copysignf(float x, float y) {
 static const float _M_LN10 = 2.30258509299404f; // 0x40135d8e
 float log10f(float x) { return logf(x) / (float)_M_LN10; }
 
+static const float M_LN2 = 0.6931471805599453f;
+float log2f(float x) { return logf(x) / (float)M_LN2; }
+
 float tanhf(float x) {
     int sign = 0;
     if (x < 0) {
