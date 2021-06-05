@@ -145,6 +145,18 @@ void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
+// deinit all pin IRQ handler
+void machine_pin_irq_deinit(void) {
+    for (int i = 0; i < ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects)); ++i) {
+        machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[i]);
+        if (irq != NULL) {
+            machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
+            GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+            MP_STATE_PORT(machine_pin_irq_objects[i]) = NULL;
+        }
+    }
+}
+
 // Simplified mode setting used by the extmod modules
 void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
     gpio_pin_config_t pin_config = {kGPIO_DigitalInput, 1, kGPIO_NoIntmode};
