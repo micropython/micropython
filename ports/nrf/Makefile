@@ -313,6 +313,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	music/modmusic.c \
 	music/musictunes.c \
 	ble/modble.c \
+	math/nrf_math.c \
 	)
 
 # Custom micropython startup file with smaller interrupt vector table
