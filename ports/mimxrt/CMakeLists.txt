@@ -29,6 +29,7 @@ endif()
 
 # Include board config
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
+include(${MICROPY_PORT_DIR}/libm.cmake)
 
 # Configure SDK path
 if (MIMXRT_SDK_PATH_OVERRIDE)
@@ -37,11 +38,15 @@ else()
     set(MIMXRT_SDK_PATH ${MICROPY_DIR}/lib/nxp_driver/sdk/devices/${MCU_SERIES})
 endif()
 
+
+# Set Configurations
+set(MICROPY_VFS_LFS2 1)
+
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
 include(${MICROPY_DIR}/py/usermod.cmake)
-
 
 # Set pin configuration defines
 set(MAKE_PINS ${MICROPY_PORT_DIR}/boards/make-pins.py)
@@ -86,35 +91,51 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/utils/printf.c
     ${MICROPY_DIR}/lib/utils/pyexec.c
     ${MICROPY_DIR}/lib/utils/stdout_helpers.c
+    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c 
 )
 
-set(MICROPY_SOURCE_DRIVERS
+set(MICROPY_SOURCE_HAL
     ${MIMXRT_SDK_PATH}/gcc/startup_${MCU_SERIES}.S
     ${MIMXRT_SDK_PATH}/system_${MCU_SERIES}.c
     ${MIMXRT_SDK_PATH}/xip/fsl_flexspi_nor_boot.c
     ${MIMXRT_SDK_PATH}/project_template/clock_config.c
+    ${MIMXRT_SDK_PATH}/drivers/fsl_adc.c
     ${MIMXRT_SDK_PATH}/drivers/fsl_clock.c
     ${MIMXRT_SDK_PATH}/drivers/fsl_gpio.c
+    ${MIMXRT_SDK_PATH}/drivers/fsl_gpt.c
     ${MIMXRT_SDK_PATH}/drivers/fsl_common.c
     ${MIMXRT_SDK_PATH}/drivers/fsl_lpuart.c
     ${MIMXRT_SDK_PATH}/drivers/fsl_flexram.c
-    ${MIMXRT_SDK_PATH}/drivers/fsl_gpt.c
-    ${TINY_USB_SOURCE}
+    ${MIMXRT_SDK_PATH}/drivers/fsl_flexspi.c
+    ${MIMXRT_SDK_PATH}/drivers/fsl_pit.c
+    ${MIMXRT_SDK_PATH}/drivers/fsl_snvs_lp.c
+    ${MIMXRT_SDK_PATH}/drivers/fsl_trng.c
 )
 
 set(MICROPY_SOURCE_PORT
     ${MICROPY_PORT_DIR}/main.c
-    ${MICROPY_PORT_DIR}/board_init.c
     ${MICROPY_PORT_DIR}/led.c
-    ${MICROPY_PORT_DIR}/machine_led.c
     ${MICROPY_PORT_DIR}/pin.c
-    ${MICROPY_PORT_DIR}/machine_pin.c
     ${MICROPY_PORT_DIR}/ticks.c
+    ${MICROPY_PORT_DIR}/board_init.c
     ${MICROPY_PORT_DIR}/modmachine.c
     ${MICROPY_PORT_DIR}/modutime.c
     ${MICROPY_PORT_DIR}/mphalport.c
+    ${MICROPY_PORT_DIR}/modmimxrt.c
+    ${MICROPY_PORT_DIR}/moduos.c
+    ${MICROPY_PORT_DIR}/mphalport.c
     ${MICROPY_PORT_DIR}/tusb_port.c
+    ${MICROPY_PORT_DIR}/hal/flexspi_nor_flash.c
+    ${MICROPY_PORT_DIR}/machine_led.c
+    ${MICROPY_PORT_DIR}/machine_pin.c
+    ${MICROPY_PORT_DIR}/machine_adc.c
+    ${MICROPY_PORT_DIR}/machine_led.c
+    ${MICROPY_PORT_DIR}/machine_rtc.c
+    ${MICROPY_PORT_DIR}/machine_timer.c
+    ${MICROPY_PORT_DIR}/mimxrt_flash.c
     ${MICROPY_BOARD_DIR}/flash_config.c
+    ${MICROPY_DIR}/drivers/bus/softspi.c
+    ${MICROPY_DIR}/extmod/modonewire.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -127,19 +148,22 @@ set(MICROPY_SOURCE_QSTR
     ${GEN_PINS_HDR}
 )
 
+
 # Define mpy-cross flags and frozen manifest
-set(MICROPY_CROSS_FLAGS -march=armv7-m)
-#set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
+set(MICROPY_CROSS_FLAGS -march=armv7m)
+set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
 
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
+target_link_libraries(${MICROPY_TARGET} libm)
 target_link_libraries(${MICROPY_TARGET} -lgcc)
 
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_LIB}
-    ${MICROPY_SOURCE_DRIVERS}
+    ${MICROPY_SOURCE_HAL}
+    ${TINY_USB_SOURCE}
     ${MICROPY_SOURCE_PORT}
     ${GEN_PINS_SRC}
 )
@@ -173,8 +197,9 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
 )
 
 target_link_options(${MICROPY_TARGET} PRIVATE
+    -T${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD}/${MICROPY_BOARD}.ld
     -T${MICROPY_PORT_DIR}/boards/${MCU_SERIES}.ld
-    -T${MIMXRT_SDK_PATH}/gcc/${MCU_SERIES}xxxxx_flexspi_nor.ld
+    -T${MICROPY_PORT_DIR}/boards/common.ld
     -mcpu=cortex-m7
     -mtune=cortex-m7
     -mfloat-abi=hard
@@ -202,12 +227,34 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     CPU_${MCU_VARIANT}
     CPU_HEADER_H=<${MCU_SERIES}.h>
     __STARTUP_CLEAR_BSS
+    __STARTUP_INITIALIZE_RAMFUNCTION
     __START=main
     XIP_EXTERNAL_FLASH=1
     XIP_BOOT_HEADER_ENABLE=1
     CFG_TUSB_MCU=OPT_MCU_MIMXRT10XX
+    MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
     ${BOARD_COMPILE_DEFINITIONS}
+    MICROPY_VFS_LFS2=1
+    LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
+    LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT    
 )
+
+if(${MICROPY_FLOAT_IMPL} EQUAL double)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
+    )
+elseif(${MICROPY_FLOAT_IMPL} EQUAL none)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
+    )
+else()
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
+    )
+    target_compile_options(${MICROPY_TARGET} PRIVATE
+        -fsingle-precision-constant
+    )
+endif()
 
 # Print size of generated target
 add_custom_command(TARGET ${MICROPY_TARGET}
