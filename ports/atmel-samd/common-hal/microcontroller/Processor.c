@@ -292,6 +292,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     #endif
 
     #ifdef SAM_D5X_E5X
+    hri_supc_clear_VREF_ONDEMAND_bit(SUPC);
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
 
