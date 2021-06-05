@@ -198,8 +198,17 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
+        libm/roundf.c \
         )
 
 SRC_LIB += $(addprefix modules/,\
