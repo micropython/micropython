@@ -1057,7 +1057,25 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
-        } else {
+        }
+        #if MICROPY_PY_BUILTINS_PROPERTY && MICROPY_PY_BUILTINS_PROPERTY_GETTER
+        // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_property) && mp_obj_is_native_type(type) && self != MP_OBJ_NULL) {
+            // object member is a property; delegate the load to the property
+            // Note: This is an optimisation for code size and execution time.
+            // The proper way to do it is have the functionality just below
+            // in a __get__ method of the property object, and then it would
+            // be called by the descriptor code down below.  But that way
+            // requires overhead for the nested mp_call's and overhead for
+            // the code.
+            const mp_obj_t *proxy = mp_obj_property_get(member);
+            if (proxy[0] == mp_const_none) {
+                mp_raise_msg_varg(&mp_type_AttributeError, "unreadable attribute");
+            } else {
+                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self);
+            }
+        #endif
+        else {
             // `member` is a value, so just return that value.
             dest[0] = member;
         }
@@ -1157,6 +1175,36 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // success
             return;
         }
+        #if MICROPY_PY_BUILTINS_PROPERTY && MICROPY_PY_BUILTINS_PROPERTY_SETTER
+    } else if (type->locals_dict != NULL) {
+        // generic method lookup
+        // this is a lookup in the object (ie not class or type)
+        assert(type->locals_dict->base.type == &mp_type_dict); // Micro Python restriction, for now
+        mp_map_t *locals_map = &type->locals_dict->map;
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+        // If base is MP_OBJ_NULL, we looking at the class itself, not an instance.
+        if (elem != NULL && MP_OBJ_IS_TYPE(elem->value, &mp_type_property) && base != MP_OBJ_NULL) {
+            // attribute exists and is a property; delegate the store/delete
+            // Note: This is an optimisation for code size and execution time.
+            // The proper way to do it is have the functionality just below in
+            // a __set__/__delete__ method of the property object, and then it
+            // would be called by the descriptor code down below.  But that way
+            // requires overhead for the nested mp_call's and overhead for
+            // the code.
+            const mp_obj_t *proxy = mp_obj_property_get(elem->value);
+            mp_obj_t dest[2] = {base, value};
+            if (value == MP_OBJ_NULL) {
+                // delete attribute
+                if (proxy[2] != mp_const_none) {
+                    mp_call_function_n_kw(proxy[2], 1, 0, dest);
+                    return;
+                }
+            } else if (proxy[1] != mp_const_none) {
+                mp_call_function_n_kw(proxy[1], 2, 0, dest);
+                return;
+            }
+        }
+		#endif
     }
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("no such attribute"));
