@@ -136,14 +136,6 @@ void GPIO4_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[4], 4, 16);
 }
 
-void GPIO5_Combined_0_15_IRQHandler(void) {
-    call_handler(gpiobases[5], 5, 0);
-}
-
-void GPIO5_Combined_16_31_IRQHandler(void) {
-    call_handler(gpiobases[5], 5, 16);
-}
-
 // Simplified mode setting used by the extmod modules
 void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
     gpio_pin_config_t pin_config = {kGPIO_DigitalInput, 1, kGPIO_NoIntmode};
@@ -324,7 +316,11 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // Get the IRQ object.
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]);
+    uint32_t index = GET_PIN_IRQ_INDEX(gpio_nr, self->pin);
+    if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
+        mp_raise_ValueError(MP_ERROR_TEXT("IQR not supported"));
+    }
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
@@ -334,7 +330,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.parent = MP_OBJ_FROM_PTR(self);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]) = irq;
+        MP_STATE_PORT(machine_pin_irq_objects[index]) = irq;
     }
 
     if (n_args > 1 || kw_args->used != 0) {
@@ -343,6 +339,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
         // Disable all IRQs from the affected source while data is updated.
         DisableIRQ(irq_num);
+        GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
 
         // Update IRQ data.
         irq->base.handler = args[ARG_handler].u_obj;
@@ -354,11 +351,11 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         if (args[ARG_handler].u_obj != mp_const_none) {
             // Set the pin mode
             GPIO_PinSetInterruptConfig(self->gpio, self->pin, irq->trigger);
-            // Enable LEVEL1 interrupt
-            EnableIRQ(irq_num);
             // Enable the specific Pin interrupt
             GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
         }
+        // Enable LEVEL1 interrupt again
+        EnableIRQ(irq_num);
     }
 
     return MP_OBJ_FROM_PTR(irq);
