@@ -20,8 +20,6 @@ version = git_out.strip().decode("utf-8")
 # Detect a development build and mutate it to be valid semver and valid python version.
 pieces = version.split("-")
 if len(pieces) > 2:
-    # Merge the commit portion onto the commit count since the tag.
-    pieces[-2] += "+" + pieces[-1]
     pieces.pop()
     # Merge the commit count and build to the pre-release identifier.
     pieces[-2] += ".dev." + pieces[-1]

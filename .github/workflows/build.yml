@@ -63,14 +63,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-    - name: Publish stubs
-      if: contains(steps.need-pypi.outputs.setup-py, 'setup.py')
-      env:
-        TWINE_USERNAME: ${{ secrets.pypi_username }}
-        TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: |
-        python setup.py sdist
-        twine upload dist/*
     - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
     - uses: actions/upload-artifact@v2
@@ -126,6 +118,13 @@ jobs:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
     - name: Upload stubs and mpy-cross builds to S3
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      env:
+        AWS_PAGER: ''
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        TWINE_USERNAME: ${{ secrets.pypi_username }}
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-aarch64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-aarch64-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
@@ -133,12 +132,10 @@ jobs:
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
         zip -9r circuitpython-stubs.zip circuitpython-stubs
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs.zip s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
-      env:
-        AWS_PAGER: ''
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-
+        if [[ -z "${{steps.need-pypi.outputs.setup-py}}" && -z "$TWINE_PASSWORD" ]]; then
+          python setup.py sdist
+          twine upload dist/*
+        fi
 
   mpy-cross-mac:
     runs-on: macos-10.15
