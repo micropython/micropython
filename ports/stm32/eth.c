@@ -791,11 +791,10 @@ int eth_link_status(eth_t *self) {
             return 2; // link no-ip;
         }
     } else {
-        int s = eth_phy_read(0) | eth_phy_read(0x10) << 16;
-        if (s == 0) {
-            return 0; // link down
+        if (eth_phy_read(PHY_BSR) & PHY_BSR_LINK_STATUS) {
+            return 1; // link up
         } else {
-            return 1; // link join
+            return 0; // link down
         }
     }
 }
