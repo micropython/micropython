@@ -330,3 +330,7 @@ extern const struct _mp_obj_module_t ble_module;
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
+
+#ifndef MP_NEED_LOG2
+#define MP_NEED_LOG2                (1)
+#endif

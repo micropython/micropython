@@ -173,10 +173,6 @@ SRC_LIB += $(addprefix lib/,\
         libm/roundf.c \
 	)
 
-SRC_LIB += $(addprefix modules/,\
-		math/nrf_math.c \
-	)
-
 endif
 
 ifeq ($(MCU_VARIANT), nrf91)
@@ -210,10 +206,6 @@ SRC_LIB += $(addprefix lib/,\
         libm/wf_tgamma.c \
         libm/roundf.c \
         )
-
-SRC_LIB += $(addprefix modules/,\
-		math/nrf_math.c \
-	)
 
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
         nrfx_uarte.c \
