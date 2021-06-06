@@ -175,7 +175,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
     struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]; \
     \
     /* root pointers defined by a board */ \
-        MICROPY_BOARD_ROOT_POINTERS \
+    MICROPY_BOARD_ROOT_POINTERS \
 
 #define MP_STATE_PORT MP_STATE_VM
 
