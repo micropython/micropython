@@ -103,7 +103,7 @@ See :ref:`machine.UART <machine.UART>`. ::
 
 .. note::
  	
-	REPL over UART is disabled by default.You can see the :ref:`rp2_intro` for details on how to 		enable REPL ober UART.
+	REPL over UART is disabled by default.You can see the :ref:`rp2_intro` for details on how to enable REPL over UART.
 
 
 PWM (pulse width modulation)
