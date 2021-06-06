@@ -109,17 +109,11 @@ See :ref:`machine.UART <machine.UART>`. ::
 PWM (pulse width modulation)
 ----------------------------
 
-It has 8 almost independent channels – because they share the same 125MHz input clock (but have independent dividers) and can be started synchronously to run in lock-step for power control.
 
-Each channel has two outputs – so 16 PWM channels over all – that can be used to drive any of the 30 i-o pins.
+There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. 
 
-The channel clock dividers allows the 16bit PWMs to be clocked anywhere from 125MHz to 7Hz with 8-integer 4-fractional divide.
 
-Also included in the dividers is phase advance and retard.
-
-In some circumstances the outputs can be controlled from 0% to 100% modulation.
-
-The channels also share a feature of general purpose timers on other MCUs – they can also be clocked by external sources, with an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
+The channels can be clocked by external sources, using an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
 
 For more information on this topic you can see the PWM module in the rp2040 datasheet.
 
@@ -137,9 +131,10 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
-An analogue-to-digital converter (ADC) measures some analogue signal and encodes it as a digital number. The ADC on RP2040 measures voltages.An ADC has two key features: its resolution, measured in digital bits, and its channels, or how many analogue signals it can accept and convert at once. The ADC on RP2040 has a resolution of 12-bits, meaning that it can transform an analogue signal into a digital signal as a number ranging from 0 to 4095 – though this is handled in MicroPython transformed to a 16-bit number ranging from 0 to 65,535, so that it behaves the same as the ADC on other MicroPython microcontrollers.
+The ADC on RP2040 has a 12-bits resolution but with MicroPython it is transformed to a 16-bit number.
+ 
+RP2040 has five ADC channels in total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins. The fourth is used to measure the VSYS voltage on the board.The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
 
-RP2040 has five ADC channels total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins, and the fourth can be used to measure the VSYS voltage on the board.The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
@@ -312,3 +307,5 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
     r, g, b = ap[0]
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
+
+
