@@ -102,6 +102,32 @@ Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
+LAN
+^^^
+
+To use the wired interfaces one has to specify the pins ::
+
+    import network
+
+    lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin configuration
+    lan.active(True)                      # activate the interface
+    lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
+
+
+Pinouts for popular boards
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+These are working configurations for LAN interfaces
+
+Olimex ESP32-GATEWAY::
+
+   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), phy_type=network.PHY_LAN8720, phy_addr=0, clock_mode=network.ETH_CLOCK_GPIO17_OUT)
+
+Olimex ESP32-POE::
+
+   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(12), phy_type=network.PHY_LAN8720, phy_addr=0, clock_mode=network.ETH_CLOCK_GPIO17_OUT)
+
+
+
 Delay and timing
 ----------------
 
