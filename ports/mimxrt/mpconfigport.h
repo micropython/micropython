@@ -29,6 +29,7 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
+uint32_t TRNG_random_u32();
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
@@ -118,6 +119,7 @@
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (TRNG_random_u32())
 #define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
