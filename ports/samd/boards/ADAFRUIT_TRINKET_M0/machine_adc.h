@@ -26,36 +26,38 @@
 #ifndef MICROPY_INCLUDED_SAMD_MACHINE_ADC_H
 #define MICROPY_INCLUDED_SAMD_MACHINE_ADC_H
 
-#define gpio_num_t uint8_t // make code compatible with ESP32 version
-// #define PORTPA_SHIFT(value) value & 0x3F   // extract shift counter from machine_pin_obj_t->port_shift
-// #define PORTPA_NR(value) (value & 0xC0)>>6 // extract the port number from machine_pin_obj_t->port_shift
-// #define PORT_PA(pin_obj) _UL_(1)<<((pin_obj->port_shift) & 0x3F) // PORT_PAxx 32 bit value calculated from shift counter
-#define adc1_channel_t uint8_t 
+#define ADC_WIDTH_12BIT 12
 
-// TODO: ESP32 - adapt to SAMD21
-#define ADC1_CHANNEL_0  0
-#define ADC_WIDTH_12BIT 12 
-
+#define gpio_num_t uint8_t 
 #define adc_bits_width_t uint8_t
+#define cpu_pin_t uint8_t
+#define io_group_t uint8_t
+#define io_pin_t uint8_t
+#define muxpos_pin_t unsigned long
+
 
 const mp_obj_type_t machine_adc_type;
-
-//typedef struct _machine_pin_obj_t {
-//    mp_obj_base_t base;
-//    gpio_num_t id;
-    // port_shift = 0bXXYYYYYY : X for port#, Y for number left shift to calculate PORT_PA of the pin
-//    uint8_t port_shift;
-//} machine_pin_obj_t;
 
 typedef struct _madc_obj_t {
     mp_obj_base_t base;
     gpio_num_t gpio_id;
-    adc1_channel_t adc1_id;
+    cpu_pin_t cpu_pin;
+    io_group_t io_group;
+    io_pin_t io_pin;
+    muxpos_pin_t muxpos_pin;
 } madc_obj_t;
 
 
+// see Pg 21, 6.1 Multiplexed Signals from SAMD21 datasheet
 STATIC const madc_obj_t madc_obj[] = {
-    {{&machine_adc_type}, PIN_PA08, ADC1_CHANNEL_0},
+    {{&machine_adc_type}, PIN_PA08, 11, 0,8, ADC_INPUTCTRL_MUXPOS_PIN16}, //Trinket 0
+    {{&machine_adc_type}, PIN_PA02,  3, 0,2, ADC_INPUTCTRL_MUXPOS_PIN0},  //.. 1
+    //.. Mounting ADC on Pin 2 Kills MicroPython!
+    // {{&machine_adc_type}, PIN_PA09, 12, 0,9, ADC_INPUTCTRL_MUXPOS_PIN17}, //.. 2
+    {{NULL}, -1,-1, -1,-1, -1 },                                             //.. 2
+    {{&machine_adc_type}, PIN_PA07,  8, 0,7, ADC_INPUTCTRL_MUXPOS_PIN7},  //.. 3
+    {{&machine_adc_type}, PIN_PA06,  7, 0,6, ADC_INPUTCTRL_MUXPOS_PIN6},  //.. 4
+    
 };
 
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in);

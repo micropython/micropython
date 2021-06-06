@@ -22,14 +22,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
+ * TODO: implement madc_atten
+ * TODO: madc_width (width resolution in bits)
  */
 
 
 #include <stdio.h>
-
-// #include "driver/gpio.h"
-// #include "driver/adc.h"
-
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "samd21.h"
@@ -49,58 +48,60 @@ void adc_initialize(){
     // Enable APB Clock for ADC
     PM->APBCMASK.reg |= PM_APBCMASK_ADC;
     // Enable GCLK1 for ADC
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0_Val | GCLK_CLKCTRL_ID_ADC ; //GCLK_CLKCTRL_GEN_GCLK1
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc Enable \n" );
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0_Val | GCLK_CLKCTRL_ID_ADC ; //GCLK_CLKCTRL_GEN_GCLK1 seems used by MicroPython
     adc_sync();
     ADC->CTRLA.bit.ENABLE = true; // Enable ADC
-    // Wait for Synch
-    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    adc_sync();
     // Reload calibration data
     uint32_t bias = (*((uint32_t *) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos;
     uint32_t linearity = (*((uint32_t *) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
     linearity |= ((*((uint32_t *) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
-    // Wait for Synch
-    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    adc_sync();
     // Write calibration data
-    mp_printf( MP_PYTHON_PRINTER, "Disable calibration setting %u, %u\n", linearity, bias );
     ADC->CALIB.reg = ADC_CALIB_BIAS_CAL(bias) | ADC_CALIB_LINEARITY_CAL(linearity); 
-    // Wait for Synch
-    while (GCLK->STATUS.bit.SYNCBUSY) {};
+    adc_sync();
     // Use internal VCC reference. 1/2 * VCCA = 1/2 * 3.3V = 1.65v
-    mp_printf( MP_PYTHON_PRINTER, "DBG: REFCTRL\n" );
     ADC->REFCTRL.reg = ADC_REFCTRL_REFSEL_INTVCC1;
     // Capture only one sample to calculate average value
-    mp_printf( MP_PYTHON_PRINTER, "DBG: AVGCTRL\n" );
-    ADC->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_256 | ADC_AVGCTRL_ADJRES(4); // ADC_AVGCTRL_SAMPLENUM_1; 
+    ADC->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_256 | ADC_AVGCTRL_ADJRES(4);
     // DIV4 : clock prescaler @ 512 --> sample at 8Mhz / 512 = 31.25 KHz
     // DIV16 : clock prescaler for imput impedance @ 12.4 KOhms (see https://blog.thea.codes/getting-the-most-out-of-the-samd21-adc/ )
     // 12 bits resolution
-    mp_printf( MP_PYTHON_PRINTER, "DBG: Prescaler\n" );
-    ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV16 | ADC_CTRLB_RESSEL_12BIT; // was DIV4
-    mp_printf( MP_PYTHON_PRINTER, "DBG: Gain setting\n" );
-    // Minimal ADC input configuration
-    // (GAIN_DIV2 minimal because of VCC reference, compare to Ground)
-    //ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND;
-    mp_printf( MP_PYTHON_PRINTER, "DBG: done\n" );
+    ADC->CTRLB.reg = ADC_CTRLB_PRESCALER_DIV16 | ADC_CTRLB_RESSEL_12BIT;
 }
 
-void adc_configure_pin() { // TODO: add parameters
+void adc_configure_pin( const gpio_num_t gpio_id ) { // TODO: add parameters
     // Configure the Pin and PMux for ADC Input function
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin\n" );
-    PORT->Group[0].DIRCLR.reg = PORT_PA08;
-    PORT->Group[0].PINCFG[8].reg |= PORT_PINCFG_PMUXEN;
-    PORT->Group[0].PMUX[11].reg = PORT_PMUX_PMUXO_B; // Switch to function B (Analog function)
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin done\n" );
+    const madc_obj_t *madc = NULL;
+    for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
+        if (gpio_id == madc_obj[i].gpio_id) {
+            madc = &madc_obj[i];
+            break;
+        }
+    }
+    // Trinket #1 : PA02, cpu pin 3, AIN[0]
+    //    PORT->Group[0].DIRCLR.reg = PORT_PA02;
+    //    PORT->Group[0].PINCFG[2].reg |= PORT_PINCFG_PMUXEN;
+    //    PORT->Group[0].PMUX[3].reg = PORT_PMUX_PMUXO_B;
+    PORT->Group[madc->io_group].DIRCLR.reg = gpio_id;
+    PORT->Group[madc->io_group].PINCFG[ madc->io_pin ].reg |= PORT_PINCFG_PMUXEN;
+    PORT->Group[madc->io_group].PMUX[ madc->cpu_pin ].reg = PORT_PMUX_PMUXO_B;
 }
 
-void adc_select_pin() { // TODO: add parameter
+void adc_select_pin( const gpio_num_t gpio_id ) { // TODO: add parameter
     // Connect the Pin to the ADC for reading
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin\n" );
     adc_sync();
-    ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND | ADC_INPUTCTRL_MUXPOS_PIN16;
-    //ADC->SAMPCTRL.reg = 0x02;
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_select_pin done\n" );
+    // Trinket 0, PA08, CPU PIN 11, AIN[16] >>>  ADC->INPUTCTRL.reg = ... | ADC_INPUTCTRL_MUXPOS_PIN16;
+    const madc_obj_t *madc = NULL;
+    for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
+        if (gpio_id == madc_obj[i].gpio_id) {
+            madc = &madc_obj[i];
+            break;
+        }
+    }
+    ADC->INPUTCTRL.reg = ADC_INPUTCTRL_GAIN_DIV2 | ADC_INPUTCTRL_MUXNEG_GND | madc->muxpos_pin;
 }
+
 // --- ADC class implementation --------------------------------------------------------
 
 STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
@@ -108,21 +109,13 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     static int initialized = 0;
     if (!initialized) {
-        mp_printf( MP_PYTHON_PRINTER, "DBG: adc_initialize()\n" );
         adc_initialize();
-        mp_printf( MP_PYTHON_PRINTER, "DBG: adc_initialize() done\n" );
-//        #if CONFIG_IDF_TARGET_ESP32S2
-//        adc1_config_width(ADC_WIDTH_BIT_13);
-//        #else
-//        adc1_config_width(ADC_WIDTH_BIT_12);
-//        #endif
         adc_bit_width = 12;
         initialized = 1;
     }
 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     gpio_num_t pin_id = machine_pin_get_id(args[0]);
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: pin_id %u", pin_id );
     const madc_obj_t *self = NULL;
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
         if (pin_id == madc_obj[i].gpio_id) {
@@ -135,22 +128,16 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     // configure the Pin & PMUX for ADC
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin()" );
-    adc_configure_pin(); //TODO: pass the Pin object & ADC Object
-    mp_printf( MP_PYTHON_PRINTER, "DBG: adc_configure_pin() done" );
+    adc_configure_pin( pin_id );
 
-// TODO: 
-//    esp_err_t err = adc1_config_channel_atten(self->adc1_id, ADC_ATTEN_0db);
-//    if (err == ESP_OK) {
-        return MP_OBJ_FROM_PTR(self);
-//    }
-//    mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
+    return MP_OBJ_FROM_PTR(self);
 }
+
 
 STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     madc_obj_t *self = self_in;
     char _port = 'z';
-    // gpio_id identifies a pin as PIN_PA08 
+    // gpio_id identifies (a pin as PIN_PA08) 
     for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_obj); ++i) {
         if (machine_pin_obj[i].id == self->gpio_id) {
             _port = (char)(65+(uint8_t)(PORTPA_NR(machine_pin_obj[i].port_shift)));
@@ -162,41 +149,37 @@ STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 
 // read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
-    // TODO: madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO: uint32_t raw = adc1_get_raw(self->adc1_id);
-    adc_select_pin();
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc soft trigger" );
+    madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    adc_select_pin( self->gpio_id );
     adc_sync();
     ADC->SWTRIG.bit.START = true; // start ADC with software trigger
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc wait result" );
     while (ADC->INTFLAG.bit.RESRDY == 0); // wait result to be ready
     ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY; // clear the flag
-    
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc get result" );
-    // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
-    uint32_t u16 = ADC->RESULT.reg; //TODO: raw << (16 - adc_bit_width) | raw >> (2 * adc_bit_width - 16);
-    
-    //mp_printf( MP_PYTHON_PRINTER, "DBG: adc disable" );
-    //adc_sync();
-    //ADC->CTRLA.bit.ENABLE = false; // Disable ADC
 
-    return MP_OBJ_NEW_SMALL_INT(u16);
+    // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
+    uint32_t raw = ADC->RESULT.reg; //TODO: raw << (16 - adc_bit_width) | raw >> (2 * adc_bit_width - 16);
+    return MP_OBJ_NEW_SMALL_INT( raw << (16 - adc_bit_width) | raw >> (2 * adc_bit_width - 16) );
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_u16_obj, madc_read_u16);
 
 // Legacy method
 STATIC mp_obj_t madc_read(mp_obj_t self_in) {
-    //madc_obj_t *self = self_in;
-    int val = 0; //TODO: adc1_get_raw(self->adc1_id);
-    if (val == -1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
-    }
-    return MP_OBJ_NEW_SMALL_INT(val);
+    madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    adc_select_pin( self->gpio_id );
+    adc_sync();
+    ADC->SWTRIG.bit.START = true; 
+    while (ADC->INTFLAG.bit.RESRDY == 0);
+    ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY;
+
+    uint32_t u16 = ADC->RESULT.reg;
+    return MP_OBJ_NEW_SMALL_INT(u16);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(madc_read_obj, madc_read);
 
 STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in) {
-    //madc_obj_t *self = self_in;
+    //TODO: madc_obj_t *self = self_in;
     //adc_atten_t atten = mp_obj_get_int(atten_in);
     //esp_err_t err = adc1_config_channel_atten(self->adc1_id, atten);
     //if (err == ESP_OK) {
