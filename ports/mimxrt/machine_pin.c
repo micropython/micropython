@@ -90,9 +90,10 @@ int GPIO_get_instance(GPIO_Type *gpio) {
 
 void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
     uint32_t mask = 1 << pin;
+    uint32_t isr = gpio->ISR & gpio->IMR;
     for (int i = 0; i < 16; i++, pin++, mask <<= 1) {
         // did the ISR fire? Consider only the bits that are enabled
-        if (gpio->ISR & gpio->IMR & mask) {
+        if (isr & mask) {
             gpio->ISR = mask;  // Clear the ISR flag
             int index = GET_PIN_IRQ_INDEX(gpio_nr, pin);
             machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
@@ -339,7 +340,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
     uint32_t index = GET_PIN_IRQ_INDEX(gpio_nr, self->pin);
     if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
-        mp_raise_ValueError(MP_ERROR_TEXT("IQR not supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("IQR not supported at that PIN"));
     }
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
 
@@ -366,6 +367,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.handler = args[ARG_handler].u_obj;
         irq->base.ishard = args[ARG_hard].u_bool;
         irq->flags = 0;
+        if (args[ARG_trigger].u_int >= ARRAY_SIZE(IRQ_mapping)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("IQR mode not supported"));
+        }
         irq->trigger = IRQ_mapping[args[ARG_trigger].u_int];
 
         // Enable IRQ if a handler is given.
