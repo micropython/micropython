@@ -38,6 +38,6 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-  // turn off any left over LED
-  board_reset_user_neopixels(&pin_GPIO19, 12);
+    // turn off any left over LED
+    board_reset_user_neopixels(&pin_GPIO19, 12);
 }
