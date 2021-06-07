@@ -67,7 +67,7 @@ void serial_early_init(void) {
     const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(DEBUG_UART_TX);
 
     common_hal_busio_uart_construct(&debug_uart, tx, rx, NULL, NULL, NULL,
-        false, 115200, 8, UART_PARITY_NONE, 1, 1.0f, 64,
+        false, 115200, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, 64,
         buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
     #endif

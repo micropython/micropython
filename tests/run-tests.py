@@ -7,10 +7,11 @@ import platform
 import argparse
 import inspect
 import re
-import threading
+from glob import glob
 import multiprocessing
 from multiprocessing.pool import ThreadPool
-from glob import glob
+import threading
+import tempfile
 
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
@@ -169,26 +170,27 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
+                mpy_modname = tempfile.mktemp(dir="")
+                mpy_filename = mpy_modname + ".mpy"
                 subprocess.check_output(
                     [MPYCROSS]
                     + args.mpy_cross_flags.split()
-                    + ["-o", "mpytest.mpy", "-X", "emit=" + args.emit, test_file]
+                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test_file]
                 )
-                cmdlist.extend(["-m", "mpytest"])
+                cmdlist.extend(["-m", mpy_modname])
             else:
                 cmdlist.append(test_file)
 
             # run the actual test
-            e = {"LANG": "en_US.UTF-8", "MICROPYPATH": os.environ["MICROPYPATH"]}
             try:
-                output_mupy = subprocess.check_output(cmdlist, env=e, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError as error:
+                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as er:
                 had_crash = True
-                output_mupy = error.output + b"CRASH"
+                output_mupy = er.output + b"CRASH"
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
-                rm_f("mpytest.mpy")
+                rm_f(mpy_filename)
 
     else:
         # run on pyboard
@@ -200,7 +202,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
             if not is_special and e.args[0] == "exception":
                 output_mupy = e.args[1] + e.args[2] + b"CRASH"
             else:
-                output_mupy = b"CRASH"
+                output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
@@ -241,10 +243,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
             else:
                 # a regex
                 if lines_exp[i][1].match(lines_mupy[i_mupy]):
-                    # print("match", lines_exp[i][0], lines_mupy[i_mupy])
                     lines_mupy[i_mupy] = lines_exp[i][0]
                 else:
-                    # print("don't match: %r %s" % (lines_exp[i][0], lines_mupy[i_mupy]))  # DEBUG
+                    # print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
                     pass
                 i_mupy += 1
             if i_mupy >= len(lines_mupy):
@@ -265,6 +266,9 @@ class ThreadSafeCounter:
     def __init__(self, start=0):
         self._value = start
         self._lock = threading.Lock()
+
+    def increment(self):
+        self.add(1)
 
     def add(self, to_add):
         with self._lock:
@@ -306,11 +310,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not (args.list_tests or args.write_exp):
         # Even if we run completely different tests in a different directory,
         # we need to access feature_checks from the same directory as the
-        # run-tests script itself so use base_path.
+        # run-tests.py script itself so use base_path.
 
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "native_check.py")
-        if output.endswith(b"CRASH"):
+        if output != b"native\n":
             skip_native = True
 
         # Check if arbitrary-precision integers are supported, and skip such tests if it's not
@@ -325,7 +329,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "set_check.py")
-        if output.endswith(b"CRASH"):
+        if output != b"{1}\n":
             skip_set_type = True
 
         # Check if slice is supported, and skip such tests if it's not
@@ -335,12 +339,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "async_check.py")
-        if output.endswith(b"CRASH"):
+        if output != b"async\n":
             skip_async = True
 
         # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, "const.py")
-        if output.endswith(b"CRASH"):
+        if output != b"1\n":
             skip_const = True
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
@@ -365,10 +369,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         upy_byteorder = run_feature_check(pyb, args, base_path, "byteorder.py")
         upy_float_precision = run_feature_check(pyb, args, base_path, "float.py")
-        if upy_float_precision.endswith(b"CRASH"):
-            upy_float_precision = 0
-        else:
+        try:
             upy_float_precision = int(upy_float_precision)
+        except ValueError:
+            upy_float_precision = 0
         has_complex = run_feature_check(pyb, args, base_path, "complex.py") == b"complex\n"
         has_coverage = run_feature_check(pyb, args, base_path, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
@@ -545,7 +549,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
-        is_async = test_name.startswith("async_")
+        is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
 
@@ -610,8 +614,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         filename_mupy = os.path.join(result_dir, test_basename + ".out")
 
         if output_expected == output_mupy:
-            # print("pass ", test_file)
-            passed_count.add(1)
+            print("pass ", test_file)
+            passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -619,17 +623,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 f.write(output_expected)
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
-            print("### Expected")
-            print(output_expected)
-            print("### Actual")
-            print(output_mupy)
             print("FAIL ", test_file)
-            failed_tests.append(test_file)
+            failed_tests.append(test_name)
 
-        test_count.add(1)
+        test_count.increment()
 
-    if args.list_tests:
-        return True
+    if pyb or args.list_tests:
+        num_threads = 1
 
     if num_threads > 1:
         pool = ThreadPool(num_threads)
@@ -638,6 +638,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         for test in tests:
             run_one_test(test)
 
+    if args.list_tests:
+        return True
+
     print(
         "{} tests performed ({} individual testcases)".format(
             test_count.value, testcase_count.value
@@ -645,18 +648,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     )
     print("{} tests passed".format(passed_count.value))
 
-    if len(skipped_tests.value) > 0:
-        print(
-            "{} tests skipped: {}".format(
-                len(skipped_tests.value), " ".join(sorted(skipped_tests.value))
-            )
-        )
-    if len(failed_tests.value) > 0:
-        print(
-            "{} tests failed: {}".format(
-                len(failed_tests.value), " ".join(sorted(failed_tests.value))
-            )
-        )
+    skipped_tests = sorted(skipped_tests.value)
+    if len(skipped_tests) > 0:
+        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
+    failed_tests = sorted(failed_tests.value)
+    if len(failed_tests) > 0:
+        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         return False
 
     # all tests succeeded
@@ -758,17 +755,10 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "-j",
         "--jobs",
-        default=1,
+        default=multiprocessing.cpu_count(),
         metavar="N",
         type=int,
         help="Number of tests to run simultaneously",
-    )
-    cmd_parser.add_argument(
-        "--auto-jobs",
-        action="store_const",
-        dest="jobs",
-        const=multiprocessing.cpu_count(),
-        help="Set the -j values to the CPU (thread) count",
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     cmd_parser.add_argument(
@@ -869,9 +859,7 @@ the last matching regex is used:
 
     if not args.keep_path:
         # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = (
-            os.pathsep + base_path("../extmod") + os.pathsep + base_path(".")
-        )
+        os.environ["MICROPYPATH"] = os.pathsep + base_path("../extmod")
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)

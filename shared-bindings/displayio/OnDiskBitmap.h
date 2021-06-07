@@ -38,6 +38,6 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *b
     int16_t x, int16_t y);
 
 uint16_t common_hal_displayio_ondiskbitmap_get_height(displayio_ondiskbitmap_t *self);
-
+mp_obj_t common_hal_displayio_ondiskbitmap_get_pixel_shader(displayio_ondiskbitmap_t *self);
 uint16_t common_hal_displayio_ondiskbitmap_get_width(displayio_ondiskbitmap_t *self);
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKBITMAP_H

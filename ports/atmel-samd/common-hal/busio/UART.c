@@ -45,6 +45,8 @@
 
 #include "samd/sercom.h"
 
+#include "common-hal/busio/SPI.h" // for never_reset_sercom
+
 #define UART_DEBUG(...) (void)0
 // #define UART_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
@@ -152,16 +154,21 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (rx && receiver_buffer_size > 0) {
         self->buffer_length = receiver_buffer_size;
-        // Initially allocate the UART's buffer in the long-lived part of the
-        // heap.  UARTs are generally long-lived objects, but the "make long-
-        // lived" machinery is incapable of moving internal pointers like
-        // self->buffer, so do it manually.  (However, as long as internal
-        // pointers like this are NOT moved, allocating the buffer
-        // in the long-lived pool is not strictly necessary)
-        self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
-        if (self->buffer == NULL) {
-            common_hal_busio_uart_deinit(self);
-            mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), self->buffer_length * sizeof(uint8_t));
+        if (NULL != receiver_buffer) {
+            self->buffer = receiver_buffer;
+        } else {
+            // Initially allocate the UART's buffer in the long-lived part of the
+            // heap.  UARTs are generally long-lived objects, but the "make long-
+            // lived" machinery is incapable of moving internal pointers like
+            // self->buffer, so do it manually.  (However, as long as internal
+            // pointers like this are NOT moved, allocating the buffer
+            // in the long-lived pool is not strictly necessary)
+
+            self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
+            if (self->buffer == NULL) {
+                common_hal_busio_uart_deinit(self);
+                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), self->buffer_length * sizeof(uint8_t));
+            }
         }
     } else {
         self->buffer_length = 0;
@@ -244,6 +251,21 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     usart_async_enable(usart_desc_p);
+}
+
+void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(sercom_insts); i++) {
+        const Sercom *sercom = sercom_insts[i];
+        Sercom *hw = (Sercom *)(self->usart_desc.device.hw);
+
+        // Reserve pins for active UART only
+        if (sercom == hw) {
+            never_reset_sercom(hw);
+            never_reset_pin_number(self->rx_pin);
+            never_reset_pin_number(self->tx_pin);
+        }
+    }
+    return;
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {

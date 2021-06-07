@@ -352,6 +352,8 @@ bool audio_dma_get_paused(audio_dma_t *dma) {
 void audio_dma_init(audio_dma_t *dma) {
     dma->first_buffer = NULL;
     dma->second_buffer = NULL;
+    dma->channel[0] = NUM_DMA_CHANNELS;
+    dma->channel[1] = NUM_DMA_CHANNELS;
 }
 
 void audio_dma_deinit(audio_dma_t *dma) {
@@ -368,7 +370,6 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
     }
     if (!dma_channel_is_busy(dma->channel[0]) &&
         !dma_channel_is_busy(dma->channel[1])) {
-        audio_dma_stop(dma);
         return false;
     }
 

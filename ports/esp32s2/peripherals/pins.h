@@ -91,4 +91,6 @@ extern const mcu_pin_obj_t pin_GPIO44;
 extern const mcu_pin_obj_t pin_GPIO45;
 extern const mcu_pin_obj_t pin_GPIO46;
 
+#define NO_PIN (GPIO_NUM_NC)
+
 #endif // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PINS_H

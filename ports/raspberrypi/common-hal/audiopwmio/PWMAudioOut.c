@@ -102,6 +102,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     }
 
     audio_dma_init(&self->dma);
+    self->pacing_timer = NUM_DMA_TIMERS;
 
     self->quiescent_value = quiescent_value;
 }
@@ -126,6 +127,7 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self
 }
 
 void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
+
     if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
     }
@@ -135,8 +137,8 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     for (size_t i = 0; i < NUM_DMA_TIMERS; i++) {
         if (dma_hw->timer[i] == 0) {
             pacing_timer = i;
+            break;
         }
-        break;
     }
     if (pacing_timer == NUM_DMA_TIMERS) {
         mp_raise_RuntimeError(translate("No DMA pacing timer found"));

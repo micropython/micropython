@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+PROG=mpy-cross-arm64
+BUILD=build-arm64
+
+include mpy-cross.mk
+# Because mpy-cross.mk unconditionally overwrites CC for Darwin, we must set it BELOW the inclusion
+CC := $(shell xcrun --sdk macosx11.1 --find clang) -isysroot $(shell xcrun --sdk macosx11.1 --show-sdk-path) -target arm64-apple-macos11
