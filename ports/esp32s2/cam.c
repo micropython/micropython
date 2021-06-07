@@ -205,7 +205,7 @@ static void cam_set_pin(const cam_config_t *config) {
         gpio_matrix_in(config->pin_data[i], I2S0I_DATA_IN0_IDX + (16 - config->bit_width) + i, false);
     }
 
-    gpio_matrix_in(0x38, I2S0I_H_ENABLE_IDX, false);
+    gpio_matrix_in(GPIO_FUNC_IN_HIGH, I2S0I_H_ENABLE_IDX, false);
     ESP_LOGI(TAG, "cam_set_pin\n");
 }
 
