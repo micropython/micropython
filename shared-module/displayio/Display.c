@@ -249,7 +249,7 @@ STATIC bool _refresh_area(displayio_display_obj_t *self, const displayio_area_t 
     // for SH1107 and other boundary constrained controllers
     //      write one single row at a time
     if (self->SH1107_addressing) {
-        subrectangles = rows_per_buffer / 8;  // vertical (column mode) write each separately (height times)
+        subrectangles = rows_per_buffer / 8;  // page addressing mode writes 8 rows at a time
         rows_per_buffer = 8;
     } else if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
         rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
