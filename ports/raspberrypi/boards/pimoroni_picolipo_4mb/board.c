@@ -38,6 +38,3 @@ void reset_board(void) {
 
 void board_deinit(void) {
 }
-
-void board_deinit(void) {
-}
