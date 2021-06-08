@@ -58,15 +58,7 @@ Use the :mod:`time <utime>` module::
 
 Timers
 ------
-
-The system timer peripheral on RP2040 provides a global microsecond timebase for the system, and generates
-interrupts based on this timebase. It supports • A single 64-bit counter, incrementing once per microsecond;• This counter can be read from a pair of latching registers, for race-free reads over a 32-bit bus;• Four alarms: match on the lower 32 bits of counter, IRQ on match.The timer uses a one microsecond reference that is generated in the watchdog and derived from the refernce clock,which itself is usually connected to the crystal oscillator.The 64-bit counter effectively can not overflow (thousands of years at 1 MHz), so the system timer is completely monotonic in practice.
-
-The system timer is intended to provide a global timebase for software. RP2040 has a number of other programmable counter resources which can provide regular interrupts, or trigger DMA transfers.The PWM contains 8× 16-bit programmable counters, which run at up to system speed, can generate
-interrupts, and can be continuously reprogrammed via the DMA, or trigger DMA transfers to other peripherals. 8× PIO state machines can count 32-bit values at system speed, and generate interrupts.
-The DMA (Section 2.5) has four internal pacing timers, which trigger transfers at regular intervals.
-Each Cortex-M0+ core (Section 2.4) has a standard 24-bit SysTick timer, counting either the microsecond tic or the system clock.
-
+RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. It supports • A single 64-bit counter, incrementing once per microsecond;• This counter can be read from a pair of latching registers, for race-free reads over a 32-bit bus;• Four alarms: match on the lower 32 bits of counter, IRQ on match. The watchdog generates a one microsecond reference. 
 
 
 
@@ -103,7 +95,7 @@ See :ref:`machine.UART <machine.UART>`. ::
 
 .. note::
  	
-	REPL over UART is disabled by default.You can see the :ref:`rp2_intro` for details on how to enable REPL over UART.
+	REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for details on how to enable REPL over UART.
 
 
 PWM (pulse width modulation)
@@ -115,7 +107,7 @@ There are 8 independent channels each of which have two outputs making it 16 PWM
 
 The channels can be clocked by external sources, using an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
 
-For more information on this topic you can see the PWM module in the rp2040 datasheet.
+For more information on this topic you can see the PWM module in the rp2040 datasheet <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>
 
 Use the ``machine.PWM`` class::
 
@@ -133,7 +125,7 @@ ADC (analog to digital conversion)
 
 The ADC on RP2040 has a 12-bits resolution but with MicroPython it is transformed to a 16-bit number.
  
-RP2040 has five ADC channels in total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins. The fourth is used to measure the VSYS voltage on the board.The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
+RP2040 has five ADC channels in total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins. The fourth is used to measure the VSYS voltage on the board. The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
