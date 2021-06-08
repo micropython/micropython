@@ -10,15 +10,15 @@ the RP2040.
 Technical specifications and SoC datasheets
 -------------------------------------------
 
-For a deatiled technical specification, then you can view the `datasheets <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_ 
+For a detailed technical specification, you can view the `datasheets <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_ 
 
 The RP2040 microcontroller a 40 nm silicon in a 7X7mm QFN-56 SMD package.The key features include:
 
 # 133 MHz dual ARM Cortex-M0+ cores (overclockable to over 400 MHz)
 	* Each core has an integer divider peripheral and two interpolators
 # 264KB SRAM in six independent banks
-# No internal Flash or EEPROM memory (after reset, the bootploader loads firmware from either the external flash memory or USB bus into internal SRAM)
-# QSPI bus controller, which supports upto 16 MB of external Flash memory
+# No internal Flash or EEPROM memory (after reset, the bootloader loads firmware from either the external flash memory or USB bus into internal SRAM)
+# QSPI bus controller, which supports up to 16 MB of external Flash memory
 # DMA Controller
 # AHB crossbar, fully-connected
 # On-chip programmable LDO to generate core voltage
