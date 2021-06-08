@@ -40,6 +40,8 @@ typedef struct _mp_obj_task_t {
     mp_obj_t ph_key;
 } mp_obj_task_t;
 
+#define PAIRHEAP(x) ((x) ? &x->pairheap : NULL)
+
 typedef struct _mp_obj_task_queue_t {
     mp_obj_base_t base;
     mp_obj_task_t *heap;
@@ -103,7 +105,7 @@ STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
         assert(mp_obj_is_small_int(args[2]));
         task->ph_key = args[2];
     }
-    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, &self->heap->pairheap, &task->pairheap);
+    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, PAIRHEAP(self->heap), PAIRHEAP(task));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_sorted_obj, 2, 3, task_queue_push_sorted);
