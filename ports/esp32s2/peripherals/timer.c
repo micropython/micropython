@@ -26,6 +26,7 @@
 
 #include "peripherals/timer.h"
 
+#define TIMER_NEVER_RESET 2
 #define TIMER_FREE 1
 #define TIMER_BUSY 0
 
@@ -45,7 +46,7 @@ void peripherals_timer_reset(void) {
     }
 }
 
-void peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) {
+bool peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) {
     bool break_loop = false;
 
     // get free timer
@@ -60,7 +61,7 @@ void peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) 
             } else if (i == 1 && j == 1) {
                 timer->idx = TIMER_MAX;
                 timer->group = TIMER_GROUP_MAX;
-                return;
+                return false;
             }
         }
         if (break_loop) {
@@ -68,11 +69,30 @@ void peripherals_timer_init(const timer_config_t *config, timer_index_t *timer) 
         }
     }
 
+    timer->hw = (timer->group == 0) ? &TIMERG0 : &TIMERG1;
+
     // initialize timer module
     timer_init(timer->group, timer->idx, config);
     timer_set_counter_value(timer->group, timer->idx, 0);
+
+    return true;
 }
 
 void peripherals_timer_deinit(timer_index_t *timer) {
+    if (timer->group == TIMER_GROUP_MAX || timer->idx == TIMER_MAX) {
+        return;
+    }
     timer_deinit(timer->group, timer->idx);
+    int i = timer->group;
+    int j = timer->idx;
+    timer->group = TIMER_GROUP_MAX;
+    timer->idx = TIMER_MAX;
+    timer_state[i][j] = TIMER_FREE;
+}
+
+void peripherals_timer_never_reset(timer_index_t *timer) {
+    timer_deinit(timer->group, timer->idx);
+    int i = timer->group;
+    int j = timer->idx;
+    timer_state[i][j] = TIMER_NEVER_RESET;
 }

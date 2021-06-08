@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
 # SPDX-License-Identifier: MIT
-
+import os
+import site
 from datetime import datetime
+from typing import List
+
 from setuptools import setup
 from pathlib import Path
 import subprocess
@@ -25,6 +28,13 @@ if len(pieces) > 2:
     pieces.pop()
 version = "-".join(pieces)
 
+def build_data_files_list() -> List[tuple]:
+    result = []
+    for package in os.listdir("circuitpython-stubs"):
+        result.append((site.getsitepackages()[0] + "/" + package + "/",
+                       ["circuitpython-stubs/{}/__init__.pyi".format(package)]))
+    return result
+
 setup(
     name="circuitpython-stubs",
     description="PEP 561 type stubs for CircuitPython",
@@ -34,7 +44,6 @@ setup(
     author_email="circuitpython@adafruit.com",
     version=version,
     license="MIT",
-    package_data={"circuitpython-stubs": stubs},
-    packages=["circuitpython-stubs"],
+    data_files=build_data_files_list(),
     setup_requires=["setuptools>=38.6.0"],
 )

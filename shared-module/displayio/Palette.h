@@ -69,7 +69,7 @@ typedef struct {
     bool opaque;
 } displayio_output_pixel_t;
 
-typedef struct {
+typedef struct displayio_palette {
     mp_obj_base_t base;
     _displayio_color_t *colors;
     uint32_t color_count;

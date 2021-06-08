@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-25 17:41+0000\n"
+"PO-Revision-Date: 2021-06-01 13:10+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -98,6 +98,10 @@ msgid "%q list must be a list"
 msgstr "%q lièbiǎo bìxū shì lièbiǎo"
 
 #: shared-bindings/usb_hid/Device.c
+msgid "%q must be 0-255"
+msgstr "%q bì xū wéi 0-255"
+
+#: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
 msgstr "%q bì xū wéi 1-255"
 
@@ -114,8 +118,8 @@ msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
 
 #: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or 1-255"
-msgstr "%q bì xū wéi wú huò 1-255"
+msgid "%q must be None or between 1 and len(report_descriptor)-1"
+msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -4413,6 +4417,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must be None or 1-255"
+#~ msgstr "%q bì xū wéi wú huò 1-255"
 
 #~ msgid "Only raw int supported for ip"
 #~ msgstr "Ip jǐn zhīchí raw int"

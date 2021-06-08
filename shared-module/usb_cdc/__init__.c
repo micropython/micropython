@@ -147,26 +147,26 @@ static const char data_cdc_comm_interface_name[] = USB_INTERFACE_NAME " CDC2 con
 static const char console_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC data";
 static const char data_cdc_data_interface_name[] = USB_INTERFACE_NAME " CDC2 data";
 
+// .idx is set later.
+
 static usb_cdc_serial_obj_t usb_cdc_console_obj = {
     .base.type = &usb_cdc_serial_type,
     .timeout = -1.0f,
     .write_timeout = -1.0f,
-    .idx = 0,
 };
 
 static usb_cdc_serial_obj_t usb_cdc_data_obj = {
     .base.type = &usb_cdc_serial_type,
     .timeout = -1.0f,
     .write_timeout = -1.0f,
-    .idx = 1,
 };
 
 static bool usb_cdc_console_is_enabled;
 static bool usb_cdc_data_is_enabled;
 
 void usb_cdc_set_defaults(void) {
-    usb_cdc_console_is_enabled = CIRCUITPY_USB_CDC_CONSOLE_ENABLED_DEFAULT;
-    usb_cdc_data_is_enabled = CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT;
+    common_hal_usb_cdc_enable(CIRCUITPY_USB_CDC_CONSOLE_ENABLED_DEFAULT,
+        CIRCUITPY_USB_CDC_DATA_ENABLED_DEFAULT);
 }
 
 bool usb_cdc_console_enabled(void) {
@@ -241,11 +241,21 @@ bool common_hal_usb_cdc_enable(bool console, bool data) {
     // Right now these objects contain no heap objects, but if that changes,
     // they will need to be protected against gc.
 
+    // Assign only as many idx values as necessary. They must start at 0.
+    uint8_t idx = 0;
     usb_cdc_console_is_enabled = console;
     usb_cdc_set_console(console ? MP_OBJ_FROM_PTR(&usb_cdc_console_obj) : mp_const_none);
+    if (console) {
+        usb_cdc_console_obj.idx = idx;
+        idx++;
+    }
 
     usb_cdc_data_is_enabled = data;
     usb_cdc_set_data(data ? MP_OBJ_FROM_PTR(&usb_cdc_data_obj) : mp_const_none);
+    if (data) {
+        usb_cdc_data_obj.idx = idx;
+    }
+
 
     return true;
 }

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,12 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+    << << << < HEAD: shared - module / keypad / __init__.h
+#ifndef SHARED_MODULE_KEYPAD_H
+#define SHARED_MODULE_KEYPAD_H
+== == == =
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+    >> >> >> > adafruit / main: ports / atmel - samd / boards / sparkfun_samd51_micromod / board.c
 
-#define MICROPY_HW_BOARD_NAME       "nanoESP32-S2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
-
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
-
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
+#endif // SHARED_MODULE_KEYPAD_H
