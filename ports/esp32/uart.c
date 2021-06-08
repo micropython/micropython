@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "driver/uart.h"
+#include "soc/uart_periph.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -48,9 +49,13 @@ STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
     uart->int_clr.frm_err = 1;
     uart->int_clr.rxfifo_tout = 1;
     while (uart->status.rxfifo_cnt) {
+        #if CONFIG_IDF_TARGET_ESP32
         uint8_t c = uart->fifo.rw_byte;
+        #elif CONFIG_IDF_TARGET_ESP32S2
+        uint8_t c = READ_PERI_REG(UART_FIFO_AHB_REG(0)); // UART0
+        #endif
         if (c == mp_interrupt_char) {
-            mp_keyboard_interrupt();
+            mp_sched_keyboard_interrupt();
         } else {
             // this is an inline function so will be in IRAM
             ringbuf_put(&stdin_ringbuf, c);

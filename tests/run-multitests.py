@@ -6,6 +6,7 @@
 
 import sys, os, time, re, select
 import argparse
+import itertools
 import subprocess
 import tempfile
 
@@ -31,8 +32,10 @@ import sys
 class multitest:
     @staticmethod
     def flush():
-        if hasattr(sys.stdout, "flush"):
+        try:
             sys.stdout.flush()
+        except AttributeError:
+            pass
     @staticmethod
     def skip():
         print("SKIP")
@@ -159,7 +162,17 @@ class PyInstanceSubProcess(PyInstance):
 
 
 class PyInstancePyboard(PyInstance):
+    @staticmethod
+    def map_device_shortcut(device):
+        if device[0] == "a" and device[1:].isdigit():
+            return "/dev/ttyACM" + device[1:]
+        elif device[0] == "u" and device[1:].isdigit():
+            return "/dev/ttyUSB" + device[1:]
+        else:
+            return device
+
     def __init__(self, device):
+        device = self.map_device_shortcut(device)
         self.device = device
         self.pyb = pyboard.Pyboard(device)
         self.pyb.enter_raw_repl()
@@ -232,6 +245,7 @@ def trace_instance_output(instance_idx, line):
     if cmd_args.trace_output:
         t_ms = round((time.time() - trace_t0) * 1000)
         print("{:6} i{} :".format(t_ms, instance_idx), line)
+        sys.stdout.flush()
 
 
 def run_test_on_instances(test_file, num_instances, instances):
@@ -389,7 +403,7 @@ def run_tests(test_files, instances_truth, instances_test):
                 print("### TRUTH ###")
                 print(output_truth, end="")
                 print("### DIFF ###")
-                print_diff(output_test, output_truth)
+                print_diff(output_truth, output_test)
 
         if cmd_args.show_output:
             print()
@@ -417,6 +431,13 @@ def main():
     )
     cmd_parser.add_argument(
         "-i", "--instance", action="append", default=[], help="instance(s) to run the tests on"
+    )
+    cmd_parser.add_argument(
+        "-p",
+        "--permutations",
+        type=int,
+        default=1,
+        help="repeat the test with this many permutations of the instance order",
     )
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
@@ -450,8 +471,14 @@ def main():
     for _ in range(max_instances - len(instances_test)):
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
+    all_pass = True
     try:
-        all_pass = run_tests(test_files, instances_truth, instances_test)
+        for i, instances_test_permutation in enumerate(itertools.permutations(instances_test)):
+            if i >= cmd_args.permutations:
+                break
+
+            all_pass &= run_tests(test_files, instances_truth, instances_test_permutation)
+
     finally:
         for i in instances_truth:
             i.close()

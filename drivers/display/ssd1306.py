@@ -37,12 +37,12 @@ class SSD1306(framebuf.FrameBuffer):
 
     def init_display(self):
         for cmd in (
-            SET_DISP | 0x00,  # off
+            SET_DISP,  # display off
             # address setting
             SET_MEM_ADDR,
             0x00,  # horizontal
             # resolution and layout
-            SET_DISP_START_LINE | 0x00,
+            SET_DISP_START_LINE,  # start at line 0
             SET_SEG_REMAP | 0x01,  # column addr 127 mapped to SEG0
             SET_MUX_RATIO,
             self.height - 1,
@@ -66,14 +66,14 @@ class SSD1306(framebuf.FrameBuffer):
             # charge pump
             SET_CHARGE_PUMP,
             0x10 if self.external_vcc else 0x14,
-            SET_DISP | 0x01,
+            SET_DISP | 0x01,  # display on
         ):  # on
             self.write_cmd(cmd)
         self.fill(0)
         self.show()
 
     def poweroff(self):
-        self.write_cmd(SET_DISP | 0x00)
+        self.write_cmd(SET_DISP)
 
     def poweron(self):
         self.write_cmd(SET_DISP | 0x01)
@@ -84,6 +84,10 @@ class SSD1306(framebuf.FrameBuffer):
 
     def invert(self, invert):
         self.write_cmd(SET_NORM_INV | (invert & 1))
+
+    def rotate(self, rotate):
+        self.write_cmd(SET_COM_OUT_DIR | ((rotate & 1) << 3))
+        self.write_cmd(SET_SEG_REMAP | (rotate & 1))
 
     def show(self):
         x0 = 0

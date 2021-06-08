@@ -59,7 +59,11 @@ STATIC ledc_timer_config_t timers[LEDC_TIMER_MAX];
 // 5khz
 #define PWFREQ (5000)
 // High speed mode
+#if CONFIG_IDF_TARGET_ESP32
 #define PWMODE (LEDC_HIGH_SPEED_MODE)
+#else
+#define PWMODE (LEDC_LOW_SPEED_MODE)
+#endif
 // 10-bit resolution (compatible with esp8266 PWM)
 #define PWRES (LEDC_TIMER_10_BIT)
 

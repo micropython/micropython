@@ -10,7 +10,8 @@ MEMORY
     FLASH_FS (r)    : ORIGIN = 0x08020000, LENGTH = 128K    /* sector 1, 128K */
     FLASH_TEXT (rx) : ORIGIN = 0x08040000, LENGTH = 1792K   /* sectors 6*128 + 8*128 */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
-    RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K    /* AXI SRAM */
+    RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K    /* AXI SRAM */    
+    RAM_D2 (xrw)    : ORIGIN = 0x30000000, LENGTH = 288K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
@@ -27,3 +28,12 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
+
+/* Define output sections */
+SECTIONS
+{
+    .eth_buffers (NOLOAD) : {
+        . = ABSOLUTE(0x30040000);
+        *eth.o*(.bss.eth_dma)
+    } >RAM_D2
+}

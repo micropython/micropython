@@ -62,8 +62,6 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-
 // We have inlined IRQ functions for efficiency (they are generally
 // 1 machine instruction).
 //
@@ -71,10 +69,6 @@ typedef long mp_off_t;
 // value of the state variable, but rather just pass the return
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
-
-#ifndef __disable_irq
-#define __disable_irq() __asm__ volatile ("CPSID i");
-#endif
 
 __attribute__((always_inline)) static inline uint32_t __get_PRIMASK(void) {
     uint32_t result;
@@ -92,7 +86,7 @@ __attribute__((always_inline)) static inline void enable_irq(mp_uint_t state) {
 
 __attribute__((always_inline)) static inline mp_uint_t disable_irq(void) {
     mp_uint_t state = __get_PRIMASK();
-    __disable_irq();
+    __asm__ volatile ("CPSID i");
     return state;
 }
 

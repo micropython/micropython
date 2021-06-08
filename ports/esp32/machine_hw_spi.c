@@ -36,8 +36,28 @@
 
 #include "driver/spi_master.h"
 
+// Default pins for SPI(1), can be overridden by a board
+#ifndef MICROPY_HW_SPI1_SCK
+#define MICROPY_HW_SPI1_SCK (14)
+#define MICROPY_HW_SPI1_MOSI (13)
+#define MICROPY_HW_SPI1_MISO (12)
+#endif
+
+// Default pins for SPI(2), can be overridden by a board
+#ifndef MICROPY_HW_SPI2_SCK
+#define MICROPY_HW_SPI2_SCK (18)
+#define MICROPY_HW_SPI2_MOSI (23)
+#define MICROPY_HW_SPI2_MISO (19)
+#endif
+
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
+
+typedef struct _machine_hw_spi_default_pins_t {
+    int8_t sck;
+    int8_t mosi;
+    int8_t miso;
+} machine_hw_spi_default_pins_t;
 
 typedef struct _machine_hw_spi_obj_t {
     mp_obj_base_t base;
@@ -57,6 +77,12 @@ typedef struct _machine_hw_spi_obj_t {
         MACHINE_HW_SPI_STATE_DEINIT
     } state;
 } machine_hw_spi_obj_t;
+
+// Default pin mappings for the hardware SPI instances
+STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
+    { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
+    { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
+};
 
 // Static objects mapping to HSPI and VSPI hardware peripherals
 STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];
@@ -158,8 +184,12 @@ STATIC void machine_hw_spi_init_internal(
         changed = true;
     }
 
-    if (self->host != HSPI_HOST && self->host != VSPI_HOST) {
-        mp_raise_ValueError(MP_ERROR_TEXT("SPI ID must be either HSPI(1) or VSPI(2)"));
+    if (self->host != HSPI_HOST
+        #ifdef VSPI_HOST
+        && self->host != VSPI_HOST
+        #endif
+        ) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), self->host);
     }
 
     if (changed) {
@@ -194,8 +224,10 @@ STATIC void machine_hw_spi_init_internal(
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
         dma_chan = 1;
+    #ifdef VSPI_HOST
     } else if (self->host == VSPI_HOST) {
         dma_chan = 2;
+    #endif
     }
 
     ret = spi_bus_initialize(self->host, &buscfg, dma_chan);
@@ -369,10 +401,13 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     machine_hw_spi_obj_t *self;
+    const machine_hw_spi_default_pins_t *default_pins;
     if (args[ARG_id].u_int == HSPI_HOST) {
         self = &machine_hw_spi_obj[0];
+        default_pins = &machine_hw_spi_default_pins[0];
     } else {
         self = &machine_hw_spi_obj[1];
+        default_pins = &machine_hw_spi_default_pins[1];
     }
     self->base.type = &machine_hw_spi_type;
 
@@ -384,9 +419,9 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         args[ARG_phase].u_int,
         args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj),
-        args[ARG_mosi].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_mosi].u_obj),
-        args[ARG_miso].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_miso].u_obj));
+        args[ARG_sck].u_obj == MP_OBJ_NULL ? default_pins->sck : machine_pin_get_id(args[ARG_sck].u_obj),
+        args[ARG_mosi].u_obj == MP_OBJ_NULL ? default_pins->mosi : machine_pin_get_id(args[ARG_mosi].u_obj),
+        args[ARG_miso].u_obj == MP_OBJ_NULL ? default_pins->miso : machine_pin_get_id(args[ARG_miso].u_obj));
 
     return MP_OBJ_FROM_PTR(self);
 }

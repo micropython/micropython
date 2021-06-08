@@ -1,0 +1,27 @@
+name: Check code size
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/bare-arm/**'
+      - 'ports/minimal/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 100
+    - name: Install packages
+      run: source tools/ci.sh && ci_code_size_setup
+    - name: Build
+      run: source tools/ci.sh && ci_code_size_build
+    - name: Compute code size difference
+      run: tools/metrics.py diff --error-threshold 0 ~/size0 ~/size1

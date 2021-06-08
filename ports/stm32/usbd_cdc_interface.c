@@ -382,6 +382,10 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len) {
             uint32_t start = HAL_GetTick();
             while (usbd_cdc_tx_buffer_full(cdc) && HAL_GetTick() - start <= 500) {
                 usbd_cdc_try_tx(cdc);
+                if (cdc->base.usbd->pdev->dev_state == USBD_STATE_SUSPENDED) {
+                    // The USB is suspended so buffer will never be drained; exit loop
+                    break;
+                }
                 if (query_irq() == IRQ_STATE_DISABLED) {
                     // IRQs disabled so buffer will never be drained; exit loop
                     break;

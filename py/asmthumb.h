@@ -70,7 +70,9 @@ typedef struct _asm_thumb_t {
     uint32_t stack_adjust;
 } asm_thumb_t;
 
-void asm_thumb_end_pass(asm_thumb_t *as);
+static inline void asm_thumb_end_pass(asm_thumb_t *as) {
+    (void)as;
+}
 
 void asm_thumb_entry(asm_thumb_t *as, int num_locals);
 void asm_thumb_exit(asm_thumb_t *as);
@@ -157,6 +159,7 @@ static inline void asm_thumb_sub_rlo_rlo_i3(asm_thumb_t *as, uint rlo_dest, uint
 #define ASM_THUMB_FORMAT_3_CMP (0x2800)
 #define ASM_THUMB_FORMAT_3_ADD (0x3000)
 #define ASM_THUMB_FORMAT_3_SUB (0x3800)
+#define ASM_THUMB_FORMAT_3_LDR (0x4800)
 
 #define ASM_THUMB_FORMAT_3_ENCODE(op, rlo, i8) ((op) | ((rlo) << 8) | (i8))
 
@@ -176,6 +179,9 @@ static inline void asm_thumb_add_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
 }
 static inline void asm_thumb_sub_rlo_i8(asm_thumb_t *as, uint rlo, int i8) {
     asm_thumb_format_3(as, ASM_THUMB_FORMAT_3_SUB, rlo, i8);
+}
+static inline void asm_thumb_ldr_rlo_pcrel_i8(asm_thumb_t *as, uint rlo, uint i8) {
+    asm_thumb_format_3(as, ASM_THUMB_FORMAT_3_LDR, rlo, i8);
 }
 
 // FORMAT 4: ALU operations
@@ -201,6 +207,12 @@ void asm_thumb_format_4(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src);
 
 static inline void asm_thumb_cmp_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src) {
     asm_thumb_format_4(as, ASM_THUMB_FORMAT_4_CMP, rlo_dest, rlo_src);
+}
+static inline void asm_thumb_mvn_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src) {
+    asm_thumb_format_4(as, ASM_THUMB_FORMAT_4_MVN, rlo_dest, rlo_src);
+}
+static inline void asm_thumb_neg_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src) {
+    asm_thumb_format_4(as, ASM_THUMB_FORMAT_4_NEG, rlo_dest, rlo_src);
 }
 
 // FORMAT 5: hi register operations (add, cmp, mov, bx)
@@ -263,6 +275,32 @@ static inline void asm_thumb_ldrb_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uin
 static inline void asm_thumb_ldrh_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uint rlo_base, uint byte_offset) {
     asm_thumb_format_9_10(as, ASM_THUMB_FORMAT_10_LDRH, rlo_dest, rlo_base, byte_offset);
 }
+static inline void asm_thumb_lsl_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uint rlo_src, uint shift) {
+    asm_thumb_format_1(as, ASM_THUMB_FORMAT_1_LSL, rlo_dest, rlo_src, shift);
+}
+static inline void asm_thumb_asr_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uint rlo_src, uint shift) {
+    asm_thumb_format_1(as, ASM_THUMB_FORMAT_1_ASR, rlo_dest, rlo_src, shift);
+}
+
+// FORMAT 11: sign/zero extend
+
+#define ASM_THUMB_FORMAT_11_ENCODE(op, rlo_dest, rlo_src) \
+    ((op) | ((rlo_src) << 3) | (rlo_dest))
+
+#define ASM_THUMB_FORMAT_11_SXTH (0xb200)
+#define ASM_THUMB_FORMAT_11_SXTB (0xb240)
+#define ASM_THUMB_FORMAT_11_UXTH (0xb280)
+#define ASM_THUMB_FORMAT_11_UXTB (0xb2c0)
+
+static inline void asm_thumb_format_11(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src) {
+    assert(rlo_dest < ASM_THUMB_REG_R8);
+    assert(rlo_src < ASM_THUMB_REG_R8);
+    asm_thumb_op16(as, ASM_THUMB_FORMAT_11_ENCODE(op, rlo_dest, rlo_src));
+}
+
+static inline void asm_thumb_sxth_rlo_rlo(asm_thumb_t *as, uint rlo_dest, uint rlo_src) {
+    asm_thumb_format_11(as, ASM_THUMB_FORMAT_11_SXTH, rlo_dest, rlo_src);
+}
 
 // TODO convert these to above format style
 
@@ -270,7 +308,12 @@ static inline void asm_thumb_ldrh_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uin
 #define ASM_THUMB_OP_MOVT (0xf2c0)
 
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
+
+#if MICROPY_EMIT_THUMB_ARMV7M
 size_t asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src);
+#else
+void asm_thumb_mov_rlo_i16(asm_thumb_t *as, uint rlo_dest, int i16_src);
+#endif
 
 // these return true if the destination is in range, false otherwise
 bool asm_thumb_b_n_label(asm_thumb_t *as, uint label);
@@ -289,6 +332,8 @@ void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint re
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenience
+void asm_thumb_bcc_rel9(asm_thumb_t *as, int cc, int rel);
+void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 
 // Holds a pointer to mp_fun_table
 #define ASM_THUMB_REG_FUN_TABLE ASM_THUMB_REG_R7
@@ -344,7 +389,11 @@ void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenien
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))
+#if MICROPY_EMIT_THUMB_ARMV7M
 #define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_thumb_mov_reg_i16((as), ASM_THUMB_OP_MOVW, (reg_dest), (imm))
+#else
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_thumb_mov_rlo_i16((as), (reg_dest), (imm))
+#endif
 #define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_thumb_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_thumb_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_thumb_mov_reg_reg((as), (reg_dest), (reg_src))
