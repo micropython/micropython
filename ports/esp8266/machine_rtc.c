@@ -84,7 +84,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
-void pyb_rtc_set_us_since_2000(uint64_t nowus) {
+void pyb_rtc_set_us_since_epoch(uint64_t nowus) {
     uint32_t cal = system_rtc_clock_cali_proc();
     // Save RTC ticks for overflow detection.
     rtc_last_ticks = system_get_rtc_time();
@@ -96,7 +96,7 @@ void pyb_rtc_set_us_since_2000(uint64_t nowus) {
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 };
 
-uint64_t pyb_rtc_get_us_since_2000() {
+uint64_t pyb_rtc_get_us_since_epoch() {
     uint32_t cal;
     int64_t delta;
     uint32_t rtc_ticks;
@@ -120,17 +120,17 @@ uint64_t pyb_rtc_get_us_since_2000() {
 
 void rtc_prepare_deepsleep(uint64_t sleep_us) {
     // RTC time will reset at wake up. Let's be preared for this.
-    int64_t delta = pyb_rtc_get_us_since_2000() + sleep_us;
+    int64_t delta = pyb_rtc_get_us_since_epoch() + sleep_us;
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 }
 
 STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get time
-        uint64_t msecs = pyb_rtc_get_us_since_2000() / 1000;
+        uint64_t msecs = pyb_rtc_get_us_since_epoch() / 1000;
 
         timeutils_struct_time_t tm;
-        timeutils_seconds_since_2000_to_struct_time(msecs / 1000, &tm);
+        timeutils_seconds_since_epoch_to_struct_time(msecs / 1000, &tm);
 
         mp_obj_t tuple[8] = {
             mp_obj_new_int(tm.tm_year),
@@ -149,8 +149,8 @@ STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
-        pyb_rtc_set_us_since_2000(
-            ((uint64_t)timeutils_seconds_since_2000(
+        pyb_rtc_set_us_since_epoch(
+            ((uint64_t)timeutils_seconds_since_epoch(
                 mp_obj_get_int(items[0]),
                 mp_obj_get_int(items[1]),
                 mp_obj_get_int(items[2]),
@@ -209,7 +209,7 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
     }
 
     // set expiry time (in microseconds)
-    pyb_rtc_alarm0_expiry = pyb_rtc_get_us_since_2000() + (uint64_t)mp_obj_get_int(time_in) * 1000;
+    pyb_rtc_alarm0_expiry = pyb_rtc_get_us_since_epoch() + (uint64_t)mp_obj_get_int(time_in) * 1000;
 
     return mp_const_none;
 
@@ -222,7 +222,7 @@ STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid alarm"));
     }
 
-    uint64_t now = pyb_rtc_get_us_since_2000();
+    uint64_t now = pyb_rtc_get_us_since_epoch();
     if (pyb_rtc_alarm0_expiry <= now) {
         return MP_OBJ_NEW_SMALL_INT(0);
     } else {

@@ -26,3 +26,23 @@ try:
     del machine.mem8[0]
 except TypeError:
     print("TypeError")
+
+try:
+    machine.mem8[0:1]
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8[0:1] = 10
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8["hello"]
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8["hello"] = 10
+except TypeError:
+    print("TypeError")

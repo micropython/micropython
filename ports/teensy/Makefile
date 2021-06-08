@@ -38,7 +38,7 @@ INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
@@ -95,7 +95,6 @@ SRC_C = \
 	usb.c \
 
 STM_SRC_C = $(addprefix ports/stm32/,\
-	gccollect.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \

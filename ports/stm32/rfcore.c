@@ -30,12 +30,29 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
+#include "extmod/modbluetooth.h"
 #include "rtc.h"
 #include "rfcore.h"
 
 #if defined(STM32WB)
 
 #include "stm32wbxx_ll_ipcc.h"
+
+#if MICROPY_PY_BLUETOOTH
+
+#if MICROPY_BLUETOOTH_NIMBLE
+// For mp_bluetooth_nimble_hci_uart_wfi
+#include "nimble/nimble_npl.h"
+#else
+#error "STM32WB must use NimBLE."
+#endif
+
+#if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+#error "STM32WB must use synchronous BLE events."
+#endif
+
+#endif
 
 #define DEBUG_printf(...) // printf("rfcore: " __VA_ARGS__)
 
@@ -51,10 +68,12 @@
 #define OCF_CB_RESET             (0x03)
 #define OCF_CB_SET_EVENT_MASK2   (0x63)
 
-#define OGF_VENDOR               (0x3f)
-#define OCF_WRITE_CONFIG         (0x0c)
-#define OCF_SET_TX_POWER         (0x0f)
-#define OCF_BLE_INIT             (0x66)
+#define OGF_VENDOR                        (0x3f)
+#define OCF_WRITE_CONFIG                  (0x0c)
+#define OCF_SET_TX_POWER                  (0x0f)
+#define OCF_BLE_INIT                      (0x66)
+#define OCF_C2_FLASH_ERASE_ACTIVITY       (0x69)
+#define OCF_C2_SET_FLASH_ACTIVITY_CONTROL (0x73)
 
 #define HCI_OPCODE(ogf, ocf) ((ogf) << 10 | (ocf))
 
@@ -64,10 +83,19 @@
 #define HCI_KIND_VENDOR_RESPONSE (0x11)
 #define HCI_KIND_VENDOR_EVENT (0x12)
 
-#define HCI_EVENT_COMMAND_COMPLETE     (0x0E) // <num packets><opcode 16><status><data...>
+#define HCI_EVENT_COMMAND_COMPLETE            (0x0E) // <num packets><opcode 16><status><data...>
+#define HCI_EVENT_COMMAND_STATUS              (0x0F) // <status><num_packets><opcode 16>
+#define HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS (0x13) // <num>(<handle 16><completed 16>)*
 
 #define SYS_ACK_TIMEOUT_MS (250)
 #define BLE_ACK_TIMEOUT_MS (250)
+
+// AN5185
+#define MAGIC_FUS_ACTIVE 0xA94656B9
+// AN5289
+#define MAGIC_IPCC_MEM_INCORRECT 0x3DE96F61
+
+volatile bool hci_acl_cmd_pending = false;
 
 typedef struct _tl_list_node_t {
     volatile struct _tl_list_node_t *next;
@@ -94,15 +122,35 @@ typedef struct _parse_hci_info_t {
 // [16:23] = SRAM2b (Number of 1k sectors)
 // [24:31] = SRAM2a (Number of 1k sectors)
 
-typedef struct __attribute__((packed)) _ipcc_device_info_table_t {
-    uint32_t safeboot_version;
-    uint32_t fus_version;
-    uint32_t fus_memorysize;
-    uint32_t fus_info;
-    uint32_t fw_version;
-    uint32_t fw_memorysize;
-    uint32_t fw_infostack;
-    uint32_t fw_reserved;
+typedef union __attribute__((packed)) _ipcc_device_info_table_t {
+    struct {
+        uint32_t table_state;
+        uint8_t reserved0;
+        uint8_t last_fus_state;
+        uint8_t last_ws_state;
+        uint8_t ws_type;
+        uint32_t safeboot_version;
+        uint32_t fus_version;
+        uint32_t fus_memorysize;
+        uint32_t ws_version;
+        uint32_t ws_memorysize;
+        uint32_t ws_ble_info;
+        uint32_t ws_thread_info;
+        uint32_t reserved1;
+        uint64_t uid64;
+        uint16_t device_id;
+        uint16_t pad;
+    } fus;
+    struct {
+        uint32_t safeboot_version;
+        uint32_t fus_version;
+        uint32_t fus_memorysize;
+        uint32_t fus_info;
+        uint32_t fw_version;
+        uint32_t fw_memorysize;
+        uint32_t fw_infostack;
+        uint32_t fw_reserved;
+    } ws;
 } ipcc_device_info_table_t;
 
 typedef struct __attribute__((packed)) _ipcc_ble_table_t {
@@ -163,9 +211,6 @@ STATIC uint8_t ipcc_membuf_ble_cmd_buf[272]; // mem2
 STATIC uint8_t ipcc_membuf_ble_cs_buf[272]; // mem2
 STATIC tl_list_node_t ipcc_mem_ble_evt_queue; // mem1
 STATIC uint8_t ipcc_membuf_ble_hci_acl_data_buf[272]; // mem2
-
-// Set by the RX IRQ handler on incoming HCI payload.
-STATIC volatile bool had_ble_irq = false;
 
 /******************************************************************************/
 // Transport layer linked list
@@ -247,10 +292,20 @@ void ipcc_init(uint32_t irq_pri) {
 /******************************************************************************/
 // Transport layer HCI interface
 
-STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
+// The WS firmware doesn't support OCF_CB_SET_EVENT_MASK2, and fails with:
+//  v1.8.0.0.4 (and below): HCI_EVENT_COMMAND_COMPLETE with a non-zero status
+//  v1.9.0.0.4 (and above): HCI_EVENT_COMMAND_STATUS with a non-zero status
+// In either case we detect the failure response and inject this response
+// instead (which is HCI_EVENT_COMMAND_COMPLETE for OCF_CB_SET_EVENT_MASK2
+// with status=0).
+STATIC const uint8_t set_event_event_mask2_fix_payload[] = { 0x04, 0x0e, 0x04, 0x01, 0x63, 0x0c, 0x00 };
+
+STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
     const char *info;
-    size_t len = 0;
-    bool applied_set_event_event_mask2_fix = false;
+    #if HCI_TRACE
+    int applied_set_event_event_mask2_fix = 0;
+    #endif
+    size_t len;
     switch (buf[0]) {
         case HCI_KIND_BT_ACL: {
             info = "HCI_ACL";
@@ -264,6 +319,11 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         case HCI_KIND_BT_EVENT: {
             info = "HCI_EVT";
 
+            // Acknowledgment of a pending ACL request, allow another one to be sent.
+            if (buf[1] == HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS) {
+                hci_acl_cmd_pending = false;
+            }
+
             len = 3 + buf[2];
             if (parse != NULL) {
 
@@ -272,10 +332,12 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                     uint8_t status = buf[6];
 
                     if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_SET_EVENT_MASK2) && status != 0) {
-                        // The WB doesn't support this command (despite being in CS 4.1), so pretend like
-                        // it succeeded by replacing the final byte (status) with a zero.
-                        applied_set_event_event_mask2_fix = true;
-                        len -= 1;
+                        // For WS firmware v1.8.0.0.4 and below. Reply with the "everything OK" payload.
+                        parse->cb_fun(parse->cb_env, set_event_event_mask2_fix_payload, sizeof(set_event_event_mask2_fix_payload));
+                        #if HCI_TRACE
+                        applied_set_event_event_mask2_fix = 18;
+                        #endif
+                        break; // Don't send the original payload.
                     }
 
                     if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_RESET) && status == 0) {
@@ -285,15 +347,21 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                     }
                 }
 
-                parse->cb_fun(parse->cb_env, buf, len);
+                if (buf[1] == HCI_EVENT_COMMAND_STATUS && len == 7) {
+                    uint16_t opcode = (buf[6] << 8) | buf[5];
+                    uint8_t status = buf[3];
 
-                if (applied_set_event_event_mask2_fix) {
-                    // Inject the zero status.
-                    uint8_t data = 0;
-                    parse->cb_fun(parse->cb_env, &data, 1);
-                    // Restore the length for the HCI tracing below.
-                    len += 1;
+                    if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_SET_EVENT_MASK2) && status != 0) {
+                        // For WS firmware v1.9.0.0.4 and higher. Reply with the "everything OK" payload.
+                        parse->cb_fun(parse->cb_env, set_event_event_mask2_fix_payload, sizeof(set_event_event_mask2_fix_payload));
+                        #if HCI_TRACE
+                        applied_set_event_event_mask2_fix = 19;
+                        #endif
+                        break;  // Don't send the original payload.
+                    }
                 }
+
+                parse->cb_fun(parse->cb_env, buf, len);
             }
             break;
         }
@@ -314,6 +382,7 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         }
         default:
             info = "HCI_UNKNOWN";
+            len = 0;
             break;
     }
 
@@ -327,13 +396,15 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         printf(" (reset)");
     }
     if (applied_set_event_event_mask2_fix) {
-        printf(" (mask2 fix)");
+        printf(" (mask2 fix %d)", applied_set_event_event_mask2_fix);
     }
     printf("\n");
 
     #else
     (void)info;
     #endif
+
+    return len;
 }
 
 STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
@@ -346,6 +417,12 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
 
         // If this node is allocated from the memmgr event pool, then place it into the free buffer.
         if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {
+            // Wait for C2 to indicate that it has finished using the free buffer,
+            // so that we can link the newly-freed memory in to this buffer.
+            // If waiting is needed then it is typically between 5 and 20 microseconds.
+            while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_MM)) {
+            }
+
             // Place memory back in free pool.
             tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
             added_to_free_queue = true;
@@ -360,77 +437,87 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
     }
 }
 
+// Only call this when IRQs are disabled on this channel.
 STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, ch)) {
+        // Process new data.
         tl_process_msg(head, ch, parse);
 
-        // Clear receive channel.
+        // Clear receive channel (allows RF core to send more data to us).
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
+
+        if (ch == IPCC_CH_BLE) {
+            // Renable IRQs for BLE now that we've cleared the flag.
+            LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
+        }
     }
 }
 
-STATIC void tl_check_msg_ble(volatile tl_list_node_t *head, parse_hci_info_t *parse) {
-    if (had_ble_irq) {
-        tl_process_msg(head, IPCC_CH_BLE, parse);
-
-        had_ble_irq = false;
-    }
-}
-
-STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opcode, size_t len, const uint8_t *buf) {
+STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opcode, const uint8_t *buf, size_t len) {
     tl_list_node_t *n = (tl_list_node_t *)cmd;
-    n->next = n;
-    n->prev = n;
+    n->next = NULL;
+    n->prev = NULL;
     cmd[8] = hdr;
     cmd[9] = opcode;
     cmd[10] = opcode >> 8;
     cmd[11] = len;
     memcpy(&cmd[12], buf, len);
 
+    #if HCI_TRACE
+    printf("[% 8d] >HCI(", mp_hal_ticks_ms());
+    for (int i = 0; i < len + 4; ++i) {
+        printf(":%02x", cmd[i + 8]);
+    }
+    printf(")\n");
+    #endif
+
     // Indicate that this channel is ready.
     LL_C1_IPCC_SetFlag_CHx(IPCC, ch);
 }
 
-STATIC int tl_sys_wait_ack(const uint8_t *buf) {
+STATIC ssize_t tl_sys_wait_ack(const uint8_t *buf, mp_int_t timeout_ms) {
     uint32_t t0 = mp_hal_ticks_ms();
+
+    timeout_ms = MAX(SYS_ACK_TIMEOUT_MS, timeout_ms);
 
     // C2 will clear this bit to acknowledge the request.
     while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_SYS)) {
-        if (mp_hal_ticks_ms() - t0 > SYS_ACK_TIMEOUT_MS) {
+        if (mp_hal_ticks_ms() - t0 > timeout_ms) {
             printf("tl_sys_wait_ack: timeout\n");
             return -MP_ETIMEDOUT;
         }
     }
 
-    // C1-to-C2 bit cleared, so process (but ignore) the response.
-    tl_parse_hci_msg(buf, NULL);
-    return 0;
+    // C1-to-C2 bit cleared, so process the response (just get the length, do
+    // not parse any further).
+    return (ssize_t)tl_parse_hci_msg(buf, NULL);
 }
 
-STATIC void tl_sys_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd(ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
-    tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf);
+STATIC ssize_t tl_sys_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len, mp_int_t timeout_ms) {
+    tl_hci_cmd(ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, buf, len);
+    return tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf, timeout_ms);
 }
 
 STATIC int tl_ble_wait_resp(void) {
     uint32_t t0 = mp_hal_ticks_ms();
-    while (!had_ble_irq) {
+    while (!LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
         if (mp_hal_ticks_ms() - t0 > BLE_ACK_TIMEOUT_MS) {
             printf("tl_ble_wait_resp: timeout\n");
             return -MP_ETIMEDOUT;
         }
     }
 
-    // C2 set IPCC flag.
-    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, NULL);
+    // C2 set IPCC flag -- process the data, clear the flag, and re-enable IRQs.
+    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
     return 0;
 }
 
 // Synchronously send a BLE command.
-STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd(ipcc_membuf_ble_cmd_buf, IPCC_CH_BLE, HCI_KIND_BT_CMD, opcode, len, buf);
+STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len) {
+    // Poll for completion rather than wait for IRQ->scheduler.
+    LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
+    tl_hci_cmd(ipcc_membuf_ble_cmd_buf, IPCC_CH_BLE, HCI_KIND_BT_CMD, opcode, buf, len);
     tl_ble_wait_resp();
-
 }
 
 /******************************************************************************/
@@ -467,43 +554,46 @@ static const struct {
     uint16_t AttMtu;
     uint16_t SlaveSca;
     uint8_t MasterSca;
-    uint8_t LsSource;               // 0=LSE 1=internal RO
+    uint8_t LsSource;
     uint32_t MaxConnEventLength;
     uint16_t HsStartupTime;
     uint8_t ViterbiEnable;
-    uint8_t LlOnly;                 // 0=LL+Host, 1=LL only
+    uint8_t LlOnly;
     uint8_t HwVersion;
 } ble_init_params = {
-    0,
-    0,
-    0, // NumAttrRecord
-    0, // NumAttrServ
-    0, // AttrValueArrSize
-    1, // NumOfLinks
-    1, // ExtendedPacketLengthEnable
-    0, // PrWriteListSize
-    0x79, // MblockCount
-    0, // AttMtu
-    0, // SlaveSca
-    0, // MasterSca
-    1, // LsSource
-    0xffffffff, // MaxConnEventLength
-    0x148, // HsStartupTime
-    0, // ViterbiEnable
-    1, // LlOnly
+    0, // pBleBufferAddress
+    0, // BleBufferSize
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES,
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES,
+    MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE,
+    MICROPY_HW_RFCORE_BLE_NUM_LINK,
+    MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION,
+    MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE,
+    MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT,
+    MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU,
+    MICROPY_HW_RFCORE_BLE_SLAVE_SCA,
+    MICROPY_HW_RFCORE_BLE_MASTER_SCA,
+    MICROPY_HW_RFCORE_BLE_LSE_SOURCE,
+    MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH,
+    MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME,
+    MICROPY_HW_RFCORE_BLE_VITERBI_MODE,
+    MICROPY_HW_RFCORE_BLE_LL_ONLY,
     0, // HwVersion
 };
 
 void rfcore_ble_init(void) {
     DEBUG_printf("rfcore_ble_init\n");
 
-    // Clear any outstanding messages from ipcc_init
+    // Clear any outstanding messages from ipcc_init.
     tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
-    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, NULL);
 
-    // Configure and reset the BLE controller
-    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), sizeof(ble_init_params), (const uint8_t *)&ble_init_params);
-    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), 0, NULL);
+    // Configure and reset the BLE controller.
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 0);
+    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+
+    // Enable PES rather than SEM7 to moderate flash access between the cores.
+    uint8_t buf = 0; // FLASH_ACTIVITY_CONTROL_PES
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_SET_FLASH_ACTIVITY_CONTROL), &buf, 1, 0);
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
@@ -520,18 +610,50 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == HCI_KIND_BT_CMD) {
+        // The STM32WB has a problem when address resolution is enabled: under certain
+        // conditions the MCU can get into a state where it draws an additional 10mA
+        // or so and eventually ends up with a broken BLE RX path in the silicon.  A
+        // simple way to reproduce this is to enable address resolution (which is the
+        // default for NimBLE) and start the device advertising.  If there is enough
+        // BLE activity in the vicinity then the device will at some point enter the
+        // bad state and, if left long enough, will have permanent BLE RX damage.
+        //
+        // STMicroelectronics are aware of this issue.  The only known workaround at
+        // this stage is to not enable address resolution.  We do that here by
+        // intercepting any command that enables address resolution and convert it
+        // into a command that disables address resolution.
+        //
+        // OGF=0x08 OCF=0x002d HCI_LE_Set_Address_Resolution_Enable
+        if (len == 5 && memcmp(src + 1, "\x2d\x20\x01\x01", 4) == 0) {
+            src = (const uint8_t *)"\x01\x2d\x20\x01\x00";
+        }
+
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == HCI_KIND_BT_ACL) {
         n = (tl_list_node_t *)&ipcc_membuf_ble_hci_acl_data_buf[0];
         ch = IPCC_CH_HCI_ACL;
+
+        // Give the previous ACL command up to 100ms to complete.
+        mp_uint_t timeout_start_ticks_ms = mp_hal_ticks_ms();
+        while (hci_acl_cmd_pending) {
+            if (mp_hal_ticks_ms() - timeout_start_ticks_ms > 100) {
+                break;
+            }
+            #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
+            mp_bluetooth_nimble_hci_uart_wfi();
+            #endif
+        }
+
+        // Prevent sending another command until this one returns with HCI_EVENT_COMMAND_{COMPLETE,STATUS}.
+        hci_acl_cmd_pending = true;
     } else {
         printf("** UNEXPECTED HCI HDR: 0x%02x **\n", src[0]);
         return;
     }
 
-    n->next = n;
-    n->prev = n;
+    n->next = NULL;
+    n->prev = NULL;
     memcpy(n->body, src, len);
 
     // IPCC indicate.
@@ -540,7 +662,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
 
 void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
     parse_hci_info_t parse = { cb, env, false };
-    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, &parse);
+    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
     if (parse.was_hci_reset_evt) {
@@ -553,17 +675,29 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
         SWAP_UINT8(buf[2], buf[7]);
         SWAP_UINT8(buf[3], buf[6]);
         SWAP_UINT8(buf[4], buf[5]);
-        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), 8, buf); // set BDADDR
+        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), buf, 8); // set BDADDR
     }
 }
 
 // "level" is 0x00-0x1f, ranging from -40 dBm to +6 dBm (not linear).
 void rfcore_ble_set_txpower(uint8_t level) {
     uint8_t buf[2] = { 0x00, level };
-    tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, buf);
+    tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), buf, 2);
 }
 
+void rfcore_start_flash_erase(void) {
+    uint8_t buf = 1; // ERASE_ACTIVITY_ON
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_FLASH_ERASE_ACTIVITY), &buf, 1, 0);
+}
+
+void rfcore_end_flash_erase(void) {
+    uint8_t buf = 0; // ERASE_ACTIVITY_OFF
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_FLASH_ERASE_ACTIVITY), &buf, 1, 0);
+}
+
+/******************************************************************************/
 // IPCC IRQ Handlers
+
 void IPCC_C1_TX_IRQHandler(void) {
     IRQ_ENTER(IPCC_C1_TX_IRQn);
     IRQ_EXIT(IPCC_C1_TX_IRQn);
@@ -572,17 +706,73 @@ void IPCC_C1_TX_IRQHandler(void) {
 void IPCC_C1_RX_IRQHandler(void) {
     IRQ_ENTER(IPCC_C1_RX_IRQn);
 
+    DEBUG_printf("IPCC_C1_RX_IRQHandler\n");
+
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
-        had_ble_irq = true;
+        // Disable this IRQ until the incoming data is processed (in tl_check_msg).
+        LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
 
-        LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
-
-        // Schedule PENDSV to process incoming HCI payload.
-        extern void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms);
-        mp_bluetooth_hci_poll_wrapper(0);
+        #if MICROPY_PY_BLUETOOTH
+        // Queue up the scheduler to process UART data and run events.
+        extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
+        mp_bluetooth_hci_systick(0);
+        #endif
     }
 
     IRQ_EXIT(IPCC_C1_RX_IRQn);
 }
+
+/******************************************************************************/
+// MicroPython bindings
+
+STATIC mp_obj_t rfcore_status(void) {
+    return mp_obj_new_int_from_uint(ipcc_mem_dev_info_tab.fus.table_state);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(rfcore_status_obj, rfcore_status);
+
+STATIC mp_obj_t get_version_tuple(uint32_t data) {
+    mp_obj_t items[] = {
+        MP_OBJ_NEW_SMALL_INT(data >> 24), MP_OBJ_NEW_SMALL_INT(data >> 16 & 0xFF), MP_OBJ_NEW_SMALL_INT(data >> 8 & 0xFF), MP_OBJ_NEW_SMALL_INT(data >> 4 & 0xF), MP_OBJ_NEW_SMALL_INT(data & 0xF)
+    };
+    return mp_obj_new_tuple(5, items);
+}
+
+STATIC mp_obj_t rfcore_fw_version(mp_obj_t fw_id_in) {
+    if (ipcc_mem_dev_info_tab.fus.table_state == MAGIC_IPCC_MEM_INCORRECT) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    mp_int_t fw_id = mp_obj_get_int(fw_id_in);
+    bool fus_active = ipcc_mem_dev_info_tab.fus.table_state == MAGIC_FUS_ACTIVE;
+    uint32_t v;
+    if (fw_id == 0) {
+        // FUS
+        v = fus_active ? ipcc_mem_dev_info_tab.fus.fus_version : ipcc_mem_dev_info_tab.ws.fus_version;
+    } else {
+        // WS
+        v = fus_active ? ipcc_mem_dev_info_tab.fus.ws_version : ipcc_mem_dev_info_tab.ws.fw_version;
+    }
+    return get_version_tuple(v);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rfcore_fw_version_obj, rfcore_fw_version);
+
+STATIC mp_obj_t rfcore_sys_hci(size_t n_args, const mp_obj_t *args) {
+    if (ipcc_mem_dev_info_tab.fus.table_state == MAGIC_IPCC_MEM_INCORRECT) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    mp_int_t ogf = mp_obj_get_int(args[0]);
+    mp_int_t ocf = mp_obj_get_int(args[1]);
+    mp_buffer_info_t bufinfo = {0};
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    mp_int_t timeout_ms = 0;
+    if (n_args >= 4) {
+        timeout_ms = mp_obj_get_int(args[3]);
+    }
+    ssize_t len = tl_sys_hci_cmd_resp(HCI_OPCODE(ogf, ocf), bufinfo.buf, bufinfo.len, timeout_ms);
+    if (len < 0) {
+        mp_raise_OSError(-len);
+    }
+    return mp_obj_new_bytes(ipcc_membuf_sys_cmd_buf, len);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rfcore_sys_hci_obj, 3, 4, rfcore_sys_hci);
 
 #endif // defined(STM32WB)

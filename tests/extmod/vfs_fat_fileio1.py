@@ -58,22 +58,22 @@ f.close()  # allowed
 try:
     f.write("world!")
 except OSError as e:
-    print(e.args[0] == uerrno.EINVAL)
+    print(e.errno == uerrno.EINVAL)
 
 try:
     f.read()
 except OSError as e:
-    print(e.args[0] == uerrno.EINVAL)
+    print(e.errno == uerrno.EINVAL)
 
 try:
     f.flush()
 except OSError as e:
-    print(e.args[0] == uerrno.EINVAL)
+    print(e.errno == uerrno.EINVAL)
 
 try:
     open("foo_file.txt", "x")
 except OSError as e:
-    print(e.args[0] == uerrno.EEXIST)
+    print(e.errno == uerrno.EEXIST)
 
 with open("foo_file.txt", "a") as f:
     f.write("world!")
@@ -105,7 +105,7 @@ vfs.mkdir("foo_dir")
 try:
     vfs.rmdir("foo_file.txt")
 except OSError as e:
-    print(e.args[0] == 20)  # uerrno.ENOTDIR
+    print(e.errno == 20)  # uerrno.ENOTDIR
 
 vfs.remove("foo_file.txt")
 print(list(vfs.ilistdir()))

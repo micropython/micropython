@@ -58,7 +58,7 @@ void machine_pin_deinit(void) {
     MP_STATE_PORT(machine_pin_irq_list) = NULL;
 }
 
-STATIC void gpio_callback_handler(struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
+STATIC void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     machine_pin_irq_obj_t *irq = CONTAINER_OF(cb, machine_pin_irq_obj_t, callback);
 
     #if MICROPY_STACK_CHECK
@@ -132,7 +132,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_obj_get_array_fixed_n(args[0], 2, &items);
     const char *drv_name = mp_obj_str_get_str(items[0]);
     int wanted_pin = mp_obj_get_int(items[1]);
-    struct device *wanted_port = device_get_binding(drv_name);
+    const struct device *wanted_port = device_get_binding(drv_name);
     if (!wanted_port) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
     }

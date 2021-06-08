@@ -45,3 +45,7 @@ genrst/
 /docs/_build/*
 
 *.bak
+
+# MacOS desktop metadata files
+######################
+.DS_Store

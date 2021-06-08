@@ -256,7 +256,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
-/// Change current directory.
+// Change current directory.
 STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path;
@@ -272,7 +272,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 
-/// Get the current directory.
+// Get the current directory.
 STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
@@ -284,8 +284,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 
-/// \function stat(path)
-/// Get the status of a file or directory.
+// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
@@ -311,7 +310,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-    mp_int_t seconds = timeutils_seconds_since_2000(
+    mp_int_t seconds = timeutils_seconds_since_epoch(
         1980 + ((fno.fdate >> 9) & 0x7f),
         (fno.fdate >> 5) & 0x0f,
         fno.fdate & 0x1f,
@@ -319,9 +318,6 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         (fno.ftime >> 5) & 0x3f,
         2 * (fno.ftime & 0x1f)
         );
-    #if MICROPY_EPOCH_IS_1970
-    seconds += TIMEUTILS_SECONDS_1970_TO_2000;
-    #endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev

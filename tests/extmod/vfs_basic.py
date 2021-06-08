@@ -74,6 +74,14 @@ print(uos.statvfs("/")[9] >= 32)
 # getcwd when in root dir
 print(uos.getcwd())
 
+# test operations on the root directory with nothing mounted, they should all fail
+for func in ("chdir", "listdir", "mkdir", "remove", "rmdir", "stat"):
+    for arg in ("x", "/x"):
+        try:
+            getattr(uos, func)(arg)
+        except OSError:
+            print(func, arg, "OSError")
+
 # basic mounting and listdir
 uos.mount(Filesystem(1), "/test_mnt")
 print(uos.listdir())

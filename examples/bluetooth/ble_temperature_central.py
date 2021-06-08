@@ -56,7 +56,7 @@ class BLETemperatureCentral:
     def __init__(self, ble):
         self._ble = ble
         self._ble.active(True)
-        self._ble.irq(handler=self._irq)
+        self._ble.irq(self._irq)
 
         self._reset()
 

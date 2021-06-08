@@ -35,6 +35,15 @@ print("%.6f" % strtod("1.23", None))
 # test passing double and float args
 libm = ffi_open(("libm.so", "libm.so.6", "libc.so.0", "libc.so.6", "libc.dylib"))
 tgamma = libm.func("d", "tgamma", "d")
-for fun in (tgamma,):
+for fun_name in ("tgamma",):
+    fun = globals()[fun_name]
     for val in (0.5, 1, 1.0, 1.5, 4, 4.0):
-        print("%.6f" % fun(val))
+        print(fun_name, "%.5f" % fun(val))
+
+# test passing 2x float/double args
+powf = libm.func("f", "powf", "ff")
+pow = libm.func("d", "pow", "dd")
+for fun_name in ("powf", "pow"):
+    fun = globals()[fun_name]
+    for args in ((0, 1), (1, 0), (2, 0.5), (3, 4)):
+        print(fun_name, "%.5f" % fun(*args))

@@ -41,7 +41,7 @@
 #define MICROPY_HW_UART6_PORT (GPIOC)
 #define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_NAME "X"
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
@@ -49,7 +49,7 @@
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NAME "X"
 #define MICROPY_HW_SPI1_NSS  (pin_A4) // X5
 #define MICROPY_HW_SPI1_SCK  (pin_A5) // X6
@@ -61,7 +61,7 @@
 #define MICROPY_HW_SPI2_MISO (pin_B14) // Y7
 #define MICROPY_HW_SPI2_MOSI (pin_B15) // Y8
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_NAME "YA"
 #define MICROPY_HW_CAN1_TX   (pin_B9) // Y4
 #define MICROPY_HW_CAN1_RX   (pin_B8) // Y3

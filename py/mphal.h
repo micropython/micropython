@@ -76,7 +76,7 @@ mp_uint_t mp_hal_ticks_cpu(void);
 #endif
 
 #ifndef mp_hal_time_ns
-// Nanoseconds since 1970/1/1.
+// Nanoseconds since the Epoch.
 uint64_t mp_hal_time_ns(void);
 #endif
 

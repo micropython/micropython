@@ -58,7 +58,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     #else
 
     __asm volatile (
-        #if defined(__APPLE__) || defined(__MACH__)
+        #if defined(__APPLE__) && defined(__MACH__)
         "pop    %rbp                \n" // undo function's prelude
         #endif
         "movq   (%rsp), %rax        \n" // load return %rip
@@ -70,7 +70,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
         "movq   %r13, 56(%rdi)      \n" // store %r13 into nlr_buf
         "movq   %r14, 64(%rdi)      \n" // store %r14 into nlr_buf
         "movq   %r15, 72(%rdi)      \n" // store %r15 into nlr_buf
-        #if defined(__APPLE__) || defined(__MACH__)
+        #if defined(__APPLE__) && defined(__MACH__)
         "jmp    _nlr_push_tail      \n" // do the rest in C
         #else
         "jmp    nlr_push_tail       \n" // do the rest in C
@@ -89,7 +89,7 @@ NORETURN void nlr_jump(void *val) {
         "movq   %0, %%rcx           \n" // %rcx points to nlr_buf
         #if MICROPY_NLR_OS_WINDOWS
         "movq   88(%%rcx), %%rsi    \n" // load saved %rsi
-        "movq   80(%%rcx), %%rdi    \n" // load saved %rdr
+        "movq   80(%%rcx), %%rdi    \n" // load saved %rdi
         #endif
         "movq   72(%%rcx), %%r15    \n" // load saved %r15
         "movq   64(%%rcx), %%r14    \n" // load saved %r14

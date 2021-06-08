@@ -39,7 +39,12 @@
 // *FORMAT-OFF*
 
 #if 0
-#define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(&mp_plat_print, ip, 1, code_state->fun_bc->const_table);
+#if MICROPY_PY_THREAD
+#define TRACE_PREFIX mp_printf(&mp_plat_print, "ts=%p sp=%d ", mp_thread_get_state(), (int)(sp - &code_state->state[0] + 1))
+#else
+#define TRACE_PREFIX mp_printf(&mp_plat_print, "sp=%d ", (int)(sp - &code_state->state[0] + 1))
+#endif
+#define TRACE(ip) TRACE_PREFIX; mp_bytecode_print2(&mp_plat_print, ip, 1, code_state->fun_bc->const_table);
 #else
 #define TRACE(ip)
 #endif

@@ -55,9 +55,6 @@
 #define RULE_ARG_RULE           (0x2000)
 #define RULE_ARG_OPT_RULE       (0x3000)
 
-// (un)comment to use rule names; for debugging
-// #define USE_RULE_NAME (1)
-
 // *FORMAT-OFF*
 
 enum {
@@ -192,7 +189,7 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #undef DEF_RULE_NC
 0;
 
-#if USE_RULE_NAME
+#if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
@@ -410,7 +407,7 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            #if USE_RULE_NAME
+            #if MICROPY_DEBUG_PARSE_RULE_NAME
             mp_printf(print, "%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #else
             mp_printf(print, "rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
