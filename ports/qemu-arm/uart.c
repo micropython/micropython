@@ -75,4 +75,31 @@ void uart_tx_strn(const char *buf, size_t len) {
     }
 }
 
+#elif defined(QEMU_SOC_IMX6)
+
+#define UART_UCR1_UARTEN (1 << 0)
+#define UART_UCR2_TXEN (1 << 2)
+
+typedef struct _UART_t {
+    volatile uint32_t URXD; // 0x00
+    volatile uint32_t r0[15];
+    volatile uint32_t UTXD; // 0x40
+    volatile uint32_t r1[15];
+    volatile uint32_t UCR1; // 0x80
+    volatile uint32_t UCR2; // 0x84
+} UART_t;
+
+#define UART1 ((UART_t *)(0x02020000))
+
+void uart_init(void) {
+    UART1->UCR1 = UART_UCR1_UARTEN;
+    UART1->UCR2 = UART_UCR2_TXEN;
+}
+
+void uart_tx_strn(const char *buf, size_t len) {
+    for (size_t i = 0; i < len; ++i) {
+        UART1->UTXD = buf[i];
+    }
+}
+
 #endif

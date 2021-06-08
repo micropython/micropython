@@ -185,8 +185,6 @@ def run_until_complete(main_task=None):
                 if isinstance(er, StopIteration):
                     return er.value
                 raise er
-            # Save return value of coro to pass up to caller
-            t.data = er
             # Schedule any other tasks waiting on the completion of this task
             waiting = False
             if hasattr(t, "waiting"):
@@ -194,13 +192,15 @@ def run_until_complete(main_task=None):
                     _task_queue.push_head(t.waiting.pop_head())
                     waiting = True
                 t.waiting = None  # Free waiting queue head
-            # Print out exception for detached tasks
             if not waiting and not isinstance(er, excs_stop):
-                _exc_context["exception"] = er
-                _exc_context["future"] = t
-                Loop.call_exception_handler(_exc_context)
-            # Indicate task is done
-            t.coro = None
+                # An exception ended this detached task, so queue it for later
+                # execution to handle the uncaught exception if no other task retrieves
+                # the exception in the meantime (this is handled by Task.throw).
+                _task_queue.push_head(t)
+            # Indicate task is done by setting coro to the task object itself
+            t.coro = t
+            # Save return value of coro to pass up to caller
+            t.data = er
 
 
 # Create a new task from a coroutine and run it until it finishes
@@ -262,6 +262,10 @@ class Loop:
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
 def get_event_loop(runq_len=0, waitq_len=0):
     return Loop
+
+
+def current_task():
+    return cur_task
 
 
 def new_event_loop():

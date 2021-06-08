@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "adc.h"
 
 #if defined(STM32F0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
 #define ADC_V2 (1)
@@ -95,7 +96,7 @@ STATIC const uint8_t adc_cr_to_bits_table[] = {16, 14, 12, 10, 8, 8, 8, 8};
 STATIC const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
 
-STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
+void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     // Configure ADC clock source and enable ADC clock
     #if defined(STM32L4) || defined(STM32WB)
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
@@ -330,15 +331,20 @@ STATIC uint32_t adc_read_channel(ADC_TypeDef *adc) {
     return value;
 }
 
-STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     if (channel == ADC_CHANNEL_VREF) {
         return 0xffff;
     }
 
+    // Select, configure and read the channel.
     adc_config_channel(adc, channel, sample_time);
     uint32_t raw = adc_read_channel(adc);
+
+    // If VBAT was sampled then deselect it to prevent battery drain.
+    adc_deselect_vbat(adc, channel);
+
+    // Scale raw reading to 16 bit value using a Taylor expansion (for bits <= 16).
     uint32_t bits = adc_get_bits(adc);
-    // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
     #if defined(STM32H7)
     if (bits < 8) {
         // For 6 and 7 bits
@@ -350,6 +356,8 @@ STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint
 
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
+
+#if !BUILDING_MBOOT
 
 const mp_obj_type_t machine_adc_type;
 
@@ -456,3 +464,5 @@ const mp_obj_type_t machine_adc_type = {
     .make_new = machine_adc_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };
+
+#endif

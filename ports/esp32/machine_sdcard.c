@@ -31,6 +31,8 @@
 #include "py/mperrno.h"
 #include "extmod/vfs_fat.h"
 
+#if MICROPY_HW_ENABLE_SDCARD
+
 #include "driver/sdmmc_host.h"
 #include "driver/sdspi_host.h"
 #include "sdmmc_cmd.h"
@@ -49,10 +51,6 @@
 // Cards gets initialised by ioctl op==1 and de-inited by ioctl 2
 // Hosts are de-inited in __del__. Slots do not need de-initing.
 //
-
-// Currently the ESP32 Library doesn't support MMC cards, so
-// we don't enable on MICROPY_HW_ENABLE_MMCARD.
-#if MICROPY_HW_ENABLE_SDCARD
 
 // Forward declaration
 const mp_obj_type_t machine_sdcard_type;

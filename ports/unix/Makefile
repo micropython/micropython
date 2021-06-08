@@ -156,8 +156,6 @@ endif
 
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-# Runs in a thread, cannot make calls into the VM.
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=0
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 
@@ -184,6 +182,7 @@ else
 
 # NimBLE is enabled.
 GIT_SUBMODULES += lib/mynewt-nimble
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 
 endif
@@ -293,17 +292,17 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
-test: $(PROG) $(TOP)/tests/run-tests
+test: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
 
-test_full: $(PROG) $(TOP)/tests/run-tests
+test_full: $(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests -d thread
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py -d thread
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
 	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'
 
 test_gcov: test_full

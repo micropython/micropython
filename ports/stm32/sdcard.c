@@ -42,30 +42,39 @@
 
 #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
 
-// The F7 has 2 SDMMC units but at the moment we only support using one of them in
-// a given build.  If a boards config file defines MICROPY_HW_SDMMC2_CK then SDMMC2
-// is used, otherwise SDMMC1 is used.
+// The H7/F7/L4 have 2 SDMMC peripherals, but at the moment this driver only supports
+// using one of them in a given build, selected by MICROPY_HW_SDCARD_SDMMC.
 
-#if defined(MICROPY_HW_SDMMC2_CK)
+#if MICROPY_HW_SDCARD_SDMMC == 2
 #define SDIO SDMMC2
 #define SDMMC_IRQHandler SDMMC2_IRQHandler
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC2_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC2_CLK_DISABLE()
+#define SDMMC_FORCE_RESET() __HAL_RCC_SDMMC2_FORCE_RESET()
+#define SDMMC_RELEASE_RESET() __HAL_RCC_SDMMC2_RELEASE_RESET()
 #define SDMMC_IRQn SDMMC2_IRQn
 #define SDMMC_DMA dma_SDMMC_2
+#define STATIC_AF_SDCARD_CK STATIC_AF_SDMMC2_CK
+#define STATIC_AF_SDCARD_CMD STATIC_AF_SDMMC2_CMD
+#define STATIC_AF_SDCARD_D0 STATIC_AF_SDMMC2_D0
+#define STATIC_AF_SDCARD_D1 STATIC_AF_SDMMC2_D1
+#define STATIC_AF_SDCARD_D2 STATIC_AF_SDMMC2_D2
+#define STATIC_AF_SDCARD_D3 STATIC_AF_SDMMC2_D3
 #else
 #define SDIO SDMMC1
 #define SDMMC_IRQHandler SDMMC1_IRQHandler
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC1_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC1_CLK_DISABLE()
+#define SDMMC_FORCE_RESET() __HAL_RCC_SDMMC1_FORCE_RESET()
+#define SDMMC_RELEASE_RESET() __HAL_RCC_SDMMC1_RELEASE_RESET()
 #define SDMMC_IRQn SDMMC1_IRQn
 #define SDMMC_DMA dma_SDIO_0
-#define STATIC_AF_SDMMC_CK STATIC_AF_SDMMC1_CK
-#define STATIC_AF_SDMMC_CMD STATIC_AF_SDMMC1_CMD
-#define STATIC_AF_SDMMC_D0 STATIC_AF_SDMMC1_D0
-#define STATIC_AF_SDMMC_D1 STATIC_AF_SDMMC1_D1
-#define STATIC_AF_SDMMC_D2 STATIC_AF_SDMMC1_D2
-#define STATIC_AF_SDMMC_D3 STATIC_AF_SDMMC1_D3
+#define STATIC_AF_SDCARD_CK STATIC_AF_SDMMC1_CK
+#define STATIC_AF_SDCARD_CMD STATIC_AF_SDMMC1_CMD
+#define STATIC_AF_SDCARD_D0 STATIC_AF_SDMMC1_D0
+#define STATIC_AF_SDCARD_D1 STATIC_AF_SDMMC1_D1
+#define STATIC_AF_SDCARD_D2 STATIC_AF_SDMMC1_D2
+#define STATIC_AF_SDCARD_D3 STATIC_AF_SDMMC1_D3
 #endif
 
 // The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
@@ -105,25 +114,23 @@
 #define SDMMC_IRQHandler SDIO_IRQHandler
 #define SDMMC_DMA dma_SDIO_0
 #define SDIO_USE_GPDMA 1
-#define STATIC_AF_SDMMC_CK STATIC_AF_SDIO_CK
-#define STATIC_AF_SDMMC_CMD STATIC_AF_SDIO_CMD
-#define STATIC_AF_SDMMC_D0 STATIC_AF_SDIO_D0
-#define STATIC_AF_SDMMC_D1 STATIC_AF_SDIO_D1
-#define STATIC_AF_SDMMC_D2 STATIC_AF_SDIO_D2
-#define STATIC_AF_SDMMC_D3 STATIC_AF_SDIO_D3
+#define STATIC_AF_SDCARD_CK STATIC_AF_SDIO_CK
+#define STATIC_AF_SDCARD_CMD STATIC_AF_SDIO_CMD
+#define STATIC_AF_SDCARD_D0 STATIC_AF_SDIO_D0
+#define STATIC_AF_SDCARD_D1 STATIC_AF_SDIO_D1
+#define STATIC_AF_SDCARD_D2 STATIC_AF_SDIO_D2
+#define STATIC_AF_SDCARD_D3 STATIC_AF_SDIO_D3
 
 #endif
 
 // If no custom SDIO pins defined, use the default ones
-#ifndef MICROPY_HW_SDMMC_CK
-
-#define MICROPY_HW_SDMMC_D0 (pin_C8)
-#define MICROPY_HW_SDMMC_D1 (pin_C9)
-#define MICROPY_HW_SDMMC_D2 (pin_C10)
-#define MICROPY_HW_SDMMC_D3 (pin_C11)
-#define MICROPY_HW_SDMMC_CK (pin_C12)
-#define MICROPY_HW_SDMMC_CMD (pin_D2)
-
+#ifndef MICROPY_HW_SDCARD_CK
+#define MICROPY_HW_SDCARD_D0 (pin_C8)
+#define MICROPY_HW_SDCARD_D1 (pin_C9)
+#define MICROPY_HW_SDCARD_D2 (pin_C10)
+#define MICROPY_HW_SDCARD_D3 (pin_C11)
+#define MICROPY_HW_SDCARD_CK (pin_C12)
+#define MICROPY_HW_SDCARD_CMD (pin_D2)
 #endif
 
 #define PYB_SDMMC_FLAG_SD       (0x01)
@@ -152,26 +159,13 @@ void sdcard_init(void) {
     // Note: the mp_hal_pin_config function will configure the GPIO in
     // fast mode which can do up to 50MHz.  This should be plenty for SDIO
     // which clocks up to 25MHz maximum.
-    #if defined(MICROPY_HW_SDMMC2_CK)
-    // Use SDMMC2 peripheral with pins provided by the board's config
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CK);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CMD);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D0);
-    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D1);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D2);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D3);
-    #endif
-    #else
-    // Default SDIO/SDMMC1 config
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CK);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CMD);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D0);
-    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D1);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D2);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D3);
-    #endif
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_CK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_CMD);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_D0);
+    #if MICROPY_HW_SDCARD_BUS_WIDTH == 4
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_D1);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_D2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDCARD_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDCARD_D3);
     #endif
 
     // configure the SD card detect pin
@@ -187,13 +181,8 @@ STATIC void sdmmc_msp_init(void) {
 
     #if defined(STM32H7)
     // Reset SDMMC
-    #if defined(MICROPY_HW_SDMMC2_CK)
-    __HAL_RCC_SDMMC2_FORCE_RESET();
-    __HAL_RCC_SDMMC2_RELEASE_RESET();
-    #else
-    __HAL_RCC_SDMMC1_FORCE_RESET();
-    __HAL_RCC_SDMMC1_RELEASE_RESET();
-    #endif
+    SDMMC_FORCE_RESET();
+    SDMMC_RELEASE_RESET();
     #endif
 
     // NVIC configuration for SDIO interrupts
@@ -263,7 +252,7 @@ STATIC HAL_StatusTypeDef sdmmc_init_sd(void) {
         mp_hal_delay_ms(50);
     }
 
-    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
+    #if MICROPY_HW_SDCARD_BUS_WIDTH == 4
     // configure the SD bus width for 4-bit wide operation
     status = HAL_SD_ConfigWideBusOperation(&sdmmc_handle.sd, SDIO_BUS_WIDE_4B);
     if (status != HAL_OK) {
@@ -298,7 +287,7 @@ STATIC HAL_StatusTypeDef sdmmc_init_mmc(void) {
     // As this is an eMMC card, overwrite LogBlockNbr with actual value
     sdmmc_handle.mmc.MmcCard.LogBlockNbr = 7469056 + 2048;
 
-    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
+    #if MICROPY_HW_SDCARD_BUS_WIDTH == 4
     // Configure the SDIO bus width for 4-bit wide operation
     #ifdef STM32F7
     sdmmc_handle.mmc.Init.ClockBypass = SDIO_CLOCK_BYPASS_ENABLE;

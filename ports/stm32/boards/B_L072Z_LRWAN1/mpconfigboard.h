@@ -13,6 +13,7 @@
 #define MICROPY_PY_FRAMEBUF         (0)
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
+#define MICROPY_PY_ONEWIRE          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_PY_UHEAPQ           (0)
@@ -34,11 +35,11 @@
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS         (pin_A15)
 #define MICROPY_HW_SPI1_SCK         (pin_A5)
 #define MICROPY_HW_SPI1_MISO        (pin_A6)

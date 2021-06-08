@@ -23,10 +23,6 @@ import usb.core
 import usb.util
 import zlib
 
-# VID/PID
-__VID = 0x0483
-__PID = 0xDF11
-
 # USB request __TIMEOUT
 __TIMEOUT = 4000
 
@@ -112,10 +108,10 @@ def find_dfu_cfg_descr(descr):
     return None
 
 
-def init():
+def init(**kwargs):
     """Initializes the found DFU device so that we can program it."""
     global __dev, __cfg_descr
-    devices = get_dfu_devices(idVendor=__VID, idProduct=__PID)
+    devices = get_dfu_devices(**kwargs)
     if not devices:
         raise ValueError("No DFU device found")
     if len(devices) > 1:
@@ -521,7 +517,7 @@ def write_elements(elements, mass_erase_used, progress=None):
         data = elem["data"]
         elem_size = size
         elem_addr = addr
-        if progress:
+        if progress and elem_size:
             progress(elem_addr, 0, elem_size)
         while size > 0:
             write_size = size
@@ -565,15 +561,13 @@ def cli_progress(addr, offset, size):
 def main():
     """Test program for verifying this files functionality."""
     global __verbose
-    global __VID
-    global __PID
     # Parse CMD args
     parser = argparse.ArgumentParser(description="DFU Python Util")
     parser.add_argument(
         "-l", "--list", help="list available DFU devices", action="store_true", default=False
     )
-    parser.add_argument("--vid", help="USB Vendor ID", type=lambda x: int(x, 0), default=__VID)
-    parser.add_argument("--pid", help="USB Product ID", type=lambda x: int(x, 0), default=__PID)
+    parser.add_argument("--vid", help="USB Vendor ID", type=lambda x: int(x, 0), default=None)
+    parser.add_argument("--pid", help="USB Product ID", type=lambda x: int(x, 0), default=None)
     parser.add_argument(
         "-m", "--mass-erase", help="mass erase device", action="store_true", default=False
     )
@@ -588,14 +582,18 @@ def main():
 
     __verbose = args.verbose
 
-    __VID = args.vid
-    __PID = args.pid
+    kwargs = {}
+    if args.vid:
+        kwargs["idVendor"] = args.vid
+
+    if args.pid:
+        kwargs["idProduct"] = args.pid
 
     if args.list:
-        list_dfu_devices(idVendor=__VID, idProduct=__PID)
+        list_dfu_devices(**kwargs)
         return
 
-    init()
+    init(**kwargs)
 
     command_run = False
     if args.mass_erase:

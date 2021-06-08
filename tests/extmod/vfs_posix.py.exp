@@ -1,0 +1,16 @@
+/
+True
+<class 'tuple'>
+<class 'list'>
+<io.TextIOWrapper 2>
+hello
+['test2']
+['test2']
+<class 'tuple'>
+<class 'tuple'>
+<class 'str'>
+<class 'bytes'>
+[]
+remove OSError
+False
+rmdir OSError

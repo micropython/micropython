@@ -32,7 +32,7 @@
 // See qstrdefs.h for a list of qstr's that are available as constants.
 // Reference them as MP_QSTR_xxxx.
 //
-// Note: it would be possible to define MP_QSTR_xxx as qstr_from_str_static("xxx")
+// Note: it would be possible to define MP_QSTR_xxx as qstr_from_str("xxx")
 // for qstrs that are referenced this way, but you don't want to have them in ROM.
 
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
@@ -55,7 +55,6 @@ typedef struct _qstr_pool_t {
     const byte *qstrs[];
 } qstr_pool_t;
 
-#define QSTR_FROM_STR_STATIC(s) (qstr_from_strn((s), strlen(s)))
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
 void qstr_init(void);

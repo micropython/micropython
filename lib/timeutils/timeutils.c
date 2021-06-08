@@ -158,7 +158,7 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
         + (year - 2000) * 31536000;
 }
 
-mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
     // Normalize the tuple. This allows things like:
