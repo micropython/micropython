@@ -47,6 +47,8 @@ DEFAULT_IGNORELIST = [
     "metro_m4_express",
     "unexpectedmaker_feathers2",
     "unexpectedmaker_feathers2_prerelease",
+    "espressif_kaluga_1",
+    "espressif_kaluga_1.3",
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
