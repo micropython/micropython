@@ -8,17 +8,16 @@ The Pico board is the most popular in the series and we will be talking about it
 1.1. The MicroPython Environment
 ---------------------------------
 
-Python is the fastest way to get started with embedded software on RP2xxx ports.Without compromising on approachability, MicroPython can be used for embedded systems development at a professional level.
-The arihmtic performance of the is quite accurate as the accelerated floating point libraries in RP2040’s on-board ROM storage are used automatically by the Python code.
+Python is the fastest way to get started with embedded software on RP2xxx ports. Without compromising on approachability, MicroPython can be used for embedded systems development at a professional level. The arihmetic performance of the is quite accurate as the accelerated floating point libraries in RP2040’s on-board ROM storage are used automatically by the Python code.
 
-We also have ease of working on existing MicroPython projects as they can ported easily because of the standard *machine* module being used for most of the on-chip hardware.The second processor core is exposed through the *_thread* module.
+We also have ease of working on existing MicroPython projects as they can ported easily because of the standard *machine* module being used for most of the on-chip hardware. The second processor core is exposed through the *_thread* module.
 
 
 RP2040 is a board with unique hardware like the programmable I/O system (PIO) which is a versatile hardware subsystem which allows the creation of new I/O interfaces and allows running them at high speed. The rp2 module has a comprehensive PIO library with the help of which we can write new PIO programs at the MicroPython prompt, interact with them in real time for development of interfaces for new or rarely used hardware pieces.
 
 
 
-MicroPython implements the entire Python 3.4 syntax (including exceptions, with, yield from, etc., and additionally *async /await* keywords from Python 3.5). The following core datatypes are provided: *str (including basic Unicode support), bytes, bytearray, tuple, list, dict, set, frozenset, array.array, collections.namedtuple,* classes and instances. Builtin modules include sys, time, and struct, etc. Note that only a subset of Python 3 functionality is implemented for the data types and modules.MicroPython can execute scripts in textual source form (*.py* files) or from precompiled bytecode, in both cases either from an on-device filesystem or "frozen" into the MicroPython executable.
+MicroPython implements the entire Python 3.4 syntax (including exceptions, with, yield from, etc., and additionally *async /await* keywords from Python 3.5). The following core datatypes are provided: *str (including basic Unicode support), bytes, bytearray, tuple, list, dict, set, frozenset, array.array, collections.namedtuple,* classes and instances. Builtin modules include sys, time, and struct, etc. Note that only a subset of Python 3 functionality is implemented for the data types and modules. MicroPython can execute scripts in textual source form (*.py* files) or from precompiled bytecode, in both cases either from an on-device filesystem or "frozen" into the MicroPython executable.
 
 1.2. Requirements
 ------------------
@@ -38,10 +37,9 @@ To get MicroPython the easiest way, download the pre-built release binary from t
 1.5. Installing MicroPython on Raspberry Pi Pico
 -------------------------------------------------
 
-Raspberry Pi Pico has a BOOTSEL mode for programming firmware over the USB port.First step is to ensure that the board  is not plugged into any source of power: disconnect the micro USB cable if plugged in, and disconnect any other wires that might be providing power to the board, e.g. through the VSYS or VBUS pin. Now hold down the BOOTSEL button, and plug in the micro USB cable which must ne connected to a computer.
+Raspberry Pi Pico has a BOOTSEL mode for programming firmware over the USB port. First step is to ensure that the board  is not plugged into any source of power: disconnect the micro USB cable if plugged in, and disconnect any other wires that might be providing power to the board, e.g. through the VSYS or VBUS pin. Now hold down the BOOTSEL button, and plug in the micro USB cable which must be connected to a computer.
 
-Drag the MicroPython *firmware.uf2* file onto a drive called the RPI-RP2 which pops up. This programs the MicroPython firmware(the UF2 File) onto the flash memory on your Raspberry Pi Pico.
-After finishing,the board reboots and boots into MicroPython, waiting for further instructions.
+Drag the MicroPython *firmware.uf2* file onto a drive called the RPI-RP2 which pops up. This programs the MicroPython firmware(the UF2 File) onto the flash memory on your Raspberry Pi Pico. After finishing,the board reboots and boots into MicroPython, waiting for further instructions.
 
 
 The `Getting started with Raspberry Pi Pico https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf`_ book has detailed instructions on getting your Raspberry Pi Pico into BOOTSEL mode and loading UF2 files, in case you are having trouble. There is also a section going over loading ELF files with the debugger, in case your board doesn’t have an easy way of entering BOOTSEL, or you would like to debug a MicroPython C module you are developing.
@@ -57,8 +55,7 @@ You can build your own MicroPython firmware from source if you’d like to custo
 
 If you  have already downloaded and installed a prebuilt MicroPython UF2 file, you can skip ahead to the next section to start using your board.
 
-These instructions for getting and building MicroPython assume you are using Raspberry Pi OS running on a
-Raspberry Pi 4, or an equivalent Debian-based Linux distribution running on another platform.
+These instructions for getting and building MicroPython assume you are using Raspberry Pi OS running on a Raspberry Pi 4, or an equivalent Debian-based Linux distribution running on another platform.
 
 These instructions create a pico directory at */home/pi/pico.*
 
@@ -83,9 +80,9 @@ Check for the source code in a new directory called micropython. The MicroPython
 
 .. note:: 
 
-	The following instructions assume that you are using a Raspberry Pi Pico. Some details may differ if you are building firmware for a different RP2040-based board. The board vendor should detail any extra 	    steps needed to build firmware for that particular board. These instructions are generic, but might differ at places like putting the default serial port on different pins,or including extra modules to drive that board’s hardware.
+	The following instructions assume that you are using a Raspberry Pi Pico. Some details may differ if you are building firmware for a different RP2040-based board. The board vendor should detail any extra steps needed to build firmware for that particular board. These instructions are generic, but might differ at places like putting the default serial port on different pins, or including extra modules to drive that board’s hardware.
 
-To build the RP2040 MicroPython port, you’ll need to install some extra tools. To build projects you’ll need `CMake https://cmake.org/`_ , a cross-platform tool used to build the software, and the `GNU Embedded Toolchain for Arm https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads`_, which turns MicroPython’s C source code into a binary program RP2040’s processors can understand. *build-essential* is a bundle of tools you need to build code native to your own machine — this is needed for some internal tools in MicroPython and the SDK. You can install all of these via apt from the command line. Anything you already have installed will be ignored by *apt.*
+To build the RP2040 MicroPython port, you’ll need to install some extra tools. To build projects you’ll need `CMake https://cmake.org/`_ , a cross-platform tool used to build the software, and the `GNU Embedded Toolchain for Arm https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads`_, which turns MicroPython’s C source code into a binary program RP2040’s processors can understand. *build-essential* is a bundle of tools you need to build code native to your own machine — this is needed for some internal tools in MicroPython and the SDK. You can install all of these via apt from the command line. *Apt* ignores anything you might have laready installed.
 
 .. code-block:: bash
 
@@ -137,7 +134,7 @@ The MicroPython firmware is equipped with a virtual USB serial port which is acc
 
 .. note::
 
-	You can run ls /dev/tty* to list your serial ports. There may be quite a few, but MicroPython’s USB serial will start with /dev/ttyACM. If in doubt, unplug the micro USB connector and see which 		one disappears. If you don’t see anything, you can try rebooting your Raspberry Pi.
+	You can run ls /dev/tty* to list your serial ports. There may be quite a few, but MicroPython’s USB serial will start with /dev/ttyACM. If in doubt, unplug the micro USB connector and see which one disappears. If you don’t see anything, you can try rebooting your Raspberry Pi.
 
 
 Install *minicom* to access the serial port:
@@ -165,7 +162,7 @@ This is a prompt. MicroPython wants you to type something in, and tell it what t
 	Type "help()" for more information.
 	>>>
 
-This key combination tells MicroPython to reboot. You can do this at any time. When it reboots, MicroPython will printout a message saying exactly what firmware version it is running, and when it was built. Your version number will be different from the one shown here.
+This key combination tells MicroPython to reboot. You can do this at any time. When it reboots, MicroPython will print out a message saying exactly what firmware version it is running, and when it was built. Your version number will be different from the one shown here.
 
 2.2. Connecting from a Raspberry Pi Pico using UART
 ---------------------------------------------------
@@ -174,7 +171,7 @@ This key combination tells MicroPython to reboot. You can do this at any time. W
 
 	REPL over UART is disabled by default.
 
-The MicroPython port for RP2040 does not expose REPL over a UART port by default. However this default can bechanged in the ports/rp2/mpconfigport.h source file.To use the REPL over UART first build MicroPython (see section 1.6 for details).
+The MicroPython port for RP2040 does not expose REPL over a UART port by default. However this default can bechanged in the ports/rp2/mpconfigport.h source file. To use the REPL over UART first build MicroPython (see section 1.6 for details).
 
 Go ahead and download the MicroPython source and in *ports/rp2/mpconfigport.h* change *MICROPY_HW_ENABLE_UART_REPL* to 1 to enable it.
 
@@ -235,7 +232,7 @@ Wire the Raspberry Pi and the Raspberry Pi Pico together with the help of the fo
 
 .. warning:: 
 
-	RX matches to TX, and TX matches to RX. You mustn’t connect the two opposite TX pins together, or the two RX pins. This is because MicroPython needs to listen on the channel that the Raspberry Pi 		transmits on, and vice versa.
+	RX matches to TX, and TX matches to RX. You mustn’t connect the two opposite TX pins together, or the two RX pins. This is because MicroPython needs to listen on the channel that the Raspberry Pi transmits on, and vice versa.
 
 then connect to the board using minicom connected to */dev/serial0*
 
