@@ -7,11 +7,12 @@ This script works with Python 2.6, 2.7, 3.3 and 3.4.
 
 from __future__ import print_function
 
+import io
+import os
 import re
 import subprocess
 import sys
-import io
-import os
+import multiprocessing, multiprocessing.dummy
 
 
 # Extract MP_QSTR_FOO macros.
@@ -39,11 +40,27 @@ def preprocess():
         os.makedirs(os.path.dirname(args.output[0]))
     except OSError:
         pass
-    with open(args.output[0], "w") as out_file:
-        if csources:
-            subprocess.check_call(args.pp + args.cflags + csources, stdout=out_file)
-        if cxxsources:
-            subprocess.check_call(args.pp + args.cxxflags + cxxsources, stdout=out_file)
+
+    def pp(flags):
+        def run(files):
+            return subprocess.check_output(args.pp + flags + files)
+
+        return run
+
+    try:
+        cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        cpus = 1
+    p = multiprocessing.dummy.Pool(cpus)
+    with open(args.output[0], "wb") as out_file:
+        for flags, sources in (
+            (args.cflags, csources),
+            (args.cxxflags, cxxsources),
+        ):
+            batch_size = (len(sources) + cpus - 1) // cpus
+            chunks = [sources[i : i + batch_size] for i in range(0, len(sources), batch_size or 1)]
+            for output in p.imap(pp(flags), chunks):
+                out_file.write(output)
 
 
 def write_out(fname, output):

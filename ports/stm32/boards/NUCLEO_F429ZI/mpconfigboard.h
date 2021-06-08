@@ -38,11 +38,11 @@
 #define MICROPY_HW_UART_REPL        PYB_UART_3
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C3_SCL (pin_A8)
 #define MICROPY_HW_I2C3_SDA (pin_C9)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS     (pin_A4)
 #define MICROPY_HW_SPI1_SCK     (pin_B3)
 #define MICROPY_HW_SPI1_MISO    (pin_B4)
@@ -58,7 +58,7 @@
 #define MICROPY_HW_SPI5_MISO    (pin_F8)
 #define MICROPY_HW_SPI5_MOSI    (pin_F9)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_TX (pin_B9)
 #define MICROPY_HW_CAN1_RX (pin_B8)
 #define MICROPY_HW_CAN2_TX (pin_B13)

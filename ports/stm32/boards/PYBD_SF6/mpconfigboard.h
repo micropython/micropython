@@ -49,7 +49,7 @@
 #define MICROPY_HW_UART7_TX         (pyb_pin_W16)
 #define MICROPY_HW_UART7_RX         (pyb_pin_W22B)
 
-// Extra CAN busses
+// Extra CAN buses
 #define MICROPY_HW_CAN2_NAME        "Y"
 #define MICROPY_HW_CAN2_TX          (pyb_pin_Y6)
 #define MICROPY_HW_CAN2_RX          (pyb_pin_Y5)

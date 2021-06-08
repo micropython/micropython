@@ -125,7 +125,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
 // the bus, if any).  If extra arguments are given, the bus is initialised.
 // See `init` for parameters of initialisation.
 //
-// The physical pins of the SPI busses are:
+// The physical pins of the SPI buses are:
 //   - `SPI(1)` is on the X position: `(NSS, SCK, MISO, MOSI) = (X5, X6, X7, X8) = (PA4, PA5, PA6, PA7)`
 //   - `SPI(2)` is on the Y position: `(NSS, SCK, MISO, MOSI) = (Y5, Y6, Y7, Y8) = (PB12, PB13, PB14, PB15)`
 //

@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mperrno.h"
+#include "py/objint.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"
@@ -55,6 +56,18 @@
  * Note: all constraint specified by typecode can be not enforced at this time,
  * but may be later.
  */
+
+// This union is large enough to hold any supported argument/return value.
+typedef union _ffi_union_t {
+    ffi_arg ffi;
+    unsigned char B;
+    unsigned short int H;
+    unsigned int I;
+    unsigned long int L;
+    unsigned long long int Q;
+    float flt;
+    double dbl;
+} ffi_union_t;
 
 typedef struct _mp_obj_opaque_t {
     mp_obj_base_t base;
@@ -151,10 +164,10 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in) {
     mp_raise_TypeError(MP_ERROR_TEXT("unknown type"));
 }
 
-STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
+STATIC mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
     switch (type) {
         case 's': {
-            const char *s = (const char *)(intptr_t)val;
+            const char *s = (const char *)(intptr_t)val->ffi;
             if (!s) {
                 return mp_const_none;
             }
@@ -164,20 +177,30 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
             return mp_const_none;
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': {
-            union { ffi_arg ffi;
-                    float flt;
-            } val_union = { .ffi = val };
-            return mp_obj_new_float_from_f(val_union.flt);
+            return mp_obj_new_float_from_f(val->flt);
         }
         case 'd': {
-            double *p = (double *)&val;
-            return mp_obj_new_float_from_d(*p);
+            return mp_obj_new_float_from_d(val->dbl);
         }
         #endif
+        case 'b':
+        case 'h':
+        case 'i':
+        case 'l':
+            return mp_obj_new_int((signed)val->ffi);
+        case 'B':
+        case 'H':
+        case 'I':
+        case 'L':
+            return mp_obj_new_int_from_uint(val->ffi);
+        case 'q':
+            return mp_obj_new_int_from_ll(val->Q);
+        case 'Q':
+            return mp_obj_new_int_from_ull(val->Q);
         case 'O':
-            return (mp_obj_t)(intptr_t)val;
+            return (mp_obj_t)(intptr_t)val->ffi;
         default:
-            return mp_obj_new_int(val);
+            return mp_obj_new_int(val->ffi);
     }
 }
 
@@ -362,34 +385,74 @@ STATIC void ffifunc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "<ffifunc %p>", self->func);
 }
 
+STATIC unsigned long long ffi_get_int_value(mp_obj_t o) {
+    if (mp_obj_is_small_int(o)) {
+        return MP_OBJ_SMALL_INT_VALUE(o);
+    } else {
+        unsigned long long res;
+        mp_obj_int_to_bytes_impl(o, MP_ENDIANNESS_BIG, sizeof(res), (byte *)&res);
+        return res;
+    }
+}
+
+STATIC ffi_union_t ffi_int_obj_to_ffi_union(mp_obj_t o, const char argtype) {
+    ffi_union_t ret;
+    if ((argtype | 0x20) == 'q') {
+        ret.Q = ffi_get_int_value(o);
+        return ret;
+    } else {
+        mp_uint_t val = mp_obj_int_get_truncated(o);
+        switch (argtype) {
+            case 'b':
+            case 'B':
+                ret.B = val;
+                break;
+            case 'h':
+            case 'H':
+                ret.H = val;
+                break;
+            case 'i':
+            case 'I':
+                ret.I = val;
+                break;
+            case 'l':
+            case 'L':
+                ret.L = val;
+                break;
+            default:
+                ret.ffi = val;
+                break;
+        }
+    }
+    return ret;
+}
+
 STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw;
     mp_obj_ffifunc_t *self = MP_OBJ_TO_PTR(self_in);
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
 
-    ffi_arg values[n_args];
+    ffi_union_t values[n_args];
     void *valueptrs[n_args];
     const char *argtype = self->argtypes;
     for (uint i = 0; i < n_args; i++, argtype++) {
         mp_obj_t a = args[i];
         if (*argtype == 'O') {
-            values[i] = (ffi_arg)(intptr_t)a;
+            values[i].ffi = (ffi_arg)(intptr_t)a;
         #if MICROPY_PY_BUILTINS_FLOAT
         } else if (*argtype == 'f') {
-            float *p = (float *)&values[i];
-            *p = mp_obj_get_float_to_f(a);
+            values[i].flt = mp_obj_get_float_to_f(a);
         } else if (*argtype == 'd') {
-            double *p = (double *)&values[i];
-            *p = mp_obj_get_float_to_d(a);
+            values[i].dbl = mp_obj_get_float_to_d(a);
         #endif
         } else if (a == mp_const_none) {
-            values[i] = 0;
+            values[i].ffi = 0;
         } else if (mp_obj_is_int(a)) {
-            values[i] = mp_obj_int_get_truncated(a);
+            values[i] = ffi_int_obj_to_ffi_union(a, *argtype);
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
-            values[i] = (ffi_arg)(intptr_t)s;
+            values[i].ffi = (ffi_arg)(intptr_t)s;
         } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
@@ -397,32 +460,19 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
             if (ret != 0) {
                 goto error;
             }
-            values[i] = (ffi_arg)(intptr_t)bufinfo.buf;
+            values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
         } else if (mp_obj_is_type(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
-            values[i] = (ffi_arg)(intptr_t)p->func;
+            values[i].ffi = (ffi_arg)(intptr_t)p->func;
         } else {
             goto error;
         }
         valueptrs[i] = &values[i];
     }
 
-    // If ffi_arg is not big enough to hold a double, then we must pass along a
-    // pointer to a memory location of the correct size.
-    // TODO check if this needs to be done for other types which don't fit into
-    // ffi_arg.
-    #if MICROPY_PY_BUILTINS_FLOAT
-    if (sizeof(ffi_arg) == 4 && self->rettype == 'd') {
-        double retval;
-        ffi_call(&self->cif, self->func, &retval, valueptrs);
-        return mp_obj_new_float_from_d(retval);
-    } else
-    #endif
-    {
-        ffi_arg retval;
-        ffi_call(&self->cif, self->func, &retval, valueptrs);
-        return return_ffi_value(retval, self->rettype);
-    }
+    ffi_union_t retval;
+    ffi_call(&self->cif, self->func, &retval, valueptrs);
+    return return_ffi_value(&retval, self->rettype);
 
 error:
     mp_raise_TypeError(MP_ERROR_TEXT("don't know how to pass object to native function"));

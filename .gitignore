@@ -46,3 +46,7 @@ genrst/
 # Backup files
 ######################
 *.bak
+
+# MacOS desktop metadata files
+######################
+.DS_Store

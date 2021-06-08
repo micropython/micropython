@@ -31,24 +31,29 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
+#define DEBUG_printf(...) // printf("mpnimbleport.c: " __VA_ARGS__)
+
 #include "host/ble_hs.h"
 #include "nimble/nimble_npl.h"
 
 #include "extmod/mpbthci.h"
+#include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
 #include "extmod/nimble/hal/hal_uart.h"
 
-// This implements the Nimble "background task". It's called at PENDSV
-// priority, either every 128ms or whenever there's UART data available.
-// Because it's called via PENDSV, you can implicitly consider that it
-// is surrounded by MICROPY_PY_BLUETOOTH_ENTER / MICROPY_PY_BLUETOOTH_EXIT.
+// Get any pending data from the UART and send it to NimBLE's HCI buffers.
+// Any further processing by NimBLE will be run via its event queue.
 void mp_bluetooth_hci_poll(void) {
     if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
-        // Ask NimBLE to process UART data.
-        mp_bluetooth_nimble_hci_uart_process();
+        // DEBUG_printf("mp_bluetooth_hci_poll_uart %d\n", mp_bluetooth_nimble_ble_state);
 
-        // Run pending background operations and events, but only after HCI sync.
+        // Run any timers.
         mp_bluetooth_nimble_os_callout_process();
+
+        // Process incoming UART data, and run events as they are generated.
+        mp_bluetooth_nimble_hci_uart_process(true);
+
+        // Run any remaining events (e.g. if there was no UART data).
         mp_bluetooth_nimble_os_eventq_run_all();
     }
 }
@@ -57,15 +62,10 @@ void mp_bluetooth_hci_poll(void) {
 
 void mp_bluetooth_nimble_hci_uart_wfi(void) {
     __WFI();
-}
 
-uint32_t mp_bluetooth_nimble_hci_uart_enter_critical(void) {
-    MICROPY_PY_BLUETOOTH_ENTER
-    return atomic_state;
-}
-
-void mp_bluetooth_nimble_hci_uart_exit_critical(uint32_t atomic_state) {
-    MICROPY_PY_BLUETOOTH_EXIT
+    // This is called while NimBLE is waiting in ble_npl_sem_pend, i.e. waiting for an HCI ACK.
+    // Do not need to run events here (it must not invoke Python code), only processing incoming HCI data.
+    mp_bluetooth_nimble_hci_uart_process(false);
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

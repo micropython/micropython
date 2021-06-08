@@ -62,4 +62,6 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len);
 int i2c_readfrom(i2c_t *i2c, uint16_t addr, uint8_t *dest, size_t len, bool stop);
 int i2c_writeto(i2c_t *i2c, uint16_t addr, const uint8_t *src, size_t len, bool stop);
 
+int i2c_find_peripheral(mp_obj_t id);
+
 #endif // MICROPY_INCLUDED_STM32_I2C_H

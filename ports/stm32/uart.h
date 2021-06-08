@@ -40,6 +40,9 @@ typedef enum {
     PYB_UART_8 = 8,
     PYB_UART_9 = 9,
     PYB_UART_10 = 10,
+    #ifdef LPUART1
+    PYB_LPUART_1 = MICROPY_HW_MAX_UART + 1,
+    #endif
 } pyb_uart_t;
 
 #define CHAR_WIDTH_8BIT (0)
@@ -86,6 +89,8 @@ void uart_irq_handler(mp_uint_t uart_id);
 
 void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached);
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self);
+void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate);
+
 mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj);
 bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout);
 int uart_rx_char(pyb_uart_obj_t *uart_obj);

@@ -261,7 +261,9 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR_args) {
         decompress_error_text_maybe(self);
         dest[0] = MP_OBJ_FROM_PTR(self->args);
-    } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
+    } else if (attr == MP_QSTR_value || attr == MP_QSTR_errno) {
+        // These are aliases for args[0]: .value for StopIteration and .errno for OSError.
+        // For efficiency let these attributes apply to all exception instances.
         dest[0] = mp_obj_exception_get_value(self_in);
     }
 }
@@ -370,6 +372,8 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
     assert(exc_type->make_new == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
+
+#if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     // Check that the given type is an exception type
@@ -515,6 +519,8 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
+
+#endif
 
 // return true if the given object is an exception type
 bool mp_obj_is_exception_type(mp_obj_t self_in) {

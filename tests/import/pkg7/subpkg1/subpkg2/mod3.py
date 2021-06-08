@@ -7,5 +7,5 @@ print(bar)
 # attempted relative import beyond top-level package
 try:
     from .... import mod1
-except ValueError:
-    print("ValueError")
+except ImportError:
+    print("ImportError")

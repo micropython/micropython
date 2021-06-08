@@ -57,6 +57,11 @@ bool mp_bluetooth_hci_poll(void) {
     return false;
 }
 
+bool mp_bluetooth_hci_active(void) {
+    return mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_OFF
+           && mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
+}
+
 // The IRQ functionality in btstack_run_loop_embedded.c is not used, so the
 // following three functions are empty.
 

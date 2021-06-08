@@ -85,7 +85,7 @@ def run_benchmark_on_target(target, script):
 
 def run_benchmarks(target, param_n, param_m, n_average, test_list):
     skip_complex = run_feature_test(target, "complex") != "complex"
-    skip_native = run_feature_test(target, "native_check") != ""
+    skip_native = run_feature_test(target, "native_check") != "native"
 
     for test_file in sorted(test_list):
         print(test_file + ": ", end="")

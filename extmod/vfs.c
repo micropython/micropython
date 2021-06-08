@@ -160,27 +160,30 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
     #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t vfs = MP_OBJ_NULL;
+        // The superblock for littlefs is in both block 0 and 1, but block 0 may be erased
+        // or partially written, so search both blocks 0 and 1 for the littlefs signature.
         mp_vfs_blockdev_t blockdev;
         mp_vfs_blockdev_init(&blockdev, bdev_obj);
         uint8_t buf[44];
-        mp_vfs_blockdev_read_ext(&blockdev, 0, 8, sizeof(buf), buf);
-        #if MICROPY_VFS_LFS1
-        if (memcmp(&buf[32], "littlefs", 8) == 0) {
-            // LFS1
-            vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
-            nlr_pop();
-            return vfs;
+        for (size_t block_num = 0; block_num <= 1; ++block_num) {
+            mp_vfs_blockdev_read_ext(&blockdev, block_num, 8, sizeof(buf), buf);
+            #if MICROPY_VFS_LFS1
+            if (memcmp(&buf[32], "littlefs", 8) == 0) {
+                // LFS1
+                mp_obj_t vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
+                nlr_pop();
+                return vfs;
+            }
+            #endif
+            #if MICROPY_VFS_LFS2
+            if (memcmp(&buf[0], "littlefs", 8) == 0) {
+                // LFS2
+                mp_obj_t vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
+                nlr_pop();
+                return vfs;
+            }
+            #endif
         }
-        #endif
-        #if MICROPY_VFS_LFS2
-        if (memcmp(&buf[0], "littlefs", 8) == 0) {
-            // LFS2
-            vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
-            nlr_pop();
-            return vfs;
-        }
-        #endif
         nlr_pop();
     } else {
         // Ignore exception (eg block device doesn't support extended readblocks)
@@ -191,7 +194,8 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
     return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
     #endif
 
-    return bdev_obj;
+    // no filesystem found
+    mp_raise_OSError(MP_ENODEV);
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

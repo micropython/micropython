@@ -59,4 +59,4 @@ print(ws.ioctl(9))
 try:
     ws.ioctl(-1)
 except OSError as e:
-    print("ioctl: EINVAL:", e.args[0] == uerrno.EINVAL)
+    print("ioctl: EINVAL:", e.errno == uerrno.EINVAL)

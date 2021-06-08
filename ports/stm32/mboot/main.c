@@ -29,6 +29,7 @@
 
 #include "py/mphal.h"
 #include "extmod/crypto-algorithms/sha256.c"
+#include "boardctrl.h"
 #include "usbd_core.h"
 #include "storage.h"
 #include "flash.h"
@@ -37,6 +38,12 @@
 #include "mboot.h"
 #include "powerctrl.h"
 #include "dfu.h"
+#include "pack.h"
+
+// Whether the bootloader will leave via reset, or direct jump to the application.
+#ifndef MBOOT_LEAVE_BOOTLOADER_VIA_RESET
+#define MBOOT_LEAVE_BOOTLOADER_VIA_RESET (1)
+#endif
 
 // This option selects whether to use explicit polling or IRQs for USB events.
 // In some test cases polling mode can run slightly faster, but it uses more power.
@@ -56,11 +63,17 @@
 // Configure PLL to give the desired CPU freq
 #undef MICROPY_HW_FLASH_LATENCY
 #if defined(STM32F4) || defined(STM32F7)
-#define CORE_PLL_FREQ (48000000)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+  #if MBOOT_ENABLE_PACKING
+    // With encryption/signing/compression, a faster CPU makes processing much faster.
+    #define CORE_PLL_FREQ (96000000)
+    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_3
+  #else
+    #define CORE_PLL_FREQ (48000000)
+    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+  #endif
 #elif defined(STM32H7)
-#define CORE_PLL_FREQ (96000000)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
+  #define CORE_PLL_FREQ (96000000)
+  #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
 #endif
 #undef MICROPY_HW_CLK_PLLM
 #undef MICROPY_HW_CLK_PLLN
@@ -87,12 +100,18 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
-#define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+// For 1ms system ticker.
+static volatile uint32_t systick_ms;
 
-static void do_reset(void);
+// Global dfu state
+dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
 uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return systick_ms;
 }
 
 void mp_hal_delay_us(mp_uint_t usec) {
@@ -104,10 +123,9 @@ void mp_hal_delay_us(mp_uint_t usec) {
     const uint32_t ucount = SystemCoreClock / 2000000 * usec / 2;
     #endif
     for (uint32_t count = 0; ++count <= ucount;) {
+        __NOP();
     }
 }
-
-static volatile uint32_t systick_ms;
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (__get_PRIMASK() == 0) {
@@ -140,7 +158,7 @@ void HAL_Delay(uint32_t ms) {
     mp_hal_delay_ms(ms);
 }
 
-static void __fatal_error(const char *msg) {
+NORETURN static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
@@ -354,12 +372,27 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 /******************************************************************************/
 // LED
 
+#if defined(MBOOT_LED1)
+#define LED0 MBOOT_LED1
+#elif defined(MICROPY_HW_LED1)
 #define LED0 MICROPY_HW_LED1
+#endif
+
+#if defined(MBOOT_LED2)
+#define LED1 MBOOT_LED2
+#elif defined(MICROPY_HW_LED2)
 #define LED1 MICROPY_HW_LED2
-#ifdef MICROPY_HW_LED3
+#endif
+
+#if defined(MBOOT_LED3)
+#define LED2 MBOOT_LED3
+#elif defined(MICROPY_HW_LED3)
 #define LED2 MICROPY_HW_LED3
 #endif
-#ifdef MICROPY_HW_LED4
+
+#if defined(MBOOT_LED4)
+#define LED3 MBOOT_LED4
+#elif defined(MICROPY_HW_LED4)
 #define LED3 MICROPY_HW_LED4
 #endif
 
@@ -377,28 +410,45 @@ static uint32_t led0_ms_interval = 0;
 static int led0_toggle_count = 0;
 
 MP_WEAK void led_init(void) {
+    #if defined(MBOOT_BOARD_LED_INIT)
+    // Custom LED init function provided by the board.
+    MBOOT_BOARD_LED_INIT();
+    #else
+    // Init LEDs using GPIO calls.
     mp_hal_pin_output(LED0);
+    #ifdef LED1
     mp_hal_pin_output(LED1);
+    #endif
     #ifdef LED2
     mp_hal_pin_output(LED2);
     #endif
     #ifdef LED3
     mp_hal_pin_output(LED3);
     #endif
+    #endif
+
     led0_cur_state = LED0_STATE_OFF;
 }
 
 MP_WEAK void led_state(uint32_t led, int val) {
+    #if defined(MBOOT_BOARD_LED_STATE)
+    // Custom LED state function provided by the board.
+    return MBOOT_BOARD_LED_STATE(led, val);
+    #else
+    // Set LEDs using GPIO calls.
     if (val) {
         MICROPY_HW_LED_ON(led);
     } else {
         MICROPY_HW_LED_OFF(led);
     }
+    #endif
 }
 
 void led_state_all(unsigned int mask) {
     led_state(LED0, mask & 1);
+    #ifdef LED1
     led_state(LED1, mask & 2);
+    #endif
     #ifdef LED2
     led_state(LED2, mask & 4);
     #endif
@@ -423,17 +473,6 @@ void led0_update() {
         }
         led_state(LED0, (led0_cur_state & (led0_toggle_count == 0 ? 1 : 2)));
     }
-}
-
-/******************************************************************************/
-// USR BUTTON
-
-static void usrbtn_init(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
-}
-
-static int usrbtn_state(void) {
-    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
 }
 
 /******************************************************************************/
@@ -481,7 +520,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED;
     }
 
     *next_addr = sector_start + sector_size;
@@ -495,7 +534,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
         if (((volatile uint32_t*)sector_start)[i] != 0xffffffff) {
-            return -2;
+            return -MBOOT_ERRNO_FLASH_ERASE_FAILED;
         }
     }
 
@@ -509,7 +548,7 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
                                           : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
-        return -1;
+        return -MBOOT_ERRNO_FLASH_WRITE_DISALLOWED;
     }
 
     const uint32_t *src = (const uint32_t*)src8;
@@ -547,7 +586,7 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 }
 #endif
 
-int do_page_erase(uint32_t addr, uint32_t *next_addr) {
+int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
     int ret = -1;
     led0_state(LED0_STATE_ON);
 
@@ -573,7 +612,7 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     return ret;
 }
 
-void do_read(uint32_t addr, int len, uint8_t *buf) {
+void hw_read(uint32_t addr, int len, uint8_t *buf) {
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -592,7 +631,7 @@ void do_read(uint32_t addr, int len, uint8_t *buf) {
     led0_state(LED0_STATE_SLOW_FLASH);
 }
 
-int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
     int ret = -1;
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
@@ -614,6 +653,34 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
 
     led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
     return ret;
+}
+
+int do_page_erase(uint32_t addr, uint32_t *next_addr) {
+    #if MBOOT_ENABLE_PACKING
+    // Erase handled automatically for packed mode.
+    return 0;
+    #else
+    return hw_page_erase(addr, next_addr);
+    #endif
+}
+
+void do_read(uint32_t addr, int len, uint8_t *buf) {
+    #if MBOOT_ENABLE_PACKING
+    // Read disabled on packed (encrypted) mode.
+    dfu_context.status = DFU_STATUS_ERROR_FILE;
+    dfu_context.error = MBOOT_ERROR_STR_INVALID_READ_IDX;
+    led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
+    #else
+    hw_read(addr, len, buf);
+    #endif
+}
+
+int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    #if MBOOT_ENABLE_PACKING
+    return mboot_pack_write(addr, src8, len);
+    #else
+    return hw_write(addr, src8, len);
+    #endif
 }
 
 /******************************************************************************/
@@ -702,7 +769,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
         memcpy(buf + 12 + sizeof(MICROPY_HW_MCU_NAME), MICROPY_HW_BOARD_NAME, sizeof(MICROPY_HW_BOARD_NAME) - 1);
         len = 12 + sizeof(MICROPY_HW_MCU_NAME) + sizeof(MICROPY_HW_BOARD_NAME) - 1;
     } else if (buf[0] == I2C_CMD_RESET && len == 0) {
-        do_reset();
+        dfu_context.leave_dfu = true;
     } else if (buf[0] == I2C_CMD_GETLAYOUT && len == 0) {
         len = strlen(FLASH_LAYOUT_STR);
         memcpy(buf, FLASH_LAYOUT_STR, len);
@@ -795,6 +862,7 @@ static void dfu_init(void) {
     dfu_context.cmd = DFU_CMD_NONE;
     dfu_context.status = DFU_STATUS_OK;
     dfu_context.error = 0;
+    dfu_context.leave_dfu = false;
     dfu_context.addr = 0x08000000;
 }
 
@@ -862,7 +930,8 @@ static void dfu_handle_rx(int cmd, int arg, int len, const void *buf) {
 
 static void dfu_process(void) {
     if (dfu_context.state == DFU_STATE_MANIFEST) {
-        do_reset();
+        // Set a flag to leave DFU mode from the main thread (here we are in an IRQ handler).
+        dfu_context.leave_dfu = true;
     }
 
     if (dfu_context.state == DFU_STATE_BUSY) {
@@ -1068,6 +1137,16 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_ADDRESS, str_desc, length);
             return str_desc;
 
+        #if MBOOT_ENABLE_PACKING
+        case MBOOT_ERROR_STR_INVALID_SIG_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_SIG, str_desc, length);
+            return str_desc;
+
+        case MBOOT_ERROR_STR_INVALID_READ_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
+            return str_desc;
+        #endif
+
         default:
             return NULL;
     }
@@ -1229,6 +1308,14 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
+#if defined(MBOOT_BOARD_GET_RESET_MODE)
+
+static inline int mboot_get_reset_mode(void) {
+    return MBOOT_BOARD_GET_RESET_MODE();
+}
+
+#else
+
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
 #ifdef LED2
@@ -1241,9 +1328,17 @@ static int pyb_usbdd_shutdown(void) {
 #define RESET_MODE_LED_STATES 0x3210
 #endif
 
-static int get_reset_mode(void) {
+static void usrbtn_init(void) {
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
+}
+
+static int usrbtn_state(void) {
+    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
+}
+
+static int mboot_get_reset_mode(void) {
     usrbtn_init();
-    int reset_mode = 1;
+    int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
         // Timeout is roughly 20s, where reset_mode=1
@@ -1253,7 +1348,7 @@ static int get_reset_mode(void) {
         for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
             if (i % 32 == 0) {
                 if (++reset_mode > RESET_MODE_NUM_STATES) {
-                    reset_mode = 1;
+                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
                 led_state_all(l);
@@ -1276,14 +1371,44 @@ static int get_reset_mode(void) {
     return reset_mode;
 }
 
-static void do_reset(void) {
-    led_state_all(0);
-    mp_hal_delay_ms(50);
-    pyb_usbdd_shutdown();
-    #if defined(MBOOT_I2C_SCL)
-    i2c_slave_shutdown(MBOOT_I2Cx, I2Cx_EV_IRQn);
+#endif
+
+NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
+    __asm volatile (
+        "ldr r2, [r1, #0]\n"    // get address of stack pointer
+        "msr msp, r2\n"         // set stack pointer
+        "ldr r2, [r1, #4]\n"    // get address of destination
+        "bx r2\n"               // branch to application
+        );
+    MP_UNREACHABLE;
+}
+
+static void try_enter_application(int reset_mode) {
+    uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
+    if ((msp & APP_VALIDITY_BITS) != 0) {
+        // Application is invalid.
+        return;
+    }
+
+    // undo our DFU settings
+    // TODO probably should disable all IRQ sources first
+    #if defined(MBOOT_BOARD_CLEANUP)
+    MBOOT_BOARD_CLEANUP(reset_mode);
     #endif
-    mp_hal_delay_ms(50);
+    #if USE_CACHE && defined(STM32F7)
+    SCB_DisableICache();
+    SCB_DisableDCache();
+    #endif
+
+    // Jump to the application.
+    branch_to_application(reset_mode, APPLICATION_ADDR);
+}
+
+static void leave_bootloader(void) {
+    #if !MBOOT_LEAVE_BOOTLOADER_VIA_RESET
+    // Try to enter the application via a jump, if it's valid.
+    try_enter_application(BOARDCTRL_RESET_MODE_BOOTLOADER);
+    #endif
     NVIC_SystemReset();
 }
 
@@ -1305,7 +1430,7 @@ void stm32_main(int initial_r0) {
     #endif
 
     // Make sure IRQ vector table points to flash where this bootloader lives.
-    SCB->VTOR = FLASH_BASE;
+    SCB->VTOR = MBOOT_VTOR;
 
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
@@ -1348,23 +1473,17 @@ void stm32_main(int initial_r0) {
         goto enter_bootloader;
     }
 
-    int reset_mode = get_reset_mode();
-    uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
-    if (reset_mode != 4 && (msp & APP_VALIDITY_BITS) == 0) {
-        // not DFU mode so jump to application, passing through reset_mode
-        // undo our DFU settings
-        // TODO probably should disable all IRQ sources first
-        #if USE_CACHE && defined(STM32F7)
-        SCB_DisableICache();
-        SCB_DisableDCache();
-        #endif
-        __set_MSP(msp);
-        ((void (*)(uint32_t)) *((volatile uint32_t*)(APPLICATION_ADDR + 4)))(reset_mode);
+    int reset_mode = mboot_get_reset_mode();
+    if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER) {
+        // Bootloader mode was not selected so try to enter the application,
+        // passing through the reset_mode.  This will return if the application
+        // is invalid.
+        try_enter_application(reset_mode);
     }
 
 enter_bootloader:
 
-    // Init subsystems (get_reset_mode() may call these, calling them again is ok)
+    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
     led_init();
 
     // set the system clock to be HSE
@@ -1388,16 +1507,27 @@ enter_bootloader:
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
     #endif
 
+    #if MBOOT_ENABLE_PACKING
+    mboot_pack_init();
+    #endif
+
     #if MBOOT_FSLOAD
     if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            fsload_process();
+            int ret = fsload_process();
+            // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
+            const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
+            if (elem_status != NULL && elem_status[-1] == 4) {
+                uint32_t *status_ptr = (uint32_t *)get_le32(&elem_status[0]);
+                LL_PWR_EnableBkUpAccess(); // In case status_ptr points to backup registers
+                *status_ptr = ret;
+            }
         }
         // Always reset because the application is expecting to resume
         led_state_all(0);
-        NVIC_SystemReset();
+        leave_bootloader();
     }
     #endif
 
@@ -1420,7 +1550,7 @@ enter_bootloader:
     #if MBOOT_USB_RESET_ON_DISCONNECT
     bool has_connected = false;
     #endif
-    for (;;) {
+    while (!dfu_context.leave_dfu) {
         #if USE_USB_POLLING
         #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
         if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
@@ -1444,10 +1574,20 @@ enter_bootloader:
             has_connected = true;
         }
         if (has_connected && pyb_usbdd.hUSBDDevice.dev_state == USBD_STATE_SUSPENDED) {
-            do_reset();
+            break;
         }
         #endif
     }
+
+    // Shutdown and leave the bootloader.
+    led_state_all(0);
+    mp_hal_delay_ms(50);
+    pyb_usbdd_shutdown();
+    #if defined(MBOOT_I2C_SCL)
+    i2c_slave_shutdown(MBOOT_I2Cx, I2Cx_EV_IRQn);
+    #endif
+    mp_hal_delay_ms(50);
+    leave_bootloader();
 }
 
 void NMI_Handler(void) {
