@@ -279,9 +279,6 @@ float common_hal_mcu_processor_get_temperature(void) {
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-    #if MICROCONTROLLER_VOLTAGE_DISABLE
-    return NAN;
-    #else
     struct adc_sync_descriptor adc;
 
     static Adc *adc_insts[] = ADC_INSTS;
@@ -292,6 +289,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     #endif
 
     #ifdef SAM_D5X_E5X
+    hri_supc_clear_VREF_ONDEMAND_bit(SUPC);
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
 
@@ -326,7 +324,6 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_sync_deinit(&adc);
     // Multiply by 4 to compensate for SCALEDIOVCC division by 4.
     return (reading / 4095.0f) * 4.0f;
-    #endif
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
