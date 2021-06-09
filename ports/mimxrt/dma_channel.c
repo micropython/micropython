@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
  * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,19 +23,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
-#define MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
 
-#include "py/obj.h"
+#include "dma_channel.h"
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_rtc_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_uart_type;
+// List of channel flags: true: channel used, false: channel available
+static bool channel_list[32] = { true, true, true, true, false, false, false, false,
+                                 false, false, false, false, false, false, false, false,
+                                 false, false, false, false, false, false, false, false,
+                                 false, false, false, false, false, false, false, false };
 
-void machine_adc_init(void);
-void machine_pin_irq_deinit(void);
-void machine_timer_init_PIT(void);
+// allocate_channel(): retrieve an available channel. Return the number or -1
+int allocate_dma_channel(void) {
+    for (int i = 0; i < ARRAY_SIZE(channel_list); i++) {
+        if (channel_list[i] == false) { // Channel available
+            channel_list[i] = true;
+            return i;
+        }
+    }
+    return -1;
+}
 
-#endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
+// free_channel(n): Declare channel as free
+void free_dma_channel(int n) {
+    if (n >= 0 && n <= ARRAY_SIZE(channel_list)) {
+        channel_list[n] = false;
+    }
+}

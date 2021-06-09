@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
  * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,19 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
-#define MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_MIMXRT_DMACHANNEL_H
+#define MICROPY_INCLUDED_MIMXRT_DMACHANNEL_H
 
-#include "py/obj.h"
+#include "py/runtime.h"
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_rtc_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_uart_type;
+int allocate_dma_channel(void);
+void free_dma_channel(int n);
 
-void machine_adc_init(void);
-void machine_pin_irq_deinit(void);
-void machine_timer_init_PIT(void);
-
-#endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
+#endif // MICROPY_INCLUDED_MIMXRT_DMACHANNEL_H

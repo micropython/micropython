@@ -32,3 +32,19 @@
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPUART8_TX }, { IOMUXC_GPIO_SD_B1_03_LPUART8_RX },
+
+#define MICROPY_HW_SPI_INDEX { 1, 3 }
+
+#define IOMUX_TABLE_SPI \
+    { IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK }, { IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0 }, \
+    { IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO }, { IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_12_LPSPI3_SCK }, { IOMUXC_GPIO_AD_B1_13_LPSPI3_PCS0 }, \
+    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI }, 
+
+#define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
+                            kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
+
+#define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
+                            kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
