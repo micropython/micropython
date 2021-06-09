@@ -221,7 +221,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
-The RP2XXX port even has a Watchdog.The watchdog is a countdown timer that can restart parts of the chip if it reaches zero. This can be used to restart the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
+The RP2XXX port even has a Watchdog. The watchdog is a countdown timer that can restart parts of the chip if it reaches zero. This can be used to restart the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
