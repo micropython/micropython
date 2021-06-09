@@ -3,7 +3,7 @@
 1.Getting started with MicroPython on the RP2xxx
 ================================================
 
-The Pico board is the most popular in the series and we will be talking about it in general for all the RP2xxx boards.This tutorial will guide you through setting up MicroPython, connecting to the network and communicating with the Internet, using the hardware peripherals, and controlling some external components.
+The Pico board is the most popular in the series and we will be talking about it in general for all the RP2xxx boards. This tutorial will guide you through setting up MicroPython, connecting to the network and communicating with the Internet, using the hardware peripherals, and controlling some external components.
 
 1.1. The MicroPython Environment
 ---------------------------------
@@ -153,7 +153,7 @@ Where the *-D /dev/ttyACM0* is pointing *minicom* at MicroPython’s USB serial 
 
 >>>
 
-This is a prompt. MicroPython wants you to type something in, and tell it what to do, similar to any other command prompt on any OS.Press CTRL-D and a message will pop up:
+This is a prompt. MicroPython wants you to type something in, and tell it what to do, similar to any other command prompt on any OS. Press CTRL-D and a message will pop up:
 
 .. topic:: Message
 
@@ -171,7 +171,7 @@ This key combination tells MicroPython to reboot. You can do this at any time. W
 
 	REPL over UART is disabled by default.
 
-The MicroPython port for RP2040 does not expose REPL over a UART port by default. However this default can bechanged in the ports/rp2/mpconfigport.h source file. To use the REPL over UART first build MicroPython (see section 1.6 for details).
+The MicroPython port for RP2040 does not expose REPL over a UART port by default. However this default can be changed in the ports/rp2/mpconfigport.h source file. To use the REPL over UART first build MicroPython (see section 1.6 for details).
 
 Go ahead and download the MicroPython source and in *ports/rp2/mpconfigport.h* change *MICROPY_HW_ENABLE_UART_REPL* to 1 to enable it.
 
@@ -210,7 +210,7 @@ The next thing you’ll need to do is to enable UART serial on the Raspberry Pi.
 
 	$ sudo raspi-config
 
-and go to *Interfacing Options → Serial* and select "No" on being asked "Would you like a login shell to be accessible over serial?" and "Yes" when asked "Would you like the serial port hardware to be enabled?".You should see something like this.
+and go to *Interfacing Options → Serial* and select "No" on being asked "Would you like a login shell to be accessible over serial?" and "Yes" when asked "Would you like the serial port hardware to be enabled?". You should see something like this.
 
 .. image:: fig1.jpeg
     :width: 200px
