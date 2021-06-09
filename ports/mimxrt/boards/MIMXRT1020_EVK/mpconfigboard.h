@@ -32,3 +32,4 @@
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPUART8_TX }, { IOMUXC_GPIO_SD_B1_03_LPUART8_RX },
+#define MICROPY_HW_SPI_INDEX { 1, 3 }

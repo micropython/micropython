@@ -33,6 +33,7 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_spi_type;
 
 void machine_adc_init(void);
 void machine_pin_irq_deinit(void);

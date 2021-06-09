@@ -121,6 +121,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
+	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
@@ -135,12 +136,14 @@ SRC_C = \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
+	$(BOARD_DIR)/lpdev_iomux.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_spi.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -267,6 +270,7 @@ SRC_QSTR += \
 	machine_rtc.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_spi.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
