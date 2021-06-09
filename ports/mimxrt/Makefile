@@ -122,6 +122,10 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
+	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
+	$(MCU_DIR)/drivers/fsl_edma.c \
+	$(MCU_DIR)/drivers/fsl_cache.c \
+	$(MCU_DIR)/drivers/fsl_dmamux.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \

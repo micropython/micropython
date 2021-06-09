@@ -31,8 +31,12 @@
 #include "modmachine.h"
 
 #include "fsl_common.h"
-#include "fsl_lpspi.h"
 #include "fsl_iomuxc.h"
+#include "fsl_dmamux.h"
+#include "fsl_cache.h"
+
+#include "fsl_lpspi.h"
+#include "fsl_lpspi_edma.h"
 
 #define DEFAULT_SPI_BAUDRATE    (1000000)
 #define DEFAULT_SPI_POLARITY    (0)
@@ -45,9 +49,11 @@
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
     uint8_t spi_id;
+    uint8_t spi_hw_id;
     LPSPI_Type *spi_inst;
     lpspi_master_config_t config;
     lpspi_master_handle_t handle;
+    bool transfer_busy;
 } machine_spi_obj_t;
 
 STATIC const uint8_t spi_index_table[] = MICROPY_HW_SPI_INDEX;
@@ -94,6 +100,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->base.type = &machine_spi_type;
     self->spi_id = spi_id;
     self->spi_inst = spi_base_ptr_table[spi_hw_id];
+    self->spi_hw_id = spi_hw_id;
     LPSPI_MasterGetDefaultConfig(&self->config);
 
     if (clk_init) {
@@ -115,6 +122,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     lpspi_set_iomux(spi_index_table[spi_id]);
+    LPSPI_Reset(self->spi_inst);
     LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
     LPSPI_MasterInit(self->spi_inst, &self->config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
 
@@ -170,65 +178,132 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
+static uint16_t dma_req_src_rx[] = { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx,
+                                        kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx };
+static uint16_t dma_req_src_tx[] = { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx,
+                                        kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx };
+
+
+void LPSPI_Callback(LPSPI_Type *base, lpspi_master_edma_handle_t *handle, status_t status, void *self_in) {
+    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
+
+    self->transfer_busy = false;
+}
+
+enum transferstate {
+    STATE_NONE = 0,
+    STATE_DMA = 1,
+    STATE_POLLING = 2
+};
+
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
-    // const size_t dma_min_size_threshold = 32;
-    // int chan_tx = -1;
-    // int chan_rx = -1;
-    // // if (len >= dma_min_size_threshold) {
-    //     // Use two DMA channels to service the two FIFOs
-    //     chan_tx = dma_claim_unused_channel(false);
-    //     chan_rx = dma_claim_unused_channel(false);
-    // }
-    bool use_dma = false; // chan_rx >= 0 && chan_tx >= 0;
+    const size_t dma_min_size_threshold = 32;
+    static uint8_t state = STATE_NONE;
+    uint64_t t;
+
+    int chan_tx = -1;
+    int chan_rx = -1;
+    if (len >= dma_min_size_threshold) {
+        // Use two DMA channels to service the two FIFOs
+        chan_rx = 4; // ## To be changed for proper avilability check
+        chan_tx = 5;
+    }
+    bool use_dma = chan_rx >= 0 && chan_tx >= 0;
     // note src is guaranteed to be non-NULL
     // bool write_only = dest == NULL;
 
-    // if (use_dma) {
-    //     uint8_t dev_null;
-    //     dma_channel_config c = dma_channel_get_default_config(chan_tx);
-    //     channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    //     channel_config_set_dreq(&c, spi_get_index(self->spi_inst) ? DREQ_SPI1_TX : DREQ_SPI0_TX);
-    //     dma_channel_configure(chan_tx, &c,
-    //         &spi_get_hw(self->spi_inst)->dr,
-    //         src,
-    //         len,
-    //         false);
+    lpspi_transfer_t masterXfer;
 
-    //     c = dma_channel_get_default_config(chan_rx);
-    //     channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    //     channel_config_set_dreq(&c, spi_get_index(self->spi_inst) ? DREQ_SPI1_RX : DREQ_SPI0_RX);
-    //     channel_config_set_read_increment(&c, false);
-    //     channel_config_set_write_increment(&c, !write_only);
-    //     dma_channel_configure(chan_rx, &c,
-    //         write_only ? &dev_null : dest,
-    //         &spi_get_hw(self->spi_inst)->dr,
-    //         len,
-    //         false);
+    if (use_dma) {
+        edma_config_t userConfig;
+        lpspi_master_edma_handle_t g_m_edma_handle;
+        edma_handle_t lpspiEdmaMasterRxRegToRxDataHandle;
+        edma_handle_t lpspiEdmaMasterTxDataToTxRegHandle;
 
-    //     dma_start_channel_mask((1u << chan_rx) | (1u << chan_tx));
-    //     dma_channel_wait_for_finish_blocking(chan_rx);
-    //     dma_channel_wait_for_finish_blocking(chan_tx);
-    // }
+        static bool init_dma = true;
 
-    // // If we have claimed only one channel successfully, we should release immediately
-    // if (chan_rx >= 0) {
-    //     dma_channel_unclaim(chan_rx);
-    // }
-    // if (chan_tx >= 0) {
-    //     dma_channel_unclaim(chan_tx);
-    // }
+        if (init_dma) {
+            init_dma = false;
+        /* DMA MUX init*/
+            DMAMUX_Init(DMAMUX);
+
+            DMAMUX_SetSource(DMAMUX, chan_rx, dma_req_src_rx[self->spi_hw_id]); // ## SPIn source
+            DMAMUX_EnableChannel(DMAMUX, chan_rx);
+
+            DMAMUX_SetSource(DMAMUX, chan_tx, dma_req_src_tx[self->spi_hw_id]);
+            DMAMUX_EnableChannel(DMAMUX, chan_tx);
+
+            EDMA_GetDefaultConfig(&userConfig);
+            EDMA_Init(DMA0, &userConfig);
+        }
+
+        if (state != STATE_DMA) { // The last transaction did not use DMA; re-init TCR
+            LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
+            // Set Transmit Command Register
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
+                        LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
+
+            LPSPI_Enable(self->spi_inst, true);
+            state = STATE_DMA;
+        }
+
+        /*Set up lpspi master*/
+        L1CACHE_DisableDCache();
+
+        memset(&(g_m_edma_handle), 0, sizeof(g_m_edma_handle));
+        memset(&(lpspiEdmaMasterRxRegToRxDataHandle), 0, sizeof(lpspiEdmaMasterRxRegToRxDataHandle));
+        memset(&(lpspiEdmaMasterTxDataToTxRegHandle), 0, sizeof(lpspiEdmaMasterTxDataToTxRegHandle));
+
+        EDMA_CreateHandle(&(lpspiEdmaMasterRxRegToRxDataHandle), DMA0, chan_rx);
+        EDMA_CreateHandle(&(lpspiEdmaMasterTxDataToTxRegHandle), DMA0, chan_tx);
+
+        LPSPI_MasterTransferCreateHandleEDMA(self->spi_inst, &g_m_edma_handle, LPSPI_Callback, self,
+                                            &lpspiEdmaMasterRxRegToRxDataHandle,
+                                            &lpspiEdmaMasterTxDataToTxRegHandle);
+        /*Start master transfer*/
+        masterXfer.txData = (uint8_t *)src;
+        masterXfer.rxData = (uint8_t *)dest;
+        masterXfer.dataSize = len;
+        masterXfer.configFlags = kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
+
+        self->transfer_busy = true;
+        LPSPI_MasterTransferEDMA(self->spi_inst, &g_m_edma_handle, &masterXfer);
+
+        // Wait until transfer completed. Use the timer as backup
+        t = ticks_us64() + 15000000 * len / self->config.baudRate + 1000000;
+
+        while (self->transfer_busy) {
+            if (ticks_us64() > t) {  // Timeout
+                // Abort the transfer
+                LPSPI_MasterTransferAbortEDMA(self->spi_inst, &g_m_edma_handle);
+                break;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        }
+        L1CACHE_EnableDCache();
+    }
 
     if (!use_dma) {
         // Use software for small transfers, or if couldn't claim two DMA channels
-        lpspi_transfer_t masterXfer;
+        
+        if (state != STATE_POLLING) { // The last transaction used DMA; re-init TCR
+            LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
+            // Set Transmit Command Register
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
+                        LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
+
+            LPSPI_Enable(self->spi_inst, true);
+            state = STATE_POLLING;
+        }
 
         masterXfer.txData = (uint8_t *)src;
         masterXfer.rxData = (uint8_t *)dest;
         masterXfer.dataSize = len;
-        masterXfer.configFlags =
-           kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
+        masterXfer.configFlags = kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
         LPSPI_MasterTransferBlocking(self->spi_inst, &masterXfer);
     }
