@@ -337,6 +337,10 @@ flash: $(BUILD)/firmware.bin
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
 	esptool.py --chip esp32s2 -p $(PORT) $(ESPTOOL_FLAGS) write_flash $(FLASH_FLAGS) 0x10000 $^
 
+monitor: $(BUILD)/firmware.elf
+	cp $< build/circuitpython.elf
+	idf.py monitor -p $(PORT)
+
 include $(TOP)/py/mkrules.mk
 
 # Print out the value of a make variable.
