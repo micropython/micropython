@@ -117,7 +117,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_scan_obj, keypad_keys_scan);
 STATIC mp_obj_t keypad_keys_state(mp_obj_t self_in, mp_obj_t key_num_obj) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t key_num = mp_obj_int_get_checked(key_num_obj);
-    if (key_num < 0 || key_num >= common_hal_keypad_keys_length(self)) {
+    if (key_num < 0 || (mp_uint_t)key_num >= common_hal_keypad_keys_length(self)) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_key_num);
     }
 

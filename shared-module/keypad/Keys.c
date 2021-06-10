@@ -106,12 +106,12 @@ size_t common_hal_keypad_keys_length(keypad_keys_obj_t *self) {
 
 bool common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
-    uint64_t last_scan_ticks = self->last_scan_ticks;
-    self->last_scan_ticks = now;
-    if (now - last_scan_ticks < DEBOUNCE_TICKS) {
+    if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
         // Too soon.
         return false;
     }
+
+    self->last_scan_ticks = now;
 
     for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
         self->previously_pressed[key_num] = self->currently_pressed[key_num];
