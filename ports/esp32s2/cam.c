@@ -447,6 +447,7 @@ esp_err_t cam_deinit() {
     }
 
     cam_stop();
+    gpio_isr_handler_remove(cam_obj->vsync_pin);
     esp_intr_free(cam_obj->intr_handle);
     vTaskDelete(cam_obj->task_handle);
     vQueueDelete(cam_obj->event_queue);
