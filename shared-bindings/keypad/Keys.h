@@ -35,7 +35,7 @@ extern const mp_obj_type_t keypad_keys_type;
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
 void common_hal_keypad_keys_keys_with_state(keypad_keys_obj_t *self, mp_int_t state, mp_obj_list_t *into);
 size_t common_hal_keypad_keys_length(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_scan(keypad_keys_obj_t *self);
+bool common_hal_keypad_keys_scan(keypad_keys_obj_t *self);
 mp_int_t common_hal_keypad_keys_state(keypad_keys_obj_t *self, mp_uint_t key_num);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H

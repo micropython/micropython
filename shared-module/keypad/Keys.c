@@ -30,6 +30,9 @@
 #include "shared-bindings/keypad/State.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
+#include "supervisor/port.h"
+
+#define DEBOUNCE_TICKS (20)
 
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull) {
     mp_obj_t dios[num_pins];
@@ -101,13 +104,22 @@ size_t common_hal_keypad_keys_length(keypad_keys_obj_t *self) {
     return self->digitalinouts->len;
 }
 
-void common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
+bool common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
+    uint64_t now = port_get_raw_ticks(NULL);
+    uint64_t last_scan_ticks = self->last_scan_ticks;
+    self->last_scan_ticks = now;
+    if (now - last_scan_ticks < DEBOUNCE_TICKS) {
+        // Too soon.
+        return false;
+    }
+
     for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
         self->previously_pressed[key_num] = self->currently_pressed[key_num];
         self->currently_pressed[key_num] =
             common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
             self->value_when_pressed;
     }
+    return true;
 }
 
 mp_int_t common_hal_keypad_keys_state(keypad_keys_obj_t *self, mp_uint_t key_num) {

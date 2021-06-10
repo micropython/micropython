@@ -80,20 +80,25 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     }
 
     common_hal_keypad_keys_construct(self, num_pins, pins_array, value_when_pressed, args[ARG_pull].u_bool);
+    common_hal_keypad_keys_scan(self);
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def scan(self) -> None:
+//|     def scan(self) -> bool:
 //|         """Scan the keys and record which are newly pressed, still pressed,
-//|         newly released, and still released. For convenient activity checking,
+//|         newly released, and still released. If not enough time has elapsed since
+//|         the last scan for debouncing, do nothing and return ``False``.
+//|
+//|         :return: ``True`` if sufficient time has elapsed for debouncing (about 20 msecs),
+//|           otherwise ``False``.
+//|         :rtype: bool
 //|         """
 //|         ...
 //|
 STATIC mp_obj_t keypad_keys_scan(mp_obj_t self_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    common_hal_keypad_keys_scan(self);
-    return MP_ROM_NONE;
+    return mp_obj_new_bool(common_hal_keypad_keys_scan(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_scan_obj, keypad_keys_scan);
 

@@ -35,6 +35,7 @@
 typedef struct {
     mp_obj_base_t base;
     mp_obj_tuple_t *digitalinouts;
+    uint64_t last_scan_ticks;
     bool value_when_pressed;
     bool *previously_pressed;
     bool *currently_pressed;
