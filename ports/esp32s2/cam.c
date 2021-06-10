@@ -106,13 +106,18 @@ static void cam_config(const cam_config_t *config) {
     periph_module_enable(PERIPH_I2S0_MODULE);
 
     /*!< Configure the clock */
+    #if 0
     I2S0.clkm_conf.val = 0;
-    I2S0.clkm_conf.clkm_div_num = 2;
+    I2S0.clkm_conf.clkm_div_num = 2; // <--- this should set the low 8 bits, but doesn't somehow
     I2S0.clkm_conf.clkm_div_b = 0;
     I2S0.clkm_conf.clkm_div_a = 0;
     I2S0.clkm_conf.clk_sel = 2;
     I2S0.clkm_conf.clk_en = 1;
-
+    #else
+    // The above code should set the clock to this value .. however, it sets it to 0x0050_0000 instead, the "clkm_div_num" value missing!
+    // it's not clear why this behavior arises
+    I2S0.clkm_conf.val = 0x00500002;
+    #endif
     /*!< Configuration sampling rate */
     I2S0.sample_rate_conf.val = 0;
     I2S0.sample_rate_conf.tx_bck_div_num = 2;
