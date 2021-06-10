@@ -68,7 +68,8 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t pins = args[ARG_pins].u_obj;
-    const mp_uint_t num_pins = mp_obj_int_get_uint_checked(mp_obj_len(pins));
+    // mp_obj_len() will be >= 0.
+    const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(pins));
     const bool value_when_pressed = args[ARG_value_when_pressed].u_bool;
 
     mcu_pin_obj_t *pins_array[num_pins];
