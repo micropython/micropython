@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,12 @@
  * THE SOFTWARE.
  */
 
+    << << << < HEAD: shared - module / keypad / __init__.h
+#ifndef SHARED_MODULE_KEYPAD_H
+#define SHARED_MODULE_KEYPAD_H
+== == == =
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
+    >> >> >> > adafruit / main: ports / atmel - samd / boards / sparkfun_samd51_micromod / board.c
 
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-}
+#endif // SHARED_MODULE_KEYPAD_H
