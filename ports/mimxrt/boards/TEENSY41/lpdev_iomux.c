@@ -1,9 +1,9 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
- * Copyright 2019 NXP
  * The MIT License (MIT)
  *
+ * Copyright 2019 NXP
  * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@
 
 #include "fsl_iomuxc.h"
 
-// set the SPI IOMUX for MIMXRT1020-EVK
+// set the SPI IOMUX for Teensy 4.1
 // Input is the HW SPI number
 
 bool lpspi_set_iomux(int8_t spi) {
@@ -35,31 +35,45 @@ bool lpspi_set_iomux(int8_t spi) {
 
     switch (spi) {
         case 1:  // LPSPI1
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_00_LPSPI1_SCK,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_00_LPSPI1_SCK, 0x10B0u);
 
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_01_LPSPI1_PCS0,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_01_LPSPI1_PCS0, 0x10B0u);
 
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_02_LPSPI1_SDO,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_02_LPSPI1_SDO, 0x10B0u);
 
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_03_LPSPI1_SDI,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_03_LPSPI1_SDI, 0x10B0u);
             break;
 
         case 3:  // LPSPI3
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_12_LPSPI3_SCK,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_12_LPSPI3_SCK, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_15_LPSPI3_SCK,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_15_LPSPI3_SCK, 0x10B0u);
 
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_13_LPSPI3_PCS0,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_13_LPSPI3_PCS0, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_12_LPSPI3_PCS0,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_12_LPSPI3_PCS0, 0x10B0u);
 
             IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO,0U);
             IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO, 0x10B0u);
 
-            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI,0U);
-            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI, 0x10B0u);
+            IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_13_LPSPI3_SDI,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_13_LPSPI3_SDI, 0x10B0u);
+            break;
+
+        case 4:  // LPSPI4
+            IOMUXC_SetPinMux(IOMUXC_GPIO_B0_03_LPSPI4_SCK,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_03_LPSPI4_SCK, 0x10B0u);
+
+            IOMUXC_SetPinMux(IOMUXC_GPIO_B0_00_LPSPI4_PCS0,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_00_LPSPI4_PCS0, 0x10B0u);
+
+            IOMUXC_SetPinMux(IOMUXC_GPIO_B0_02_LPSPI4_SDO,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_02_LPSPI4_SDO, 0x10B0u);
+
+            IOMUXC_SetPinMux(IOMUXC_GPIO_B0_01_LPSPI4_SDI,0U);
+            IOMUXC_SetPinConfig(IOMUXC_GPIO_B0_01_LPSPI4_SDI, 0x10B0u);
             break;
 
         default:
