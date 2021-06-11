@@ -192,28 +192,20 @@ void LPSPI_Callback(LPSPI_Type *base, lpspi_master_edma_handle_t *handle, status
     self->transfer_busy = false;
 }
 
-enum transferstate {
-    STATE_NONE = 0,
-    STATE_DMA = 1,
-    STATE_POLLING = 2
-};
-
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
     const size_t dma_min_size_threshold = 32;
-    static uint8_t state = STATE_NONE;
     uint64_t t;
 
     int chan_tx = -1;
     int chan_rx = -1;
     if (len >= dma_min_size_threshold) {
         // Use two DMA channels to service the two FIFOs
-        chan_rx = allocate_DMA_channel(); // ## To be changed for proper avilability check
+        chan_rx = allocate_DMA_channel();
         chan_tx = allocate_DMA_channel();
     }
     bool use_dma = chan_rx >= 0 && chan_tx >= 0;
-
     lpspi_transfer_t masterXfer;
 
     if (use_dma) {
@@ -226,7 +218,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
         if (init_dma) {
             init_dma = false;
-        /* DMA MUX init*/
+            /* DMA MUX init*/
             DMAMUX_Init(DMAMUX);
 
             DMAMUX_SetSource(DMAMUX, chan_rx, dma_req_src_rx[self->spi_hw_id]); // ## SPIn source
@@ -239,16 +231,12 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             EDMA_Init(DMA0, &userConfig);
         }
 
-        if (state != STATE_DMA) { // The last transaction did not use DMA; re-init TCR
-            LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            // Set Transmit Command Register
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
-                        LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
-
-            LPSPI_Enable(self->spi_inst, true);
-            state = STATE_DMA;
-        }
+        // Reconfigure the TXR, required after switch between DMA vs. non-DMA
+        LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
+        self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
+                    LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
+                    (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
+        LPSPI_Enable(self->spi_inst, true);
 
         /*Set up lpspi master*/
         L1CACHE_DisableDCache();
@@ -294,18 +282,12 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
 
     if (!use_dma) {
-        // Use software for small transfers.
-        
-        if (state != STATE_POLLING) { // The last transaction used DMA; re-init TCR
-            LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            // Set Transmit Command Register
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
-                        LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
-
-            LPSPI_Enable(self->spi_inst, true);
-            state = STATE_POLLING;
-        }
+        // Reconfigure the TXR, required after switch between DMA vs. non-DMA
+        LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
+        self->spi_inst->TCR = LPSPI_TCR_CPOL(self->config.cpol) | LPSPI_TCR_CPHA(self->config.cpha) |
+                    LPSPI_TCR_LSBF(self->config.direction) | LPSPI_TCR_FRAMESZ(self->config.bitsPerFrame - 1) |
+                    (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->config.whichPcs);
+        LPSPI_Enable(self->spi_inst, true);
 
         masterXfer.txData = (uint8_t *)src;
         masterXfer.rxData = (uint8_t *)dest;
