@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020-2021 Damien P. George
+ * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +30,9 @@
 #include "py/mperrno.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
+#include "dma_channel.h"
 
-#include "fsl_common.h"
+// #include "fsl_common.h"
 #include "fsl_iomuxc.h"
 #include "fsl_dmamux.h"
 #include "fsl_cache.h"
@@ -207,12 +209,10 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     int chan_rx = -1;
     if (len >= dma_min_size_threshold) {
         // Use two DMA channels to service the two FIFOs
-        chan_rx = 4; // ## To be changed for proper avilability check
-        chan_tx = 5;
+        chan_rx = allocate_DMA_channel(); // ## To be changed for proper avilability check
+        chan_tx = allocate_DMA_channel();
     }
     bool use_dma = chan_rx >= 0 && chan_tx >= 0;
-    // note src is guaranteed to be non-NULL
-    // bool write_only = dest == NULL;
 
     lpspi_transfer_t masterXfer;
 
@@ -272,7 +272,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         self->transfer_busy = true;
         LPSPI_MasterTransferEDMA(self->spi_inst, &g_m_edma_handle, &masterXfer);
 
-        // Wait until transfer completed. Use the timer as backup
+        // Wait until transfer completed. Use the timer as backup for timeout
         t = ticks_us64() + 15000000 * len / self->config.baudRate + 1000000;
 
         while (self->transfer_busy) {
@@ -285,9 +285,16 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         }
         L1CACHE_EnableDCache();
     }
+    // Release DMA channels, even if never allocated.
+    if (chan_rx >= 0) {
+        free_DMA_channel(chan_rx);
+    }
+    if (chan_tx >= 0) {
+        free_DMA_channel(chan_tx);
+    }
 
     if (!use_dma) {
-        // Use software for small transfers, or if couldn't claim two DMA channels
+        // Use software for small transfers.
         
         if (state != STATE_POLLING) { // The last transaction used DMA; re-init TCR
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied

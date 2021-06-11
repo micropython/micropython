@@ -148,6 +148,7 @@ SRC_C = \
 	machine_timer.c \
 	machine_uart.c \
 	machine_spi.c \
+	dma_channel.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
