@@ -30,6 +30,12 @@
 #include "py/mphal.h"
 #include "drivers/bus/spi.h"
 
+// if a port didn't define MASTER/SLAVE constants then provide them
+#ifndef MICROPY_PY_MACHINE_SPI_MASTER
+#define MICROPY_PY_MACHINE_SPI_MASTER (1)
+#define MICROPY_PY_MACHINE_SPI_SLAVE  (0)
+#endif
+
 // Temporary support for legacy construction of SoftSPI via SPI type.
 #define MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \
