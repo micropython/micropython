@@ -28,15 +28,15 @@ Example usage::
                                     # depending on the port, extra parameters may be required
                                     # to select the peripheral and/or pins to use
 
-    i2c.scan()                      # scan for slaves, returning a list of 7-bit addresses
+    i2c.scan()                      # scan for peripherals, returning a list of 7-bit addresses
 
-    i2c.writeto(42, b'123')         # write 3 bytes to slave with 7-bit address 42
-    i2c.readfrom(42, 4)             # read 4 bytes from slave with 7-bit address 42
+    i2c.writeto(42, b'123')         # write 3 bytes to peripheral with 7-bit address 42
+    i2c.readfrom(42, 4)             # read 4 bytes from peripheral with 7-bit address 42
 
-    i2c.readfrom_mem(42, 8, 3)      # read 3 bytes from memory of slave 42,
-                                    #   starting at memory-address 8 in the slave
-    i2c.writeto_mem(42, 2, b'\x10') # write 1 byte to memory of slave 42
-                                    #   starting at address 2 in the slave
+    i2c.readfrom_mem(42, 8, 3)      # read 3 bytes from memory of peripheral 42,
+                                    #   starting at memory-address 8 in the peripheral
+    i2c.writeto_mem(42, 2, b'\x10') # write 1 byte to memory of peripheral 42
+                                    #   starting at address 2 in the peripheral
 
 Constructors
 ------------
@@ -95,7 +95,7 @@ General Methods
 Primitive I2C operations
 ------------------------
 
-The following methods implement the primitive I2C master bus operations and can
+The following methods implement the primitive I2C controller bus operations and can
 be combined to make any I2C transaction.  They are provided if you need more
 control over the bus, otherwise the standard methods (see below) can be used.
 
@@ -115,7 +115,7 @@ These methods are only available on the `machine.SoftI2C` class.
    read is the length of *buf*.  An ACK will be sent on the bus after
    receiving all but the last byte.  After the last byte is received, if *nack*
    is true then a NACK will be sent, otherwise an ACK will be sent (and in this
-   case the slave assumes more bytes are going to be read in a later call).
+   case the peripheral assumes more bytes are going to be read in a later call).
 
 .. method:: I2C.write(buf)
 
@@ -126,18 +126,18 @@ These methods are only available on the `machine.SoftI2C` class.
 Standard bus operations
 -----------------------
 
-The following methods implement the standard I2C master read and write
-operations that target a given slave device.
+The following methods implement the standard I2C controller read and write
+operations that target a given peripheral device.
 
 .. method:: I2C.readfrom(addr, nbytes, stop=True, /)
 
-   Read *nbytes* from the slave specified by *addr*.
+   Read *nbytes* from the peripheral specified by *addr*.
    If *stop* is true then a STOP condition is generated at the end of the transfer.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_into(addr, buf, stop=True, /)
 
-   Read into *buf* from the slave specified by *addr*.
+   Read into *buf* from the peripheral specified by *addr*.
    The number of bytes read will be the length of *buf*.
    If *stop* is true then a STOP condition is generated at the end of the transfer.
 
@@ -145,7 +145,7 @@ operations that target a given slave device.
 
 .. method:: I2C.writeto(addr, buf, stop=True, /)
 
-   Write the bytes from *buf* to the slave specified by *addr*.  If a
+   Write the bytes from *buf* to the peripheral specified by *addr*.  If a
    NACK is received following the write of a byte from *buf* then the
    remaining bytes are not sent.  If *stop* is true then a STOP condition is
    generated at the end of the transfer, even if a NACK is received.
@@ -153,7 +153,7 @@ operations that target a given slave device.
 
 .. method:: I2C.writevto(addr, vector, stop=True, /)
 
-   Write the bytes contained in *vector* to the slave specified by *addr*.
+   Write the bytes contained in *vector* to the peripheral specified by *addr*.
    *vector* should be a tuple or list of objects with the buffer protocol.
    The *addr* is sent once and then the bytes from each object in *vector*
    are written out sequentially.  The objects in *vector* may be zero bytes
@@ -170,19 +170,19 @@ Memory operations
 
 Some I2C devices act as a memory device (or set of registers) that can be read
 from and written to.  In this case there are two addresses associated with an
-I2C transaction: the slave address and the memory address.  The following
+I2C transaction: the peripheral address and the memory address.  The following
 methods are convenience functions to communicate with such devices.
 
 .. method:: I2C.readfrom_mem(addr, memaddr, nbytes, *, addrsize=8)
 
-   Read *nbytes* from the slave specified by *addr* starting from the memory
+   Read *nbytes* from the peripheral specified by *addr* starting from the memory
    address specified by *memaddr*.
    The argument *addrsize* specifies the address size in bits.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_mem_into(addr, memaddr, buf, *, addrsize=8)
 
-   Read into *buf* from the slave specified by *addr* starting from the
+   Read into *buf* from the peripheral specified by *addr* starting from the
    memory address specified by *memaddr*.  The number of bytes read is the
    length of *buf*.
    The argument *addrsize* specifies the address size in bits (on ESP8266
@@ -192,7 +192,7 @@ methods are convenience functions to communicate with such devices.
 
 .. method:: I2C.writeto_mem(addr, memaddr, buf, *, addrsize=8)
 
-   Write *buf* to the slave specified by *addr* starting from the
+   Write *buf* to the peripheral specified by *addr* starting from the
    memory address specified by *memaddr*.
    The argument *addrsize* specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).

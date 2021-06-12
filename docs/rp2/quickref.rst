@@ -181,7 +181,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
     i2c.writeto(0x3a, '12') # write '12' to device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
-    i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+    i2c.writeto(0x3a, buf)  # write the given buffer to the peripheral
 
 Hardware I2C bus
 ----------------
