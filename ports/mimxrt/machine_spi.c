@@ -60,8 +60,8 @@ typedef struct _machine_spi_obj_t {
     lpspi_master_handle_t master_handle;
     lpspi_slave_config_t slave_config;
     lpspi_slave_handle_t slave_handle;
-    bool transfer_busy;
     uint32_t timeout;
+    bool transfer_busy;
 } machine_spi_obj_t;
 
 STATIC const uint8_t spi_index_table[] = MICROPY_HW_SPI_INDEX;
@@ -176,7 +176,6 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-
     if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
         // Reconfigure the baudrate if requested.
         if (args[ARG_baudrate].u_int != -1) {
@@ -266,22 +265,17 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     if (use_dma) {
         edma_config_t userConfig;
 
-        static bool init_dma = true;
+        /* DMA MUX init*/
+        DMAMUX_Init(DMAMUX);
 
-        if (init_dma) {
-            init_dma = false;
-            /* DMA MUX init*/
-            DMAMUX_Init(DMAMUX);
+        DMAMUX_SetSource(DMAMUX, chan_rx, dma_req_src_rx[self->spi_hw_id]); // ## SPIn source
+        DMAMUX_EnableChannel(DMAMUX, chan_rx);
 
-            DMAMUX_SetSource(DMAMUX, chan_rx, dma_req_src_rx[self->spi_hw_id]); // ## SPIn source
-            DMAMUX_EnableChannel(DMAMUX, chan_rx);
+        DMAMUX_SetSource(DMAMUX, chan_tx, dma_req_src_tx[self->spi_hw_id]);
+        DMAMUX_EnableChannel(DMAMUX, chan_tx);
 
-            DMAMUX_SetSource(DMAMUX, chan_tx, dma_req_src_tx[self->spi_hw_id]);
-            DMAMUX_EnableChannel(DMAMUX, chan_tx);
-
-            EDMA_GetDefaultConfig(&userConfig);
-            EDMA_Init(DMA0, &userConfig);
-        }
+        EDMA_GetDefaultConfig(&userConfig);
+        EDMA_Init(DMA0, &userConfig);
 
         if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
             lpspi_transfer_t masterXfer;
@@ -404,6 +398,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             masterXfer.configFlags = kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
             LPSPI_MasterTransferBlocking(self->spi_inst, &masterXfer);
+
         } else {
             lpspi_slave_handle_t g_s_handle;
             lpspi_transfer_t slaveXfer;
