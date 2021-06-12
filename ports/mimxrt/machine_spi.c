@@ -79,10 +79,10 @@ STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
             self->master_config.cpha, self->master_config.bitsPerFrame,
             firstbit_str[self->master_config.direction], self->master_config.betweenTransferDelayInNanoSec);
     } else {
-        mp_printf(print, "SPI(%u, mode=PERIPHERAL, polarity=%u, phase=%u, bits=%u, firstbit=%s)\n",
+        mp_printf(print, "SPI(%u, mode=PERIPHERAL, polarity=%u, phase=%u, bits=%u, firstbit=%s, timeout=%d)\n",
             self->spi_id, self->slave_config.cpol,
             self->slave_config.cpha, self->slave_config.bitsPerFrame,
-            firstbit_str[self->slave_config.direction]);
+            firstbit_str[self->slave_config.direction], self->timeout);
     }
 }
 
@@ -160,7 +160,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 }
 
 STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap };
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -168,6 +168,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_gap,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse the arguments.
@@ -213,6 +214,9 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
         }
         if (args[ARG_firstbit].u_int != -1) {
             self->slave_config.direction = args[ARG_firstbit].u_int;
+        }
+        if (args[ARG_timeout].u_int != -1) {
+            self->timeout = args[ARG_timeout].u_int;
         }
         LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
         LPSPI_SlaveInit(self->spi_inst, &self->slave_config);
@@ -368,7 +372,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
                 if (ticks_us64() > t) {  // Timeout
                     // Abort the transfer
                     LPSPI_SlaveTransferAbortEDMA(self->spi_inst, &g_slave_edma_handle);
-                    break;
+                    mp_raise_OSError(MP_ETIMEDOUT);
                 }
                 MICROPY_EVENT_POLL_HOOK
             }
@@ -428,7 +432,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
                 if (ticks_us64() > t) {  // Timeout
                     // Abort the transfer
                     LPSPI_SlaveTransferAbort(self->spi_inst, &g_s_handle);
-                    break;
+                    mp_raise_OSError(MP_ETIMEDOUT);
                 }
                 MICROPY_EVENT_POLL_HOOK
             }
