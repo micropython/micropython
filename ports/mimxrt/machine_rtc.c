@@ -40,7 +40,7 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 uint32_t us_offset = 0;
 
 // Calculate the weekday from the date.
-// The result is zero based with 0 = Sunday.
+// The result is zero based with 0 = Monday.
 // by Michael Keith and Tom Craver, 1990.
 static int calc_weekday(int y, int m, int d) {
     return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
@@ -104,7 +104,21 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
-    return machine_rtc_datetime_helper(1, &self_in);
+    // Get date and time in CPython order.
+    snvs_lp_srtc_datetime_t srtc_date;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
+
+    mp_obj_t tuple[8] = {
+        mp_obj_new_int(srtc_date.year),
+        mp_obj_new_int(srtc_date.month),
+        mp_obj_new_int(srtc_date.day),
+        mp_obj_new_int(srtc_date.hour),
+        mp_obj_new_int(srtc_date.minute),
+        mp_obj_new_int(srtc_date.second),
+        mp_obj_new_int((ticks_us64() + us_offset) % 1000000),
+        mp_const_none,
+    };
+    return mp_obj_new_tuple(8, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
