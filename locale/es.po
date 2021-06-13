@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-30 13:32+0000\n"
+"PO-Revision-Date: 2021-06-13 04:32+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3140,7 +3140,7 @@ msgstr "primer argumento para super() debe ser de tipo"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "first two arguments must be ndarrays"
-msgstr ""
+msgstr "los primeros dos argumentos deben ser ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -3367,7 +3367,7 @@ msgstr "Entero requerido"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D iterables of equal length"
-msgstr ""
+msgstr "interp está definido para iterables 1D de igual tamaño"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -4237,7 +4237,7 @@ msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D iterables"
-msgstr ""
+msgstr "trapz está definido para iterables 1D"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
