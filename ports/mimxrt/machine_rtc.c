@@ -42,7 +42,7 @@ uint32_t us_offset = 0;
 // Calculate the weekday from the date.
 // The result is zero based with 0 = Monday.
 // by Michael Keith and Tom Craver, 1990.
-static int calc_weekday(int y, int m, int d) {
+int calc_weekday(int y, int m, int d) {
     return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
 }
 

@@ -154,6 +154,7 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	lib/timeutils/timeutils.c \
 	drivers/bus/softspi.c \
 	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
