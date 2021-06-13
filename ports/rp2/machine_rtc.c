@@ -100,7 +100,9 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
             .sec = mp_obj_get_int(items[6]),
         };
 
-        rtc_set_datetime(&t);
+        if (!rtc_set_datetime(&t)) {
+            mp_raise_OSError(MP_EINVAL);
+        }
 
     }
     return mp_const_none;
