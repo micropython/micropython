@@ -25,21 +25,6 @@ from .console import Console, ConsolePosix
 
 _PROG = "mpremote"
 
-_AUTO_CONNECT_SEARCH_LIST = [
-    "/dev/ttyACM0",
-    "/dev/ttyACM1",
-    "/dev/ttyACM2",
-    "/dev/ttyACM3",
-    "/dev/ttyUSB0",
-    "/dev/ttyUSB1",
-    "/dev/ttyUSB2",
-    "/dev/ttyUSB3",
-    "COM0",
-    "COM1",
-    "COM2",
-    "COM3",
-]
-
 _BUILTIN_COMMAND_EXPANSIONS = {
     # Device connection shortcuts.
     "a0": "connect /dev/ttyACM0",
@@ -187,14 +172,12 @@ def do_connect(args):
             return None
         elif dev == "auto":
             # Auto-detect and auto-connect to the first available device.
-            ports = serial.tools.list_ports.comports()
-            for dev in _AUTO_CONNECT_SEARCH_LIST:
-                if any(p.device == dev for p in ports):
-                    try:
-                        return pyboard.PyboardExtended(dev, baudrate=115200)
-                    except pyboard.PyboardError as er:
-                        if not er.args[0].startswith("failed to access"):
-                            raise er
+            for p in sorted(serial.tools.list_ports.comports()):
+                try:
+                    return pyboard.PyboardExtended(p.device, baudrate=115200)
+                except pyboard.PyboardError as er:
+                    if not er.args[0].startswith("failed to access"):
+                        raise er
             raise pyboard.PyboardError("no device found")
         elif dev.startswith("id:"):
             # Search for a device with the given serial number.
