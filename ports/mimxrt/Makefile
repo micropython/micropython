@@ -140,7 +140,6 @@ SRC_C = \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
-	$(BOARD_DIR)/lpdev_iomux.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \

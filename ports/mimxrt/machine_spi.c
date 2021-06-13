@@ -64,12 +64,51 @@ typedef struct _machine_spi_obj_t {
     bool transfer_busy;
 } machine_spi_obj_t;
 
+typedef struct _iomux_table_t {
+    uint32_t muxRegister;
+    uint32_t muxMode;
+    uint32_t inputRegister;
+    uint32_t inputDaisy;
+    uint32_t configRegister;
+} iomux_table_t;
+
 STATIC const uint8_t spi_index_table[] = MICROPY_HW_SPI_INDEX;
 STATIC LPSPI_Type *spi_base_ptr_table[] = LPSPI_BASE_PTRS;
-extern bool lpspi_set_iomux(int8_t spi);
+static const iomux_table_t iomux_table_uart[] = {
+    IOMUX_TABLE_SPI
+};
 
 static const char *firstbit_str[] = {"MSB", "LSB"};
 
+#define MICROPY_HW_SPI_NUM     (sizeof(spi_index_table)/sizeof(spi_index_table)[0])
+
+#define SCK (iomux_table_uart[index])
+#define CS0 (iomux_table_uart[index + 1])
+#define SDO (iomux_table_uart[index + 2])
+#define SDI (iomux_table_uart[index + 3])
+
+bool lpspi_set_iomux(int8_t spi) {
+
+    int index = (spi - 1) * 4;
+
+    if (SCK.muxRegister != 0) {
+        IOMUXC_SetPinMux(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0U);
+        IOMUXC_SetPinConfig(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0x10B0u);
+
+        IOMUXC_SetPinMux(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0U);
+        IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0x10B0u);
+
+        IOMUXC_SetPinMux(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0U);
+        IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0x10B0u);
+
+        IOMUXC_SetPinMux(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0U);
+        IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0x10B0u);
+
+        return true;
+    } else {
+        return false;
+    }
+}
 
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
