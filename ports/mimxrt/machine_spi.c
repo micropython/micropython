@@ -56,10 +56,9 @@ typedef struct _machine_spi_obj_t {
     uint8_t mode;
     uint8_t spi_hw_id;
     LPSPI_Type *spi_inst;
-    lpspi_master_config_t master_config;
-    lpspi_master_handle_t master_handle;
-    lpspi_slave_config_t slave_config;
-    lpspi_slave_handle_t slave_handle;
+    lpspi_master_config_t *master_config;
+    lpspi_slave_config_t *slave_config;
+    lpspi_slave_handle_t *slave_handle;
     uint32_t timeout;
     bool transfer_busy;
 } machine_spi_obj_t;
@@ -113,15 +112,15 @@ bool lpspi_set_iomux(int8_t spi) {
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
-        mp_printf(print, "SPI(%u, mode=CONTROLLER, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s, gap=%d ns)\n",
-            self->spi_id, self->master_config.baudRate, self->master_config.cpol,
-            self->master_config.cpha, self->master_config.bitsPerFrame,
-            firstbit_str[self->master_config.direction], self->master_config.betweenTransferDelayInNanoSec);
+        mp_printf(print, "SPI(%u, mode=CONTROLLER, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s, gap=%dns)",
+            self->spi_id, self->master_config->baudRate, self->master_config->cpol,
+            self->master_config->cpha, self->master_config->bitsPerFrame,
+            firstbit_str[self->master_config->direction], self->master_config->betweenTransferDelayInNanoSec);
     } else {
-        mp_printf(print, "SPI(%u, mode=PERIPHERAL, polarity=%u, phase=%u, bits=%u, firstbit=%s, timeout=%d)\n",
-            self->spi_id, self->slave_config.cpol,
-            self->slave_config.cpha, self->slave_config.bitsPerFrame,
-            firstbit_str[self->slave_config.direction], self->timeout);
+        mp_printf(print, "SPI(%u, mode=PERIPHERAL, polarity=%u, phase=%u, bits=%u, firstbit=%s, timeout=%d)",
+            self->spi_id, self->slave_config->cpol,
+            self->slave_config->cpha, self->slave_config->bitsPerFrame,
+            firstbit_str[self->slave_config->direction], self->timeout);
     }
 }
 
@@ -172,27 +171,30 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
 
     if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
-        LPSPI_MasterGetDefaultConfig(&self->master_config);
+        self->master_config = m_new_obj(lpspi_master_config_t);
+        LPSPI_MasterGetDefaultConfig(self->master_config);
         // Initialise the SPI peripheral.
-        self->master_config.baudRate = args[ARG_baudrate].u_int;
-        self->master_config.betweenTransferDelayInNanoSec = 1000000000 / self->master_config.baudRate * 2;
-        self->master_config.cpol = args[ARG_polarity].u_int;
-        self->master_config.cpha = args[ARG_phase].u_int;
-        self->master_config.bitsPerFrame = args[ARG_bits].u_int;
-        self->master_config.direction = args[ARG_firstbit].u_int;
+        self->master_config->baudRate = args[ARG_baudrate].u_int;
+        self->master_config->betweenTransferDelayInNanoSec = 1000000000 / self->master_config->baudRate * 2;
+        self->master_config->cpol = args[ARG_polarity].u_int;
+        self->master_config->cpha = args[ARG_phase].u_int;
+        self->master_config->bitsPerFrame = args[ARG_bits].u_int;
+        self->master_config->direction = args[ARG_firstbit].u_int;
         if (args[ARG_gap].u_int != -1) {
-            self->master_config.betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
+            self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
         }
-        LPSPI_MasterInit(self->spi_inst, &self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
+        LPSPI_MasterInit(self->spi_inst, self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
     } else {
-        LPSPI_SlaveGetDefaultConfig(&self->slave_config);
+        self->slave_config = m_new_obj(lpspi_slave_config_t);
+        self->slave_handle = m_new_obj(lpspi_slave_handle_t);
+        LPSPI_SlaveGetDefaultConfig(self->slave_config);
         // Initialise the SPI peripheral.
-        self->slave_config.cpol = args[ARG_polarity].u_int;
-        self->slave_config.cpha = args[ARG_phase].u_int;
-        self->slave_config.bitsPerFrame = args[ARG_bits].u_int;
-        self->slave_config.direction = args[ARG_firstbit].u_int;
+        self->slave_config->cpol = args[ARG_polarity].u_int;
+        self->slave_config->cpha = args[ARG_phase].u_int;
+        self->slave_config->bitsPerFrame = args[ARG_bits].u_int;
+        self->slave_config->direction = args[ARG_firstbit].u_int;
 
-        LPSPI_SlaveInit(self->spi_inst, &self->slave_config);
+        LPSPI_SlaveInit(self->spi_inst, self->slave_config);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -218,46 +220,46 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
         // Reconfigure the baudrate if requested.
         if (args[ARG_baudrate].u_int != -1) {
-            self->master_config.baudRate = args[ARG_baudrate].u_int;
-            self->master_config.betweenTransferDelayInNanoSec = 1000000000 / self->master_config.baudRate * 2;
+            self->master_config->baudRate = args[ARG_baudrate].u_int;
+            self->master_config->betweenTransferDelayInNanoSec = 1000000000 / self->master_config->baudRate * 2;
         }
         // Reconfigure the format if requested.
         if (args[ARG_polarity].u_int != -1) {
-            self->master_config.cpol = args[ARG_polarity].u_int;
+            self->master_config->cpol = args[ARG_polarity].u_int;
         }
         if (args[ARG_phase].u_int != -1) {
-            self->master_config.cpha = args[ARG_phase].u_int;
+            self->master_config->cpha = args[ARG_phase].u_int;
         }
         if (args[ARG_bits].u_int != -1) {
-            self->master_config.bitsPerFrame = args[ARG_bits].u_int;
+            self->master_config->bitsPerFrame = args[ARG_bits].u_int;
         }
         if (args[ARG_firstbit].u_int != -1) {
-            self->master_config.direction = args[ARG_firstbit].u_int;
+            self->master_config->direction = args[ARG_firstbit].u_int;
         }
         if (args[ARG_gap].u_int != -1) {
-            self->master_config.betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
+            self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
         }
         LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
-        LPSPI_MasterInit(self->spi_inst, &self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
+        LPSPI_MasterInit(self->spi_inst, self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
     } else {
         // Reconfigure the format if requested.
         if (args[ARG_polarity].u_int != -1) {
-            self->slave_config.cpol = args[ARG_polarity].u_int;
+            self->slave_config->cpol = args[ARG_polarity].u_int;
         }
         if (args[ARG_phase].u_int != -1) {
-            self->slave_config.cpha = args[ARG_phase].u_int;
+            self->slave_config->cpha = args[ARG_phase].u_int;
         }
         if (args[ARG_bits].u_int != -1) {
-            self->slave_config.bitsPerFrame = args[ARG_bits].u_int;
+            self->slave_config->bitsPerFrame = args[ARG_bits].u_int;
         }
         if (args[ARG_firstbit].u_int != -1) {
-            self->slave_config.direction = args[ARG_firstbit].u_int;
+            self->slave_config->direction = args[ARG_firstbit].u_int;
         }
         if (args[ARG_timeout].u_int != -1) {
             self->timeout = args[ARG_timeout].u_int;
         }
         LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
-        LPSPI_SlaveInit(self->spi_inst, &self->slave_config);
+        LPSPI_SlaveInit(self->spi_inst, self->slave_config);
     }
 }
 
@@ -343,16 +345,16 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config.cpol) | LPSPI_TCR_CPHA(self->master_config.cpha) |
-                        LPSPI_TCR_LSBF(self->master_config.direction) | LPSPI_TCR_FRAMESZ(self->master_config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config.whichPcs);
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
+                        LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
             LPSPI_MasterTransferEDMA(self->spi_inst, &g_m_edma_handle, &masterXfer);
 
             // Wait until transfer completed. Use the timer as backup for timeout
-            t = ticks_us64() + 15000000 * len / self->master_config.baudRate + 1000000;
+            t = ticks_us64() + 15000000 * len / self->master_config->baudRate + 1000000;
 
             while (self->transfer_busy) {
                 if (ticks_us64() > t) {  // Timeout
@@ -390,9 +392,9 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config.cpol) | LPSPI_TCR_CPHA(self->slave_config.cpha) |
-                        LPSPI_TCR_LSBF(self->slave_config.direction) | LPSPI_TCR_FRAMESZ(self->slave_config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config.whichPcs);
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config->cpol) | LPSPI_TCR_CPHA(self->slave_config->cpha) |
+                        LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
@@ -426,9 +428,9 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config.cpol) | LPSPI_TCR_CPHA(self->master_config.cpha) |
-                        LPSPI_TCR_LSBF(self->master_config.direction) | LPSPI_TCR_FRAMESZ(self->master_config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config.whichPcs);
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
+                        LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             masterXfer.txData = (uint8_t *)src;
@@ -439,17 +441,16 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             LPSPI_MasterTransferBlocking(self->spi_inst, &masterXfer);
 
         } else {
-            lpspi_slave_handle_t g_s_handle;
             lpspi_transfer_t slaveXfer;
 
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
-            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config.cpol) | LPSPI_TCR_CPHA(self->slave_config.cpha) |
-                        LPSPI_TCR_LSBF(self->slave_config.direction) | LPSPI_TCR_FRAMESZ(self->slave_config.bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config.whichPcs);
+            self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config->cpol) | LPSPI_TCR_CPHA(self->slave_config->cpha) |
+                        LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
+                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
-            LPSPI_SlaveTransferCreateHandle(self->spi_inst, &g_s_handle, LPSPI_SlaveCallback, self);
+            LPSPI_SlaveTransferCreateHandle(self->spi_inst, self->slave_handle, LPSPI_SlaveCallback, self);
 
             slaveXfer.txData      = (uint8_t *)src;
             slaveXfer.rxData      = (uint8_t *)dest;
@@ -458,14 +459,14 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
             /* Slave start receive */
             self->transfer_busy = true;
-            LPSPI_SlaveTransferNonBlocking(self->spi_inst, &g_s_handle, &slaveXfer);
+            LPSPI_SlaveTransferNonBlocking(self->spi_inst, self->slave_handle, &slaveXfer);
 
             // Wait until transfer completed. Use the timer as backup for timeout
             t = ticks_us64() + self->timeout * 1000;
             while (self->transfer_busy) {
                 if (ticks_us64() > t) {  // Timeout
                     // Abort the transfer
-                    LPSPI_SlaveTransferAbort(self->spi_inst, &g_s_handle);
+                    LPSPI_SlaveTransferAbort(self->spi_inst, self->slave_handle);
                     mp_raise_OSError(MP_ETIMEDOUT);
                 }
                 MICROPY_EVENT_POLL_HOOK
