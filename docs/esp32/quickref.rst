@@ -102,6 +102,12 @@ Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
+After a call to ``wlan.connect()``, micropython will by default retry to connect
+**forever**, even when the authentication failed or no AP is in range. ``wlan.status()`` will return ``network.STAT_CONNECTING`` in this state until a connection succeeds or the interface gets disabled (e.g. by ``wlan.active(False)``).
+
+This can be changed by calling ``wlan.config(reconnects=n)``, where n are the number of
+desired reconnects. A value of -1 will restore the default behavior (try to reconnect forever).
+
 Delay and timing
 ----------------
 
