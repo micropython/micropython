@@ -17,7 +17,7 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
-import os, select, sys, time
+import os, sys
 import serial.tools.list_ports
 
 from . import pyboardextended as pyboard
@@ -249,12 +249,7 @@ def do_filesystem(pyb, args):
 
 def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
     while True:
-        if isinstance(console_in, ConsolePosix):
-            # TODO pyb.serial might not have fd
-            select.select([console_in.infd, pyb.serial.fd], [], [])
-        else:
-            while not (console_in.inWaiting() or pyb.serial.inWaiting()):
-                time.sleep(0.01)
+        console_in.waitchar(pyb.serial)
         c = console_in.readchar()
         if c:
             if c == b"\x1d":  # ctrl-], quit
