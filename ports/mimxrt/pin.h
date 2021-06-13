@@ -88,15 +88,6 @@ enum {
     PIN_DRIVE_POWER_6, // R0/7
 };
 
-enum {
-    PIN_IRQ_NONE = 0,
-    PIN_IRQ_LOW = 1,
-    PIN_IRQ_HIGH = 2,
-    PIN_IRQ_RISING = 3,
-    PIN_IRQ_FALLING = 4,
-    PIN_IRQ_RISING_OR_FALLING = 0,
-};
-
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

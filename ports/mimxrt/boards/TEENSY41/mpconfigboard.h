@@ -9,5 +9,4 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "teensy41_flexspi_nor_config.h"
 
-#define MICROPY_BOARD_ROOT_POINTERS \
-    void *machine_pin_irq_objects[4 * 32 + 3];
+#define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)

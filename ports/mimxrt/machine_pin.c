@@ -71,7 +71,6 @@ const mp_obj_type_t machine_pin_board_pins_obj_type = {
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
-// STATIC const uint16_t GPIO_irqs[] = GPIO_IRQS;
 static GPIO_Type *gpiobases[] = GPIO_BASE_PTRS;
 STATIC const uint16_t GPIO_combined_low_irqs[] = GPIO_COMBINED_LOW_IRQS;
 STATIC const uint16_t GPIO_combined_high_irqs[] = GPIO_COMBINED_HIGH_IRQS;
@@ -340,7 +339,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
     uint32_t index = GET_PIN_IRQ_INDEX(gpio_nr, self->pin);
     if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
-        mp_raise_ValueError(MP_ERROR_TEXT("IQR not supported at that PIN"));
+        mp_raise_ValueError(MP_ERROR_TEXT("IRQ not supported on given Pin"));
     }
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
 
@@ -368,7 +367,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.ishard = args[ARG_hard].u_bool;
         irq->flags = 0;
         if (args[ARG_trigger].u_int >= ARRAY_SIZE(IRQ_mapping)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("IQR mode not supported"));
+            mp_raise_ValueError(MP_ERROR_TEXT("IRQ mode not supported"));
         }
         irq->trigger = IRQ_mapping[args[ARG_trigger].u_int];
 
