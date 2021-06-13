@@ -150,6 +150,7 @@ SRC_C = \
 	hal/flexspi_nor_flash.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/gchelper_native.c \
 	lib/utils/mpirq.c \
 	lib/utils/printf.c \

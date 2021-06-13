@@ -28,8 +28,10 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
+#include "lib/timeutils/timeutils.h"
 #include "ticks.h"
 #include "tusb.h"
+#include "fsl_snvs_lp.h"
 
 #include CPU_HEADER_H
 
@@ -93,4 +95,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     //     while (!(USARTx->USART.INTFLAG.bit.DRE)) { }
     //     USARTx->USART.DATA.bit.DATA = *str++;
     // }
+}
+
+uint64_t mp_hal_time_ns(void) {
+    snvs_lp_srtc_datetime_t t;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &t);
+    uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second);
+    return s * 1000000000ULL;
 }
