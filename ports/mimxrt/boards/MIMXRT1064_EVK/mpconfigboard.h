@@ -8,5 +8,21 @@
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1064_flexspi_nor_config.h"
 
 // Define mapping logical UART # to hardware uart #
+
+// LPUART3 on D0/D1  -> 1
+// LPUART2 on D7/D6  -> 2
+// LPUART6 on D8/D9  -> 3
+// LPUART8 on A1/A0  -> 4
+
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table)/sizeof(uart_index_table)[0])
 #define MICROPY_HW_UART_INDEX   { 0, 3, 2, 6, 8 }
+
+#define IOMUX_TABLE_UART \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_02_LPUART2_TX }, { IOMUXC_GPIO_AD_B1_03_LPUART2_RX }, \
+    { IOMUXC_GPIO_AD_B1_06_LPUART3_TX }, { IOMUXC_GPIO_AD_B1_07_LPUART3_RX }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B0_02_LPUART6_TX }, { IOMUXC_GPIO_AD_B0_03_LPUART6_RX }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_10_LPUART8_TX }, { IOMUXC_GPIO_AD_B1_11_LPUART8_RX },

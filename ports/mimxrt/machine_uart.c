@@ -48,8 +48,15 @@ typedef struct _machine_uart_obj_t {
     bool new;
 } machine_uart_obj_t;
 
+typedef struct _iomux_table_t {
+    uint32_t muxRegister;
+    uint32_t muxMode;
+    uint32_t inputRegister;
+    uint32_t inputDaisy;
+    uint32_t configRegister;
+} iomux_table_t;
+
 extern const mp_obj_type_t machine_uart_type;
-extern bool lpuart_set_iomux(int8_t uart);
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
@@ -62,9 +69,31 @@ extern bool lpuart_set_iomux(int8_t uart);
 
 STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
 STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
+static const iomux_table_t iomux_table_uart[] = {
+    IOMUX_TABLE_UART
+};
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+
+#define RX (iomux_table_uart[index + 1])
+#define TX (iomux_table_uart[index])
+
+bool lpuart_set_iomux(int8_t uart) {
+
+    int index = (uart - 1) * 2;
+
+    if (TX.muxRegister != 0) {
+        IOMUXC_SetPinMux(TX.muxRegister, TX.muxMode, TX.inputRegister, TX.inputDaisy, TX.configRegister, 0U);
+        IOMUXC_SetPinConfig(TX.muxRegister, TX.muxMode, TX.inputRegister, TX.inputDaisy, TX.configRegister, 0x10B0u);
+
+        IOMUXC_SetPinMux(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister, 0U);
+        IOMUXC_SetPinConfig(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister, 0x10B0u);
+        return true;
+    } else {
+        return false;
+    }
+}
 
 uint32_t UART_SrcFreq(void) {
     uint32_t freq;

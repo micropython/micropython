@@ -11,5 +11,23 @@
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1020_flexspi_nor_config.h"
 
 // Define mapping logical UART # to hardware uart #
+//
+// D3/D5   LPUART1  Not usable, Since D3 is blocked.
+// D0/D1   LPUART2 -> 1
+// D6/D9   LPUART3 -> 2
+// D10/D12 LPUART5 -> 3
+// D14/D15 LPUART8 -> 4
+// A0/A1   LPUART4 -> 5
+
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table)/sizeof(uart_index_table)[0])
 #define MICROPY_HW_UART_INDEX   { 0, 2, 3, 5, 8, 4 }
+
+#define IOMUX_TABLE_UART \
+    { IOMUXC_GPIO_AD_B0_06_LPUART1_TX }, { IOMUXC_GPIO_AD_B0_07_LPUART1_RX }, \
+    { IOMUXC_GPIO_AD_B1_08_LPUART2_TX }, { IOMUXC_GPIO_AD_B1_09_LPUART2_RX }, \
+    { IOMUXC_GPIO_AD_B0_14_LPUART3_TX }, { IOMUXC_GPIO_AD_B0_15_LPUART3_RX }, \
+    { IOMUXC_GPIO_AD_B1_10_LPUART4_TX }, { IOMUXC_GPIO_AD_B1_11_LPUART4_RX }, \
+    { IOMUXC_GPIO_AD_B0_10_LPUART5_TX }, { IOMUXC_GPIO_AD_B0_11_LPUART5_RX }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_SD_B1_02_LPUART8_TX }, { IOMUXC_GPIO_SD_B1_03_LPUART8_RX },

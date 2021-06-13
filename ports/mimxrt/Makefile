@@ -136,7 +136,6 @@ SRC_C = \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
 	machine_adc.c \
-	$(BOARD_DIR)/lpdev_iomux.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
