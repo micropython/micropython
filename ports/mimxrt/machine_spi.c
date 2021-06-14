@@ -274,10 +274,8 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
-static uint16_t dma_req_src_rx[] = { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx,
-                                        kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx };
-static uint16_t dma_req_src_tx[] = { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx,
-                                        kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx };
+static uint16_t dma_req_src_rx[] = DMA_REQ_SRC_RX;
+static uint16_t dma_req_src_tx[] = DMA_REQ_SRC_TX;
 
 
 void LPSPI_EDMAMasterCallback(LPSPI_Type *base, lpspi_master_edma_handle_t *handle, status_t status, void *self_in) {
