@@ -112,7 +112,7 @@ void cyw43_deinit(cyw43_t *self) {
     self->itf_state = 0;
 
     // Disable async polling
-    SDMMC1->MASK &= ~SDMMC_MASK_SDIOITIE;
+    sdio_enable_irq(false);
     cyw43_poll = NULL;
 
     #ifdef pyb_pin_WL_RFSW_VDD
@@ -164,7 +164,7 @@ STATIC int cyw43_ensure_up(cyw43_t *self) {
     cyw43_sleep = CYW43_SLEEP_MAX;
     cyw43_poll = cyw43_poll_func;
     #if USE_SDIOIT
-    SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+    sdio_enable_irq(true);
     #else
     extern void extint_set(const pin_obj_t *pin, uint32_t mode);
     extint_set(pyb_pin_WL_HOST_WAKE, GPIO_MODE_IT_FALLING);
@@ -209,7 +209,7 @@ STATIC void cyw43_poll_func(void) {
     }
 
     #if USE_SDIOIT
-    SDMMC1->MASK |= SDMMC_MASK_SDIOITIE;
+    sdio_enable_irq(true);
     #endif
 }
 
@@ -227,10 +227,7 @@ int cyw43_cb_read_host_interrupt_pin(void *cb_data) {
 void cyw43_cb_ensure_awake(void *cb_data) {
     cyw43_sleep = CYW43_SLEEP_MAX;
     #if !USE_SDIOIT
-    if (__HAL_RCC_SDMMC1_IS_CLK_DISABLED()) {
-        __HAL_RCC_SDMMC1_CLK_ENABLE(); // enable SDIO peripheral
-        sdio_enable_high_speed_4bit();
-    }
+    sdio_reenable();
     #endif
 }
 

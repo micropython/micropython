@@ -84,7 +84,7 @@ BOOL WINAPI console_sighandler(DWORD evt) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         return TRUE;
     }
     return FALSE;

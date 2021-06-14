@@ -24,14 +24,104 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "pin.h"
 
-const mp_obj_type_t pin_type = {
-    .base = {&mp_type_type},
-    .name = MP_QSTR_Pin,
-};
 
-const mp_obj_type_t pin_af_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_PinAF,
-};
+void pin_init(void) {
+    return;
+}
+
+uint32_t pin_get_mode(const machine_pin_obj_t *pin) {
+    uint32_t pin_mode = PIN_MODE_ALT;
+    uint32_t config_register = *((volatile uint32_t *)pin->configRegister);
+    uint8_t af_mode = pin_get_af(pin);
+
+    if (af_mode == PIN_AF_MODE_ALT5) {
+        bool open_drain_enabled = (config_register & IOMUXC_SW_PAD_CTL_PAD_ODE_MASK) >> IOMUXC_SW_PAD_CTL_PAD_ODE_SHIFT;
+
+        if (open_drain_enabled) {
+            pin_mode = PIN_MODE_OPEN_DRAIN;
+        } else {
+            // Check pin direction
+            if ((pin->gpio->GDIR & (1U << pin->pin)) >> pin->pin) {
+                pin_mode = PIN_MODE_OUT;
+            } else {
+                pin_mode = PIN_MODE_IN;
+            }
+        }
+    }
+
+    return pin_mode;
+}
+
+uint32_t pin_get_af(const machine_pin_obj_t *pin) {
+    uint32_t mux_register = *((volatile uint32_t *)pin->muxRegister);
+
+    // Read configured AF-Mode of pin
+    return (uint32_t)(mux_register & IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_MASK) >> IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_SHIFT;
+}
+
+const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
+    const machine_pin_obj_t *pin_obj;
+
+    // If a pin was provided, then use it
+    if (mp_obj_is_type(user_obj, &machine_pin_type)) {
+        pin_obj = user_obj;
+        return pin_obj;
+    }
+
+    // If pin is SMALL_INT
+    if (mp_obj_is_small_int(user_obj)) {
+        uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
+        if (value < num_board_pins) {
+            return machine_pin_board_pins[value];
+        }
+    }
+
+    // See if the pin name matches a board pin
+    pin_obj = pin_find_named_pin(&machine_pin_board_pins_locals_dict, user_obj);
+    if (pin_obj) {
+        return pin_obj;
+    }
+
+    // See if the pin name matches a cpu pin
+    pin_obj = pin_find_named_pin(&machine_pin_cpu_pins_locals_dict, user_obj);
+    if (pin_obj) {
+        return pin_obj;
+    }
+
+    mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't exist"));
+}
+
+const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return named_elem->value;
+    }
+    return NULL;
+}
+
+const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn) {
+    const machine_pin_af_obj_t *af_obj = NULL;
+
+    for (int i = 0; i < pin->af_list_len; ++i) {
+        af_obj = &pin->af_list[i];
+        if (af_obj->af_mode == fn) {
+            return af_obj;
+        }
+    }
+
+    return NULL;
+}
+
+const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx) {
+    // TODO: Implement pin_find_af_by_index function
+    return NULL;
+}
+
+const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name) {
+    // TODO: Implement pin_find_af_by_name function
+    return NULL;
+}

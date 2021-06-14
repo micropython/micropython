@@ -27,6 +27,10 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 # File containing description of content to be frozen into firmware.
 FROZEN_MANIFEST ?= boards/manifest.py
 
+# Location of mboot (or other bootloader) if the device has one.
+# Used by machine.bootloader().
+MBOOT_TEXT0_ADDR ?= 0x08000000
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -101,6 +105,7 @@ CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
+CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
 # Configure for nan-boxing object model if requested

@@ -8,6 +8,10 @@ import argparse
 import inspect
 import re
 from glob import glob
+import multiprocessing
+from multiprocessing.pool import ThreadPool
+import threading
+import tempfile
 
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
@@ -157,12 +161,14 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
+                mpy_modname = tempfile.mktemp(dir="")
+                mpy_filename = mpy_modname + ".mpy"
                 subprocess.check_output(
                     [MPYCROSS]
                     + args.mpy_cross_flags.split()
-                    + ["-o", "mpytest.mpy", "-X", "emit=" + args.emit, test_file]
+                    + ["-o", mpy_filename, "-X", "emit=" + args.emit, test_file]
                 )
-                cmdlist.extend(["-m", "mpytest"])
+                cmdlist.extend(["-m", mpy_modname])
             else:
                 cmdlist.append(test_file)
 
@@ -175,7 +181,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
-                rm_f("mpytest.mpy")
+                rm_f(mpy_filename)
 
     else:
         # run on pyboard
@@ -247,12 +253,32 @@ def run_feature_check(pyb, args, base_path, test_file):
     return run_micropython(pyb, args, base_path("feature_check", test_file), is_special=True)
 
 
-def run_tests(pyb, tests, args, result_dir):
-    test_count = 0
-    testcase_count = 0
-    passed_count = 0
-    failed_tests = []
-    skipped_tests = []
+class ThreadSafeCounter:
+    def __init__(self, start=0):
+        self._value = start
+        self._lock = threading.Lock()
+
+    def increment(self):
+        self.add(1)
+
+    def add(self, to_add):
+        with self._lock:
+            self._value += to_add
+
+    def append(self, arg):
+        self.add([arg])
+
+    @property
+    def value(self):
+        return self._value
+
+
+def run_tests(pyb, tests, args, result_dir, num_threads=1):
+    test_count = ThreadSafeCounter()
+    testcase_count = ThreadSafeCounter()
+    passed_count = ThreadSafeCounter()
+    failed_tests = ThreadSafeCounter([])
+    skipped_tests = ThreadSafeCounter([])
 
     skip_tests = set()
     skip_native = False
@@ -490,7 +516,7 @@ def run_tests(pyb, tests, args, result_dir):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
 
-    for test_file in tests:
+    def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
 
         if args.filters:
@@ -500,7 +526,7 @@ def run_tests(pyb, tests, args, result_dir):
                 if pat.search(test_file):
                     verdict = action
             if verdict == "exclude":
-                continue
+                return
 
         test_basename = test_file.replace("..", "_").replace("./", "").replace("/", "_")
         test_name = os.path.splitext(os.path.basename(test_file))[0]
@@ -533,12 +559,12 @@ def run_tests(pyb, tests, args, result_dir):
         if args.list_tests:
             if not skip_it:
                 print(test_file)
-            continue
+            return
 
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
-            continue
+            return
 
         # get expected output
         test_file_expected = test_file + ".exp"
@@ -560,7 +586,7 @@ def run_tests(pyb, tests, args, result_dir):
         output_expected = output_expected.replace(b"\r\n", b"\n")
 
         if args.write_exp:
-            continue
+            return
 
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
@@ -568,16 +594,16 @@ def run_tests(pyb, tests, args, result_dir):
         if output_mupy == b"SKIP\n":
             print("skip ", test_file)
             skipped_tests.append(test_name)
-            continue
+            return
 
-        testcase_count += len(output_expected.splitlines())
+        testcase_count.add(len(output_expected.splitlines()))
 
         filename_expected = os.path.join(result_dir, test_basename + ".exp")
         filename_mupy = os.path.join(result_dir, test_basename + ".out")
 
         if output_expected == output_mupy:
             print("pass ", test_file)
-            passed_count += 1
+            passed_count.increment()
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -588,16 +614,32 @@ def run_tests(pyb, tests, args, result_dir):
             print("FAIL ", test_file)
             failed_tests.append(test_name)
 
-        test_count += 1
+        test_count.increment()
+
+    if pyb or args.list_tests:
+        num_threads = 1
+
+    if num_threads > 1:
+        pool = ThreadPool(num_threads)
+        pool.map(run_one_test, tests)
+    else:
+        for test in tests:
+            run_one_test(test)
 
     if args.list_tests:
         return True
 
-    print("{} tests performed ({} individual testcases)".format(test_count, testcase_count))
-    print("{} tests passed".format(passed_count))
+    print(
+        "{} tests performed ({} individual testcases)".format(
+            test_count.value, testcase_count.value
+        )
+    )
+    print("{} tests passed".format(passed_count.value))
 
+    skipped_tests = sorted(skipped_tests.value)
     if len(skipped_tests) > 0:
         print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
+    failed_tests = sorted(failed_tests.value)
     if len(failed_tests) > 0:
         print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         return False
@@ -697,6 +739,14 @@ the last matching regex is used:
     )
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
+    )
+    cmd_parser.add_argument(
+        "-j",
+        "--jobs",
+        default=multiprocessing.cpu_count(),
+        metavar="N",
+        type=int,
+        help="Number of tests to run simultaneously",
     )
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     cmd_parser.add_argument(
@@ -800,7 +850,7 @@ the last matching regex is used:
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)
-        res = run_tests(pyb, tests, args, args.result_dir)
+        res = run_tests(pyb, tests, args, args.result_dir, args.jobs)
     finally:
         if pyb:
             pyb.close()

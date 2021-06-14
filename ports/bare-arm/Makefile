@@ -5,7 +5,7 @@ include ../../py/mkenv.mk
 include $(TOP)/py/py.mk
 
 # Set makefile-level MicroPython feature configurations.
-MICROPY_ROM_TEXT_COMPRESSION ?= 1
+MICROPY_ROM_TEXT_COMPRESSION ?= 0
 
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-

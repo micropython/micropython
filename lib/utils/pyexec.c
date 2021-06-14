@@ -588,8 +588,8 @@ friendly_repl_reset:
 
         // If the GC is locked at this point there is no way out except a reset,
         // so force the GC to be unlocked to help the user debug what went wrong.
-        if (MP_STATE_MEM(gc_lock_depth) != 0) {
-            MP_STATE_MEM(gc_lock_depth) = 0;
+        if (MP_STATE_THREAD(gc_lock_depth) != 0) {
+            MP_STATE_THREAD(gc_lock_depth) = 0;
         }
 
         vstr_reset(&line);

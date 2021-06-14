@@ -39,6 +39,7 @@
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_ENABLE_MMCARD    (1)
+#define MICROPY_HW_ENABLE_RF_SWITCH (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
@@ -121,7 +122,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_UART6_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART6_CTS        (pyb_pin_BT_CTS)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_NAME        "X"
 #define MICROPY_HW_I2C1_SCL         (pyb_pin_X9)
 #define MICROPY_HW_I2C1_SDA         (pyb_pin_X10)
@@ -129,7 +130,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_I2C2_SCL         (pyb_pin_Y9)
 #define MICROPY_HW_I2C2_SDA         (pyb_pin_Y10)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NAME        "X"
 #define MICROPY_HW_SPI1_NSS         (pyb_pin_X5)
 #define MICROPY_HW_SPI1_SCK         (pyb_pin_X6)
@@ -145,7 +146,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SPI3_MISO        (pyb_pin_W50)
 #define MICROPY_HW_SPI3_MOSI        (pyb_pin_W46)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_NAME        "X"
 #define MICROPY_HW_CAN1_TX          (pyb_pin_X10)
 #define MICROPY_HW_CAN1_RX          (pyb_pin_X9)
@@ -165,12 +166,13 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
 // SD card
-#define MICROPY_HW_SDMMC2_CK                (pyb_pin_SD_CK)
-#define MICROPY_HW_SDMMC2_CMD               (pyb_pin_SD_CMD)
-#define MICROPY_HW_SDMMC2_D0                (pyb_pin_SD_D0)
-#define MICROPY_HW_SDMMC2_D1                (pyb_pin_SD_D1)
-#define MICROPY_HW_SDMMC2_D2                (pyb_pin_SD_D2)
-#define MICROPY_HW_SDMMC2_D3                (pyb_pin_SD_D3)
+#define MICROPY_HW_SDCARD_SDMMC             (2)
+#define MICROPY_HW_SDCARD_CK                (pyb_pin_SD_CK)
+#define MICROPY_HW_SDCARD_CMD               (pyb_pin_SD_CMD)
+#define MICROPY_HW_SDCARD_D0                (pyb_pin_SD_D0)
+#define MICROPY_HW_SDCARD_D1                (pyb_pin_SD_D1)
+#define MICROPY_HW_SDCARD_D2                (pyb_pin_SD_D2)
+#define MICROPY_HW_SDCARD_D3                (pyb_pin_SD_D3)
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pyb_pin_SD_SW)
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)

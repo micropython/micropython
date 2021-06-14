@@ -85,6 +85,8 @@ enum {
 
 extern uint8_t _estack[ELEM_DATA_SIZE];
 
+void systick_init(void);
+
 uint32_t get_le32(const uint8_t *b);
 void led_state_all(unsigned int mask);
 

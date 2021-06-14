@@ -41,7 +41,7 @@ void uart_irq(void) {
         int c = uart_getc(uart_default);
         #if MICROPY_KBD_EXCEPTION
         if (c == mp_interrupt_char) {
-            mp_keyboard_interrupt();
+            mp_sched_keyboard_interrupt();
             return;
         }
         #endif

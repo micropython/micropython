@@ -60,9 +60,18 @@
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
 #endif
 
+// Constants to return from boardctrl_run_boot_py, boardctrl_run_main_py.
 enum {
     BOARDCTRL_CONTINUE,
     BOARDCTRL_GOTO_SOFT_RESET_EXIT,
+};
+
+// Constants for boardctrl_state_t.reset_mode.
+enum {
+    BOARDCTRL_RESET_MODE_NORMAL = 1,
+    BOARDCTRL_RESET_MODE_SAFE_MODE = 2,
+    BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM = 3,
+    BOARDCTRL_RESET_MODE_BOOTLOADER = 4,
 };
 
 typedef struct _boardctrl_state_t {

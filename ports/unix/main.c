@@ -451,7 +451,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (sizeof(void *) / 4));
+    // Define a reasonable stack limit to detect stack overflow.
+    mp_uint_t stack_limit = 40000 * (sizeof(void *) / 4);
+    #if defined(__arm__) && !defined(__thumb2__)
+    // ARM (non-Thumb) architectures require more stack.
+    stack_limit *= 2;
+    #endif
+    mp_stack_set_limit(stack_limit);
 
     pre_process_options(argc, argv);
 

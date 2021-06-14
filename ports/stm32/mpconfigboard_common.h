@@ -47,6 +47,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
+#ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
@@ -107,14 +112,24 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
-// SD/MMC interface bus width (defaults to 4 bits)
-#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
-#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+// Which SDMMC peripheral to use for the SD/MMC card driver (1 or 2)
+#ifndef MICROPY_HW_SDCARD_SDMMC
+#define MICROPY_HW_SDCARD_SDMMC (1)
+#endif
+
+// SD/MMC card driver interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDCARD_BUS_WIDTH
+#define MICROPY_HW_SDCARD_BUS_WIDTH (4)
 #endif
 
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
+#endif
+
+// Which SDMMC peripheral to use for the SDIO driver (1 or 2)
+#ifndef MICROPY_HW_SDIO_SDMMC
+#define MICROPY_HW_SDIO_SDMMC (1)
 #endif
 
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
@@ -381,6 +396,15 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
+// generates the relevant AF constants.
+#if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1
+#define MICROPY_HW_SDMMC1_CK (1)
+#endif
+#if MICROPY_HW_SDCARD_SDMMC == 2 || MICROPY_HW_SDIO_SDMMC == 2
+#define MICROPY_HW_SDMMC2_CK (1)
 #endif
 
 // Whether the USB peripheral is device-only, or multiple OTG
