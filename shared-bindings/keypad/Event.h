@@ -24,21 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_STATE__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_STATE__H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H
 
 #include "py/obj.h"
-#include "py/enum.h"
+#include "shared-module/keypad/Event.h"
 
-typedef enum {
-    STATE_JUST_PRESSED,
-    STATE_STILL_PRESSED,
-    STATE_PRESSED,
-    STATE_JUST_RELEASED,
-    STATE_STILL_RELEASED,
-    STATE_RELEASED,
-} keypad_state_t;
+extern const mp_obj_type_t keypad_event_type;
 
-extern const mp_obj_type_t keypad_state_type;
+void common_hal_keypad_event_construct(keypad_event_obj_t *self, uint16_t key_num, bool pressed);
+mp_int_t common_hal_keypad_event_get_key_num(keypad_event_obj_t *self);
+bool common_hal_keypad_event_get_pressed(keypad_event_obj_t *self);
+bool common_hal_keypad_event_get_released(keypad_event_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_STATE__H
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H

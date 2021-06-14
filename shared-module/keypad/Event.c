@@ -24,24 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+#include "shared-module/keypad/Event.h"
 
-#include "common-hal/digitalio/DigitalInOut.h"
+void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_uint_t key_num, bool pressed) {
+    self->key_num = key_num;
+    self->pressed = true;
+}
 
-#include "py/obj.h"
-#include "py/objtuple.h"
-#include "py/ringbuf.h"
+mp_int_t common_hal_keypad_event_get_key_num(keypad_event_obj_t *self) {
+    return self->key_num;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_tuple_t *digitalinouts;
-    uint64_t last_scan_ticks;
-    bool value_when_pressed;
-    bool *previously_pressed;
-    bool *currently_pressed;
-    ringbuf_t *encoded_events;
-} keypad_keys_obj_t;
+bool common_hal_keypad_event_get_pressed(keypad_event_obj_t *self) {
+    return self->pressed;
+}
 
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+bool common_hal_keypad_event_get_released(keypad_event_obj_t *self) {
+    return !self->pressed;
+}

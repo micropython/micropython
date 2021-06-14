@@ -95,13 +95,18 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
+#: shared-bindings/keypad/Event.c
+msgid "%q must be > 0"
+msgstr ""
+
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
+#: shared-bindings/displayio/Shape.c shared-bindings/keypad/KeyMatrix.c
+#: shared-bindings/keypad/Keys.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
@@ -116,7 +121,8 @@ msgid "%q must be a tuple of length 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#: shared-bindings/canio/Match.c shared-bindings/keypad/Keys.c
+#: shared-bindings/canio/Match.c shared-bindings/keypad/KeyMatrix.c
+#: shared-bindings/keypad/Keys.c
 msgid "%q out of range"
 msgstr ""
 
@@ -905,8 +911,7 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/keypad/Keys.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"

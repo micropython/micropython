@@ -25,16 +25,20 @@
  */
 
 #include "py/gc.h"
-#include "py/objproperty.h"
+#include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/Keys.h"
-#include "shared-bindings/keypad/State.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
 #include "supervisor/port.h"
 
 #define DEBOUNCE_TICKS (20)
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull) {
+// Top bit of 16-bit event indicates pressed or released. Rest is key_num.
+#define EVENT_PRESSED (1 << 15)
+#define EVENT_RELEASED (0)
+#define EVENT_KEY_NUM_MASK (~EVENT_PRESSED)
+
+void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, size_t max_events) {
     mp_obj_t dios[num_pins];
 
     for (size_t i = 0; i < num_pins; i++) {
@@ -52,88 +56,60 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->value_when_pressed = value_when_pressed;
 
+    // Event queue is 16-bit values.
+    ringbuf_alloc(self->encoded_events, max_events * 2, false);
 }
 
-void common_hal_keypad_keys_keys_with_state(keypad_keys_obj_t *self, int state, mp_obj_list_t *list_into) {
-    const size_t list_length = list_into->len;
-
-    size_t next_list_slot = 0;
-
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
-        if (next_list_slot >= list_length) {
-            // List is full.
-            break;
-        }
-
-        bool store_key = false;
-        switch (state) {
-            case STATE_JUST_PRESSED:
-                store_key = !self->previously_pressed[key_num] && self->currently_pressed[key_num];
-                break;
-            case STATE_STILL_PRESSED:
-                store_key = self->previously_pressed[key_num] && self->currently_pressed[key_num];
-                break;
-            case STATE_PRESSED:
-                store_key = self->currently_pressed[key_num];
-                break;
-            case STATE_JUST_RELEASED:
-                store_key = self->previously_pressed[key_num] && !self->currently_pressed[key_num];
-                break;
-            case STATE_STILL_RELEASED:
-                store_key = !self->previously_pressed[key_num] && !self->currently_pressed[key_num];
-                break;
-            case STATE_RELEASED:
-                store_key = !self->currently_pressed[key_num];
-                break;
-        }
-
-        if (store_key) {
-            mp_obj_list_store(list_into, MP_OBJ_NEW_SMALL_INT(next_list_slot),
-                MP_OBJ_NEW_SMALL_INT(key_num));
-            next_list_slot++;
-        }
-
-        for (size_t unused_slot = next_list_slot; unused_slot < list_length; unused_slot++) {
-            mp_obj_list_store(list_into, MP_OBJ_NEW_SMALL_INT(unused_slot),
-                MP_ROM_NONE);
-        }
-    }
-}
-
-size_t common_hal_keypad_keys_length(keypad_keys_obj_t *self) {
+size_t common_hal_keypad_keys_num_keys(keypad_keys_obj_t *self) {
     return self->digitalinouts->len;
 }
 
-bool common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
+void keypad_keys_scan(keypad_keys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
     if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
-        // Too soon.
-        return false;
+        // Too soon. Wait longer to debounce.
+        return;
     }
 
     self->last_scan_ticks = now;
 
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
-        self->previously_pressed[key_num] = self->currently_pressed[key_num];
-        self->currently_pressed[key_num] =
-            common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
+    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_num_keys(self); key_num++) {
+        // Remember the previous up/down state.
+        const bool previous = self->currently_pressed[key_num];
+        self->previously_pressed[key_num] = previous;
+
+        // Get the current state.
+        const bool current = common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
             self->value_when_pressed;
+        self->currently_pressed[key_num] = current;
+
+        // Record any transitions.
+        if (previous != current) {
+            if (ringbuf_num_empty(self->encoded_events) == 0) {
+                // Discard oldest if full.
+                ringbuf_get16(self->encoded_events);
+            }
+            ringbuf_put16(self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
+        }
     }
-    return true;
 }
 
-mp_int_t common_hal_keypad_keys_state(keypad_keys_obj_t *self, mp_uint_t key_num) {
-    if (self->currently_pressed[key_num]) {
-        if (self->previously_pressed[key_num]) {
-            return STATE_STILL_PRESSED;
-        } else {
-            return STATE_JUST_PRESSED;
-        }
-    } else {
-        if (self->previously_pressed[key_num]) {
-            return STATE_JUST_RELEASED;
-        } else {
-            return STATE_STILL_RELEASED;
-        }
+bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_num) {
+    return self->currently_pressed[key_num];
+}
+
+mp_obj_t common_hal_keypad_keys_next_event(keypad_keys_obj_t *self) {
+    int encoded_event = ringbuf_get16(self->encoded_events);
+    if (encoded_event == -1) {
+        return MP_ROM_NONE;
     }
+
+    keypad_event_obj_t *event = m_new_obj(keypad_event_obj_t);
+    self->base.type = &keypad_event_type;
+    common_hal_keypad_event_construct(event, encoded_event & EVENT_KEY_NUM_MASK, encoded_event & EVENT_PRESSED);
+    return MP_OBJ_FROM_PTR(event);
+}
+
+void common_hal_keypad_keys_clear_events(keypad_keys_obj_t *self) {
+    ringbuf_clear(self->encoded_events);
 }

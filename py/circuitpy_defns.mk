@@ -516,8 +516,9 @@ SRC_SHARED_MODULE_ALL = \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	keypad/__init__.c \
+	keypad/Event.c \
+	keypad/KeyMatrix.c \
 	keypad/Keys.c \
-	keypad/State.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \
