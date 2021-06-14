@@ -29,6 +29,7 @@
 #include "autoconf.h"
 // Included here to get basic Zephyr environment (macros, etc.)
 #include <zephyr.h>
+#include <drivers/spi.h>
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
@@ -62,6 +63,9 @@
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SPI_MSB (SPI_TRANSFER_MSB)
+#define MICROPY_PY_MACHINE_SPI_LSB (SPI_TRANSFER_LSB)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_PY_STRUCT           (0)

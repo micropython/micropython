@@ -38,6 +38,7 @@ set(MICROPY_SOURCE_PORT
     main.c
     help.c
     machine_i2c.c
+    machine_spi.c
     machine_pin.c
     machine_uart.c
     modbluetooth_zephyr.c
