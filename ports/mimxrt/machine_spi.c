@@ -300,7 +300,7 @@ void LPSPI_SlaveCallback(LPSPI_Type *base, lpspi_slave_handle_t *handle, status_
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
-    const size_t dma_min_size_threshold = 32;
+    const size_t dma_min_size_threshold = 16;  // That's the FIFO size
     uint64_t t;
 
     int chan_tx = -1;
@@ -361,7 +361,6 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
             self->transfer_busy = true;
             LPSPI_MasterTransferEDMA(self->spi_inst, &g_master_edma_handle, &masterXfer);
-
             // Wait until transfer completed. Use the timer as backup for timeout
             t = ticks_us64() + 15000000 * len / self->master_config->baudRate + 1000000;
 
