@@ -47,6 +47,7 @@
 #define DEFAULT_SPI_FIRSTBIT    (kLPSPI_MsbFirst)
 #define DEFAULT_SPI_MODE        (MICROPY_PY_MACHINE_SPI_MASTER)
 #define DEFAULT_SPI_TIMEOUT     (1000)
+#define DEFAULT_SPI_DRIVE       (6)
 
 #define CLOCK_DIVIDER           (3)
 
@@ -55,12 +56,12 @@ typedef struct _machine_spi_obj_t {
     uint8_t spi_id;
     uint8_t mode;
     uint8_t spi_hw_id;
+    bool transfer_busy;
     LPSPI_Type *spi_inst;
     lpspi_master_config_t *master_config;
     lpspi_slave_config_t *slave_config;
     lpspi_slave_handle_t *slave_handle;
     uint32_t timeout;
-    bool transfer_busy;
 } machine_spi_obj_t;
 
 typedef struct _iomux_table_t {
@@ -86,22 +87,26 @@ static const char *firstbit_str[] = {"MSB", "LSB"};
 #define SDO (iomux_table_uart[index + 2])
 #define SDI (iomux_table_uart[index + 3])
 
-bool lpspi_set_iomux(int8_t spi) {
+bool lpspi_set_iomux(int8_t spi, uint8_t drive) {
 
     int index = (spi - 1) * 4;
 
     if (SCK.muxRegister != 0) {
         IOMUXC_SetPinMux(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0U);
-        IOMUXC_SetPinConfig(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0x10B0u);
+        IOMUXC_SetPinConfig(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister,
+                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0U);
-        IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0x10B0u);
+        IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister,
+                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0U);
-        IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0x10B0u);
+        IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister,
+                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0U);
-        IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0x10B0u);
+        IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister,
+                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         return true;
     } else {
@@ -125,7 +130,7 @@ STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap, ARG_mode, ARG_timeout };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap, ARG_mode, ARG_timeout, ARG_drive };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -136,6 +141,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_gap,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_MODE} },
         { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_TIMEOUT} },
+        { MP_QSTR_drive,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_DRIVE} },
     };
 
     static bool clk_init = true;
@@ -160,13 +166,18 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->mode = args[ARG_mode].u_int;
     self->timeout = args[ARG_timeout].u_int;
 
+    uint8_t drive = args[ARG_drive].u_int;
+    if (drive < 1 || drive > 7) {
+        drive = DEFAULT_SPI_DRIVE;
+    }
+
     if (clk_init) {
         clk_init = false;
         /*Set clock source for LPSPI*/
         CLOCK_SetMux(kCLOCK_LpspiMux, 1);  // Clock source is kCLOCK_Usb1PllPfd0Clk
         CLOCK_SetDiv(kCLOCK_LpspiDiv, CLOCK_DIVIDER);
     }
-    lpspi_set_iomux(spi_index_table[spi_id]);
+    lpspi_set_iomux(spi_index_table[spi_id], drive);
     LPSPI_Reset(self->spi_inst);
     LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
 
@@ -320,21 +331,21 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
         if (self->mode == MICROPY_PY_MACHINE_SPI_MASTER) {
             lpspi_transfer_t masterXfer;
-            lpspi_master_edma_handle_t g_m_edma_handle;
+            lpspi_master_edma_handle_t g_master_edma_handle;
             edma_handle_t lpspiEdmaMasterRxRegToRxDataHandle;
             edma_handle_t lpspiEdmaMasterTxDataToTxRegHandle;
 
             /*Set up lpspi master*/
             L1CACHE_DisableDCache();
 
-            memset(&(g_m_edma_handle), 0, sizeof(g_m_edma_handle));
+            memset(&(g_master_edma_handle), 0, sizeof(g_master_edma_handle));
             memset(&(lpspiEdmaMasterRxRegToRxDataHandle), 0, sizeof(lpspiEdmaMasterRxRegToRxDataHandle));
             memset(&(lpspiEdmaMasterTxDataToTxRegHandle), 0, sizeof(lpspiEdmaMasterTxDataToTxRegHandle));
 
             EDMA_CreateHandle(&(lpspiEdmaMasterRxRegToRxDataHandle), DMA0, chan_rx);
             EDMA_CreateHandle(&(lpspiEdmaMasterTxDataToTxRegHandle), DMA0, chan_tx);
 
-            LPSPI_MasterTransferCreateHandleEDMA(self->spi_inst, &g_m_edma_handle, LPSPI_EDMAMasterCallback, self,
+            LPSPI_MasterTransferCreateHandleEDMA(self->spi_inst, &g_master_edma_handle, LPSPI_EDMAMasterCallback, self,
                                                 &lpspiEdmaMasterRxRegToRxDataHandle,
                                                 &lpspiEdmaMasterTxDataToTxRegHandle);
             /*Start master transfer*/
@@ -351,7 +362,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
-            LPSPI_MasterTransferEDMA(self->spi_inst, &g_m_edma_handle, &masterXfer);
+            LPSPI_MasterTransferEDMA(self->spi_inst, &g_master_edma_handle, &masterXfer);
 
             // Wait until transfer completed. Use the timer as backup for timeout
             t = ticks_us64() + 15000000 * len / self->master_config->baudRate + 1000000;
@@ -359,7 +370,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             while (self->transfer_busy) {
                 if (ticks_us64() > t) {  // Timeout
                     // Abort the transfer
-                    LPSPI_MasterTransferAbortEDMA(self->spi_inst, &g_m_edma_handle);
+                    LPSPI_MasterTransferAbortEDMA(self->spi_inst, &g_master_edma_handle);
                     break;
                 }
                 MICROPY_EVENT_POLL_HOOK
@@ -407,6 +418,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
                 if (ticks_us64() > t) {  // Timeout
                     // Abort the transfer
                     LPSPI_SlaveTransferAbortEDMA(self->spi_inst, &g_slave_edma_handle);
+                    L1CACHE_EnableDCache();
                     mp_raise_OSError(MP_ETIMEDOUT);
                 }
                 MICROPY_EVENT_POLL_HOOK
