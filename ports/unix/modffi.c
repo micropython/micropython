@@ -275,7 +275,9 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) 
     mp_obj_t pyfunc = o->pyfunc;
 
     if (o->lock) {
+        #if MICROPY_ENABLE_SCHEDULER
         mp_sched_lock();
+        #endif
         gc_lock();
     }
 
@@ -290,17 +292,19 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) 
 
     if (o->lock) {
         gc_unlock();
+        #if MICROPY_ENABLE_SCHEDULER
         mp_sched_unlock();
+        #endif
     }
 }
 
 STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_rettype, ARG_func, ARG_parmtypes, ARG_lock };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_rettype,     MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_func,        MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_paramtypes,  MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_lock,        MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_rettype,     MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_func,        MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_paramtypes,  MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_lock,        MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -485,6 +489,9 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
+        } else if (mp_obj_is_type(a, &fficallback_type)) {
+            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
+            values[i].ffi = (ffi_arg)(intptr_t)p->func;
         } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
@@ -493,9 +500,6 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
                 goto error;
             }
             values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
-        } else if (mp_obj_is_type(a, &fficallback_type)) {
-            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
-            values[i].ffi = (ffi_arg)(intptr_t)p->func;
         } else {
             goto error;
         }
