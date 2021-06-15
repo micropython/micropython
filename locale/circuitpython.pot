@@ -3058,6 +3058,10 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr ""
 
+#: extmod/ulab/code/scipy/linalg/linalg.c
+msgid "first two arguments must be ndarrays"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
@@ -3237,10 +3241,11 @@ msgid "input matrix is asymmetric"
 msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr ""
 
-#: extmod/ulab/code/user/user.c
+#: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr ""
 
@@ -3281,7 +3286,7 @@ msgid "integer required"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
+msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -4137,11 +4142,11 @@ msgid "too many values to unpack (expected %d)"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "trapz is defined for 1D arrays"
+msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "trapz is defined for 1D arrays of equal length"
+msgid "trapz is defined for 1D iterables"
 msgstr ""
 
 #: py/obj.c
@@ -4322,10 +4327,6 @@ msgstr ""
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
 msgstr ""
 
 #: extmod/ulab/code/numpy/vector/vector.c
