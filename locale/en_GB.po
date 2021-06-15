@@ -3090,6 +3090,10 @@ msgstr "first argument must be an ndarray"
 msgid "first argument to super() must be type"
 msgstr "first argument to super() must be type"
 
+#: extmod/ulab/code/scipy/linalg/linalg.c
+msgid "first two arguments must be ndarrays"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "flattening order must be either 'C', or 'F'"
@@ -3269,10 +3273,11 @@ msgid "input matrix is asymmetric"
 msgstr "input matrix is asymmetric"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "input matrix is singular"
 
-#: extmod/ulab/code/user/user.c
+#: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "input must be a dense ndarray"
 
@@ -3313,8 +3318,8 @@ msgid "integer required"
 msgstr "integer required"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp is defined for 1D arrays of equal length"
+msgid "interp is defined for 1D iterables of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3858,6 +3863,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
@@ -3865,7 +3871,8 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
@@ -4170,12 +4177,12 @@ msgid "too many values to unpack (expected %d)"
 msgstr "too many values to unpack (expected %d)"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "trapz is defined for 1D arrays"
-msgstr "trapz is defined for 1D arrays"
-
-#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz is defined for 1D arrays of equal length"
+
+#: extmod/ulab/code/numpy/approx/approx.c
+msgid "trapz is defined for 1D iterables"
+msgstr ""
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4357,10 +4364,6 @@ msgstr "wrong number of arguments"
 msgid "wrong number of values to unpack"
 msgstr "wrong number of values to unpack"
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
-msgstr "wrong operand type"
-
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr "wrong output type"
@@ -4396,6 +4399,15 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr "interp is defined for 1D arrays of equal length"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "trapz is defined for 1D arrays"
+
+#~ msgid "wrong operand type"
+#~ msgstr "wrong operand type"
 
 #~ msgid "Only raw int supported for ip"
 #~ msgstr "Only raw int supported for ip"

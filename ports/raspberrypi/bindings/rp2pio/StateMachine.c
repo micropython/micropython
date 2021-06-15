@@ -100,7 +100,7 @@
 //|         :param ~microcontroller.Pin first_in_pin: the first pin to use with the IN instruction
 //|         :param int in_pin_count: the count of consecutive pins to use with IN starting at first_in_pin
 //|         :param int pull_in_pin_up: a 1-bit in this mask sets pull up on the corresponding in pin
-//|         :param int pull_in_pin_down: a 1-bit in this mask sets pull up on the corresponding in pin. Setting both pulls enables a "bus keep" function, i.e. a weak pull to whatever is current high/low state of GPIO.
+//|         :param int pull_in_pin_down: a 1-bit in this mask sets pull down on the corresponding in pin. Setting both pulls enables a "bus keep" function, i.e. a weak pull to whatever is current high/low state of GPIO.
 //|         :param ~microcontroller.Pin first_set_pin: the first pin to use with the SET instruction
 //|         :param int set_pin_count: the count of consecutive pins to use with SET starting at first_set_pin
 //|         :param int initial_set_pin_state: the initial output value for set pins starting at first_set_pin

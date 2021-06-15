@@ -91,7 +91,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_LRCLK),  MP_ROM_PTR(&pin_PA20) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_SDIN),  MP_ROM_PTR(&pin_PA21) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_SDOUT),  MP_ROM_PTR(&pin_PA22) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_BLCK),  MP_ROM_PTR(&pin_PB16) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_BCLK),  MP_ROM_PTR(&pin_PB16) },
 
     // RTL8720D
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_PWR),  MP_ROM_PTR(&pin_PA18) },       // CHIP_PU

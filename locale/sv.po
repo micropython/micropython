@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-30 13:32+0000\n"
+"PO-Revision-Date: 2021-06-13 04:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3111,6 +3111,10 @@ msgstr "första argumentet måste vara en ndarray"
 msgid "first argument to super() must be type"
 msgstr "första argumentet till super() måste vara typ"
 
+#: extmod/ulab/code/scipy/linalg/linalg.c
+msgid "first two arguments must be ndarrays"
+msgstr "De två första argumenten måste vara ndarray:er"
+
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "förenklingsordningen måste vara antingen \"C\" eller \"F\""
@@ -3290,10 +3294,11 @@ msgid "input matrix is asymmetric"
 msgstr "indatamatrisen är asymmetrisk"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "indatamatrisen är singulär"
 
-#: extmod/ulab/code/user/user.c
+#: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "indata måste vara en dense ndarray"
 
@@ -3334,8 +3339,8 @@ msgid "integer required"
 msgstr "heltal krävs"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp är definierad för 1D-matriser med samma längd"
+msgid "interp is defined for 1D iterables of equal length"
+msgstr "interp är definierad för 1D-iterabla med samma längd"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3882,6 +3887,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
@@ -3889,7 +3895,8 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
@@ -4194,12 +4201,12 @@ msgid "too many values to unpack (expected %d)"
 msgstr "för många värden att packa upp (förväntat %d)"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "trapz is defined for 1D arrays"
-msgstr "trapz är definierat för 1D-matriser"
-
-#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
+
+#: extmod/ulab/code/numpy/approx/approx.c
+msgid "trapz is defined for 1D iterables"
+msgstr "trapz är definierat för 1D-iterabla"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4381,10 +4388,6 @@ msgstr "fel antal argument"
 msgid "wrong number of values to unpack"
 msgstr "fel antal värden för att packa upp"
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
-msgstr "fel operandtyp"
-
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr "fel utdatatyp"
@@ -4420,6 +4423,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr "interp är definierad för 1D-matriser med samma längd"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "trapz är definierat för 1D-matriser"
+
+#~ msgid "wrong operand type"
+#~ msgstr "fel operandtyp"
 
 #~ msgid "%q must be None or 1-255"
 #~ msgstr "%q måste vara None eller 1-255"

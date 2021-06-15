@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-30 13:32+0000\n"
+"PO-Revision-Date: 2021-06-13 04:32+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -3138,6 +3138,10 @@ msgstr "el primer argumento debe ser ndarray"
 msgid "first argument to super() must be type"
 msgstr "primer argumento para super() debe ser de tipo"
 
+#: extmod/ulab/code/scipy/linalg/linalg.c
+msgid "first two arguments must be ndarrays"
+msgstr "los primeros dos argumentos deben ser ndarrays"
+
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "el orden de aplanamiento debe ser 'C' o 'F'"
@@ -3317,10 +3321,11 @@ msgid "input matrix is asymmetric"
 msgstr "la matriz de entrada es asimétrica"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "la matriz de entrada es singular"
 
-#: extmod/ulab/code/user/user.c
+#: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "Entrada tiene que ser un ndarray denso"
 
@@ -3361,8 +3366,8 @@ msgid "integer required"
 msgstr "Entero requerido"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp está definido para arreglos de 1D del mismo tamaño"
+msgid "interp is defined for 1D iterables of equal length"
+msgstr "interp está definido para iterables 1D de igual tamaño"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3912,6 +3917,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
@@ -3919,7 +3925,8 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
@@ -4225,12 +4232,12 @@ msgid "too many values to unpack (expected %d)"
 msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/numpy/approx/approx.c
-msgid "trapz is defined for 1D arrays"
-msgstr "trapz esta definido para matrices 1D"
-
-#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz está definido para arreglos 1D de igual tamaño"
+
+#: extmod/ulab/code/numpy/approx/approx.c
+msgid "trapz is defined for 1D iterables"
+msgstr "trapz está definido para iterables 1D"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4412,10 +4419,6 @@ msgstr "numero erroneo de argumentos"
 msgid "wrong number of values to unpack"
 msgstr "numero erroneo de valores a descomprimir"
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
-msgstr "tipo de operando incorrecto"
-
 #: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr "tipo de salida incorrecta"
@@ -4451,6 +4454,15 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr "interp está definido para arreglos de 1D del mismo tamaño"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "trapz esta definido para matrices 1D"
+
+#~ msgid "wrong operand type"
+#~ msgstr "tipo de operando incorrecto"
 
 #~ msgid "%q must be None or 1-255"
 #~ msgstr "%q debe ser None o 1-255"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,29 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "TinyS2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
 
-#define AUTORESET_DELAY_MS 500
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+void reset_board(void) {
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO37)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO36)
+}
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+void board_deinit(void) {
+}
