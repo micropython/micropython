@@ -78,7 +78,9 @@ const mp_obj_property_t keypad_event_key_num_obj = {
 };
 
 //|     pressed: bool
-//|     """True if event represents a key down (pressed) transition."""
+//|     """True if event represents a key down (pressed) transition.
+//|     The opposite of `released`.
+//|     """
 //|
 STATIC mp_obj_t keypad_event_obj_get_pressed(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -94,7 +96,9 @@ const mp_obj_property_t keypad_event_pressed_obj = {
 };
 
 //|     released: bool
-//|     """True if event represents a key up (released) transition."""
+//|     """True if event represents a key up (released) transition.
+//|     The opposite of `pressed`.
+//|     """
 //|
 STATIC mp_obj_t keypad_event_obj_get_released(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -109,13 +113,48 @@ const mp_obj_property_t keypad_event_released_obj = {
               MP_ROM_NONE},
 };
 
-STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {
-    // Properties
-    { MP_ROM_QSTR(MP_QSTR_key_num),  MP_ROM_PTR(&keypad_event_key_num_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pressed),  MP_ROM_PTR(&keypad_event_pressed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_released), MP_ROM_PTR(&keypad_event_released_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_table);
+//|     def __eq__(self, other: object) -> bool:
+//|         """Two Event objects are equal if their `key_num`
+//|         and `pressed`/`released` values are equal.
+//|         """
+//|         ...
+//|
+STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            if (mp_obj_is_type(rhs_in, &keypad_event_type)) {
+                keypad_event_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+                keypad_event_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+                return mp_obj_new_bool(
+                    (common_hal_keypad_event_get_key_num(lhs) ==
+                        common_hal_keypad_event_get_key_num(rhs)) &&
+                    (common_hal_keypad_event_get_pressed(lhs) ==
+                        common_hal_keypad_event_get_pressed(rhs)));
+            } else {
+                return mp_const_false;
+            }
+
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Event, so it can be used in dictionaries, etc.."""
+//|         ...
+//|
+STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self);
+    switch (op) {
+        case MP_UNARY_OP_HASH: {
+            const mp_int_t key_num = common_hal_keypad_event_get_key_num(self);
+            const bool pressed = common_hal_keypad_event_get_pressed(self);
+            return MP_OBJ_NEW_SMALL_INT((pressed << 15) + key_num);
+        }
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
 
 STATIC void keypad_event_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -124,10 +163,20 @@ STATIC void keypad_event_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         common_hal_keypad_event_get_pressed(self) ? "pressed" : "released");
 }
 
+STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {
+    // Properties
+    { MP_ROM_QSTR(MP_QSTR_key_num),  MP_ROM_PTR(&keypad_event_key_num_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pressed),  MP_ROM_PTR(&keypad_event_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_released), MP_ROM_PTR(&keypad_event_released_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_table);
+
 const mp_obj_type_t keypad_event_type = {
     { &mp_type_type },
     .name = MP_QSTR_Event,
     .make_new = keypad_event_make_new,
     .print = keypad_event_print,
+    .unary_op = keypad_event_unary_op,
+    .binary_op = keypad_event_binary_op,
     .locals_dict = (mp_obj_dict_t *)&keypad_event_locals_dict,
 };

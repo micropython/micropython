@@ -34,10 +34,12 @@
 //| class Keys:
 //|     """Manage a set of independent keys."""
 //|
-//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, level_when_pressed: bool, pull: bool = True, max_events: int = 16) -> None:
+//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, level_when_pressed: bool, pull: bool = True, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to the given sequence of pins.
 //|         Each key is independent and attached to its own pin.
+//|
+//|         The keys are debounced by waiting about 20 msecs before reporting a transition.
 //|
 //|         :param Sequence[microcontroller.Pin] pins: The pins attached to the keys.
 //|           The key numbers correspond to indices into this sequence.
@@ -65,7 +67,7 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
         { MP_QSTR_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_value_when_pressed, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
         { MP_QSTR_pull, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-        { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} },
+        { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -131,7 +133,7 @@ STATIC void check_for_deinit(keypad_keys_obj_t *self) {
 }
 
 //|     def next_event(self) -> Optional[Event]:
-//|         """Return the next key transition event. Return ``None` if no events are pending.
+//|         """Return the next key transition event. Return ``None`` if no events are pending.
 //|
 //|         Note that the queue size is limited; see ``max_events`` in the constructor.
 //|         If a new event arrives when the queue is full, the oldest event is discarded.

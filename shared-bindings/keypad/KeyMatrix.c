@@ -34,17 +34,20 @@
 //| class KeyMatrix:
 //|     """Manage a 2D matrix of keys with row and column pins."""
 //|
-//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], max_events: int = 16) -> None:
+//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], max_events: int = 64) -> None:
 //|         """
-//|         Create a `Keys` object that will scan key matrix attached to the given row and column pins.
+//|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
 //|         If the matrix uses diodes, the diode anodes should be connected to the column pins,
-//|         and the cathodes should be connected to the row pins.
+//|         and the cathodes should be connected to the row pins. If your diodes are reversed,
+//|         simply exchange the row and column pin sequences.
 //|
 //|         The keys are numbered sequentially from zero. A key number can be computed
-//|         by ``col * len(row_pins) + row``.
+//|         by ``row * len(col_pins) + col``.
 //|
-//|         :param Sequence[microcontroller.Pin] row_pins: The pins attached to rows.
-//|         :param Sequence[microcontroller.Pin] col_pins: The pins attached to rows.
+//|         The keys are debounced by waiting about 20 msecs before reporting a transition.
+//|
+//|         :param Sequence[microcontroller.Pin] row_pins: The pins attached to the rows.
+//|         :param Sequence[microcontroller.Pin] col_pins: The pins attached to the colums.
 //|         :param int max_events: Size of key event queue:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -58,8 +61,8 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     enum { ARG_row_pins, ARG_col_pins, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_col_pins, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
-        { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} },
+        { MP_QSTR_col_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -79,16 +82,16 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     mcu_pin_obj_t *row_pins_array[num_row_pins];
     mcu_pin_obj_t *col_pins_array[num_col_pins];
 
-    for (mp_uint_t i = 0; i < num_row_pins; i++) {
+    for (size_t row = 0; row < num_row_pins; row++) {
         mcu_pin_obj_t *pin =
-            validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
-        row_pins_array[i] = pin;
+            validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(row), MP_OBJ_SENTINEL));
+        row_pins_array[row] = pin;
     }
 
-    for (mp_uint_t i = 0; i < num_col_pins; i++) {
+    for (size_t col = 0; col < num_col_pins; col++) {
         mcu_pin_obj_t *pin =
-            validate_obj_is_free_pin(mp_obj_subscr(col_pins, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
-        col_pins_array[i] = pin;
+            validate_obj_is_free_pin(mp_obj_subscr(col_pins, MP_OBJ_NEW_SMALL_INT(col), MP_OBJ_SENTINEL));
+        col_pins_array[col] = pin;
     }
 
     common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_col_pins, col_pins_array, max_events);
@@ -131,7 +134,7 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 }
 
 //|     def next_event(self) -> Optional[Event]:
-//|         """Return the next key transition event. Return ``None` if no events are pending.
+//|         """Return the next key transition event. Return ``None`` if no events are pending.
 //|
 //|         Note that the queue size is limited; see ``max_events`` in the constructor.
 //|         If a new event arrives when the queue is full, the oldest event is discarded.
@@ -141,13 +144,13 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_keymatrix_next_event(mp_obj_t self_in, mp_obj_t event_in) {
+STATIC mp_obj_t keypad_keymatrix_next_event(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
     return common_hal_keypad_keymatrix_next_event(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_keymatrix_next_event_obj, keypad_keymatrix_next_event);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_next_event_obj, keypad_keymatrix_next_event);
 
 //|     def clear_events(self) -> None:
 //|         """Clear any queued key transition events.
@@ -184,7 +187,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_keymatrix_pressed_obj, keypad_keymatrix_pressed
 
 //|     def key_num(self, row: int, col: int) -> int:
 //|         """Return the key number for a given row and column.
-//|         The key number is calculated by `row * number_of_columns + col`.
+//|         The key number is calculated by ``row * len(col_pins) + col``.
 //|         """
 //|         ...
 //|
