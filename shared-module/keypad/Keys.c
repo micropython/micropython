@@ -59,9 +59,10 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->value_when_pressed = value_when_pressed;
+    self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     // Event queue is 16-bit values.
-    ringbuf_alloc(self->encoded_events, max_events * 2, false);
+    ringbuf_alloc(&self->encoded_events, max_events * 2, false);
 
     // Add self to the list of active Keys objects.
 
@@ -69,6 +70,8 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->next = MP_STATE_VM(keypad_keys_linked_list);
     MP_STATE_VM(keypad_keys_linked_list) = self;
     supervisor_release_lock(&keypad_keys_linked_list_lock);
+
+    supervisor_enable_tick();
 }
 
 void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
@@ -113,19 +116,19 @@ bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_num) 
 }
 
 mp_obj_t common_hal_keypad_keys_next_event(keypad_keys_obj_t *self) {
-    int encoded_event = ringbuf_get16(self->encoded_events);
+    int encoded_event = ringbuf_get16(&self->encoded_events);
     if (encoded_event == -1) {
         return MP_ROM_NONE;
     }
 
     keypad_event_obj_t *event = m_new_obj(keypad_event_obj_t);
-    self->base.type = &keypad_event_type;
+    event->base.type = &keypad_event_type;
     common_hal_keypad_event_construct(event, encoded_event & EVENT_KEY_NUM_MASK, encoded_event & EVENT_PRESSED);
     return MP_OBJ_FROM_PTR(event);
 }
 
 void common_hal_keypad_keys_clear_events(keypad_keys_obj_t *self) {
-    ringbuf_clear(self->encoded_events);
+    ringbuf_clear(&self->encoded_events);
 }
 
 static void keypad_keys_scan(keypad_keys_obj_t *self) {
@@ -143,17 +146,17 @@ static void keypad_keys_scan(keypad_keys_obj_t *self) {
         self->previously_pressed[key_num] = previous;
 
         // Get the current state.
-        const bool current = common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
+        const bool current =
+            common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
             self->value_when_pressed;
         self->currently_pressed[key_num] = current;
-
         // Record any transitions.
         if (previous != current) {
-            if (ringbuf_num_empty(self->encoded_events) == 0) {
+            if (ringbuf_num_empty(&self->encoded_events) == 0) {
                 // Discard oldest if full.
-                ringbuf_get16(self->encoded_events);
+                ringbuf_get16(&self->encoded_events);
             }
-            ringbuf_put16(self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
+            ringbuf_put16(&self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
         }
     }
 }

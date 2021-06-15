@@ -174,7 +174,7 @@ STATIC mp_obj_t keypad_keymatrix_pressed(mp_obj_t self_in, mp_obj_t key_num_in) 
     check_for_deinit(self);
 
     mp_int_t key_num = mp_obj_get_int(key_num_in);
-    if (key_num < 0 || key_num >= common_hal_keypad_keymatrix_num_keys(self)) {
+    if (key_num < 0 || (size_t)key_num >= common_hal_keypad_keymatrix_num_keys(self)) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_key_num);
     }
 
@@ -193,12 +193,12 @@ STATIC mp_obj_t keypad_keymatrix_key_num(mp_obj_t self_in, mp_obj_t row_in, mp_o
     check_for_deinit(self);
 
     const mp_int_t row = mp_obj_get_int(row_in);
-    if (row < 0 || row >= common_hal_keypad_keymatrix_num_rows(self)) {
+    if (row < 0 || (size_t)row >= common_hal_keypad_keymatrix_num_rows(self)) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_row_num);
     }
 
     const mp_int_t col = mp_obj_get_int(col_in);
-    if (col < 0 || col >= common_hal_keypad_keymatrix_num_cols(self)) {
+    if (col < 0 || (size_t)col >= common_hal_keypad_keymatrix_num_cols(self)) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_col_num);
     }
 

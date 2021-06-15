@@ -40,12 +40,12 @@ typedef struct _keypad_keys_obj_t {
     bool value_when_pressed;
     bool *previously_pressed;
     bool *currently_pressed;
-    ringbuf_t *encoded_events;
+    ringbuf_t encoded_events;
     // Keep a linked list of active Keys objects.
     struct _keypad_keys_obj_t *next;
 } keypad_keys_obj_t;
 
-void keypad_keys_tick();
-void keypad_keys_reset();
+void keypad_keys_tick(void);
+void keypad_keys_reset(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H

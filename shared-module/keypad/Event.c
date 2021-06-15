@@ -28,7 +28,7 @@
 
 void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_uint_t key_num, bool pressed) {
     self->key_num = key_num;
-    self->pressed = true;
+    self->pressed = pressed;
 }
 
 mp_int_t common_hal_keypad_event_get_key_num(keypad_event_obj_t *self) {

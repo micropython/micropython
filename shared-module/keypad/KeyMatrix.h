@@ -40,12 +40,12 @@ typedef struct _keypad_keymatrix_obj_t {
     uint64_t last_scan_ticks;
     bool *previously_pressed;
     bool *currently_pressed;
-    ringbuf_t *encoded_events;
+    ringbuf_t encoded_events;
     // Keep a linked list of active KeyMatrix objects.
     struct _keypad_keymatrix_obj_t *next;
 } keypad_keymatrix_obj_t;
 
-void keypad_keymatrix_tick();
-void keypad_keymatrix_reset();
+void keypad_keymatrix_tick(void);
+void keypad_keymatrix_reset(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H

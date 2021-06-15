@@ -73,7 +73,7 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_col_pins, false, false);
 
     // Event queue is 16-bit values.
-    ringbuf_alloc(self->encoded_events, max_events * 2, false);
+    ringbuf_alloc(&self->encoded_events, max_events * 2, false);
 
     // Add self to the list of active Keys objects.
 
@@ -139,7 +139,7 @@ bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t
 }
 
 mp_obj_t common_hal_keypad_keymatrix_next_event(keypad_keymatrix_obj_t *self) {
-    int encoded_event = ringbuf_get16(self->encoded_events);
+    int encoded_event = ringbuf_get16(&self->encoded_events);
     if (encoded_event == -1) {
         return MP_ROM_NONE;
     }
@@ -151,7 +151,7 @@ mp_obj_t common_hal_keypad_keymatrix_next_event(keypad_keymatrix_obj_t *self) {
 }
 
 void common_hal_keypad_keymatrix_clear_events(keypad_keymatrix_obj_t *self) {
-    ringbuf_clear(self->encoded_events);
+    ringbuf_clear(&self->encoded_events);
 }
 
 mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col) {
@@ -185,11 +185,11 @@ static void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
             // Record any transitions.
             if (previous != current) {
-                if (ringbuf_num_empty(self->encoded_events) == 0) {
+                if (ringbuf_num_empty(&self->encoded_events) == 0) {
                     // Discard oldest if full.
-                    ringbuf_get16(self->encoded_events);
+                    ringbuf_get16(&self->encoded_events);
                 }
-                ringbuf_put16(self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
+                ringbuf_put16(&self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
             }
 
         }

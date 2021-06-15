@@ -117,9 +117,17 @@ STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_table);
 
+STATIC void keypad_event_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "<Event: keynum %d %s>",
+        common_hal_keypad_event_get_key_num(self),
+        common_hal_keypad_event_get_pressed(self) ? "pressed" : "released");
+}
+
 const mp_obj_type_t keypad_event_type = {
     { &mp_type_type },
-    .name = MP_QSTR_UART,
+    .name = MP_QSTR_Event,
     .make_new = keypad_event_make_new,
+    .print = keypad_event_print,
     .locals_dict = (mp_obj_dict_t *)&keypad_event_locals_dict,
 };
