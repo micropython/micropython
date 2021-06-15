@@ -30,8 +30,10 @@
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
-
 #include "mpconfigboard.h"
+#if MICROPY_HW_USB_MSC
+#include "hardware/flash.h"
+#endif
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
@@ -107,10 +109,22 @@
 #define MICROPY_FATFS_ENABLE_LFN                (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_RPATH                     (2)
+#if MICROPY_HW_USB_MSC
+#define MICROPY_FATFS_USE_LABEL                 (1)
+#define MICROPY_FATFS_MULTI_PARTITION           (1)
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
+#endif
 
+#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS2
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
 #define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
 
 // Use VFS's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

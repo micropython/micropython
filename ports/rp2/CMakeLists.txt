@@ -105,6 +105,7 @@ set(MICROPY_SOURCE_PORT
     rp2_pio.c
     tusb_port.c
     uart.c
+    msc_disk.c
 )
 
 set(MICROPY_SOURCE_QSTR
