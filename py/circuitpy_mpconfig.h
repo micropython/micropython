@@ -533,8 +533,20 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #if CIRCUITPY_KEYPAD
 extern const struct _mp_obj_module_t keypad_module;
 #define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
+#define KEYPAD_ROOT_POINTERS \
+    mp_obj_t keypad_keys_linked_list; \
+    mp_obj_t keypad_keymatrix_linked_list;
 #else
 #define KEYPAD_MODULE
+#define KEYPAD_ROOT_POINTERS
+#endif
+
+#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+// Scan gamepad every 32ms
+#define CIRCUITPY_GAMEPAD_TICKS 0x1f
+#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
+#else
+#define GAMEPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_MATH
@@ -962,6 +974,7 @@ struct _supervisor_allocation_node;
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
+    KEYPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \

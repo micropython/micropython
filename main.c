@@ -86,6 +86,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_KEYPAD
+#include "shared-module/keypad/__init__.h"
+#endif
+
 #if CIRCUITPY_MEMORYMONITOR
 #include "shared-module/memorymonitor/__init__.h"
 #endif
@@ -230,9 +234,11 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
     #endif
+
     #if CIRCUITPY_MEMORYMONITOR
     memorymonitor_reset();
     #endif
+
     filesystem_flush();
     stop_mp();
     free_memory(heap);
@@ -240,6 +246,10 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap) {
 
     #if CIRCUITPY_CANIO
     common_hal_canio_reset();
+    #endif
+
+    #if CIRCUITPY_KEYPAD
+    keypad_reset();
     #endif
 
     // reset_board_busses() first because it may release pins from the never_reset state, so that

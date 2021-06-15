@@ -24,10 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_KEYPAD_H
-#define SHARED_MODULE_KEYPAD_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_LOCK_H
+#define MICROPY_INCLUDED_SUPERVISOR_LOCK_H
 
-void keypad_tick(void);
-void keypad_reset(void);
+typedef volatile bool supervisor_lock_t;
 
-#endif // SHARED_MODULE_KEYPAD_H
+void supervisor_acquire_lock(supervisor_lock_t *lock);
+bool supervisor_try_lock(supervisor_lock_t *lock);
+void supervisor_release_lock(supervisor_lock_t *lock);
+
+#endif // MICROPY_INCLUDED_SUPERVISOR_LOCK_H

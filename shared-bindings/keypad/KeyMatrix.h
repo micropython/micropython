@@ -24,28 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
 
-#include "common-hal/digitalio/DigitalInOut.h"
+#include "py/objlist.h"
+#include "shared-module/keypad/KeyMatrix.h"
 
-#include "py/obj.h"
-#include "py/objtuple.h"
-#include "py/ringbuf.h"
+extern const mp_obj_type_t keypad_keymatrix_type;
 
-typedef struct _keypad_keys_obj_t {
-    mp_obj_base_t base;
-    mp_obj_tuple_t *digitalinouts;
-    uint64_t last_scan_ticks;
-    bool value_when_pressed;
-    bool *previously_pressed;
-    bool *currently_pressed;
-    ringbuf_t *encoded_events;
-    // Keep a linked list of active Keys objects.
-    struct _keypad_keys_obj_t *next;
-} keypad_keys_obj_t;
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], size_t max_events);
+void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self);
+bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self);
 
-void keypad_keys_tick();
-void keypad_keys_reset();
+mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col);
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+mp_uint_t common_hal_keypad_keymatrix_num_keys(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_num_cols(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_num_rows(keypad_keymatrix_obj_t *self);
+
+bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num);
+mp_obj_t common_hal_keypad_keymatrix_next_event(keypad_keymatrix_obj_t *self);
+void common_hal_keypad_keymatrix_clear_events(keypad_keymatrix_obj_t *self);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

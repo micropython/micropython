@@ -24,10 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "lib/utils/context_manager_helpers.h"
+#include "py/runtime.h"
 #include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "py/runtime.h"
+#include "shared-bindings/util.h"
 
 //| class Keys:
 //|     """Manage a set of independent keys."""
@@ -88,7 +90,44 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     }
 
     common_hal_keypad_keys_construct(self, num_pins, pins_array, value_when_pressed, args[ARG_pull].u_bool, max_events);
+
     return MP_OBJ_FROM_PTR(self);
+}
+
+//|     def deinit(self) -> None:
+//|         """Stop scanning and release the pins."""
+//|         ...
+//|
+STATIC mp_obj_t keypad_keys_deinit(mp_obj_t self_in) {
+    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_keypad_keys_deinit(self);
+    return MP_ROM_NONE;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_deinit_obj, keypad_keys_deinit);
+
+//|     def __enter__(self) -> Keys:
+//|         """No-op used by Context Managers."""
+//|         ...
+//|
+//  Provided by context manager helper.
+
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
+//|
+STATIC mp_obj_t keypad_keys___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    common_hal_keypad_keys_deinit(args[0]);
+    return MP_ROM_NONE;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keys___exit___obj, 4, 4, keypad_keys___exit__);
+
+STATIC void check_for_deinit(keypad_keys_obj_t *self) {
+    if (common_hal_keypad_keys_deinited(self)) {
+        raise_deinited_error();
+    }
 }
 
 //|     def next_event(self) -> Optional[Event]:
@@ -104,6 +143,8 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
 //|
 STATIC mp_obj_t keypad_keys_next_event(mp_obj_t self_in, mp_obj_t event_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     return common_hal_keypad_keys_next_event(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_next_event_obj, keypad_keys_next_event);
@@ -115,6 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_next_event_obj, keypad_keys_next_event);
 //|
 STATIC mp_obj_t keypad_keys_clear_events(mp_obj_t self_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
 
     common_hal_keypad_keys_clear_events(self);
     return MP_ROM_NONE;
@@ -129,6 +171,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_clear_events_obj, keypad_keys_clear_events
 //|
 STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     mp_int_t key_num = mp_obj_get_int(key_num_in);
     if (key_num < 0 || key_num >= common_hal_keypad_keys_num_keys(self)) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_key_num);
@@ -139,6 +183,10 @@ STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_pressed_obj, keypad_keys_pressed);
 
 STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&keypad_keys_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&keypad_keys___exit___obj) },
+
     { MP_ROM_QSTR(MP_QSTR_clear_events), MP_ROM_PTR(&keypad_keys_clear_events_obj) },
     { MP_ROM_QSTR(MP_QSTR_next_event),   MP_ROM_PTR(&keypad_keys_next_event_obj) },
     { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_keys_pressed_obj) },

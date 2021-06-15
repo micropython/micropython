@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,10 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_KEYPAD_H
-#define SHARED_MODULE_KEYPAD_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
 
-void keypad_tick(void);
-void keypad_reset(void);
+#include "common-hal/digitalio/DigitalInOut.h"
 
-#endif // SHARED_MODULE_KEYPAD_H
+#include "py/obj.h"
+#include "py/objtuple.h"
+#include "py/ringbuf.h"
+
+typedef struct _keypad_keymatrix_obj_t {
+    mp_obj_base_t base;
+    mp_obj_tuple_t *row_digitalinouts;
+    mp_obj_tuple_t *col_digitalinouts;
+    uint64_t last_scan_ticks;
+    bool *previously_pressed;
+    bool *currently_pressed;
+    ringbuf_t *encoded_events;
+    // Keep a linked list of active KeyMatrix objects.
+    struct _keypad_keymatrix_obj_t *next;
+} keypad_keymatrix_obj_t;
+
+void keypad_keymatrix_tick();
+void keypad_keymatrix_reset();
+
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
