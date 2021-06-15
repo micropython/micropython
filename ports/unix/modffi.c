@@ -31,6 +31,7 @@
 #include <dlfcn.h>
 #include <ffi.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "py/runtime.h"
 #include "py/binary.h"
@@ -102,7 +103,6 @@ typedef struct _mp_obj_fficallback_t {
     ffi_closure *clo;
     char rettype;
     mp_obj_t pyfunc;
-    bool lock;
     ffi_cif cif;
     ffi_type *params[];
 } mp_obj_fficallback_t;
@@ -274,13 +274,6 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) 
     mp_obj_fficallback_t *o = user_data;
     mp_obj_t pyfunc = o->pyfunc;
 
-    if (o->lock) {
-        #if MICROPY_ENABLE_SCHEDULER
-        mp_sched_lock();
-        #endif
-        gc_lock();
-    }
-
     for (uint i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(mp_int_t *)args[i]);
     }
@@ -289,13 +282,39 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) 
     if (res != mp_const_none) {
         *(ffi_arg *)ret = mp_obj_int_get_truncated(res);
     }
+}
 
-    if (o->lock) {
-        gc_unlock();
-        #if MICROPY_ENABLE_SCHEDULER
-        mp_sched_unlock();
-        #endif
+STATIC void call_py_func_with_lock(ffi_cif *cif, void *ret, void **args, void *user_data) {
+    mp_obj_t pyargs[cif->nargs];
+    mp_obj_fficallback_t *o = user_data;
+    mp_obj_t pyfunc = o->pyfunc;
+    nlr_buf_t nlr;
+
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+    gc_lock();
+
+    if (nlr_push(&nlr) == 0) {
+        for (uint i = 0; i < cif->nargs; i++) {
+            pyargs[i] = mp_obj_new_int(*(mp_int_t *)args[i]);
+        }
+        mp_obj_t res = mp_call_function_n_kw(pyfunc, cif->nargs, 0, pyargs);
+
+        if (res != mp_const_none) {
+            *(ffi_arg *)ret = mp_obj_int_get_truncated(res);
+        }
+        nlr_pop();
+    } else {
+        // Uncaught exception
+        printf("Uncaught exception in FFI callback!\n");
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
     }
+
+    gc_unlock();
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
 }
 
 STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -324,7 +343,6 @@ STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     o->rettype = *rettype;
     o->pyfunc = func_in;
-    o->lock = lock_in;
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(paramtypes_in, &iter_buf);
@@ -339,7 +357,8 @@ STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
         mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
-    res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, o, o->func);
+    res = ffi_prep_closure_loc(o->clo, &o->cif,
+        lock_in? call_py_func_with_lock: call_py_func, o, o->func);
     if (res != FFI_OK) {
         mp_raise_ValueError(MP_ERROR_TEXT("ffi_prep_closure_loc"));
     }
