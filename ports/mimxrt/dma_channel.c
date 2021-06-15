@@ -27,11 +27,11 @@
 #include "dma_channel.h"
 
 // List of channel flags: true: channel used, false: channel available
- static bool channel_list[32] = { true, true, true, true, false, false, false, false,
-                                  false, false, false, false, false, false, false, false,
-                                  false, false, false, false, false, false, false, false,
-                                  false, false, false, false, false, false, false, false };
- 
+static bool channel_list[32] = { true, true, true, true, false, false, false, false,
+                                 false, false, false, false, false, false, false, false,
+                                 false, false, false, false, false, false, false, false,
+                                 false, false, false, false, false, false, false, false };
+
 // allocate_channel(): retrieve an available channel. Return the number or -1
 int allocate_DMA_channel(void) {
     for (int i = 0; i < ARRAY_SIZE(channel_list); i++) {

@@ -79,7 +79,7 @@ static const iomux_table_t iomux_table_uart[] = {
 
 static const char *firstbit_str[] = {"MSB", "LSB"};
 
-#define MICROPY_HW_SPI_NUM     (sizeof(spi_index_table)/sizeof(spi_index_table)[0])
+#define MICROPY_HW_SPI_NUM     (sizeof(spi_index_table) / sizeof(spi_index_table)[0])
 
 #define SCK (iomux_table_uart[index])
 #define CS0 (iomux_table_uart[index + 1])
@@ -93,19 +93,19 @@ bool lpspi_set_iomux(int8_t spi, uint8_t drive) {
     if (SCK.muxRegister != 0) {
         IOMUXC_SetPinMux(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister, 0U);
         IOMUXC_SetPinConfig(SCK.muxRegister, SCK.muxMode, SCK.inputRegister, SCK.inputDaisy, SCK.configRegister,
-                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0U);
         IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister,
-                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister, 0U);
         IOMUXC_SetPinConfig(SDO.muxRegister, SDO.muxMode, SDO.inputRegister, SDO.inputDaisy, SDO.configRegister,
-                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister, 0U);
         IOMUXC_SetPinConfig(SDI.muxRegister, SDI.muxMode, SDI.inputRegister, SDI.inputDaisy, SDI.configRegister,
-                            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         return true;
     } else {
@@ -333,8 +333,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             EDMA_CreateHandle(&(lpspiEdmaMasterRxRegToRxDataHandle), DMA0, chan_rx);
             EDMA_CreateHandle(&(lpspiEdmaMasterTxDataToTxRegHandle), DMA0, chan_tx);
             LPSPI_MasterTransferCreateHandleEDMA(self->spi_inst, &g_master_edma_handle, LPSPI_EDMAMasterCallback, self,
-                                                &lpspiEdmaMasterRxRegToRxDataHandle,
-                                                &lpspiEdmaMasterTxDataToTxRegHandle);
+                &lpspiEdmaMasterRxRegToRxDataHandle,
+                &lpspiEdmaMasterTxDataToTxRegHandle);
             // Start master transfer
             lpspi_transfer_t masterXfer;
             masterXfer.txData = (uint8_t *)src;
@@ -345,8 +345,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
             self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
-                        LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
+                LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
+                (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
@@ -366,8 +366,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             EDMA_CreateHandle(&(lpspiEdmaSlaveRxRegToRxDataHandle), DMA0, chan_rx);
             EDMA_CreateHandle(&(lpspiEdmaSlaveTxDataToTxRegHandle), DMA0, chan_tx);
             LPSPI_SlaveTransferCreateHandleEDMA(self->spi_inst, &g_slave_edma_handle, LPSPI_EDMASlaveCallback, self,
-                                                &lpspiEdmaSlaveRxRegToRxDataHandle,
-                                                &lpspiEdmaSlaveTxDataToTxRegHandle);
+                &lpspiEdmaSlaveRxRegToRxDataHandle,
+                &lpspiEdmaSlaveTxDataToTxRegHandle);
             // Start master transfer
             lpspi_transfer_t slaveXfer;
             slaveXfer.txData = (uint8_t *)src;
@@ -378,8 +378,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
             self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config->cpol) | LPSPI_TCR_CPHA(self->slave_config->cpha) |
-                        LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
+                LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
+                (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
@@ -413,8 +413,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
             self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
-                        LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
+                LPSPI_TCR_LSBF(self->master_config->direction) | LPSPI_TCR_FRAMESZ(self->master_config->bitsPerFrame - 1) |
+                (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->master_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             lpspi_transfer_t masterXfer;
@@ -429,17 +429,17 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             // Reconfigure the TCR, required after switch between DMA vs. non-DMA
             LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
             self->spi_inst->TCR = LPSPI_TCR_CPOL(self->slave_config->cpol) | LPSPI_TCR_CPHA(self->slave_config->cpha) |
-                        LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
-                        (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
+                LPSPI_TCR_LSBF(self->slave_config->direction) | LPSPI_TCR_FRAMESZ(self->slave_config->bitsPerFrame - 1) |
+                (self->spi_inst->TCR & LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PCS(self->slave_config->whichPcs);
             LPSPI_Enable(self->spi_inst, true);
 
             lpspi_slave_handle_t slave_handle;
             LPSPI_SlaveTransferCreateHandle(self->spi_inst, &slave_handle, LPSPI_SlaveCallback, self);
 
             lpspi_transfer_t slaveXfer;
-            slaveXfer.txData      = (uint8_t *)src;
-            slaveXfer.rxData      = (uint8_t *)dest;
-            slaveXfer.dataSize    = len;
+            slaveXfer.txData = (uint8_t *)src;
+            slaveXfer.rxData = (uint8_t *)dest;
+            slaveXfer.dataSize = len;
             slaveXfer.configFlags = kLPSPI_SlavePcs0 | kLPSPI_SlaveByteSwap;
 
             /* Slave start receive */
