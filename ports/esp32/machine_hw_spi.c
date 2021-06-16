@@ -411,6 +411,32 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
     self->base.type = &machine_hw_spi_type;
 
+    int8_t sck, mosi, miso;
+
+    if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
+        sck = default_pins->sck;
+    } else if (args[ARG_sck].u_obj == mp_const_none) {
+        sck = -1;
+    } else {
+        sck = machine_pin_get_id(args[ARG_sck].u_obj);
+    }
+
+    if (args[ARG_mosi].u_obj == MP_OBJ_NULL) {
+        mosi = default_pins->mosi;
+    } else if (args[ARG_mosi].u_obj == mp_const_none) {
+        mosi = -1;
+    } else {
+        mosi = machine_pin_get_id(args[ARG_mosi].u_obj);
+    }
+
+    if (args[ARG_miso].u_obj == MP_OBJ_NULL) {
+        miso = default_pins->miso;
+    } else if (args[ARG_miso].u_obj == mp_const_none) {
+        miso = -1;
+    } else {
+        miso = machine_pin_get_id(args[ARG_miso].u_obj);
+    }
+
     machine_hw_spi_init_internal(
         self,
         args[ARG_id].u_int,
@@ -419,9 +445,9 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         args[ARG_phase].u_int,
         args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_sck].u_obj == MP_OBJ_NULL ? default_pins->sck : machine_pin_get_id(args[ARG_sck].u_obj),
-        args[ARG_mosi].u_obj == MP_OBJ_NULL ? default_pins->mosi : machine_pin_get_id(args[ARG_mosi].u_obj),
-        args[ARG_miso].u_obj == MP_OBJ_NULL ? default_pins->miso : machine_pin_get_id(args[ARG_miso].u_obj));
+        sck,
+        mosi,
+        miso);
 
     return MP_OBJ_FROM_PTR(self);
 }
