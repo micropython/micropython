@@ -26,14 +26,12 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/lock.h"
 #include "supervisor/shared/tick.h"
-
-static supervisor_lock_t keypad_keys_linked_list_lock;
 
 #define DEBOUNCE_TICKS (20)
 
@@ -64,12 +62,8 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     // Event queue is 16-bit values.
     ringbuf_alloc(&self->encoded_events, max_events * 2, false);
 
-    // Add self to the list of active Keys objects.
-
-    supervisor_acquire_lock(&keypad_keys_linked_list_lock);
-    self->next = MP_STATE_VM(keypad_keys_linked_list);
-    MP_STATE_VM(keypad_keys_linked_list) = self;
-    supervisor_release_lock(&keypad_keys_linked_list_lock);
+    // Add self to the list of active keypad scanners.
+    keypad_register_scanner((keypad_scanner_obj_t *)self);
 
     supervisor_enable_tick();
 }
@@ -79,29 +73,14 @@ void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
         return;
     }
 
+    // Remove self from the list of active keypad scanners first.
+    keypad_deregister_scanner((keypad_scanner_obj_t *)self);
+
     for (size_t key = 0; key < common_hal_keypad_keys_num_keys(self); key++) {
         common_hal_digitalio_digitalinout_deinit(self->digitalinouts->items[key]);
     }
     self->digitalinouts = MP_ROM_NONE;
 
-    // Remove self from the list of active Keys objects.
-
-    supervisor_acquire_lock(&keypad_keys_linked_list_lock);
-    if (MP_STATE_VM(keypad_keys_linked_list) == self) {
-        // I'm at the front; splice myself out.
-        MP_STATE_VM(keypad_keys_linked_list) = self->next;
-    } else {
-        keypad_keys_obj_t *current = MP_STATE_VM(keypad_keys_linked_list);
-        while (current) {
-            if (current->next == self) {
-                // Splice myself out.
-                current->next = self->next;
-                break;
-            }
-            current = current->next;
-        }
-    }
-    supervisor_release_lock(&keypad_keys_linked_list_lock);
 }
 
 bool common_hal_keypad_keys_deinited(keypad_keys_obj_t *self) {
@@ -131,7 +110,7 @@ void common_hal_keypad_keys_clear_events(keypad_keys_obj_t *self) {
     ringbuf_clear(&self->encoded_events);
 }
 
-static void keypad_keys_scan(keypad_keys_obj_t *self) {
+void keypad_keys_scan(keypad_keys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
     if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
         // Too soon. Wait longer to debounce.
@@ -159,29 +138,4 @@ static void keypad_keys_scan(keypad_keys_obj_t *self) {
             ringbuf_put16(&self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
         }
     }
-}
-
-void keypad_keys_tick(void) {
-    // Fast path.
-    if (!MP_STATE_VM(keypad_keys_linked_list)) {
-        return;
-    }
-
-    if (supervisor_try_lock(&keypad_keys_linked_list_lock)) {
-        keypad_keys_obj_t *keypad_keys = MP_STATE_VM(keypad_keys_linked_list);
-        while (keypad_keys) {
-            keypad_keys_scan(keypad_keys);
-            keypad_keys = keypad_keys->next;
-        }
-        supervisor_release_lock(&keypad_keys_linked_list_lock);
-    }
-}
-
-void keypad_keys_reset(void) {
-    if (MP_STATE_VM(keypad_keys_linked_list)) {
-        supervisor_disable_tick();
-    }
-
-    MP_STATE_VM(keypad_keys_linked_list) = NULL;
-    keypad_keys_linked_list_lock = false;
 }

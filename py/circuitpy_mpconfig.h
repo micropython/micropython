@@ -533,9 +533,7 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #if CIRCUITPY_KEYPAD
 extern const struct _mp_obj_module_t keypad_module;
 #define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
-#define KEYPAD_ROOT_POINTERS \
-    mp_obj_t keypad_keys_linked_list; \
-    mp_obj_t keypad_keymatrix_linked_list;
+#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
 #else
 #define KEYPAD_MODULE
 #define KEYPAD_ROOT_POINTERS

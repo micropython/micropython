@@ -27,7 +27,21 @@
 #ifndef SHARED_MODULE_KEYPAD_H
 #define SHARED_MODULE_KEYPAD_H
 
+#include "py/obj.h"
+
+// All scanners must have a next field immediately following base.
+// This is an ad hoc "superclass" struct for scanners, though they do
+// not actually have a superclass relationship.
+typedef struct _keypad_scanner_obj_t {
+    mp_obj_base_t base;
+    struct _keypad_scanner_obj_t *next;
+} keypad_scanner_obj_t;
+
 void keypad_tick(void);
 void keypad_reset(void);
+
+void keypad_register_scanner(keypad_scanner_obj_t *scanner);
+void keypad_deregister_scanner(keypad_scanner_obj_t *scanner);
+
 
 #endif // SHARED_MODULE_KEYPAD_H

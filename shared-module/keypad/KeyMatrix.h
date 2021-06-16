@@ -27,25 +27,25 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
 #define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
 
-#include "common-hal/digitalio/DigitalInOut.h"
-
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/ringbuf.h"
 
-typedef struct _keypad_keymatrix_obj_t {
+#include "common-hal/digitalio/DigitalInOut.h"
+#include "shared-module/keypad/__init__.h"
+
+typedef struct {
     mp_obj_base_t base;
+    // All scanners have a next field here, to keep a linked list of active scanners.
+    keypad_scanner_obj_t *next;
     mp_obj_tuple_t *row_digitalinouts;
     mp_obj_tuple_t *col_digitalinouts;
     uint64_t last_scan_ticks;
     bool *previously_pressed;
     bool *currently_pressed;
     ringbuf_t encoded_events;
-    // Keep a linked list of active KeyMatrix objects.
-    struct _keypad_keymatrix_obj_t *next;
 } keypad_keymatrix_obj_t;
 
-void keypad_keymatrix_tick(void);
-void keypad_keymatrix_reset(void);
+void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H

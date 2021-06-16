@@ -24,15 +24,70 @@
  * THE SOFTWARE.
  */
 
-#include "shared-module/keypad/Keys.h"
-#include "shared-module/keypad/KeyMatrix.h"
+#include "shared-bindings/keypad/Keys.h"
+#include "shared-bindings/keypad/KeyMatrix.h"
+#include "supervisor/shared/lock.h"
+#include "supervisor/shared/tick.h"
+
+static supervisor_lock_t keypad_scanners_linked_list_lock;
 
 void keypad_tick(void) {
-    keypad_keys_tick();
-    keypad_keymatrix_tick();
+    // Fast path. Return immediately if there are no scanners.
+    if (!MP_STATE_VM(keypad_scanners_linked_list)) {
+        return;
+    }
+
+    // Skip scanning if someone else has the lock. Don't wait for the lock.
+    if (supervisor_try_lock(&keypad_scanners_linked_list_lock)) {
+        mp_obj_t scanner = MP_STATE_VM(keypad_scanners_linked_list);
+        while (scanner) {
+            if (mp_obj_is_type(scanner, &keypad_keys_type)) {
+                keypad_keys_scan((keypad_keys_obj_t *)scanner);
+            } else if (mp_obj_is_type(scanner, &keypad_keymatrix_type)) {
+                keypad_keymatrix_scan((keypad_keymatrix_obj_t *)scanner);
+            }
+
+            scanner = ((keypad_scanner_obj_t *)scanner)->next;
+        }
+        supervisor_release_lock(&keypad_scanners_linked_list_lock);
+    }
 }
 
 void keypad_reset(void) {
-    keypad_keys_reset();
-    keypad_keymatrix_reset();
+    if (MP_STATE_VM(keypad_scanners_linked_list)) {
+        supervisor_disable_tick();
+    }
+
+    MP_STATE_VM(keypad_scanners_linked_list) = NULL;
+    keypad_scanners_linked_list_lock = false;
+}
+
+// Register a Keys, KeyMatrix, etc. that will be scanned in the background
+void keypad_register_scanner(keypad_scanner_obj_t *scanner) {
+    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
+    scanner->next = MP_STATE_VM(keypad_scanners_linked_list);
+    MP_STATE_VM(keypad_scanners_linked_list) = scanner;
+    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+}
+
+// Remove scanner from the list of active scanners.
+void keypad_deregister_scanner(keypad_scanner_obj_t *scanner) {
+    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
+    if (MP_STATE_VM(keypad_scanners_linked_list) == scanner) {
+        // Scanner is at the front; splice it out.
+        MP_STATE_VM(keypad_scanners_linked_list) = scanner->next;
+        scanner->next = NULL;
+    } else {
+        keypad_scanner_obj_t *current = MP_STATE_VM(keypad_scanners_linked_list);
+        while (current) {
+            if (current->next == scanner) {
+                // Splice myself out.
+                current->next = scanner->next;
+                scanner->next = NULL;
+                break;
+            }
+            current = current->next;
+        }
+    }
+    supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
