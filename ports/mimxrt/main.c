@@ -70,7 +70,8 @@ int main(void) {
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
