@@ -24,28 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include "py/objlist.h"
+#include "shared-module/keypad/Keys.h"
 
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-module/keypad/__init__.h"
-#include "shared-module/keypad/EventQueue.h"
+extern const mp_obj_type_t keypad_eventqueue_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    // All scanners have a next field here, to keep a linked list of active scanners.
-    keypad_scanner_obj_t *next;
-    mp_obj_tuple_t *row_digitalinouts;
-    mp_obj_tuple_t *col_digitalinouts;
-    uint64_t last_scan_ticks;
-    bool *previously_pressed;
-    bool *currently_pressed;
-    keypad_eventqueue_obj_t *events;
-} keypad_keymatrix_obj_t;
+void common_hal_keypad_eventqueue_construct(keypad_eventqueue_obj_t *self, size_t max_events);
 
-void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self);
+void common_hal_keypad_eventqueue_clear(keypad_eventqueue_obj_t *self);
+size_t common_hal_keypad_eventqueue_get_length(keypad_eventqueue_obj_t *self);
+mp_obj_t common_hal_keypad_eventqueue_next(keypad_eventqueue_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYMATRIX_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H

@@ -64,11 +64,11 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
 //|     key_num: int
 //|     """The key number."""
 //|
-STATIC mp_obj_t keypad_event_obj_get_key_num(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_event_get_key_num(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_event_get_key_num(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_num_obj, keypad_event_obj_get_key_num);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_num_obj, keypad_event_get_key_num);
 
 const mp_obj_property_t keypad_event_key_num_obj = {
     .base.type = &mp_type_property,
@@ -78,15 +78,15 @@ const mp_obj_property_t keypad_event_key_num_obj = {
 };
 
 //|     pressed: bool
-//|     """True if event represents a key down (pressed) transition.
+//|     """``True`` if the event represents a key down (pressed) transition.
 //|     The opposite of `released`.
 //|     """
 //|
-STATIC mp_obj_t keypad_event_obj_get_pressed(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_event_get_pressed(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_keypad_event_get_pressed(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_pressed_obj, keypad_event_obj_get_pressed);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_pressed_obj, keypad_event_get_pressed);
 
 const mp_obj_property_t keypad_event_pressed_obj = {
     .base.type = &mp_type_property,
@@ -96,15 +96,15 @@ const mp_obj_property_t keypad_event_pressed_obj = {
 };
 
 //|     released: bool
-//|     """True if event represents a key up (released) transition.
+//|     """``True`` if the event represents a key up (released) transition.
 //|     The opposite of `pressed`.
 //|     """
 //|
-STATIC mp_obj_t keypad_event_obj_get_released(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_event_get_released(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_keypad_event_get_released(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_released_obj, keypad_event_obj_get_released);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_released_obj, keypad_event_get_released);
 
 const mp_obj_property_t keypad_event_released_obj = {
     .base.type = &mp_type_property,
@@ -114,7 +114,7 @@ const mp_obj_property_t keypad_event_released_obj = {
 };
 
 //|     def __eq__(self, other: object) -> bool:
-//|         """Two Event objects are equal if their `key_num`
+//|         """Two `Event` objects are equal if their `key_num`
 //|         and `pressed`/`released` values are equal.
 //|         """
 //|         ...
@@ -140,7 +140,7 @@ STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_ob
 }
 
 //|     def __hash__(self) -> int:
-//|         """Returns a hash for the Event, so it can be used in dictionaries, etc.."""
+//|         """Returns a hash for the `Event`, so it can be used in dictionaries, etc.."""
 //|         ...
 //|
 STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {

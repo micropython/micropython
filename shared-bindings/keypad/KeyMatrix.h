@@ -33,6 +33,7 @@
 extern const mp_obj_type_t keypad_keymatrix_type;
 
 void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], size_t max_events);
+
 void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self);
 bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self);
 
@@ -42,8 +43,7 @@ mp_uint_t common_hal_keypad_keymatrix_num_keys(keypad_keymatrix_obj_t *self);
 mp_uint_t common_hal_keypad_keymatrix_num_cols(keypad_keymatrix_obj_t *self);
 mp_uint_t common_hal_keypad_keymatrix_num_rows(keypad_keymatrix_obj_t *self);
 
+mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self);
 bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num);
-mp_obj_t common_hal_keypad_keymatrix_next_event(keypad_keymatrix_obj_t *self);
-void common_hal_keypad_keymatrix_clear_events(keypad_keymatrix_obj_t *self);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

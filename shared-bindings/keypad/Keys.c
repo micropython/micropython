@@ -25,6 +25,7 @@
  */
 
 #include "lib/utils/context_manager_helpers.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/Keys.h"
@@ -39,6 +40,8 @@
 //|         Create a `Keys` object that will scan keys attached to the given sequence of pins.
 //|         Each key is independent and attached to its own pin.
 //|
+//|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
+//|
 //|         The keys are debounced by waiting about 20 msecs before reporting a transition.
 //|
 //|         :param Sequence[microcontroller.Pin] pins: The pins attached to the keys.
@@ -52,7 +55,7 @@
 //|           If an external pull is already provided for all the pins, you can set ``pull`` to ``False``.
 //|           However, enabling an internal pull when an external one is already present is not a problem;
 //|           it simply uses slightly more current.
-//|         :param int max_events: Size of key event queue:
+//|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
 //|           If a new event arrives when the queue is full, the oldest event is discarded.
@@ -132,42 +135,9 @@ STATIC void check_for_deinit(keypad_keys_obj_t *self) {
     }
 }
 
-//|     def next_event(self) -> Optional[Event]:
-//|         """Return the next key transition event. Return ``None`` if no events are pending.
-//|
-//|         Note that the queue size is limited; see ``max_events`` in the constructor.
-//|         If a new event arrives when the queue is full, the oldest event is discarded.
-//|
-//|         :return: the next queued key transition `Event`
-//|         :rtype: Optional[Event]
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t keypad_keys_next_event(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return common_hal_keypad_keys_next_event(self);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_next_event_obj, keypad_keys_next_event);
-
-//|     def clear_events(self) -> None:
-//|         """Clear any queued key transition events.
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t keypad_keys_clear_events(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    common_hal_keypad_keys_clear_events(self);
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_clear_events_obj, keypad_keys_clear_events);
-
 //|     def pressed(self, key_num: int) -> None:
 //|         """Return ``True`` if the given key is pressed. This is a debounced read
-//|         of the key state which bypasses the event queue.
+//|         of the key state which bypasses the `events` `EventQueue`.
 //|         """
 //|         ...
 //|
@@ -184,14 +154,30 @@ STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_pressed_obj, keypad_keys_pressed);
 
-STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&keypad_keys_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&keypad_keys___exit___obj) },
+//|     events: EventQueue
+//|     """The `EventQueue` associated with this `Keys` object. (read-only)
+//|     """
+//|
+STATIC mp_obj_t keypad_keys_get_events(mp_obj_t self_in) {
+    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_keypad_keys_get_events(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_get_events_obj, keypad_keys_get_events);
 
-    { MP_ROM_QSTR(MP_QSTR_clear_events), MP_ROM_PTR(&keypad_keys_clear_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_next_event),   MP_ROM_PTR(&keypad_keys_next_event_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_keys_pressed_obj) },
+const mp_obj_property_t keypad_keys_events_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&keypad_keys_get_events_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
+STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),    MP_ROM_PTR(&keypad_keys_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),  MP_ROM_PTR(&keypad_keys___exit___obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_events),    MP_ROM_PTR(&keypad_keys_events_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pressed),   MP_ROM_PTR(&keypad_keys_pressed_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_keys_locals_dict, keypad_keys_locals_dict_table);

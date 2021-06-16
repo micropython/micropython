@@ -29,10 +29,10 @@
 
 #include "py/obj.h"
 #include "py/objtuple.h"
-#include "py/ringbuf.h"
 
 #include "common-hal/digitalio/DigitalInOut.h"
 #include "shared-module/keypad/__init__.h"
+#include "shared-module/keypad/EventQueue.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -42,7 +42,7 @@ typedef struct {
     uint64_t last_scan_ticks;
     bool *previously_pressed;
     bool *currently_pressed;
-    ringbuf_t encoded_events;
+    keypad_eventqueue_obj_t *events;
     bool value_when_pressed;
 } keypad_keys_obj_t;
 

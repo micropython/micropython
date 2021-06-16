@@ -26,19 +26,14 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "shared-bindings/keypad/__init__.h"
-#include "shared-bindings/keypad/Event.h"
-#include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/keypad/EventQueue.h"
+#include "shared-bindings/keypad/Keys.h"
+#include "shared-bindings/keypad/__init__.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
 #define DEBOUNCE_TICKS (20)
-
-// Top bit of 16-bit event indicates pressed or released. Rest is key_num.
-#define EVENT_PRESSED (1 << 15)
-#define EVENT_RELEASED (0)
-#define EVENT_KEY_NUM_MASK (~EVENT_PRESSED)
 
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, size_t max_events) {
     mp_obj_t dios[num_pins];
@@ -59,8 +54,10 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->value_when_pressed = value_when_pressed;
     self->last_scan_ticks = port_get_raw_ticks(NULL);
 
-    // Event queue is 16-bit values.
-    ringbuf_alloc(&self->encoded_events, max_events * 2, false);
+    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
+    events->base.type = &keypad_eventqueue_type;
+    common_hal_keypad_eventqueue_construct(events, max_events);
+    self->events = events;
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
@@ -94,20 +91,8 @@ bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_num) 
     return self->currently_pressed[key_num];
 }
 
-mp_obj_t common_hal_keypad_keys_next_event(keypad_keys_obj_t *self) {
-    int encoded_event = ringbuf_get16(&self->encoded_events);
-    if (encoded_event == -1) {
-        return MP_ROM_NONE;
-    }
-
-    keypad_event_obj_t *event = m_new_obj(keypad_event_obj_t);
-    event->base.type = &keypad_event_type;
-    common_hal_keypad_event_construct(event, encoded_event & EVENT_KEY_NUM_MASK, encoded_event & EVENT_PRESSED);
-    return MP_OBJ_FROM_PTR(event);
-}
-
-void common_hal_keypad_keys_clear_events(keypad_keys_obj_t *self) {
-    ringbuf_clear(&self->encoded_events);
+mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self) {
+    return MP_OBJ_FROM_PTR(self->events);
 }
 
 void keypad_keys_scan(keypad_keys_obj_t *self) {
@@ -129,13 +114,10 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
             common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
             self->value_when_pressed;
         self->currently_pressed[key_num] = current;
+
         // Record any transitions.
         if (previous != current) {
-            if (ringbuf_num_empty(&self->encoded_events) == 0) {
-                // Discard oldest if full.
-                ringbuf_get16(&self->encoded_events);
-            }
-            ringbuf_put16(&self->encoded_events, key_num | (current ? EVENT_PRESSED : EVENT_RELEASED));
+            keypad_eventqueue_record(self->events, key_num, current);
         }
     }
 }

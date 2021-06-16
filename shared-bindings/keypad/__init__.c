@@ -28,6 +28,7 @@
 
 #include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
+#include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/keypad/KeyMatrix.h"
 #include "shared-bindings/keypad/Keys.h"
 
@@ -39,10 +40,11 @@
 //|
 
 STATIC mp_map_elem_t keypad_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),  MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },
-    { MP_ROM_QSTR(MP_QSTR_Event),     MP_OBJ_FROM_PTR(&keypad_event_type) },
-    { MP_ROM_QSTR(MP_QSTR_KeyMatrix), MP_OBJ_FROM_PTR(&keypad_keymatrix_type) },
-    { MP_ROM_QSTR(MP_QSTR_Keys),      MP_OBJ_FROM_PTR(&keypad_keys_type) },
+    { MP_ROM_QSTR(MP_QSTR___name__),   MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },
+    { MP_ROM_QSTR(MP_QSTR_Event),      MP_OBJ_FROM_PTR(&keypad_event_type) },
+    { MP_ROM_QSTR(MP_QSTR_EventQueue), MP_OBJ_FROM_PTR(&keypad_eventqueue_type) },
+    { MP_ROM_QSTR(MP_QSTR_KeyMatrix),  MP_OBJ_FROM_PTR(&keypad_keymatrix_type) },
+    { MP_ROM_QSTR(MP_QSTR_Keys),       MP_OBJ_FROM_PTR(&keypad_keys_type) },
 };
 
 STATIC MP_DEFINE_MUTABLE_DICT(keypad_module_globals, keypad_module_globals_table);
