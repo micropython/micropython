@@ -83,6 +83,10 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr ""
@@ -118,6 +122,10 @@ msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+msgid "%q must store bytes"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c

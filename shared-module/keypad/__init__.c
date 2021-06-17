@@ -29,7 +29,7 @@
 #include "supervisor/shared/lock.h"
 #include "supervisor/shared/tick.h"
 
-static supervisor_lock_t keypad_scanners_linked_list_lock;
+supervisor_lock_t keypad_scanners_linked_list_lock;
 
 void keypad_tick(void) {
     // Fast path. Return immediately if there are no scanners.

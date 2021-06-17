@@ -39,11 +39,12 @@ bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self);
 
 mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col);
 
-mp_uint_t common_hal_keypad_keymatrix_num_keys(keypad_keymatrix_obj_t *self);
-mp_uint_t common_hal_keypad_keymatrix_num_cols(keypad_keymatrix_obj_t *self);
-mp_uint_t common_hal_keypad_keymatrix_num_rows(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_num_keys(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_num_cols(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_num_rows(keypad_keymatrix_obj_t *self);
 
 mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self);
 bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num);
+void common_hal_keypad_keymatrix_store_states(keypad_keymatrix_obj_t *self, uint8_t *states);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

@@ -28,6 +28,7 @@
 #define SHARED_MODULE_KEYPAD_H
 
 #include "py/obj.h"
+#include "supervisor/shared/lock.h"
 
 // All scanners must have a next field immediately following base.
 // This is an ad hoc "superclass" struct for scanners, though they do
@@ -36,6 +37,8 @@ typedef struct _keypad_scanner_obj_t {
     mp_obj_base_t base;
     struct _keypad_scanner_obj_t *next;
 } keypad_scanner_obj_t;
+
+extern supervisor_lock_t keypad_scanners_linked_list_lock;
 
 void keypad_tick(void);
 void keypad_reset(void);

@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -73,7 +75,7 @@ void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
     // Remove self from the list of active keypad scanners first.
     keypad_deregister_scanner((keypad_scanner_obj_t *)self);
 
-    for (size_t key = 0; key < common_hal_keypad_keys_num_keys(self); key++) {
+    for (size_t key = 0; key < common_hal_keypad_keys_get_num_keys(self); key++) {
         common_hal_digitalio_digitalinout_deinit(self->digitalinouts->items[key]);
     }
     self->digitalinouts = MP_ROM_NONE;
@@ -84,11 +86,19 @@ bool common_hal_keypad_keys_deinited(keypad_keys_obj_t *self) {
     return self->digitalinouts == MP_ROM_NONE;
 }
 
-size_t common_hal_keypad_keys_num_keys(keypad_keys_obj_t *self) {
+size_t common_hal_keypad_keys_get_num_keys(keypad_keys_obj_t *self) {
     return self->digitalinouts->len;
 }
 bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_num) {
     return self->currently_pressed[key_num];
+}
+
+// The length of states has already been validated.
+void common_hal_keypad_keys_store_states(keypad_keys_obj_t *self, uint8_t *states) {
+    // Read the state atomically.
+    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
+    memcpy(states, self->currently_pressed, common_hal_keypad_keys_get_num_keys(self));
+    supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
 
 mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self) {
@@ -104,7 +114,7 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
 
     self->last_scan_ticks = now;
 
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_num_keys(self); key_num++) {
+    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_get_num_keys(self); key_num++) {
         // Remember the previous up/down state.
         const bool previous = self->currently_pressed[key_num];
         self->previously_pressed[key_num] = previous;

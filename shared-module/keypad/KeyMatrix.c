@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -84,12 +86,12 @@ void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self) {
     // Remove self from the list of active keypad scanners first.
     keypad_deregister_scanner((keypad_scanner_obj_t *)self);
 
-    for (size_t row = 0; row < common_hal_keypad_keymatrix_num_rows(self); row++) {
+    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_num_rows(self); row++) {
         common_hal_digitalio_digitalinout_deinit(self->row_digitalinouts->items[row]);
     }
     self->row_digitalinouts = MP_ROM_NONE;
 
-    for (size_t col = 0; col < common_hal_keypad_keymatrix_num_cols(self); col++) {
+    for (size_t col = 0; col < common_hal_keypad_keymatrix_get_num_cols(self); col++) {
         common_hal_digitalio_digitalinout_deinit(self->col_digitalinouts->items[col]);
     }
     self->col_digitalinouts = MP_ROM_NONE;
@@ -99,21 +101,30 @@ bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self) {
     return self->row_digitalinouts == MP_ROM_NONE;
 }
 
-size_t common_hal_keypad_keymatrix_num_keys(keypad_keymatrix_obj_t *self) {
-    return common_hal_keypad_keymatrix_num_rows(self) * common_hal_keypad_keymatrix_num_cols(self);
+size_t common_hal_keypad_keymatrix_get_num_keys(keypad_keymatrix_obj_t *self) {
+    return common_hal_keypad_keymatrix_get_num_rows(self) * common_hal_keypad_keymatrix_get_num_cols(self);
 }
 
-size_t common_hal_keypad_keymatrix_num_rows(keypad_keymatrix_obj_t *self) {
+size_t common_hal_keypad_keymatrix_get_num_rows(keypad_keymatrix_obj_t *self) {
     return self->row_digitalinouts->len;
 }
 
-size_t common_hal_keypad_keymatrix_num_cols(keypad_keymatrix_obj_t *self) {
+size_t common_hal_keypad_keymatrix_get_num_cols(keypad_keymatrix_obj_t *self) {
     return self->col_digitalinouts->len;
 }
 
 bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num) {
     return self->currently_pressed[key_num];
 }
+
+// The length of states has already been validated.
+void common_hal_keypad_keymatrix_store_states(keypad_keymatrix_obj_t *self, uint8_t *states) {
+    // Read the state atomically.
+    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
+    memcpy(states, self->currently_pressed, common_hal_keypad_keymatrix_get_num_keys(self));
+    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+}
+
 mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col) {
     return row_col_to_key_num(self, row, col);
 }
@@ -132,12 +143,12 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
     self->last_scan_ticks = now;
 
     // On entry, all pins are set to inputs with a pull-up.
-    for (size_t row = 0; row < common_hal_keypad_keymatrix_num_rows(self); row++) {
+    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_num_rows(self); row++) {
         // Switch this row to an output and set to low.
         common_hal_digitalio_digitalinout_switch_to_output(
             self->row_digitalinouts->items[row], false, DRIVE_MODE_PUSH_PULL);
 
-        for (size_t col = 0; col < common_hal_keypad_keymatrix_num_cols(self); col++) {
+        for (size_t col = 0; col < common_hal_keypad_keymatrix_get_num_cols(self); col++) {
             mp_uint_t key_num = row_col_to_key_num(self, row, col);
             const bool previous = self->currently_pressed[key_num];
             self->previously_pressed[key_num] = previous;
