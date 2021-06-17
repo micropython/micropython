@@ -151,13 +151,11 @@ static int fsload_program_file(bool write_to_flash) {
             if (res != l) {
                 return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
-            if (write_to_flash) {
-                res = do_write(elem_addr, buf, l);
-                if (res != 0) {
-                    return res;
-                }
-                elem_addr += l;
+            res = do_write(elem_addr, buf, l, !write_to_flash);
+            if (res != 0) {
+                return res;
             }
+            elem_addr += l;
             s -= l;
         }
 

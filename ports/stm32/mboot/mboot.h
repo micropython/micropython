@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
@@ -96,7 +97,7 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
 void do_read(uint32_t addr, int len, uint8_t *buf);
-int do_write(uint32_t addr, const uint8_t *src8, size_t len);
+int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
