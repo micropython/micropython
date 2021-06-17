@@ -56,6 +56,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(CMSIS_DIR)/
+INC += -I$(TOP)/extmod
 INC += -I$(TOP)/$(HAL_DIR)/Inc
 INC += -I../$(USBDEV_DIR)/core/inc -I../$(USBDEV_DIR)/class/inc
 

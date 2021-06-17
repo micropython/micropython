@@ -30,6 +30,7 @@
 #include "mboot.h"
 #include "pack.h"
 #include "vfs.h"
+#include "lib/uzlib/tinf.h"
 
 // Default block size used for mount operations if none given.
 #ifndef MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE
@@ -72,8 +73,13 @@ static inline int input_stream_read(size_t len, uint8_t *buf) {
 }
 #endif
 
+static inline int crc_append(const void *buf, unsigned int length, uint32_t crc) {
+    return uzlib_crc32(buf, length, crc ^ 0xffffffff) ^ 0xffffffff;
+}
+
 static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
+    uint32_t crc = 0;
     uint8_t buf[512];
     size_t file_offset;
 
@@ -83,6 +89,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset = 11;
+    crc = crc_append(buf, 11, crc);
 
     // Validate header, version 1
     if (memcmp(buf, "DfuSe\x01", 6) != 0) {
@@ -103,6 +110,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset += 274;
+    crc = crc_append(buf, 274, crc);
 
     // Validate target header, with alt being 0
     if (memcmp(buf, "Target\x00", 7) != 0) {
@@ -123,6 +131,7 @@ static int fsload_program_file(bool write_to_flash) {
             return -MBOOT_ERRNO_DFU_READ_ERROR;
         }
         file_offset += 8;
+        crc = crc_append(buf, 8, crc);
 
         // Get element destination address and size
         uint32_t elem_addr = get_le32(buf);
@@ -151,6 +160,7 @@ static int fsload_program_file(bool write_to_flash) {
             if (res != l) {
                 return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
+            crc = crc_append(buf, l, crc);
             res = do_write(elem_addr, buf, l, !write_to_flash);
             if (res != 0) {
                 return res;
@@ -175,8 +185,13 @@ static int fsload_program_file(bool write_to_flash) {
     if (res != 16) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
-
-    // TODO validate CRC32
+    // Don't include final 4 bytes; that's the expected crc.
+    crc = crc_append(buf, 12, crc);
+    crc ^= 0xffffffff;
+    uint32_t crc_expected = (buf[12] << 0) | (buf[13] << 8) | (buf[14] << 16) | (buf[15] << 24);
+    if (crc != crc_expected) {
+        return -MBOOT_ERRNO_DFU_INVALID_CRC;
+    }
 
     return 0;
 }
