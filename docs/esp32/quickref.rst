@@ -606,7 +606,7 @@ to transfer files to an ESP32 board.
 
 Interrupts
 ----------
-**Hardware Interrupts** - They are fired by hardware peripherals and sources.hey can be: Internal or External. An example of internal hardware interrupts maybe something like a hardware timer interrupt or WDT. An example of an external hardware interrupt is external GPIO pins interrupts 
+**Hardware Interrupts** - They are fired by hardware peripherals and sources. They can be: Internal or External. An example of internal hardware interrupts maybe something like a hardware timer interrupt or WDT. An example of an external hardware interrupt is external GPIO pins interrupts 
 
 **Sotware Interrupts** - Software Interrupts – Are interrupts that are being fired by the user, the programmers. Manually inserted in certain pieces of the code to indicate something or to do an IO request or something.
 
@@ -627,6 +627,7 @@ There are 5 different events to trigger an interrupt for each external interrupt
 	LOW	  - An interrupt is fired whenever the pin is LOW
 
 	CHANGE    - An interrupt is fired whenever the pin’s state changes, from High to LOW or From LOW to HIGH 
+
 
 
 
