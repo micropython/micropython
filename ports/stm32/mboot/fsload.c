@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "py/mphal.h"
+#include "lib/uzlib/tinf.h"
 #include "mboot.h"
 #include "pack.h"
 #include "vfs.h"
@@ -74,6 +75,7 @@ static inline int input_stream_read(size_t len, uint8_t *buf) {
 
 static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
+    uint32_t crc = 0xffffffff;
     uint8_t buf[512];
     size_t file_offset;
 
@@ -83,6 +85,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset = 11;
+    crc = uzlib_crc32(buf, 11, crc);
 
     // Validate header, version 1
     if (memcmp(buf, "DfuSe\x01", 6) != 0) {
@@ -103,6 +106,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset += 274;
+    crc = uzlib_crc32(buf, 274, crc);
 
     // Validate target header, with alt being 0
     if (memcmp(buf, "Target\x00", 7) != 0) {
@@ -123,6 +127,7 @@ static int fsload_program_file(bool write_to_flash) {
             return -MBOOT_ERRNO_DFU_READ_ERROR;
         }
         file_offset += 8;
+        crc = uzlib_crc32(buf, 8, crc);
 
         // Get element destination address and size
         uint32_t elem_addr = get_le32(buf);
@@ -151,6 +156,7 @@ static int fsload_program_file(bool write_to_flash) {
             if (res != l) {
                 return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
+            crc = uzlib_crc32(buf, l, crc);
             res = do_write(elem_addr, buf, l, !write_to_flash);
             if (res != 0) {
                 return res;
@@ -176,7 +182,12 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
 
-    // TODO validate CRC32
+    // The final 4 bytes of the file are the expected CRC32, so including these
+    // bytes in the CRC calculation should yield a final CRC32 of 0.
+    crc = uzlib_crc32(buf, 16, crc);
+    if (crc != 0) {
+        return -MBOOT_ERRNO_DFU_INVALID_CRC;
+    }
 
     return 0;
 }
