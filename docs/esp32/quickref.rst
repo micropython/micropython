@@ -68,6 +68,9 @@ by reading the temperature sensor immediately after waking up from sleep.
 Networking
 ----------
 
+WLAN
+^^^^
+
 The :mod:`network` module::
 
     import network
@@ -114,9 +117,7 @@ To use the wired interfaces one has to specify the pins ::
     lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
 
 
-Pinouts for popular boards
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-These are working configurations for LAN interfaces
+These are working configurations for LAN interfaces of popular boards:
 
 Olimex ESP32-GATEWAY::
 
