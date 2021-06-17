@@ -57,6 +57,11 @@ Use the :mod:`time <utime>` module::
     delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
 Timers
+<<<<<<< HEAD
+=======
+------
+RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. It supports • A single 64-bit counter, incrementing once per microsecond;• This counter can be read from a pair of latching registers, for race-free reads over a 32-bit bus;• Four alarms: match on the lower 32 bits of counter, IRQ on match. The watchdog generates a one microsecond reference. 
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09
 
 ------
 RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. The software timer is available currently, and there are unlimited number of them available(limited by memory). There is no need to specify the timer id (id=-1 is supported at the moment) as it will be set autoatically. 
@@ -101,10 +106,19 @@ See :ref:`machine.UART <machine.UART>`. ::
 PWM (pulse width modulation)
 ----------------------------
 
+<<<<<<< HEAD
 There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. The duty cycle range is from 0-65535.
 
 
 
+=======
+
+There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. 
+
+
+The channels can be clocked by external sources, using an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
+
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09
 For more information on this topic you can see the PWM module in the rp2040 datasheet <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>
 
 Use the ``machine.PWM`` class::
@@ -121,7 +135,13 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
+<<<<<<< HEAD
 RP2040 has five ADC channels in total, four of which are 12-bit SAR based ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can be connected with GP26,GP27,GP28. The fourth is used to measure the VSYS voltage on the board.The standard ADC range is 0-3.3V.
+=======
+The ADC on RP2040 has a 12-bits resolution but with MicroPython it is transformed to a 16-bit number.
+ 
+RP2040 has five ADC channels in total, four of which are brought out to chip GPIOs: GP26, GP27, GP28 and GP29. On Raspberry Pi Pico, the first three of these are brought out to GPIO pins. The fourth is used to measure the VSYS voltage on the board. The ADC’s fifth input channel is connected to a temperature sensor built into RP2040.
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
@@ -217,7 +237,11 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
+<<<<<<< HEAD
 The RP2XXX port has a watchdog which is a countdown timer that can restart parts of the chip if it reaches zero. This helps in restarting the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
+=======
+The RP2XXX port even has a Watchdog. The watchdog is a countdown timer that can restart parts of the chip if it reaches zero. This can be used to restart the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
@@ -297,4 +321,7 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09

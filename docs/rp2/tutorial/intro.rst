@@ -242,4 +242,7 @@ If you press the enter key, MicroPython should respond by prompting you for more
 
 >>>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09

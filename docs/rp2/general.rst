@@ -30,11 +30,19 @@ The peripherals include 2 UARTs, 2 SPI controllers, 2 I2C contollers, 16 PWM cha
 RP2040 is the debut microcontroller from Raspberry Pi from the Raspberry Pi Foundation.
 
 It has large on-chip memory, symmetric dual-core processor complex, deterministic bus fabric, and rich peripheral set augmented with  unique Programmable I/O (PIO) subsystem, providing professional users with unrivalled power and flexibility. It has the lowest possible barrier to entry for beginners because of its polished MicroPython port and a UF2 bootloader in ROM.
+<<<<<<< HEAD
 
 RP2040 is a stateless device, with support for cached execute-in-place from external QSPI memory. This gives us the flexibility to choose the appropriate density of non-volatile storage for the application, and the additional benefit of low pricing of commodity Flash parts.
 
 Manufactured on a modern 40nm process node, the RP2040 delivers high performance, low dynamic power
 consumption, and low leakage, with support for extended-duration operation on battery power through a variety of low-power operations.
 
+=======
+
+RP2040 is a stateless device, with support for cached execute-in-place from external QSPI memory. This gives us the flexibility to choose the appropriate density of non-volatile storage for the application, and the additional benefit of low pricing of commodity Flash parts.
+
+Manufactured on a modern 40nm process node, the RP2040 delivers high performance, low dynamic power
+consumption, and low leakage, with support for extended-duration operation on battery power through a variety of low-power operations.
+>>>>>>> 4a760bc0b19a456f122d6a35e15fd8ab8ff81e09
 
 
