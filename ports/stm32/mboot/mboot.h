@@ -113,7 +113,7 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
 void do_read(mboot_addr_t addr, size_t len, uint8_t *buf);
-int do_write(uint32_t addr, const uint8_t *src8, size_t len);
+int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);

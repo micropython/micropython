@@ -715,11 +715,15 @@ void do_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     #endif
 }
 
-int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run) {
     #if MBOOT_ENABLE_PACKING
-    return mboot_pack_write(addr, src8, len);
+    return mboot_pack_write(addr, src8, len, dry_run);
     #else
-    return hw_write(addr, src8, len);
+    if (dry_run) {
+        return 0;
+    } else {
+        return hw_write(addr, src8, len);
+    }
     #endif
 }
 
@@ -844,7 +848,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
             // Mark the 2 lower bits to indicate invalid app firmware
             buf[1] |= APP_VALIDITY_BITS;
         }
-        int ret = do_write(i2c_obj.cmd_wraddr, buf + 1, len);
+        int ret = do_write(i2c_obj.cmd_wraddr, buf + 1, len, false);
         if (ret < 0) {
             len = ret;
         } else {
@@ -866,7 +870,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
             len = -1;
         } else {
             buf &= ~APP_VALIDITY_BITS;
-            int ret = do_write(APPLICATION_ADDR, (void*)&buf, 4);
+            int ret = do_write(APPLICATION_ADDR, (void*)&buf, 4, false);
             if (ret < 0) {
                 len = ret;
             } else {
@@ -940,7 +944,7 @@ static int dfu_process_dnload(void) {
     } else if (dfu_context.wBlockNum > 1) {
         // write data to memory
         uint32_t addr = (dfu_context.wBlockNum - 2) * DFU_XFER_SIZE + dfu_context.addr;
-        ret = do_write(addr, dfu_context.buf, dfu_context.wLength);
+        ret = do_write(addr, dfu_context.buf, dfu_context.wLength, false);
     }
     if (ret == 0) {
         return DFU_STATE_DNLOAD_IDLE;
