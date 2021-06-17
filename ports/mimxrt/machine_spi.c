@@ -350,7 +350,11 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
-            L1CACHE_DisableDCache();
+            if (dest) {
+                L1CACHE_DisableDCache();
+            } else if (src) {
+                DCACHE_CleanByRange((uint32_t)src, len);
+            }
             LPSPI_MasterTransferEDMA(self->spi_inst, &g_master_edma_handle, &masterXfer);
 
             while (self->transfer_busy) {
@@ -383,7 +387,11 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
             LPSPI_Enable(self->spi_inst, true);
 
             self->transfer_busy = true;
-            L1CACHE_DisableDCache();
+            if (dest) {
+                L1CACHE_DisableDCache();
+            } else if (src) {
+                DCACHE_CleanByRange((uint32_t)src, len);
+            }
             LPSPI_SlaveTransferEDMA(self->spi_inst, &g_slave_edma_handle, &slaveXfer);
 
             // Wait until the transfer is completed. Use the timer for timeout
