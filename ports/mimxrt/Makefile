@@ -140,6 +140,7 @@ SRC_C = \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -149,7 +150,9 @@ SRC_C = \
 	hal/flexspi_nor_flash.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/gchelper_native.c \
+	lib/utils/mpirq.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
@@ -263,12 +266,14 @@ SRC_QSTR += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
+	lib/utils/mpirq.c \
 	lib/utils/sys_stdio_mphal.c \
 	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \

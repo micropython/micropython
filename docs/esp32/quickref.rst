@@ -105,6 +105,14 @@ Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
+After a call to ``wlan.connect()``, the device will by default retry to connect
+**forever**, even when the authentication failed or no AP is in range.
+``wlan.status()`` will return ``network.STAT_CONNECTING`` in this state until a
+connection succeeds or the interface gets disabled.  This can be changed by
+calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
+attempts (0 means it won't retry, -1 will restore the default behaviour of trying
+to reconnect forever).
+
 LAN
 ^^^
 
@@ -126,7 +134,6 @@ Olimex ESP32-GATEWAY::
 Olimex ESP32-POE::
 
    network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(12), phy_type=network.PHY_LAN8720, phy_addr=0, clock_mode=network.ETH_CLOCK_GPIO17_OUT)
-
 
 
 Delay and timing

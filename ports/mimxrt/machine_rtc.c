@@ -37,12 +37,13 @@ typedef struct _machine_rtc_obj_t {
 
 // Singleton RTC object.
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
+uint32_t us_offset = 0;
 
 // Calculate the weekday from the date.
-// The result is zero based with 0 = Sunday.
+// The result is zero based with 0 = Monday.
 // by Michael Keith and Tom Craver, 1990.
-static int calc_weekday(int y, int m, int d) {
-    return (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7;
+int calc_weekday(int y, int m, int d) {
+    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
 }
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -66,11 +67,11 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
             mp_obj_new_int(srtc_date.year),
             mp_obj_new_int(srtc_date.month),
             mp_obj_new_int(srtc_date.day),
+            mp_obj_new_int(calc_weekday(srtc_date.year, srtc_date.month, srtc_date.day)),
             mp_obj_new_int(srtc_date.hour),
             mp_obj_new_int(srtc_date.minute),
             mp_obj_new_int(srtc_date.second),
-            mp_obj_new_int(ticks_us64() % 1000000),
-            mp_const_none,
+            mp_obj_new_int((ticks_us64() + us_offset) % 1000000),
         };
         return mp_obj_new_tuple(8, tuple);
     } else {
@@ -84,12 +85,14 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
         srtc_date.year = year >= 100 ? year : year + 2000; // allow 21 for 2021
         srtc_date.month = mp_obj_get_int(items[1]);
         srtc_date.day = mp_obj_get_int(items[2]);
-        srtc_date.hour = mp_obj_get_int(items[3]);
-        srtc_date.minute = mp_obj_get_int(items[4]);
-        srtc_date.second = mp_obj_get_int(items[5]);
+        // Ignore weekday at items[3]
+        srtc_date.hour = mp_obj_get_int(items[4]);
+        srtc_date.minute = mp_obj_get_int(items[5]);
+        srtc_date.second = mp_obj_get_int(items[6]);
         if (SNVS_LP_SRTC_SetDatetime(SNVS, &srtc_date) != kStatus_Success) {
             mp_raise_ValueError(NULL);
         }
+        us_offset = (1000000 + mp_obj_get_int(items[7]) - ticks_us64() % 1000000) % 1000000;
 
         return mp_const_none;
     }
@@ -101,7 +104,21 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
-    return machine_rtc_datetime_helper(1, &self_in);
+    // Get date and time in CPython order.
+    snvs_lp_srtc_datetime_t srtc_date;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
+
+    mp_obj_t tuple[8] = {
+        mp_obj_new_int(srtc_date.year),
+        mp_obj_new_int(srtc_date.month),
+        mp_obj_new_int(srtc_date.day),
+        mp_obj_new_int(srtc_date.hour),
+        mp_obj_new_int(srtc_date.minute),
+        mp_obj_new_int(srtc_date.second),
+        mp_obj_new_int((ticks_us64() + us_offset) % 1000000),
+        mp_const_none,
+    };
+    return mp_obj_new_tuple(8, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
@@ -111,16 +128,6 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
-
-STATIC mp_obj_t machine_rtc_weekday(mp_obj_t self_in) {
-    (void)self_in; // unused
-    int day;
-    snvs_lp_srtc_datetime_t srtc_date;
-    SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
-    day = calc_weekday(srtc_date.year, srtc_date.month, srtc_date.day);
-    return MP_OBJ_NEW_SMALL_INT((day + 6) % 7);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_weekday_obj, machine_rtc_weekday);
 
 // calibration(cal)
 // When the argument is a number in the range [-16 to 15], set the calibration value.
@@ -143,7 +150,6 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
-    { MP_ROM_QSTR(MP_QSTR_weekday), MP_ROM_PTR(&machine_rtc_weekday_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&machine_rtc_calibration_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);

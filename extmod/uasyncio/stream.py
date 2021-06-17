@@ -30,6 +30,10 @@ class Stream:
         yield core._io_queue.queue_read(self.s)
         return self.s.read(n)
 
+    async def readinto(self, buf):
+        yield core._io_queue.queue_read(self.s)
+        return self.s.readinto(buf)
+
     async def readexactly(self, n):
         r = b""
         while n:
@@ -112,7 +116,6 @@ class Server:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(ai[-1])
         s.listen(backlog)
-        self.task = core.cur_task
         # Accept incoming connections
         while True:
             try:
@@ -135,7 +138,7 @@ class Server:
 # TODO could use an accept-callback on socket read activity instead of creating a task
 async def start_server(cb, host, port, backlog=5):
     s = Server()
-    core.create_task(s._serve(cb, host, port, backlog))
+    s.task = core.create_task(s._serve(cb, host, port, backlog))
     return s
 
 

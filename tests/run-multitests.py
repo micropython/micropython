@@ -32,8 +32,10 @@ import sys
 class multitest:
     @staticmethod
     def flush():
-        if hasattr(sys.stdout, "flush"):
+        try:
             sys.stdout.flush()
+        except AttributeError:
+            pass
     @staticmethod
     def skip():
         print("SKIP")

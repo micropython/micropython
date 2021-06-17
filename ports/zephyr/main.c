@@ -49,6 +49,7 @@
 #include "py/stackctrl.h"
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
+#include "extmod/modbluetooth.h"
 
 #if MICROPY_VFS
 #include "extmod/vfs.h"
@@ -100,8 +101,8 @@ STATIC void vfs_init(void) {
     const char *mount_point_str = NULL;
     int ret = 0;
 
-    #ifdef CONFIG_DISK_ACCESS_SDHC
-    mp_obj_t args[] = { mp_obj_new_str(CONFIG_DISK_SDHC_VOLUME_NAME, strlen(CONFIG_DISK_SDHC_VOLUME_NAME)) };
+    #ifdef CONFIG_DISK_DRIVER_SDMMC
+    mp_obj_t args[] = { mp_obj_new_str(CONFIG_SDMMC_VOLUME_NAME, strlen(CONFIG_SDMMC_VOLUME_NAME)) };
     bdev = zephyr_disk_access_type.make_new(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && FLASH_AREA_LABEL_EXISTS(storage)
@@ -168,6 +169,9 @@ soft_reset:
 
     printf("soft reboot\n");
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bluetooth_deinit();
+    #endif
     #if MICROPY_PY_MACHINE
     machine_pin_deinit();
     #endif

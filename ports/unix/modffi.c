@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mperrno.h"
+#include "py/objint.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"
@@ -59,6 +60,11 @@
 // This union is large enough to hold any supported argument/return value.
 typedef union _ffi_union_t {
     ffi_arg ffi;
+    unsigned char B;
+    unsigned short int H;
+    unsigned int I;
+    unsigned long int L;
+    unsigned long long int Q;
     float flt;
     double dbl;
 } ffi_union_t;
@@ -177,6 +183,20 @@ STATIC mp_obj_t return_ffi_value(ffi_union_t *val, char type) {
             return mp_obj_new_float_from_d(val->dbl);
         }
         #endif
+        case 'b':
+        case 'h':
+        case 'i':
+        case 'l':
+            return mp_obj_new_int((signed)val->ffi);
+        case 'B':
+        case 'H':
+        case 'I':
+        case 'L':
+            return mp_obj_new_int_from_uint(val->ffi);
+        case 'q':
+            return mp_obj_new_int_from_ll(val->Q);
+        case 'Q':
+            return mp_obj_new_int_from_ull(val->Q);
         case 'O':
             return (mp_obj_t)(intptr_t)val->ffi;
         default:
@@ -365,6 +385,48 @@ STATIC void ffifunc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "<ffifunc %p>", self->func);
 }
 
+STATIC unsigned long long ffi_get_int_value(mp_obj_t o) {
+    if (mp_obj_is_small_int(o)) {
+        return MP_OBJ_SMALL_INT_VALUE(o);
+    } else {
+        unsigned long long res;
+        mp_obj_int_to_bytes_impl(o, MP_ENDIANNESS_BIG, sizeof(res), (byte *)&res);
+        return res;
+    }
+}
+
+STATIC ffi_union_t ffi_int_obj_to_ffi_union(mp_obj_t o, const char argtype) {
+    ffi_union_t ret;
+    if ((argtype | 0x20) == 'q') {
+        ret.Q = ffi_get_int_value(o);
+        return ret;
+    } else {
+        mp_uint_t val = mp_obj_int_get_truncated(o);
+        switch (argtype) {
+            case 'b':
+            case 'B':
+                ret.B = val;
+                break;
+            case 'h':
+            case 'H':
+                ret.H = val;
+                break;
+            case 'i':
+            case 'I':
+                ret.I = val;
+                break;
+            case 'l':
+            case 'L':
+                ret.L = val;
+                break;
+            default:
+                ret.ffi = val;
+                break;
+        }
+    }
+    return ret;
+}
+
 STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw;
     mp_obj_ffifunc_t *self = MP_OBJ_TO_PTR(self_in);
@@ -387,7 +449,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (a == mp_const_none) {
             values[i].ffi = 0;
         } else if (mp_obj_is_int(a)) {
-            values[i].ffi = mp_obj_int_get_truncated(a);
+            values[i] = ffi_int_obj_to_ffi_union(a, *argtype);
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
