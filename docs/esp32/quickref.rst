@@ -129,11 +129,11 @@ These are working configurations for LAN interfaces of popular boards:
 
 Olimex ESP32-GATEWAY::
 
-   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), phy_type=network.PHY_LAN8720, phy_addr=0, clock_mode=network.ETH_CLOCK_GPIO17_OUT)
+   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), phy_type=network.PHY_LAN8720, phy_addr=0)
 
 Olimex ESP32-POE::
 
-   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(12), phy_type=network.PHY_LAN8720, phy_addr=0, clock_mode=network.ETH_CLOCK_GPIO17_OUT)
+   network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(12), phy_type=network.PHY_LAN8720, phy_addr=0)
 
 
 Delay and timing
