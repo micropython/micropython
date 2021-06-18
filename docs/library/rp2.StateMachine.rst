@@ -128,4 +128,3 @@ Methods
      Returns the IRQ object for the given StateMachine.
 
      Optionally configure it.
-

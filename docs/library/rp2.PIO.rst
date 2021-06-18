@@ -91,4 +91,3 @@ Constants
           PIO.IRQ_SM3
 
     These constants are used for the *trigger* argument to `PIO.irq`.
-
