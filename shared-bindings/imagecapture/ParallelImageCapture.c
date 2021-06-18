@@ -45,7 +45,8 @@
 //|         href: Optional[microcontroller.Pin],
 //|     ):
 //|         """Create a parallel image capture object
-//|         :param microcontroller.Pin data0: The first data pin.  Additional data pins are assumed to follow this pin directly in the microcontroller's standard pin ordering.
+//|
+//|         :param List[microcontroller.Pin] data_pins: The data pins.
 //|         :param microcontroller.Pin clock: The pixel clock input.
 //|         :param microcontroller.Pin vsync: The vertical sync input, which has a negative-going pulse at the beginning of each frame.
 //|         :param microcontroller.Pin href: The horizontal reference input, which is high whenever the camera is transmitting valid pixel information.
