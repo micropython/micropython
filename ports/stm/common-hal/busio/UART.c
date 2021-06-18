@@ -355,7 +355,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle) {
             if (context->sigint_enabled) {
                 if (context->rx_char == CHAR_CTRL_C) {
                     common_hal_busio_uart_clear_rx_buffer(context);
-                    mp_keyboard_interrupt();
+                    mp_sched_keyboard_interrupt();
                 }
             }
 

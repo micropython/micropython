@@ -293,7 +293,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_n_read_flush(itf);    // flush read fifo
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
     }
 }
 

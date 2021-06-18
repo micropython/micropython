@@ -81,7 +81,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *param) {
                 for (size_t i = 0; i < write->len; ++i) {
                     #if MICROPY_KBD_EXCEPTION
                     if (write->data[i] == mp_interrupt_char) {
-                        mp_keyboard_interrupt();
+                        mp_sched_keyboard_interrupt();
                     } else
                     #endif
                     {
