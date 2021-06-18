@@ -203,7 +203,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_espidf;
-extern const struct _mp_obj_module_t mp_module_lvesp32;
 extern const struct _mp_obj_module_t mp_module_rtch;
 extern const struct _mp_obj_module_t mp_module_lodepng;
 // extern const struct _mp_obj_module_t mp_module_ILI9341;
@@ -212,15 +211,13 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #if MICROPY_PY_LVGL
 #define MICROPY_PORT_LVGL_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32), (mp_obj_t)&mp_module_lvesp32 },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_ILI9341 },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 },
 
 // lvesp needs to delete the timer task upon soft reset
 
-extern void lvesp_deinit();
 extern void lv_deinit(void);
-#define MICROPY_PORT_DEINIT_FUNC lvesp_deinit(); lv_deinit()
+#define MICROPY_PORT_DEINIT_FUNC lv_deinit()
 
 #else
 #define MICROPY_PORT_LVGL_DEF
