@@ -112,7 +112,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     // so that the generated native code which was created in data RAM will
     // be available for execution from instruction RAM.
     #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
-    #if __ICACHE_PRESENT == 1
+    #if defined(__ICACHE_PRESENT) && __ICACHE_PRESENT == 1
     // Flush D-cache, so the code emitted is stored in RAM.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
     // Invalidate I-cache, so the newly-created code is reloaded from RAM.
