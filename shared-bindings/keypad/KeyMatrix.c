@@ -36,12 +36,10 @@
 //| class KeyMatrix:
 //|     """Manage a 2D matrix of keys with row and column pins."""
 //|
-//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], max_events: int = 64) -> None:
+//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], columns_to_anodes: bool = True, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
-//|         If the matrix uses diodes, the diode anodes should be connected to the column pins,
-//|         and the cathodes should be connected to the row pins. If your diodes are reversed,
-//|         simply exchange the row and column pin sequences.
+//|         There should not be any pull-ups or pull-downs on the matrix.
 //|
 //|         The keys are numbered sequentially from zero. A key number can be computed
 //|         by ``row * len(col_pins) + col``.
@@ -52,6 +50,11 @@
 //|
 //|         :param Sequence[microcontroller.Pin] row_pins: The pins attached to the rows.
 //|         :param Sequence[microcontroller.Pin] col_pins: The pins attached to the colums.
+//|         :param bool columns_to_anodes: Default ``True``.
+//|           If the matrix uses diodes, the diode anodes are typically connected to the column pins,
+//|           and the cathodes should be connected to the row pins. If your diodes are reversed,
+//|           set ``columns_to_anodes`` to ``False``.
+//|
 //|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -62,10 +65,11 @@
 STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_keymatrix_obj_t *self = m_new_obj(keypad_keymatrix_obj_t);
     self->base.type = &keypad_keymatrix_type;
-    enum { ARG_row_pins, ARG_col_pins, ARG_max_events };
+    enum { ARG_row_pins, ARG_col_pins, ARG_columns_to_anodes, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_col_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_columns_to_anodes, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -98,7 +102,7 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
         col_pins_array[col] = pin;
     }
 
-    common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_col_pins, col_pins_array, max_events);
+    common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_col_pins, col_pins_array, args[ARG_columns_to_anodes].u_bool, max_events);
     return MP_OBJ_FROM_PTR(self);
 }
 

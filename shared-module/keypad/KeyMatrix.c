@@ -42,14 +42,14 @@ static mp_uint_t row_col_to_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row,
     return row * self->col_digitalinouts->len + col;
 }
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], size_t max_events) {
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], bool columns_to_anodes, size_t max_events) {
 
     mp_obj_t row_dios[num_row_pins];
     for (size_t row = 0; row < num_row_pins; row++) {
         digitalio_digitalinout_obj_t *dio = m_new_obj(digitalio_digitalinout_obj_t);
         dio->base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(dio, row_pins[row]);
-        common_hal_digitalio_digitalinout_switch_to_input(dio, PULL_UP);
+        common_hal_digitalio_digitalinout_switch_to_input(dio, columns_to_anodes ? PULL_UP : PULL_DOWN);
         row_dios[row] = dio;
     }
     self->row_digitalinouts = mp_obj_new_tuple(num_row_pins, row_dios);
@@ -59,13 +59,15 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
         digitalio_digitalinout_obj_t *dio = m_new_obj(digitalio_digitalinout_obj_t);
         dio->base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(dio, col_pins[col]);
-        common_hal_digitalio_digitalinout_switch_to_input(dio, PULL_UP);
+        common_hal_digitalio_digitalinout_switch_to_input(dio, columns_to_anodes ? PULL_UP : PULL_DOWN);
         col_dios[col] = dio;
     }
     self->col_digitalinouts = mp_obj_new_tuple(num_col_pins, col_dios);
 
     self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_col_pins, false, false);
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_col_pins, false, false);
+
+    self->columns_to_anodes = columns_to_anodes;
 
     keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
     events->base.type = &keypad_eventqueue_type;
@@ -142,21 +144,25 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
     self->last_scan_ticks = now;
 
-    // On entry, all pins are set to inputs with a pull-up.
+    // On entry, all pins are set to inputs with a pull-up or pull-down,
+    // depending on the diode orientation.
     for (size_t row = 0; row < common_hal_keypad_keymatrix_get_num_rows(self); row++) {
-        // Switch this row to an output and set to low.
+        // Switch this row to an output and set level appropriately
+        // Set low if columns_to_anodes is true, else set high.
         common_hal_digitalio_digitalinout_switch_to_output(
-            self->row_digitalinouts->items[row], false, DRIVE_MODE_PUSH_PULL);
+            self->row_digitalinouts->items[row], !self->columns_to_anodes, DRIVE_MODE_PUSH_PULL);
 
         for (size_t col = 0; col < common_hal_keypad_keymatrix_get_num_cols(self); col++) {
             mp_uint_t key_num = row_col_to_key_num(self, row, col);
             const bool previous = self->currently_pressed[key_num];
             self->previously_pressed[key_num] = previous;
 
-            // Get the current state, by reading whether the col got pulled down or not.
-            // If low, the key is pressed.
+            // Get the current state, by reading whether the col got pulled to the row value or not.
+            // If low and columns_to_anodes is true, the key is pressed.
+            // If high and columns_to_anodes is false, the key is pressed.
             const bool current =
-                !common_hal_digitalio_digitalinout_get_value(self->col_digitalinouts->items[col]);
+                common_hal_digitalio_digitalinout_get_value(self->col_digitalinouts->items[col]) !=
+                self->columns_to_anodes;
             self->currently_pressed[key_num] = current;
 
             // Record any transitions.
@@ -165,7 +171,8 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
             }
         }
 
-        // Switch the row back to an input, pulled up.
-        common_hal_digitalio_digitalinout_switch_to_input(self->row_digitalinouts->items[row], PULL_UP);
+        // Switch the row back to an input, pulled appropriately
+        common_hal_digitalio_digitalinout_switch_to_input(
+            self->row_digitalinouts->items[row], self->columns_to_anodes ? PULL_UP : PULL_DOWN);
     }
 }

@@ -44,6 +44,7 @@ typedef struct {
     bool *previously_pressed;
     bool *currently_pressed;
     keypad_eventqueue_obj_t *events;
+    bool columns_to_anodes;
 } keypad_keymatrix_obj_t;
 
 void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self);
