@@ -373,7 +373,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, cons
             m_del(mp_obj_t, args2, 2 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("__init__() should return None"));
             #else
             mp_raise_TypeError_varg(MP_ERROR_TEXT("__init__() should return None, not '%q'"),
@@ -889,7 +889,7 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     mp_obj_t call = mp_obj_instance_get_call(self_in, member);
     if (call == MP_OBJ_NULL) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("object not callable"));
         #else
         mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object is not callable"),
@@ -1029,7 +1029,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->make_new == NULL) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("cannot create instance"));
         #else
         mp_raise_TypeError_varg(MP_ERROR_TEXT("cannot create '%q' instances"), self->name);
@@ -1171,7 +1171,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("type is not an acceptable base type"));
             #else
             mp_raise_TypeError_varg(

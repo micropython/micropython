@@ -40,7 +40,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     size_t n_args_max = (sig >> 1) & 0xffff;
 
     if (n_kw && !takes_kw) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else
         mp_raise_TypeError(MP_ERROR_TEXT("function doesn't take keyword arguments"));
@@ -49,7 +49,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
 
     if (n_args_min == n_args_max) {
         if (n_args != n_args_min) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
@@ -58,7 +58,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
         }
     } else {
         if (n_args < n_args_min) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(
@@ -66,7 +66,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
                 n_args_min - n_args);
             #endif
         } else if (n_args > n_args_max) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(
@@ -106,7 +106,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             }
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
-                    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     mp_arg_error_terse_mismatch();
                     #else
                     mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' argument required"), allowed[i].qst);
@@ -130,7 +130,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
     }
     if (pos_found < n_pos) {
     extra_positional:
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else
         // TODO better error message
@@ -138,7 +138,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         #endif
     }
     if (kws != NULL && kws_found < kws->used) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else
         // TODO better error message

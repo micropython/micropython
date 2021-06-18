@@ -57,7 +57,7 @@ STATIC void sighandler(int signum) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         #endif
     }
 }

@@ -32,8 +32,10 @@ import sys
 class multitest:
     @staticmethod
     def flush():
-        if hasattr(sys.stdout, "flush"):
+        try:
             sys.stdout.flush()
+        except AttributeError:
+            pass
     @staticmethod
     def skip():
         print("SKIP")
@@ -160,7 +162,17 @@ class PyInstanceSubProcess(PyInstance):
 
 
 class PyInstancePyboard(PyInstance):
+    @staticmethod
+    def map_device_shortcut(device):
+        if device[0] == "a" and device[1:].isdigit():
+            return "/dev/ttyACM" + device[1:]
+        elif device[0] == "u" and device[1:].isdigit():
+            return "/dev/ttyUSB" + device[1:]
+        else:
+            return device
+
     def __init__(self, device):
+        device = self.map_device_shortcut(device)
         self.device = device
         self.pyb = pyboard.Pyboard(device)
         self.pyb.enter_raw_repl()
@@ -233,6 +245,7 @@ def trace_instance_output(instance_idx, line):
     if cmd_args.trace_output:
         t_ms = round((time.time() - trace_t0) * 1000)
         print("{:6} i{} :".format(t_ms, instance_idx), line)
+        sys.stdout.flush()
 
 
 def run_test_on_instances(test_file, num_instances, instances):
