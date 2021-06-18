@@ -299,18 +299,19 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void **args, void *user_data) 
 }
 
 STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_rettype, ARG_func, ARG_parmtypes, ARG_lock };
+
+    // first 3 args are positional: retttype, func, paramtypes.
+    mp_obj_t rettype_in = pos_args[0];
+    mp_obj_t func_in = pos_args[1];
+    mp_obj_t paramtypes_in = pos_args[2];
+
+    // arg parsing is used only for additional kwargs
+    enum { ARG_lock };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_rettype,     MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_func,        MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_paramtypes,  MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_lock,        MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mp_obj_t rettype_in = args[ARG_rettype].u_obj;
-    mp_obj_t func_in = args[ARG_func].u_obj;
-    mp_obj_t paramtypes_in = args[ARG_parmtypes].u_obj;
+    mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     bool lock_in = args[ARG_lock].u_bool;
 
     const char *rettype = mp_obj_str_get_str(rettype_in);
@@ -529,21 +530,24 @@ STATIC void fficallback_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "<fficallback %p>", self->func);
 }
 
-STATIC mp_int_t fficallback_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    (void)flags;
+STATIC mp_obj_t fficallback_cfun(mp_obj_t self_in) {
     mp_obj_fficallback_t *self = MP_OBJ_TO_PTR(self_in);
-
-    bufinfo->buf = &self->func;
-    bufinfo->len = sizeof(self->func);
-    bufinfo->typecode = BYTEARRAY_TYPECODE;
-    return 0;
+    return mp_obj_new_int_from_ull((uintptr_t)self->func);
 }
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fficallback_cfun_obj, fficallback_cfun);
+
+STATIC const mp_rom_map_elem_t fficallback_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_cfun), MP_ROM_PTR(&fficallback_cfun_obj) }
+};
+
+STATIC MP_DEFINE_CONST_DICT(fficallback_locals_dict, fficallback_locals_dict_table);
 
 STATIC const mp_obj_type_t fficallback_type = {
     { &mp_type_type },
     .name = MP_QSTR_fficallback,
     .print = fficallback_print,
-    .buffer_p = { .get_buffer = fficallback_get_buffer }
+    .locals_dict = (mp_obj_dict_t *)&fficallback_locals_dict
 };
 
 // FFI variable
