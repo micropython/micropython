@@ -26,13 +26,14 @@
 
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/keypad/KeyMatrix.h"
+#include "shared-bindings/keypad/ShiftRegisterKeys.h"
 #include "supervisor/shared/lock.h"
 #include "supervisor/shared/tick.h"
 
 supervisor_lock_t keypad_scanners_linked_list_lock;
 
 void keypad_tick(void) {
-    // Fast path. Return immediately if there are no scanners.
+    // Fast path. Return immediately there are no scanners.
     if (!MP_STATE_VM(keypad_scanners_linked_list)) {
         return;
     }
@@ -45,6 +46,8 @@ void keypad_tick(void) {
                 keypad_keys_scan((keypad_keys_obj_t *)scanner);
             } else if (mp_obj_is_type(scanner, &keypad_keymatrix_type)) {
                 keypad_keymatrix_scan((keypad_keymatrix_obj_t *)scanner);
+            } else if (mp_obj_is_type(scanner, &keypad_shiftregisterkeys_type)) {
+                keypad_shiftregisterkeys_scan((keypad_shiftregisterkeys_obj_t *)scanner);
             }
 
             scanner = ((keypad_scanner_obj_t *)scanner)->next;

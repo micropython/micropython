@@ -519,6 +519,7 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/Event.c \
 	keypad/EventQueue.c \
 	keypad/KeyMatrix.c \
+	keypad/ShiftRegisterKeys.c \
 	keypad/Keys.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
