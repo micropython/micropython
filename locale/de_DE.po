@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-03-16 00:47+0000\n"
-"Last-Translator: Daniel Glocker <mystboy666@gmail.com>\n"
+"PO-Revision-Date: 2021-06-19 20:18+0000\n"
+"Last-Translator: Zoltán Vörös <zvoros@gmail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: main.c
 msgid ""
@@ -97,11 +97,11 @@ msgstr "%q Liste muss eine Liste sein"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
-msgstr ""
+msgstr "%q muss 0-255 sein"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
-msgstr ""
+msgstr "%q muss 1-255 sein"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -117,7 +117,7 @@ msgstr "%q muss >= 1 sein"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
+msgstr "%q muss None oder zwischen 1 und len(report_descriptor)-1 sein"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -209,7 +209,7 @@ msgstr "'%s' erwartet {r0, r1, ...}"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' Die ganze Zahl %d ist nicht im Bereich %d..%d"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -537,7 +537,7 @@ msgstr "Buffer + Offset zu klein %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Puffer-Elemente müssen 4 Bytes lang oder kürzer sein"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -629,11 +629,11 @@ msgstr "CCCD kann nicht auf lokales Merkmal eingestellt werden"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "Kann jetzt USB Geräte nicht laden"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Kann keinen neuen Adapter erstellen; benutze _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -908,7 +908,7 @@ msgstr "EXTINT Kanal ist schon in Benutzung"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "Fehler in MIDI Datenstrom um Position %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -1042,7 +1042,7 @@ msgstr "Interner Flash konnte nicht geschrieben werden."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "Fataler Fehler."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -1186,7 +1186,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr ""
+msgstr "Instruktion %d benötigt extra Pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1225,7 +1225,7 @@ msgstr "Ungültiger %q Pin"
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr ""
+msgstr "Ungültige %q Pin-Auswahl"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -1233,11 +1233,11 @@ msgstr "Ungültiger ADC-Einheitenwert"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
-msgstr ""
+msgstr "Ungültiges AuthMode"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
-msgstr ""
+msgstr "Ungültiges BLE Parameter"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1254,7 +1254,7 @@ msgstr "Ungültiger DAC-Pin angegeben"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
-msgstr ""
+msgstr "Ungültige MIDI Datei"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
@@ -1381,15 +1381,15 @@ msgstr "Ungültiger security_mode"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid size"
-msgstr ""
+msgstr "Ungültige Größe"
 
 #: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "Ungültiges Socket für TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
+msgstr "Ungültiger Zustand"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1426,7 +1426,7 @@ msgstr "Layer muss eine Group- oder TileGrid-Unterklasse sein."
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
-msgstr ""
+msgstr "MAC Adresse war ungültig"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1443,7 +1443,7 @@ msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Meldungen auf 8 Bytes limitiert"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -1457,7 +1457,7 @@ msgstr "Fehlender MISO- oder MOSI-Pin"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr ""
+msgstr "Fehlender first_in_pin. Instruktion %d liest Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1477,12 +1477,12 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "Fehlender first_out_pin. Instruktion %d schreibt Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "Fehlender first_set_pin. Instruktion %d setzt Pin(s)"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1503,7 +1503,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "NVS Fehler"
 
 #: py/qstr.c
 msgid "Name too long"
