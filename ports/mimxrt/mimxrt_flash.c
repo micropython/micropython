@@ -127,13 +127,6 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
-    // if (n_args == 4) {
-    //     mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, offset = %d, len = %d\n",
-    //         n_args, mp_obj_get_int(args[1]), mp_obj_get_int(args[3]), bufinfo.len);
-    // } else {
-    //     mp_printf(MP_PYTHON_PRINTER, "readblocks: nargs = %d, block = %d, len = %d\n",
-    //         n_args, mp_obj_get_int(args[1]), bufinfo.len);
-    // }
     // Calculate read offset from block number.
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
     // Add optional offset
