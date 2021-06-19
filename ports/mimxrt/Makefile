@@ -213,6 +213,7 @@ SRC_C += \
 	board_init.c \
 	dma_channel.c \
 	drivers/bus/softspi.c \
+	drivers/dht/dht.c \
 	eth.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
