@@ -123,6 +123,7 @@ uint32_t TRNG_random_u32();
 #define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
