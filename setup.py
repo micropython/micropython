@@ -4,35 +4,31 @@
 import os
 import site
 from datetime import datetime
-from typing import List
+from typing import Dict, List
 
 from setuptools import setup
 from pathlib import Path
-import subprocess
-import re
+
+STD_PACKAGES = set(('array', 'math', 'os', 'random', 'struct', 'sys', 'ssl', 'time'))
 
 stub_root = Path("circuitpython-stubs")
 stubs = [p.relative_to(stub_root).as_posix() for p in stub_root.glob("*.pyi")]
 
-git_out = subprocess.check_output(["git", "describe", "--tags"])
-version = git_out.strip().decode("utf-8")
+def local_scheme(version):
+    return ""
 
-# Detect a development build and mutate it to be valid semver and valid python version.
-pieces = version.split("-")
-if len(pieces) > 2:
-    pieces.pop()
-    # Merge the commit count and build to the pre-release identifier.
-    pieces[-2] += ".dev." + pieces[-1]
-    pieces.pop()
-version = "-".join(pieces)
+packages = set(os.listdir("circuitpython-stubs")) - STD_PACKAGES
+package_dir = dict((f"{package}-stubs", f"circuitpython-stubs/{package}")
+    for package in packages)
+print("package dir is", package_dir)
 
-def build_data_files_list() -> List[tuple]:
-    result = []
-    for package in os.listdir("circuitpython-stubs"):
-        result.append((site.getsitepackages()[0] + "/" + package + "/",
-                       ["circuitpython-stubs/{}/__init__.pyi".format(package)]))
+def build_package_data() -> Dict[str, List[str]]:
+    result = {}
+    for package in packages:
+        result[f"{package}-stubs"] = ["*.pyi", "*/*.pyi"]
     return result
 
+package_data=build_package_data()
 setup(
     name="circuitpython-stubs",
     description="PEP 561 type stubs for CircuitPython",
@@ -40,8 +36,11 @@ setup(
     maintainer="CircuitPythonistas",
     maintainer_email="circuitpython@adafruit.com",
     author_email="circuitpython@adafruit.com",
-    version=version,
     license="MIT",
-    data_files=build_data_files_list(),
-    setup_requires=["setuptools>=38.6.0"],
+    packages=list(package_data.keys()),
+    package_data=package_data,
+    package_dir = package_dir,
+    setup_requires=["setuptools_scm", "setuptools>=38.6.0"],
+    use_scm_version={"local_scheme": local_scheme},
+    zip_safe=False,
 )
