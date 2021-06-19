@@ -73,7 +73,7 @@ typedef struct _iomux_table_t {
 
 STATIC const uint8_t spi_index_table[] = MICROPY_HW_SPI_INDEX;
 STATIC LPSPI_Type *spi_base_ptr_table[] = LPSPI_BASE_PTRS;
-static const iomux_table_t iomux_table_uart[] = {
+static const iomux_table_t iomux_table[] = {
     IOMUX_TABLE_SPI
 };
 
@@ -81,10 +81,10 @@ static const char *firstbit_str[] = {"MSB", "LSB"};
 
 #define MICROPY_HW_SPI_NUM     (sizeof(spi_index_table) / sizeof(spi_index_table)[0])
 
-#define SCK (iomux_table_uart[index])
-#define CS0 (iomux_table_uart[index + 1])
-#define SDO (iomux_table_uart[index + 2])
-#define SDI (iomux_table_uart[index + 3])
+#define SCK (iomux_table[index])
+#define CS0 (iomux_table[index + 1])
+#define SDO (iomux_table[index + 2])
+#define SDI (iomux_table[index + 3])
 
 bool lpspi_set_iomux(int8_t spi, uint8_t drive) {
 
