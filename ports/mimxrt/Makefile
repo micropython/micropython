@@ -126,6 +126,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
+	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
@@ -148,6 +149,7 @@ SRC_C = \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_i2c.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
