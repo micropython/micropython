@@ -451,9 +451,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             #else
             printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
             #endif
+            #if defined(STM32F7)
             if (sdmmc_dma) {
                 dma_nohal_deinit(&dma_SDIO_0);
             }
+            #endif
             return -MP_ETIMEDOUT;
         }
     }
@@ -466,9 +468,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         #else
         printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC->STA, (uint)SDMMC->DCOUNT, (uint)SDMMC->DCTRL, (uint)SDMMC->IDMACTRL);
         #endif
+        #if defined(STM32F7)
         if (sdmmc_dma) {
             dma_nohal_deinit(&dma_SDIO_0);
         }
+        #endif
         return -(0x1000000 | sdmmc_error);
     }
 
@@ -478,7 +482,9 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             return -MP_EIO;
         }
     } else {
+        #if defined(STM32F7)
         dma_nohal_deinit(&dma_SDIO_0);
+        #endif
     }
 
     return 0;
