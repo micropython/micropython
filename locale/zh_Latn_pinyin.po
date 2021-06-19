@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-01 13:10+0000\n"
+"PO-Revision-Date: 2021-06-19 20:18+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: main.c
 msgid ""
@@ -3113,7 +3113,7 @@ msgstr "chāojí () de dì yī gè cānshù bìxū shì lèixíng"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "first two arguments must be ndarrays"
-msgstr ""
+msgstr "qián liǎng gè cān shù bì xū shì ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -3340,7 +3340,7 @@ msgstr "xūyào zhěngshù"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "interp is defined for 1D iterables of equal length"
-msgstr ""
+msgstr "zhōng jiān wéi cháng dù xiāng děng de 1D kě yì jiāo qì dìng yì"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -4203,7 +4203,7 @@ msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 
 #: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D iterables"
-msgstr ""
+msgstr "tī xíng dìng yì wéi yì wéi kě dié dài duì xiàng"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
