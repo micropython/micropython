@@ -216,10 +216,11 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
     uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
     bool data_as_commands, bool always_toggle_chip_select,
     displayio_area_t *area, bool SH1107_addressing) {
-    uint16_t x1 = area->x1;
-    uint16_t x2 = area->x2;
-    uint16_t y1 = area->y1;
-    uint16_t y2 = area->y2;
+    uint16_t x1 = area->x1 + self->colstart;
+    uint16_t x2 = area->x2 + self->colstart;
+    uint16_t y1 = area->y1 + self->rowstart;
+    uint16_t y2 = area->y2 + self->rowstart;
+
     // Collapse down the dimension where multiple pixels are in a byte.
     if (self->colorspace.depth < 8) {
         uint8_t pixels_per_byte = 8 / self->colorspace.depth;
@@ -231,6 +232,9 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
             y2 /= pixels_per_byte * self->colorspace.bytes_per_cell;
         }
     }
+
+    x2 -= 1;
+    y2 -= 1;
 
     display_chip_select_behavior_t chip_select = CHIP_SELECT_UNTOUCHED;
     if (always_toggle_chip_select || data_as_commands) {
@@ -249,25 +253,25 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
     } else {
         data_type = DISPLAY_COMMAND;
     }
+
     if (self->ram_width < 0x100) {
-        data[data_length++] = x1 + self->colstart;
-        data[data_length++] = x2 - 1 + self->colstart;
+        data[data_length++] = x1;
+        data[data_length++] = x2;
     } else {
-        x1 += self->colstart;
-        x2 += self->colstart - 1;
         data[data_length++] = x1 >> 8;
         data[data_length++] = x1 & 0xff;
         data[data_length++] = x2 >> 8;
         data[data_length++] = x2 & 0xff;
     }
+
     // Quirk for SH1107 "SH1107_addressing"
-    //     Note... column is y!  page is x!
-    //     Page address command = 0xB0
+    //     Column lower command = 0x00, Column upper command = 0x10
     if (SH1107_addressing) {
-        // set the page to our x value
-        data[0] = 0xB0 | (x1 & 0x0F);
-        data_length = 1;
+        data[0] = ((x1 >> 4) & 0x0F) | 0x10; // 0x10 to 0x17
+        data[1] = x1 & 0x0F; // 0x00 to 0x0F
+        data_length = 2;
     }
+
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 
@@ -288,27 +292,26 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t *self,
         self->send(self->bus, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, data, 1);
         data_length = 0;
     }
+
     if (self->ram_height < 0x100) {
-        data[data_length++] = y1 + self->rowstart;
-        data[data_length++] = y2 - 1 + self->rowstart;
+        data[data_length++] = y1;
+        data[data_length++] = y2;
     } else {
-        y1 += self->rowstart;
-        y2 += self->rowstart - 1;
         data[data_length++] = y1 >> 8;
         data[data_length++] = y1 & 0xff;
         data[data_length++] = y2 >> 8;
         data[data_length++] = y2 & 0xff;
     }
-    // Quirk for SH1107 "SH1107_addressing"
-    //     Note... column is y!  page is x!
-    //     Column lower command = 0x00, Column upper command = 0x10
-    if (SH1107_addressing) {
-        data[0] = y1 & 0x0F; // 0x00 to 0x0F
-        data[1] = (y1 >> 4 & 0x0F) | 0x10; // 0x10 to 0x17
-        data_length = 2;
-    }
-    self->send(self->bus, data_type, chip_select, data, data_length);
 
+    // Quirk for SH1107 "SH1107_addressing"
+    //     Page address command = 0xB0
+    if (SH1107_addressing) {
+        // set the page to our y value
+        data[0] = 0xB0 | y1;
+        data_length = 1;
+    }
+
+    self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 
     if (set_current_row_command != NO_COMMAND) {
