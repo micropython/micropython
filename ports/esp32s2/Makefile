@@ -190,7 +190,7 @@ SRC_C += \
 	peripherals/rmt.c
 
 ifneq ($(CIRCUITPY_USB),0)
-SRC_C += lib/tinyusb/src/portable/espressif/esp32s2/dcd_esp32s2.c
+SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
 endif
 
 SRC_S =
