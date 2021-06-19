@@ -123,6 +123,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
+	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
@@ -142,6 +143,7 @@ SRC_C = \
 	dma_channel.c \
 	$(BOARD_DIR)/flash_config.c \
 	machine_adc.c \
+	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
