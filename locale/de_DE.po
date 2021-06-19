@@ -123,6 +123,10 @@ msgstr "%q muss None oder zwischen 1 und len(report_descriptor)-1 sein"
 msgid "%q must be a tuple of length 2"
 msgstr "%q muss ein Tupel der Länge 2 sein"
 
+#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+msgid "%q must be between %d and %d"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -1300,6 +1304,11 @@ msgstr "Ungültige Anzahl von Kanälen"
 msgid "Invalid data_count %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_pins[%d]"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
 msgstr "Ungültige Richtung."
@@ -1843,6 +1852,7 @@ msgstr ""
 "Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergeben Sie "
 "allow_inefficient = True an den Konstruktor"
 
+#: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr ""

@@ -125,6 +125,10 @@ msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
 msgid "%q must be a tuple of length 2"
 msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 
+#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+msgid "%q must be between %d and %d"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -1302,6 +1306,11 @@ msgstr "Wúxiào de tōngdào jìshù"
 msgid "Invalid data_count %d"
 msgstr "wú xiào data_count %d"
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_pins[%d]"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
 msgstr "Wúxiào de fāngxiàng."
@@ -1845,6 +1854,7 @@ msgstr ""
 "duōzì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì "
 "gěigòuzào hánshù"
 
+#: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr "yǐn jiǎo bì xū shì lián xù de"
