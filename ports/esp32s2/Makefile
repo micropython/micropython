@@ -176,6 +176,7 @@ CFLAGS += -DCFG_TUD_VENDOR_RX_BUFSIZE=128 -DCFG_TUD_VENDOR_TX_BUFSIZE=128
 
 SRC_C += \
 	background.c \
+	cam.c \
 	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
@@ -336,6 +337,10 @@ flash: $(BUILD)/firmware.bin
 
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
 	esptool.py --chip esp32s2 -p $(PORT) $(ESPTOOL_FLAGS) write_flash $(FLASH_FLAGS) 0x10000 $^
+
+monitor: $(BUILD)/firmware.elf
+	cp $< build/circuitpython.elf
+	idf.py monitor -p $(PORT)
 
 include $(TOP)/py/mkrules.mk
 

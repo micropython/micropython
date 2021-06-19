@@ -137,3 +137,11 @@ void assert_pin_free(const mcu_pin_obj_t *pin) {
         mp_raise_ValueError_varg(translate("%q in use"), name);
     }
 }
+
+void validate_pins(qstr what, uint8_t *pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
+    mcu_pin_obj_t *pins[max_pins];
+    validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
+    for (mp_int_t i = 0; i < *count_out; i++) {
+        pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
+    }
+}
