@@ -1120,6 +1120,36 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         init->FIFOMode              // DMDIS
         | init->FIFOThreshold       // FTH
     ;
+
+    #if defined(STM32H7)
+    // Configure DMAMUX
+    uint32_t request = descr->sub_instance & DMAMUX_CxCR_DMAREQ_ID;
+    if ((dma >= DMA1_Stream0 && dma <= DMA1_Stream7) || (dma >= DMA2_Stream0 && dma <= DMA2_Stream7)) {
+        // DMA1/2 channels 0 to 7 are hardwired to DMAMUX1 channels 0-15.
+        uint32_t stream = (((uint32_t)dma & 0xff) - 16) / 24 + ((dma >= DMA2_Stream0) ? 8 : 0);
+        // Set DMAMUX channel peripheral request.
+        ((DMAMUX_Channel_TypeDef *)(((uint32_t)DMAMUX1_Channel0) + (stream * 4)))->CCR = request;
+        DMAMUX1_ChannelStatus->CFR = 1 << (stream & 0x1F);
+        // Configure DMAMUX request generator if needed.
+        if (request >= DMA_REQUEST_GENERATOR0 && request <= DMA_REQUEST_GENERATOR7) {
+            ((DMAMUX_RequestGen_TypeDef *)(((uint32_t)DMAMUX1_RequestGenerator0) + ((request - 1) * 4)))->RGCR = 0;
+            DMAMUX1_RequestGenStatus->RGCFR = 1 << (request - 1);
+        }
+    #if ENABLE_BDMA // TODO: BDMA is Not currently supported by this driver.
+    } else if (dma >= BDMA_Channel0 && dma <= BDMA_Channel7) {
+        // BDMA channels 0 to 7 are hardwired to DMAMUX2 channels 0-7.
+        uint32_t stream = (((uint32_t)dma & 0xff) - 8) / 20;
+        // Set DMAMUX channel peripheral request.
+        ((DMAMUX_Channel_TypeDef *)(((uint32_t)DMAMUX2_Channel0) + (stream * 4)))->CCR = request;
+        DMAMUX2_ChannelStatus->CFR = 1 << (stream & 0x1F);
+        // Configure DMAMUX request generator if needed.
+        if (request >= DMA_REQUEST_GENERATOR0 && request <= DMA_REQUEST_GENERATOR7) {
+            ((DMAMUX_RequestGen_TypeDef *)(((uint32_t)DMAMUX2_RequestGenerator0) + ((request - 1) * 4)))->RGCR = 0;
+            DMAMUX2_RequestGenStatus->RGCFR = 1 << (request - 1);
+        }
+    #endif // ENABLE_BDMA
+    }
+    #endif // STM32H7
 }
 
 void dma_nohal_deinit(const dma_descr_t *descr) {
