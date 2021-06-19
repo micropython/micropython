@@ -41,6 +41,15 @@ static i2s_t *i2s_instance[I2S_NUM_MAX];
 static QueueHandle_t i2s_queues[I2S_NUM_MAX];
 static TaskHandle_t i2s_tasks[I2S_NUM_MAX];
 
+void port_i2s_allocate_i2s0(void) {
+    if (!i2s_instance[0]) {
+        i2s_instance[0] = (void *)~(intptr_t)0;
+        return;
+    }
+
+    mp_raise_RuntimeError(translate("Peripheral in use"));
+}
+
 static int8_t port_i2s_allocate(void) {
     #if defined(I2S_NUM_1)
     if (!i2s_instance[1]) {
