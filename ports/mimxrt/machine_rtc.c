@@ -26,6 +26,7 @@
  */
 
 #include "py/runtime.h"
+#include "lib/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "ticks.h"
 #include "fsl_snvs_lp.h"
@@ -38,13 +39,6 @@ typedef struct _machine_rtc_obj_t {
 // Singleton RTC object.
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 uint32_t us_offset = 0;
-
-// Calculate the weekday from the date.
-// The result is zero based with 0 = Monday.
-// by Michael Keith and Tom Craver, 1990.
-int calc_weekday(int y, int m, int d) {
-    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
-}
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check arguments.
@@ -67,7 +61,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
             mp_obj_new_int(srtc_date.year),
             mp_obj_new_int(srtc_date.month),
             mp_obj_new_int(srtc_date.day),
-            mp_obj_new_int(calc_weekday(srtc_date.year, srtc_date.month, srtc_date.day)),
+            mp_obj_new_int(timeutils_calc_weekday(srtc_date.year, srtc_date.month, srtc_date.day)),
             mp_obj_new_int(srtc_date.hour),
             mp_obj_new_int(srtc_date.minute),
             mp_obj_new_int(srtc_date.second),

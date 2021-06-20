@@ -30,8 +30,6 @@
 #include "extmod/utime_mphal.h"
 #include "fsl_snvs_lp.h"
 
-extern int calc_weekday(int y, int m, int d);
-
 // localtime([secs])
 // Convert a time expressed in seconds since the Epoch into an 8-tuple which
 // contains: (year, month, mday, hour, minute, second, weekday, yearday)
@@ -48,7 +46,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(t.hour),
             mp_obj_new_int(t.minute),
             mp_obj_new_int(t.second),
-            mp_obj_new_int(calc_weekday(t.year, t.month, t.day)),
+            mp_obj_new_int(timeutils_calc_weekday(t.year, t.month, t.day)),
             mp_obj_new_int(timeutils_year_day(t.year, t.month, t.day)),
         };
         return mp_obj_new_tuple(8, tuple);

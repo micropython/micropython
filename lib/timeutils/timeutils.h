@@ -100,4 +100,6 @@ static inline int64_t timeutils_nanoseconds_since_epoch_to_nanoseconds_since_197
 
 #endif
 
+int timeutils_calc_weekday(int y, int m, int d);
+
 #endif // MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
