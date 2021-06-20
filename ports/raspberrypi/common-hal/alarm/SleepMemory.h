@@ -29,21 +29,6 @@
 
 #include "py/obj.h"
 
-// There are several places we could store persistent data for SleepMemory:
-//
-// RTC registers: There are a few 32-bit registers maintained during deep sleep.
-// We are already using one for saving sleep information during deep sleep.
-//
-// RTC Fast Memory: 8kB, also used for deep-sleep power-on stub.
-// RTC Slow Memory: 8kB, also used for the ULP (tiny co-processor available during sleep).
-//
-// The ESP-IDF build system takes care of the power management of these regions.
-// RTC_DATA_ATTR will allocate storage in RTC_SLOW_MEM unless CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM
-// is set. Any memory not allocated by us can be used by the ESP-IDF for heap or other purposes.
-
-// Use half of RTC_SLOW_MEM or RTC_FAST_MEM.
-#define SLEEP_MEMORY_LENGTH (4096)
-
 typedef struct {
     mp_obj_base_t base;
 } alarm_sleep_memory_obj_t;
