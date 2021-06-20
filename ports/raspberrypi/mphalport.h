@@ -34,7 +34,7 @@
 #include "supervisor/shared/tick.h"
 
 // Global millisecond tick count (driven by SysTick interrupt).
-#define mp_hal_ticks_ms()       ((mp_uint_t) supervisor_ticks_ms32())
+#define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
 
 // Number of bytes in receive buffer
 extern volatile uint8_t usb_rx_count;

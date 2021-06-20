@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2015 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +37,10 @@ enum {
 
 // Frozen modules are in a pseudo-directory, so sys.path can control how they're found.
 #define MP_FROZEN_FAKE_DIR ".frozen"
-#define MP_FROZEN_FAKE_DIR_LENGTH (sizeof(MP_FROZEN_FAKE_DIR)-1)
+#define MP_FROZEN_FAKE_DIR_LENGTH (sizeof(MP_FROZEN_FAKE_DIR) - 1)
 
 #define MP_FROZEN_FAKE_DIR_SLASH (MP_FROZEN_FAKE_DIR "/")
-#define MP_FROZEN_FAKE_DIR_SLASH_LENGTH (sizeof(MP_FROZEN_FAKE_DIR_SLASH)-1)
+#define MP_FROZEN_FAKE_DIR_SLASH_LENGTH (sizeof(MP_FROZEN_FAKE_DIR_SLASH) - 1)
 
 // This should match MP_FROZEN_FAKE_DIR.
 #define MP_FROZEN_FAKE_DIR_QSTR MP_QSTR__dot_frozen

@@ -6,9 +6,11 @@ workaround: Unknown
 """
 val = 1
 
+
 def test():
     val = 2
     print(val)
     eval("print(val)")
+
 
 test()

@@ -28,8 +28,7 @@
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 
-void board_init(void)
-{
+void board_init(void) {
 }
 
 bool board_requests_safe_mode(void) {

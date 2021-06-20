@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_FLASH_ROOT_POINTERS_H
 #define MICROPY_INCLUDED_SUPERVISOR_FLASH_ROOT_POINTERS_H
 
-#ifdef EXTERNAL_FLASH_DEVICE_COUNT
+#ifdef EXTERNAL_FLASH_DEVICES
 #include "supervisor/shared/external_flash/external_flash_root_pointers.h"
 #else
 #include "supervisor/internal_flash_root_pointers.h"

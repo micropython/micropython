@@ -27,5 +27,5 @@ STATIC MP_DEFINE_CONST_DICT(gnss_module_globals, gnss_module_globals_table);
 
 const mp_obj_module_t gnss_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&gnss_module_globals,
+    .globals = (mp_obj_dict_t *)&gnss_module_globals,
 };

@@ -125,13 +125,13 @@ STATIC MP_DEFINE_CONST_DICT(espidf_module_globals, espidf_module_globals_table);
 
 const mp_obj_module_t espidf_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&espidf_module_globals,
+    .globals = (mp_obj_dict_t *)&espidf_module_globals,
 };
 
 void raise_esp_error(esp_err_t err) {
     const compressed_string_t *msg = NULL;
-    const mp_obj_type_t * exception_type = &mp_type_espidf_IDFError;
-    switch(err) {
+    const mp_obj_type_t *exception_type = &mp_type_espidf_IDFError;
+    switch (err) {
         case ESP_FAIL:
             msg = translate("Generic Failure");
             break;
@@ -177,9 +177,9 @@ void raise_esp_error(esp_err_t err) {
     const char *group = "ESP-IDF";
 
     // tests must be in descending order
-    MP_STATIC_ASSERT( ESP_ERR_FLASH_BASE > ESP_ERR_MESH_BASE );
-    MP_STATIC_ASSERT( ESP_ERR_MESH_BASE > ESP_ERR_WIFI_BASE );
-    if(err >= ESP_ERR_FLASH_BASE) {
+    MP_STATIC_ASSERT(ESP_ERR_FLASH_BASE > ESP_ERR_MESH_BASE);
+    MP_STATIC_ASSERT(ESP_ERR_MESH_BASE > ESP_ERR_WIFI_BASE);
+    if (err >= ESP_ERR_FLASH_BASE) {
         group = "Flash";
     } else if (err >= ESP_ERR_MESH_BASE) {
         group = "Mesh";

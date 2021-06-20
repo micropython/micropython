@@ -17,9 +17,9 @@ while True:
 
     if buttons != prev_buttons:
         for i in range(0, 4):
-            bit = (1 << i)
+            bit = 1 << i
             if (buttons & bit) != (prev_buttons & bit):
-                print('Button %d %s' % (i + 1, 'pressed' if buttons & bit else 'released'))
+                print("Button %d %s" % (i + 1, "pressed" if buttons & bit else "released"))
 
         prev_buttons = buttons
 

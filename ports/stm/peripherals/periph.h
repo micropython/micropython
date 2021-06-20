@@ -36,34 +36,34 @@
 // Comm Peripherals
 
 typedef struct {
-    uint8_t periph_index:4;     // Index of the peripheral instance
-    uint8_t altfn_index:4;      // Index of the altfn for this pin (0 to 15)
-    const mcu_pin_obj_t * pin;  // Pin Object
+    uint8_t periph_index : 4;     // Index of the peripheral instance
+    uint8_t altfn_index : 4;      // Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t *pin;   // Pin Object
 } mcu_periph_obj_t;
 
 #define PERIPH(index, alt, p_pin)       \
-{ \
-    .periph_index = index, \
-    .altfn_index = alt, \
-    .pin = p_pin, \
-}
+    { \
+        .periph_index = index, \
+        .altfn_index = alt, \
+        .pin = p_pin, \
+    }
 
 // Timer Peripheral
 
 typedef struct {
-    uint8_t tim_index:4;
-    uint8_t altfn_index:4;
-    uint8_t channel_index:4;
-    const mcu_pin_obj_t * pin;
+    uint8_t tim_index : 4;
+    uint8_t altfn_index : 4;
+    uint8_t channel_index : 4;
+    const mcu_pin_obj_t *pin;
 } mcu_tim_pin_obj_t;
 
 #define TIM(index, alt, channel, tim_pin)       \
-{ \
-    .tim_index = index, \
-    .altfn_index = alt, \
-    .channel_index = channel, \
-    .pin = tim_pin, \
-}
+    { \
+        .tim_index = index, \
+        .altfn_index = alt, \
+        .channel_index = channel, \
+        .pin = tim_pin, \
+    }
 
 // F4 Series
 // Access Lines

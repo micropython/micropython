@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
 
-//#include "py/mpconfig.h"
+// #include "py/mpconfig.h"
 #include "py/obj.h"
 
 #include "common-hal/supervisor/Runtime.h"

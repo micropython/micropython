@@ -74,9 +74,17 @@ typedef struct {
 // Return the compressed, translated version of a source string
 // Usually, due to LTO, this is optimized into a load of a constant
 // pointer.
-const compressed_string_t* translate(const char* c);
-void serial_write_compressed(const compressed_string_t* compressed);
-char* decompress(const compressed_string_t* compressed, char* decompressed);
-uint16_t decompress_length(const compressed_string_t* compressed);
+const compressed_string_t *translate(const char *c);
+void serial_write_compressed(const compressed_string_t *compressed);
+char *decompress(const compressed_string_t *compressed, char *decompressed);
+uint16_t decompress_length(const compressed_string_t *compressed);
+
+
+// Map MicroPython's error messages to our translations.
+#if defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME
+#define MP_ERROR_TEXT(x) (x)
+#else
+#define MP_ERROR_TEXT(x) translate(x)
+#endif
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

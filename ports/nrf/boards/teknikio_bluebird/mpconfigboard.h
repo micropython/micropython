@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-//https://github.com/Teknikio/TKInventionBuilderFramework
+// https://github.com/Teknikio/TKInventionBuilderFramework
 
 
 #include "nrfx/hal/nrf_gpio.h"

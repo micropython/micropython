@@ -41,7 +41,15 @@
 //|
 //|        import microcontroller
 //|        print(microcontroller.cpu.frequency)
-//|        print(microcontroller.cpu.temperature)"""
+//|        print(microcontroller.cpu.temperature)
+//|
+//|        Note that on chips with more than one cpu (such as the RP2040)
+//|        microcontroller.cpu will return the value for CPU 0.
+//|        To get values from other CPUs use microcontroller.cpus indexed by
+//|        the number of the desired cpu. i.e.
+//|
+//|        print(microcontroller.cpus[0].temperature)
+//|        print(microcontroller.cpus[1].frequency)"""
 //|
 
 //|     def __init__(self) -> None:
@@ -62,8 +70,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_frequency_obj, mcu_processor_get_fre
 const mp_obj_property_t mcu_processor_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_frequency_obj,  // getter
-              (mp_obj_t)&mp_const_none_obj,            // no setter
-              (mp_obj_t)&mp_const_none_obj,            // no deleter
+              MP_ROM_NONE,            // no setter
+              MP_ROM_NONE,            // no deleter
     },
 };
 
@@ -79,8 +87,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_reset_reason_obj, mcu_processor_get_
 const mp_obj_property_t mcu_processor_reset_reason_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_reset_reason_obj,  // getter
-              (mp_obj_t)&mp_const_none_obj,            // no setter
-              (mp_obj_t)&mp_const_none_obj,            // no deleter
+              MP_ROM_NONE,            // no setter
+              MP_ROM_NONE,            // no deleter
     },
 };
 
@@ -99,8 +107,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_temperature_obj, mcu_processor_get_t
 const mp_obj_property_t mcu_processor_temperature_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_temperature_obj,  // getter
-              (mp_obj_t)&mp_const_none_obj,            // no setter
-              (mp_obj_t)&mp_const_none_obj,            // no deleter
+              MP_ROM_NONE,            // no setter
+              MP_ROM_NONE,            // no deleter
     },
 };
 
@@ -118,8 +126,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_uid_obj, mcu_processor_get_uid);
 const mp_obj_property_t mcu_processor_uid_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_uid_obj,  // getter
-        (mp_obj_t)&mp_const_none_obj,            // no setter
-        (mp_obj_t)&mp_const_none_obj,            // no deleter
+              MP_ROM_NONE,      // no setter
+              MP_ROM_NONE,      // no deleter
     },
 };
 
@@ -138,8 +146,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_voltage_obj, mcu_processor_get_volta
 const mp_obj_property_t mcu_processor_voltage_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_voltage_obj,  // getter
-              (mp_obj_t)&mp_const_none_obj,            // no setter
-              (mp_obj_t)&mp_const_none_obj,            // no deleter
+              MP_ROM_NONE,            // no setter
+              MP_ROM_NONE,            // no deleter
     },
 };
 

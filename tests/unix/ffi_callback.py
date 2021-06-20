@@ -15,15 +15,18 @@ def ffi_open(names):
             err = e
     raise err
 
-libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
+
+libc = ffi_open(("libc.so", "libc.so.0", "libc.so.6", "libc.dylib"))
 
 qsort = libc.func("v", "qsort", "piip")
+
 
 def cmp(pa, pb):
     a = ffi.as_bytearray(pa, 1)
     b = ffi.as_bytearray(pb, 1)
-    #print("cmp:", a, b)
+    # print("cmp:", a, b)
     return a[0] - b[0]
+
 
 cmp_c = ffi.callback("i", cmp, "pp")
 

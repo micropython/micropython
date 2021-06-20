@@ -73,16 +73,16 @@
 STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-       { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t* mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t* miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
 
     bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
     self->base.type = &bitbangio_spi_type;
@@ -224,32 +224,53 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|     def readinto(self, buf: WriteableBuffer) -> None:
-//|         """Read into the buffer specified by ``buf`` while writing zeroes.
-//|         Requires the SPI being locked.
-//|         If the number of bytes to read is 0, nothing happens."""
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, write_value: int = 0) -> None:
+//|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
+//|         The SPI object must be locked.
+//|         If the number of bytes to read is 0, nothing happens.
+//|
+//|         :param bytearray buffer: Read data into this buffer
+//|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
+//|         :param int write_value: Value to write while reading."""
 //|         ...
 //|
-// TODO(tannewt): Add support for start and end kwargs.
-STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
-    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
+    check_lock(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    if (bufinfo.len == 0) {
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    int32_t start = args[ARG_start].u_int;
+    size_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    if (length == 0) {
         return mp_const_none;
     }
-    check_lock(args[0]);
-    bool ok = shared_module_bitbangio_spi_read(self, bufinfo.buf, bufinfo.len);
+
+    bool ok = shared_module_bitbangio_spi_read(self, ((uint8_t *)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 2, bitbangio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: WriteableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
+//|         The SPI object must be locked.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|         must be equal.
 //|         If buffer slice lengths are both 0, nothing happens.
@@ -274,6 +295,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
+    check_lock(self);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -299,9 +321,9 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     }
 
     bool ok = shared_module_bitbangio_spi_transfer(self,
-                                            ((uint8_t*)buf_out_info.buf) + out_start,
-                                            ((uint8_t*)buf_in_info.buf) + in_start,
-                                            out_length);
+        ((uint8_t *)buf_out_info.buf) + out_start,
+        ((uint8_t *)buf_in_info.buf) + in_start,
+        out_length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -328,5 +350,5 @@ const mp_obj_type_t bitbangio_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPI,
     .make_new = bitbangio_spi_make_new,
-    .locals_dict = (mp_obj_dict_t*)&bitbangio_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bitbangio_spi_locals_dict,
 };

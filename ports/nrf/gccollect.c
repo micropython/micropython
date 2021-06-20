@@ -31,11 +31,10 @@
 #include "py/gc.h"
 #include "gccollect.h"
 
-static inline uint32_t get_msp(void)
-{
-	register uint32_t result;
-	__asm volatile ("MRS %0, msp\n" : "=r" (result) );
-	return(result);
+static inline uint32_t get_msp(void) {
+    register uint32_t result;
+    __asm volatile ("MRS %0, msp\n" : "=r" (result));
+    return result;
 }
 
 void gc_collect(void) {
@@ -45,7 +44,7 @@ void gc_collect(void) {
     mp_uint_t sp = get_msp(); // Get stack pointer
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
 
     // end the GC
     gc_collect_end();

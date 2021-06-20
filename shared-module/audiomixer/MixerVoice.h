@@ -32,12 +32,12 @@
 #include "shared-module/audiomixer/Mixer.h"
 
 typedef struct {
-	mp_obj_base_t base;
-	audiomixer_mixer_obj_t *parent;
+    mp_obj_base_t base;
+    audiomixer_mixer_obj_t *parent;
     mp_obj_t sample;
     bool loop;
     bool more_data;
-    uint32_t* remaining_buffer;
+    uint32_t *remaining_buffer;
     uint32_t buffer_length;
     uint16_t level;
 } audiomixer_mixervoice_obj_t;

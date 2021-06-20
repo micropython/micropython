@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -66,7 +66,7 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitStruct.HSEState = BOARD_HSE_SOURCE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = HSE_VALUE/1000000;
+    RCC_OscInitStruct.PLL.PLLM = HSE_VALUE / 1000000;
     RCC_OscInitStruct.PLL.PLLN = CPY_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = CPY_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = CPY_CLK_PLLQ;
@@ -74,10 +74,12 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitStruct.PLL.PLLR = 2; // Unused but required by HAL
     #endif
 
-    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         // Clock issues are too problematic to even attempt recovery.
         // If you end up here, check whether your LSE settings match your board.
-        while(1);
+        while (1) {
+            ;
+        }
     }
 
     // Configure bus clock sources and divisors
@@ -98,7 +100,7 @@ void stm32_peripherals_clocks_init(void) {
     #endif
     #if (CPY_CLK_USB_USES_AUDIOPLL)
     // Not supported by all lines. Should always result in 48M.
-    PeriphClkInitStruct.PLLI2S.PLLI2SM = HSE_VALUE/1000000;
+    PeriphClkInitStruct.PLLI2S.PLLI2SM = HSE_VALUE / 1000000;
     PeriphClkInitStruct.PLLI2S.PLLI2SQ = 4;
     PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
     PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_CK48;

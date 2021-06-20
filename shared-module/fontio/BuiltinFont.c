@@ -47,7 +47,7 @@ uint8_t fontio_builtinfont_get_glyph_index(const fontio_builtinfont_t *self, mp_
         return codepoint - 0x20;
     }
     // Do a linear search of the mapping for unicode.
-    const byte* j = self->unicode_characters;
+    const byte *j = self->unicode_characters;
     uint8_t k = 0;
     while (j < self->unicode_characters + self->unicode_characters_len) {
         unichar potential_c = utf8_get_char(j);
@@ -75,5 +75,5 @@ mp_obj_t common_hal_fontio_builtinfont_get_glyph(const fontio_builtinfont_t *sel
         MP_OBJ_NEW_SMALL_INT(self->width),
         MP_OBJ_NEW_SMALL_INT(0)
     };
-    return namedtuple_make_new((const mp_obj_type_t*) &fontio_glyph_type, 8, field_values, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&fontio_glyph_type, 8, field_values, NULL);
 }

@@ -40,18 +40,18 @@ STATIC bool reserved_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
 STATIC bool never_reset_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
 
 STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, size_t sz, const mcu_pin_obj_t *pin, int periph_index) {
-    for(size_t i = 0; i<sz; i++, table++) {
-        if(periph_index == table->periph_index && pin == table->pin ) {
+    for (size_t i = 0; i < sz; i++, table++) {
+        if (periph_index == table->periph_index && pin == table->pin) {
             return table;
         }
     }
     return NULL;
 }
 
-//match pins to SDIO objects
+// match pins to SDIO objects
 STATIC int check_pins(sdioio_sdcard_obj_t *self,
-         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * command,
-         uint8_t num_data, mcu_pin_obj_t ** data) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
+    uint8_t num_data, mcu_pin_obj_t **data) {
     bool sdio_taken = false;
 
     const uint8_t sdio_clock_len = MP_ARRAY_SIZE(mcu_sdio_clock_list);
@@ -78,26 +78,26 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
         }
 
         const mcu_periph_obj_t *mcu_sdio_data0 = NULL;
-        if(!(mcu_sdio_data0 = find_pin_function(mcu_sdio_data0_list, sdio_data0_len, data[0], periph_index))) {
+        if (!(mcu_sdio_data0 = find_pin_function(mcu_sdio_data0_list, sdio_data0_len, data[0], periph_index))) {
             continue;
         }
 
         const mcu_periph_obj_t *mcu_sdio_data1 = NULL;
-        if(num_data > 1 && !(mcu_sdio_data1 = find_pin_function(mcu_sdio_data1_list, sdio_data1_len, data[1], periph_index))) {
+        if (num_data > 1 && !(mcu_sdio_data1 = find_pin_function(mcu_sdio_data1_list, sdio_data1_len, data[1], periph_index))) {
             continue;
         }
 
         const mcu_periph_obj_t *mcu_sdio_data2 = NULL;
-        if(num_data > 2 && !(mcu_sdio_data2 = find_pin_function(mcu_sdio_data2_list, sdio_data2_len, data[2], periph_index))) {
+        if (num_data > 2 && !(mcu_sdio_data2 = find_pin_function(mcu_sdio_data2_list, sdio_data2_len, data[2], periph_index))) {
             continue;
         }
 
         const mcu_periph_obj_t *mcu_sdio_data3 = NULL;
-        if(num_data > 3 && !(mcu_sdio_data3 = find_pin_function(mcu_sdio_data3_list, sdio_data3_len, data[3], periph_index))) {
+        if (num_data > 3 && !(mcu_sdio_data3 = find_pin_function(mcu_sdio_data3_list, sdio_data3_len, data[3], periph_index))) {
             continue;
         }
 
-        if (reserved_sdio[periph_index-1]) {
+        if (reserved_sdio[periph_index - 1]) {
             sdio_taken = true;
             continue;
         }
@@ -121,16 +121,16 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
 
 
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * command,
-        uint8_t num_data, mcu_pin_obj_t ** data, uint32_t frequency) {
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
+    uint8_t num_data, mcu_pin_obj_t **data, uint32_t frequency) {
 
     int periph_index = check_pins(self, clock, command, num_data, data);
-    SDIO_TypeDef * SDIOx = mcu_sdio_banks[periph_index - 1];
+    SDIO_TypeDef *SDIOx = mcu_sdio_banks[periph_index - 1];
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /* Configure data pins */
-    for (int i=0; i<num_data; i++) {
+    for (int i = 0; i < num_data; i++) {
         GPIO_InitStruct.Pin = pin_mask(data[i]->number);
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -186,7 +186,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     common_hal_mcu_pin_claim(clock);
     common_hal_mcu_pin_claim(command);
-    for (int i=0; i<num_data; i++) {
+    for (int i = 0; i < num_data; i++) {
         common_hal_mcu_pin_claim(data[i]);
     }
 
@@ -217,7 +217,7 @@ STATIC void wait_write_complete(sdioio_sdcard_obj_t *self) {
         // This waits up to 60s for programming to complete.  This seems like
         // an extremely long time, but this is the timeout that micropython's
         // implementation uses
-        for (int i=0; i < 60000 && st == HAL_SD_CARD_PROGRAMMING; i++) {
+        for (int i = 0; i < 60000 && st == HAL_SD_CARD_PROGRAMMING; i++) {
             st = HAL_SD_GetCardState(&self->handle);
             HAL_Delay(1);
         };
@@ -293,7 +293,7 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     reset_mcu_periph(self->clock);
     self->command = NULL;
 
-    for (size_t i=0; i<MP_ARRAY_SIZE(self->data); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(self->data); i++) {
         reset_mcu_periph(self->data[i]);
         self->data[i] = NULL;
     }
@@ -313,13 +313,13 @@ void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
     never_reset_mcu_periph(self->command);
     never_reset_mcu_periph(self->clock);
 
-    for (size_t i=0; i<MP_ARRAY_SIZE(self->data); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(self->data); i++) {
         never_reset_mcu_periph(self->data[i]);
     }
 }
 
 void sdioio_reset() {
-    for (size_t i=0; i<MP_ARRAY_SIZE(reserved_sdio); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(reserved_sdio); i++) {
         if (!never_reset_sdio[i]) {
             reserved_sdio[i] = false;
         }

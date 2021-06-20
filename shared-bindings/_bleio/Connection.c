@@ -146,8 +146,8 @@ STATIC mp_obj_t bleio_connection_discover_remote_services(mp_uint_t n_args, cons
     bleio_connection_ensure_connected(self);
 
     return MP_OBJ_FROM_PTR(common_hal_bleio_connection_discover_remote_services(
-                               self,
-                               args[ARG_service_uuids_whitelist].u_obj));
+        self,
+        args[ARG_service_uuids_whitelist].u_obj));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_discover_remote_services_obj, 1, bleio_connection_discover_remote_services);
 
@@ -164,8 +164,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connected_obj, bleio_conne
 const mp_obj_property_t bleio_connection_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_connection_get_connected_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -182,8 +182,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_paired_obj, bleio_connecti
 const mp_obj_property_t bleio_connection_paired_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_connection_get_paired_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -239,14 +239,14 @@ const mp_obj_property_t bleio_connection_connection_interval_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_connection_get_connection_interval_obj,
                (mp_obj_t)&bleio_connection_set_connection_interval_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 const mp_obj_property_t bleio_connection_max_packet_length_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_connection_get_max_packet_length_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
@@ -267,6 +267,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_local
 const mp_obj_type_t bleio_connection_type = {
     { &mp_type_type },
     .name = MP_QSTR_Connection,
-    .locals_dict = (mp_obj_dict_t*)&bleio_connection_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
     .unary_op = mp_generic_unary_op,
 };

@@ -68,7 +68,7 @@
 
 #define HEAP_SIZE (48 * 1024)
 
-uint32_t* heap;
+uint32_t *heap;
 uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
@@ -78,7 +78,7 @@ TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-void tick_timer_cb(void* arg) {
+void tick_timer_cb(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
@@ -86,7 +86,7 @@ void tick_timer_cb(void* arg) {
     xTaskNotifyGive(circuitpython_task);
 }
 
-void sleep_timer_cb(void* arg);
+void sleep_timer_cb(void *arg);
 
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
@@ -127,8 +127,8 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-        heap = (uint32_t*) (DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
-        heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
+    heap = (uint32_t *)(DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
+    heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
     #endif
 
     if (heap == NULL) {
@@ -160,73 +160,73 @@ void reset_port(void) {
     // A larger delay so the idle task can run and do any IDF cleanup needed.
     vTaskDelay(4);
 
-#if CIRCUITPY_ANALOGIO
+    #if CIRCUITPY_ANALOGIO
     analogout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_DUALBANK
+    #if CIRCUITPY_DUALBANK
     dualbank_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PS2IO
+    #if CIRCUITPY_PS2IO
     ps2_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_AUDIOBUSIO
+    #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PULSEIO
+    #if CIRCUITPY_PULSEIO
     esp32s2_peripherals_rmt_reset();
     pulsein_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PWMIO
+    #if CIRCUITPY_PWMIO
     pwmout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_BUSIO
+    #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
-#endif
+    #endif
 
-#if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
+    #if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
     peripherals_pcnt_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_FREQUENCYIO
+    #if CIRCUITPY_FREQUENCYIO
     peripherals_timer_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PULSEIO
+    #if CIRCUITPY_PULSEIO
     esp32s2_peripherals_rmt_reset();
     pulsein_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_PWMIO
+    #if CIRCUITPY_PWMIO
     pwmout_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_RTC
+    #if CIRCUITPY_RTC
     rtc_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_TOUCHIO_USE_NATIVE
+    #if CIRCUITPY_TOUCHIO_USE_NATIVE
     peripherals_touch_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_WATCHDOG
+    #if CIRCUITPY_WATCHDOG
     watchdog_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_WIFI
+    #if CIRCUITPY_WIFI
     wifi_reset();
-#endif
+    #endif
 
-#if CIRCUITPY_SOCKETPOOL
+    #if CIRCUITPY_SOCKETPOOL
     socket_reset();
-#endif
+    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -249,7 +249,7 @@ uint32_t *port_heap_get_top(void) {
 uint32_t *port_stack_get_limit(void) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
-    return (uint32_t*) pxTaskGetStackStart(NULL);
+    return (uint32_t *)pxTaskGetStackStart(NULL);
     #pragma GCC diagnostic pop
 }
 
@@ -281,7 +281,7 @@ uint32_t port_get_saved_word(void) {
     return REG_READ(RTC_CNTL_STORE0_REG);
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+uint64_t port_get_raw_ticks(uint8_t *subticks) {
     // Convert microseconds to subticks of 1/32768 seconds
     // 32768/1000000 = 64/15625 in lowest terms
     // this arithmetic overflows after 570 years
@@ -306,7 +306,7 @@ void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
 }
 
-void sleep_timer_cb(void* arg) {
+void sleep_timer_cb(void *arg) {
     port_wake_main_task();
 }
 

@@ -24,12 +24,13 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Feather ESP32S2 without PSRAM"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO21)
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 

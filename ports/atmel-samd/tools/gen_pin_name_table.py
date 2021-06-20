@@ -27,11 +27,47 @@
 import os
 import os.path
 
-pins = ["PA00", "PA01", "PA02", "PA03", "PB08", "PB09", "PA04", "PA05", "PA06",
-        "PA07", "PA08", "PA09", "PA10", "PA11", "PB10", "PB11", "PA12", "PA13",
-        "PA14", "PA15", "PA16", "PA17", "PA18", "PA19", "PA20", "PA21", "PA22",
-        "PA23", "PA24", "PA25", "PB22", "PB23", "PA27", "PA28", "PA29", "PA30",
-        "PA31", "PB02", "PB03"]
+pins = [
+    "PA00",
+    "PA01",
+    "PA02",
+    "PA03",
+    "PB08",
+    "PB09",
+    "PA04",
+    "PA05",
+    "PA06",
+    "PA07",
+    "PA08",
+    "PA09",
+    "PA10",
+    "PA11",
+    "PB10",
+    "PB11",
+    "PA12",
+    "PA13",
+    "PA14",
+    "PA15",
+    "PA16",
+    "PA17",
+    "PA18",
+    "PA19",
+    "PA20",
+    "PA21",
+    "PA22",
+    "PA23",
+    "PA24",
+    "PA25",
+    "PB22",
+    "PB23",
+    "PA27",
+    "PA28",
+    "PA29",
+    "PA30",
+    "PA31",
+    "PB02",
+    "PB03",
+]
 
 # Dictionary keys: [board][pin] = list of pin names
 mapping = {}
@@ -46,7 +82,7 @@ for board in os.listdir("boards"):
         for line in f:
             if line.startswith(QSTR):
                 board_name, _, pin = line.split(")")
-                board_name = board_name[len(QSTR):]
+                board_name = board_name[len(QSTR) :]
                 pin = pin[-8:-4]
                 if pin not in mapping[board]:
                     mapping[board][pin] = []
@@ -108,61 +144,196 @@ ALL_BUT_USB.remove("PA25")
 
 # dictionary is [module][class] = [pins]
 capabilities = {
-    "analogio" : {
-        "AnalogIn" : ["PA02", "PA03", "PB08", "PB09", "PA04", "PA05", "PA06",
-                      "PA07", "PA08", "PA09", "PA10", "PA11", "PB02", "PB03"],
-        "AnalogOut": ["PA02"]
+    "analogio": {
+        "AnalogIn": [
+            "PA02",
+            "PA03",
+            "PB08",
+            "PB09",
+            "PA04",
+            "PA05",
+            "PA06",
+            "PA07",
+            "PA08",
+            "PA09",
+            "PA10",
+            "PA11",
+            "PB02",
+            "PB03",
+        ],
+        "AnalogOut": ["PA02"],
     },
-    "audioio" : {
-        "AudioOut": ["PA02"]
-    },
-    "bitbangio": {
-        "I2C": ALL_BUT_USB,
-        "OneWire": ALL_BUT_USB,
-        "SPI": ALL_BUT_USB
-    },
+    "audioio": {"AudioOut": ["PA02"]},
+    "bitbangio": {"I2C": ALL_BUT_USB, "OneWire": ALL_BUT_USB, "SPI": ALL_BUT_USB},
     "busio": {
-        "I2C - SDA": ["PA00", "PB08", "PA08", "PA12", "PA16", "PA22", "PB02"], # SERCOM pad 0
-        "I2C - SCL": ["PA01", "PB09", "PA09", "PA13", "PA17", "PA23", "PB03"], # SERCOM pad 1
+        "I2C - SDA": ["PA00", "PB08", "PA08", "PA12", "PA16", "PA22", "PB02"],  # SERCOM pad 0
+        "I2C - SCL": ["PA01", "PB09", "PA09", "PA13", "PA17", "PA23", "PB03"],  # SERCOM pad 1
         "OneWire": ALL_BUT_USB,
-        "SPI - MISO": ["PA00", "PA01", "PB08", "PB09", "PA04", "PA05", "PA06",
-                       "PA07", "PA08", "PA09", "PA10", "PA11", "PB10", "PB11",
-                       "PA12", "PA13", "PA14", "PA15", "PA16", "PA17", "PA18",
-                       "PA19", "PA20", "PA21", "PA22", "PA23", "PB22", "PB23",
-                       "PA30", "PA31", "PB02", "PB03"], # any SERCOM pad
-        "SPI - MOSI": ["PA00", "PB08", "PA04", "PA06", "PA08", "PA10", "PA11",
-                       "PB10", "PB11", "PA14", "PA15", "PA16", "PA18", "PA19",
-                       "PA20", "PA21", "PA22", "PB22", "PB23", "PA30", "PA31",
-                       "PB02"], # any pad but 1
-        "SPI - SCK": ["PA01", "PB09", "PA05", "PA07", "PA09", "PA11", "PB11",
-                      "PA13", "PA15", "PA17", "PA19", "PA21", "PA23", "PB23",
-                      "PA31", "PB03"], # 1 or 3
-        "UART - RX": ["PA00", "PA01", "PB08", "PB09", "PA04", "PA05", "PA06",
-                      "PA07", "PA08", "PA09", "PA10", "PA11", "PB10", "PB11",
-                      "PA12", "PA13", "PA14", "PA15", "PA16", "PA17", "PA18",
-                      "PA19", "PA20", "PA21", "PA22", "PA23", "PB22", "PB23",
-                      "PA30", "PA31", "PB02", "PB03"], # any pad
-        "UART - TX": ["PA00", "PB08", "PA04", "PA06", "PA08", "PA10", "PB10",
-                      "PA12", "PA14", "PA16", "PA18", "PA20", "PA22", "PB22",
-                      "PA30", "PB02"] # pad 0 or 2
+        "SPI - MISO": [
+            "PA00",
+            "PA01",
+            "PB08",
+            "PB09",
+            "PA04",
+            "PA05",
+            "PA06",
+            "PA07",
+            "PA08",
+            "PA09",
+            "PA10",
+            "PA11",
+            "PB10",
+            "PB11",
+            "PA12",
+            "PA13",
+            "PA14",
+            "PA15",
+            "PA16",
+            "PA17",
+            "PA18",
+            "PA19",
+            "PA20",
+            "PA21",
+            "PA22",
+            "PA23",
+            "PB22",
+            "PB23",
+            "PA30",
+            "PA31",
+            "PB02",
+            "PB03",
+        ],  # any SERCOM pad
+        "SPI - MOSI": [
+            "PA00",
+            "PB08",
+            "PA04",
+            "PA06",
+            "PA08",
+            "PA10",
+            "PA11",
+            "PB10",
+            "PB11",
+            "PA14",
+            "PA15",
+            "PA16",
+            "PA18",
+            "PA19",
+            "PA20",
+            "PA21",
+            "PA22",
+            "PB22",
+            "PB23",
+            "PA30",
+            "PA31",
+            "PB02",
+        ],  # any pad but 1
+        "SPI - SCK": [
+            "PA01",
+            "PB09",
+            "PA05",
+            "PA07",
+            "PA09",
+            "PA11",
+            "PB11",
+            "PA13",
+            "PA15",
+            "PA17",
+            "PA19",
+            "PA21",
+            "PA23",
+            "PB23",
+            "PA31",
+            "PB03",
+        ],  # 1 or 3
+        "UART - RX": [
+            "PA00",
+            "PA01",
+            "PB08",
+            "PB09",
+            "PA04",
+            "PA05",
+            "PA06",
+            "PA07",
+            "PA08",
+            "PA09",
+            "PA10",
+            "PA11",
+            "PB10",
+            "PB11",
+            "PA12",
+            "PA13",
+            "PA14",
+            "PA15",
+            "PA16",
+            "PA17",
+            "PA18",
+            "PA19",
+            "PA20",
+            "PA21",
+            "PA22",
+            "PA23",
+            "PB22",
+            "PB23",
+            "PA30",
+            "PA31",
+            "PB02",
+            "PB03",
+        ],  # any pad
+        "UART - TX": [
+            "PA00",
+            "PB08",
+            "PA04",
+            "PA06",
+            "PA08",
+            "PA10",
+            "PB10",
+            "PA12",
+            "PA14",
+            "PA16",
+            "PA18",
+            "PA20",
+            "PA22",
+            "PB22",
+            "PA30",
+            "PB02",
+        ],  # pad 0 or 2
     },
-    "digitalio": {
-        "DigitalInOut": ALL_BUT_USB
-    },
+    "digitalio": {"DigitalInOut": ALL_BUT_USB},
     "pulseio": {
         "PulseIn": ALL_BUT_USB,
-        "PWMOut": ["PA01", "PB09", "PA04", "PA05", "PA06", "PA07", "PA08",
-                   "PA09", "PA10", "PA11", "PB10", "PB11", "PA12", "PA13",
-                   "PA14", "PA15", "PA16", "PA17", "PA18", "PA19", "PA20",
-                   "PA21", "PA22", "PA23", "PA30", "PA31"]
+        "PWMOut": [
+            "PA01",
+            "PB09",
+            "PA04",
+            "PA05",
+            "PA06",
+            "PA07",
+            "PA08",
+            "PA09",
+            "PA10",
+            "PA11",
+            "PB10",
+            "PB11",
+            "PA12",
+            "PA13",
+            "PA14",
+            "PA15",
+            "PA16",
+            "PA17",
+            "PA18",
+            "PA19",
+            "PA20",
+            "PA21",
+            "PA22",
+            "PA23",
+            "PA30",
+            "PA31",
+        ],
     },
-    "ps2io": {
-        "Ps2": ALL_BUT_USB,
-    },
+    "ps2io": {"Ps2": ALL_BUT_USB},
     "touchio": {
-        "TouchIn": ["PA02", "PA03", "PB08", "PB09", "PA04", "PA05", "PA06",
-                    "PA07", "PB02", "PB03"]
-    }
+        "TouchIn": ["PA02", "PA03", "PB08", "PB09", "PA04", "PA05", "PA06", "PA07", "PB02", "PB03"]
+    },
 }
 
 column_width = {}
@@ -178,7 +349,7 @@ for module in capabilities:
     module_width[module] -= 2
 
     if module_width[module] < (len(module) + 2):
-        column_width[module + c] += (len(module) + 2 - module_width[module])
+        column_width[module + c] += len(module) + 2 - module_width[module]
         module_width[module] = len(module) + 2
 
 first_column_width = len("`microcontroller.pin`")

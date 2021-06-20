@@ -108,8 +108,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_get_bytes_per_block_obj, 
 const mp_obj_property_t memorymonitor_allocationsize_bytes_per_block_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&memorymonitor_allocationsize_get_bytes_per_block_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __len__(self) -> int:
@@ -125,9 +125,12 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
     memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_memorymonitor_allocationsize_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -147,7 +150,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t i
     } else {
         memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-        if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+        if (mp_obj_is_type(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
             size_t index = mp_get_index(&memorymonitor_allocationsize_type, common_hal_memorymonitor_allocationsize_get_len(self), index_obj, false);
@@ -179,5 +182,5 @@ const mp_obj_type_t memorymonitor_allocationsize_type = {
     .subscr = memorymonitor_allocationsize_subscr,
     .unary_op = memorymonitor_allocationsize_unary_op,
     .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t*)&memorymonitor_allocationsize_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&memorymonitor_allocationsize_locals_dict,
 };

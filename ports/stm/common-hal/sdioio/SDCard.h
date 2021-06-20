@@ -36,7 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     SD_HandleTypeDef handle;
-    uint8_t num_data:3, state_programming:1;
+    uint8_t num_data : 3, state_programming : 1;
     bool has_lock;
     const mcu_periph_obj_t *command;
     const mcu_periph_obj_t *clock;

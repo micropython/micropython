@@ -76,8 +76,8 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t* sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
 
     common_hal_busio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int, args[ARG_timeout].u_int);
     return (mp_obj_t)self;
@@ -119,7 +119,7 @@ STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_i2c___exit___obj, 4, 4, busio_i2c_obj___exit__);
 
 static void check_lock(busio_i2c_obj_t *self) {
-    asm("");
+    asm ("");
     if (!common_hal_busio_i2c_has_lock(self)) {
         mp_raise_RuntimeError(translate("Function requires lock"));
     }
@@ -201,7 +201,7 @@ STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, i
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
-    uint8_t status = common_hal_busio_i2c_read(self, address, ((uint8_t*)bufinfo.buf) + start, length);
+    uint8_t status = common_hal_busio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -222,7 +222,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     readfrom(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-             args[ARG_end].u_int);
+        args[ARG_end].u_int);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
@@ -254,8 +254,8 @@ STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, in
     normalize_buffer_bounds(&start, end, &length);
 
     // do the transfer
-    uint8_t status = common_hal_busio_i2c_write(self, address, ((uint8_t*) bufinfo.buf) + start,
-                                                length, stop);
+    uint8_t status = common_hal_busio_i2c_write(self, address, ((uint8_t *)bufinfo.buf) + start,
+        length, stop);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -276,7 +276,7 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     writeto(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-            args[ARG_end].u_int, true);
+        args[ARG_end].u_int, true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
@@ -317,9 +317,9 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     writeto(self, args[ARG_address].u_int, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int,
-            args[ARG_out_end].u_int, false);
+        args[ARG_out_end].u_int, false);
     readfrom(self, args[ARG_address].u_int, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int,
-             args[ARG_in_end].u_int);
+        args[ARG_in_end].u_int);
 
     return mp_const_none;
 }
@@ -342,8 +342,8 @@ STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(busio_i2c_locals_dict, busio_i2c_locals_dict_table);
 
 const mp_obj_type_t busio_i2c_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_I2C,
-   .make_new = busio_i2c_make_new,
-   .locals_dict = (mp_obj_dict_t*)&busio_i2c_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_I2C,
+    .make_new = busio_i2c_make_new,
+    .locals_dict = (mp_obj_dict_t *)&busio_i2c_locals_dict,
 };

@@ -60,7 +60,7 @@
  ****************************************************************************/
 
 struct spk_header
-  {
+{
     uint8_t magic[4];
     uint8_t cpu;
     uint8_t reserved[11];
@@ -70,18 +70,18 @@ struct spk_header
     uint16_t binaries;
     uint16_t phoffs;
     uint16_t mode;
-  };
+};
 
 struct spk_prog_info
-  {
+{
     uint32_t load_address;
     uint32_t offset;
     uint32_t size;
     uint32_t memsize;
-  };
+};
 
 struct elf_file
-  {
+{
     Elf32_Ehdr *ehdr;
     Elf32_Phdr *phdr;
     Elf32_Shdr *shdr;
@@ -90,4 +90,4 @@ struct elf_file
     char *shstring;
     char *string;
     char *data;
-  };
+};

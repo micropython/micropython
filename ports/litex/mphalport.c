@@ -60,12 +60,14 @@ void isr(void) {
 
     // Increase the "nesting count". Note: This should be going from 0 -> 1.
     nesting_count += 1;
-#ifdef CFG_TUSB_MCU
-    if (irqs & (1 << USB_INTERRUPT))
+    #ifdef CFG_TUSB_MCU
+    if (irqs & (1 << USB_INTERRUPT)) {
         usb_irq_handler();
-#endif
-    if (irqs & (1 << TIMER0_INTERRUPT))
+    }
+    #endif
+    if (irqs & (1 << TIMER0_INTERRUPT)) {
         SysTick_Handler();
+    }
 
     // Decrease the "nesting count". Note: This should be going from 1 -> 0.
     nesting_count -= 1;
@@ -73,6 +75,6 @@ void isr(void) {
 
 mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs) {
     unsigned long __tmp;
-    asm volatile ("mv %0, x2" :"=r"(__tmp));
+    asm volatile ("mv %0, x2" : "=r" (__tmp));
     return __tmp;
 }

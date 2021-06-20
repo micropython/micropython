@@ -69,7 +69,7 @@ void mp_unix_free_exec(void *ptr, size_t size) {
     munmap(ptr, size);
 
     // unlink the mmap'd region from the list
-    for (mmap_region_t **rg = (mmap_region_t**)&MP_STATE_VM(mmap_region_head); *rg != NULL; *rg = (*rg)->next) {
+    for (mmap_region_t **rg = (mmap_region_t **)&MP_STATE_VM(mmap_region_head); *rg != NULL; *rg = (*rg)->next) {
         if ((*rg)->ptr == ptr) {
             mmap_region_t *next = (*rg)->next;
             m_del_obj(mmap_region_t, *rg);

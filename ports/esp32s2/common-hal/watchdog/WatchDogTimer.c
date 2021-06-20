@@ -35,11 +35,11 @@
 void esp_task_wdt_isr_user_handler(void) {
     mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
     MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
-#if MICROPY_ENABLE_SCHEDULER
+    #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
-#endif
+    #endif
 }
 
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
@@ -49,13 +49,13 @@ void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
-    if (esp_task_wdt_deinit() == ESP_OK) {
+    if (esp_task_wdt_delete(NULL) == ESP_OK && esp_task_wdt_deinit() == ESP_OK) {
         self->mode = WATCHDOGMODE_NONE;
     }
 }
 
 void watchdog_reset(void) {
-   common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
+    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
 }
 
 static void wdt_config(watchdog_watchdogtimer_obj_t *self) {

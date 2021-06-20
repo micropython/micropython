@@ -34,12 +34,12 @@
 
 #define BOARD_HAS_CRYSTAL 1
 
-#define DEFAULT_I2C_BUS_SCL 	(&pin_P0_20)
-#define DEFAULT_I2C_BUS_SDA	(&pin_P0_17)
+#define DEFAULT_I2C_BUS_SCL     (&pin_P0_20)
+#define DEFAULT_I2C_BUS_SDA     (&pin_P0_17)
 
-#define DEFAULT_SPI_BUS_SCK	(&pin_P1_13)
-#define DEFAULT_SPI_BUS_MOSI	(&pin_P0_10)
-#define DEFAULT_SPI_BUS_MISO	(&pin_P1_11)
+#define DEFAULT_SPI_BUS_SCK     (&pin_P1_13)
+#define DEFAULT_SPI_BUS_MOSI    (&pin_P0_10)
+#define DEFAULT_SPI_BUS_MISO    (&pin_P1_11)
 
-#define DEFAULT_UART_BUS_RX	(&pin_P0_08)
-#define DEFAULT_UART_BUS_TX	(&pin_P0_06)
+#define DEFAULT_UART_BUS_RX     (&pin_P0_08)
+#define DEFAULT_UART_BUS_TX     (&pin_P0_06)

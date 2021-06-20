@@ -43,10 +43,14 @@ typedef struct {
     uint32_t r_bitmask;
     uint32_t g_bitmask;
     uint32_t b_bitmask;
+    pyb_file_obj_t *file;
+    union {
+        mp_obj_base_t *pixel_shader_base;
+        struct displayio_palette *palette;
+        struct displayio_colorconverter *colorconverter;
+    };
     bool bitfield_compressed;
-    pyb_file_obj_t* file;
     uint8_t bits_per_pixel;
-    uint32_t* palette_data;
 } displayio_ondiskbitmap_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H

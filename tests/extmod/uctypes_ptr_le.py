@@ -1,4 +1,5 @@
 import sys
+
 try:
     import uctypes
 except ImportError:
@@ -22,6 +23,9 @@ buf = addr.to_bytes(uctypes.sizeof(desc), "little")
 
 S = uctypes.struct(uctypes.addressof(buf), desc, uctypes.LITTLE_ENDIAN)
 
+print(addr == int(S.ptr))
+print(addr == int(S.ptr2))
+
 print(S.ptr[0])
 assert S.ptr[0] == ord("0")
 print(S.ptr[1])
@@ -29,6 +33,6 @@ assert S.ptr[1] == ord("1")
 print(hex(S.ptr16[0]))
 assert hex(S.ptr16[0]) == "0x3130"
 print(S.ptr2[0].b, S.ptr2[1].b)
-print (S.ptr2[0].b, S.ptr2[1].b)
+print(S.ptr2[0].b, S.ptr2[1].b)
 print(hex(S.ptr16[0]))
 assert (S.ptr2[0].b, S.ptr2[1].b) == (48, 49)

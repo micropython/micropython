@@ -57,7 +57,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|         ...
 //|
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
     self->base.type = &alarm_time_timealarm_type;
 
@@ -85,20 +85,20 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     mp_float_t monotonic_time_now = common_hal_time_monotonic_ms() / 1000.0;
 
     if (have_epoch) {
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
         mp_raise_ValueError(translate("epoch_time not supported on this board"));
-#else
+        #else
         mp_uint_t epoch_time_secs = mp_obj_int_get_checked(args[ARG_epoch_time].u_obj);
 
         timeutils_struct_time_t tm;
         struct_time_to_tm(rtc_get_time_source_time(), &tm);
         mp_uint_t epoch_secs_now = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday,
-                                                       tm.tm_hour, tm.tm_min, tm.tm_sec);
+            tm.tm_hour, tm.tm_min, tm.tm_sec);
         // How far in the future (in secs) is the requested time?
         mp_int_t epoch_diff = epoch_time_secs - epoch_secs_now;
         // Convert it to a future monotonic time.
         monotonic_time = monotonic_time_now + epoch_diff;
-#endif
+        #endif
     }
 
     if (monotonic_time < monotonic_time_now) {
@@ -125,8 +125,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_tim
 const mp_obj_property_t alarm_time_timealarm_monotonic_time_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {

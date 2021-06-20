@@ -43,5 +43,5 @@ STATIC MP_DEFINE_CONST_DICT(sdioio_module_globals, sdioio_module_globals_table);
 
 const mp_obj_module_t sdioio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&sdioio_module_globals,
+    .globals = (mp_obj_dict_t *)&sdioio_module_globals,
 };

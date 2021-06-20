@@ -60,8 +60,9 @@ static void ledda_write(uint8_t value, uint8_t addr) {
 static int ledda_init_done;
 
 static void ledda_init(void) {
-    if (ledda_init_done)
+    if (ledda_init_done) {
         return;
+    }
 
     // Enable the driver
     rgb_ctrl_write((1 << CSR_RGB_CTRL_EXE_OFFSET) | (1 << CSR_RGB_CTRL_CURREN_OFFSET) | (1 << CSR_RGB_CTRL_RGBLEDEN_OFFSET));
@@ -69,7 +70,7 @@ static void ledda_init(void) {
     ledda_write(LEDDCR0_LEDDEN | LEDDCR0_FR250 | LEDDCR0_QUICKSTOP, LEDDCR0);
 
     // Set clock register to 12 MHz / 64 kHz - 1
-    ledda_write((12000000/64000)-1, LEDDBR);
+    ledda_write((12000000 / 64000) - 1, LEDDBR);
 
     // Ensure LED "breathe" effect is diabled
     ledda_write(0, LEDDBCRR);
@@ -82,7 +83,7 @@ static void ledda_init(void) {
     ledda_init_done = 1;
 }
 
-void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     (void)digitalinout;
     (void)numBytes;
     ledda_init();

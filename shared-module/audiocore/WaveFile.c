@@ -45,10 +45,10 @@ struct wave_format_chunk {
     uint16_t extra_params; // Assumed to be zero below.
 };
 
-void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
-                                           pyb_file_obj_t* file,
-                                           uint8_t *buffer,
-                                           size_t buffer_size) {
+void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
+    pyb_file_obj_t *file,
+    uint8_t *buffer,
+    size_t buffer_size) {
     // Load the wave
     self->file = file;
     uint8_t chunk_header[16];
@@ -96,7 +96,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
         mp_raise_OSError(MP_EIO);
     }
     if (bytes_read != 4 ||
-        memcmp((uint8_t *) data_tag, "data", 4) != 0) {
+        memcmp((uint8_t *)data_tag, "data", 4) != 0) {
         mp_raise_ValueError(translate("Data chunk must follow fmt chunk"));
     }
 
@@ -122,55 +122,55 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
         if (self->buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
             mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate first buffer"));
+                translate("Couldn't allocate first buffer"));
         }
 
         self->second_buffer = m_malloc(self->len, false);
         if (self->second_buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
             mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate second buffer"));
+                translate("Couldn't allocate second buffer"));
         }
     }
 }
 
-void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self) {
+void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t *self) {
     self->buffer = NULL;
     self->second_buffer = NULL;
 }
 
-bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self) {
+bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t *self) {
     return self->buffer == NULL;
 }
 
-uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t* self) {
+uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t *self) {
     return self->sample_rate;
 }
 
-void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self,
-                                                 uint32_t sample_rate) {
+void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t *self,
+    uint32_t sample_rate) {
     self->sample_rate = sample_rate;
 }
 
-uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t* self) {
+uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t *self) {
     return self->bits_per_sample;
 }
 
-uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t* self) {
+uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t *self) {
     return self->channel_count;
 }
 
-bool audioio_wavefile_samples_signed(audioio_wavefile_obj_t* self) {
+bool audioio_wavefile_samples_signed(audioio_wavefile_obj_t *self) {
     return self->bits_per_sample > 8;
 }
 
-uint32_t audioio_wavefile_max_buffer_length(audioio_wavefile_obj_t* self) {
+uint32_t audioio_wavefile_max_buffer_length(audioio_wavefile_obj_t *self) {
     return 512;
 }
 
-void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t* self,
-                                   bool single_channel,
-                                   uint8_t channel) {
+void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t *self,
+    bool single_channel,
+    uint8_t channel) {
     if (single_channel && channel == 1) {
         return;
     }
@@ -183,11 +183,11 @@ void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t* self,
     self->right_read_count = 0;
 }
 
-audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
-                                                        bool single_channel,
-                                                        uint8_t channel,
-                                                        uint8_t** buffer,
-                                                        uint32_t* buffer_length) {
+audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t *self,
+    bool single_channel,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length) {
     if (!single_channel) {
         channel = 0;
     }
@@ -226,13 +226,13 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* 
             length_read += pad;
             if (self->bits_per_sample == 8) {
                 for (uint32_t i = 0; i < pad; i++) {
-                    ((uint8_t*) (*buffer))[length_read / sizeof(uint8_t) - i - 1] = 0x80;
+                    ((uint8_t *)(*buffer))[length_read / sizeof(uint8_t) - i - 1] = 0x80;
                 }
             } else if (self->bits_per_sample == 16) {
                 // We know the buffer is aligned because we allocated it onto the heap ourselves.
                 #pragma GCC diagnostic push
                 #pragma GCC diagnostic ignored "-Wcast-align"
-                ((int16_t*) (*buffer))[length_read / sizeof(int16_t) - 1] = 0;
+                ((int16_t *)(*buffer))[length_read / sizeof(int16_t) - 1] = 0;
                 #pragma GCC diagnostic pop
             }
         }
@@ -265,9 +265,9 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* 
     return self->bytes_remaining == 0 ? GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;
 }
 
-void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t* self, bool single_channel,
-                                           bool* single_buffer, bool* samples_signed,
-                                           uint32_t* max_buffer_length, uint8_t* spacing) {
+void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t *self, bool single_channel,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = false;
     *samples_signed = self->bits_per_sample > 8;
     *max_buffer_length = 512;

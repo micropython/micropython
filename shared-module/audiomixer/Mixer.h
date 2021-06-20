@@ -34,8 +34,8 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint32_t* first_buffer;
-    uint32_t* second_buffer;
+    uint32_t *first_buffer;
+    uint32_t *second_buffer;
     uint32_t len; // in words
     uint8_t bits_per_sample;
     bool use_first_buffer;
@@ -54,16 +54,16 @@ typedef struct {
 
 
 // These are not available from Python because it may be called in an interrupt.
-void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
-                                    bool single_channel,
-                                    uint8_t channel);
-audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
-                                                         bool single_channel,
-                                                         uint8_t channel,
-                                                         uint8_t** buffer,
-                                                         uint32_t* buffer_length); // length in bytes
-void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t* self, bool single_channel,
-                                            bool* single_buffer, bool* samples_signed,
-                                            uint32_t* max_buffer_length, uint8_t* spacing);
+void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t *self,
+    bool single_channel,
+    uint8_t channel);
+audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t *self,
+    bool single_channel,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length);                                                      // length in bytes
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t *self, bool single_channel,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H

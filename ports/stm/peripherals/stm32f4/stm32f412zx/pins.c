@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -34,9 +34,9 @@ const mcu_pin_obj_t pin_PE04 = PIN(4, 4, NO_ADC);
 const mcu_pin_obj_t pin_PE05 = PIN(4, 5, NO_ADC);
 const mcu_pin_obj_t pin_PE06 = PIN(4, 6, NO_ADC);
 
-const mcu_pin_obj_t pin_PC13 = PIN(2, 13, NO_ADC); //anti-tamp
-const mcu_pin_obj_t pin_PC14 = PIN(2, 14, NO_ADC); //OSC32_IN
-const mcu_pin_obj_t pin_PC15 = PIN(2, 15, NO_ADC); //OSC32_OUT
+const mcu_pin_obj_t pin_PC13 = PIN(2, 13, NO_ADC); // anti-tamp
+const mcu_pin_obj_t pin_PC14 = PIN(2, 14, NO_ADC); // OSC32_IN
+const mcu_pin_obj_t pin_PC15 = PIN(2, 15, NO_ADC); // OSC32_OUT
 
 const mcu_pin_obj_t pin_PF00 = PIN(5, 0, NO_ADC);   // 144 only
 const mcu_pin_obj_t pin_PF01 = PIN(5, 1, NO_ADC);   // 144 only

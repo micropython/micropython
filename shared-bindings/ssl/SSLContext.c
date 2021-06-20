@@ -51,7 +51,7 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(s);
 }
 
-//| def wrap_socket(sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> socketpool.Socket:
+//| def wrap_socket(sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
 //|     """Wraps the socket into a socket-compatible class that handles SSL negotiation.
 //|        The socket must be of type SOCK_STREAM."""
 //|     ...
@@ -75,7 +75,7 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
         mp_raise_ValueError(translate("Server side context cannot have hostname"));
     }
 
-    socketpool_socket_obj_t* sock = args[ARG_sock].u_obj;
+    socketpool_socket_obj_t *sock = args[ARG_sock].u_obj;
 
     return common_hal_ssl_sslcontext_wrap_socket(self, sock, server_side, server_hostname);
 }
@@ -91,5 +91,5 @@ const mp_obj_type_t ssl_sslcontext_type = {
     { &mp_type_type },
     .name = MP_QSTR_SSLContext,
     .make_new = ssl_sslcontext_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ssl_sslcontext_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&ssl_sslcontext_locals_dict,
 };

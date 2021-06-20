@@ -1,4 +1,4 @@
-filepath = '../py/circuitpy_mpconfig.mk'
+filepath = "../py/circuitpy_mpconfig.mk"
 with open(filepath) as fp:
     line = fp.readline()
     cnt = 1

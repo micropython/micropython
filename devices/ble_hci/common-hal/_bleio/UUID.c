@@ -60,7 +60,7 @@ void common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[1
     memcpy(uuid128, self->uuid128, 16);
 }
 
-void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf) {
+void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t *buf) {
     if (self->size == 16) {
         buf[0] = self->uuid16 & 0xff;
         buf[1] = self->uuid16 >> 8;

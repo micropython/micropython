@@ -1,0 +1,19 @@
+__pos__ called
+__pos__ called
+__neg__ called
+__invert__ called
+__mul__ called
+__matmul__ called
+__truediv__ called
+__floordiv__ called
+__iadd__ called
+__isub__ called
+__mod__ called
+__pow__ called
+__or__ called
+__and__ called
+__xor__ called
+__lshift__ called
+__rshift__ called
+['a', 'b', 'c']
+False

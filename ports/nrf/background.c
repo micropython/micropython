@@ -46,14 +46,16 @@
 #include "common-hal/_bleio/bonding.h"
 #endif
 
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
+void port_start_background_task(void) {
+}
+void port_finish_background_task(void) {
+}
 
 void port_background_task(void) {
-#if CIRCUITPY_AUDIOPWMIO
+    #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_background();
-#endif
-#if CIRCUITPY_AUDIOBUSIO
+    #endif
+    #if CIRCUITPY_AUDIOBUSIO
     i2s_background();
-#endif
+    #endif
 }

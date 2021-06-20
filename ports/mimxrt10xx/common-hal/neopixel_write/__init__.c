@@ -33,7 +33,7 @@
 
 uint64_t next_start_raw_ticks = 0;
 
-//sysclock divisors
+// sysclock divisors
 #define MAGIC_800_INT  900000  // ~1.11 us  -> 1.2  field
 #define MAGIC_800_T0H  2800000  // ~0.36 us -> 0.44 field
 #define MAGIC_800_T1H  1350000  // ~0.74 us -> 0.84 field
@@ -41,15 +41,15 @@ uint64_t next_start_raw_ticks = 0;
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 
-void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels,
-                                uint32_t numBytes) {
+void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t * digitalinout, uint8_t *pixels,
+    uint32_t numBytes) {
     uint8_t *p = pixels, *end = p + numBytes, pix = *p++, mask = 0x80;
     uint32_t start = 0;
     uint32_t cyc = 0;
 
-    //assumes 800_000Hz frequency
-    //Theoretical values here are 800_000 -> 1.25us, 2500000->0.4us, 1250000->0.8us
-    //TODO: try to get dynamic weighting working again
+    // assumes 800_000Hz frequency
+    // Theoretical values here are 800_000 -> 1.25us, 2500000->0.4us, 1250000->0.8us
+    // TODO: try to get dynamic weighting working again
     const uint32_t sys_freq = SystemCoreClock;
     const uint32_t interval = (sys_freq / MAGIC_800_INT);
     const uint32_t t0 = (sys_freq / MAGIC_800_T0H);
@@ -57,7 +57,8 @@ void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
-    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
     GPIO_Type *gpio = digitalinout->pin->gpio;
     const uint32_t pin = digitalinout->pin->number;
@@ -68,16 +69,22 @@ void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     DWT->CYCCNT = 0;
 
-    for(;;) {
+    for (;;) {
         cyc = (pix & mask) ? t1 : t0;
         start = DWT->CYCCNT;
         gpio->DR |= (1U << pin);
-        while((DWT->CYCCNT - start) < cyc);
+        while ((DWT->CYCCNT - start) < cyc) {
+            ;
+        }
         gpio->DR &= ~(1U << pin);
-        while((DWT->CYCCNT - start) < interval);
-        if(!(mask >>= 1)) {
-            if(p >= end) break;
-            pix       = *p++;
+        while ((DWT->CYCCNT - start) < interval) {
+            ;
+        }
+        if (!(mask >>= 1)) {
+            if (p >= end) {
+                break;
+            }
+            pix = *p++;
             mask = 0x80;
         }
     }

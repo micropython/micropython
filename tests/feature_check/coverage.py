@@ -1,5 +1,5 @@
 try:
     extra_coverage
-    print('coverage')
+    print("coverage")
 except NameError:
-    print('no')
+    print("no")

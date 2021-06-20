@@ -78,7 +78,7 @@ void bleio_reset() {
 
     bleio_set_adapter(mp_const_none);
 
-    //FIX bonding_reset();
+    // FIX bonding_reset();
     supervisor_start_bluetooth();
 }
 

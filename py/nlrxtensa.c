@@ -39,18 +39,18 @@
 unsigned int nlr_push(nlr_buf_t *nlr) {
 
     __asm volatile (
-    "s32i.n  a0, a2, 8          \n" // save regs...
-    "s32i.n  a1, a2, 12         \n"
-    "s32i.n  a8, a2, 16         \n"
-    "s32i.n  a9, a2, 20         \n"
-    "s32i.n  a10, a2, 24        \n"
-    "s32i.n  a11, a2, 28        \n"
-    "s32i.n  a12, a2, 32        \n"
-    "s32i.n  a13, a2, 36        \n"
-    "s32i.n  a14, a2, 40        \n"
-    "s32i.n  a15, a2, 44        \n"
-    "j      nlr_push_tail       \n" // do the rest in C
-    );
+        "s32i.n  a0, a2, 8          \n" // save regs...
+        "s32i.n  a1, a2, 12         \n"
+        "s32i.n  a8, a2, 16         \n"
+        "s32i.n  a9, a2, 20         \n"
+        "s32i.n  a10, a2, 24        \n"
+        "s32i.n  a11, a2, 28        \n"
+        "s32i.n  a12, a2, 32        \n"
+        "s32i.n  a13, a2, 36        \n"
+        "s32i.n  a14, a2, 40        \n"
+        "s32i.n  a15, a2, 44        \n"
+        "j      nlr_push_tail       \n" // do the rest in C
+        );
 
     return 0; // needed to silence compiler warning
 }
@@ -59,23 +59,23 @@ NORETURN void nlr_jump(void *val) {
     MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
-    "mov.n   a2, %0             \n" // a2 points to nlr_buf
-    "l32i.n  a0, a2, 8          \n" // restore regs...
-    "l32i.n  a1, a2, 12         \n"
-    "l32i.n  a8, a2, 16         \n"
-    "l32i.n  a9, a2, 20         \n"
-    "l32i.n  a10, a2, 24        \n"
-    "l32i.n  a11, a2, 28        \n"
-    "l32i.n  a12, a2, 32        \n"
-    "l32i.n  a13, a2, 36        \n"
-    "l32i.n  a14, a2, 40        \n"
-    "l32i.n  a15, a2, 44        \n"
-    "movi.n a2, 1               \n" // return 1, non-local return
-    "ret.n                      \n" // return
-    :                               // output operands
-    : "r"(top)                      // input operands
-    :                               // clobbered registers
-    );
+        "mov.n   a2, %0             \n" // a2 points to nlr_buf
+        "l32i.n  a0, a2, 8          \n" // restore regs...
+        "l32i.n  a1, a2, 12         \n"
+        "l32i.n  a8, a2, 16         \n"
+        "l32i.n  a9, a2, 20         \n"
+        "l32i.n  a10, a2, 24        \n"
+        "l32i.n  a11, a2, 28        \n"
+        "l32i.n  a12, a2, 32        \n"
+        "l32i.n  a13, a2, 36        \n"
+        "l32i.n  a14, a2, 40        \n"
+        "l32i.n  a15, a2, 44        \n"
+        "movi.n a2, 1               \n" // return 1, non-local return
+        "ret.n                      \n" // return
+        :                           // output operands
+        : "r" (top)                 // input operands
+        :                           // clobbered registers
+        );
 
     MP_UNREACHABLE
 }

@@ -32,7 +32,7 @@
 
 #include "lib/utils/interrupt_char.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -76,14 +76,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_
 //|     `set_rgb_status_brightness` is called."""
 //|     ...
 //|
-STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
-      // This must be int. If cast to uint8_t first, will never raise a ValueError.
-      int brightness_int = mp_obj_get_int(lvl);
-      if(brightness_int < 0 || brightness_int > 255){
-            mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
-      }
-      set_rgb_status_brightness((uint8_t)brightness_int);
-      return mp_const_none;
+STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
+    // This must be int. If cast to uint8_t first, will never raise a ValueError.
+    int brightness_int = mp_obj_get_int(lvl);
+    if (brightness_int < 0 || brightness_int > 255) {
+        mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
+    }
+    set_status_brightness((uint8_t)brightness_int);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
@@ -165,31 +165,42 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
         mp_arg_val_t sticky_on_error;
         mp_arg_val_t sticky_on_reload;
     } args;
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
-    if (!MP_OBJ_IS_STR_OR_BYTES(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
+    if (!mp_obj_is_str_or_bytes(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
         mp_raise_TypeError(translate("argument has wrong type"));
     }
-    if (args.filename.u_obj == mp_const_none) args.filename.u_obj = mp_const_empty_bytes;
+    if (args.filename.u_obj == mp_const_none) {
+        args.filename.u_obj = mp_const_empty_bytes;
+    }
     uint8_t options = 0;
-    if (args.reload_on_success.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS;
-    if (args.reload_on_error.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR;
-    if (args.sticky_on_success.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
-    if (args.sticky_on_error.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
-    if (args.sticky_on_reload.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+    if (args.reload_on_success.u_bool) {
+        options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS;
+    }
+    if (args.reload_on_error.u_bool) {
+        options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR;
+    }
+    if (args.sticky_on_success.u_bool) {
+        options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
+    }
+    if (args.sticky_on_error.u_bool) {
+        options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
+    }
+    if (args.sticky_on_reload.u_bool) {
+        options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+    }
     size_t len;
-    const char* filename = mp_obj_str_get_data(args.filename.u_obj, &len);
+    const char *filename = mp_obj_str_get_data(args.filename.u_obj, &len);
     free_memory(next_code_allocation);
     if (options != 0 || len != 0) {
         next_code_allocation = allocate_memory(align32_size(sizeof(next_code_info_t) + len + 1), false, true);
         if (next_code_allocation == NULL) {
             m_malloc_fail(sizeof(next_code_info_t) + len + 1);
         }
-        next_code_info_t* next_code = (next_code_info_t*)next_code_allocation->ptr;
+        next_code_info_t *next_code = (next_code_info_t *)next_code_allocation->ptr;
         next_code->options = options | SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         memcpy(&next_code->filename, filename, len);
         next_code->filename[len] = '\0';
-    }
-    else {
+    } else {
         next_code_allocation = NULL;
     }
     return mp_const_none;
@@ -212,5 +223,5 @@ STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals
 
 const mp_obj_module_t supervisor_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&supervisor_module_globals,
+    .globals = (mp_obj_dict_t *)&supervisor_module_globals,
 };

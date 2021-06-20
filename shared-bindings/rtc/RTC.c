@@ -91,14 +91,20 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rtc_rtc_get_datetime_obj,
               (mp_obj_t)&rtc_rtc_set_datetime_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     calibration: int
 //|     """The RTC calibration value as an `int`.
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.
-//|     Range and value is hardware specific, but one step is often approximately 1 ppm."""
+//|     Range and value is hardware specific, but one step is often approximately 1 ppm::
+//|
+//|       import rtc
+//|       import time
+//|
+//|       r = rtc.RTC()
+//|       r.calibration = 1"""
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();
@@ -116,7 +122,7 @@ const mp_obj_property_t rtc_rtc_calibration_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rtc_rtc_get_calibration_obj,
               (mp_obj_t)&rtc_rtc_set_calibration_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
@@ -129,5 +135,5 @@ const mp_obj_type_t rtc_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = rtc_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&rtc_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rtc_rtc_locals_dict,
 };

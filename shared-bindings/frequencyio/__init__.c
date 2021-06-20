@@ -70,5 +70,5 @@ STATIC MP_DEFINE_CONST_DICT(frequencyio_module_globals, frequencyio_module_globa
 
 const mp_obj_module_t frequencyio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&frequencyio_module_globals,
+    .globals = (mp_obj_dict_t *)&frequencyio_module_globals,
 };

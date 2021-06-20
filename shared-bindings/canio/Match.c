@@ -50,7 +50,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -85,8 +85,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_match_id_get_obj, canio_match_id_get);
 const mp_obj_property_t canio_match_id_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_match_id_get_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|
@@ -103,8 +103,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_match_mask_get_obj, canio_match_mask_get);
 const mp_obj_property_t canio_match_mask_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_match_mask_get_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     extended: bool
@@ -120,8 +120,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_match_extended_get_obj, canio_match_extended_get
 const mp_obj_property_t canio_match_extended_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_match_extended_get_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t canio_match_locals_dict_table[] = {
@@ -135,5 +135,5 @@ const mp_obj_type_t canio_match_type = {
     { &mp_type_type },
     .name = MP_QSTR_Match,
     .make_new = canio_match_make_new,
-    .locals_dict = (mp_obj_dict_t*)&canio_match_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&canio_match_locals_dict,
 };

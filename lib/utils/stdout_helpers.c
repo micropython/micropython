@@ -20,7 +20,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
             i = 1;
         }
         // Lump all characters on the next line together.
-        while((last_cr || str[i] != '\n') && i < len) {
+        while ((last_cr || str[i] != '\n') && i < len) {
             last_cr = str[i] == '\r';
             i++;
         }

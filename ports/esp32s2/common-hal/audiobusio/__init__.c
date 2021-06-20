@@ -42,10 +42,14 @@ static QueueHandle_t i2s_queues[I2S_NUM_MAX];
 static TaskHandle_t i2s_tasks[I2S_NUM_MAX];
 
 static int8_t port_i2s_allocate(void) {
-#if defined(I2S_NUM_1)
-    if(!i2s_instance[1]) return 1;
-#endif
-    if(!i2s_instance[0]) return 0;
+    #if defined(I2S_NUM_1)
+    if (!i2s_instance[1]) {
+        return 1;
+    }
+    #endif
+    if (!i2s_instance[0]) {
+        return 0;
+    }
 
     mp_raise_RuntimeError(translate("Peripheral in use"));
 }
@@ -62,7 +66,7 @@ void port_i2s_reset_instance(int i) {
 }
 
 void i2s_reset(void) {
-    for (int i=0; i < I2S_NUM_MAX; i++) {
+    for (int i = 0; i < I2S_NUM_MAX; i++) {
         port_i2s_reset_instance(i);
     }
 }
@@ -88,7 +92,7 @@ static void i2s_fill_buffer(i2s_t *self) {
             uint32_t sample_buffer_length;
             audioio_get_buffer_result_t get_buffer_result =
                 audiosample_get_buffer(self->sample, false, 0,
-                                       &self->sample_data, &sample_buffer_length);
+                    &self->sample_data, &sample_buffer_length);
             self->sample_end = self->sample_data + sample_buffer_length;
             if (get_buffer_result == GET_BUFFER_DONE) {
                 if (self->loop) {
@@ -118,27 +122,27 @@ static void i2s_fill_buffer(i2s_t *self) {
             if (self->samples_signed) {
                 assert(self->channel_count == 1);
                 if (self->bytes_per_sample == 1) {
-                    audiosample_convert_s8m_s16s(signed_samples, (int8_t*)(void*)self->sample_data, framecount);
+                    audiosample_convert_s8m_s16s(signed_samples, (int8_t *)(void *)self->sample_data, framecount);
                 } else {
-                    audiosample_convert_s16m_s16s(signed_samples, (int16_t*)(void*)self->sample_data, framecount);
+                    audiosample_convert_s16m_s16s(signed_samples, (int16_t *)(void *)self->sample_data, framecount);
                 }
             } else {
                 if (self->channel_count == 1) {
                     if (self->bytes_per_sample == 1) {
-                        audiosample_convert_u8m_s16s(signed_samples, (uint8_t*)(void*)self->sample_data, framecount);
+                        audiosample_convert_u8m_s16s(signed_samples, (uint8_t *)(void *)self->sample_data, framecount);
                     } else {
-                        audiosample_convert_u16m_s16s(signed_samples, (uint16_t*)(void*)self->sample_data, framecount);
+                        audiosample_convert_u16m_s16s(signed_samples, (uint16_t *)(void *)self->sample_data, framecount);
                     }
                 } else {
                     if (self->bytes_per_sample == 1) {
-                        audiosample_convert_u8s_s16s(signed_samples, (uint8_t*)(void*)self->sample_data, framecount);
+                        audiosample_convert_u8s_s16s(signed_samples, (uint8_t *)(void *)self->sample_data, framecount);
                     } else {
-                        audiosample_convert_u16s_s16s(signed_samples, (uint16_t*)(void*)self->sample_data, framecount);
+                        audiosample_convert_u16s_s16s(signed_samples, (uint16_t *)(void *)self->sample_data, framecount);
                     }
                 }
             }
             size_t expanded_bytes_written = 0;
-            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame*framecount, &expanded_bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame * framecount, &expanded_bytes_written, 0));
             assert(expanded_bytes_written % 4 == 0);
             bytes_written = expanded_bytes_written / bytes_per_output_frame * bytes_per_input_frame;
         }
@@ -157,7 +161,7 @@ static void i2s_callback_fun(void *self_in) {
 
 static void i2s_event_task(void *self_in) {
     i2s_t *self = self_in;
-    while(true) {
+    while (true) {
         i2s_event_type_t event;
         BaseType_t result = xQueueReceive(i2s_queues[self->instance], &event, portMAX_DELAY);
         if (result && event == I2S_EVENT_TX_DONE) {
@@ -199,7 +203,7 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
     uint32_t max_buffer_length;
     uint8_t spacing;
     audiosample_get_buffer_structure(sample, false, &single_buffer, &samples_signed,
-                                     &max_buffer_length, &spacing);
+        &max_buffer_length, &spacing);
     self->samples_signed = samples_signed;
     self->playing = true;
     self->paused = false;

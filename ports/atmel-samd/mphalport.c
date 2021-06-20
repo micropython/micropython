@@ -56,15 +56,15 @@ extern uint32_t common_hal_mcu_processor_get_frequency(void);
 // Testing done at 48 MHz on SAMD21 and 120 MHz on SAMD51, multiplication and division cancel out.
 // But get the frequency just in case.
 #ifdef SAMD21
-#define DELAY_LOOP_ITERATIONS_PER_US ( (10U*48000000U) / common_hal_mcu_processor_get_frequency())
+#define DELAY_LOOP_ITERATIONS_PER_US ((10U * 48000000U) / common_hal_mcu_processor_get_frequency())
 #endif
 #ifdef SAM_D5X_E5X
-#define DELAY_LOOP_ITERATIONS_PER_US ( (30U*120000000U) / common_hal_mcu_processor_get_frequency())
+#define DELAY_LOOP_ITERATIONS_PER_US ((30U * 120000000U) / common_hal_mcu_processor_get_frequency())
 #endif
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    for (uint32_t i = delay*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
-        asm volatile("nop");
+    for (uint32_t i = delay * DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
+        asm volatile ("nop");
     }
 }
 

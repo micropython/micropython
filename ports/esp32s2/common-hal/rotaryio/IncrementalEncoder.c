@@ -30,8 +30,8 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
+    const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
     claim_pin(pin_a);
     claim_pin(pin_b);
 
@@ -49,7 +49,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
     };
 
-     // Initialize PCNT unit
+    // Initialize PCNT unit
     const int8_t unit = peripherals_pcnt_init(pcnt_config);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
@@ -60,11 +60,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     self->unit = (pcnt_unit_t)unit;
 }
 
-bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
+bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
     return self->unit == PCNT_UNIT_MAX;
 }
 
-void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
+void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
@@ -73,14 +73,14 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     peripherals_pcnt_deinit(&self->unit);
 }
 
-mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
+mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
-    return (count/2)+self->position;
+    return (count / 2) + self->position;
 }
 
-void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
-        mp_int_t new_position) {
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
+    mp_int_t new_position) {
     self->position = new_position;
     pcnt_counter_clear(self->unit);
 }

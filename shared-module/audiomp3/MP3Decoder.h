@@ -38,15 +38,15 @@ typedef struct {
     mp_obj_base_t base;
     struct _MP3DecInfo *decoder;
     background_callback_t inbuf_fill_cb;
-    uint8_t* inbuf;
+    uint8_t *inbuf;
     uint32_t inbuf_length;
     uint32_t inbuf_offset;
-    int16_t* buffers[2];
+    int16_t *buffers[2];
     uint32_t len;
     uint32_t frame_buffer_size;
 
     uint32_t sample_rate;
-    pyb_file_obj_t* file;
+    pyb_file_obj_t *file;
 
     uint8_t buffer_index;
     uint8_t channel_count;
@@ -57,18 +57,18 @@ typedef struct {
 } audiomp3_mp3file_obj_t;
 
 // These are not available from Python because it may be called in an interrupt.
-void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t* self,
-                                   bool single_channel,
-                                   uint8_t channel);
-audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* self,
-                                                        bool single_channel,
-                                                        uint8_t channel,
-                                                        uint8_t** buffer,
-                                                        uint32_t* buffer_length); // length in bytes
-void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t* self, bool single_channel,
-                                           bool* single_buffer, bool* samples_signed,
-                                           uint32_t* max_buffer_length, uint8_t* spacing);
+void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
+    bool single_channel,
+    uint8_t channel);
+audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *self,
+    bool single_channel,
+    uint8_t channel,
+    uint8_t **buffer,
+    uint32_t *buffer_length);                                                     // length in bytes
+void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool single_channel,
+    bool *single_buffer, bool *samples_signed,
+    uint32_t *max_buffer_length, uint8_t *spacing);
 
-float audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t* self);
+float audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H

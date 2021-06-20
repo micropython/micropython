@@ -5,10 +5,11 @@ cause: Unknown
 workaround: Unknown
 """
 import json
+
 a = bytes(x for x in range(256))
 try:
     z = json.dumps(a)
     x = json.loads(z)
-    print('Should not get here')
+    print("Should not get here")
 except TypeError:
-    print('TypeError')
+    print("TypeError")

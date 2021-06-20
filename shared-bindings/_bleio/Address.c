@@ -104,8 +104,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get
 const mp_obj_property_t bleio_address_address_bytes_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_address_get_address_bytes_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     type: int
@@ -124,8 +124,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_type_obj, bleio_address_get_type);
 const mp_obj_property_t bleio_address_type_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_address_get_type_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __eq__(self, other: object) -> bool:
@@ -136,12 +136,12 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_BINARY_OP_EQUAL:
-            if (MP_OBJ_IS_TYPE(rhs_in, &bleio_address_type)) {
+            if (mp_obj_is_type(rhs_in, &bleio_address_type)) {
                 bleio_address_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
                 bleio_address_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 return mp_obj_new_bool(
                     mp_obj_equal(common_hal_bleio_address_get_address_bytes(lhs),
-                                 common_hal_bleio_address_get_address_bytes(rhs)) &&
+                        common_hal_bleio_address_get_address_bytes(rhs)) &&
                     common_hal_bleio_address_get_type(lhs) ==
                     common_hal_bleio_address_get_type(rhs));
 
@@ -182,9 +182,9 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
     mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
 
-    const uint8_t *buf = (uint8_t *) buf_info.buf;
+    const uint8_t *buf = (uint8_t *)buf_info.buf;
     mp_printf(print, "<Address %02x:%02x:%02x:%02x:%02x:%02x>",
-              buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
+        buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
 //|     PUBLIC: int
@@ -220,5 +220,5 @@ const mp_obj_type_t bleio_address_type = {
     .print = bleio_address_print,
     .unary_op = bleio_address_unary_op,
     .binary_op = bleio_address_binary_op,
-    .locals_dict = (mp_obj_dict_t*)&bleio_address_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_address_locals_dict
 };

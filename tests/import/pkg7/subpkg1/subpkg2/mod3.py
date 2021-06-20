@@ -1,5 +1,6 @@
 from ... import mod1
 from ...mod2 import bar
+
 print(mod1.foo)
 print(bar)
 
@@ -7,4 +8,4 @@ print(bar)
 try:
     from .... import mod1
 except ValueError:
-    print('ValueError')
+    print("ValueError")

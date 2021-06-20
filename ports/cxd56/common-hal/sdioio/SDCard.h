@@ -35,7 +35,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    struct inode* inode;
+    struct inode *inode;
     uint32_t frequency;
     uint32_t count;
     uint8_t width;

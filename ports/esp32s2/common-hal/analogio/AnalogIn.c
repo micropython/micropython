@@ -41,8 +41,8 @@
 #define ATTENUATION         ADC_ATTEN_DB_11
 #define DATA_WIDTH          ADC_WIDTH_BIT_13
 
-void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     if (pin->adc_index == 0 || pin->adc_channel == ADC_CHANNEL_MAX) {
         mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
     }
@@ -78,14 +78,14 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     esp_adc_cal_characterize(self->pin->adc_index, ATTENUATION, DATA_WIDTH, DEFAULT_VREF, &adc_chars);
 
     uint32_t adc_reading = 0;
-    //Multisampling
+    // Multisampling
     for (int i = 0; i < NO_OF_SAMPLES; i++) {
         if (self->pin->adc_index == ADC_UNIT_1) {
             adc_reading += adc1_get_raw((adc1_channel_t)self->pin->adc_channel);
         } else {
             int raw;
             esp_err_t r = adc2_get_raw((adc2_channel_t)self->pin->adc_channel, DATA_WIDTH, &raw);
-            if ( r != ESP_OK ) {
+            if (r != ESP_OK) {
                 mp_raise_ValueError(translate("ADC2 is being used by WiFi"));
             }
             adc_reading += raw;
@@ -95,7 +95,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     // This corrects non-linear regions of the ADC range with a LUT, so it's a better reading than raw
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, &adc_chars);
-    return voltage * ((1 << 16) - 1)/3300;
+    return voltage * ((1 << 16) - 1) / 3300;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

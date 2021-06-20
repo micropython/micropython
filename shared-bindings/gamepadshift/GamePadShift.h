@@ -33,9 +33,9 @@
 extern const mp_obj_type_t gamepadshift_type;
 
 void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
-                                                digitalio_digitalinout_obj_t *clock_pin,
-                                                digitalio_digitalinout_obj_t *data_pin,
-                                                digitalio_digitalinout_obj_t *latch_pin);
+    digitalio_digitalinout_obj_t *clock_pin,
+    digitalio_digitalinout_obj_t *data_pin,
+    digitalio_digitalinout_obj_t *latch_pin);
 
 void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift);
 

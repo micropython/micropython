@@ -49,7 +49,7 @@ typedef struct _bleio_adapter_obj_t {
     bleio_scanresults_obj_t *scan_results;
     mp_obj_t name;
     mp_obj_tuple_t *connection_objs;
-    busio_uart_obj_t* hci_uart;
+    busio_uart_obj_t *hci_uart;
     digitalio_digitalinout_obj_t *rts_digitalinout;
     digitalio_digitalinout_obj_t *cts_digitalinout;
     bool allocated;  // True when in use.
@@ -72,7 +72,7 @@ typedef struct _bleio_adapter_obj_t {
     // Generic services characteristics.
     bleio_characteristic_obj_t *device_name_characteristic;
     bleio_characteristic_obj_t *appearance_characteristic;
-    bleio_characteristic_obj_t * service_changed_characteristic;
+    bleio_characteristic_obj_t *service_changed_characteristic;
 
     uint16_t max_acl_buffer_len;
     uint16_t max_acl_num_buffers;
@@ -90,10 +90,10 @@ typedef struct _bleio_adapter_obj_t {
 
 uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute);
 void bleio_adapter_advertising_was_stopped(bleio_adapter_obj_t *self);
-mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle);
+mp_obj_t *bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle);
 uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter);
-void bleio_adapter_background(bleio_adapter_obj_t* adapter);
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter);
+void bleio_adapter_background(bleio_adapter_obj_t *adapter);
+void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter);
+void bleio_adapter_reset(bleio_adapter_obj_t *adapter);
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ADAPTER_H

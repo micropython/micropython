@@ -47,9 +47,9 @@
 #include "driver/i2s.h"
 
 // Caller validates that pins are free.
-void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
-        const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select,
-        const mcu_pin_obj_t* data, bool left_justified) {
+void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
+    const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
+    const mcu_pin_obj_t *data, bool left_justified) {
 
     port_i2s_allocate_init(&self->peripheral, left_justified);
 
@@ -63,13 +63,16 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     self->bit_clock = bit_clock;
     self->word_select = word_select;
     self->data = data;
+    claim_pin(bit_clock);
+    claim_pin(word_select);
+    claim_pin(data);
 }
 
-bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self) {
     return self->peripheral.instance == -1;
 }
 
-void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
@@ -95,31 +98,31 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     self->peripheral.instance = -1;
 }
 
-void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
-                                       mp_obj_t sample, bool loop) {
+void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
+    mp_obj_t sample, bool loop) {
     if (common_hal_audiobusio_i2sout_get_playing(self)) {
         common_hal_audiobusio_i2sout_stop(self);
     }
     port_i2s_play(&self->peripheral, sample, loop);
 }
 
-void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t *self) {
     port_i2s_pause(&self->peripheral);
 }
 
-void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t *self) {
     port_i2s_resume(&self->peripheral);
 }
 
-bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t *self) {
     return port_i2s_paused(&self->peripheral);
 }
 
-void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
+void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
     port_i2s_stop(&self->peripheral);
 }
 
-bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
+bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t *self) {
     return port_i2s_playing(&self->peripheral);
 }
 

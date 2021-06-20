@@ -53,8 +53,8 @@
 // need to set the 15th bit on each register.
 
 // WS2812 (rev A) timing is 0.35 and 0.7us
-//#define MAGIC_T0H               5UL | (0x8000) // 0.3125us
-//#define MAGIC_T1H              12UL | (0x8000) // 0.75us
+// #define MAGIC_T0H               5UL | (0x8000) // 0.3125us
+// #define MAGIC_T1H              12UL | (0x8000) // 0.75us
 
 // WS2812B (rev B) timing is 0.4 and 0.8 us
 #define MAGIC_T0H               6UL | (0x8000) // 0.375us
@@ -78,18 +78,18 @@
 // ---------- END of Constants for cycle counter implementation --------
 
 // find a free PWM device, which is not enabled and has no connected pins
-static NRF_PWM_Type* find_free_pwm (void) {
-    NRF_PWM_Type* PWM[] = {
-            NRF_PWM0, NRF_PWM1, NRF_PWM2
-#ifdef NRF_PWM3
-            , NRF_PWM3
-#endif
+static NRF_PWM_Type *find_free_pwm(void) {
+    NRF_PWM_Type *PWM[] = {
+        NRF_PWM0, NRF_PWM1, NRF_PWM2
+        #ifdef NRF_PWM3
+        , NRF_PWM3
+        #endif
     };
 
-    for ( size_t device = 0; device < ARRAY_SIZE(PWM); device++ ) {
-        if ( (PWM[device]->ENABLE == 0) &&
-             (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
-             (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
+    for (size_t device = 0; device < ARRAY_SIZE(PWM); device++) {
+        if ((PWM[device]->ENABLE == 0) &&
+            (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
+            (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk)) {
             return PWM[device];
         }
     }
@@ -106,7 +106,7 @@ void neopixel_write_reset(void) {
 
 uint64_t next_start_raw_ticks = 0;
 
-void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
     // feature from the NRF52. However this technique implies to
     // generate a pattern and store it on the memory. The actual
@@ -126,22 +126,22 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 // to handle larger NeoPixel rings without malloc'ing.
 #define STACK_PIXELS 24
     uint32_t pattern_size = PATTERN_SIZE(numBytes);
-    uint16_t* pixels_pattern = NULL;
+    uint16_t *pixels_pattern = NULL;
 
     // Use the stack to store STACK_PIXEL's worth of PWM data. uint32_t to ensure alignment.
     // It is 3*STACK_PIXELS to handle RGB.
     // PATTERN_SIZE is a multiple of 4, so we don't need round up to make sure one_pixel is large enough.
     uint32_t stack_pixels[PATTERN_SIZE(3 * STACK_PIXELS) / sizeof(uint32_t)];
 
-    NRF_PWM_Type* pwm = find_free_pwm();
+    NRF_PWM_Type *pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
-    if ( pwm != NULL ) {
+    if (pwm != NULL) {
         if (pattern_size <= sizeof(stack_pixels)) {
-            pixels_pattern = (uint16_t *) stack_pixels;
+            pixels_pattern = (uint16_t *)stack_pixels;
         } else {
             uint8_t sd_en = 0;
-            (void) sd_softdevice_is_enabled(&sd_en);
+            (void)sd_softdevice_is_enabled(&sd_en);
 
             if (pixels_pattern_heap_size < pattern_size) {
                 // Current heap buffer is too small.
@@ -157,12 +157,12 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
                     // transmit. This takes a bunch of memory to do so raise an
                     // exception if we can't.
                     MP_STATE_VM(pixels_pattern_heap) =
-                        (uint16_t *) m_realloc(MP_STATE_VM(pixels_pattern_heap), pattern_size);
+                        (uint16_t *)m_realloc(MP_STATE_VM(pixels_pattern_heap), pattern_size);
                 } else {
                     // Might return NULL.
                     MP_STATE_VM(pixels_pattern_heap) =
                         // true means move if necessary.
-                        (uint16_t *) m_realloc_maybe(MP_STATE_VM(pixels_pattern_heap), pattern_size, true);
+                        (uint16_t *)m_realloc_maybe(MP_STATE_VM(pixels_pattern_heap), pattern_size, true);
                 }
                 if (MP_STATE_VM(pixels_pattern_heap)) {
                     pixels_pattern_heap_size = pattern_size;
@@ -175,17 +175,18 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
-    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
     // Use the identified device to choose the implementation
     // If a PWM device is available and we have a buffer, use DMA.
-    if ( (pixels_pattern != NULL) && (pwm != NULL) ) {
+    if ((pixels_pattern != NULL) && (pwm != NULL)) {
         uint16_t pos = 0;  // bit position
 
-        for ( uint16_t n = 0; n < numBytes; n++ ) {
+        for (uint16_t n = 0; n < numBytes; n++) {
             uint8_t pix = pixels[n];
 
-            for ( uint8_t mask = 0x80; mask > 0; mask >>= 1 ) {
+            for (uint8_t mask = 0x80; mask > 0; mask >>= 1) {
                 pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
                 pos++;
             }
@@ -227,7 +228,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         //    pwm->INTEN |= (PWM_INTEN_SEQEND0_Enabled<<PWM_INTEN_SEQEND0_Pos);
 
         // PSEL must be configured before enabling PWM
-        nrf_pwm_pins_set(pwm, (uint32_t[]) {digitalinout->pin->number, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
+        nrf_pwm_pins_set(pwm, (uint32_t[]) {digitalinout->pin->number, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL});
 
         // Enable the PWM
         nrf_pwm_enable(pwm);
@@ -238,7 +239,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         nrf_pwm_task_trigger(pwm, NRF_PWM_TASK_SEQSTART0);
 
         // But we have to wait for the flag to be set.
-        while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
+        while (!nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0)) {
             RUN_BACKGROUND_TASKS;
         }
 
@@ -250,7 +251,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // be selected on the next call.
         // TODO: Check if disabling the device causes performance issues.
         nrf_pwm_disable(pwm);
-        nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
+        nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL});
 
     } // End of DMA implementation
     // ---------------------------------------------------------------------
@@ -264,9 +265,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         __disable_irq();
 
         uint32_t decoded_pin = digitalinout->pin->number;
-        NRF_GPIO_Type* port = nrf_gpio_pin_port_decode(&decoded_pin);
+        NRF_GPIO_Type *port = nrf_gpio_pin_port_decode(&decoded_pin);
 
-        uint32_t pinMask = ( 1UL << decoded_pin );
+        uint32_t pinMask = (1UL << decoded_pin);
 
         uint32_t CYCLES_X00 = CYCLES_800;
         uint32_t CYCLES_X00_T1H = CYCLES_800_T1H;
@@ -277,39 +278,43 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
         // Tries to re-send the frame if is interrupted by the SoftDevice.
-        while ( 1 ) {
+        while (1) {
             uint8_t *p = pixels;
 
             uint32_t cycStart = DWT->CYCCNT;
             uint32_t cyc = 0;
 
-            for ( uint16_t n = 0; n < numBytes; n++ ) {
+            for (uint16_t n = 0; n < numBytes; n++) {
                 uint8_t pix = *p++;
 
-                for ( uint8_t mask = 0x80; mask; mask >>= 1 ) {
-                    while ( DWT->CYCCNT - cyc < CYCLES_X00 )
+                for (uint8_t mask = 0x80; mask; mask >>= 1) {
+                    while (DWT->CYCCNT - cyc < CYCLES_X00) {
                         ;
+                    }
                     cyc = DWT->CYCCNT;
 
                     port->OUTSET |= pinMask;
 
-                    if ( pix & mask ) {
-                        while ( DWT->CYCCNT - cyc < CYCLES_X00_T1H )
+                    if (pix & mask) {
+                        while (DWT->CYCCNT - cyc < CYCLES_X00_T1H) {
                             ;
+                        }
                     } else {
-                        while ( DWT->CYCCNT - cyc < CYCLES_X00_T0H )
+                        while (DWT->CYCCNT - cyc < CYCLES_X00_T0H) {
                             ;
+                        }
                     }
 
                     port->OUTCLR |= pinMask;
                 }
             }
-            while ( DWT->CYCCNT - cyc < CYCLES_X00 )
+            while (DWT->CYCCNT - cyc < CYCLES_X00) {
                 ;
+            }
 
             // If total time longer than 25%, resend the whole data.
             // Since we are likely to be interrupted by SoftDevice
-            if ( (DWT->CYCCNT - cycStart) < (8 * numBytes * ((CYCLES_X00 * 5) / 4)) ) {
+            if ((DWT->CYCCNT - cycStart) < (8 * numBytes * ((CYCLES_X00 * 5) / 4))) {
                 break;
             }
 

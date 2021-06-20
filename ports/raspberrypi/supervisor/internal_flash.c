@@ -44,27 +44,39 @@
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
 
-#define RESERVED_FLASH 1 * 1024 * 1024
-
-// TODO: Parameterize flash size based on the configured flash.
-#define TOTAL_FLASH_SIZE 2 * 1024 * 1024
+#define RESERVED_FLASH (1 * 1024 * 1024)
 
 // TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
 #define SECTOR_SIZE 4096
 #define NO_CACHE 0xffffffff
 STATIC uint8_t _cache[SECTOR_SIZE];
 STATIC uint32_t _cache_lba = NO_CACHE;
+STATIC uint32_t _flash_size = 0;
 
 void supervisor_flash_init(void) {
     bi_decl_if_func_used(bi_block_device(
         BINARY_INFO_MAKE_TAG('C', 'P'),
         "CircuitPython",
         RESERVED_FLASH,
-        TOTAL_FLASH_SIZE - RESERVED_FLASH,
+        (1 * 1024 * 1024), // This is a minimum. We can't set it dynamically.
         NULL,
         BINARY_INFO_BLOCK_DEV_FLAG_READ |
         BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
         BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
+
+    // Read the RDID register to get the flash capacity.
+    uint8_t cmd[] = {0x9f, 0, 0, 0};
+    uint8_t data[4];
+    flash_do_cmd(cmd, data, 4);
+    uint8_t power_of_two = 21;
+    // Flash must be at least 2MB (1 << 21) because we use the first 1MB for the
+    // CircuitPython core. We validate the range because Adesto Tech flash chips
+    // don't return the correct value. So, we default to 2MB which will work for
+    // larger chips, it just won't use all of the space.
+    if (data[3] >= 21 && data[3] < 30) {
+        power_of_two = data[3];
+    }
+    _flash_size = 1 << power_of_two;
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -72,7 +84,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return (TOTAL_FLASH_SIZE - RESERVED_FLASH) / FILESYSTEM_BLOCK_SIZE;
+    return (_flash_size - RESERVED_FLASH) / FILESYSTEM_BLOCK_SIZE;
 }
 
 void port_internal_flash_flush(void) {
@@ -88,8 +100,8 @@ void port_internal_flash_flush(void) {
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     memcpy(dest,
-           (void*)(XIP_BASE + RESERVED_FLASH + block * FILESYSTEM_BLOCK_SIZE),
-           num_blocks * FILESYSTEM_BLOCK_SIZE);
+        (void *)(XIP_BASE + RESERVED_FLASH + block * FILESYSTEM_BLOCK_SIZE),
+        num_blocks * FILESYSTEM_BLOCK_SIZE);
     return 0;
 }
 
@@ -103,18 +115,18 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
         if (_cache_lba != block_address) {
             memcpy(_cache,
-                   (void*)(XIP_BASE + RESERVED_FLASH + sector_offset),
-                   SECTOR_SIZE);
+                (void *)(XIP_BASE + RESERVED_FLASH + sector_offset),
+                SECTOR_SIZE);
             _cache_lba = sector_offset;
         }
         for (uint8_t b = block_offset; b < blocks_per_sector; b++) {
             // Stop copying after the last block.
             if (block >= num_blocks) {
-              break;
+                break;
             }
             memcpy(_cache + b * FILESYSTEM_BLOCK_SIZE,
-                   src + block * FILESYSTEM_BLOCK_SIZE,
-                   FILESYSTEM_BLOCK_SIZE);
+                src + block * FILESYSTEM_BLOCK_SIZE,
+                FILESYSTEM_BLOCK_SIZE);
             block++;
         }
         // Make sure we don't have an interrupt while we do flash operations.

@@ -48,7 +48,8 @@ extern const mp_obj_dict_t mcu_pin_globals;
 #if CIRCUITPY_PROCESSOR_COUNT == 1
 extern const mcu_processor_obj_t common_hal_mcu_processor_obj;
 #elif CIRCUITPY_PROCESSOR_COUNT > 1
-extern const mp_rom_obj_tuple_t common_hal_mcu_processor_obj;
+extern const mcu_processor_obj_t common_hal_mcu_processor_obj;
+extern const mp_rom_obj_tuple_t common_hal_multi_processor_obj;
 #else
 #error "Invalid processor count"
 #endif

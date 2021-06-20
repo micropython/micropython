@@ -112,9 +112,9 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     self->base.type = &audiomixer_mixer_type;
     common_hal_audiomixer_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
 
-    for(int v=0; v<voice_count; v++){
-    	self->voice[v] = audiomixer_mixervoice_type.make_new(&audiomixer_mixervoice_type, 0, 0, NULL);
-    	common_hal_audiomixer_mixervoice_set_parent(self->voice[v], self);
+    for (int v = 0; v < voice_count; v++) {
+        self->voice[v] = audiomixer_mixervoice_type.make_new(&audiomixer_mixervoice_type, 0, 0, NULL);
+        common_hal_audiomixer_mixervoice_set_parent(self->voice[v], self);
     }
     self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
 
@@ -169,8 +169,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_playing_obj, audiomixer_mixer_obj
 const mp_obj_property_t audiomixer_mixer_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     sample_rate: int
@@ -186,8 +186,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_sample_rate_obj, audiomixer_mixer
 const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_sample_rate_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     voice: Tuple[MixerVoice, ...]
@@ -207,8 +207,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_voice_obj, audiomixer_mixer_obj_g
 const mp_obj_property_t audiomixer_mixer_voice_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixer_get_voice_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def play(self, sample: _typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
@@ -280,7 +280,7 @@ STATIC const mp_rom_map_elem_t audiomixer_mixer_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiomixer_mixer_playing_obj) },
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiomixer_mixer_sample_rate_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_voice), MP_ROM_PTR(&audiomixer_mixer_voice_obj) }
+    { MP_ROM_QSTR(MP_QSTR_voice), MP_ROM_PTR(&audiomixer_mixer_voice_obj) }
 };
 STATIC MP_DEFINE_CONST_DICT(audiomixer_mixer_locals_dict, audiomixer_mixer_locals_dict_table);
 
@@ -298,6 +298,6 @@ const mp_obj_type_t audiomixer_mixer_type = {
     { &mp_type_type },
     .name = MP_QSTR_Mixer,
     .make_new = audiomixer_mixer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiomixer_mixer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixer_locals_dict,
     .protocol = &audiomixer_mixer_proto,
 };

@@ -24,7 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-//TODO
+// TODO
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -38,6 +38,8 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate.h"
+
+#define DBL_TAP_REG              SNVS->LPGPR[3]
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -72,10 +74,10 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
         }
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.
-        SNVS->LPGPR[0] = DBL_TAP_MAGIC;
+        DBL_TAP_REG = DBL_TAP_MAGIC;
     } else {
         // Set up the default.
-        SNVS->LPGPR[0] = DBL_TAP_MAGIC_QUICK_BOOT;
+        DBL_TAP_REG = DBL_TAP_MAGIC_QUICK_BOOT;
     }
     if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
@@ -102,14 +104,14 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = (uint8_t*) (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+    .start_address = (uint8_t *)(FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
 };
 #endif
 
 // This maps MCU pin names to pin objects.
 // NOTE: for all i.MX chips, order MUST match _iomuxc_sw_mux_ctl_pad enum
 STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
-#ifdef MIMXRT1011_SERIES
+    #ifdef MIMXRT1011_SERIES
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_14), MP_ROM_PTR(&pin_GPIO_AD_14) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_13), MP_ROM_PTR(&pin_GPIO_AD_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_12), MP_ROM_PTR(&pin_GPIO_AD_12) },
@@ -125,7 +127,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_02), MP_ROM_PTR(&pin_GPIO_AD_02) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_01), MP_ROM_PTR(&pin_GPIO_AD_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_00), MP_ROM_PTR(&pin_GPIO_AD_00) },
-    { MP_ROM_QSTR(MP_QSTR_GPIO_SD_14), MP_ROM_PTR(&pin_GPIO_SD_14) }, //spooky ghost pin
+    { MP_ROM_QSTR(MP_QSTR_GPIO_SD_14), MP_ROM_PTR(&pin_GPIO_SD_14) }, // spooky ghost pin
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_13), MP_ROM_PTR(&pin_GPIO_SD_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_12), MP_ROM_PTR(&pin_GPIO_SD_12) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_11), MP_ROM_PTR(&pin_GPIO_SD_11) },
@@ -154,7 +156,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_02), MP_ROM_PTR(&pin_GPIO_02) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_01), MP_ROM_PTR(&pin_GPIO_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_00), MP_ROM_PTR(&pin_GPIO_00) },
-#else
+    #else
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_00), MP_ROM_PTR(&pin_GPIO_EMC_00) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_01), MP_ROM_PTR(&pin_GPIO_EMC_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_EMC_02), MP_ROM_PTR(&pin_GPIO_EMC_02) },
@@ -284,6 +286,6 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_09), MP_ROM_PTR(&pin_GPIO_SD_B1_09) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_10), MP_ROM_PTR(&pin_GPIO_SD_B1_10) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B1_11), MP_ROM_PTR(&pin_GPIO_SD_B1_11) },
-#endif
+    #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

@@ -63,9 +63,9 @@ typedef enum {
 } bonding_block_type_t;
 
 typedef struct {
-    bool is_central: 1;            // 1 if data is for a central role.
-    uint16_t reserved: 7;          // Not currently used
-    bonding_block_type_t type: 8;  // What kind of data is stored in.
+    bool is_central : 1;            // 1 if data is for a central role.
+    uint16_t reserved : 7;          // Not currently used
+    bonding_block_type_t type : 8;  // What kind of data is stored in.
     uint16_t ediv;                 // ediv value; used as a lookup key.
     uint16_t conn_handle;          // Connection handle: used when a BLOCK_SYS_ATTR is queued to write.
                                    // Not used as a key, etc.

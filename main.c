@@ -53,13 +53,13 @@
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
+#include "supervisor/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -67,6 +67,19 @@
 
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
+#endif
+
+#if CIRCUITPY_CANIO
+#include "common-hal/canio/CAN.h"
 #endif
 
 #if CIRCUITPY_DISPLAYIO
@@ -81,17 +94,8 @@
 #include "shared-module/network/__init__.h"
 #endif
 
-#if CIRCUITPY_BOARD
-#include "shared-module/board/__init__.h"
-#endif
-
-#if CIRCUITPY_BLEIO
-#include "shared-bindings/_bleio/__init__.h"
-#include "supervisor/shared/bluetooth.h"
-#endif
-
-#if CIRCUITPY_CANIO
-#include "common-hal/canio/CAN.h"
+#if CIRCUITPY_USB_HID
+#include "shared-module/usb_hid/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -109,7 +113,6 @@ static void reset_devices(void) {
 }
 
 STATIC void start_mp(supervisor_allocation* heap) {
-    reset_status_led();
     autoreload_stop();
     supervisor_workflow_reset();
 
@@ -157,7 +160,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    alarm_save_wake_alarm();
+    shared_alarm_save_wake_alarm(common_hal_alarm_create_wake_alarm());
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif
@@ -184,6 +187,10 @@ STATIC void stop_mp(void) {
     #endif
 
     background_callback_reset();
+
+    #if CIRCUITPY_USB
+    usb_background();
+    #endif
 
     gc_deinit();
 }
@@ -242,7 +249,6 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     #endif
     reset_port();
     reset_board();
-    reset_status_led();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
@@ -252,18 +258,20 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
         serial_write_compressed(translate("Auto-reload is off.\n"));
     }
     if (safe_mode != NO_SAFE_MODE) {
-        serial_write_compressed(translate("Running in safe mode! "));
-        serial_write_compressed(translate("Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
     }
 }
 
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
+    bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
-    serial_write("\n");
-    print_code_py_status_message(safe_mode);
-    print_safe_mode_message(safe_mode);
-    serial_write("\n");
+    if (serial_connected_at_start) {
+        serial_write("\r\n");
+        print_code_py_status_message(safe_mode);
+        print_safe_mode_message(safe_mode);
+        printed_safe_mode_message = true;
+    }
     #endif
 
     pyexec_result_t result;
@@ -279,8 +287,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
     if (safe_mode == NO_SAFE_MODE) {
-        new_status_color(MAIN_RUNNING);
-
         static const char * const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -292,13 +298,21 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
+
+        // Prepare the VM state. Includes an alarm check/reset for sleep.
         start_mp(heap);
 
+        #if CIRCUITPY_USB
+        usb_setup_with_vm();
+        #endif
+
+        // Check if a different run file has been allocated
         if (next_code_allocation) {
             ((next_code_info_t*)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
             next_code_options = ((next_code_info_t*)next_code_allocation->ptr)->options;
             if (((next_code_info_t*)next_code_allocation->ptr)->filename[0] != '\0') {
                 const char* next_list[] = {((next_code_info_t*)next_code_allocation->ptr)->filename, ""};
+                // This is where the user's python code is actually executed:
                 found_main = maybe_run_list(next_list, &result);
                 if (!found_main) {
                     serial_write(((next_code_info_t*)next_code_allocation->ptr)->filename);
@@ -306,8 +320,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 }
             }
         }
+        // Otherwise, default to the standard list of filenames
         if (!found_main) {
+            // This is where the user's python code is actually executed:
             found_main = maybe_run_list(supported_filenames, &result);
+            // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
             if (!found_main){
                 found_main = maybe_run_list(double_extension_filenames, &result);
@@ -315,11 +332,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
             }
+            #else
+            (void) found_main;
             #endif
         }
 
-        // TODO: on deep sleep, make sure display is refreshed before sleeping (for e-ink).
-
+        // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
@@ -337,19 +355,19 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
-                goto done;
+                //goto done;
             }
         }
         else {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR) {
                 skip_repl = true;
-                goto done;
+                //goto done;
             }
         }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             skip_repl = reload_requested;
-            goto done;
+            //goto done;
         }
 
         if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
@@ -360,68 +378,93 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     }
 
     // Program has finished running.
-
     bool printed_press_any_key = false;
     #if CIRCUITPY_DISPLAYIO
-    bool refreshed_epaper_display = false;
+    size_t time_to_epaper_refresh = 1;
     #endif
 
-    rgb_status_animation_t animation;
-    prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
-    bool asleep = false;
+    // Setup LED blinks.
+    #if CIRCUITPY_STATUS_LED
+    uint32_t color;
+    uint8_t blink_count;
+    bool led_active = false;
+    #if CIRCUITPY_ALARM
+    if (result.return_code & PYEXEC_DEEP_SLEEP) {
+        color = BLACK;
+        blink_count = 0;
+    } else
+    #endif
+    if (result.return_code != PYEXEC_EXCEPTION) {
+        if (safe_mode == NO_SAFE_MODE) {
+            color = ALL_DONE;
+            blink_count = ALL_DONE_BLINKS;
+        } else {
+            color = SAFE_MODE;
+            blink_count = SAFE_MODE_BLINKS;
+        }
+    } else {
+        color = EXCEPTION;
+        blink_count = EXCEPTION_BLINKS;
+    }
+    size_t pattern_start = supervisor_ticks_ms32();
+    size_t single_blink_time = (OFF_ON_RATIO + 1) * BLINK_TIME_MS;
+    size_t blink_time = single_blink_time * blink_count;
+    size_t total_time = blink_time + LED_SLEEP_TIME_MS;
+    #endif
+
+    #if CIRCUITPY_ALARM
+    bool fake_sleeping = false;
+    #endif
+    // bool skip_repl = false;
     while (true) {
         RUN_BACKGROUND_TASKS;
+
+        // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
-            #if CIRCUITPY_ALARM
-            if (asleep) {
-                board_init();
-            }
-            #endif
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
             // "no" for now, mainly because it's a bit less code. At this point, we have both a
             // success or error and a reload, so let's have both of the respective options take
             // effect (in OR combination).
-            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             skip_repl = true;
-            goto done;
+            break;
         }
 
+        // If interrupted by keyboard, return
         if (serial_connected() && serial_bytes_available()) {
-            #if CIRCUITPY_ALARM
-            if (asleep) {
-                board_init();
-            }
-            #endif
             // Skip REPL if reload was requested.
             skip_repl = serial_read() == CHAR_CTRL_D;
             if (skip_repl) {
                 supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
             }
-            goto done;
+            break;
         }
 
         // Check for a deep sleep alarm and restart the VM. This can happen if
         // an alarm alerts faster than our USB delay or if we pretended to deep
         // sleep.
         #if CIRCUITPY_ALARM
-        if (asleep && alarm_woken_from_sleep()) {
+        if (fake_sleeping && common_hal_alarm_woken_from_sleep()) {
             serial_write_compressed(translate("Woken up by alarm.\n"));
-            board_init();
             supervisor_set_run_reason(RUN_REASON_STARTUP);
-            return true;
+            skip_repl = true;
+            break;
         }
         #endif
 
+        // If messages haven't been printed yet, print them
         if (!printed_press_any_key && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
 
-            print_safe_mode_message(safe_mode);
-            serial_write("\n");
+            if (!printed_safe_mode_message) {
+                print_safe_mode_message(safe_mode);
+                printed_safe_mode_message = true;
+            }
+            serial_write("\r\n");
             serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
             printed_press_any_key = true;
         }
@@ -430,73 +473,132 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             printed_press_any_key = false;
         }
 
-        // Refresh the ePaper display if we have one. That way it'll show an error message.
-        #if CIRCUITPY_DISPLAYIO
-        // Don't refresh the display if we're about to deep sleep.
-        #if CIRCUITPY_ALARM
-        refreshed_epaper_display = refreshed_epaper_display || result.return_code & PYEXEC_DEEP_SLEEP;
-        #endif
-        if (!refreshed_epaper_display) {
-            refreshed_epaper_display = maybe_refresh_epaperdisplay();
-        }
-        #endif
-
         // Sleep until our next interrupt.
         #if CIRCUITPY_ALARM
         if (result.return_code & PYEXEC_DEEP_SLEEP) {
             // Make sure we have been awake long enough for USB to connect (enumeration delay).
             int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-            if (connecting_delay_ticks > 0) {
-                // Set when we've waited long enough so that we wake up from the
-                // port_idle_until_interrupt below and loop around to the real deep
-                // sleep in the else clause.
-                port_interrupt_after_ticks(connecting_delay_ticks);
-            // Deep sleep if we're not connected to a host.
-            } else if (!asleep) {
-                asleep = true;
-                new_status_color(BLACK);
+            // Until it's safe to decide whether we're real/fake sleeping
+            if (fake_sleeping) {
+                // This waits until a pretend deep sleep alarm occurs. They are set
+                // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
+                // it may also return due to another interrupt, that's why we check
+                // for deep sleep alarms above. If it wasn't a deep sleep alarm,
+                // then we'll idle here again.
+                common_hal_alarm_pretending_deep_sleep();
+            } else if (connecting_delay_ticks < 0) {
+                // Entering deep sleep (may be fake or real.)
                 board_deinit();
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
-                    alarm_enter_deep_sleep();
+                    common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
                     serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                    fake_sleeping = true;
                 }
+            } else {
+                // Loop while checking the time. We can't idle because we don't want to override a
+                // time alarm set for the deep sleep.
             }
-        }
+        } else
         #endif
+        {
+            // Refresh the ePaper display if we have one. That way it'll show an error message.
+            #if CIRCUITPY_DISPLAYIO
+            if (time_to_epaper_refresh > 0) {
+                time_to_epaper_refresh = maybe_refresh_epaperdisplay();
+            }
 
-        if (!asleep) {
-            tick_rgb_status_animation(&animation);
-        } else {
-            // This waits until a pretend deep sleep alarm occurs. They are set
-            // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
-            // it may also return due to another interrupt, that's why we check
-            // for deep sleep alarms above. If it wasn't a deep sleep alarm,
-            // then we'll idle here again.
+            #if !CIRCUITPY_STATUS_LED
+                port_interrupt_after_ticks(time_to_epaper_refresh);
+            #endif
+            #endif
+
+            #if CIRCUITPY_STATUS_LED
+            uint32_t tick_diff = supervisor_ticks_ms32() - pattern_start;
+
+            // By default, don't sleep.
+            size_t time_to_next_change = 0;
+            if (tick_diff < blink_time) {
+                uint32_t blink_diff = tick_diff % (single_blink_time);
+                if (blink_diff >= BLINK_TIME_MS) {
+                    if (led_active) {
+                        new_status_color(BLACK);
+                        status_led_deinit();
+                        led_active = false;
+                    }
+                    time_to_next_change = single_blink_time - blink_diff;
+                } else {
+                    if (!led_active) {
+                        status_led_init();
+                        new_status_color(color);
+                        led_active = true;
+                    }
+                    time_to_next_change = BLINK_TIME_MS - blink_diff;
+                }
+            } else if (tick_diff > total_time) {
+                pattern_start = supervisor_ticks_ms32();
+            } else {
+                if (led_active) {
+                    new_status_color(BLACK);
+                    status_led_deinit();
+                    led_active = false;
+                }
+                time_to_next_change = total_time - tick_diff;
+            }
+            #if CIRCUITPY_DISPLAYIO
+            if (time_to_epaper_refresh > 0 && time_to_next_change > 0) {
+                time_to_next_change = MIN(time_to_next_change, time_to_epaper_refresh);
+            }
+            #endif
+
+            // time_to_next_change is in ms and ticks are slightly shorter so
+            // we'll undersleep just a little. It shouldn't matter.
+            port_interrupt_after_ticks(time_to_next_change);
+            #endif
             port_idle_until_interrupt();
         }
     }
 
-done:
+    // free code allocation if unused
     if ((next_code_options & next_code_stickiness_situation) == 0) {
         free_memory(next_code_allocation);
         next_code_allocation = NULL;
     }
+
+    // Done waiting, start the board back up.
+    #if CIRCUITPY_STATUS_LED
+    if (led_active) {
+        new_status_color(BLACK);
+        status_led_deinit();
+    }
+    #endif
+
+    #if CIRCUITPY_ALARM
+    if (fake_sleeping) {
+        board_init();
+    }
+    #endif
+
     return skip_repl;
 }
 
 FIL* boot_output_file;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
-    // If not in safe mode, run boot before initing USB and capture output in a
-    // file.
-    if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    // If not in safe mode, run boot before initing USB and capture output in a file.
 
-        new_status_color(BOOT_RUNNING);
+    // There is USB setup to do even if boot.py is not actually run.
+    const bool ok_to_run = filesystem_present()
+        && safe_mode == NO_SAFE_MODE
+        && MP_STATE_VM(vfs_mount_table) != NULL;
+
+    static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    bool skip_boot_output = false;
+
+    if (ok_to_run) {
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         FIL file_pointer;
@@ -506,8 +608,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
 
         bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
-
-        bool skip_boot_output = false;
 
         // If there's no boot.py file that might write some changing output,
         // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
@@ -548,12 +648,20 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
         filesystem_flush();
-        supervisor_allocation* heap = allocate_remaining_memory();
-        start_mp(heap);
+    }
 
-        // TODO(tannewt): Re-add support for flashing boot error output.
+    // Do USB setup even if boot.py is not run.
+
+    supervisor_allocation* heap = allocate_remaining_memory();
+    start_mp(heap);
+
+#if CIRCUITPY_USB
+    // Set up default USB values after boot.py VM starts but before running boot.py.
+    usb_set_defaults();
+#endif
+
+    if (ok_to_run) {
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;
 
@@ -564,9 +672,28 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         boot_output_file = NULL;
         #endif
-
-        cleanup_after_vm(heap);
     }
+
+
+#if CIRCUITPY_USB
+
+    // Some data needs to be carried over from the USB settings in boot.py
+    // to the next VM, while the heap is still available.
+    // Its size can vary, so save it temporarily on the stack,
+    // and then when the heap goes away, copy it in into a
+    // storage_allocation.
+
+    size_t size = usb_boot_py_data_size();
+    uint8_t usb_boot_py_data[size];
+    usb_get_boot_py_data(usb_boot_py_data, size);
+#endif
+
+    cleanup_after_vm(heap);
+
+#if CIRCUITPY_USB
+    // Now give back the data we saved from the heap going away.
+    usb_return_boot_py_data(usb_boot_py_data, size);
+#endif
 }
 
 STATIC int run_repl(void) {
@@ -575,14 +702,33 @@ STATIC int run_repl(void) {
     filesystem_flush();
     supervisor_allocation* heap = allocate_remaining_memory();
     start_mp(heap);
+
+    #if CIRCUITPY_USB
+    usb_setup_with_vm();
+    #endif
+
     autoreload_suspend();
+
+    // Set the status LED to the REPL color before running the REPL. For
+    // NeoPixels and DotStars this will be sticky but for PWM or single LED it
+    // won't. This simplifies pin sharing because they won't be in use when
+    // actually in the REPL.
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
     new_status_color(REPL_RUNNING);
+    status_led_deinit();
+    #endif
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
         exit_code = pyexec_raw_repl();
     } else {
         exit_code = pyexec_friendly_repl();
     }
     cleanup_after_vm(heap);
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
+    new_status_color(BLACK);
+    status_led_deinit();
+    #endif
     autoreload_resume();
     return exit_code;
 }
@@ -591,9 +737,8 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
-    // Turn on LEDs
-    init_status_leds();
-    rgb_led_status_init();
+    // Turn on RX and TX LEDs if we have them.
+    init_rxtx_leds();
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {
@@ -634,7 +779,14 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start serial and HID after giving boot.py a chance to tweak behavior.
+    // Start USB after giving boot.py a chance to tweak behavior.
+    #if CIRCUITPY_USB
+    // Setup USB connection after heap is available.
+    // It needs the heap to build descriptors.
+    usb_init();
+    #endif
+
+    // Set up any other serial connection.
     serial_init();
 
     #if CIRCUITPY_BLEIO
@@ -648,6 +800,7 @@ int __attribute__((used)) main(void) {
     for (;;) {
         if (!skip_repl) {
             exit_code = run_repl();
+            supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
@@ -685,6 +838,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_BLEIO
     common_hal_bleio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_USB_HID
+    usb_hid_gc_collect();
     #endif
 
     #if CIRCUITPY_WIFI

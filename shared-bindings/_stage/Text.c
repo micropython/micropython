@@ -49,7 +49,7 @@
 //|         ...
 //|
 STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
-        const mp_obj_t *args, mp_map_t *kw_args) {
+    const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 5, 5, false);
 
     text_obj_t *self = m_new_obj(text_obj_t);
@@ -104,5 +104,5 @@ const mp_obj_type_t mp_type_text = {
     { &mp_type_type },
     .name = MP_QSTR_Text,
     .make_new = text_make_new,
-    .locals_dict = (mp_obj_dict_t*)&text_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&text_locals_dict,
 };

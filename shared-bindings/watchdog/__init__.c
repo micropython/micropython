@@ -64,7 +64,7 @@ mp_obj_exception_t mp_watchdog_timeout_exception = {
     .traceback_alloc = 0,
     .traceback_len = 0,
     .traceback_data = NULL,
-    .args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj,
+    .args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj,
 };
 
 STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {
@@ -77,5 +77,5 @@ STATIC MP_DEFINE_CONST_DICT(watchdog_module_globals, watchdog_module_globals_tab
 
 const mp_obj_module_t watchdog_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&watchdog_module_globals,
+    .globals = (mp_obj_dict_t *)&watchdog_module_globals,
 };

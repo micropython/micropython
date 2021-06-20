@@ -30,7 +30,9 @@
 #ifdef MICROPY_UNSAFE_PROTO
 #define MP_PROTOCOL_HEAD /* NOTHING */
 #define MP_PROTO_IMPLEMENT(name) /* NOTHING */
-static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) { return mp_obj_get_type(obj)->protocol; }
+static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) {
+    return mp_obj_get_type(obj)->protocol;
+}
 #else
 #define MP_PROTOCOL_HEAD \
     uint16_t name; // The name of this protocol, a qstr

@@ -148,7 +148,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     mp_get_buffer_raise(args[ARG_stop_sequence].u_obj, &stop_bufinfo, MP_BUFFER_READ);
 
 
-    const mcu_pin_obj_t* busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj);
+    const mcu_pin_obj_t *busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj);
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
@@ -156,7 +156,8 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     }
 
     primary_display_t *disp = allocate_display_or_raise();
-    displayio_epaperdisplay_obj_t *self = &disp->epaper_display;;
+    displayio_epaperdisplay_obj_t *self = &disp->epaper_display;
+    ;
 
     mp_float_t refresh_time = mp_obj_get_float(args[ARG_refresh_time].u_obj);
     mp_float_t seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);
@@ -186,8 +187,8 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_epaperdisplay_obj_t* native_display(mp_obj_t display_obj) {
-    mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &displayio_epaperdisplay_type);
+static displayio_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
+    mp_obj_t native_display = mp_obj_cast_to_native_base(display_obj, &displayio_epaperdisplay_type);
     mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
@@ -201,7 +202,7 @@ static displayio_epaperdisplay_obj_t* native_display(mp_obj_t display_obj) {
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
-    displayio_group_t* group = NULL;
+    displayio_group_t *group = NULL;
     if (group_in != mp_const_none) {
         group = MP_OBJ_TO_PTR(native_group(group_in));
     }
@@ -241,8 +242,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_time_to_refresh_obj, displ
 const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_time_to_refresh_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     busy: bool
@@ -258,8 +259,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaper
 const mp_obj_property_t displayio_epaperdisplay_busy_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_busy_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     width: int
@@ -274,8 +275,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_width_obj, displayio_epape
 const mp_obj_property_t displayio_epaperdisplay_width_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_width_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     height: int
@@ -290,8 +291,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_height_obj, displayio_epap
 const mp_obj_property_t displayio_epaperdisplay_height_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_height_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     rotation: int
@@ -314,7 +315,7 @@ const mp_obj_property_t displayio_epaperdisplay_rotation_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
               (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     bus: _DisplayBus
@@ -329,8 +330,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperd
 const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_bus_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 
@@ -351,5 +352,5 @@ const mp_obj_type_t displayio_epaperdisplay_type = {
     { &mp_type_type },
     .name = MP_QSTR_EPaperDisplay,
     .make_new = displayio_epaperdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t*)&displayio_epaperdisplay_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_epaperdisplay_locals_dict,
 };

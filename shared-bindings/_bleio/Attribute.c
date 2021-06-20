@@ -78,5 +78,5 @@ STATIC MP_DEFINE_CONST_DICT(bleio_attribute_locals_dict, bleio_attribute_locals_
 const mp_obj_type_t bleio_attribute_type = {
     { &mp_type_type },
     .name = MP_QSTR_Attribute,
-    .locals_dict = (mp_obj_dict_t*)&bleio_attribute_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bleio_attribute_locals_dict,
 };

@@ -30,7 +30,8 @@
 #include "py/reload.h"
 #include "supervisor/shared/tick.h"
 
-supervisor_allocation* next_code_allocation;
+supervisor_allocation *next_code_allocation;
+#include "shared-bindings/supervisor/Runtime.h"
 
 static volatile uint32_t autoreload_delay_ms = 0;
 static bool autoreload_enabled = false;
@@ -46,6 +47,7 @@ inline void autoreload_tick() {
         !autoreload_suspended && !reload_requested) {
         mp_raise_reload_exception();
         reload_requested = true;
+        supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
         supervisor_disable_tick();
     }
     autoreload_delay_ms--;
@@ -93,4 +95,5 @@ void autoreload_now() {
     }
     mp_raise_reload_exception();
     reload_requested = true;
+    supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
 }

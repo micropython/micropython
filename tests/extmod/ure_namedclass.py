@@ -9,8 +9,9 @@ except ImportError:
         print("SKIP")
         raise SystemExit
 
+
 def print_groups(match):
-    print('----')
+    print("----")
     try:
         i = 0
         while True:
@@ -19,14 +20,15 @@ def print_groups(match):
     except IndexError:
         pass
 
-m = re.match(r'\w+','1234hello567 abc')
+
+m = re.match(r"\w+", "1234hello567 abc")
 print_groups(m)
 
-m = re.match(r'(\w+)\s+(\w+)','ABC \t1234hello567 abc')
+m = re.match(r"(\w+)\s+(\w+)", "ABC \t1234hello567 abc")
 print_groups(m)
 
-m = re.match(r'(\S+)\s+(\D+)','ABC \thello abc567 abc')
+m = re.match(r"(\S+)\s+(\D+)", "ABC \thello abc567 abc")
 print_groups(m)
 
-m = re.match(r'(([0-9]*)([a-z]*)\d*)','1234hello567')
+m = re.match(r"(([0-9]*)([a-z]*)\d*)", "1234hello567")
 print_groups(m)

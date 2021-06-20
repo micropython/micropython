@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    busio_spi_obj_t* bus;
+    busio_spi_obj_t *bus;
     busio_spi_obj_t inline_bus;
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;

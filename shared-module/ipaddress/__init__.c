@@ -28,8 +28,8 @@
 #include "shared-bindings/ipaddress/IPv4Address.h"
 
 mp_obj_t common_hal_ipaddress_new_ipv4address(uint32_t value) {
-    ipaddress_ipv4address_obj_t* self = m_new_obj(ipaddress_ipv4address_obj_t);
+    ipaddress_ipv4address_obj_t *self = m_new_obj(ipaddress_ipv4address_obj_t);
     self->base.type = &ipaddress_ipv4address_type;
-    common_hal_ipaddress_ipv4address_construct(self, (uint8_t*) &value, 4);
+    common_hal_ipaddress_ipv4address_construct(self, (uint8_t *)&value, 4);
     return MP_OBJ_FROM_PTR(self);
 }

@@ -42,14 +42,16 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
     self->pin = pin;
 }
 
-mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
-    // First, check to see if we match any given alarms.
+mp_obj_t alarm_touch_touchalarm_find_triggered_alarm(const size_t n_alarms, const mp_obj_t *alarms) {
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
             return alarms[i];
         }
     }
+    return mp_const_none;
+}
 
+mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
     // Create TouchAlarm object.
     alarm_touch_touchalarm_obj_t *alarm = m_new_obj(alarm_touch_touchalarm_obj_t);
     alarm->base.type = &alarm_touch_touchalarm_type;
@@ -62,7 +64,7 @@ mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp
 
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
-        const mcu_pin_obj_t* pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
+        const mcu_pin_obj_t *pin_obj = MP_OBJ_TO_PTR(mcu_pin_globals.map.table[i].value);
         if (pin_obj->touch_channel == wake_channel) {
             alarm->pin = mcu_pin_globals.map.table[i].value;
             break;
@@ -74,7 +76,7 @@ mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp
 
 // This is used to wake the main CircuitPython task.
 void touch_interrupt(void *arg) {
-    (void) arg;
+    (void)arg;
     woke_up = true;
     BaseType_t task_wakeup;
     vTaskNotifyGiveFromISR(circuitpython_task, &task_wakeup);
@@ -88,7 +90,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     alarm_touch_touchalarm_obj_t *touch_alarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
+        if (mp_obj_is_type(alarms[i], &alarm_touch_touchalarm_type)) {
             if (deep_sleep && touch_alarm_set) {
                 mp_raise_ValueError(translate("Only one TouchAlarm can be set in deep sleep."));
             }
@@ -121,7 +123,7 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             // configure trigger threshold
             uint32_t touch_value;
             touch_pad_read_benchmark(touch_channel, &touch_value);
-            touch_pad_set_thresh(touch_channel, touch_value * 0.1); //10%
+            touch_pad_set_thresh(touch_channel, touch_value * 0.1); // 10%
         }
     }
 
@@ -161,14 +163,14 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     // configure trigger threshold
     uint32_t touch_value;
     touch_pad_sleep_channel_read_smooth(touch_channel, &touch_value);
-    touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); //10%
+    touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); // 10%
 
     // enable touchpad wakeup
     esp_sleep_enable_touchpad_wakeup();
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
 }
 
-bool alarm_touch_touchalarm_woke_us_up(void) {
+bool alarm_touch_touchalarm_woke_this_cycle(void) {
     return woke_up;
 }
 

@@ -1,0 +1,34 @@
+# For string compression
+huffman
+
+# For nvm.toml
+cascadetoml
+jinja2
+typer
+
+requests
+sh
+click
+setuptools
+cpp-coveralls
+
+# For docs
+Sphinx<4
+sphinx-rtd-theme
+myst-parser
+sphinx-autoapi
+sphinxcontrib-svg2pdfconverter
+readthedocs-sphinx-search
+
+# For translate check
+polib
+
+# For pre-commit
+pyyaml
+astroid
+isort
+black
+mypy
+
+# For uploading artifacts
+awscli

@@ -37,14 +37,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra gcc-aarch64-linux-gnu
+        pip install -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version
         python3 --version
-    - name: Translations
-      run: make check-translate
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
@@ -73,27 +71,25 @@ jobs:
       run: make -C mpy-cross -j2
     - name: Build unix port
       run: |
-        make -C ports/unix deplibs -j2
-        make -C ports/unix -j2
-        make -C ports/unix coverage -j2
+        make -C ports/unix VARIANT=coverage -j2
     - name: Test all
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1
       working-directory: tests
-    - name: Print failure info
-      run: |
-        for exp in *.exp;
-        do testbase=$(basename $exp .exp);
-        echo -e "\nFAILURE $testbase";
-        diff -u $testbase.exp $testbase.out;
-        done
-      working-directory: tests
-      if: failure()
     - name: Native Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy -d basics float micropython
       working-directory: tests
+    - name: Native mpy Tests
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
+      working-directory: tests
+    - name: Build mpy-cross.static-aarch64
+      run: make -C mpy-cross -j2 -f Makefile.static-aarch64
+    - uses: actions/upload-artifact@v2
+      with:
+        name: mpy-cross.static-aarch64
+        path: mpy-cross/mpy-cross.static-aarch64
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
@@ -114,6 +110,7 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
     - name: Upload stubs and mpy-cross builds to S3
       run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-aarch64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-aarch64-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
@@ -133,15 +130,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install dependencies
-      run: |
-        brew install gettext
-        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
-    - name: Versions
-      run: |
-        gcc --version
-        python3 --version
-        msgfmt --version
     - uses: actions/checkout@v2.2.0
       with:
         submodules: true
@@ -151,14 +139,39 @@ jobs:
       run: |
         git describe --dirty --tags
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Install dependencies
+      run: |
+        brew install gettext
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
       with:
         name: mpy-cross-macos-catalina
         path: mpy-cross/mpy-cross
+    - name: Select SDK for M1 build
+      run: sudo xcode-select -switch /Applications/Xcode_12.3.app
+    - name: Build mpy-cross (arm64)
+      run: make -C mpy-cross -j2 -f Makefile.m1 V=2
+    - uses: actions/upload-artifact@v2
+      with:
+        name: mpy-cross-macos-bigsur-arm64
+        path: mpy-cross/mpy-cross-arm64
+    - name: Make universal binary
+      run: lipo -create -output mpy-cross-macos-universal mpy-cross/mpy-cross mpy-cross/mpy-cross-arm64
+    - uses: actions/upload-artifact@v2
+      with:
+        name: mpy-cross-macos-universal
+        path: mpy-cross-macos-universal
     - name: Upload mpy-cross build to S3
       run: |
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-universal-${{ env.CP_VERSION }} --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-bigsur-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
@@ -178,17 +191,28 @@ jobs:
         - "ADM_B_NRF52840_1"
         - "TG-Watch"
         - "adafruit_feather_rp2040"
+        - "adafruit_itsybitsy_rp2040"
+        - "adafruit_macropad_rp2040"
+        - "adafruit_neokey_trinkey_m0"
+        - "adafruit_proxlight_trinkey_m0"
+        - "adafruit_qt2040_trinkey"
+        - "adafruit_qtpy_rp2040"
+        - "adafruit_rotary_trinkey_m0"
+        - "adafruit_slide_trinkey_m0"
         - "aloriumtech_evo_m51"
+        - "aramcon2_badge"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
         - "arduino_nano_33_iot"
+        - "arduino_nano_rp2040_connect"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
+        - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -202,12 +226,15 @@ jobs:
         - "clue_nrf52840_express"
         - "cp32-m4"
         - "cp_sapling_m0"
+        - "cp_sapling_m0_revb"
         - "cp_sapling_m0_spiflash"
+        - "cytron_maker_pi_rp2040"
         - "datalore_ip_m4"
         - "datum_distance"
         - "datum_imu"
         - "datum_light"
         - "datum_weather"
+        - "dynalora_usb"
         - "dynossat_edu_eps"
         - "dynossat_edu_obc"
         - "electronut_labs_blip"
@@ -229,7 +256,6 @@ jobs:
         - "feather_mimxrt1011"
         - "feather_mimxrt1062"
         - "feather_nrf52840_express"
-        - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
         - "fluff_m0"
         - "gemma_m0"
@@ -237,6 +263,7 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
+        - "huntercat_nfc"
         - "ikigaisense_vita"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
@@ -280,16 +307,19 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "picoplanet"
-        - "pirkey_m0"
+        - "pimoroni_keybow2040"
+        - "pimoroni_pga2040"
+        - "pimoroni_picolipo_16mb"
+        - "pimoroni_picolipo_4mb"
+        - "pimoroni_picosystem"
+        - "pimoroni_tiny2040"
         - "pitaya_go"
         - "pyb_nano_v2"
         - "pybadge"
-        - "pybadge_airlift"
         - "pyboard_v11"
         - "pycubed"
         - "pycubed_mram"
         - "pygamer"
-        - "pygamer_advance"
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
@@ -302,18 +332,25 @@ jobs:
         - "same54_xplained"
         - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
+        - "sensebox_mcu"
         - "serpente"
         - "shirtty"
+        - "silicognition-m4-shim"
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
+        - "sparkfun_micromod_rp2040"
+        - "sparkfun_nrf52840_micromod"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_pro_micro_rp2040"
         - "sparkfun_qwiic_micro_no_flash"
         - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "sparkfun_samd51_micromod"
         - "sparkfun_samd51_thing_plus"
+        - "sparkfun_thing_plus_rp2040"
         - "spresense"
         - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
@@ -345,10 +382,15 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
@@ -356,13 +398,10 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -394,6 +433,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -405,13 +449,10 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v2.2.0
-      with:
-        submodules: true
-        fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: python3 -u build_release_files.py
       working-directory: tools
@@ -437,18 +478,27 @@ jobs:
         board:
         - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_feather_esp32s2_tftback_nopsram"
+        - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "artisense_rd00"
+        - "atmegazero_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
+        - "espressif_kaluga_1.3"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "franzininho_wifi_wroom"
+        - "franzininho_wifi_wrover"
+        - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
-        - "muselab_nanoesp32_s2"
+        - "muselab_nanoesp32_s2_wroom"
+        - "muselab_nanoesp32_s2_wrover"
         - "targett_module_clip_wroom"
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
+        - "unexpectedmaker_tinys2"
 
     steps:
     - name: Set up Python 3.8
@@ -462,12 +512,12 @@ jobs:
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
-    - uses: actions/cache@v1
+    - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210122
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210506
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
@@ -485,7 +535,7 @@ jobs:
     - name: Install CircuitPython deps
       run: |
         source $IDF_PATH/export.sh
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
       env:
         IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
@@ -504,6 +554,8 @@ jobs:
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
     - name: build
       run: |
         source $IDF_PATH/export.sh

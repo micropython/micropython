@@ -33,7 +33,7 @@
 #include "shared-bindings/audiocore/__init__.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
-//#include "shared-bindings/audiomixer/Mixer.h"
+// #include "shared-bindings/audiomixer/Mixer.h"
 
 //| """Support for audio samples"""
 //|
@@ -48,5 +48,5 @@ STATIC MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_t
 
 const mp_obj_module_t audiocore_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&audiocore_module_globals,
+    .globals = (mp_obj_dict_t *)&audiocore_module_globals,
 };

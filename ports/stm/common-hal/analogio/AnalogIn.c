@@ -36,8 +36,8 @@
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_bus.h"
 
-void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
+    const mcu_pin_obj_t *pin) {
 
     // No ADC function on pin
     if (pin->adc_unit == 0x00) {
@@ -76,9 +76,9 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
-    ADC_TypeDef * ADCx;
+    ADC_TypeDef *ADCx;
 
-    if(self->pin->adc_unit & 0x01) {
+    if (self->pin->adc_unit & 0x01) {
         ADCx = ADC1;
     } else if (self->pin->adc_unit == 0x04) {
         #ifdef ADC3
@@ -89,9 +89,9 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     }
 
     LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);
-    //LL_GPIO_PIN_0
+    // LL_GPIO_PIN_0
 
-    //HAL Implementation
+    // HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
 
@@ -110,9 +110,9 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
     HAL_ADC_Init(&AdcHandle);
 
-    sConfig.Channel = (uint32_t)self->pin->adc_channel; //ADC_CHANNEL_0 <-normal iteration, not mask
+    sConfig.Channel = (uint32_t)self->pin->adc_channel; // ADC_CHANNEL_0 <-normal iteration, not mask
     sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES; //Taken from micropython
+    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES; // Taken from micropython
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);

@@ -105,13 +105,13 @@ bool supervisor_background_tasks_ok(void) {
 }
 
 void supervisor_tick(void) {
-#if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
+    #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
-#endif
-#ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    #endif
+    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     autoreload_tick();
-#endif
-#ifdef CIRCUITPY_GAMEPAD_TICKS
+    #endif
+    #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
         gamepad_tick();
@@ -120,7 +120,7 @@ void supervisor_tick(void) {
         gamepadshift_tick();
         #endif
     }
-#endif
+    #endif
     background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 

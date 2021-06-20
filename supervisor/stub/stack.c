@@ -40,7 +40,7 @@ void stack_resize(void) {
 }
 
 void set_next_stack_size(uint32_t size) {
-    (void) size;
+    (void)size;
 }
 
 uint32_t get_current_stack_size(void) {

@@ -57,15 +57,16 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     const mp_obj_t address = args[ARG_address].u_obj;
 
     uint32_t value;
-    uint8_t* buf = NULL;
-    if (mp_obj_get_int_maybe(address, (mp_int_t*) &value)) {
+    uint8_t *buf = NULL;
+    if (mp_obj_get_int_maybe(address, (mp_int_t *)&value)) {
         // We're done.
-        buf = (uint8_t*) value;
-    } else if (MP_OBJ_IS_STR(address)) {
+        buf = (uint8_t *)&value;
+    } else if (mp_obj_is_str(address)) {
         GET_STR_DATA_LEN(address, str_data, str_len);
-        if (!ipaddress_parse_ipv4address((const char*) str_data, str_len, &value)) {
+        if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
             mp_raise_ValueError(translate("Not a valid IP string"));
         }
+        buf = (uint8_t *)&value;
     } else {
         mp_buffer_info_t buf_info;
         if (mp_get_buffer(address, &buf_info, MP_BUFFER_READ)) {
@@ -98,8 +99,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_packed_obj, ipaddress_ipv4ad
 const mp_obj_property_t ipaddress_ipv4address_packed_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_packed_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     version: int
@@ -122,8 +123,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_version_obj, ipaddress_ipv4a
 const mp_obj_property_t ipaddress_ipv4address_version_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_version_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __eq__(self, other: object) -> bool:
@@ -134,12 +135,12 @@ STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_
     switch (op) {
         // Two Addresses are equal if their address bytes and address_type are equal
         case MP_BINARY_OP_EQUAL:
-            if (MP_OBJ_IS_TYPE(rhs_in, &ipaddress_ipv4address_type)) {
+            if (mp_obj_is_type(rhs_in, &ipaddress_ipv4address_type)) {
                 ipaddress_ipv4address_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
                 ipaddress_ipv4address_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 return mp_obj_new_bool(
                     mp_obj_equal(common_hal_ipaddress_ipv4address_get_packed(lhs),
-                                 common_hal_ipaddress_ipv4address_get_packed(rhs)));
+                        common_hal_ipaddress_ipv4address_get_packed(rhs)));
 
             } else {
                 return mp_const_false;
@@ -177,7 +178,7 @@ STATIC void ipaddress_ipv4address_print(const mp_print_t *print, mp_obj_t self_i
     mp_obj_t address_bytes = common_hal_ipaddress_ipv4address_get_packed(self);
     mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
 
-    const uint8_t *buf = (uint8_t *) buf_info.buf;
+    const uint8_t *buf = (uint8_t *)buf_info.buf;
     mp_printf(print, "%d.%d.%d.%d", buf[0], buf[1], buf[2], buf[3]);
 }
 
@@ -194,5 +195,5 @@ const mp_obj_type_t ipaddress_ipv4address_type = {
     .print = ipaddress_ipv4address_print,
     .unary_op = ipaddress_ipv4address_unary_op,
     .binary_op = ipaddress_ipv4address_binary_op,
-    .locals_dict = (mp_obj_dict_t*)&ipaddress_ipv4address_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&ipaddress_ipv4address_locals_dict
 };

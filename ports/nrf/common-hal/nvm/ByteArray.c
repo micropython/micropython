@@ -51,9 +51,9 @@ static bool write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
 }
 
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
+    uint32_t start_index, uint8_t *values, uint32_t len) {
 
-    uint32_t address = (uint32_t) self->start_address + start_index;
+    uint32_t address = (uint32_t)self->start_address + start_index;
     uint32_t offset = address % FLASH_PAGE_SIZE;
     uint32_t page_addr = address - offset;
 
@@ -71,6 +71,6 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 }
 
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values) {
+    uint32_t start_index, uint32_t len, uint8_t *values) {
     memcpy(values, self->start_address + start_index, len);
 }

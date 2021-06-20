@@ -33,12 +33,12 @@
 #include "components/soc/include/hal/gpio_hal.h"
 
 void common_hal_digitalio_digitalinout_never_reset(
-        digitalio_digitalinout_obj_t *self) {
+    digitalio_digitalinout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
-        digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
+    digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
     claim_pin(pin);
     self->pin = pin;
 
@@ -69,20 +69,20 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
-        digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
+    digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     common_hal_digitalio_digitalinout_set_pull(self, pull);
     gpio_set_direction(self->pin->number, GPIO_MODE_DEF_INPUT);
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
-        digitalio_digitalinout_obj_t *self, bool value,
-        digitalio_drive_mode_t drive_mode) {
+    digitalio_digitalinout_obj_t *self, bool value,
+    digitalio_drive_mode_t drive_mode) {
     common_hal_digitalio_digitalinout_set_value(self, value);
     return common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
-        digitalio_digitalinout_obj_t *self) {
+    digitalio_digitalinout_obj_t *self) {
     uint32_t iomux = READ_PERI_REG(GPIO_PIN_MUX_REG[self->pin->number]);
     if ((iomux & FUN_IE) != 0) {
         return DIRECTION_INPUT;
@@ -91,13 +91,13 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 }
 
 void common_hal_digitalio_digitalinout_set_value(
-        digitalio_digitalinout_obj_t *self, bool value) {
+    digitalio_digitalinout_obj_t *self, bool value) {
     self->output_value = value;
     gpio_set_level(self->pin->number, value);
 }
 
 bool common_hal_digitalio_digitalinout_get_value(
-        digitalio_digitalinout_obj_t *self) {
+    digitalio_digitalinout_obj_t *self) {
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
         return gpio_get_level(self->pin->number) == 1;
     }
@@ -105,8 +105,8 @@ bool common_hal_digitalio_digitalinout_get_value(
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
-        digitalio_digitalinout_obj_t *self,
-        digitalio_drive_mode_t drive_mode) {
+    digitalio_digitalinout_obj_t *self,
+    digitalio_drive_mode_t drive_mode) {
     gpio_num_t number = self->pin->number;
     gpio_mode_t mode;
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
@@ -122,7 +122,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
-        digitalio_digitalinout_obj_t *self) {
+    digitalio_digitalinout_obj_t *self) {
     if (GPIO_HAL_GET_HW(GPIO_PORT_0)->pin[self->pin->number].pad_driver == 1) {
         return DRIVE_MODE_OPEN_DRAIN;
     }
@@ -130,7 +130,7 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
 }
 
 void common_hal_digitalio_digitalinout_set_pull(
-        digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
+    digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     gpio_num_t number = self->pin->number;
     gpio_pullup_dis(number);
     gpio_pulldown_dis(number);
@@ -142,7 +142,7 @@ void common_hal_digitalio_digitalinout_set_pull(
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
-        digitalio_digitalinout_obj_t *self) {
+    digitalio_digitalinout_obj_t *self) {
     gpio_num_t gpio_num = self->pin->number;
     if (REG_GET_BIT(GPIO_PIN_MUX_REG[gpio_num], FUN_PU) == 1) {
         return PULL_UP;

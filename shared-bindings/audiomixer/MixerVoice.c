@@ -117,7 +117,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-	float level = mp_obj_get_float(args[ARG_level].u_obj);
+    float level = mp_obj_get_float(args[ARG_level].u_obj);
 
     if (level > 1 || level < 0) {
         mp_raise_ValueError(translate("level must be between 0 and 1"));
@@ -133,7 +133,7 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_level_obj,
               (mp_obj_t)&audiomixer_mixervoice_set_level_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     playing: bool
@@ -151,8 +151,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_playing_obj, audiomixer_mixe
 const mp_obj_property_t audiomixer_mixervoice_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
@@ -170,5 +170,5 @@ const mp_obj_type_t audiomixer_mixervoice_type = {
     { &mp_type_type },
     .name = MP_QSTR_MixerVoice,
     .make_new = audiomixer_mixervoice_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiomixer_mixervoice_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixervoice_locals_dict,
 };

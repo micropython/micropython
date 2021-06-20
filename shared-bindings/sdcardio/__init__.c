@@ -43,5 +43,5 @@ STATIC MP_DEFINE_CONST_DICT(sdcardio_module_globals, sdcardio_module_globals_tab
 
 const mp_obj_module_t sdcardio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&sdcardio_module_globals,
+    .globals = (mp_obj_dict_t *)&sdcardio_module_globals,
 };

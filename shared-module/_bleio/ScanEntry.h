@@ -42,6 +42,6 @@ typedef struct {
     uint64_t time_received;
 } bleio_scanentry_obj_t;
 
-bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t* prefixes, size_t prefix_length, bool any);
+bool bleio_scanentry_data_matches(const uint8_t *data, size_t len, const uint8_t *prefixes, size_t prefix_length, bool any);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H

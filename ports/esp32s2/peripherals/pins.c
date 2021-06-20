@@ -33,13 +33,13 @@
 
 // This macro is used to simplify pin definition in boards/<board>/pins.c
 #define PIN(p_name, p_number, p_adc_index, p_adc_channel, p_touch_channel) \
-const mcu_pin_obj_t pin_## p_name = { \
-    PIN_PREFIX_VALUES \
-    .number = p_number, \
-    .adc_index = p_adc_index, \
-    .adc_channel = p_adc_channel, \
-    .touch_channel = p_touch_channel, \
-}
+    const mcu_pin_obj_t pin_##p_name = { \
+        PIN_PREFIX_VALUES \
+        .number = p_number, \
+        .adc_index = p_adc_index, \
+        .adc_channel = p_adc_channel, \
+        .touch_channel = p_touch_channel, \
+    }
 
 PIN(GPIO0, 0, NO_ADC, NO_ADC_CHANNEL, NO_TOUCH_CHANNEL);
 PIN(GPIO1, 1, ADC_UNIT_1, ADC_CHANNEL_0, TOUCH_PAD_NUM1);

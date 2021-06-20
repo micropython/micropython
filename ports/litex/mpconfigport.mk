@@ -6,8 +6,8 @@ MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
 # Internal math library is substantially smaller than toolchain one
 INTERNAL_LIBM = 1
 
-# Chip supplied serial number, in bytes
-USB_SERIAL_NUMBER_LENGTH = 30
+# Number of USB endpoint pairs.
+USB_NUM_ENDPOINT_PAIRS = 16
 
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
@@ -25,7 +25,9 @@ CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_I2CPERIPHERAL = 0
 CIRCUITPY_NVM = 0
+CIRCUITPY_PWMIO = 0
 CIRCUITPY_PULSEIO = 0
+CIRCUITPY_PWMIO = 0
 CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 CIRCUITPY_SDCARDIO = 0

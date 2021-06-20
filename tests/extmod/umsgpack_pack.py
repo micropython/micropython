@@ -20,11 +20,11 @@ print(b.getvalue())
 # pack to a small-int not allowed
 try:
     msgpack.pack(123, 1)
-except (AttributeError, OSError): # CPython and uPy have different errors
-    print('Exception')
+except (AttributeError, OSError):  # CPython and uPy have different errors
+    print("Exception")
 
 # pack to an object not allowed
 try:
     msgpack.pack(123, {})
-except (AttributeError, OSError): # CPython and uPy have different errors
-    print('Exception')
+except (AttributeError, OSError):  # CPython and uPy have different errors
+    print("Exception")

@@ -40,19 +40,19 @@
 // as needed. It does not provide uname.
 
 // Version of mp_vfs_lookup_path that takes and returns uPy string objects.
-STATIC mp_vfs_mount_t *lookup_path(const char* path, mp_obj_t *path_out) {
+STATIC mp_vfs_mount_t *lookup_path(const char *path, mp_obj_t *path_out) {
     const char *p_out;
     *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(&mp_type_str,
-            (const byte*)p_out, strlen(p_out));
+            (const byte *)p_out, strlen(p_out));
     }
     return vfs;
 }
 
 // Strip off trailing slashes to please underlying libraries
-STATIC mp_vfs_mount_t *lookup_dir_path(const char* path, mp_obj_t *path_out) {
+STATIC mp_vfs_mount_t *lookup_dir_path(const char *path, mp_obj_t *path_out) {
     const char *p_out;
     *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
@@ -61,7 +61,7 @@ STATIC mp_vfs_mount_t *lookup_dir_path(const char* path, mp_obj_t *path_out) {
         while (len > 1 && p_out[len - 1] == '/') {
             len--;
         }
-        *path_out = mp_obj_new_str_of_type(&mp_type_str, (const byte*)p_out, len);
+        *path_out = mp_obj_new_str_of_type(&mp_type_str, (const byte *)p_out, len);
     }
     return vfs;
 }
@@ -83,7 +83,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
     return mp_call_method_n_kw(n_args, 0, meth);
 }
 
-void common_hal_os_chdir(const char* path) {
+void common_hal_os_chdir(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_dir_path(path, &path_out);
     MP_STATE_VM(vfs_cur) = vfs;
@@ -107,7 +107,7 @@ mp_obj_t common_hal_os_getcwd(void) {
     return mp_vfs_getcwd();
 }
 
-mp_obj_t common_hal_os_listdir(const char* path) {
+mp_obj_t common_hal_os_listdir(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_dir_path(path, &path_out);
 
@@ -135,7 +135,7 @@ mp_obj_t common_hal_os_listdir(const char* path) {
     return dir_list;
 }
 
-void common_hal_os_mkdir(const char* path) {
+void common_hal_os_mkdir(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_dir_path(path, &path_out);
     if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
@@ -144,13 +144,13 @@ void common_hal_os_mkdir(const char* path) {
     mp_vfs_proxy_call(vfs, MP_QSTR_mkdir, 1, &path_out);
 }
 
-void common_hal_os_remove(const char* path) {
+void common_hal_os_remove(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path, &path_out);
     mp_vfs_proxy_call(vfs, MP_QSTR_remove, 1, &path_out);
 }
 
-void common_hal_os_rename(const char* old_path, const char* new_path) {
+void common_hal_os_rename(const char *old_path, const char *new_path) {
     mp_obj_t args[2];
     mp_vfs_mount_t *old_vfs = lookup_path(old_path, &args[0]);
     mp_vfs_mount_t *new_vfs = lookup_path(new_path, &args[1]);
@@ -161,13 +161,13 @@ void common_hal_os_rename(const char* old_path, const char* new_path) {
     mp_vfs_proxy_call(old_vfs, MP_QSTR_rename, 2, args);
 }
 
-void common_hal_os_rmdir(const char* path) {
+void common_hal_os_rmdir(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_dir_path(path, &path_out);
     mp_vfs_proxy_call(vfs, MP_QSTR_rmdir, 1, &path_out);
 }
 
-mp_obj_t common_hal_os_stat(const char* path) {
+mp_obj_t common_hal_os_stat(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path, &path_out);
     if (vfs == MP_VFS_ROOT) {
@@ -181,7 +181,7 @@ mp_obj_t common_hal_os_stat(const char* path) {
     return mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_out);
 }
 
-mp_obj_t common_hal_os_statvfs(const char* path) {
+mp_obj_t common_hal_os_statvfs(const char *path) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path, &path_out);
     if (vfs == MP_VFS_ROOT) {

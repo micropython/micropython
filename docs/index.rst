@@ -36,6 +36,7 @@ Full Table of Contents
    :caption: MicroPython specific
 
    library/index.rst
+   reference/glossary.rst
 
 .. toctree::
    :maxdepth: 1
@@ -46,6 +47,7 @@ Full Table of Contents
    ../BUILDING
    ../CODE_OF_CONDUCT
    ../license.rst
+   ../WEBUSB_README
 
 Indices and tables
 ==================

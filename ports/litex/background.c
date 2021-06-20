@@ -29,6 +29,9 @@
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
 
-void port_background_task(void) {}
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
+void port_background_task(void) {
+}
+void port_start_background_task(void) {
+}
+void port_finish_background_task(void) {
+}

@@ -1,0 +1,14 @@
+{
+  "problemMatcher": [
+    {
+      "severity": "error",
+      "pattern": [
+        {
+          "regexp": "^(Build .+ and \\x1b\\[31mfailed\\x1b\\[0m)$",
+          "message": 1
+        }
+      ],
+      "owner": "build-failed"
+    }
+  ]
+}

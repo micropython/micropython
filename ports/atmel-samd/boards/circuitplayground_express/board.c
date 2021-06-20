@@ -31,8 +31,7 @@
 #include "supervisor/shared/board.h"
 #include "hal/include/hal_gpio.h"
 
-void board_init(void)
-{
+void board_init(void) {
 }
 
 // Check the status of the two buttons on CircuitPlayground Express. If both are

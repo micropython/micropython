@@ -10,17 +10,21 @@ current_heap = {}
 allocation_history = []
 root = {}
 
+
 def change_root(trace, size):
     level = root
     for frame in reversed(trace):
         file_location = frame[1]
         if file_location not in level:
-            level[file_location] = {"blocks": 0,
-                                    "file": file_location,
-                                    "function": frame[2],
-                                    "subcalls": {}}
+            level[file_location] = {
+                "blocks": 0,
+                "file": file_location,
+                "function": frame[2],
+                "subcalls": {},
+            }
         level[file_location]["blocks"] += size
         level = level[file_location]["subcalls"]
+
 
 total_actions = 0
 non_single_block_streak = 0
@@ -41,7 +45,7 @@ with open(sys.argv[1], "r") as f:
         action = None
         if line.startswith("Breakpoint 2"):
             break
-        next(f) # throw away breakpoint code line
+        next(f)  # throw away breakpoint code line
         # print(next(f)) # first frame
         block = 0
         size = 0
@@ -55,7 +59,7 @@ with open(sys.argv[1], "r") as f:
                 else:
                     trace.append(("0x0", frame[-1], frame[1]))
             elif line[0] == "$":
-                #print(line.strip().split()[-1])
+                # print(line.strip().split()[-1])
                 block = int(line.strip().split()[-1][2:], 16)
                 next_line = next(f)
                 size = int(next_line.strip().split()[-1][2:], 16)
@@ -66,14 +70,19 @@ with open(sys.argv[1], "r") as f:
 
         action = "unknown"
         if block not in current_heap:
-            current_heap[block] = {"start_block": block, "size": size, "start_trace": trace, "start_time": total_actions}
+            current_heap[block] = {
+                "start_block": block,
+                "size": size,
+                "start_trace": trace,
+                "start_time": total_actions,
+            }
             action = "alloc"
             if size == 1:
                 max_nsbs = max(max_nsbs, non_single_block_streak)
                 non_single_block_streak = 0
             else:
                 non_single_block_streak += 1
-            #change_root(trace, size)
+            # change_root(trace, size)
             if size not in block_sizes:
                 block_sizes[size] = 0
             source = trace[-1][-1]
@@ -89,15 +98,27 @@ with open(sys.argv[1], "r") as f:
             change_root(alloc["start_trace"], -1 * alloc["size"])
             if size > 0:
                 action = "realloc"
-                current_heap[block] = {"start_block": block, "size": size, "start_trace": trace, "start_time": total_actions}
-                #change_root(trace, size)
+                current_heap[block] = {
+                    "start_block": block,
+                    "size": size,
+                    "start_trace": trace,
+                    "start_time": total_actions,
+                }
+                # change_root(trace, size)
             else:
                 action = "free"
                 if trace[0][2] == "gc_sweep":
                     action = "sweep"
                     non_single_block_streak = 0
-                if (trace[3][2] == "py_gc_collect" or (trace[3][2] == "gc_deinit" and count > 1)) and last_action != "sweep":
-                    print(ticks_ms - last_ticks_ms, total_actions - last_total_actions, "gc.collect", max_nsbs)
+                if (
+                    trace[3][2] == "py_gc_collect" or (trace[3][2] == "gc_deinit" and count > 1)
+                ) and last_action != "sweep":
+                    print(
+                        ticks_ms - last_ticks_ms,
+                        total_actions - last_total_actions,
+                        "gc.collect",
+                        max_nsbs,
+                    )
                     print(actions)
                     print(block_sizes)
                     print(allocation_sources)
@@ -117,7 +138,7 @@ with open(sys.argv[1], "r") as f:
             actions[action] = 0
         actions[action] += 1
         last_action = action
-        #print(total_actions, non_single_block_streak, action, block, size)
+        # print(total_actions, non_single_block_streak, action, block, size)
         total_actions += 1
 print(actions)
 print(max_nsbs)
@@ -128,12 +149,18 @@ for alloc in current_heap.values():
     alloc["end_time"] = total_actions
     allocation_history.append(alloc)
 
+
 def print_frame(frame, indent=0):
     for key in sorted(frame):
-        if not frame[key]["blocks"] or key.startswith("../py/malloc.c") or key.startswith("../py/gc.c"):
+        if (
+            not frame[key]["blocks"]
+            or key.startswith("../py/malloc.c")
+            or key.startswith("../py/gc.c")
+        ):
             continue
         print(" " * (indent - 1), key, frame[key]["function"], frame[key]["blocks"], "blocks")
         print_frame(frame[key]["subcalls"], indent + 2)
+
 
 # print_frame(root)
 # total_blocks = 0

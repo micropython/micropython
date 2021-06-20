@@ -26,4 +26,4 @@ print(random.getrandbits(16) == r)
 try:
     random.getrandbits(0)
 except ValueError:
-    print('ValueError')
+    print("ValueError")

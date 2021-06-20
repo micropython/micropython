@@ -95,7 +95,7 @@
 #endif
 
 //  <o>Osc Calibration Value <0-65535>
-// 	<i> Set the Oscillator Calibration Value
+//      <i> Set the Oscillator Calibration Value
 //  <i> Default: 1
 // <id> osc8m_arch_calib
 #ifndef CONF_OSC8M_CALIB
@@ -183,7 +183,7 @@
 #endif
 
 //  <o>Osc Calibration Value <0-65535>
-// 	<i> Set the Oscillator Calibration Value
+//      <i> Set the Oscillator Calibration Value
 //  <i> Default: 0
 // <id> osc32k_arch_calib
 #ifndef CONF_OSC32K_CALIB
@@ -396,7 +396,7 @@
 #endif
 
 //  <o>Osc Calibration Value <0-255>
-// 	<i> Set the Oscillator Calibration Value
+//      <i> Set the Oscillator Calibration Value
 //  <i> Default: 0
 // <id> osculp32k_arch_calib
 #ifndef CONF_OSCULP32K_CALIB
@@ -536,7 +536,7 @@
 #endif
 
 //  <o>DFLL Multiply Factor<0-65535>
-// 	<i> Set the DFLL Multiply Factor
+//      <i> Set the DFLL Multiply Factor
 //  <i> Default: 0
 //  <id> dfll48m_mul
 #ifndef CONF_DFLL_MUL
@@ -564,17 +564,17 @@
 
 #if CONF_DFLL_OVERWRITE_CALIBRATION == 0
 #define CONF_DEFAULT_CORASE                                                                                            \
-	((FUSES_DFLL48M_COARSE_CAL_Msk & (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR))) >> FUSES_DFLL48M_COARSE_CAL_Pos)
+    ((FUSES_DFLL48M_COARSE_CAL_Msk & (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR))) >> FUSES_DFLL48M_COARSE_CAL_Pos)
 
 #define CONF_DFLLVAL                                                                                                   \
-	SYSCTRL_DFLLVAL_COARSE(((CONF_DEFAULT_CORASE) == 0x3F) ? 0x1F : (CONF_DEFAULT_CORASE))                             \
-	| SYSCTRL_DFLLVAL_FINE(512)
+    SYSCTRL_DFLLVAL_COARSE(((CONF_DEFAULT_CORASE) == 0x3F) ? 0x1F : (CONF_DEFAULT_CORASE))                             \
+    | SYSCTRL_DFLLVAL_FINE(512)
 
 #else
 #define CONF_DFLLVAL SYSCTRL_DFLLVAL_COARSE(CONF_DFLL_COARSE) | SYSCTRL_DFLLVAL_FINE(CONF_DFLL_FINE)
 
 #endif
-//</e>
+// </e>
 
 // </h>
 // </e>

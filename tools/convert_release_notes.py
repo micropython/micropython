@@ -16,13 +16,14 @@ html = mistune.create_markdown()
 print()
 print("HTML")
 print("=====================================")
-print("From the <a href=\"\">GitHub release page</a>:\n<blockquote>")
+print('From the <a href="">GitHub release page</a>:\n<blockquote>')
 print(html(source))
 print("</blockquote>")
 
+
 class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
     def placeholder(self):
-        return ''
+        return ""
 
     def paragraph(self, text):
         return text + "\n\n"
@@ -62,6 +63,7 @@ class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
 
     def strong(self, text):
         return "[i]{}[/i]".format(text)
+
 
 bbcode = mistune.create_markdown(renderer=AdafruitBBCodeRenderer())
 

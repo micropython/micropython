@@ -34,7 +34,7 @@
 #include "py/mpconfig.h"
 #include "supervisor/shared/tick.h"
 
-#define mp_hal_ticks_ms()       ((mp_uint_t) supervisor_ticks_ms32())
+#define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
 
 bool mp_hal_stdin_any(void);
 

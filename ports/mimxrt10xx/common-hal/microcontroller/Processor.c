@@ -65,7 +65,7 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     for (int i = 0; i < 4; ++i) {
         uint32_t wr = OCOTP_ReadFuseShadowRegister(OCOTP, i + 1);
         for (int j = 0; j < 4; j++) {
-            raw_id[i*4+j] = wr & 0xff;
+            raw_id[i * 4 + j] = wr & 0xff;
             wr >>= 8;
         }
     }

@@ -26,6 +26,6 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_QSPI_FLASH_H
 #define MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_QSPI_FLASH_H
 
-void check_quad_enable(const external_flash_device* device);
+void check_quad_enable(const external_flash_device *device);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_QSPI_FLASH_H

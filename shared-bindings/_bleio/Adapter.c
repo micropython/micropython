@@ -82,7 +82,7 @@
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if CIRCUITPY_BLEIO_HCI
+    #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = common_hal_bleio_allocate_adapter_or_raise();
 
     enum { ARG_uart, ARG_rts, ARG_cts };
@@ -96,14 +96,14 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_uart_obj_t *uart = args[ARG_uart].u_obj;
-    if (!MP_OBJ_IS_TYPE(uart, &busio_uart_type)) {
+    if (!mp_obj_is_type(uart, &busio_uart_type)) {
         mp_raise_ValueError(translate("Expected a UART"));
     }
 
     digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
     digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
-    if (!MP_OBJ_IS_TYPE(rts, &digitalio_digitalinout_type) ||
-        !MP_OBJ_IS_TYPE(cts, &digitalio_digitalinout_type)) {
+    if (!mp_obj_is_type(rts, &digitalio_digitalinout_type) ||
+        !mp_obj_is_type(cts, &digitalio_digitalinout_type)) {
         mp_raise_ValueError(translate("Expected a DigitalInOut"));
     }
 
@@ -111,10 +111,10 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
 
     return MP_OBJ_FROM_PTR(self);
-#else
+    #else
     mp_raise_NotImplementedError(translate("Cannot create a new Adapter; use _bleio.adapter;"));
     return mp_const_none;
-#endif // CIRCUITPY_BLEIO_HCI
+    #endif // CIRCUITPY_BLEIO_HCI
 }
 
 //|
@@ -139,7 +139,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_enabled_obj,
                (mp_obj_t)&bleio_adapter_set_enabled_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     address: Address
@@ -163,7 +163,7 @@ const mp_obj_property_t bleio_adapter_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_address_obj,
                (mp_obj_t)&bleio_adapter_set_address_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
 //|     name: str
@@ -187,10 +187,10 @@ const mp_obj_property_t bleio_adapter_name_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_name_obj,
                (mp_obj_t)&bleio_adapter_set_name_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
 };
 
-//|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> None:
+//|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1, tx_power: int = 0) -> None:
 //|         """Starts advertising until `stop_advertising` is called or if connectable, another device
 //|         connects to us.
 //|
@@ -205,13 +205,14 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
 //|         :param int timeout:  If set, we will only advertise for this many seconds. Zero means no timeout.
-//|         :param float interval:  advertising interval, in seconds"""
+//|         :param float interval:  advertising interval, in seconds
+//|         :param tx_power int: transmitter power while advertising in dBm"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_timeout, ARG_interval };
+    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_timeout, ARG_interval, ARG_tx_power };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scan_response, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -219,6 +220,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         { MP_QSTR_anonymous, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tx_power, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -240,7 +242,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"),
-                                 ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
+            ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
     bool connectable = args[ARG_connectable].u_bool;
@@ -251,7 +253,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
-                                               &data_bufinfo, &scan_response_bufinfo);
+        &data_bufinfo, &scan_response_bufinfo, args[ARG_tx_power].u_int);
 
     return mp_const_none;
 }
@@ -325,12 +327,12 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (timeout != 0.0f && timeout < interval) {
         mp_raise_ValueError(translate("non-zero timeout must be >= interval"));
     }
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 
     const mp_float_t window = mp_obj_get_float(args[ARG_window].u_obj);
     if (window > interval) {
@@ -375,8 +377,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_advertising_obj, bleio_adapter_get_a
 const mp_obj_property_t bleio_adapter_advertising_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_advertising_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     connected: bool
@@ -392,8 +394,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connected_obj, bleio_adapter_get_con
 const mp_obj_property_t bleio_adapter_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_connected_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     connections: Tuple[Connection]
@@ -408,8 +410,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connections_obj, bleio_adapter_get_c
 const mp_obj_property_t bleio_adapter_connections_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_connections_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     def connect(self, address: Address, *, timeout: float) -> Connection:
@@ -431,7 +433,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_address].u_obj, &bleio_address_type)) {
+    if (!mp_obj_is_type(args[ARG_address].u_obj, &bleio_address_type)) {
         mp_raise_TypeError(translate("Expected an Address"));
     }
 

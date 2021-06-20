@@ -47,9 +47,9 @@ void bleio_characteristic_buffer_update(bleio_characteristic_buffer_obj_t *self,
 
 // Assumes that timeout and buffer_size have been validated before call.
 void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
-                                                      bleio_characteristic_obj_t *characteristic,
-                                                      mp_float_t timeout,
-                                                      size_t buffer_size) {
+    bleio_characteristic_obj_t *characteristic,
+    mp_float_t timeout,
+    size_t buffer_size) {
 
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
@@ -64,10 +64,10 @@ uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ((ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
-        if ( mp_hal_is_interrupted() ) {
+        if (mp_hal_is_interrupted()) {
             return 0;
         }
     }
@@ -97,8 +97,8 @@ void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_o
 
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {
     return self->characteristic != NULL &&
-        self->characteristic->service != NULL &&
-        (!self->characteristic->service->is_remote ||
-         (self->characteristic->service->connection != MP_OBJ_NULL &&
-          common_hal_bleio_connection_get_connected(self->characteristic->service->connection)));
+           self->characteristic->service != NULL &&
+           (!self->characteristic->service->is_remote ||
+               (self->characteristic->service->connection != MP_OBJ_NULL &&
+                   common_hal_bleio_connection_get_connected(self->characteristic->service->connection)));
 }

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "stm32f411ce-blackpill-with-flash"
 #define MICROPY_HW_MCU_NAME         "STM32F411CE"

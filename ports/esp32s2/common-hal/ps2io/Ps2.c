@@ -62,7 +62,7 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
     // Grab the current time first.
     uint64_t current_tick = port_get_raw_ticks(NULL);
 
-    ps2io_ps2_obj_t * self = self_in;
+    ps2io_ps2_obj_t *self = self_in;
     int data_bit = gpio_get_level(self->data_pin) ? 1 : 0;
 
     // test for timeout
@@ -85,7 +85,7 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
             // start bit should be 0
             self->last_errors |= ERROR_STARTBIT;
             self->state = STATE_RECV_ERR;
-                } else {
+        } else {
             self->state = STATE_RECV;
         }
 
@@ -113,7 +113,7 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
 
     } else if (self->state == STATE_RECV_STOP) {
         ++self->bitcount;
-        if (! data_bit) {
+        if (!data_bit) {
             self->last_errors |= ERROR_STOPBIT;
         } else if (self->waiting_cmd_response) {
             self->cmd_response = self->bits;
@@ -135,31 +135,31 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
     }
 }
 
-static void enable_interrupt(ps2io_ps2_obj_t* self) {
+static void enable_interrupt(ps2io_ps2_obj_t *self) {
     // turn on falling edge interrupt
     gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
     gpio_set_intr_type(self->clk_pin, GPIO_INTR_NEGEDGE);
-    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void *)self);
 }
 
-static void disable_interrupt(ps2io_ps2_obj_t* self) {
+static void disable_interrupt(ps2io_ps2_obj_t *self) {
     // turn off fallling edge interrupt
     gpio_isr_handler_remove(self->clk_pin);
 }
 
-static void resume_interrupt(ps2io_ps2_obj_t* self) {
+static void resume_interrupt(ps2io_ps2_obj_t *self) {
     self->state = STATE_IDLE;
-    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void *)self);
 }
 
 /* gpio handling */
 
-static void clk_hi(ps2io_ps2_obj_t* self) {
+static void clk_hi(ps2io_ps2_obj_t *self) {
     // external pull-up
     gpio_set_direction(self->clk_pin, GPIO_MODE_INPUT);
 }
 
-static bool wait_clk_lo(ps2io_ps2_obj_t* self, uint32_t us) {
+static bool wait_clk_lo(ps2io_ps2_obj_t *self, uint32_t us) {
     clk_hi(self);
     delay_us(1);
     while (gpio_get_level(self->clk_pin) && us) {
@@ -169,7 +169,7 @@ static bool wait_clk_lo(ps2io_ps2_obj_t* self, uint32_t us) {
     return us;
 }
 
-static bool wait_clk_hi(ps2io_ps2_obj_t* self, uint32_t us) {
+static bool wait_clk_hi(ps2io_ps2_obj_t *self, uint32_t us) {
     clk_hi(self);
     delay_us(1);
     while (!gpio_get_level(self->clk_pin) && us) {
@@ -179,17 +179,17 @@ static bool wait_clk_hi(ps2io_ps2_obj_t* self, uint32_t us) {
     return us;
 }
 
-static void clk_lo(ps2io_ps2_obj_t* self) {
+static void clk_lo(ps2io_ps2_obj_t *self) {
     gpio_set_direction(self->clk_pin, GPIO_MODE_OUTPUT);
     gpio_set_level(self->clk_pin, 0);
 }
 
-static void data_hi(ps2io_ps2_obj_t* self) {
+static void data_hi(ps2io_ps2_obj_t *self) {
     // external pull-up
     gpio_set_direction(self->data_pin, GPIO_MODE_INPUT);
 }
 
-static bool wait_data_lo(ps2io_ps2_obj_t* self, uint32_t us) {
+static bool wait_data_lo(ps2io_ps2_obj_t *self, uint32_t us) {
     data_hi(self);
     delay_us(1);
     while (gpio_get_level(self->data_pin) && us) {
@@ -199,7 +199,7 @@ static bool wait_data_lo(ps2io_ps2_obj_t* self, uint32_t us) {
     return us;
 }
 
-static bool wait_data_hi(ps2io_ps2_obj_t* self, uint32_t us) {
+static bool wait_data_hi(ps2io_ps2_obj_t *self, uint32_t us) {
     data_hi(self);
     delay_us(1);
     while (!gpio_get_level(self->data_pin) && us) {
@@ -209,25 +209,25 @@ static bool wait_data_hi(ps2io_ps2_obj_t* self, uint32_t us) {
     return us;
 }
 
-static void data_lo(ps2io_ps2_obj_t* self) {
+static void data_lo(ps2io_ps2_obj_t *self) {
     gpio_set_direction(self->data_pin, GPIO_MODE_OUTPUT);
     gpio_set_level(self->data_pin, 0);
 }
 
-static void idle(ps2io_ps2_obj_t* self) {
+static void idle(ps2io_ps2_obj_t *self) {
     clk_hi(self);
     data_hi(self);
 }
 
-static void inhibit(ps2io_ps2_obj_t* self) {
+static void inhibit(ps2io_ps2_obj_t *self) {
     clk_lo(self);
     data_hi(self);
 }
 
 /* ps2io module functions */
 
-void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
-        const mcu_pin_obj_t* data_pin, const mcu_pin_obj_t* clk_pin) {
+void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
+    const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *clk_pin) {
     self->clk_pin = (gpio_num_t)clk_pin->number;
     self->data_pin = (gpio_num_t)data_pin->number;
     self->state = STATE_IDLE;
@@ -243,11 +243,11 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
     claim_pin(data_pin);
 }
 
-bool common_hal_ps2io_ps2_deinited(ps2io_ps2_obj_t* self) {
+bool common_hal_ps2io_ps2_deinited(ps2io_ps2_obj_t *self) {
     return self->clk_pin == GPIO_NUM_MAX;
 }
 
-void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self) {
+void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
     if (common_hal_ps2io_ps2_deinited(self)) {
         return;
     }
@@ -258,11 +258,11 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self) {
     self->data_pin = GPIO_NUM_MAX;
 }
 
-uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t* self) {
+uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t *self) {
     return self->bufcount;
 }
 
-int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t* self) {
+int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t *self) {
     common_hal_mcu_disable_interrupts();
     if (self->bufcount <= 0) {
         common_hal_mcu_enable_interrupts();
@@ -275,7 +275,7 @@ int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t* self) {
     return b;
 }
 
-uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t* self) {
+uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t *self) {
     common_hal_mcu_disable_interrupts();
     uint16_t errors = self->last_errors;
     self->last_errors = 0;
@@ -286,7 +286,7 @@ uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t* self) {
 // Based upon TMK implementation of PS/2 protocol
 // https://github.com/tmk/tmk_keyboard/blob/master/tmk_core/protocol/ps2_interrupt.c
 
-int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t* self, uint8_t b) {
+int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t *self, uint8_t b) {
     disable_interrupt(self);
 
     /* terminate a transmission if we have */

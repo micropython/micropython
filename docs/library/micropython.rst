@@ -73,13 +73,25 @@ Functions
 
 .. function:: heap_lock()
 .. function:: heap_unlock()
+.. function:: heap_locked()
 
    Lock or unlock the heap.  When locked no memory allocation can occur and a
    `MemoryError` will be raised if any heap allocation is attempted.
+   `heap_locked()` returns a true value if the heap is currently locked.
 
    These functions can be nested, ie `heap_lock()` can be called multiple times
    in a row and the lock-depth will increase, and then `heap_unlock()` must be
    called the same number of times to make the heap available again.
+
+   Both `heap_unlock()` and `heap_locked()` return the current lock depth
+   (after unlocking for the former) as a non-negative integer, with 0 meaning
+   the heap is not locked.
+
+   If the REPL becomes active with the heap locked then it will be forcefully
+   unlocked.
+
+   Note: `heap_locked()` is not enabled on most ports by default,
+   requires ``MICROPY_PY_MICROPYTHON_HEAP_LOCKED``.
 
 .. function:: kbd_intr(chr)
 
@@ -91,3 +103,36 @@ Functions
    This function can be used to prevent the capturing of Ctrl-C on the
    incoming stream of characters that is usually used for the REPL, in case
    that stream is used for other purposes.
+
+.. function:: schedule(func, arg)
+
+   Schedule the function *func* to be executed "very soon".  The function
+   is passed the value *arg* as its single argument.  "Very soon" means that
+   the MicroPython runtime will do its best to execute the function at the
+   earliest possible time, given that it is also trying to be efficient, and
+   that the following conditions hold:
+
+   - A scheduled function will never preempt another scheduled function.
+   - Scheduled functions are always executed "between opcodes" which means
+     that all fundamental Python operations (such as appending to a list)
+     are guaranteed to be atomic.
+   - A given port may define "critical regions" within which scheduled
+     functions will never be executed.  Functions may be scheduled within
+     a critical region but they will not be executed until that region
+     is exited.  An example of a critical region is a preempting interrupt
+     handler (an IRQ).
+
+   A use for this function is to schedule a callback from a preempting IRQ.
+   Such an IRQ puts restrictions on the code that runs in the IRQ (for example
+   the heap may be locked) and scheduling a function to call later will lift
+   those restrictions.
+
+   Note: If `schedule()` is called from a preempting IRQ, when memory
+   allocation is not allowed and the callback to be passed to `schedule()` is
+   a bound method, passing this directly will fail. This is because creating a
+   reference to a bound method causes memory allocation. A solution is to
+   create a reference to the method in the class constructor and to pass that
+   reference to `schedule()`.
+
+   There is a finite queue to hold the scheduled functions and `schedule()`
+   will raise a `RuntimeError` if the queue is full.

@@ -35,15 +35,15 @@
 #include "py/mperrno.h"
 
 #if 0
-#define DEBUG_PRINT(...) ((void)mp_printf(&mp_plat_print, ## __VA_ARGS__))
+#define DEBUG_PRINT(...) ((void)mp_printf(&mp_plat_print,##__VA_ARGS__))
 #else
 #define DEBUG_PRINT(...) ((void)0)
 #endif
 
 #define CMD_TIMEOUT (200)
 
-#define R1_IDLE_STATE (1<<0)
-#define R1_ILLEGAL_COMMAND (1<<2)
+#define R1_IDLE_STATE (1 << 0)
+#define R1_ILLEGAL_COMMAND (1 << 2)
 
 #define TOKEN_CMD25 (0xFC)
 #define TOKEN_STOP_TRAN (0xFD)
@@ -67,7 +67,7 @@ STATIC void lock_bus_or_throw(sdcardio_sdcard_obj_t *self) {
 STATIC void clock_card(sdcardio_sdcard_obj_t *self, int bytes) {
     uint8_t buf[] = {0xff};
     common_hal_digitalio_digitalinout_set_value(&self->cs, true);
-    for (int i=0; i<bytes; i++) {
+    for (int i = 0; i < bytes; i++) {
         common_hal_busio_spi_write(self->bus, buf, 1);
     }
 }
@@ -77,7 +77,7 @@ STATIC void extraclock_and_unlock_bus(sdcardio_sdcard_obj_t *self) {
     common_hal_busio_spi_unlock(self->bus);
 }
 
-static uint8_t CRC7(const uint8_t* data, uint8_t n) {
+static uint8_t CRC7(const uint8_t *data, uint8_t n) {
     uint8_t crc = 0;
     for (uint8_t i = 0; i < n; i++) {
         uint8_t d = data[i];
@@ -123,7 +123,7 @@ STATIC int cmd(sdcardio_sdcard_obj_t *self, int cmd, int arg, void *response_buf
 
     // Wait for the response (response[7] == 0)
     bool response_received = false;
-    for (int i=0; i<CMD_TIMEOUT; i++) {
+    for (int i = 0; i < CMD_TIMEOUT; i++) {
         common_hal_busio_spi_read(self->bus, cmdbuf, 1, 0xff);
         if ((cmdbuf[0] & 0x80) == 0) {
             response_received = true;
@@ -141,7 +141,7 @@ STATIC int cmd(sdcardio_sdcard_obj_t *self, int cmd, int arg, void *response_buf
             cmdbuf[1] = 0xff;
             do {
                 // Wait for the start block byte
-                common_hal_busio_spi_read(self->bus, cmdbuf+1, 1, 0xff);
+                common_hal_busio_spi_read(self->bus, cmdbuf + 1, 1, 0xff);
             } while (cmdbuf[1] != 0xfe);
         }
 
@@ -149,7 +149,7 @@ STATIC int cmd(sdcardio_sdcard_obj_t *self, int cmd, int arg, void *response_buf
 
         if (data_block) {
             // Read and discard the CRC-CCITT checksum
-            common_hal_busio_spi_read(self->bus, cmdbuf+1, 2, 0xff);
+            common_hal_busio_spi_read(self->bus, cmdbuf + 1, 2, 0xff);
         }
 
     }
@@ -161,13 +161,13 @@ STATIC int block_cmd(sdcardio_sdcard_obj_t *self, int cmd_, int block, void *res
     return cmd(self, cmd_, block * self->cdv, response_buf, response_len, true, true);
 }
 
-STATIC bool cmd_nodata(sdcardio_sdcard_obj_t* self, int cmd, int response) {
+STATIC bool cmd_nodata(sdcardio_sdcard_obj_t *self, int cmd, int response) {
     uint8_t cmdbuf[2] = {cmd, 0xff};
 
     common_hal_busio_spi_write(self->bus, cmdbuf, sizeof(cmdbuf));
 
     // Wait for the response (response[7] == response)
-    for (int i=0; i<CMD_TIMEOUT; i++) {
+    for (int i = 0; i < CMD_TIMEOUT; i++) {
         common_hal_busio_spi_read(self->bus, cmdbuf, 1, 0xff);
         if (cmdbuf[0] == response) {
             return 0;
@@ -177,7 +177,7 @@ STATIC bool cmd_nodata(sdcardio_sdcard_obj_t* self, int cmd, int response) {
 }
 
 STATIC const compressed_string_t *init_card_v1(sdcardio_sdcard_obj_t *self) {
-    for (int i=0; i<CMD_TIMEOUT; i++) {
+    for (int i = 0; i < CMD_TIMEOUT; i++) {
         if (cmd(self, 41, 0, NULL, 0, true, true) == 0) {
             return NULL;
         }
@@ -186,7 +186,7 @@ STATIC const compressed_string_t *init_card_v1(sdcardio_sdcard_obj_t *self) {
 }
 
 STATIC const compressed_string_t *init_card_v2(sdcardio_sdcard_obj_t *self) {
-    for (int i=0; i<CMD_TIMEOUT; i++) {
+    for (int i = 0; i < CMD_TIMEOUT; i++) {
         uint8_t ocr[4];
         common_hal_time_delay_ms(50);
         cmd(self, 58, 0, ocr, sizeof(ocr), false, true);
@@ -210,7 +210,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
     // CMD0: init card: should return _R1_IDLE_STATE (allow 5 attempts)
     {
         bool reached_idle_state = false;
-        for (int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             if (cmd(self, 0, 0, NULL, 0, true, true) == R1_IDLE_STATE) {
                 reached_idle_state = true;
                 break;
@@ -226,12 +226,12 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
         uint8_t rb7[4];
         int response = cmd(self, 8, 0x1AA, rb7, sizeof(rb7), false, true);
         if (response == R1_IDLE_STATE) {
-            const compressed_string_t *result =init_card_v2(self);
+            const compressed_string_t *result = init_card_v2(self);
             if (result != NULL) {
                 return result;
             }
         } else if (response == (R1_IDLE_STATE | R1_ILLEGAL_COMMAND)) {
-            const compressed_string_t *result =init_card_v1(self);
+            const compressed_string_t *result = init_card_v1(self);
             if (result != NULL) {
                 return result;
             }
@@ -399,7 +399,7 @@ STATIC int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t 
     // with STATUS 010 indicating "data accepted", and other status bit
     // combinations indicating failure.
     // In practice, I was seeing cmd[0] as 0xe5, indicating success
-    for (int i=0; i<CMD_TIMEOUT; i++) {
+    for (int i = 0; i < CMD_TIMEOUT; i++) {
         common_hal_busio_spi_read(self->bus, cmd, 1, 0xff);
         DEBUG_PRINT("i=%02d cmd[0] = 0x%02x\n", i, cmd[0]);
         if ((cmd[0] & 0b00010001) == 0b00000001) {

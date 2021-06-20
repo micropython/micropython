@@ -59,7 +59,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 
@@ -86,8 +86,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_se
 const mp_obj_property_t bleio_service_characteristics_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_characteristics_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     remote: bool
@@ -103,8 +103,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get
 const mp_obj_property_t bleio_service_remote_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_remote_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     secondary: bool
@@ -120,8 +120,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_
 const mp_obj_property_t bleio_service_secondary_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_secondary_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     uuid: Optional[UUID]
@@ -140,8 +140,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_u
 const mp_obj_property_t bleio_service_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_uuid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -169,5 +169,5 @@ const mp_obj_type_t bleio_service_type = {
     .name = MP_QSTR_Service,
     .make_new = bleio_service_make_new,
     .print = bleio_service_print,
-    .locals_dict = (mp_obj_dict_t*)&bleio_service_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_service_locals_dict
 };

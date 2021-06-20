@@ -1,0 +1,32 @@
+# tests/run-tests.py: Reformat with Black.
+2a38d7103672580882fb621a5b76e8d26805d593
+
+# all: Update Python code to conform to latest black formatting.
+06659077a81b85882254cf0953c33b27614e018e
+
+# tools/uncrustify: Enable more opts to remove space between func and '('.
+77ed6f69ac35c1663a5633a8ee1d8a2446542204
+
+# tools/codeformat.py: Include extmod/{btstack,nimble} in code formatting.
+026fda605e03113d6e753290d65fed774418bc53
+
+# all: Format code to add space after C++-style comment start.
+84fa3312cfa7d2237d4b56952f2cd6e3591210c4
+
+# tests: Format all Python code with black, except tests in basics subdir.
+3dc324d3f1312e40d3a8ed87e7244966bb756f26
+
+# all: Remove spaces inside and around parenthesis.
+1a3e386c67e03a79eb768cb6e9f6777e002d6660
+
+# all: Remove spaces between nested paren and inside function arg paren.
+feb25775851ba0c04b8d1013716f442258879d9c
+
+# all: Reformat C and Python source code with tools/codeformat.py.
+69661f3343bedf86e514337cff63d96cc42f8859
+
+# stm32/usbdev: Convert files to unix line endings.
+abde0fa2267f9062b28c3c015d7662a550125cc6
+
+# all: Remove trailing spaces, per coding conventions.
+761e4c7ff62896c7d8f8c3dfc3cc98a4cc4f2f6f

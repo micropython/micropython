@@ -1,5 +1,5 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
@@ -31,4 +31,4 @@
 
 const int32_t colorwheel(float pos);
 
-#endif //CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+#endif // CP_SHARED_BINDINGS_PIXELBUF_INIT_H

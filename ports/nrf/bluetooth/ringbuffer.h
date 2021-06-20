@@ -65,18 +65,18 @@
 #define _ringbuffer_h
 
 #define ringBuffer_typedef(T, NAME) \
-  typedef struct { \
-    int size; \
-    volatile int start; \
-    volatile int end; \
-    T* elems; \
-  } NAME
+    typedef struct { \
+        int size; \
+        volatile int start; \
+        volatile int end; \
+        T *elems; \
+    } NAME
 
 #define bufferInit(BUF, S, T) \
-  BUF.size = S+1; \
-  BUF.start = 0; \
-  BUF.end = 0; \
-  BUF.elems = (T*)calloc(BUF.size, sizeof(T))
+    BUF.size = S + 1; \
+    BUF.start = 0; \
+    BUF.end = 0; \
+    BUF.elems = (T *)calloc(BUF.size, sizeof(T))
 
 
 #define bufferDestroy(BUF) free((BUF)->elems)
@@ -86,11 +86,11 @@
 #define isBufferFull(BUF) (nextEndIndex(BUF) == (BUF)->start)
 
 #define bufferWrite(BUF, ELEM) \
-  (BUF)->elems[(BUF)->end] = ELEM; \
-  (BUF)->end = ((BUF)->end + 1) % (BUF)->size; \
-  if (isBufferEmpty(BUF)) { \
-    (BUF)->start = nextStartIndex(BUF); \
-  }
+    (BUF)->elems[(BUF)->end] = ELEM; \
+    (BUF)->end = ((BUF)->end + 1) % (BUF)->size; \
+    if (isBufferEmpty(BUF)) { \
+        (BUF)->start = nextStartIndex(BUF); \
+    }
 
 #define bufferRead(BUF, ELEM) \
     ELEM = (BUF)->elems[(BUF)->start]; \

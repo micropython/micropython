@@ -30,8 +30,8 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-void common_hal_countio_counter_construct(countio_counter_obj_t* self,
-    const mcu_pin_obj_t* pin) {
+void common_hal_countio_counter_construct(countio_counter_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     claim_pin(pin);
 
     // Prepare configuration for the PCNT unit
@@ -55,11 +55,11 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     self->unit = (pcnt_unit_t)unit;
 }
 
-bool common_hal_countio_counter_deinited(countio_counter_obj_t* self) {
+bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
     return self->unit == PCNT_UNIT_MAX;
 }
 
-void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
+void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     if (common_hal_countio_counter_deinited(self)) {
         return;
     }
@@ -67,18 +67,18 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
     peripherals_pcnt_deinit(&self->unit);
 }
 
-mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {
+mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
-    return count+self->count;
+    return count + self->count;
 }
 
-void common_hal_countio_counter_set_count(countio_counter_obj_t* self,
-        mp_int_t new_count) {
+void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
+    mp_int_t new_count) {
     self->count = new_count;
     pcnt_counter_clear(self->unit);
 }
 
-void common_hal_countio_counter_reset(countio_counter_obj_t* self) {
-   common_hal_countio_counter_set_count(self, 0);
+void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
+    common_hal_countio_counter_set_count(self, 0);
 }

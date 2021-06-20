@@ -60,3 +60,54 @@ try:
     print(a.a)
 except AttributeError:
     print("AttributeError")
+
+# test object.__setattr__
+class C:
+    def __init__(self):
+        pass
+
+    def __setattr__(self, attr, value):
+        print(attr, "=", value)
+
+    def __delattr__(self, attr):
+        print("del", attr)
+
+c = C()
+c.a = 5
+try:
+    print(c.a)
+except AttributeError:
+    print("AttributeError")
+
+object.__setattr__(c, "a", 5)
+super(C, c).__setattr__("b", 6)
+print(c.a)
+print(c.b)
+
+try:
+    # attribute name must be string
+    object.__setattr__(c, 5, 5)
+except TypeError:
+    print("TypeError")
+
+
+# test object.__delattr__
+del c.a
+print(c.a)
+
+object.__delattr__(c, "a")
+try:
+    print(c.a)
+except AttributeError:
+    print("AttributeError")
+
+super(C, c).__delattr__("b")
+try:
+    print(c.b)
+except AttributeError:
+    print("AttributeError")
+
+try:
+    object.__delattr__(c, "c")
+except AttributeError:
+    print("AttributeError")

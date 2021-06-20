@@ -36,7 +36,7 @@ typedef struct _mp_obj_utimeq_t {
 
 STATIC mp_uint_t utimeq_id;
 
-STATIC mp_obj_utimeq_t *get_heap(mp_obj_t heap_in) {
+STATIC mp_obj_utimeq_t *utimeq_get_heap(mp_obj_t heap_in) {
     return MP_OBJ_TO_PTR(heap_in);
 }
 
@@ -66,7 +66,7 @@ STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, const 
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC void heap_siftdown(mp_obj_utimeq_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
+STATIC void utimeq_heap_siftdown(mp_obj_utimeq_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
     struct qentry item = heap->items[pos];
     while (pos > start_pos) {
         mp_uint_t parent_pos = (pos - 1) >> 1;
@@ -82,7 +82,7 @@ STATIC void heap_siftdown(mp_obj_utimeq_t *heap, mp_uint_t start_pos, mp_uint_t 
     heap->items[pos] = item;
 }
 
-STATIC void heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
+STATIC void utimeq_heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
     mp_uint_t start_pos = pos;
     mp_uint_t end_pos = heap->len;
     struct qentry item = heap->items[pos];
@@ -99,34 +99,34 @@ STATIC void heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
         pos = child_pos;
     }
     heap->items[pos] = item;
-    heap_siftdown(heap, start_pos, pos);
+    utimeq_heap_siftdown(heap, start_pos, pos);
 }
 
 STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_t heap_in = args[0];
-    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == heap->alloc) {
-        mp_raise_IndexError(translate("queue overflow"));
+        mp_raise_IndexError(MP_ERROR_TEXT("queue overflow"));
     }
     mp_uint_t l = heap->len;
     heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);
     heap->items[l].id = utimeq_id++;
     heap->items[l].callback = args[2];
     heap->items[l].args = args[3];
-    heap_siftdown(heap, 0, heap->len);
+    utimeq_heap_siftdown(heap, 0, heap->len);
     heap->len++;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_utimeq_heappush);
 
 STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
-    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_IndexError(translate("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
     mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
-    if (!MP_OBJ_IS_TYPE(list_ref, &mp_type_list) || ret->len < 3) {
+    if (!mp_obj_is_type(list_ref, &mp_type_list) || ret->len < 3) {
         mp_raise_TypeError(NULL);
     }
 
@@ -139,16 +139,16 @@ STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
     heap->items[heap->len].callback = MP_OBJ_NULL; // so we don't retain a pointer
     heap->items[heap->len].args = MP_OBJ_NULL;
     if (heap->len) {
-        heap_siftup(heap, 0);
+        utimeq_heap_siftup(heap, 0);
     }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
 
 STATIC mp_obj_t mod_utimeq_peektime(mp_obj_t heap_in) {
-    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_IndexError(translate("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
 
     struct qentry *item = &heap->items[0];
@@ -158,7 +158,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_peektime_obj, mod_utimeq_peektime);
 
 #if DEBUG
 STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
-    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     for (int i = 0; i < heap->len; i++) {
         printf(UINT_FMT "\t%p\t%p\n", heap->items[i].time,
             MP_OBJ_TO_PTR(heap->items[i].callback), MP_OBJ_TO_PTR(heap->items[i].args));
@@ -171,9 +171,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_dump_obj, mod_utimeq_dump);
 STATIC mp_obj_t utimeq_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_utimeq_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -193,7 +196,7 @@ STATIC const mp_obj_type_t utimeq_type = {
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
     .unary_op = utimeq_unary_op,
-    .locals_dict = (void*)&utimeq_locals_dict,
+    .locals_dict = (void *)&utimeq_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {
@@ -205,7 +208,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_utimeq_globals, mp_module_utimeq_globals_t
 
 const mp_obj_module_t mp_module_utimeq = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_utimeq_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_utimeq_globals,
 };
 
-#endif //MICROPY_PY_UTIMEQ
+#endif // MICROPY_PY_UTIMEQ

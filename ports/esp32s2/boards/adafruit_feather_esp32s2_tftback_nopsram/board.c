@@ -55,10 +55,10 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
-#ifdef DEBUG
+    #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-#endif /* DEBUG */
+    #endif /* DEBUG */
 
     /*
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;

@@ -35,7 +35,7 @@
 
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
-//static LPUART_Type *uart_instance = LPUART2; // feather 1062
+// static LPUART_Type *uart_instance = LPUART2; // feather 1062
 
 static uint32_t UartSrcFreq(void) {
     uint32_t freq;
@@ -79,8 +79,8 @@ bool serial_bytes_available(void) {
     return LPUART_GetStatusFlags(uart_instance) & kLPUART_RxDataRegFullFlag;
 }
 
-void serial_write(const char* text) {
-    LPUART_WriteBlocking(uart_instance, (uint8_t*)text, strlen(text));
+void serial_write(const char *text) {
+    LPUART_WriteBlocking(uart_instance, (uint8_t *)text, strlen(text));
 }
 
 void serial_write_substring(const char *text, uint32_t len) {
@@ -88,5 +88,5 @@ void serial_write_substring(const char *text, uint32_t len) {
         return;
     }
 
-    LPUART_WriteBlocking(uart_instance, (uint8_t*)text, len);
+    LPUART_WriteBlocking(uart_instance, (uint8_t *)text, len);
 }

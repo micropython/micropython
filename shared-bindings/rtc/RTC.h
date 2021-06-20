@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "py/obj.h"
 #include "lib/timeutils/timeutils.h"
 
 extern void common_hal_rtc_get_time(timeutils_struct_time_t *tm);

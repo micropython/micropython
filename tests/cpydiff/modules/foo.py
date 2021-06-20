@@ -1,2 +1,2 @@
-print('foo')
+print("foo")
 xxx

@@ -200,8 +200,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_playing_obj, audioio_audioout_obj
 const mp_obj_property_t audioio_audioout_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audioio_audioout_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def pause(self) -> None:
@@ -249,8 +249,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_paused_obj, audioio_audioout_obj_
 const mp_obj_property_t audioio_audioout_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audioio_audioout_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
@@ -273,5 +273,5 @@ const mp_obj_type_t audioio_audioout_type = {
     { &mp_type_type },
     .name = MP_QSTR_AudioOut,
     .make_new = audioio_audioout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audioio_audioout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audioio_audioout_locals_dict,
 };

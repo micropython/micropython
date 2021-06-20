@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "py/obj.h"
 #include "lib/protomatter/src/core.h"
 
 extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
@@ -44,4 +45,6 @@ typedef struct {
     bool core_is_initialized;
     bool paused;
     bool doublebuffer;
+    bool serpentine;
+    int8_t tile;
 } rgbmatrix_rgbmatrix_obj_t;

@@ -38,7 +38,7 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
 }
 
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
+    uint32_t start_index, uint8_t *values, uint32_t len) {
     // Copy flash to buffer
     uint8_t buffer[self->len];
     memcpy(buffer, self->start_address, self->len);
@@ -48,7 +48,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 
     // Erase flash sector
     HAL_FLASH_Unlock();
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR );
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
     FLASH_Erase_Sector(CIRCUITPY_INTERNAL_NVM_SECTOR, VOLTAGE_RANGE_3);
 
     // Write bytes to flash
@@ -68,6 +68,6 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 
 // NVM memory is memory mapped so reading it is easy.
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values) {
+    uint32_t start_index, uint32_t len, uint8_t *values) {
     memcpy(values, self->start_address + start_index, len);
 }

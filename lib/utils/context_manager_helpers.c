@@ -29,6 +29,6 @@
 #include "py/obj.h"
 
 STATIC mp_obj_t default___enter__(mp_obj_t self_in) {
-   return self_in;
+    return self_in;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(default___enter___obj, default___enter__);

@@ -35,11 +35,11 @@
 
 typedef struct {
     mp_obj_base_t base;
-    spi_inst_t * peripheral;
+    spi_inst_t *peripheral;
     bool has_lock;
-    const mcu_pin_obj_t* clock;
-    const mcu_pin_obj_t* MOSI;
-    const mcu_pin_obj_t* MISO;
+    const mcu_pin_obj_t *clock;
+    const mcu_pin_obj_t *MOSI;
+    const mcu_pin_obj_t *MISO;
     uint32_t target_frequency;
     int32_t real_frequency;
     uint8_t polarity;

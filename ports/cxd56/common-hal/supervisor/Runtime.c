@@ -27,10 +27,10 @@
 #include "shared-bindings/supervisor/Runtime.h"
 #include "supervisor/serial.h"
 
-bool common_hal_get_serial_connected(void) {
-    return (bool) serial_connected();
+bool common_hal_supervisor_runtime_get_serial_connected(void) {
+    return (bool)serial_connected();
 }
 
-bool common_hal_get_serial_bytes_available(void) {
-    return (bool) serial_bytes_available();
+bool common_hal_supervisor_runtime_get_serial_bytes_available(void) {
+    return (bool)serial_bytes_available();
 }

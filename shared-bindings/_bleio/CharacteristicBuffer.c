@@ -80,7 +80,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
         mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
     }
 
-    if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
+    if (!mp_obj_is_type(characteristic, &bleio_characteristic_type)) {
         mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
@@ -180,8 +180,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_get_in_waiting_obj, bleio_
 const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_characteristic_buffer_get_in_waiting_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def reset_input_buffer(self) -> None:
@@ -231,8 +231,8 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,
     .is_text = false,
-    // Match PySerial when possible, such as disallowing optional length argument for .readinto()
-    .pyserial_compatibility = true,
+    // Disallow readinto() size parameter.
+    .pyserial_readinto_compatibility = true,
 };
 
 
@@ -243,5 +243,5 @@ const mp_obj_type_t bleio_characteristic_buffer_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &characteristic_buffer_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&bleio_characteristic_buffer_locals_dict
+    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_buffer_locals_dict
 };

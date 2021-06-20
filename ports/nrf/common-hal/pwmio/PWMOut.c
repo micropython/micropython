@@ -36,19 +36,19 @@
 
 #define PWM_MAX_FREQ      (16000000)
 
-STATIC NRF_PWM_Type* pwms[] = {
-#if NRFX_CHECK(NRFX_PWM0_ENABLED)
+STATIC NRF_PWM_Type *pwms[] = {
+    #if NRFX_CHECK(NRFX_PWM0_ENABLED)
     NRF_PWM0,
-#endif
-#if NRFX_CHECK(NRFX_PWM1_ENABLED)
+    #endif
+    #if NRFX_CHECK(NRFX_PWM1_ENABLED)
     NRF_PWM1,
-#endif
-#if NRFX_CHECK(NRFX_PWM2_ENABLED)
+    #endif
+    #if NRFX_CHECK(NRFX_PWM2_ENABLED)
     NRF_PWM2,
-#endif
-#if NRFX_CHECK(NRFX_PWM3_ENABLED)
+    #endif
+    #if NRFX_CHECK(NRFX_PWM3_ENABLED)
     NRF_PWM3,
-#endif
+    #endif
 };
 
 #define CHANNELS_PER_PWM 4
@@ -58,14 +58,17 @@ STATIC uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
 static uint8_t never_reset_pwm[MP_ARRAY_SIZE(pwms)];
 
 STATIC int pwm_idx(NRF_PWM_Type *pwm) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++)
-        if(pwms[i] == pwm) return i;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
+        if (pwms[i] == pwm) {
+            return i;
+        }
+    }
     return -1;
 }
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
-        NRF_PWM_Type* pwm = pwms[i];
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
+        NRF_PWM_Type *pwm = pwms[i];
         if (pwm == self->pwm) {
             never_reset_pwm[i] += 1;
         }
@@ -75,8 +78,8 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
-        NRF_PWM_Type* pwm = pwms[i];
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
+        NRF_PWM_Type *pwm = pwms[i];
         if (pwm == self->pwm) {
             never_reset_pwm[i] -= 1;
         }
@@ -84,32 +87,32 @@ void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
 }
 
 void reset_single_pwmout(uint8_t i) {
-    NRF_PWM_Type* pwm = pwms[i];
+    NRF_PWM_Type *pwm = pwms[i];
 
-    pwm->ENABLE          = 0;
-    pwm->MODE            = PWM_MODE_UPDOWN_Up;
-    pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-    pwm->LOOP            = 0;
-    pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // default is 500 hz
-    pwm->COUNTERTOP      = (PWM_MAX_FREQ/500);                // default is 500 hz
+    pwm->ENABLE = 0;
+    pwm->MODE = PWM_MODE_UPDOWN_Up;
+    pwm->DECODER = PWM_DECODER_LOAD_Individual;
+    pwm->LOOP = 0;
+    pwm->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_1;       // default is 500 hz
+    pwm->COUNTERTOP = (PWM_MAX_FREQ / 500);                   // default is 500 hz
 
-    pwm->SEQ[0].PTR      = (uint32_t) pwm_seq[i];
-    pwm->SEQ[0].CNT      = CHANNELS_PER_PWM; // default mode is Individual --> count must be 4
-    pwm->SEQ[0].REFRESH  = 0;
+    pwm->SEQ[0].PTR = (uint32_t)pwm_seq[i];
+    pwm->SEQ[0].CNT = CHANNELS_PER_PWM;      // default mode is Individual --> count must be 4
+    pwm->SEQ[0].REFRESH = 0;
     pwm->SEQ[0].ENDDELAY = 0;
 
-    pwm->SEQ[1].PTR      = 0;
-    pwm->SEQ[1].CNT      = 0;
-    pwm->SEQ[1].REFRESH  = 0;
+    pwm->SEQ[1].PTR = 0;
+    pwm->SEQ[1].CNT = 0;
+    pwm->SEQ[1].REFRESH = 0;
     pwm->SEQ[1].ENDDELAY = 0;
 
-    for(int ch =0; ch < CHANNELS_PER_PWM; ch++) {
+    for (int ch = 0; ch < CHANNELS_PER_PWM; ch++) {
         pwm_seq[i][ch] = (1 << 15); // polarity = 0
     }
 }
 
 void pwmout_reset(void) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
         if (never_reset_pwm[i] > 0) {
             continue;
         }
@@ -143,8 +146,8 @@ bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *
 static IRQn_Type pwm_irqs[4] = {PWM0_IRQn, PWM1_IRQn, PWM2_IRQn, PWM3_IRQn};
 
 NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
-        bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
-        IRQn_Type* irq) {
+    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
+    IRQn_Type *irq) {
     for (size_t pwm_index = 0; pwm_index < MP_ARRAY_SIZE(pwms); pwm_index++) {
         NRF_PWM_Type *pwm = pwms[pwm_index];
         bool pwm_already_in_use = pwm->ENABLE & PWM_ENABLE_ENABLE_Msk;
@@ -194,7 +197,7 @@ void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel) {
     // Disconnect pin from channel.
     pwm->PSEL.OUT[channel] = 0xFFFFFFFF;
 
-    for(int i=0; i < CHANNELS_PER_PWM; i++) {
+    for (int i = 0; i < CHANNELS_PER_PWM; i++) {
         if (pwm->PSEL.OUT[i] != 0xFFFFFFFF) {
             // Some channel is still being used, so don't disable.
             return;
@@ -204,11 +207,11 @@ void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel) {
     nrf_pwm_disable(pwm);
 }
 
-pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
-                                                    const mcu_pin_obj_t* pin,
-                                                    uint16_t duty,
-                                                    uint32_t frequency,
-                                                    bool variable_frequency) {
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
+    const mcu_pin_obj_t *pin,
+    uint16_t duty,
+    uint32_t frequency,
+    bool variable_frequency) {
 
     // We don't use the nrfx driver here because we want to dynamically allocate channels
     // as needed in an already-enabled PWM.
@@ -255,18 +258,18 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
     return PWMOUT_OK;
 }
 
-bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->pwm == NULL;
 }
 
-void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
 
     nrf_gpio_cfg_default(self->pin_number);
 
-    NRF_PWM_Type* pwm = self->pwm;
+    NRF_PWM_Type *pwm = self->pwm;
     self->pwm = NULL;
 
     pwmout_free_channel(pwm, self->channel);
@@ -275,20 +278,20 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
     self->pin_number = NO_PIN;
 }
 
-void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty_cycle) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty_cycle) {
     self->duty_cycle = duty_cycle;
 
-    uint16_t* p_value = ((uint16_t*)self->pwm->SEQ[0].PTR) + self->channel;
+    uint16_t *p_value = ((uint16_t *)self->pwm->SEQ[0].PTR) + self->channel;
     *p_value = ((duty_cycle * self->pwm->COUNTERTOP) / 0xFFFF) | (1 << 15);
 
     self->pwm->TASKS_SEQSTART[0] = 1;
 }
 
-uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     return self->duty_cycle;
 }
 
-void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
     // COUNTERTOP is 3..32767, so highest available frequency is PWM_MAX_FREQ / 3.
     uint16_t countertop;
     nrf_pwm_clk_t base_clock;
@@ -303,10 +306,10 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t fr
     common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
-uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
     return self->frequency;
 }
 
-bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
 }

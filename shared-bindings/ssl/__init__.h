@@ -29,6 +29,6 @@
 
 #include "common-hal/ssl/SSLContext.h"
 
-void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t* self);
+void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL___INIT___H

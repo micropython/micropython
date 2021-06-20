@@ -136,7 +136,7 @@ SECTIONS
         . = ALIGN(4);
     } >APP_RAM
 
-    /* Remove exception unwinding information, since Circuit Python
+    /* Remove exception unwinding information, since CircuitPython
        does not support this GCC feature. */
     /DISCARD/ :
     {

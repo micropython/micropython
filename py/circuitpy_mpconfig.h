@@ -75,6 +75,7 @@
 #define MICROPY_MODULE_BUILTIN_INIT      (1)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
 #define MICROPY_PY_ARRAY                 (1)
@@ -95,6 +96,7 @@
 #define MICROPY_PY_BUILTINS_SET          (1)
 #define MICROPY_PY_BUILTINS_SLICE        (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS  (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
 #define MICROPY_PY_CMATH                 (0)
@@ -129,7 +131,9 @@
 //
 // 1 = SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_ENABLE_LFN      (1)
-#define MICROPY_FATFS_LFN_CODE_PAGE   (437)
+// Don't use parens on the value below because it gets combined with a prefix in
+// the preprocessor.
+#define MICROPY_FATFS_LFN_CODE_PAGE   437
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
@@ -147,7 +151,7 @@
 
 #define BYTES_PER_WORD (4)
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // Track stack usage. Expose results via ustack module.
 #define MICROPY_MAX_STACK_USAGE       (0)
@@ -195,21 +199,13 @@ typedef long mp_off_t;
 #define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
-#ifndef MICROPY_PY_UBINASCII
-#define MICROPY_PY_UBINASCII                  (CIRCUITPY_FULL_BUILD)
-#endif
-// Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
-#ifndef MICROPY_PY_URE
-#define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
-#endif
-#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
+#define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+#define MICROPY_EPOCH_IS_1970                 (0)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -301,11 +297,32 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define AUDIOPWMIO_MODULE
 #endif
 
+#if CIRCUITPY_BINASCII
+#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
+#endif
+
 #if CIRCUITPY_BITBANGIO
 #define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
 extern const struct _mp_obj_module_t bitbangio_module;
 #else
 #define BITBANGIO_MODULE
+#endif
+
+#if CIRCUITPY_BITMAPTOOLS
+#define BITMAPTOOLS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bitmaptools), (mp_obj_t)&bitmaptools_module },
+extern const struct _mp_obj_module_t bitmaptools_module;
+#else
+#define BITMAPTOOLS_MODULE
+#endif
+
+#if CIRCUITPY_BITOPS
+extern const struct _mp_obj_module_t bitops_module;
+#define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
+#else
+#define BITOPS_MODULE
 #endif
 
 #if CIRCUITPY_BLEIO
@@ -399,6 +416,23 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
+#if CIRCUITPY_ERRNO
+#define MICROPY_PY_UERRNO (1)
+// Uses about 80 bytes.
+#define MICROPY_PY_UERRNO_ERRORCODE (1)
+#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#else
+#define ERRNO_MODULE
+#
+ #endif
+
 #if CIRCUITPY_ESPIDF
 extern const struct _mp_obj_module_t espidf_module;
 #define ESPIDF_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),(mp_obj_t)&espidf_module },
@@ -463,11 +497,30 @@ extern const struct _mp_obj_module_t i2cperipheral_module;
 #define I2CPERIPHERAL_MODULE
 #endif
 
+#if CIRCUITPY_IMAGECAPTURE
+extern const struct _mp_obj_module_t imagecapture_module;
+#define IMAGECAPTURE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_imagecapture), (mp_obj_t)&imagecapture_module },
+#else
+#define IMAGECAPTURE_MODULE
+#endif
+
 #if CIRCUITPY_IPADDRESS
 extern const struct _mp_obj_module_t ipaddress_module;
 #define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
 #else
 #define IPADDRESS_MODULE
+#endif
+
+#if CIRCUITPY_JSON
+#define MICROPY_PY_UJSON (1)
+#define MICROPY_PY_IO (1)
+#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#else
+#ifndef MICROPY_PY_IO
+// We don't need MICROPY_PY_IO unless someone else wants it.
+#define MICROPY_PY_IO (0)
+#endif
+#define JSON_MODULE
 #endif
 
 #if CIRCUITPY_MATH
@@ -488,7 +541,7 @@ extern const struct _mp_obj_module_t _eve_module;
 extern const struct _mp_obj_module_t memorymonitor_module;
 #define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
 #define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
-                                    mp_obj_t active_allocationalarms;
+    mp_obj_t active_allocationalarms;
 #else
 #define MEMORYMONITOR_MODULE
 #define MEMORYMONITOR_ROOT_POINTERS
@@ -515,7 +568,7 @@ extern const struct _mp_obj_module_t socket_module;
 #define SOCKET_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
 #define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
 #if MICROPY_PY_WIZNET5K
-    extern const struct _mp_obj_module_t wiznet_module;
+extern const struct _mp_obj_module_t wiznet_module;
     #define WIZNET_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
 #endif
 #else
@@ -537,13 +590,6 @@ extern const struct _mp_obj_module_t os_module;
 #else
 #define OS_MODULE
 #define OS_MODULE_ALT_NAME
-#endif
-
-#if CIRCUITPY_DUALBANK
-extern const struct _mp_obj_module_t dualbank_module;
-#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
-#else
-#define DUALBANK_MODULE
 #endif
 
 #if CIRCUITPY_PEW
@@ -586,6 +632,13 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
 #else
 #define RANDOM_MODULE
+#endif
+
+#if CIRCUITPY_RE
+#define MICROPY_PY_URE (1)
+#define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#else
+#define RE_MODULE
 #endif
 
 #if CIRCUITPY_RGBMATRIX
@@ -686,6 +739,13 @@ extern const struct _mp_obj_module_t supervisor_module;
 #define SUPERVISOR_MODULE
 #endif
 
+#if CIRCUITPY_SYNTHIO
+#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
+extern const struct _mp_obj_module_t synthio_module;
+#else
+#define SYNTHIO_MODULE
+#endif
+
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
@@ -709,6 +769,13 @@ extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE
 #endif
 
+#if CIRCUITPY_USB_CDC
+extern const struct _mp_obj_module_t usb_cdc_module;
+#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
+#else
+#define USB_CDC_MODULE
+#endif
+
 #if CIRCUITPY_USB_HID
 extern const struct _mp_obj_module_t usb_hid_module;
 #define USB_HID_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
@@ -730,25 +797,6 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
-// These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
-#if MICROPY_PY_UBINASCII
-#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
-#else
-#define BINASCII_MODULE
-#endif
-
-#if MICROPY_PY_UERRNO
-#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
-#else
-#define ERRNO_MODULE
-#endif
-
-#if MICROPY_PY_UJSON
-#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
-#else
-#define JSON_MODULE
-#endif
-
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
@@ -758,12 +806,6 @@ extern const struct _mp_obj_module_t ustack_module;
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
 #define ULAB_MODULE
-#endif
-
-#if MICROPY_PY_URE
-#define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
-#else
-#define RE_MODULE
 #endif
 
 // This is not a top-level module; it's microcontroller.watchdog.
@@ -818,6 +860,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
     BITBANGIO_MODULE \
+    BITMAPTOOLS_MODULE \
+    BITOPS_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
     BUSDEVICE_MODULE \
@@ -827,9 +871,10 @@ extern const struct _mp_obj_module_t msgpack_module;
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
-      FONTIO_MODULE \
-      TERMINALIO_MODULE \
-      VECTORIO_MODULE \
+    DUALBANK_MODULE \
+    FONTIO_MODULE \
+    TERMINALIO_MODULE \
+    VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
     FRAMEBUFFERIO_MODULE \
@@ -839,6 +884,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
+    IMAGECAPTURE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
@@ -847,9 +893,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
-      SOCKET_MODULE \
-      WIZNET_MODULE \
-    DUALBANK_MODULE \
+    SOCKET_MODULE \
+    WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -871,8 +916,10 @@ extern const struct _mp_obj_module_t msgpack_module;
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
+    SYNTHIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
+    USB_CDC_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
@@ -911,8 +958,8 @@ struct _supervisor_allocation_node;
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
-    NETWORK_ROOT_POINTERS \
-    struct _supervisor_allocation_node* first_embedded_allocation; \
+        NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
@@ -945,8 +992,65 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PROCESSOR_COUNT (1)
 #endif
 
+#ifndef CIRCUITPY_STATUS_LED_POWER_INVERTED
+#define CIRCUITPY_STATUS_LED_POWER_INVERTED (0)
+#endif
+
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #define CIRCUITPY_VERBOSE_BLE 0
+
+// USB settings
+
+// If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
+
+#ifndef USB_CDC_EP_NUM_NOTIFICATION
+#define USB_CDC_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_OUT
+#define USB_CDC_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC_EP_NUM_DATA_IN
+#define USB_CDC_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_NOTIFICATION
+#define USB_CDC2_EP_NUM_NOTIFICATION (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_OUT
+#define USB_CDC2_EP_NUM_DATA_OUT (0)
+#endif
+
+#ifndef USB_CDC2_EP_NUM_DATA_IN
+#define USB_CDC2_EP_NUM_DATA_IN (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_OUT
+#define USB_MSC_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MSC_EP_NUM_IN
+#define USB_MSC_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_OUT
+#define USB_HID_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_HID_EP_NUM_IN
+#define USB_HID_EP_NUM_IN (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_OUT
+#define USB_MIDI_EP_NUM_OUT (0)
+#endif
+
+#ifndef USB_MIDI_EP_NUM_IN
+#define USB_MIDI_EP_NUM_IN (0)
+#endif
+
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

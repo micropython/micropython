@@ -49,7 +49,7 @@
 //|         ...
 //|
 STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
-        const mp_obj_t *args, mp_map_t *kw_args) {
+    const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 4, 5, false);
 
     layer_obj_t *self = m_new_obj(layer_obj_t);
@@ -82,7 +82,7 @@ STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
             mp_raise_ValueError(translate("map buffer too small"));
         }
     } else {
-        self-> map = NULL;
+        self->map = NULL;
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -106,7 +106,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(layer_move_obj, layer_move);
 //|         ...
 //|
 STATIC mp_obj_t layer_frame(mp_obj_t self_in, mp_obj_t frame_in,
-                            mp_obj_t rotation_in) {
+    mp_obj_t rotation_in) {
     layer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->frame = mp_obj_get_int(frame_in);
     self->rotation = mp_obj_get_int(rotation_in);
@@ -125,5 +125,5 @@ const mp_obj_type_t mp_type_layer = {
     { &mp_type_type },
     .name = MP_QSTR_Layer,
     .make_new = layer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&layer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&layer_locals_dict,
 };

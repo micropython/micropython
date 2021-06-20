@@ -4,4 +4,4 @@ description: None as first argument for rsplit such as str.rsplit(None, n) not i
 cause: Unknown
 workaround: Unknown
 """
-print('a a a'.rsplit(None, 1))
+print("a a a".rsplit(None, 1))

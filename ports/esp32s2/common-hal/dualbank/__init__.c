@@ -62,10 +62,10 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
         update_partition = esp_ota_get_next_update_partition(NULL);
 
         ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
-                running->type, running->subtype, running->address);
+            running->type, running->subtype, running->address);
 
         ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08x)\n",
-                update_partition->type, update_partition->subtype, update_partition->address);
+            update_partition->type, update_partition->subtype, update_partition->address);
 
         assert(update_partition != NULL);
     }

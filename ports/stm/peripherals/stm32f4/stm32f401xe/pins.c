@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -34,9 +34,9 @@ const mcu_pin_obj_t pin_PE04 = PIN(4, 4, NO_ADC);
 const mcu_pin_obj_t pin_PE05 = PIN(4, 5, NO_ADC);
 const mcu_pin_obj_t pin_PE06 = PIN(4, 6, NO_ADC);
 
-const mcu_pin_obj_t pin_PC13 = PIN(2, 13, NO_ADC); //anti-tamp
-const mcu_pin_obj_t pin_PC14 = PIN(2, 14, NO_ADC); //OSC32_IN
-const mcu_pin_obj_t pin_PC15 = PIN(2, 15, NO_ADC); //OSC32_OUT
+const mcu_pin_obj_t pin_PC13 = PIN(2, 13, NO_ADC); // anti-tamp
+const mcu_pin_obj_t pin_PC14 = PIN(2, 14, NO_ADC); // OSC32_IN
+const mcu_pin_obj_t pin_PC15 = PIN(2, 15, NO_ADC); // OSC32_OUT
 
 const mcu_pin_obj_t pin_PC00 = PIN(2, 0, ADC_INPUT(ADC_1,10));
 const mcu_pin_obj_t pin_PC01 = PIN(2, 1, ADC_INPUT(ADC_1,11));
@@ -94,9 +94,9 @@ const mcu_pin_obj_t pin_PA09 = PIN(0, 9, NO_ADC);
 const mcu_pin_obj_t pin_PA10 = PIN(0, 10, NO_ADC);
 const mcu_pin_obj_t pin_PA11 = PIN(0, 11, NO_ADC);
 const mcu_pin_obj_t pin_PA12 = PIN(0, 12, NO_ADC);
-const mcu_pin_obj_t pin_PA13 = PIN(0, 13, NO_ADC); //SWDIO
-const mcu_pin_obj_t pin_PA14 = PIN(0, 14, NO_ADC); //SWCLK
-const mcu_pin_obj_t pin_PA15 = PIN(0, 15, NO_ADC); //JTDI
+const mcu_pin_obj_t pin_PA13 = PIN(0, 13, NO_ADC); // SWDIO
+const mcu_pin_obj_t pin_PA14 = PIN(0, 14, NO_ADC); // SWCLK
+const mcu_pin_obj_t pin_PA15 = PIN(0, 15, NO_ADC); // JTDI
 
 const mcu_pin_obj_t pin_PC10 = PIN(2, 10, NO_ADC);
 const mcu_pin_obj_t pin_PC11 = PIN(2, 11, NO_ADC);

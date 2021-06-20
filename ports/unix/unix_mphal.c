@@ -27,11 +27,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/time.h>
 
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "py/runtime.h"
-#include "extmod/misc.h"
 
 #ifndef _WIN32
 #include <signal.h>
@@ -39,6 +40,11 @@
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
+        #if MICROPY_PY_THREAD_GIL
+        // Since signals can occur at any time, we may not be holding the GIL when
+        // this callback is called, so it is not safe to raise an exception here
+        #error "MICROPY_ASYNC_KBD_INTR and MICROPY_PY_THREAD_GIL are not compatible"
+        #endif
         mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
         sigemptyset(&mask);
@@ -51,8 +57,7 @@ STATIC void sighandler(int signum) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+        mp_keyboard_interrupt();
         #endif
     }
 }
@@ -111,74 +116,21 @@ void mp_hal_stdio_mode_orig(void) {
 
 #endif
 
-#if MICROPY_PY_OS_DUPTERM
-static int call_dupterm_read(size_t idx) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t read_m[3];
-        mp_load_method(MP_STATE_VM(dupterm_objs[idx]), MP_QSTR_read, read_m);
-        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
-        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
-        if (res == mp_const_none) {
-            return -2;
-        }
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
-        if (bufinfo.len == 0) {
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
-            MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
-            return -1;
-        }
-        nlr_pop();
-        return *(byte*)bufinfo.buf;
-    } else {
-        // Temporarily disable dupterm to avoid infinite recursion
-        mp_obj_t save_term = MP_STATE_VM(dupterm_objs[idx]);
-        MP_STATE_VM(dupterm_objs[idx]) = NULL;
-        mp_printf(&mp_plat_print, "dupterm: ");
-        mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
-        MP_STATE_VM(dupterm_objs[idx]) = save_term;
-    }
-
-    return -1;
-}
-#endif
-
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
-#if MICROPY_PY_OS_DUPTERM
-    // TODO only support dupterm one slot at the moment
-    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        int c;
-        do {
-             c = call_dupterm_read(0);
-        } while (c == -2);
-        if (c == -1) {
-            goto main_term;
-        }
-        if (c == '\n') {
-            c = '\r';
-        }
-        return c;
-    } else {
-        main_term:;
-#endif
-        int ret = read(0, &c, 1);
-        if (ret == 0) {
-            c = 4; // EOF, ctrl-D
-        } else if (c == '\n') {
-            c = '\r';
-        }
-        return c;
-#if MICROPY_PY_OS_DUPTERM
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
+    if (ret == 0) {
+        c = 4; // EOF, ctrl-D
+    } else if (c == '\n') {
+        c = '\r';
     }
-#endif
+    return c;
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    int ret = write(1, str, len);
-    mp_uos_dupterm_tx_strn(str, len);
-    (void)ret; // to suppress compiler warning
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
@@ -191,13 +143,45 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
+    #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_sec * 1000 + tv.tv_nsec / 1000000;
+    #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    #endif
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
+    #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_sec * 1000000 + tv.tv_nsec / 1000;
+    #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000 + tv.tv_usec;
+    #endif
+}
+
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    #ifdef MICROPY_EVENT_POLL_HOOK
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
+        MICROPY_EVENT_POLL_HOOK
+    }
+    #else
+    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
+    // "The useconds argument shall be less than one million."
+    usleep(ms * 1000);
+    #endif
 }

@@ -32,7 +32,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    busio_i2c_obj_t *i2c;
+    mp_obj_t *i2c;
     uint8_t device_address;
 } adafruit_bus_device_i2cdevice_obj_t;
 

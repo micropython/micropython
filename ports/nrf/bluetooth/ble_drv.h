@@ -41,7 +41,7 @@
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
-#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME) * (RESOLUTION)) / 1000000)
+#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME)*(RESOLUTION)) / 1000000)
 // 0.625 msecs (625 usecs)
 #define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 // Microseconds is the base unit. The macros above know that.
@@ -49,7 +49,7 @@
 #define UNIT_1_25_MS  (1250)
 #define UNIT_10_MS    (10000)
 
-typedef bool (*ble_drv_evt_handler_t)(ble_evt_t*, void*);
+typedef bool (*ble_drv_evt_handler_t)(ble_evt_t *, void *);
 
 typedef enum {
     SD_FLASH_OPERATION_DONE,
@@ -71,6 +71,6 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param);
 
 // Allow for user provided entries to prevent allocations outside the VM.
-void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t* entry, ble_drv_evt_handler_t func, void *param);
+void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param);
 
 #endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H

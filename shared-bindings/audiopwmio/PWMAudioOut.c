@@ -155,8 +155,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 
 //|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
-//|         resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
-//|         DAC that ignores the lowest 6 bits when playing 16 bit samples."""
+//|         resolution will use the highest order bits to output."""
 //|         ...
 //|
 STATIC mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -202,8 +201,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_playing_obj, audiopwmio_pwm
 const mp_obj_property_t audiopwmio_pwmaudioout_playing_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiopwmio_pwmaudioout_get_playing_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def pause(self) -> None:
@@ -251,8 +250,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_paused_obj, audiopwmio_pwma
 const mp_obj_property_t audiopwmio_pwmaudioout_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiopwmio_pwmaudioout_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
@@ -275,5 +274,5 @@ const mp_obj_type_t audiopwmio_pwmaudioout_type = {
     { &mp_type_type },
     .name = MP_QSTR_PWMAudioOut,
     .make_new = audiopwmio_pwmaudioout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audiopwmio_pwmaudioout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&audiopwmio_pwmaudioout_locals_dict,
 };

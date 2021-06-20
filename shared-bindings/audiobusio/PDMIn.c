@@ -84,9 +84,9 @@
 //|         ...
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if !CIRCUITPY_AUDIOBUSIO_PDMIN
+    #if !CIRCUITPY_AUDIOBUSIO_PDMIN
     mp_raise_NotImplementedError(translate("PDMIn not available"));
-#else
+    #else
     enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock_pin,     MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -129,13 +129,13 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 
     common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, sample_rate,
-                                          bit_depth, mono, oversample);
+        bit_depth, mono, oversample);
 
     // Wait for the microphone to start up. Some start in 10 msecs; some take as much as 100 msecs.
     mp_hal_delay_ms(startup_delay * 1000);
 
     return MP_OBJ_FROM_PTR(self);
-#endif
+    #endif
 }
 
 #if CIRCUITPY_AUDIOBUSIO_PDMIN
@@ -188,13 +188,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     check_for_deinit(self);
-    if (!MP_OBJ_IS_SMALL_INT(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
+    if (!mp_obj_is_small_int(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
         mp_raise_TypeError(translate("destination_length must be an int >= 0"));
     }
     uint32_t length = MP_OBJ_SMALL_INT_VALUE(destination_length);
 
     mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_TYPE(destination, &mp_type_fileio)) {
+    if (mp_obj_is_type(destination, &mp_type_fileio)) {
         mp_raise_NotImplementedError(translate("Cannot record to a file"));
     } else if (mp_get_buffer(destination, &bufinfo, MP_BUFFER_WRITE)) {
         if (bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL) < length) {
@@ -229,8 +229,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_sample_rate_obj, audiobusio_pdmin
 const mp_obj_property_t audiobusio_pdmin_sample_rate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&audiobusio_pdmin_get_sample_rate_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t audiobusio_pdmin_locals_dict_table[] = {
@@ -248,7 +248,7 @@ const mp_obj_type_t audiobusio_pdmin_type = {
     { &mp_type_type },
     .name = MP_QSTR_PDMIn,
     .make_new = audiobusio_pdmin_make_new,
-#if CIRCUITPY_AUDIOBUSIO_PDMIN
-    .locals_dict = (mp_obj_dict_t*)&audiobusio_pdmin_locals_dict,
-#endif
+    #if CIRCUITPY_AUDIOBUSIO_PDMIN
+    .locals_dict = (mp_obj_dict_t *)&audiobusio_pdmin_locals_dict,
+    #endif
 };

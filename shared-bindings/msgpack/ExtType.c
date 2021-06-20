@@ -84,7 +84,7 @@ const mp_obj_property_t mod_msgpack_exttype_code_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mod_msgpack_exttype_get_code_obj,
               (mp_obj_t)&mod_msgpack_exttype_set_code_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     data: bytes
@@ -108,7 +108,7 @@ const mp_obj_property_t mod_msgpack_exttype_data_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mod_msgpack_exttype_get_data_obj,
               (mp_obj_t)&mod_msgpack_exttype_set_data_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
@@ -122,5 +122,5 @@ const mp_obj_type_t mod_msgpack_exttype_type = {
     { &mp_type_type },
     .name = MP_QSTR_ExtType,
     .make_new = mod_msgpack_exttype_make_new,
-    .locals_dict = (mp_obj_dict_t*)&mod_msgpack_exttype_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mod_msgpack_exttype_locals_dict,
 };

@@ -67,7 +67,7 @@ void common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[1
     check_nrf_error(sd_ble_uuid_encode(&self->nrf_ble_uuid, &length, uuid128));
 }
 
-void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf) {
+void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t *buf) {
     if (self->nrf_ble_uuid.type == BLE_UUID_TYPE_BLE) {
         buf[0] = self->nrf_ble_uuid.uuid & 0xff;
         buf[1] = self->nrf_ble_uuid.uuid >> 8;

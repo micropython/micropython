@@ -3,13 +3,13 @@ try:
 except ImportError:
     import os
 
-if not hasattr(os, "unlink"):
+if not hasattr(os, "remove"):
     print("SKIP")
     raise SystemExit
 
 # cleanup in case testfile exists
 try:
-    os.unlink("testfile")
+    os.remove("testfile")
 except OSError:
     pass
 
@@ -42,6 +42,6 @@ f.close()
 
 # cleanup
 try:
-    os.unlink("testfile")
+    os.remove("testfile")
 except OSError:
     pass

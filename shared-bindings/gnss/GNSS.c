@@ -48,14 +48,14 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     unsigned long selection = 0;
-    if (MP_OBJ_IS_TYPE(args[ARG_system].u_obj, &gnss_satellitesystem_type)) {
+    if (mp_obj_is_type(args[ARG_system].u_obj, &gnss_satellitesystem_type)) {
         selection |= gnss_satellitesystem_obj_to_type(args[ARG_system].u_obj);
-    } else if (MP_OBJ_IS_TYPE(args[ARG_system].u_obj, &mp_type_list)) {
+    } else if (mp_obj_is_type(args[ARG_system].u_obj, &mp_type_list)) {
         size_t systems_size = 0;
         mp_obj_t *systems;
         mp_obj_list_get(args[ARG_system].u_obj, &systems_size, &systems);
         for (size_t i = 0; i < systems_size; ++i) {
-            if (!MP_OBJ_IS_TYPE(systems[i], &gnss_satellitesystem_type)) {
+            if (!mp_obj_is_type(systems[i], &gnss_satellitesystem_type)) {
                 mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
             }
             selection |= gnss_satellitesystem_obj_to_type(systems[i]);
@@ -111,8 +111,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_latitude_obj, gnss_obj_get_latitude);
 const mp_obj_property_t gnss_latitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_latitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     longitude: float
@@ -128,8 +128,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_longitude_obj, gnss_obj_get_longitude);
 const mp_obj_property_t gnss_longitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_longitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     altitude: float
@@ -145,8 +145,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_altitude_obj, gnss_obj_get_altitude);
 const mp_obj_property_t gnss_altitude_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_altitude_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     timestamp: time.struct_time
@@ -164,8 +164,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_timestamp_obj, gnss_obj_get_timestamp);
 const mp_obj_property_t gnss_timestamp_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_timestamp_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     fix: PositionFix
@@ -181,8 +181,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_fix_obj, gnss_obj_get_fix);
 const mp_obj_property_t gnss_fix_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&gnss_get_fix_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
@@ -198,8 +198,8 @@ STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(gnss_locals_dict, gnss_locals_dict_table);
 
 const mp_obj_type_t gnss_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_GNSS,
-   .make_new = gnss_make_new,
-   .locals_dict = (mp_obj_dict_t*)&gnss_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_GNSS,
+    .make_new = gnss_make_new,
+    .locals_dict = (mp_obj_dict_t *)&gnss_locals_dict,
 };
