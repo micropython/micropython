@@ -352,28 +352,26 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (reload_requested) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
         }
-        else if (result.return_code == 0) { //TODO mask out PYEXEC_DEEP_SLEEP?
+        else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
                 skip_wait = true;
-                //goto done;
             }
         }
         else {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
-            if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR) {
-                // TODO: in what scenario is this acceptable
+            // Deep sleep cannot be skipped
+            // TODO: settings in deep sleep should persist, using a new sleep memory API
+            if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR
+                && !(result.return_code & PYEXEC_DEEP_SLEEP)) {
                 skip_repl = true;
                 skip_wait = true;
-                //goto done;
             }
         }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
-            // TODO: what scenario does this describe?
             skip_repl = reload_requested;
             skip_wait = true;
-            //goto done;
         }
 
         if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
@@ -421,7 +419,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
     #endif
-    // bool skip_repl = false;
     while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
