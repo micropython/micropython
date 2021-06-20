@@ -281,6 +281,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     result.exception_line = 0;
 
     bool skip_repl;
+    bool skip_wait = false;
     bool found_main = false;
     uint8_t next_code_options = 0;
     // Collects stickiness bits that apply in the current situation.
@@ -355,18 +356,23 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
+                skip_wait = true;
                 //goto done;
             }
         }
         else {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR) {
+                // TODO: in what scenario is this acceptable
                 skip_repl = true;
+                skip_wait = true;
                 //goto done;
             }
         }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
+            // TODO: what scenario does this describe?
             skip_repl = reload_requested;
+            skip_wait = true;
             //goto done;
         }
 
@@ -416,7 +422,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool fake_sleeping = false;
     #endif
     // bool skip_repl = false;
-    while (true) {
+    while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
         // If a reload was requested by the supervisor or autoreload, return
