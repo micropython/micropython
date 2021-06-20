@@ -94,11 +94,12 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
             .year = mp_obj_get_int(items[0]),
             .month = mp_obj_get_int(items[1]),
             .day = mp_obj_get_int(items[2]),
-            .dotw = mp_obj_get_int(items[3]),
             .hour = mp_obj_get_int(items[4]),
             .min = mp_obj_get_int(items[5]),
             .sec = mp_obj_get_int(items[6]),
         };
+        // Deliberately ignore the weekday argument and compute the proper value
+        t.dotw = timeutils_calc_weekday(t.year, t.month, t.day);
 
         if (!rtc_set_datetime(&t)) {
             mp_raise_OSError(MP_EINVAL);
