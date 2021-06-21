@@ -96,6 +96,13 @@ void reset_all_pins(void) {
     in_use[1] = 0;
 }
 
+void claim_pin_number(gpio_num_t pin_number) {
+    if (pin_number == NO_PIN) {
+        return;
+    }
+    in_use[pin_number / 32] |= (1 << (pin_number % 32));
+}
+
 void claim_pin(const mcu_pin_obj_t *pin) {
     in_use[pin->number / 32] |= (1 << (pin->number % 32));
 }
