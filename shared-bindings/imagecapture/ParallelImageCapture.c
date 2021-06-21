@@ -43,7 +43,7 @@
 //|         clock: microcontroller.Pin,
 //|         vsync: Optional[microcontroller.Pin],
 //|         href: Optional[microcontroller.Pin],
-//|     ):
+//|     ) -> None:
 //|         """Create a parallel image capture object
 //|
 //|         :param List[microcontroller.Pin] data_pins: The data pins.

@@ -55,7 +55,7 @@ STATIC mp_obj_t keypad_eventqueue_next(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_next_obj, keypad_eventqueue_next);
 
-//|     def store_next(self, Event: event) -> bool:
+//|     def store_next(self, event: Event) -> bool:
 //|         """Store the next key transition event in the supplied event, if available,
 //|         and return ``True``.
 //|         If there are no queued events, do not touch ``event`` and return ``False``.
