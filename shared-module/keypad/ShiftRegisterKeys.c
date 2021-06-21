@@ -35,7 +35,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, size_t num_keys, bool value_when_pressed, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t num_keys, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
     digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
     clock->base.type = &digitalio_digitalinout_type;
@@ -54,6 +54,7 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     common_hal_digitalio_digitalinout_construct(latch, latch_pin);
     common_hal_digitalio_digitalinout_switch_to_output(latch, true, DRIVE_MODE_PUSH_PULL);
     self->latch = latch;
+    self->value_to_latch = value_to_latch;
 
     self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_keys, false, false);
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_keys, false, false);
@@ -126,7 +127,7 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
     self->last_scan_ticks = now;
 
     // Latch (freeze) the current state of the input pins.
-    common_hal_digitalio_digitalinout_set_value(self->latch, true);
+    common_hal_digitalio_digitalinout_set_value(self->latch, self->value_to_latch);
 
     for (mp_uint_t key_num = 0; key_num < common_hal_keypad_shiftregisterkeys_get_num_keys(self); key_num++) {
         // Zero-th data appears on on the data pin immediately, without shifting.
@@ -151,6 +152,5 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
     }
 
     // Start reading the input pins again.
-    common_hal_digitalio_digitalinout_set_value(self->latch, false);
-
+    common_hal_digitalio_digitalinout_set_value(self->latch, !self->value_to_latch);
 }

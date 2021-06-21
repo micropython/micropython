@@ -36,10 +36,10 @@
 //| class ShiftRegisterKeys:
 //|     """Manage a set of keys attached to an incoming shift register."""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(self, *, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_to_latch: bool = True, num_keys: int, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to a parallel-in serial-out shift register
-//|         like the 74HC165 or equivalent.
+//|         like the 74HC165 or CD4021.
 //|         Note that you may chain shift registers to load in as many values as you need.
 //|
 //|         Key number 0 is the first (or more properly, the zero-th) bit read. In the
@@ -53,8 +53,12 @@
 //|           The shift register should clock on a low-to-high transition.
 //|         :param microcontroller.Pin data: the incoming shift register data pin
 //|         :param microcontroller.Pin latch:
-//|           Pin used to trigger loading parallel data pins into the shift register.
-//|           Active low: pull low to load the data.
+//|           Pin used to latch parallel data going into the shift register.
+//|         :param bool value_to_latch: Pin state to latch data being read.
+//|           ``True`` if the data is latched when ``latch`` goes high
+//|           ``False`` if the data is latched when ``latch goes low.
+//|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
+//|           Once the data is latched, it will be shifted out by toggling the clock pin.
 //|         :param int num_keys: number of data lines to clock in
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
 //|           ``False`` if the pin reads low (is grounded) when the key is pressed.
@@ -70,11 +74,12 @@
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
     self->base.type = &keypad_shiftregisterkeys_type;
-    enum { ARG_clock, ARG_data, ARG_latch, ARG_num_keys, ARG_value_when_pressed, ARG_interval, ARG_max_events };
+    enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_num_keys, ARG_value_when_pressed, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_latch, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_value_to_latch, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_num_keys, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_value_when_pressed, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -86,6 +91,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
     mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj);
     mcu_pin_obj_t *latch = validate_obj_is_free_pin(args[ARG_latch].u_obj);
+    const bool value_to_latch = args[ARG_value_to_latch].u_bool;
 
     const size_t num_keys = (size_t)mp_arg_validate_int_min(args[ARG_num_keys].u_int, 1, MP_QSTR_num_keys);
     const bool value_when_pressed = args[ARG_value_when_pressed].u_bool;
@@ -94,7 +100,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
     common_hal_keypad_shiftregisterkeys_construct(
-        self, clock, data, latch, num_keys, value_when_pressed, interval, max_events);
+        self, clock, data, latch, value_to_latch, num_keys, value_when_pressed, interval, max_events);
 
     return MP_OBJ_FROM_PTR(self);
 }

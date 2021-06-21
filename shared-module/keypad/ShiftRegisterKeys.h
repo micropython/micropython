@@ -48,6 +48,7 @@ typedef struct {
     bool *currently_pressed;
     keypad_eventqueue_obj_t *events;
     bool value_when_pressed;
+    bool value_to_latch;
 } keypad_shiftregisterkeys_obj_t;
 
 void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self);
