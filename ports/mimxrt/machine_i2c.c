@@ -50,10 +50,9 @@ typedef struct _machine_i2c_obj_t {
     LPI2C_Type *i2c_inst;
     uint8_t i2c_id;
     uint8_t i2c_hw_id;
-    bool transfer_busy;
-    bool transfer_error;
-    bool nack_flag;
     uint8_t mode;
+    bool transfer_busy;
+    status_t transfer_status;
     lpi2c_master_config_t *master_config;
 } machine_i2c_obj_t;
 
@@ -155,18 +154,14 @@ static void lpi2c_master_callback(LPI2C_Type *base, lpi2c_master_handle_t *handl
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
 
     self->transfer_busy = false;
-    if (status == kStatus_LPI2C_Nak) {
-        self->nack_flag = true;
-    } else {
-        self->transfer_error = (status != kStatus_Success);
-    }
+    self->transfer_status = status;
 }
 
-    lpi2c_master_handle_t g_master_handle;
 
 STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     status_t ret;
+    lpi2c_master_handle_t g_master_handle;
     lpi2c_master_transfer_t masterXfer = {0};
     LPI2C_MasterTransferCreateHandle(self->i2c_inst, &g_master_handle, lpi2c_master_callback, self);
 
@@ -178,21 +173,35 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     masterXfer.slaveAddress = addr;
     masterXfer.data = buf;
     masterXfer.dataSize = len;
-    masterXfer.flags = kLPI2C_TransferDefaultFlag;
-
+    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
+        masterXfer.flags = kLPI2C_TransferDefaultFlag;
+    } else {
+        masterXfer.flags = kLPI2C_TransferNoStopFlag;
+     }
     self->transfer_busy = true;
-    self->nack_flag = false;
 
     // Send master data to slave in blocking mode
     ret = LPI2C_MasterTransferNonBlocking(self->i2c_inst, &g_master_handle, &masterXfer);
     if (ret != kStatus_Success) {
         return -MP_EIO;
     }
-    /*  Wait for transfer completed. */
+    //  Wait for the transfer to complete
     while (self->transfer_busy) {
         MICROPY_EVENT_POLL_HOOK
     }
-    return self->nack_flag ? -MP_ENODEV : len;
+
+    // Transfer will not send a stop in case of errors like NAK. So it#s done here.
+    if (flags & MP_MACHINE_I2C_FLAG_STOP && self->transfer_status != kStatus_Success) {
+        LPI2C_MasterStop(self->i2c_inst);
+    };
+
+    if (self->transfer_status == kStatus_Success) {
+        return len;
+    } else if (self->transfer_status == kStatus_LPI2C_Nak) {
+        return -MP_ENODEV;
+    } else {
+        return -MP_EIO;
+    }
 }
 
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
