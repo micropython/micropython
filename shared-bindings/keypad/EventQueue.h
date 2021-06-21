@@ -27,8 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H
 
-#include "py/objlist.h"
-#include "shared-module/keypad/Keys.h"
+#include "shared-module/keypad/Event.h"
+#include "shared-module/keypad/EventQueue.h"
 
 extern const mp_obj_type_t keypad_eventqueue_type;
 
@@ -37,5 +37,6 @@ void common_hal_keypad_eventqueue_construct(keypad_eventqueue_obj_t *self, size_
 void common_hal_keypad_eventqueue_clear(keypad_eventqueue_obj_t *self);
 size_t common_hal_keypad_eventqueue_get_length(keypad_eventqueue_obj_t *self);
 mp_obj_t common_hal_keypad_eventqueue_next(keypad_eventqueue_obj_t *self);
+bool common_hal_keypad_eventqueue_store_next(keypad_eventqueue_obj_t *self, keypad_event_obj_t *event);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENTQUEUE_H

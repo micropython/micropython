@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/EventQueue.h"
 
 //| class EventQueue:
@@ -53,6 +54,34 @@ STATIC mp_obj_t keypad_eventqueue_next(mp_obj_t self_in) {
     return common_hal_keypad_eventqueue_next(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_next_obj, keypad_eventqueue_next);
+
+//|     def store_next(self, Event: event) -> bool:
+//|         """Store the next key transition event in the supplied event, if available,
+//|         and return ``True``.
+//|         If there are no queued events, do not touch ``event`` and return ``False``.
+//|
+//|         The advantage of this method over ``next()`` is that it does not allocate storage.
+//|         Instead you can reuse an existing ``Event`` object.
+//|
+//|         Note that the queue size is limited; see ``max_events`` in the constructor of
+//|         a scanner such as `Keys` or `KeyMatrix`.
+//|         If a new event arrives when the queue is full, the oldest event is discarded.
+//|
+//|         :return ``True`` if an event was available and stored, ``False`` if not.
+//|         :rtype: bool
+//|         """
+//|         ...
+//|
+STATIC mp_obj_t keypad_eventqueue_store_next(mp_obj_t self_in, mp_obj_t event_in) {
+    keypad_eventqueue_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (!mp_obj_is_type(event_in, &keypad_event_type)) {
+        mp_raise_ValueError_varg(translate("Expected an %q"), MP_QSTR_Event);
+    }
+    keypad_event_obj_t *event = MP_OBJ_TO_PTR(event_in);
+    return mp_obj_new_bool(common_hal_keypad_eventqueue_store_next(self, event));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(keypad_eventqueue_store_next_obj, keypad_eventqueue_store_next);
 
 //|     def clear(self) -> None:
 //|         """Clear any queued key transition events.
@@ -91,8 +120,9 @@ STATIC mp_obj_t keypad_eventqueue_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC const mp_rom_map_elem_t keypad_eventqueue_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&keypad_eventqueue_clear_obj) },
-    { MP_ROM_QSTR(MP_QSTR_next),  MP_ROM_PTR(&keypad_eventqueue_next_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear),       MP_ROM_PTR(&keypad_eventqueue_clear_obj) },
+    { MP_ROM_QSTR(MP_QSTR_next),        MP_ROM_PTR(&keypad_eventqueue_next_obj) },
+    { MP_ROM_QSTR(MP_QSTR_store_next),  MP_ROM_PTR(&keypad_eventqueue_store_next_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_eventqueue_locals_dict, keypad_eventqueue_locals_dict_table);

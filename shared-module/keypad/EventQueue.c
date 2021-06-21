@@ -49,6 +49,20 @@ mp_obj_t common_hal_keypad_eventqueue_next(keypad_eventqueue_obj_t *self) {
     return MP_OBJ_FROM_PTR(event);
 }
 
+bool common_hal_keypad_eventqueue_store_next(keypad_eventqueue_obj_t *self, keypad_event_obj_t *event) {
+    int encoded_event = ringbuf_get16(&self->encoded_events);
+    if (encoded_event == -1) {
+        return false;
+    }
+
+    // "Construct" using the existing event.
+    common_hal_keypad_event_construct(event, encoded_event & EVENT_KEY_NUM_MASK, encoded_event & EVENT_PRESSED);
+    return true;
+}
+
+
+
+
 void common_hal_keypad_eventqueue_clear(keypad_eventqueue_obj_t *self) {
     ringbuf_clear(&self->encoded_events);
 }

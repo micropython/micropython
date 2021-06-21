@@ -949,6 +949,10 @@ msgstr ""
 msgid "Expected a UUID"
 msgstr ""
 
+#: shared-bindings/keypad/EventQueue.c
+msgid "Expected an %q"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
 msgstr ""

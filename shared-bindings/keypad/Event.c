@@ -32,7 +32,7 @@
 
 //| class Event:
 //|     """A key transition event."""
-//|     def __init__(self, key_num: int, pressed: bool) -> None:
+//|     def __init__(self, key_num: int=0, pressed: bool=True) -> None:
 //|         """Create a key transition event, which reports a key-pressed or key-released transition.
 //|
 //|         :param int key_num: the key number
@@ -46,8 +46,8 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->base.type = &keypad_event_type;
     enum { ARG_key_num, ARG_pressed };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key_num, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pressed, MP_ARG_REQUIRED | MP_ARG_BOOL },
+        { MP_QSTR_key_num, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pressed, MP_ARG_BOOL, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
