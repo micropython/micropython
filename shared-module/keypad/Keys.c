@@ -35,9 +35,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-#define DEBOUNCE_TICKS (20)
-
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, size_t max_events) {
+void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
     mp_obj_t dios[num_pins];
 
     for (size_t i = 0; i < num_pins; i++) {
@@ -54,6 +52,8 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->value_when_pressed = value_when_pressed;
+
+    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
     self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
@@ -107,7 +107,7 @@ mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self) {
 
 void keypad_keys_scan(keypad_keys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
+    if (now - self->last_scan_ticks < self->interval_ticks) {
         // Too soon. Wait longer to debounce.
         return;
     }

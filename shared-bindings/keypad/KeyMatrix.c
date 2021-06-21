@@ -36,7 +36,7 @@
 //| class KeyMatrix:
 //|     """Manage a 2D matrix of keys with row and column pins."""
 //|
-//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], columns_to_anodes: bool = True, max_events: int = 64) -> None:
+//|     def __init__(self, row_pins: Sequence[microcontroller.Pin], col_pins: Sequence[microcontroller.Pin], columns_to_anodes: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
 //|         There should not be any pull-ups or pull-downs on the matrix.
@@ -54,7 +54,8 @@
 //|           If the matrix uses diodes, the diode anodes are typically connected to the column pins,
 //|           and the cathodes should be connected to the row pins. If your diodes are reversed,
 //|           set ``columns_to_anodes`` to ``False``.
-//|
+//|         :param float interval: Scan keys no more often
+//|           to allow for debouncing. Given in seconds.
 //|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -65,11 +66,12 @@
 STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_keymatrix_obj_t *self = m_new_obj(keypad_keymatrix_obj_t);
     self->base.type = &keypad_keymatrix_type;
-    enum { ARG_row_pins, ARG_col_pins, ARG_columns_to_anodes, ARG_max_events };
+    enum { ARG_row_pins, ARG_col_pins, ARG_columns_to_anodes, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_col_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_columns_to_anodes, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -82,10 +84,9 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_obj_t col_pins = args[ARG_col_pins].u_obj;
     const size_t num_col_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(col_pins));
 
-    if (args[ARG_max_events].u_int < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_max_events);
-    }
-    const size_t max_events = (size_t)args[ARG_max_events].u_int;
+    const mp_float_t interval =
+        mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
+    const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
     mcu_pin_obj_t *row_pins_array[num_row_pins];
     mcu_pin_obj_t *col_pins_array[num_col_pins];
@@ -102,7 +103,7 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
         col_pins_array[col] = pin;
     }
 
-    common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_col_pins, col_pins_array, args[ARG_columns_to_anodes].u_bool, max_events);
+    common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_col_pins, col_pins_array, args[ARG_columns_to_anodes].u_bool, interval, max_events);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -168,18 +169,14 @@ STATIC mp_obj_t keypad_keymatrix_key_num(mp_obj_t self_in, mp_obj_t row_in, mp_o
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    const mp_int_t row = mp_obj_get_int(row_in);
-    if (row < 0 || (size_t)row >= common_hal_keypad_keymatrix_get_num_rows(self)) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_row_num);
-    }
+    const mp_uint_t row = (mp_uint_t)mp_arg_validate_int_range(
+        mp_obj_get_int(row_in), 0, (mp_int_t)common_hal_keypad_keymatrix_get_num_rows(self), MP_QSTR_row);
 
-    const mp_int_t col = mp_obj_get_int(col_in);
-    if (col < 0 || (size_t)col >= common_hal_keypad_keymatrix_get_num_cols(self)) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_col_num);
-    }
+    const mp_int_t col = (mp_uint_t)mp_arg_validate_int_range(
+        mp_obj_get_int(col_in), 0, (mp_int_t)common_hal_keypad_keymatrix_get_num_cols(self), MP_QSTR_col);
 
     return MP_OBJ_NEW_SMALL_INT(
-        (mp_int_t)common_hal_keypad_keymatrix_key_num(self, (mp_uint_t)row, (mp_uint_t)col));
+        (mp_int_t)common_hal_keypad_keymatrix_key_num(self, row, col));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(keypad_keymatrix_key_num_obj, keypad_keymatrix_key_num);
 
@@ -193,10 +190,8 @@ STATIC mp_obj_t keypad_keymatrix_pressed(mp_obj_t self_in, mp_obj_t key_num_in) 
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    mp_int_t key_num = mp_obj_get_int(key_num_in);
-    if (key_num < 0 || (size_t)key_num >= common_hal_keypad_keymatrix_get_num_keys(self)) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_key_num);
-    }
+    mp_uint_t key_num = mp_arg_validate_int_range(
+        mp_obj_get_int(key_num_in), 0, (mp_int_t)common_hal_keypad_keymatrix_get_num_keys(self), MP_QSTR_key_num);
 
     return mp_obj_new_bool(common_hal_keypad_keymatrix_pressed(self, (mp_uint_t)key_num));
 }
@@ -220,9 +215,9 @@ STATIC mp_obj_t keypad_keymatrix_store_states(mp_obj_t self_in, mp_obj_t pressed
     if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
         mp_raise_ValueError_varg(translate("%q must store bytes"), MP_QSTR_states);
     }
-    if (bufinfo.len != common_hal_keypad_keymatrix_get_num_keys(self)) {
-        mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_states, MP_QSTR_num_keys);
-    }
+
+    (void)mp_arg_validate_length_with_name(bufinfo.len, common_hal_keypad_keymatrix_get_num_keys(self),
+        MP_QSTR_states, MP_QSTR_num_keys);
 
     common_hal_keypad_keymatrix_store_states(self, (uint8_t *)bufinfo.buf);
     return MP_ROM_NONE;

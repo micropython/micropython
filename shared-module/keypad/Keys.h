@@ -39,6 +39,7 @@ typedef struct {
     // All scanners have a next field here, to keep a linked list of active scanners.
     keypad_scanner_obj_t *next;
     mp_obj_tuple_t *digitalinouts;
+    mp_uint_t interval_ticks;
     uint64_t last_scan_ticks;
     bool *previously_pressed;
     bool *currently_pressed;

@@ -36,13 +36,11 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-#define DEBOUNCE_TICKS (20)
-
 static mp_uint_t row_col_to_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col) {
     return row * self->col_digitalinouts->len + col;
 }
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], bool columns_to_anodes, size_t max_events) {
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events) {
 
     mp_obj_t row_dios[num_row_pins];
     for (size_t row = 0; row < num_row_pins; row++) {
@@ -73,6 +71,9 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     events->base.type = &keypad_eventqueue_type;
     common_hal_keypad_eventqueue_construct(events, max_events);
     self->events = events;
+
+    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
+    self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
@@ -137,7 +138,7 @@ mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self) {
 
 void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
+    if (now - self->last_scan_ticks < self->interval_ticks) {
         // Too soon. Wait longer to debounce.
         return;
     }

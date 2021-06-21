@@ -75,10 +75,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_next_obj, keypad_eventqueue_next);
 STATIC mp_obj_t keypad_eventqueue_store_next(mp_obj_t self_in, mp_obj_t event_in) {
     keypad_eventqueue_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (!mp_obj_is_type(event_in, &keypad_event_type)) {
-        mp_raise_ValueError_varg(translate("Expected an %q"), MP_QSTR_Event);
-    }
-    keypad_event_obj_t *event = MP_OBJ_TO_PTR(event_in);
+    keypad_event_obj_t *event = MP_OBJ_TO_PTR(mp_arg_validate_type(event_in, &keypad_event_type, MP_QSTR_event));
+
     return mp_obj_new_bool(common_hal_keypad_eventqueue_store_next(self, event));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_eventqueue_store_next_obj, keypad_eventqueue_store_next);

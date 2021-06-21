@@ -35,9 +35,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-#define DEBOUNCE_TICKS (20)
-
-void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, size_t num_keys, bool value_when_pressed, size_t max_events) {
+void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, size_t num_keys, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
     digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
     clock->base.type = &digitalio_digitalinout_type;
@@ -62,6 +60,7 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     self->value_when_pressed = value_when_pressed;
     self->num_keys = num_keys;
 
+    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
     self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
@@ -119,7 +118,7 @@ mp_obj_t common_hal_keypad_shiftregisterkeys_get_events(keypad_shiftregisterkeys
 
 void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
+    if (now - self->last_scan_ticks < self->interval_ticks) {
         // Too soon. Wait longer to debounce.
         return;
     }

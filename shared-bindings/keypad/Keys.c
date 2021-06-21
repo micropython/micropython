@@ -36,7 +36,7 @@
 //| class Keys:
 //|     """Manage a set of independent keys."""
 //|
-//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, level_when_pressed: bool, pull: bool = True, max_events: int = 64) -> None:
+//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, level_when_pressed: bool, pull: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to the given sequence of pins.
 //|         Each key is independent and attached to its own pin.
@@ -56,6 +56,8 @@
 //|           If an external pull is already provided for all the pins, you can set ``pull`` to ``False``.
 //|           However, enabling an internal pull when an external one is already present is not a problem;
 //|           it simply uses slightly more current.
+//|         :param float interval: Scan keys no more often
+//|           to allow for debouncing. Given in seconds.
 //|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -66,11 +68,12 @@
 STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_keys_obj_t *self = m_new_obj(keypad_keys_obj_t);
     self->base.type = &keypad_keys_type;
-    enum { ARG_pins, ARG_value_when_pressed, ARG_pull, ARG_max_events };
+    enum { ARG_pins, ARG_value_when_pressed, ARG_pull, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_value_when_pressed, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
         { MP_QSTR_pull, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL } },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -81,11 +84,9 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(pins));
 
     const bool value_when_pressed = args[ARG_value_when_pressed].u_bool;
-
-    if (args[ARG_max_events].u_int < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_max_events);
-    }
-    const size_t max_events = (size_t)args[ARG_max_events].u_int;
+    const mp_float_t interval =
+        mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
+    const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
     mcu_pin_obj_t *pins_array[num_pins];
 
@@ -95,7 +96,7 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
         pins_array[i] = pin;
     }
 
-    common_hal_keypad_keys_construct(self, num_pins, pins_array, value_when_pressed, args[ARG_pull].u_bool, max_events);
+    common_hal_keypad_keys_construct(self, num_pins, pins_array, value_when_pressed, args[ARG_pull].u_bool, interval, max_events);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -163,10 +164,8 @@ STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    mp_int_t key_num = mp_obj_get_int(key_num_in);
-    if (key_num < 0 || (size_t)key_num >= common_hal_keypad_keys_get_num_keys(self)) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_key_num);
-    }
+    const mp_int_t key_num = mp_obj_get_int(key_num_in);
+    (void)mp_arg_validate_int_range(key_num, 0, common_hal_keypad_keys_get_num_keys(self), MP_QSTR_key_num);
 
     return mp_obj_new_bool(common_hal_keypad_keys_pressed(self, (mp_uint_t)key_num));
 }
@@ -190,9 +189,8 @@ STATIC mp_obj_t keypad_keys_store_states(mp_obj_t self_in, mp_obj_t pressed) {
     if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
         mp_raise_ValueError_varg(translate("%q must store bytes"), MP_QSTR_pressed);
     }
-    if (bufinfo.len != common_hal_keypad_keys_get_num_keys(self)) {
-        mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_pressed, MP_QSTR_num_keys);
-    }
+    (void)mp_arg_validate_length_with_name(bufinfo.len,common_hal_keypad_keys_get_num_keys(self),
+        MP_QSTR_pressed, MP_QSTR_num_keys);
 
     common_hal_keypad_keys_store_states(self, (uint8_t *)bufinfo.buf);
     return MP_ROM_NONE;

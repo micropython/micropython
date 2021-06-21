@@ -40,6 +40,7 @@ typedef struct {
     keypad_scanner_obj_t *next;
     mp_obj_tuple_t *row_digitalinouts;
     mp_obj_tuple_t *col_digitalinouts;
+    mp_uint_t interval_ticks;
     uint64_t last_scan_ticks;
     bool *previously_pressed;
     bool *currently_pressed;

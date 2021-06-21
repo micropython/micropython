@@ -52,12 +52,9 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_int_t key_num = args[ARG_key_num].u_int;
-    if (key_num < 0) {
-        mp_raise_ValueError_varg(translate("%q must be > 0"), MP_QSTR_key_num);
-    }
+    const mp_uint_t key_num = (mp_uint_t)mp_arg_validate_int_min(args[ARG_key_num].u_int, 0, MP_QSTR_key_num);
 
-    common_hal_keypad_event_construct(self, (mp_uint_t)key_num, args[ARG_pressed].u_bool);
+    common_hal_keypad_event_construct(self, key_num, args[ARG_pressed].u_bool);
     return MP_OBJ_FROM_PTR(self);
 }
 

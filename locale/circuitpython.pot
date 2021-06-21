@@ -83,13 +83,20 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
+#: py/argcheck.c
 msgid "%q length must be %q"
 msgstr ""
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
@@ -100,18 +107,17 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/keypad/Event.c
-msgid "%q must be > 0"
+#: py/argcheck.c
+msgid "%q must be >= %d"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/keypad/KeyMatrix.c
-#: shared-bindings/keypad/Keys.c shared-bindings/keypad/ShiftRegisterKeys.c
+#: shared-bindings/displayio/Shape.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
@@ -119,6 +125,10 @@ msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be a string"
 msgstr ""
 
 #: shared-module/vectorio/Polygon.c
@@ -129,14 +139,17 @@ msgstr ""
 msgid "%q must be between %d and %d"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr ""
+
 #: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
 #: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q must store bytes"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#: shared-bindings/canio/Match.c shared-bindings/keypad/KeyMatrix.c
-#: shared-bindings/keypad/Keys.c shared-bindings/keypad/ShiftRegisterKeys.c
+#: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr ""
 
@@ -951,10 +964,6 @@ msgstr ""
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
 msgid "Expected a UUID"
-msgstr ""
-
-#: shared-bindings/keypad/EventQueue.c
-msgid "Expected an %q"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c

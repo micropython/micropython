@@ -162,3 +162,54 @@ NORETURN void mp_arg_error_unimpl_kw(void) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not yet implemented - use normal args instead"));
 }
 #endif
+
+
+mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
+    if (i < min) {
+        mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, min);
+    }
+    return i;
+}
+
+mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name) {
+    if (i > max) {
+        mp_raise_ValueError_varg(translate("%q must <= %d"), arg_name, max);
+    }
+    return i;
+}
+
+mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name) {
+    if (i < min || i > max) {
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), arg_name, min, max);
+    }
+    return i;
+}
+
+mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name) {
+    const mp_float_t f = (float_in == MP_OBJ_NULL)
+        ? default_for_null
+        : mp_obj_get_float(float_in);
+    if (f <= 0.0f) {
+        mp_raise_ValueError_varg(translate("%q must be >= 0"), arg_name);
+    }
+    return f;
+}
+
+size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name) {
+    mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_pressed, MP_QSTR_num_keys);
+    return (size_t)i;
+}
+
+mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
+    if (!mp_obj_is_type(obj, type)) {
+        mp_raise_TypeError_varg(translate("%q must of type %q"), arg_name, type->name);
+    }
+    return obj;
+}
+
+mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name) {
+    if (!mp_obj_is_str(obj)) {
+        mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
+    }
+    return obj;
+}
