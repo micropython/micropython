@@ -149,6 +149,10 @@ soft_reset:
         }
     }
 
+    #ifdef MICROPY_BOARD_MAIN
+    pyexec_frozen_module(MICROPY_BOARD_MAIN);
+    #endif
+
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
