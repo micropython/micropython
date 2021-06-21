@@ -583,19 +583,36 @@ displayio_area_t *displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     }
 
     if (self->partial_change) {
-        if (self->transpose_xy != self->absolute_transform->transpose_xy) {
-            int16_t x1 = self->dirty_area.x1;
-            self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y1);
-            self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x1);
-            int16_t x2 = self->dirty_area.x2;
-            self->dirty_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y2);
-            self->dirty_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x2);
-        } else {
-            self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->dirty_area.x1);
-            self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->dirty_area.y1);
-            self->dirty_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->dirty_area.x2);
-            self->dirty_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->dirty_area.y2);
+        int16_t x = self->x;
+        int16_t y = self->y;
+        if (self->absolute_transform->transpose_xy) {
+            int16_t temp = y;
+            y = x;
+            x = temp;
         }
+        int16_t x1 = self->dirty_area.x1;
+        int16_t x2 = self->dirty_area.x2;
+        if (self->flip_x) {
+            x1 = self->pixel_width - x1;
+            x2 = self->pixel_width - x2;
+        }
+        int16_t y1 = self->dirty_area.y1;
+        int16_t y2 = self->dirty_area.y2;
+        if (self->flip_y) {
+            y1 = self->pixel_height - y1;
+            y2 = self->pixel_height - y2;
+        }
+        if (self->transpose_xy != self->absolute_transform->transpose_xy) {
+            int16_t temp1 = y1, temp2 = y2;
+            y1 = x1;
+            x1 = temp1;
+            y2 = x2;
+            x2 = temp2;
+        }
+        self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (x + x1);
+        self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (y + y1);
+        self->dirty_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (x + x2);
+        self->dirty_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (y + y2);
         if (self->dirty_area.y2 < self->dirty_area.y1) {
             int16_t temp = self->dirty_area.y2;
             self->dirty_area.y2 = self->dirty_area.y1;
