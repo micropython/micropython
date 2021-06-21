@@ -36,7 +36,7 @@
 //| class Keys:
 //|     """Manage a set of independent keys."""
 //|
-//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, level_when_pressed: bool, pull: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(self, pins: Sequence[microcontroller.Pin], *, value_when_pressed: bool, pull: bool = True, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to the given sequence of pins.
 //|         Each key is independent and attached to its own pin.

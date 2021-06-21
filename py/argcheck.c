@@ -189,14 +189,16 @@ mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t 
     const mp_float_t f = (float_in == MP_OBJ_NULL)
         ? default_for_null
         : mp_obj_get_float(float_in);
-    if (f <= 0.0f) {
+    if (f <= (mp_float_t)0.0) {
         mp_raise_ValueError_varg(translate("%q must be >= 0"), arg_name);
     }
     return f;
 }
 
 size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name) {
-    mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_pressed, MP_QSTR_num_keys);
+    if (i != (mp_int_t)length) {
+        mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_pressed, MP_QSTR_num_keys);
+    }
     return (size_t)i;
 }
 

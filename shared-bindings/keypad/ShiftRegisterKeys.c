@@ -36,7 +36,7 @@
 //| class ShiftRegisterKeys:
 //|     """Manage a set of keys attached to an incoming shift register."""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, level_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(self, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to a parallel-in serial-out shift register
 //|         like the 74HC165 or equivalent.
