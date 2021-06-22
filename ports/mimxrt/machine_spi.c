@@ -49,7 +49,7 @@
 #define DEFAULT_SPI_TIMEOUT     (1000)
 #define DEFAULT_SPI_DRIVE       (6)
 
-#define CLOCK_DIVIDER           (3)
+#define CLOCK_DIVIDER           (1)
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
@@ -173,7 +173,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     if (clk_init) {
         clk_init = false;
         /*Set clock source for LPSPI*/
-        CLOCK_SetMux(kCLOCK_LpspiMux, 1);  // Clock source is kCLOCK_Usb1PllPfd0Clk
+        CLOCK_SetMux(kCLOCK_LpspiMux, 1);  // Clock source is kCLOCK_Usb1PllPfd1Clk
         CLOCK_SetDiv(kCLOCK_LpspiDiv, CLOCK_DIVIDER);
     }
     lpspi_set_iomux(spi_index_table[spi_id], drive);
