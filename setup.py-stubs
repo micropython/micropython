@@ -9,18 +9,16 @@ from typing import Dict, List
 from setuptools import setup
 from pathlib import Path
 
-STD_PACKAGES = set(('array', 'math', 'os', 'random', 'struct', 'sys', 'ssl', 'time'))
-
-stub_root = Path("circuitpython-stubs")
-stubs = [p.relative_to(stub_root).as_posix() for p in stub_root.glob("*.pyi")]
-
 def local_scheme(version):
     return ""
 
-packages = set(os.listdir("circuitpython-stubs")) - STD_PACKAGES
-package_dir = dict((f"{package}-stubs", f"circuitpython-stubs/{package}")
+STD_PACKAGES = set(('array', 'math', 'os', 'random', 'struct', 'sys', 'ssl', 'time'))
+
+stub_root = Path(".")
+stubs = [p.relative_to(stub_root) for p in stub_root.glob("*/*.pyi")]
+packages = set(stub.parent.as_posix() for stub in stubs) - STD_PACKAGES
+package_dir = dict((f"{package}-stubs", package)
     for package in packages)
-print("package dir is", package_dir)
 
 def build_package_data() -> Dict[str, List[str]]:
     result = {}
@@ -41,6 +39,10 @@ setup(
     package_data=package_data,
     package_dir = package_dir,
     setup_requires=["setuptools_scm", "setuptools>=38.6.0"],
-    use_scm_version={"local_scheme": local_scheme},
+    use_scm_version = {
+        "root": "..",
+        "relative_to": __file__,
+        "local_scheme": local_scheme,
+    },
     zip_safe=False,
 )

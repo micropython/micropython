@@ -251,17 +251,23 @@ check-translate:
 	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
+.PHONY: stubs
 stubs:
-	@mkdir -p circuitpython-stubs
+	@rm -rf circuitpython-stubs
+	@mkdir circuitpython-stubs
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py ports/raspberrypi/bindings $(STUBDIR)
-	@$(PYTHON) setup.py -q sdist
+	@cp setup.py-stubs circuitpython-stubs/setup.py
+	@cp README.rst-stubs circuitpython-stubs/README.rst
+	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
+	@(cd circuitpython-stubs && $(PYTHON) setup.py -q sdist)
 
 .PHONY: check-stubs
 check-stubs: stubs
-	MYPYPATH=$(STUBDIR) mypy --strict $(STUBDIR)
+	@(cd $(STUBDIR) && set -- */__init__.pyi && mypy --strict "$${@%/*}")
+	@tools/test-stubs.sh
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
