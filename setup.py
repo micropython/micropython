@@ -11,8 +11,6 @@ from pathlib import Path
 
 STD_PACKAGES = set(('array', 'math', 'os', 'random', 'struct', 'sys', 'ssl', 'time'))
 
-STD_PACKAGES = set(('array', 'math', 'os', 'random', 'struct', 'sys', 'ssl', 'time'))
-
 stub_root = Path("circuitpython-stubs")
 stubs = [p.relative_to(stub_root).as_posix() for p in stub_root.glob("*.pyi")]
 
