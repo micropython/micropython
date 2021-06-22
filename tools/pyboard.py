@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# SPDX-FileCopyrightText: Copyright (c) 2014-2016 Damien P. George
+# SPDX-FileCopyrightText: Copyright (c) 2014-2021 Damien P. George
 # SPDX-FileCopyrightText: Copyright (c) 2017 Paul Sokolovsky
 # SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 # SPDX-License-Identifier: MIT
