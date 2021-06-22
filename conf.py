@@ -203,6 +203,7 @@ exclude_patterns = ["**/build*",
                     "shared-module",
                     "supervisor",
                     "tests",
+                    "test-stubs",
                     "tools"]
 
 # The reST default role (used for this markup: `text`) to use for all
