@@ -148,6 +148,7 @@ STATIC void check_for_deinit(keypad_shiftregisterkeys_obj_t *self) {
 //|
 STATIC mp_obj_t keypad_shiftregisterkeys_reset(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
 
     common_hal_keypad_shiftregisterkeys_reset(self);
     return MP_ROM_NONE;
@@ -160,6 +161,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_reset_obj, keypad_shiftregist
 //|
 STATIC mp_obj_t keypad_shiftregisterkeys_get_key_count(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_shiftregisterkeys_get_key_count(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_get_key_count_obj, keypad_shiftregisterkeys_get_key_count);
@@ -177,6 +180,8 @@ const mp_obj_property_t keypad_shiftregisterkeys_key_count_obj = {
 //|
 STATIC mp_obj_t keypad_shiftregisterkeys_get_events(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     return common_hal_keypad_shiftregisterkeys_get_events(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_get_events_obj, keypad_shiftregisterkeys_get_events);

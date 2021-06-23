@@ -150,6 +150,7 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 //|
 STATIC mp_obj_t keypad_keymatrix_reset(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
 
     common_hal_keypad_keymatrix_reset(self);
     return MP_ROM_NONE;
@@ -162,6 +163,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_reset_obj, keypad_keymatrix_reset);
 //|
 STATIC mp_obj_t keypad_keymatrix_get_key_count(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_keymatrix_get_key_count(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_get_key_count_obj, keypad_keymatrix_get_key_count);
@@ -231,6 +234,8 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_keymatrix_row_column_to_key_number_obj, keypad_
 //|
 STATIC mp_obj_t keypad_keymatrix_get_events(mp_obj_t self_in) {
     keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
     return common_hal_keypad_keymatrix_get_events(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_get_events_obj, keypad_keymatrix_get_events);
