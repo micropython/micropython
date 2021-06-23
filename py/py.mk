@@ -269,8 +269,6 @@ $(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER
 	@$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
 
-SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
-
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
 CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
