@@ -70,7 +70,9 @@ typedef struct _asm_thumb_t {
     uint32_t stack_adjust;
 } asm_thumb_t;
 
-void asm_thumb_end_pass(asm_thumb_t *as);
+static inline void asm_thumb_end_pass(asm_thumb_t *as) {
+    (void)as;
+}
 
 void asm_thumb_entry(asm_thumb_t *as, int num_locals);
 void asm_thumb_exit(asm_thumb_t *as);

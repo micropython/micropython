@@ -27,6 +27,19 @@ RuntimeError:
 RuntimeError: 
 # repl
 ame__
+mport 
+
+builtins        micropython     _thread         array
+btree           cexample        cmath           collections
+cppexample      ffi             framebuf        gc
+hashlib         math            sys             termios
+ubinascii       uctypes         uerrno          uheapq
+uio             ujson           ulab            uos
+urandom         ure             uselect         ustruct
+utime           utimeq          uzlib
+ime
+
+utime           utimeq
 
 argv            atexit          byteorder       exc_info
 exit            getsizeof       implementation  maxsize

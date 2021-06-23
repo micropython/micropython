@@ -167,7 +167,7 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_lowest_long_lived_ptr) = (void *)PTR_FROM_BLOCK(MP_STATE_MEM(gc_alloc_table_byte_len * BLOCKS_PER_ATB));
 
     // unlock the GC
-    MP_STATE_MEM(gc_lock_depth) = 0;
+    MP_STATE_THREAD(gc_lock_depth) = 0;
 
     // allow auto collection
     MP_STATE_MEM(gc_auto_collect_enabled) = true;
@@ -200,19 +200,20 @@ void gc_deinit(void) {
 }
 
 void gc_lock(void) {
-    GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
-    GC_EXIT();
+    // This does not need to be atomic or have the GC mutex because:
+    // - each thread has its own gc_lock_depth so there are no races between threads;
+    // - a hard interrupt will only change gc_lock_depth during its execution, and
+    //   upon return will restore the value of gc_lock_depth.
+    MP_STATE_THREAD(gc_lock_depth)++;
 }
 
 void gc_unlock(void) {
-    GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)--;
-    GC_EXIT();
+    // This does not need to be atomic, See comment above in gc_lock.
+    MP_STATE_THREAD(gc_lock_depth)--;
 }
 
 bool gc_is_locked(void) {
-    return MP_STATE_MEM(gc_lock_depth) != 0;
+    return MP_STATE_THREAD(gc_lock_depth) != 0;
 }
 
 #ifndef TRACE_MARK
@@ -356,7 +357,7 @@ STATIC void gc_mark(void *ptr) {
 
 void gc_collect_start(void) {
     GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_THREAD(gc_lock_depth)++;
     #if MICROPY_GC_ALLOC_THRESHOLD
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
@@ -383,9 +384,19 @@ void gc_collect_ptr(void *ptr) {
     gc_mark(ptr);
 }
 
+// Address sanitizer needs to know that the access to ptrs[i] must always be
+// considered OK, even if it's a load from an address that would normally be
+// prohibited (due to being undefined, in a red zone, etc).
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+__attribute__((no_sanitize_address))
+#endif
+static void *gc_get_ptr(void **ptrs, int i) {
+    return ptrs[i];
+}
+
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
-        void *ptr = ptrs[i];
+        void *ptr = gc_get_ptr(ptrs, i);
         gc_mark(ptr);
     }
 }
@@ -397,13 +408,13 @@ void gc_collect_end(void) {
         MP_STATE_MEM(gc_first_free_atb_index)[i] = 0;
     }
     MP_STATE_MEM(gc_last_free_atb_index) = MP_STATE_MEM(gc_alloc_table_byte_len) - 1;
-    MP_STATE_MEM(gc_lock_depth)--;
+    MP_STATE_THREAD(gc_lock_depth)--;
     GC_EXIT();
 }
 
 void gc_sweep_all(void) {
     GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_THREAD(gc_lock_depth)++;
     MP_STATE_MEM(gc_stack_overflow) = 0;
     gc_collect_end();
 }
@@ -488,17 +499,16 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags, bool long_lived) {
         return NULL;
     }
 
+    // check if GC is locked
+    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
+        return NULL;
+    }
+
     if (MP_STATE_MEM(gc_pool_start) == 0) {
         reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();
-
-    // check if GC is locked
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        GC_EXIT();
-        return NULL;
-    }
 
     size_t found_block = 0xffffffff;
     size_t end_block;
@@ -676,12 +686,12 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
 void gc_free(void *ptr) {
-    GC_ENTER();
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
-        GC_EXIT();
         return;
     }
+
+    GC_ENTER();
 
     DEBUG_printf("gc_free(%p)\n", ptr);
 
@@ -837,14 +847,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return NULL;
     }
 
+    if (MP_STATE_THREAD(gc_lock_depth) > 0) {
+        return NULL;
+    }
+
     void *ptr = ptr_in;
 
     GC_ENTER();
-
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        GC_EXIT();
-        return NULL;
-    }
 
     // get the GC block number corresponding to this pointer
     assert(VERIFY_PTR(ptr));

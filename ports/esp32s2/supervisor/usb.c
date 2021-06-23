@@ -120,7 +120,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_read_flush();    // flush read fifo
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
         // So, we must notify the other task when a CTRL-C is received.
         xTaskNotifyGive(circuitpython_task);

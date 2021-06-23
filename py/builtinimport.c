@@ -332,7 +332,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         // We must have some component left over to import from
         if (p == this_name) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cannot perform relative import"));
+            mp_raise_ImportError(MP_ERROR_TEXT("cannot perform relative import"));
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
@@ -421,7 +421,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_module_call_init(mod_name, module_obj);
                 } else {
                     // couldn't find the file, so fail
-                    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     mp_raise_ImportError(MP_ERROR_TEXT("module not found"));
                     #else
                     mp_raise_msg_varg(&mp_type_ImportError,
@@ -533,7 +533,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     #endif
 
     // Couldn't find the module, so fail
-    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_msg(&mp_type_ImportError, MP_ERROR_TEXT("module not found"));
     #else
     mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("no module named '%q'"), module_name_qstr);

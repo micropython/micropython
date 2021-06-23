@@ -1,3 +1,6 @@
+# tools/gen-cpydiff.py: Fix formatting of doc strings for new Black.
+0f78c36c5aa458a954eed39a46942209107a553e
+
 # tests/run-tests.py: Reformat with Black.
 2a38d7103672580882fb621a5b76e8d26805d593
 
