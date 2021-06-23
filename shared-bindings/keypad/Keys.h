@@ -38,9 +38,7 @@ void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self);
 bool common_hal_keypad_keys_deinited(keypad_keys_obj_t *self);
 
 mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self);
-mp_uint_t common_hal_keypad_keys_get_key_count(keypad_keys_obj_t *self);
-bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_number);
+size_t common_hal_keypad_keys_get_key_count(keypad_keys_obj_t *self);
 void common_hal_keypad_keys_reset(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_get_states_into(keypad_keys_obj_t *self, uint8_t *states);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H

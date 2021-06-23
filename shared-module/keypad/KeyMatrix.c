@@ -116,18 +116,6 @@ size_t common_hal_keypad_keymatrix_get_column_count(keypad_keymatrix_obj_t *self
     return self->column_digitalinouts->len;
 }
 
-bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_number) {
-    return self->currently_pressed[key_number];
-}
-
-// The length of states has already been validated.
-void common_hal_keypad_keymatrix_get_states_into(keypad_keymatrix_obj_t *self, uint8_t *states) {
-    // Read the state atomically.
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memcpy(states, self->currently_pressed, common_hal_keypad_keymatrix_get_key_count(self));
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
-}
-
 mp_uint_t common_hal_keypad_keymatrix_row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
     return row_column_to_key_number(self, row, column);
 }

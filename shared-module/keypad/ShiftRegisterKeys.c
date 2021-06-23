@@ -101,17 +101,6 @@ bool common_hal_keypad_shiftregisterkeys_deinited(keypad_shiftregisterkeys_obj_t
 size_t common_hal_keypad_shiftregisterkeys_get_key_count(keypad_shiftregisterkeys_obj_t *self) {
     return self->key_count;
 }
-bool common_hal_keypad_shiftregisterkeys_pressed(keypad_shiftregisterkeys_obj_t *self, mp_uint_t key_number) {
-    return self->currently_pressed[key_number];
-}
-
-// The length of states has already been validated.
-void common_hal_keypad_shiftregisterkeys_get_states_into(keypad_shiftregisterkeys_obj_t *self, uint8_t *states) {
-    // Read the state atomically.
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memcpy(states, self->currently_pressed, common_hal_keypad_shiftregisterkeys_get_key_count(self));
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
-}
 
 mp_obj_t common_hal_keypad_shiftregisterkeys_get_events(keypad_shiftregisterkeys_obj_t *self) {
     return MP_OBJ_FROM_PTR(self->events);

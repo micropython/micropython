@@ -38,9 +38,7 @@ void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *
 bool common_hal_keypad_shiftregisterkeys_deinited(keypad_shiftregisterkeys_obj_t *self);
 
 mp_obj_t common_hal_keypad_shiftregisterkeys_get_events(keypad_shiftregisterkeys_obj_t *self);
-mp_uint_t common_hal_keypad_shiftregisterkeys_get_key_count(keypad_shiftregisterkeys_obj_t *self);
-bool common_hal_keypad_shiftregisterkeys_pressed(keypad_shiftregisterkeys_obj_t *self, mp_uint_t key_number);
+size_t common_hal_keypad_shiftregisterkeys_get_key_count(keypad_shiftregisterkeys_obj_t *self);
 void common_hal_keypad_shiftregisterkeys_reset(keypad_shiftregisterkeys_obj_t *self);
-void common_hal_keypad_shiftregisterkeys_get_states_into(keypad_shiftregisterkeys_obj_t *self, uint8_t *states);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_SHIFTREGISTERKEYS_H

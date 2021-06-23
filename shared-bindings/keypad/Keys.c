@@ -167,49 +167,6 @@ const mp_obj_property_t keypad_keys_key_count_obj = {
               MP_ROM_NONE},
 };
 
-//|     def pressed(self, key_number: int) -> None:
-//|         """Return ``True`` if the given key is pressed.
-//          This is a debounced read of the key state which bypasses the `events` `EventQueue`.
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_number_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    const mp_int_t key_number = mp_obj_get_int(key_number_in);
-    (void)mp_arg_validate_int_range(key_number, 0, common_hal_keypad_keys_get_key_count(self), MP_QSTR_key_number);
-
-    return mp_obj_new_bool(common_hal_keypad_keys_pressed(self, (mp_uint_t)key_number));
-}
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_pressed_obj, keypad_keys_pressed);
-
-//|     def get_states_into(self, states: _typing.WriteableBuffer) -> None:
-//|         """Write the states of all the keys into ``states``.
-//|         Write a ``1`` if pressed, and ``0`` if released.
-//|         The ``length`` of ``states`` must be `key_count`.
-//|         This is a debounced read of the state of all the keys, and bypasses the `events` `EventQueue`.
-//|         The read is done atomically.
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t keypad_keys_get_states_into(mp_obj_t self_in, mp_obj_t pressed) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(pressed, &bufinfo, MP_BUFFER_WRITE);
-    if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must store bytes"), MP_QSTR_pressed);
-    }
-    (void)mp_arg_validate_length_with_name(bufinfo.len,common_hal_keypad_keys_get_key_count(self),
-        MP_QSTR_pressed, MP_QSTR_key_count);
-
-    common_hal_keypad_keys_get_states_into(self, (uint8_t *)bufinfo.buf);
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_get_states_into_obj, keypad_keys_get_states_into);
-
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
 //|     """
@@ -233,9 +190,7 @@ STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_keys___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_keys_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_states_into), MP_ROM_PTR(&keypad_keys_get_states_into_obj) },
-    { MP_ROM_QSTR(MP_QSTR_key_count),     MP_ROM_PTR(&keypad_keys_key_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_keys_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),    MP_ROM_PTR(&keypad_keys_key_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),        MP_ROM_PTR(&keypad_keys_reset_obj) },
 };
 
