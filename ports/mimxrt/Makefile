@@ -297,7 +297,7 @@ OBJ += $(BUILD)/pins_gen.o
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"
 $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
 
-all: $(BUILD)/firmware.hex
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
