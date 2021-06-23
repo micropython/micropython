@@ -35,7 +35,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t num_keys, bool value_when_pressed, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
     digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
     clock->base.type = &digitalio_digitalinout_type;
@@ -56,10 +56,10 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     self->latch = latch;
     self->value_to_latch = value_to_latch;
 
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_keys, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_keys, false, false);
+    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
+    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
     self->value_when_pressed = value_when_pressed;
-    self->num_keys = num_keys;
+    self->key_count = key_count;
 
     self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
     self->last_scan_ticks = port_get_raw_ticks(NULL);
@@ -98,18 +98,18 @@ bool common_hal_keypad_shiftregisterkeys_deinited(keypad_shiftregisterkeys_obj_t
     return self->clock == MP_ROM_NONE;
 }
 
-size_t common_hal_keypad_shiftregisterkeys_get_num_keys(keypad_shiftregisterkeys_obj_t *self) {
-    return self->num_keys;
+size_t common_hal_keypad_shiftregisterkeys_get_key_count(keypad_shiftregisterkeys_obj_t *self) {
+    return self->key_count;
 }
-bool common_hal_keypad_shiftregisterkeys_pressed(keypad_shiftregisterkeys_obj_t *self, mp_uint_t key_num) {
-    return self->currently_pressed[key_num];
+bool common_hal_keypad_shiftregisterkeys_pressed(keypad_shiftregisterkeys_obj_t *self, mp_uint_t key_number) {
+    return self->currently_pressed[key_number];
 }
 
 // The length of states has already been validated.
-void common_hal_keypad_shiftregisterkeys_store_states(keypad_shiftregisterkeys_obj_t *self, uint8_t *states) {
+void common_hal_keypad_shiftregisterkeys_get_states_into(keypad_shiftregisterkeys_obj_t *self, uint8_t *states) {
     // Read the state atomically.
     supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memcpy(states, self->currently_pressed, common_hal_keypad_shiftregisterkeys_get_num_keys(self));
+    memcpy(states, self->currently_pressed, common_hal_keypad_shiftregisterkeys_get_key_count(self));
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
 
@@ -129,25 +129,33 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
     // Latch (freeze) the current state of the input pins.
     common_hal_digitalio_digitalinout_set_value(self->latch, self->value_to_latch);
 
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_shiftregisterkeys_get_num_keys(self); key_num++) {
+    const size_t key_count = common_hal_keypad_shiftregisterkeys_get_key_count(self);
+
+    for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
         // Zero-th data appears on on the data pin immediately, without shifting.
         common_hal_digitalio_digitalinout_set_value(self->clock, false);
 
         // Remember the previous up/down state.
-        const bool previous = self->currently_pressed[key_num];
-        self->previously_pressed[key_num] = previous;
+        const bool previous = self->currently_pressed[key_number];
+        self->previously_pressed[key_number] = previous;
 
         // Get the current state.
         const bool current =
             common_hal_digitalio_digitalinout_get_value(self->data) == self->value_when_pressed;
-        self->currently_pressed[key_num] = current;
+        self->currently_pressed[key_number] = current;
 
         // Trigger a shift to get the next bit.
         common_hal_digitalio_digitalinout_set_value(self->clock, true);
 
         // Record any transitions.
         if (previous != current) {
-            keypad_eventqueue_record(self->events, key_num, current);
+            if (!keypad_eventqueue_record(self->events, key_number, current)) {
+                // The event queue is full. Reset all states to initial values and set the overflowed flag.
+                memset(self->previously_pressed, false, key_count);
+                memset(self->currently_pressed, false, key_count);
+
+                common_hal_keypad_eventqueue_set_overflowed(self->events, true);
+            }
         }
     }
 

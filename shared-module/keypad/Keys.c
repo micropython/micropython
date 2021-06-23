@@ -75,7 +75,7 @@ void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
     // Remove self from the list of active keypad scanners first.
     keypad_deregister_scanner((keypad_scanner_obj_t *)self);
 
-    for (size_t key = 0; key < common_hal_keypad_keys_get_num_keys(self); key++) {
+    for (size_t key = 0; key < common_hal_keypad_keys_get_key_count(self); key++) {
         common_hal_digitalio_digitalinout_deinit(self->digitalinouts->items[key]);
     }
     self->digitalinouts = MP_ROM_NONE;
@@ -86,18 +86,18 @@ bool common_hal_keypad_keys_deinited(keypad_keys_obj_t *self) {
     return self->digitalinouts == MP_ROM_NONE;
 }
 
-size_t common_hal_keypad_keys_get_num_keys(keypad_keys_obj_t *self) {
+size_t common_hal_keypad_keys_get_key_count(keypad_keys_obj_t *self) {
     return self->digitalinouts->len;
 }
-bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_num) {
-    return self->currently_pressed[key_num];
+bool common_hal_keypad_keys_pressed(keypad_keys_obj_t *self, mp_uint_t key_number) {
+    return self->currently_pressed[key_number];
 }
 
 // The length of states has already been validated.
-void common_hal_keypad_keys_store_states(keypad_keys_obj_t *self, uint8_t *states) {
+void common_hal_keypad_keys_get_states_into(keypad_keys_obj_t *self, uint8_t *states) {
     // Read the state atomically.
     supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memcpy(states, self->currently_pressed, common_hal_keypad_keys_get_num_keys(self));
+    memcpy(states, self->currently_pressed, common_hal_keypad_keys_get_key_count(self));
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
 
@@ -114,20 +114,28 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
 
     self->last_scan_ticks = now;
 
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_get_num_keys(self); key_num++) {
+    const size_t key_count = common_hal_keypad_keys_get_key_count(self);
+
+    for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
         // Remember the previous up/down state.
-        const bool previous = self->currently_pressed[key_num];
-        self->previously_pressed[key_num] = previous;
+        const bool previous = self->currently_pressed[key_number];
+        self->previously_pressed[key_number] = previous;
 
         // Get the current state.
         const bool current =
-            common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
+            common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_number]) ==
             self->value_when_pressed;
-        self->currently_pressed[key_num] = current;
+        self->currently_pressed[key_number] = current;
 
         // Record any transitions.
         if (previous != current) {
-            keypad_eventqueue_record(self->events, key_num, current);
+            if (!keypad_eventqueue_record(self->events, key_number, current)) {
+                // The event queue is full. Reset all states to initial values and set the overflowed flag.
+                memset(self->previously_pressed, false, key_count);
+                memset(self->currently_pressed, false, key_count);
+
+                common_hal_keypad_eventqueue_set_overflowed(self->events, true);
+            }
         }
     }
 }

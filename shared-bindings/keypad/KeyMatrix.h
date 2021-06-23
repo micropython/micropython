@@ -32,19 +32,20 @@
 
 extern const mp_obj_type_t keypad_keymatrix_type;
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events);
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events);
 
 void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self);
 bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self);
 
-mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col);
+void common_hal_keypad_keymatrix_key_number_to_row_column(keypad_keymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column);
+mp_uint_t common_hal_keypad_keymatrix_row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column);
 
-mp_uint_t common_hal_keypad_keymatrix_get_num_keys(keypad_keymatrix_obj_t *self);
-mp_uint_t common_hal_keypad_keymatrix_get_num_cols(keypad_keymatrix_obj_t *self);
-mp_uint_t common_hal_keypad_keymatrix_get_num_rows(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_key_count(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_column_count(keypad_keymatrix_obj_t *self);
+mp_uint_t common_hal_keypad_keymatrix_get_row_count(keypad_keymatrix_obj_t *self);
 
 mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self);
-bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num);
-void common_hal_keypad_keymatrix_store_states(keypad_keymatrix_obj_t *self, uint8_t *states);
+bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_number);
+void common_hal_keypad_keymatrix_get_states_into(keypad_keymatrix_obj_t *self, uint8_t *states);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

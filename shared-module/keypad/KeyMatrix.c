@@ -36,11 +36,11 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-static mp_uint_t row_col_to_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col) {
-    return row * self->col_digitalinouts->len + col;
+static mp_uint_t row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
+    return row * self->column_digitalinouts->len + column;
 }
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events) {
 
     mp_obj_t row_dios[num_row_pins];
     for (size_t row = 0; row < num_row_pins; row++) {
@@ -52,18 +52,18 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     }
     self->row_digitalinouts = mp_obj_new_tuple(num_row_pins, row_dios);
 
-    mp_obj_t col_dios[num_col_pins];
-    for (size_t col = 0; col < num_col_pins; col++) {
+    mp_obj_t column_dios[num_column_pins];
+    for (size_t column = 0; column < num_column_pins; column++) {
         digitalio_digitalinout_obj_t *dio = m_new_obj(digitalio_digitalinout_obj_t);
         dio->base.type = &digitalio_digitalinout_type;
-        common_hal_digitalio_digitalinout_construct(dio, col_pins[col]);
+        common_hal_digitalio_digitalinout_construct(dio, column_pins[column]);
         common_hal_digitalio_digitalinout_switch_to_input(dio, columns_to_anodes ? PULL_UP : PULL_DOWN);
-        col_dios[col] = dio;
+        column_dios[column] = dio;
     }
-    self->col_digitalinouts = mp_obj_new_tuple(num_col_pins, col_dios);
+    self->column_digitalinouts = mp_obj_new_tuple(num_column_pins, column_dios);
 
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_col_pins, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_col_pins, false, false);
+    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_column_pins, false, false);
+    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_column_pins, false, false);
 
     self->columns_to_anodes = columns_to_anodes;
 
@@ -89,47 +89,53 @@ void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self) {
     // Remove self from the list of active keypad scanners first.
     keypad_deregister_scanner((keypad_scanner_obj_t *)self);
 
-    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_num_rows(self); row++) {
+    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_row_count(self); row++) {
         common_hal_digitalio_digitalinout_deinit(self->row_digitalinouts->items[row]);
     }
     self->row_digitalinouts = MP_ROM_NONE;
 
-    for (size_t col = 0; col < common_hal_keypad_keymatrix_get_num_cols(self); col++) {
-        common_hal_digitalio_digitalinout_deinit(self->col_digitalinouts->items[col]);
+    for (size_t column = 0; column < common_hal_keypad_keymatrix_get_column_count(self); column++) {
+        common_hal_digitalio_digitalinout_deinit(self->column_digitalinouts->items[column]);
     }
-    self->col_digitalinouts = MP_ROM_NONE;
+    self->column_digitalinouts = MP_ROM_NONE;
 }
 
 bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self) {
     return self->row_digitalinouts == MP_ROM_NONE;
 }
 
-size_t common_hal_keypad_keymatrix_get_num_keys(keypad_keymatrix_obj_t *self) {
-    return common_hal_keypad_keymatrix_get_num_rows(self) * common_hal_keypad_keymatrix_get_num_cols(self);
+size_t common_hal_keypad_keymatrix_get_key_count(keypad_keymatrix_obj_t *self) {
+    return common_hal_keypad_keymatrix_get_row_count(self) * common_hal_keypad_keymatrix_get_column_count(self);
 }
 
-size_t common_hal_keypad_keymatrix_get_num_rows(keypad_keymatrix_obj_t *self) {
+size_t common_hal_keypad_keymatrix_get_row_count(keypad_keymatrix_obj_t *self) {
     return self->row_digitalinouts->len;
 }
 
-size_t common_hal_keypad_keymatrix_get_num_cols(keypad_keymatrix_obj_t *self) {
-    return self->col_digitalinouts->len;
+size_t common_hal_keypad_keymatrix_get_column_count(keypad_keymatrix_obj_t *self) {
+    return self->column_digitalinouts->len;
 }
 
-bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_num) {
-    return self->currently_pressed[key_num];
+bool common_hal_keypad_keymatrix_pressed(keypad_keymatrix_obj_t *self, mp_uint_t key_number) {
+    return self->currently_pressed[key_number];
 }
 
 // The length of states has already been validated.
-void common_hal_keypad_keymatrix_store_states(keypad_keymatrix_obj_t *self, uint8_t *states) {
+void common_hal_keypad_keymatrix_get_states_into(keypad_keymatrix_obj_t *self, uint8_t *states) {
     // Read the state atomically.
     supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memcpy(states, self->currently_pressed, common_hal_keypad_keymatrix_get_num_keys(self));
+    memcpy(states, self->currently_pressed, common_hal_keypad_keymatrix_get_key_count(self));
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
 
-mp_uint_t common_hal_keypad_keymatrix_key_num(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t col) {
-    return row_col_to_key_num(self, row, col);
+mp_uint_t common_hal_keypad_keymatrix_row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
+    return row_column_to_key_number(self, row, column);
+}
+
+void common_hal_keypad_keymatrix_key_number_to_row_column(keypad_keymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column) {
+    const size_t num_columns = common_hal_keypad_keymatrix_get_column_count(self);
+    *row = key_number / num_columns;
+    *column = key_number % num_columns;
 }
 
 mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self) {
@@ -147,28 +153,35 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
     // On entry, all pins are set to inputs with a pull-up or pull-down,
     // depending on the diode orientation.
-    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_num_rows(self); row++) {
+    for (size_t row = 0; row < common_hal_keypad_keymatrix_get_row_count(self); row++) {
         // Switch this row to an output and set level appropriately
         // Set low if columns_to_anodes is true, else set high.
         common_hal_digitalio_digitalinout_switch_to_output(
             self->row_digitalinouts->items[row], !self->columns_to_anodes, DRIVE_MODE_PUSH_PULL);
 
-        for (size_t col = 0; col < common_hal_keypad_keymatrix_get_num_cols(self); col++) {
-            mp_uint_t key_num = row_col_to_key_num(self, row, col);
-            const bool previous = self->currently_pressed[key_num];
-            self->previously_pressed[key_num] = previous;
+        for (size_t column = 0; column < common_hal_keypad_keymatrix_get_column_count(self); column++) {
+            mp_uint_t key_number = row_column_to_key_number(self, row, column);
+            const bool previous = self->currently_pressed[key_number];
+            self->previously_pressed[key_number] = previous;
 
-            // Get the current state, by reading whether the col got pulled to the row value or not.
+            // Get the current state, by reading whether the column got pulled to the row value or not.
             // If low and columns_to_anodes is true, the key is pressed.
             // If high and columns_to_anodes is false, the key is pressed.
             const bool current =
-                common_hal_digitalio_digitalinout_get_value(self->col_digitalinouts->items[col]) !=
+                common_hal_digitalio_digitalinout_get_value(self->column_digitalinouts->items[column]) !=
                 self->columns_to_anodes;
-            self->currently_pressed[key_num] = current;
+            self->currently_pressed[key_number] = current;
 
             // Record any transitions.
             if (previous != current) {
-                keypad_eventqueue_record(self->events, key_num, current);
+                if (!keypad_eventqueue_record(self->events, key_number, current)) {
+                    // The event queue is full. Reset all states to initial values and set the overflowed flag.
+                    const size_t key_count = common_hal_keypad_keymatrix_get_key_count(self);
+                    memset(self->previously_pressed, false, key_count);
+                    memset(self->currently_pressed, false, key_count);
+
+                    common_hal_keypad_eventqueue_set_overflowed(self->events, true);
+                }
             }
         }
 

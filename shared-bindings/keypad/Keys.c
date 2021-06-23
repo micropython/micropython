@@ -43,8 +43,6 @@
 //|
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
-//|         The keys are debounced by waiting about 20 msecs before reporting a transition.
-//|
 //|         :param Sequence[microcontroller.Pin] pins: The pins attached to the keys.
 //|           The key numbers correspond to indices into this sequence.
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
@@ -56,8 +54,8 @@
 //|           If an external pull is already provided for all the pins, you can set ``pull`` to ``False``.
 //|           However, enabling an internal pull when an external one is already present is not a problem;
 //|           it simply uses slightly more current.
-//|         :param float interval: Scan keys no more often
-//|           to allow for debouncing. Given in seconds.
+//|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
+//|           ``interval`` is in float seconds. The default is 0.020 (20 msecs).
 //|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -137,50 +135,50 @@ STATIC void check_for_deinit(keypad_keys_obj_t *self) {
     }
 }
 
-//|     num_keys: int
+//|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
 //|
-STATIC mp_obj_t keypad_keys_get_num_keys(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_keys_get_key_count(mp_obj_t self_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_keys_get_num_keys(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_keys_get_key_count(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_get_num_keys_obj, keypad_keys_get_num_keys);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_get_key_count_obj, keypad_keys_get_key_count);
 
-const mp_obj_property_t keypad_keys_num_keys_obj = {
+const mp_obj_property_t keypad_keys_key_count_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_keys_get_num_keys_obj,
+    .proxy = {(mp_obj_t)&keypad_keys_get_key_count_obj,
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
 
-//|     def pressed(self, key_num: int) -> None:
+//|     def pressed(self, key_number: int) -> None:
 //|         """Return ``True`` if the given key is pressed.
 //          This is a debounced read of the key state which bypasses the `events` `EventQueue`.
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
+STATIC mp_obj_t keypad_keys_pressed(mp_obj_t self_in, mp_obj_t key_number_in) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    const mp_int_t key_num = mp_obj_get_int(key_num_in);
-    (void)mp_arg_validate_int_range(key_num, 0, common_hal_keypad_keys_get_num_keys(self), MP_QSTR_key_num);
+    const mp_int_t key_number = mp_obj_get_int(key_number_in);
+    (void)mp_arg_validate_int_range(key_number, 0, common_hal_keypad_keys_get_key_count(self), MP_QSTR_key_number);
 
-    return mp_obj_new_bool(common_hal_keypad_keys_pressed(self, (mp_uint_t)key_num));
+    return mp_obj_new_bool(common_hal_keypad_keys_pressed(self, (mp_uint_t)key_number));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_pressed_obj, keypad_keys_pressed);
 
-//|     def store_states(self, states: _typing.WriteableBuffer) -> None:
+//|     def get_states_into(self, states: _typing.WriteableBuffer) -> None:
 //|         """Write the states of all the keys into ``states``.
 //|         Write a ``1`` if pressed, and ``0`` if released.
-//|         The ``length`` of ``states`` must be `num_keys`.
+//|         The ``length`` of ``states`` must be `key_count`.
 //|         This is a debounced read of the state of all the keys, and bypasses the `events` `EventQueue`.
 //|         The read is done atomically.
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_keys_store_states(mp_obj_t self_in, mp_obj_t pressed) {
+STATIC mp_obj_t keypad_keys_get_states_into(mp_obj_t self_in, mp_obj_t pressed) {
     keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -189,13 +187,13 @@ STATIC mp_obj_t keypad_keys_store_states(mp_obj_t self_in, mp_obj_t pressed) {
     if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
         mp_raise_ValueError_varg(translate("%q must store bytes"), MP_QSTR_pressed);
     }
-    (void)mp_arg_validate_length_with_name(bufinfo.len,common_hal_keypad_keys_get_num_keys(self),
-        MP_QSTR_pressed, MP_QSTR_num_keys);
+    (void)mp_arg_validate_length_with_name(bufinfo.len,common_hal_keypad_keys_get_key_count(self),
+        MP_QSTR_pressed, MP_QSTR_key_count);
 
-    common_hal_keypad_keys_store_states(self, (uint8_t *)bufinfo.buf);
+    common_hal_keypad_keys_get_states_into(self, (uint8_t *)bufinfo.buf);
     return MP_ROM_NONE;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_store_states_obj, keypad_keys_store_states);
+MP_DEFINE_CONST_FUN_OBJ_2(keypad_keys_get_states_into_obj, keypad_keys_get_states_into);
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
@@ -220,9 +218,9 @@ STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_keys___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_keys_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_num_keys),     MP_ROM_PTR(&keypad_keys_num_keys_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),     MP_ROM_PTR(&keypad_keys_key_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_keys_pressed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_store_states), MP_ROM_PTR(&keypad_keys_store_states_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_states_into), MP_ROM_PTR(&keypad_keys_get_states_into_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_keys_locals_dict, keypad_keys_locals_dict_table);

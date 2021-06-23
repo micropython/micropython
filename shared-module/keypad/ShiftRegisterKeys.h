@@ -41,7 +41,7 @@ typedef struct {
     digitalio_digitalinout_obj_t *clock;
     digitalio_digitalinout_obj_t *data;
     digitalio_digitalinout_obj_t *latch;
-    size_t num_keys;
+    size_t key_count;
     mp_uint_t interval_ticks;
     uint64_t last_scan_ticks;
     bool *previously_pressed;

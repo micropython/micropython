@@ -32,10 +32,9 @@
 
 extern const mp_obj_type_t keypad_event_type;
 
-void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_uint_t key_num, bool pressed);
-mp_int_t common_hal_keypad_event_get_key_num(keypad_event_obj_t *self);
+void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_uint_t key_number, bool pressed);
+mp_int_t common_hal_keypad_event_get_key_number(keypad_event_obj_t *self);
 bool common_hal_keypad_event_get_pressed(keypad_event_obj_t *self);
 bool common_hal_keypad_event_get_released(keypad_event_obj_t *self);
-
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_EVENT__H

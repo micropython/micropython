@@ -36,7 +36,7 @@
 //| class ShiftRegisterKeys:
 //|     """Manage a set of keys attached to an incoming shift register."""
 //|
-//|     def __init__(self, *, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_to_latch: bool = True, num_keys: int, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
+//|     def __init__(self, *, clock: microcontroller.Pin, data: microcontroller.Pin, latch: microcontroller.Pin, value_to_latch: bool = True, key_count: int, value_when_pressed: bool, interval: float = 0.020, max_events: int = 64) -> None:
 //|         """
 //|         Create a `Keys` object that will scan keys attached to a parallel-in serial-out shift register
 //|         like the 74HC165 or CD4021.
@@ -46,8 +46,6 @@
 //|         74HC165, this bit is labeled ``Q7``. Key number 1 will be the value of ``Q6``, etc.
 //|
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
-//|
-//|         The keys are debounced by waiting about 20 msecs before reporting a transition.
 //|
 //|         :param microcontroller.Pin clock: The shift register clock pin.
 //|           The shift register should clock on a low-to-high transition.
@@ -59,11 +57,11 @@
 //|           ``False`` if the data is latched when ``latch goes low.
 //|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
 //|           Once the data is latched, it will be shifted out by toggling the clock pin.
-//|         :param int num_keys: number of data lines to clock in
+//|         :param int key_count: number of data lines to clock in
 //|         :param bool value_when_pressed: ``True`` if the pin reads high when the key is pressed.
 //|           ``False`` if the pin reads low (is grounded) when the key is pressed.
-//|         :param float interval: Scan keys no more often
-//|           to allow for debouncing. Given in seconds.
+//|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
+//|           ``interval`` is in float seconds. The default is 0.020 (20 msecs).
 //|         :param int max_events: maximum size of `events` `EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
@@ -74,13 +72,13 @@
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
     self->base.type = &keypad_shiftregisterkeys_type;
-    enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_num_keys, ARG_value_when_pressed, ARG_interval, ARG_max_events };
+    enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_key_count, ARG_value_when_pressed, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_latch, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_value_to_latch, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-        { MP_QSTR_num_keys, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_key_count, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_value_when_pressed, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_BOOL },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
@@ -93,14 +91,14 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     mcu_pin_obj_t *latch = validate_obj_is_free_pin(args[ARG_latch].u_obj);
     const bool value_to_latch = args[ARG_value_to_latch].u_bool;
 
-    const size_t num_keys = (size_t)mp_arg_validate_int_min(args[ARG_num_keys].u_int, 1, MP_QSTR_num_keys);
+    const size_t key_count = (size_t)mp_arg_validate_int_min(args[ARG_key_count].u_int, 1, MP_QSTR_key_count);
     const bool value_when_pressed = args[ARG_value_when_pressed].u_bool;
     const mp_float_t interval =
         mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
     const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
     common_hal_keypad_shiftregisterkeys_construct(
-        self, clock, data, latch, value_to_latch, num_keys, value_when_pressed, interval, max_events);
+        self, clock, data, latch, value_to_latch, key_count, value_when_pressed, interval, max_events);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -141,51 +139,51 @@ STATIC void check_for_deinit(keypad_shiftregisterkeys_obj_t *self) {
     }
 }
 
-//|     num_keys: int
+//|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
 //|
-STATIC mp_obj_t keypad_shiftregisterkeys_get_num_keys(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_shiftregisterkeys_get_key_count(mp_obj_t self_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_shiftregisterkeys_get_num_keys(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_shiftregisterkeys_get_key_count(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_get_num_keys_obj, keypad_shiftregisterkeys_get_num_keys);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_get_key_count_obj, keypad_shiftregisterkeys_get_key_count);
 
-const mp_obj_property_t keypad_shiftregisterkeys_num_keys_obj = {
+const mp_obj_property_t keypad_shiftregisterkeys_key_count_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_shiftregisterkeys_get_num_keys_obj,
+    .proxy = {(mp_obj_t)&keypad_shiftregisterkeys_get_key_count_obj,
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
 
-//|     def pressed(self, key_num: int) -> None:
+//|     def pressed(self, key_number: int) -> None:
 //|         """Return ``True`` if the given key is pressed.
 //          This is a debounced read of the key state which bypasses the `events` `EventQueue`.
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_shiftregisterkeys_pressed(mp_obj_t self_in, mp_obj_t key_num_in) {
+STATIC mp_obj_t keypad_shiftregisterkeys_pressed(mp_obj_t self_in, mp_obj_t key_number_in) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    mp_uint_t key_num = mp_arg_validate_int_range(
-        mp_obj_get_int(key_num_in), 0, (mp_int_t)common_hal_keypad_shiftregisterkeys_get_num_keys(self),
-        MP_QSTR_key_num);
+    mp_uint_t key_number = mp_arg_validate_int_range(
+        mp_obj_get_int(key_number_in), 0, (mp_int_t)common_hal_keypad_shiftregisterkeys_get_key_count(self),
+        MP_QSTR_key_number);
 
-    return mp_obj_new_bool(common_hal_keypad_shiftregisterkeys_pressed(self, key_num));
+    return mp_obj_new_bool(common_hal_keypad_shiftregisterkeys_pressed(self, key_number));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_shiftregisterkeys_pressed_obj, keypad_shiftregisterkeys_pressed);
 
-//|     def store_states(self, states: _typing.WriteableBuffer) -> None:
+//|     def get_states_into(self, states: _typing.WriteableBuffer) -> None:
 //|         """Write the states of all the keys into ``states``.
 //|         Write a ``1`` if pressed, and ``0`` if released.
-//|         The ``length`` of ``states`` must be `num_keys`.
+//|         The ``length`` of ``states`` must be `key_count`.
 //|         This is a debounced read of the state of all the keys, and bypasses the `events` `EventQueue`.
 //|         The read is done atomically.
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_shiftregisterkeys_store_states(mp_obj_t self_in, mp_obj_t pressed) {
+STATIC mp_obj_t keypad_shiftregisterkeys_get_states_into(mp_obj_t self_in, mp_obj_t pressed) {
     keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
@@ -194,13 +192,13 @@ STATIC mp_obj_t keypad_shiftregisterkeys_store_states(mp_obj_t self_in, mp_obj_t
     if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
         mp_raise_ValueError_varg(translate("%q must store bytes"), MP_QSTR_pressed);
     }
-    (void)mp_arg_validate_length_with_name(bufinfo.len, common_hal_keypad_shiftregisterkeys_get_num_keys(self),
-        MP_QSTR_states, MP_QSTR_num_keys);
+    (void)mp_arg_validate_length_with_name(bufinfo.len, common_hal_keypad_shiftregisterkeys_get_key_count(self),
+        MP_QSTR_states, MP_QSTR_key_count);
 
-    common_hal_keypad_shiftregisterkeys_store_states(self, (uint8_t *)bufinfo.buf);
+    common_hal_keypad_shiftregisterkeys_get_states_into(self, (uint8_t *)bufinfo.buf);
     return MP_ROM_NONE;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_shiftregisterkeys_store_states_obj, keypad_shiftregisterkeys_store_states);
+MP_DEFINE_CONST_FUN_OBJ_2(keypad_shiftregisterkeys_get_states_into_obj, keypad_shiftregisterkeys_get_states_into);
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
@@ -225,9 +223,9 @@ STATIC const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_shiftregisterkeys___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_shiftregisterkeys_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_num_keys),     MP_ROM_PTR(&keypad_shiftregisterkeys_num_keys_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),     MP_ROM_PTR(&keypad_shiftregisterkeys_key_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_shiftregisterkeys_pressed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_store_states), MP_ROM_PTR(&keypad_shiftregisterkeys_store_states_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_states_into), MP_ROM_PTR(&keypad_shiftregisterkeys_get_states_into_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftregisterkeys_locals_dict_table);

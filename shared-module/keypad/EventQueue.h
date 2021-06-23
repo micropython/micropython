@@ -33,8 +33,9 @@
 typedef struct {
     mp_obj_base_t base;
     ringbuf_t encoded_events;
+    bool overflowed;
 } keypad_eventqueue_obj_t;
 
-void keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_num, bool pressed);
+bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENTQUEUE_H

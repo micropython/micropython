@@ -26,13 +26,13 @@
 
 #include "shared-module/keypad/Event.h"
 
-void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_uint_t key_num, bool pressed) {
-    self->key_num = key_num;
+void common_hal_keypad_event_construct(keypad_event_obj_t *self, mp_int_t key_number, bool pressed) {
+    self->key_number = key_number;
     self->pressed = pressed;
 }
 
-mp_int_t common_hal_keypad_event_get_key_num(keypad_event_obj_t *self) {
-    return self->key_num;
+mp_int_t common_hal_keypad_event_get_key_number(keypad_event_obj_t *self) {
+    return self->key_number;
 }
 
 bool common_hal_keypad_event_get_pressed(keypad_event_obj_t *self) {

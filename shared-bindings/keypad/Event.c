@@ -32,44 +32,44 @@
 
 //| class Event:
 //|     """A key transition event."""
-//|     def __init__(self, key_num: int=0, pressed: bool=True) -> None:
+//|     def __init__(self, key_number: int=0, pressed: bool=True) -> None:
 //|         """Create a key transition event, which reports a key-pressed or key-released transition.
 //|
-//|         :param int key_num: the key number
+//|         :param int key_number: the key number
 //|         :param bool pressed: ``True`` if the key was pressed; ``False`` if it was released.
 //|         """
 //|         ...
 //|
-
 STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     keypad_event_obj_t *self = m_new_obj(keypad_event_obj_t);
     self->base.type = &keypad_event_type;
-    enum { ARG_key_num, ARG_pressed };
+    enum { ARG_key_number, ARG_pressed };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key_num, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_key_number, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_pressed, MP_ARG_BOOL, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_uint_t key_num = (mp_uint_t)mp_arg_validate_int_min(args[ARG_key_num].u_int, 0, MP_QSTR_key_num);
+    const mp_uint_t key_number =
+        (mp_uint_t)mp_arg_validate_int_min(args[ARG_key_number].u_int, 0, MP_QSTR_key_number);
 
-    common_hal_keypad_event_construct(self, key_num, args[ARG_pressed].u_bool);
+    common_hal_keypad_event_construct(self, key_number, args[ARG_pressed].u_bool);
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     key_num: int
+//|     key_number: int
 //|     """The key number."""
 //|
-STATIC mp_obj_t keypad_event_get_key_num(mp_obj_t self_in) {
+STATIC mp_obj_t keypad_event_get_key_number(mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_event_get_key_num(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_event_get_key_number(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_num_obj, keypad_event_get_key_num);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_number_obj, keypad_event_get_key_number);
 
-const mp_obj_property_t keypad_event_key_num_obj = {
+const mp_obj_property_t keypad_event_key_number_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_event_get_key_num_obj,
+    .proxy = {(mp_obj_t)&keypad_event_get_key_number_obj,
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
@@ -111,7 +111,7 @@ const mp_obj_property_t keypad_event_released_obj = {
 };
 
 //|     def __eq__(self, other: object) -> bool:
-//|         """Two `Event` objects are equal if their `key_num`
+//|         """Two `Event` objects are equal if their `key_number`
 //|         and `pressed`/`released` values are equal.
 //|         """
 //|         ...
@@ -123,10 +123,11 @@ STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_ob
                 keypad_event_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
                 keypad_event_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 return mp_obj_new_bool(
-                    (common_hal_keypad_event_get_key_num(lhs) ==
-                        common_hal_keypad_event_get_key_num(rhs)) &&
+                    (common_hal_keypad_event_get_key_number(lhs) ==
+                        common_hal_keypad_event_get_key_number(rhs)) &&
                     (common_hal_keypad_event_get_pressed(lhs) ==
-                        common_hal_keypad_event_get_pressed(rhs)));
+                        common_hal_keypad_event_get_pressed(rhs))
+                    );
             } else {
                 return mp_const_false;
             }
@@ -144,9 +145,9 @@ STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self);
     switch (op) {
         case MP_UNARY_OP_HASH: {
-            const mp_int_t key_num = common_hal_keypad_event_get_key_num(self);
+            const mp_int_t key_number = common_hal_keypad_event_get_key_number(self);
             const bool pressed = common_hal_keypad_event_get_pressed(self);
-            return MP_OBJ_NEW_SMALL_INT((pressed << 15) + key_num);
+            return MP_OBJ_NEW_SMALL_INT((pressed << 15) + key_number);
         }
         default:
             return MP_OBJ_NULL; // op not supported
@@ -155,16 +156,16 @@ STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 STATIC void keypad_event_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<Event: keynum %d %s>",
-        common_hal_keypad_event_get_key_num(self),
+    mp_printf(print, "<Event: key_number %d %s>",
+        common_hal_keypad_event_get_key_number(self),
         common_hal_keypad_event_get_pressed(self) ? "pressed" : "released");
 }
 
 STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_key_num),  MP_ROM_PTR(&keypad_event_key_num_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pressed),  MP_ROM_PTR(&keypad_event_pressed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_released), MP_ROM_PTR(&keypad_event_released_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_number), MP_ROM_PTR(&keypad_event_key_number_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pressed),    MP_ROM_PTR(&keypad_event_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_released),   MP_ROM_PTR(&keypad_event_released_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_table);
 
