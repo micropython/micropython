@@ -141,6 +141,21 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
     }
 }
 
+//|     def reset(self) -> None:
+//|         """Reset the internal state of the scanner to assume that all keys are now released.
+//|         Any key that is already pressed at the time of this call will therefore immediately cause
+//|         a new key-pressed event to occur.
+//|         """
+//|         ...
+//|
+STATIC mp_obj_t keypad_keymatrix_reset(mp_obj_t self_in) {
+    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_keypad_keymatrix_reset(self);
+    return MP_ROM_NONE;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_keymatrix_reset_obj, keypad_keymatrix_reset);
+
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
@@ -282,6 +297,7 @@ STATIC const mp_rom_map_elem_t keypad_keymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&keypad_keymatrix_row_column_to_key_number_obj) },
     { MP_ROM_QSTR(MP_QSTR_key_count),                MP_ROM_PTR(&keypad_keymatrix_key_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_pressed),                  MP_ROM_PTR(&keypad_keymatrix_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset),                    MP_ROM_PTR(&keypad_keymatrix_reset_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_locals_dict_table);

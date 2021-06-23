@@ -60,14 +60,6 @@ bool common_hal_keypad_eventqueue_get_into(keypad_eventqueue_obj_t *self, keypad
     return true;
 }
 
-void common_hal_keypad_eventqueue_clear(keypad_eventqueue_obj_t *self) {
-    ringbuf_clear(&self->encoded_events);
-}
-
-size_t common_hal_keypad_eventqueue_get_length(keypad_eventqueue_obj_t *self) {
-    return ringbuf_num_filled(&self->encoded_events);
-}
-
 bool common_hal_keypad_eventqueue_get_overflowed(keypad_eventqueue_obj_t *self) {
     return self->overflowed;
 }
@@ -76,9 +68,19 @@ void common_hal_keypad_eventqueue_set_overflowed(keypad_eventqueue_obj_t *self, 
     self->overflowed = overflowed;
 }
 
+void common_hal_keypad_eventqueue_clear(keypad_eventqueue_obj_t *self) {
+    ringbuf_clear(&self->encoded_events);
+    common_hal_keypad_eventqueue_set_overflowed(self, false);
+}
+
+size_t common_hal_keypad_eventqueue_get_length(keypad_eventqueue_obj_t *self) {
+    return ringbuf_num_filled(&self->encoded_events);
+}
+
 bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed) {
     if (ringbuf_num_empty(&self->encoded_events) == 0) {
-        // Queue is full. The caller will decide what to do, including whether to set the overflowed flag.
+        // Queue is full. Set the overflow flag. The caller will decide what else to do.
+        common_hal_keypad_eventqueue_set_overflowed(self, true);
         return false;
     }
 

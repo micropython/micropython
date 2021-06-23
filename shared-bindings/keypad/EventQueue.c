@@ -83,7 +83,7 @@ STATIC mp_obj_t keypad_eventqueue_get_into(mp_obj_t self_in, mp_obj_t event_in) 
 MP_DEFINE_CONST_FUN_OBJ_2(keypad_eventqueue_get_into_obj, keypad_eventqueue_get_into);
 
 //|     def clear(self) -> None:
-//|         """Clear any queued key transition events.
+//|         """Clear any queued key transition events. Also sets `overflowed` to ``False``.
 //|         """
 //|         ...
 //|
@@ -119,9 +119,8 @@ STATIC mp_obj_t keypad_eventqueue_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 //|     overflowed: bool
-//|     """``True`` if an event could not be added to the event queue because it was full.
-//|     When this happens, the event queue is cleared.
-//|     The `overflowed` flag is persistent. Reset it by setting it to ``False``.
+//|     """``True`` if an event could not be added to the event queue because it was full. (read-only)
+//|     Set to ``False`` by  `clear()`.
 //|     """
 //|
 STATIC mp_obj_t keypad_eventqueue_get_overflowed(mp_obj_t self_in) {
@@ -130,17 +129,10 @@ STATIC mp_obj_t keypad_eventqueue_get_overflowed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_get_overflowed_obj, keypad_eventqueue_get_overflowed);
 
-STATIC mp_obj_t keypad_eventqueue_set_overflowed(mp_obj_t self_in, mp_obj_t overflowed_in) {
-    keypad_eventqueue_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_keypad_eventqueue_set_overflowed(self, mp_obj_is_true(overflowed_in));
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(keypad_eventqueue_set_overflowed_obj, keypad_eventqueue_set_overflowed);
-
 const mp_obj_property_t keypad_eventqueue_overflowed_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&keypad_eventqueue_get_overflowed_obj,
-              (mp_obj_t)&keypad_eventqueue_set_overflowed_obj,
+              MP_ROM_NONE,
               MP_ROM_NONE},
 };
 

@@ -142,6 +142,15 @@ mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self) {
     return MP_OBJ_FROM_PTR(self->events);
 }
 
+void common_hal_keypad_keymatrix_reset(keypad_keymatrix_obj_t *self) {
+    const size_t key_count = common_hal_keypad_keymatrix_get_key_count(self);
+
+    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
+    memset(self->previously_pressed, false, key_count);
+    memset(self->currently_pressed, false, key_count);
+    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+}
+
 void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
     if (now - self->last_scan_ticks < self->interval_ticks) {
@@ -174,14 +183,7 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
             // Record any transitions.
             if (previous != current) {
-                if (!keypad_eventqueue_record(self->events, key_number, current)) {
-                    // The event queue is full. Reset all states to initial values and set the overflowed flag.
-                    const size_t key_count = common_hal_keypad_keymatrix_get_key_count(self);
-                    memset(self->previously_pressed, false, key_count);
-                    memset(self->currently_pressed, false, key_count);
-
-                    common_hal_keypad_eventqueue_set_overflowed(self->events, true);
-                }
+                keypad_eventqueue_record(self->events, key_number, current);
             }
         }
 

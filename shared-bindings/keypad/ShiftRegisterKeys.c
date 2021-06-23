@@ -139,6 +139,21 @@ STATIC void check_for_deinit(keypad_shiftregisterkeys_obj_t *self) {
     }
 }
 
+//|     def reset(self) -> None:
+//|         """Reset the internal state of the scanner to assume that all keys are now released.
+//|         Any key that is already pressed at the time of this call will therefore immediately cause
+//|         a new key-pressed event to occur.
+//|         """
+//|         ...
+//|
+STATIC mp_obj_t keypad_shiftregisterkeys_reset(mp_obj_t self_in) {
+    keypad_shiftregisterkeys_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_keypad_shiftregisterkeys_reset(self);
+    return MP_ROM_NONE;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_shiftregisterkeys_reset_obj, keypad_shiftregisterkeys_reset);
+
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
@@ -223,9 +238,10 @@ STATIC const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_shiftregisterkeys___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_shiftregisterkeys_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_key_count),     MP_ROM_PTR(&keypad_shiftregisterkeys_key_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_shiftregisterkeys_pressed_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_states_into), MP_ROM_PTR(&keypad_shiftregisterkeys_get_states_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),    MP_ROM_PTR(&keypad_shiftregisterkeys_key_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pressed),      MP_ROM_PTR(&keypad_shiftregisterkeys_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset),        MP_ROM_PTR(&keypad_shiftregisterkeys_reset_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftregisterkeys_locals_dict_table);
