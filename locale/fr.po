@@ -2628,6 +2628,10 @@ msgstr "mauvais code type"
 msgid "binary op %q not implemented"
 msgstr "opération binaire '%q' non implémentée"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr "les bits doivent être compris entre 5 et 9"
@@ -3251,6 +3255,10 @@ msgstr "générateur (generator) à surlevé StopIteration"
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic doit être long de 2048 octets"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"

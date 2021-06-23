@@ -2564,6 +2564,10 @@ msgstr "zły typecode"
 msgid "binary op %q not implemented"
 msgstr "brak dwu-argumentowego operatora %q"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr ""
@@ -3175,6 +3179,10 @@ msgstr ""
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic musi mieć 2048 bajtów długości"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"

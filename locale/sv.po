@@ -2601,6 +2601,10 @@ msgstr "Ogiltig typkod"
 msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr "bits måste mellan 5 och 9"
@@ -3216,6 +3220,10 @@ msgstr "generator kastade StopIteration"
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic måste vara 2048 byte lång"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-19 20:18+0000\n"
+"PO-Revision-Date: 2021-06-23 17:15+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: main.c
 msgid ""
@@ -127,7 +127,7 @@ msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q bì xū zài %d hé %d zhī jiān"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -1309,7 +1309,7 @@ msgstr "wú xiào data_count %d"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
-msgstr ""
+msgstr "wú xiào data_pins[%d]"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2600,6 +2600,10 @@ msgstr "cuòwù de dàimǎ lèixíng"
 msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
@@ -3216,6 +3220,10 @@ msgstr "fā diàn jī tí chū tíng zhǐ"
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "túxíng bìxū wèi 2048 zì jié"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"

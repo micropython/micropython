@@ -2631,6 +2631,10 @@ msgstr "typecode incorreto"
 msgid "binary op %q not implemented"
 msgstr "a operação binário %q não foi implementada"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr "os bits devem estar na faixa entre 5 a 9"
@@ -3250,6 +3254,10 @@ msgstr "gerador StopIteration elevado"
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "o gráfico deve ter 2048 bytes de comprimento"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
