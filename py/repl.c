@@ -167,13 +167,13 @@ STATIC const char *find_completions(const char *s_start, size_t s_len,
     for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
         size_t d_len;
         const char *d_str = (const char *)qstr_data(q, &d_len);
+        // special case; filter out words that begin with underscore
+        // unless there's already a partial match
+        if (s_len == 0 && d_str[0] == '_') {
+            continue;
+        }
         if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
             if (test_qstr(obj, q)) {
-                // special case; filter out words that begin with underscore
-                // unless there's already a partial match
-                if (s_len == 0 && d_str[0] == '_') {
-                    continue;
-                }
                 if (match_str == NULL) {
                     match_str = d_str;
                     *match_len = d_len;
@@ -297,7 +297,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
     if (q_first == 0) {
         // If there're no better alternatives, and if it's first word
         // in the line, try to complete "import".
-        if (s_start == org_str && s_len > 0) {
+        if (s_start == org_str && s_len > 0 && s_len < sizeof(import_str) - 1) {
             if (memcmp(s_start, import_str, s_len) == 0) {
                 *compl_str = import_str + s_len;
                 return sizeof(import_str) - 1 - s_len;

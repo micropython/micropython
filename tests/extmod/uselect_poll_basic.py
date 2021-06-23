@@ -33,7 +33,7 @@ poller.unregister(s)
 try:
     poller.modify(s, select.POLLIN)
 except OSError as e:
-    assert e.args[0] == errno.ENOENT
+    assert e.errno == errno.ENOENT
 
 # poll after closing the socket, should return POLLNVAL
 poller.register(s)

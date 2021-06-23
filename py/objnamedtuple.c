@@ -108,7 +108,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
         n_kw = kw_args->used;
     }
     if (n_args + n_kw != num_fields) {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_raise_TypeError_varg(
@@ -134,7 +134,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
         qstr kw = mp_obj_str_get_qstr(kw_args->table[i].key);
         size_t id = mp_obj_namedtuple_find_field(type, kw);
         if (id == (size_t)-1) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(
@@ -142,7 +142,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
             #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_TypeError_varg(

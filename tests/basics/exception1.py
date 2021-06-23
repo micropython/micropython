@@ -1,3 +1,5 @@
+# test basic properties of exceptions
+
 print(repr(IndexError()))
 print(str(IndexError()))
 
@@ -12,3 +14,6 @@ s = StopIteration()
 print(s.value)
 s = StopIteration(1, 2, 3)
 print(s.value)
+
+print(OSError().errno)
+print(OSError(1, "msg").errno)
