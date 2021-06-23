@@ -42,7 +42,7 @@
 //|
 //|         Note that the queue size is limited; see ``max_events`` in the constructor of
 //|         a scanner such as `Keys` or `KeyMatrix`.
-//|         If a new event arrives when the queue is full, the queue is cleared, and
+//|         If a new event arrives when the queue is full, the event is discarded, and
 //|         `overflowed` is set to ``True``.
 //|
 //|         :return: the next queued key transition `Event`
