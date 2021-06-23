@@ -2562,6 +2562,10 @@ msgstr "不正なtypecode"
 msgid "binary op %q not implemented"
 msgstr ""
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
 msgstr ""
@@ -3176,6 +3180,10 @@ msgstr ""
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphicは2048バイトでなければなりません"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
