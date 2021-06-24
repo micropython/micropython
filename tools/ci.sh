@@ -139,6 +139,24 @@ function ci_esp8266_build {
 }
 
 ########################################################################################
+# ports/javascript
+
+function ci_javascript_setup {
+    git clone https://github.com/emscripten-core/emsdk.git
+    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
+}
+
+function ci_javascript_build {
+    source emsdk/emsdk_env.sh
+    make ${MAKEOPTS} -C ports/javascript
+}
+
+function ci_javascript_run_tests {
+    # This port is very slow at running, so only run a few of the tests.
+    (cd tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
+}
+
+########################################################################################
 # ports/mimxrt
 
 function ci_mimxrt_setup {
