@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-21 22:27+0000\n"
+"PO-Revision-Date: 2021-06-24 23:11+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: main.c
 msgid ""
@@ -94,7 +94,7 @@ msgstr "Os índices %q devem ser inteiros, e não %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "o comprimento %q deve ser %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -102,11 +102,11 @@ msgstr "A lista %q deve ser uma lista"
 
 #: py/argcheck.c
 msgid "%q must <= %d"
-msgstr ""
+msgstr "o %q deve ser <= %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "o %q deve ser %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -118,7 +118,7 @@ msgstr "%q deve ser 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "o %q deve ser >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -138,7 +138,7 @@ msgstr "%q deve ser None ou entre 1 e len(report_descriptor)-1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q deve ser uma string"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -150,12 +150,12 @@ msgstr "%q deve estar entre %d e %d"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
+msgstr "o %q deve ser do tipo %q"
 
 #: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
 #: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q must store bytes"
-msgstr ""
+msgstr "o %q deve armazenar bytes"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -2665,7 +2665,7 @@ msgstr "a operação binário %q não foi implementada"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "bits deve ser 32 ou menos"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3289,7 +3289,7 @@ msgstr "o gráfico deve ter 2048 bytes de comprimento"
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "o hash é final"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
