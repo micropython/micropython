@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-#include "shared-bindings/microcontroller/Pin.h"
-#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
-#include "supervisor/shared/board.h"
+#include "py/obj.h"
 
-void board_init(void) {
-}
+typedef struct {
+    mp_obj_base_t base;
+} alarm_sleep_memory_obj_t;
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+extern void alarm_sleep_memory_reset(void);
 
-void reset_board(void) {
-    // turn off any left over LED
-    board_reset_user_neopixels(&pin_GPIO19, 12);
-}
-
-void board_deinit(void) {
-}
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_ALARM_SLEEPMEMORY_H
