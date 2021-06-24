@@ -10,6 +10,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_i2c.c
     ${MICROPY_EXTMOD_DIR}/machine_mem.c
     ${MICROPY_EXTMOD_DIR}/machine_pulse.c
+    ${MICROPY_EXTMOD_DIR}/machine_pwm.c
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c

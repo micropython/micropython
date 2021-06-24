@@ -85,7 +85,6 @@ set(MICROPY_SOURCE_PORT
     machine_adc.c
     machine_i2c.c
     machine_pin.c
-    machine_pwm.c
     machine_rtc.c
     machine_spi.c
     machine_timer.c
@@ -113,7 +112,6 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
-    ${PROJECT_SOURCE_DIR}/machine_pwm.c
     ${PROJECT_SOURCE_DIR}/machine_rtc.c
     ${PROJECT_SOURCE_DIR}/machine_spi.c
     ${PROJECT_SOURCE_DIR}/machine_timer.c
