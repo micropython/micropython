@@ -39,11 +39,9 @@
 // Select USB1 PLL (480 MHz) as master lpi2c clock source
 #define LPI2C_CLOCK_SOURCE_SELECT (0U)
 // Clock divider for master lpi2c clock source
-#define LPI2C_CLOCK_SOURCE_DIVIDER (5U)
-// Get frequency of lpi2c clock = 10 MHz
+#define LPI2C_CLOCK_SOURCE_DIVIDER (1U)
+// Get frequency of lpi2c clock = 30 MHz
 #define LPI2C_CLOCK_FREQUENCY ((CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8) / (LPI2C_CLOCK_SOURCE_DIVIDER + 1U))
-
-#define I2C_MASTER_SLAVE_ADDR_7BIT 0x7EU
 
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
@@ -68,7 +66,7 @@ STATIC const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
 STATIC LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
 static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
 
-#define MICROPY_HW_I2C_NUM     (sizeof(i2c_index_table) / sizeof(i2c_index_table)[0])
+#define MICROPY_HW_I2C_NUM     ARRAY_SIZE(i2c_index_table)
 
 #define SCL (iomux_table[index])
 #define SDA (iomux_table[index + 1])
@@ -79,11 +77,11 @@ bool lpi2c_set_iomux(int8_t hw_i2c, uint8_t drive) {
     if (SCL.muxRegister != 0) {
         IOMUXC_SetPinMux(SCL.muxRegister, SCL.muxMode, SCL.inputRegister, SCL.inputDaisy, SCL.configRegister, 1U);
         IOMUXC_SetPinConfig(SCL.muxRegister, SCL.muxMode, SCL.inputRegister, SCL.inputDaisy, SCL.configRegister,
-            0xD880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0xF880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
 
         IOMUXC_SetPinMux(SDA.muxRegister, SDA.muxMode, SDA.inputRegister, SDA.inputDaisy, SDA.configRegister, 1U);
         IOMUXC_SetPinConfig(SDA.muxRegister, SDA.muxMode, SDA.inputRegister, SDA.inputDaisy, SDA.configRegister,
-            0xD880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+            0xF880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
         return true;
     } else {
         return false;
@@ -166,7 +164,13 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     } else {
         masterXfer.direction = kLPI2C_Write;
     }
-    masterXfer.slaveAddress = addr;
+    if (addr < 0x80) {  // 7 or 10 bit address?
+        masterXfer.slaveAddress = addr;
+    } else {
+        masterXfer.slaveAddress = 0x78 | ((addr >> 8) & 0x03);
+        masterXfer.subaddress = addr & 0xff;
+        masterXfer.subaddressSize = 1;
+    }
     masterXfer.data = buf;
     masterXfer.dataSize = len;
     if (flags & MP_MACHINE_I2C_FLAG_STOP) {

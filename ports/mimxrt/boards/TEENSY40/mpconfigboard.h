@@ -49,7 +49,7 @@
 // 18/19    LPI2C1 ->    1
 // 25/24    LPI2C4 ->    2
 
-#define MICROPY_HW_I2C_INDEX   { 3, 1, 4 }
+#define MICROPY_HW_I2C_INDEX   { 1, 3, 4 }
 
 #define IOMUX_TABLE_I2C \
     { IOMUXC_GPIO_AD_B1_00_LPI2C1_SCL }, { IOMUXC_GPIO_AD_B1_01_LPI2C1_SDA }, \
