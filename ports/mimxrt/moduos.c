@@ -63,21 +63,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
 static bool initialized = false;
 
-STATIC void TRNG_init(void) {
+STATIC void trng_start(void) {
     trng_config_t trngConfig;
 
-    TRNG_GetDefaultConfig(&trngConfig);
-    trngConfig.sampleMode = kTRNG_SampleModeVonNeumann;
+    if (!initialized) {
+        TRNG_GetDefaultConfig(&trngConfig);
+        trngConfig.sampleMode = kTRNG_SampleModeVonNeumann;
 
-    TRNG_Init(TRNG, &trngConfig);
-    initialized = true;
+        TRNG_Init(TRNG, &trngConfig);
+        initialized = true;
+    }
 }
 
 uint32_t TRNG_random_u32(void) {
-    if (!initialized) {
-        TRNG_init();
-    }
     uint32_t rngval;
+
+    trng_start();
     TRNG_GetRandomData(TRNG, (uint8_t *)&rngval, 4);
     return rngval;
 }
@@ -87,9 +88,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
 
-    if (!initialized) {
-        TRNG_init();
-    }
+    trng_start();
     TRNG_GetRandomData(TRNG, vstr.buf, n);
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
