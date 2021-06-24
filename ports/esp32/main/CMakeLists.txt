@@ -1,5 +1,7 @@
 # Set location of base MicroPython directory.
-get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
+if(NOT MICROPY_DIR)
+    get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
+endif()
 
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
