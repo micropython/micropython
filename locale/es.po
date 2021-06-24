@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-13 04:32+0000\n"
+"PO-Revision-Date: 2021-06-24 23:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: main.c
 msgid ""
@@ -96,7 +96,7 @@ msgstr "%q indices deben ser enteros, no %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "el tamaño de %q debe ser %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -104,11 +104,11 @@ msgstr "%q lista debe ser una lista"
 
 #: py/argcheck.c
 msgid "%q must <= %d"
-msgstr ""
+msgstr "%q debe ser <= %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q debe ser %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -120,7 +120,7 @@ msgstr "%q debe estar entre 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q debe ser >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -140,7 +140,7 @@ msgstr "%q debe ser None o entre 1 y len(report_descriptor)-1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q debe ser una cadena"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -148,16 +148,16 @@ msgstr "%q debe ser una tupla de longitud 2"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q debe estar entre %d y %d"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
+msgstr "%q debe ser de tipo %q"
 
 #: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
 #: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q must store bytes"
-msgstr ""
+msgstr "%q debe almacenar bytes"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -1349,7 +1349,7 @@ msgstr "data_count inválido %d"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
-msgstr ""
+msgstr "Inválidos los data_pins[%d]"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -2660,7 +2660,7 @@ msgstr "operacion binaria %q no implementada"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "los bits deben ser 32 o menos"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3282,7 +3282,7 @@ msgstr "graphic debe ser 2048 bytes de largo"
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "el hash es final"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
