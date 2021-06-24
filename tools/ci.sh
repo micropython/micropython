@@ -172,6 +172,7 @@ function ci_nrf_build {
 # ports/powerpc
 
 function ci_powerpc_setup {
+    sudo apt-get update
     sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 }
 
