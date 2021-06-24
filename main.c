@@ -696,6 +696,11 @@ int __attribute__((used)) main(void) {
 
     stack_init();
 
+    #if CIRCUITPY_BLEIO
+    // Early init so that a reset press can cause BLE public advertising.
+    supervisor_bluetooth_init();
+    #endif
+
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.

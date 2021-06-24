@@ -39,9 +39,9 @@ typedef struct _bleio_characteristic_obj {
     // Will be MP_OBJ_NULL before being assigned to a Service.
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t initial_value;
+    const uint8_t *initial_value;
+    uint16_t initial_value_len;
     uint16_t max_length;
-    bool fixed_length;
     uint16_t handle;
     bleio_characteristic_properties_t props;
     bleio_attribute_security_mode_t read_perm;
@@ -50,6 +50,7 @@ typedef struct _bleio_characteristic_obj {
     uint16_t user_desc_handle;
     uint16_t cccd_handle;
     uint16_t sccd_handle;
+    bool fixed_length;
 } bleio_characteristic_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H

@@ -28,7 +28,7 @@
 
 #include "mphalport.h"
 
-#if defined(MICROPY_HW_LED_STATUS) || defined(CIRCUITPY_BOOT_BUTTON)
+#if defined(CIRCUITPY_BOOT_BUTTON)
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #endif
 #include "shared-bindings/microcontroller/Processor.h"
@@ -79,8 +79,8 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     bool boot_in_safe_mode = false;
     while (diff < 1000) {
         #ifdef CIRCUITPY_STATUS_LED
-        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        bool led_on = diff > 100 && diff / 100 != 2 && diff / 100 != 4;
+        // Blink on for 100, off for 100
+        bool led_on = (diff % 250) < 125;
         if (led_on) {
             new_status_color(SAFE_MODE);
         } else {
@@ -102,7 +102,8 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     if (boot_in_safe_mode) {
         return USER_SAFE_MODE;
     }
-    port_set_saved_word(SAFE_MODE_DATA_GUARD);
+    // Restore the original state of the saved word if no reset occured during our wait period.
+    port_set_saved_word(reset_state);
     return NO_SAFE_MODE;
 }
 

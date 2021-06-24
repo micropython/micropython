@@ -28,6 +28,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
 
+#include "py/objtuple.h"
 #include "shared-bindings/_bleio/Attribute.h"
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-module/_bleio/Characteristic.h"

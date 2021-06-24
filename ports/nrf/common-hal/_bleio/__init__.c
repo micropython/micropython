@@ -94,18 +94,13 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
-bool vm_used_ble;
-
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
+
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
-    if (!vm_used_ble) {
-        // No user-code BLE operations were done, so we can maintain the supervisor state.
-        return;
-    }
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     bonding_reset();
     supervisor_start_bluetooth();

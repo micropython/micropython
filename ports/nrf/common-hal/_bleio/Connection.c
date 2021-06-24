@@ -309,6 +309,9 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             } else {
                 if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv)) {
                     // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
+                    // Indicate ATTR table change because we may have reloaded since the peer last
+                    // connected.
+                    sd_ble_gatts_service_changed(self->conn_handle, 0xC, 0xFFFF);
                 } else {
                     // No matching bonding found, so use fresh system attributes.
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
@@ -351,6 +354,14 @@ void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
 }
 
 void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bond) {
+    // We may already be trying to pair if we just reconnected to a peer we're
+    // bonded with.
+    while (self->pair_status == PAIR_WAITING && !mp_hal_is_interrupted()) {
+        RUN_BACKGROUND_TASKS;
+    }
+    if (self->pair_status == PAIR_PAIRED) {
+        return;
+    }
     self->pair_status = PAIR_WAITING;
 
     check_nrf_error(sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params));
