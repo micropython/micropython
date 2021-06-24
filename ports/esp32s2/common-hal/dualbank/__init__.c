@@ -38,10 +38,7 @@ static esp_ota_handle_t update_handle = 0;
 static const char *TAG = "dualbank";
 
 void dualbank_reset(void) {
-    // should use `abort` instead of `end`
-    // but not in idf v4.2
-    // esp_ota_abort(update_handle);
-    if (esp_ota_end(update_handle) == ESP_OK) {
+    if (esp_ota_abort(update_handle) == ESP_OK) {
         update_handle = 0;
         update_partition = NULL;
     }

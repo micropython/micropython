@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 
 #include "components/driver/include/driver/gpio.h"
-#include "components/soc/include/hal/gpio_hal.h"
+#include "components/hal/include/hal/gpio_hal.h"
 
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
