@@ -92,9 +92,21 @@ msgstr "%q index out of range"
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q list must be a list"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -104,7 +116,11 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q must be >= 0"
 
@@ -120,12 +136,25 @@ msgstr "%q must be >= 1"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q must be a tuple of length 2"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr ""
+
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
+msgid "%q must store bytes"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1721,6 +1750,7 @@ msgstr "Only one TouchAlarm can be set in deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Only one alarm.time alarm can be set."
@@ -2063,6 +2093,7 @@ msgstr "Side set pin count must be between 1 and 5"
 msgid "Size not supported"
 msgstr "Size not supported"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2207,6 +2238,7 @@ msgstr "Too many displays"
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr ""

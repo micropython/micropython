@@ -88,9 +88,21 @@ msgstr "%q インデックスは範囲外"
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q リストはリストでなければなりません"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -100,7 +112,11 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%qは0以上でなければなりません"
 
@@ -116,12 +132,25 @@ msgstr "%qは1以上でなければなりません"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%qは長さ2のタプルでなければなりません"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr ""
+
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
+msgid "%q must store bytes"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1715,6 +1744,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
@@ -2049,6 +2079,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "サイズは対応していません"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2193,6 +2224,7 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr ""
