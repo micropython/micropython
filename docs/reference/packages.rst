@@ -306,6 +306,17 @@ to all resource files::
 
     mpy_bin2res.py data/page.html data/image.png
 
+Production Applications Best Practices
+--------------------------------------
+
+When using MicroPython in a production setting there are several considerations one will face. 
+
+.. toctree::
+   :maxdepth: 3
+
+   production.rst
+
+
 References
 ----------
 
