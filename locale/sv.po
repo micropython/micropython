@@ -91,9 +91,21 @@ msgstr "Index %q ligger utanför intervallet"
 msgid "%q indices must be integers, not %s"
 msgstr "Indexet %q måste vara ett heltal, inte %s"
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q-listan måste vara en lista"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -103,7 +115,11 @@ msgstr "%q måste vara 0-255"
 msgid "%q must be 1-255"
 msgstr "%q måste vara 1-255"
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q måste vara >= 0"
 
@@ -119,6 +135,10 @@ msgstr "%q måste vara >= 1"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q måste vara en tuple av längd 2"
@@ -126,6 +146,15 @@ msgstr "%q måste vara en tuple av längd 2"
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
 msgstr "%q måste vara mellan %d och %d"
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr ""
+
+#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
+#: shared-bindings/keypad/ShiftRegisterKeys.c
+msgid "%q must store bytes"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
