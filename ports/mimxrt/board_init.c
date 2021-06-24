@@ -43,7 +43,6 @@
 volatile uint32_t systick_ms = 0;
 
 const uint8_t dcd_data[] = { 0x00 };
-void BOARD_ConfigMPU(void);
 
 void board_init(void) {
     // Init clock

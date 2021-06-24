@@ -33,7 +33,7 @@ static bool channel_list[32] = { true, true, true, true, false, false, false, fa
                                  false, false, false, false, false, false, false, false };
 
 // allocate_channel(): retrieve an available channel. Return the number or -1
-int allocate_DMA_channel(void) {
+int allocate_dma_channel(void) {
     for (int i = 0; i < ARRAY_SIZE(channel_list); i++) {
         if (channel_list[i] == false) { // Channel available
             channel_list[i] = true;
@@ -44,7 +44,7 @@ int allocate_DMA_channel(void) {
 }
 
 // free_channel(n): Declare channel as free
-void free_DMA_channel(int n) {
+void free_dma_channel(int n) {
     if (n >= 0 && n <= ARRAY_SIZE(channel_list)) {
         channel_list[n] = false;
     }

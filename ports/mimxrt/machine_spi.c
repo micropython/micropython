@@ -45,7 +45,6 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (kLPSPI_MsbFirst)
-#define DEFAULT_SPI_MODE        (MICROPY_PY_MACHINE_SPI_MASTER)
 #define DEFAULT_SPI_DRIVE       (6)
 
 #define CLOCK_DIVIDER           (1)
@@ -76,7 +75,7 @@ static const iomux_table_t iomux_table[] = {
 
 static const char *firstbit_str[] = {"MSB", "LSB"};
 
-#define MICROPY_HW_SPI_NUM     (sizeof(spi_index_table) / sizeof(spi_index_table)[0])
+#define MICROPY_HW_SPI_NUM     MP_ARRAY_SIZE(spi_index_table)
 
 #define SCK (iomux_table[index])
 #define CS0 (iomux_table[index + 1])
@@ -119,7 +118,7 @@ STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap, ARG_drive };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap_ns, ARG_drive };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = DEFAULT_SPI_BAUDRATE} },
@@ -127,7 +126,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_PHASE} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_BITS} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_FIRSTBIT} },
-        { MP_QSTR_gap,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_gap_ns,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_drive,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_SPI_DRIVE} },
     };
 
@@ -175,8 +174,8 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     self->master_config->cpha = args[ARG_phase].u_int;
     self->master_config->bitsPerFrame = args[ARG_bits].u_int;
     self->master_config->direction = args[ARG_firstbit].u_int;
-    if (args[ARG_gap].u_int != -1) {
-        self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
+    if (args[ARG_gap_ns].u_int != -1) {
+        self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap_ns].u_int;
     }
     LPSPI_MasterInit(self->spi_inst, self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
 
@@ -184,14 +183,14 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 }
 
 STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap };
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_gap_ns };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_gap,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_gap_ns,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse the arguments.
@@ -217,8 +216,8 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     if (args[ARG_firstbit].u_int != -1) {
         self->master_config->direction = args[ARG_firstbit].u_int;
     }
-    if (args[ARG_gap].u_int != -1) {
-        self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap].u_int;
+    if (args[ARG_gap_ns].u_int != -1) {
+        self->master_config->betweenTransferDelayInNanoSec = args[ARG_gap_ns].u_int;
     }
     LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applies
     LPSPI_MasterInit(self->spi_inst, self->master_config, CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_DIVIDER + 1));
@@ -243,8 +242,8 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     int chan_rx = -1;
     if (len >= dma_min_size_threshold) {
         // Use two DMA channels to service the two FIFOs
-        chan_rx = allocate_DMA_channel();
-        chan_tx = allocate_DMA_channel();
+        chan_rx = allocate_dma_channel();
+        chan_tx = allocate_dma_channel();
     }
     bool use_dma = chan_rx >= 0 && chan_tx >= 0;
 
@@ -302,10 +301,10 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
     // Release DMA channels, even if never allocated.
     if (chan_rx >= 0) {
-        free_DMA_channel(chan_rx);
+        free_dma_channel(chan_rx);
     }
     if (chan_tx >= 0) {
-        free_DMA_channel(chan_tx);
+        free_dma_channel(chan_tx);
     }
 
     if (!use_dma) {

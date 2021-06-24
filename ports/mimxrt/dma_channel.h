@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 
-int allocate_DMA_channel(void);
-void free_DMA_channel(int n);
+int allocate_dma_channel(void);
+void free_dma_channel(int n);
 
 #endif // MICROPY_INCLUDED_MIMXRT_DMACHANNEL_H
