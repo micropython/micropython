@@ -111,7 +111,7 @@ bool lpspi_set_iomux(int8_t spi, uint8_t drive) {
 
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(%u, mode=CONTROLLER, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s, gap=%dns)",
+    mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s, gap_ns=%d)",
         self->spi_id, self->master_config->baudRate, self->master_config->cpol,
         self->master_config->cpha, self->master_config->bitsPerFrame,
         firstbit_str[self->master_config->direction], self->master_config->betweenTransferDelayInNanoSec);
