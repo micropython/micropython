@@ -602,10 +602,6 @@ msgstr "バッファは512の倍数でなければなりません"
 msgid "Buffer must be at least length 1"
 msgstr "バッファ長は少なくとも1以上でなければなりません"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "バッファが大きすぎて確保できません"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -881,6 +877,10 @@ msgstr ""
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "fmtチャンクの後にdataチャンクが続かなければなりません"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1678,7 +1678,6 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "不正なIP文字列です"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1721,6 +1720,10 @@ msgstr ""
 #, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
 msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
@@ -4431,6 +4434,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "バッファが大きすぎて確保できません"
 
 #~ msgid ""
 #~ "CircuitPython is in safe mode because you pressed the reset button during "
