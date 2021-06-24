@@ -258,6 +258,8 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
             tilegrid->in_group = true;
         }
         displayio_tilegrid_update_transform(tilegrid, &self->absolute_transform);
+        displayio_tilegrid_set_hidden_by_parent(
+            tilegrid, self->hidden || self->hidden_by_parent);
         return;
     }
     native_layer = mp_obj_cast_to_native_base(layer, &displayio_group_type);
@@ -269,6 +271,8 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
             group->in_group = true;
         }
         displayio_group_update_transform(group, &self->absolute_transform);
+        displayio_group_set_hidden_by_parent(
+            group, self->hidden || self->hidden_by_parent);
         return;
     }
     mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass."));
