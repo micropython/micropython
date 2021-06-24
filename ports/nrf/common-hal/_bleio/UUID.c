@@ -50,7 +50,6 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, mp_int_t uuid16, co
 
         // Register this vendor-specific UUID. Bytes 12 and 13 will be zero.
         check_nrf_error(sd_ble_uuid_vs_add(&vs_uuid, &self->nrf_ble_uuid.type));
-        vm_used_ble = true;
     }
 }
 

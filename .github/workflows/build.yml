@@ -139,7 +139,7 @@ jobs:
       run: |
         echo "Uploading dev release to PyPi"
         python setup.py sdist
-        twine upload dist/*
+        [ -z "$TWINE_USERNAME" ] || twine upload dist/*
 
   mpy-cross-mac:
     runs-on: macos-10.15

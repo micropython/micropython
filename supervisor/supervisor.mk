@@ -28,7 +28,13 @@ SPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth.c supervisor/bluetooth.c
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
+  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
+    CIRCUITPY_CREATOR_ID ?= $(USB_VID)
+    CIRCUITPY_CREATION_ID ?= $(USB_PID)
+    CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
+    CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
+  endif
 endif
 
 # Choose which flash filesystem impl to use.
