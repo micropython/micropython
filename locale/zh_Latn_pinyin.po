@@ -1730,6 +1730,7 @@ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mi
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "zhǐ néng shè zhì yí gè bào jǐng."
@@ -2070,6 +2071,7 @@ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "shuì mián jì yì bù kě yòng"
@@ -2221,6 +2223,7 @@ msgstr "Xiǎnshì tài duō"
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr "bù kě yòng chù mō bào jǐng qì"

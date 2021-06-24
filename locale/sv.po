@@ -1727,6 +1727,7 @@ msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Endast ett alarm.time kan ställas in."
@@ -2071,6 +2072,7 @@ msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
 msgid "Size not supported"
 msgstr "Storleken stöds inte"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sömnminne inte tillgängligt"
@@ -2223,6 +2225,7 @@ msgstr "För många displayer"
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr "Touchalarm är inte tillgängligt"

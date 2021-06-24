@@ -1743,6 +1743,7 @@ msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Apenas um alarme alarm.time pode ser definido."
@@ -2093,6 +2094,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "O tamanho não é suportado"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sleep memory não está disponível"
@@ -2248,6 +2250,7 @@ msgstr "Exibições demais"
 msgid "Total data to write is larger than %q"
 msgstr "O total dos dados que serão escritos é maior do que %q"
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr "Alarmes de toque não estão disponíveis"
