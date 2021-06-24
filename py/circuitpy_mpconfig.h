@@ -440,6 +440,13 @@ extern const struct _mp_obj_module_t espidf_module;
 #define ESPIDF_MODULE
 #endif
 
+#if CIRCUITPY__EVE
+extern const struct _mp_obj_module_t _eve_module;
+#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
+#else
+#define _EVE_MODULE
+#endif
+
 #if CIRCUITPY_FRAMEBUFFERIO
 extern const struct _mp_obj_module_t framebufferio_module;
 #define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
@@ -523,18 +530,28 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #define JSON_MODULE
 #endif
 
+#if CIRCUITPY_KEYPAD
+extern const struct _mp_obj_module_t keypad_module;
+#define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
+#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
+#else
+#define KEYPAD_MODULE
+#define KEYPAD_ROOT_POINTERS
+#endif
+
+#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+// Scan gamepad every 32ms
+#define CIRCUITPY_GAMEPAD_TICKS 0x1f
+#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
+#else
+#define GAMEPAD_ROOT_POINTERS
+#endif
+
 #if CIRCUITPY_MATH
 extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
 #else
 #define MATH_MODULE
-#endif
-
-#if CIRCUITPY__EVE
-extern const struct _mp_obj_module_t _eve_module;
-#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
-#else
-#define _EVE_MODULE
 #endif
 
 #if CIRCUITPY_MEMORYMONITOR
@@ -877,6 +894,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
+    _EVE_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
@@ -886,8 +904,8 @@ extern const struct _mp_obj_module_t msgpack_module;
     IPADDRESS_MODULE \
     IMAGECAPTURE_MODULE \
     JSON_MODULE \
+    KEYPAD_MODULE \
     MATH_MODULE \
-    _EVE_MODULE \
     MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
     MSGPACK_MODULE \
@@ -954,6 +972,7 @@ struct _supervisor_allocation_node;
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
+    KEYPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \

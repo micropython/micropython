@@ -7,7 +7,8 @@ SRC_SUPERVISOR = \
 	supervisor/shared/cpu.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
-        supervisor/shared/memory.c \
+	supervisor/shared/lock.c \
+	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
