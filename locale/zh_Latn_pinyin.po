@@ -2069,6 +2069,10 @@ msgstr "SPI chūshǐhuà cuòwù"
 msgid "SPI Re-initialization error"
 msgstr "SPI chóngxīn chūshǐhuà cuòwù"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr "SPI wài shè zhèng zài shǐ yòng zhōng"

@@ -2048,6 +2048,10 @@ msgstr "SPI初期化エラー"
 msgid "SPI Re-initialization error"
 msgstr "SPI再初期化エラー"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""

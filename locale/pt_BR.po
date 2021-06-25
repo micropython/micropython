@@ -2091,6 +2091,10 @@ msgstr "Houve um erro na inicialização SPI"
 msgid "SPI Re-initialization error"
 msgstr "Houve um erro na reinicialização SPI"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr "O periférico SPI está em uso"
