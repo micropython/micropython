@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-23 17:15+0000\n"
+"PO-Revision-Date: 2021-06-25 18:15+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -57,7 +57,7 @@ msgstr " shì %q lèi xíng\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " wèi zhǎo dào.\n"
 
 #: main.c
 msgid " output:\n"
@@ -99,7 +99,7 @@ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "%q cháng dù bì xū wéi %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -107,11 +107,11 @@ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
 
 #: py/argcheck.c
 msgid "%q must <= %d"
-msgstr ""
+msgstr "%q bì xū <= %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q bì xū wéi %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -123,7 +123,7 @@ msgstr "%q bì xū wéi 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q bì xū >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -143,7 +143,7 @@ msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q bì xū shì yí gè zì fú chuàn"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -155,12 +155,12 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
+msgstr "%q bì xū lèi xíng %q"
 
 #: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
 #: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q must store bytes"
-msgstr ""
+msgstr "%q bì xū cún chǔ zì jié"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -889,7 +889,7 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
-msgstr ""
+msgstr "bù zhī chí dìng xiàng guǎng gào de shù jù"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1741,7 +1741,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
-msgstr ""
+msgstr "zhǐ yǒu kě lián jiē de guǎng gào cái néng bèi yǐn dǎo"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
@@ -2641,7 +2641,7 @@ msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "wèi bì xū shì 32 huò gèng shǎo"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3262,7 +3262,7 @@ msgstr "túxíng bìxū wèi 2048 zì jié"
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "hā xī shì zuì zhōng de"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
