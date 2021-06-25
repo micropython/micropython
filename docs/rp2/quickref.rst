@@ -109,9 +109,6 @@ PWM (pulse width modulation)
 There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. 
 
 
-The channels can be clocked by external sources, using an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
-
-
 Use the ``machine.PWM`` class::
 
     from machine import Pin, PWM
