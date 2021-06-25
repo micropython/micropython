@@ -37,8 +37,6 @@
 #include "shared-bindings/microcontroller/ResetReason.h"
 #include "shared-module/storage/__init__.h"
 
-#include "bluetooth/ble_drv.h"
-
 #include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/shared/status_leds.h"
@@ -48,10 +46,12 @@
 
 #if CIRCUITPY_BLE_FILE_SERVICE
 #include "supervisor/shared/bluetooth/file_transfer.h"
+#include "bluetooth/ble_drv.h"
 #endif
 
 #if CIRCUITPY_SERIAL_BLE
 #include "supervisor/shared/bluetooth/serial.h"
+#include "bluetooth/ble_drv.h"
 #endif
 
 // This standard advertisement advertises the CircuitPython editing service and a CIRCUITPY short name.
@@ -75,11 +75,11 @@ const uint8_t public_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
 const uint8_t private_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
                                              0x02, 0x0a, 0x00 // 3-5 TX power level 0
 };
-// This scan response advertises the full CIRCUITPYXXXX device name.
+// This scan response advertises the full CIRCPYXXXX device name.
 uint8_t circuitpython_scan_response_data[] = {
-    0x0e, 0x09, 0x43, 0x49, 0x52, 0x43, 0x55, 0x49, 0x54, 0x50, 0x59, 0x00, 0x00, 0x00, 0x00,
+    0x0a, 0x09, 0x43, 0x49, 0x52, 0x50, 0x59, 0x00, 0x00, 0x00, 0x00,
     #if CIRCUITPY_SERIAL_BLE
-    0x06, 0x10, 0x9e, 0xca, 0xdc, 0x24, 0x0e, 0xe5, 0xa9, 0xe0, 0x93, 0xf3, 0xa3, 0xb5, 0x00, 0x00, 0x40, 0x6e,
+    0x11, 0x06, 0x9e, 0xca, 0xdc, 0x24, 0x0e, 0xe5, 0xa9, 0xe0, 0x93, 0xf3, 0xa3, 0xb5, 0x01, 0x00, 0x40, 0x6e,
     #endif
 };
 
@@ -87,6 +87,9 @@ bool boot_in_discovery_mode = false;
 bool advertising = false;
 
 STATIC void supervisor_bluetooth_start_advertising(void) {
+    // #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    // return;
+    // #else
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -95,7 +98,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     #if CIRCUITPY_USB
     // Don't advertise when we have USB instead of BLE.
     if (!bonded && !boot_in_discovery_mode) {
-        // mp_printf(&mp_plat_print, "skipping advertising\n");
+        mp_printf(&mp_plat_print, "skipping advertising\n");
         return;
     }
     #endif
@@ -109,6 +112,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     // Advertise with less power when doing so publicly to reduce who can hear us. This will make it
     // harder for someone with bad intentions to pair from a distance.
     if (!bonded) {
+        mp_printf(&mp_plat_print, "public advertising\n");
         tx_power = -40;
         adv = public_advertising_data;
         adv_len = sizeof(public_advertising_data);
@@ -126,6 +130,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         scan_response_len,
         tx_power,
         NULL);
+    mp_printf(&mp_plat_print, "advert %d\n", status);
     // This may fail if we are already advertising.
     advertising = status == NRF_SUCCESS;
 }
@@ -139,19 +144,21 @@ void supervisor_bluetooth_init(void) {
     if ((reset_state & BLE_DISCOVERY_DATA_GUARD_MASK) == BLE_DISCOVERY_DATA_GUARD) {
         ble_mode = (reset_state & ~BLE_DISCOVERY_DATA_GUARD_MASK) >> 8;
     }
-    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    // const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     boot_in_discovery_mode = false;
-    if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN &&
-        reset_reason != RESET_REASON_UNKNOWN &&
-        reset_reason != RESET_REASON_SOFTWARE) {
-        return;
-    }
+    // if (reset_reason != RESET_REASON_POWER_ON &&
+    //     reset_reason != RESET_REASON_RESET_PIN &&
+    //     reset_reason != RESET_REASON_UNKNOWN &&
+    //     reset_reason != RESET_REASON_SOFTWARE) {
+    //     return;
+    // }
 
     if (ble_mode == 0) {
         port_set_saved_word(BLE_DISCOVERY_DATA_GUARD | (0x01 << 8));
     }
     // Wait for a while to allow for reset.
+
+    ble_mode = 1;
 
     #ifdef CIRCUITPY_BOOT_BUTTON
     digitalio_digitalinout_obj_t boot_button;

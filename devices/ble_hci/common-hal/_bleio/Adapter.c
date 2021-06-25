@@ -118,7 +118,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         248,                    // max length, from Bluetooth spec
         false,                  // not fixed length
-        &generic_name_bufinfo
+        &generic_name_bufinfo,
+        NULL
         );
 
     uint16_t zero_16 = 0;
@@ -140,7 +141,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         2,                      // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_16_value
+        &zero_16_value,
+        NULL
         );
 
     // Generic Attribute Service setup.
@@ -176,7 +178,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         4,                     // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_32_value
+        &zero_32_value,
+        NULL
         );
 }
 
