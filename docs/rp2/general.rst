@@ -10,7 +10,7 @@ the RP2040.
 Technical specifications and SoC datasheets
 -------------------------------------------
 
-For a detailed technical specification, you can view the `datasheets <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_ 
+For detailed technical specifications, please refer to the `datasheet <https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_
 
 The RP2040 microcontroller a 40 nm silicon in a 7X7mm QFN-56 SMD package.The key features include:
 
