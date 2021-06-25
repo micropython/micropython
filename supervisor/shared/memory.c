@@ -36,6 +36,8 @@ enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
         // stack + heap
         2
+        // next_code_allocation
+        + 1
 
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
