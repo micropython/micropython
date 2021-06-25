@@ -657,6 +657,12 @@ def main():
     )
     group = cmd_parser.add_mutually_exclusive_group()
     group.add_argument(
+        "--soft-reset",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="Whether to perform a soft reset when connecting to the board.",
+    )
+    group.add_argument(
         "--follow",
         action="store_true",
         help="follow the output after running the scripts [default if no scripts given]",
@@ -695,7 +701,7 @@ def main():
         # we must enter raw-REPL mode to execute commands
         # this will do a soft-reset of the board
         try:
-            pyb.enter_raw_repl()
+            pyb.enter_raw_repl(args.soft_reset)
         except PyboardError as er:
             print(er)
             pyb.close()
