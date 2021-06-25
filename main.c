@@ -290,7 +290,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     result.exception_type = NULL;
     result.exception_line = 0;
 
+    bool skip_repl;
+    bool skip_wait = false;
     bool found_main = false;
+    uint8_t next_code_options = 0;
+    // Collects stickiness bits that apply in the current situation.
+    uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
     if (safe_mode == NO_SAFE_MODE) {
         static const char * const supported_filenames[] = STRING_LIST(
@@ -312,25 +317,71 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         usb_setup_with_vm();
         #endif
 
-        // This is where the user's python code is actually executed:
-        found_main = maybe_run_list(supported_filenames, &result);
-        // If that didn't work, double check the extensions
-        #if CIRCUITPY_FULL_BUILD
-        if (!found_main){
-            found_main = maybe_run_list(double_extension_filenames, &result);
-            if (found_main) {
-                serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+        // Check if a different run file has been allocated
+        if (next_code_allocation) {
+            ((next_code_info_t*)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+            next_code_options = ((next_code_info_t*)next_code_allocation->ptr)->options;
+            if (((next_code_info_t*)next_code_allocation->ptr)->filename[0] != '\0') {
+                const char* next_list[] = {((next_code_info_t*)next_code_allocation->ptr)->filename, ""};
+                // This is where the user's python code is actually executed:
+                found_main = maybe_run_list(next_list, &result);
+                if (!found_main) {
+                    serial_write(((next_code_info_t*)next_code_allocation->ptr)->filename);
+                    serial_write_compressed(translate(" not found.\n"));
+                }
             }
         }
-        #else
-        (void) found_main;
-        #endif
+        // Otherwise, default to the standard list of filenames
+        if (!found_main) {
+            // This is where the user's python code is actually executed:
+            found_main = maybe_run_list(supported_filenames, &result);
+            // If that didn't work, double check the extensions
+            #if CIRCUITPY_FULL_BUILD
+            if (!found_main){
+                found_main = maybe_run_list(double_extension_filenames, &result);
+                if (found_main) {
+                    serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                }
+            }
+            #else
+            (void) found_main;
+            #endif
+        }
 
         // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
+        // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
+        // the options because it can be treated like any other reason-for-stickiness bit. The
+        // source is different though: it comes from the options that will apply to the next run,
+        // while the rest of next_code_options is what applied to this run.
+        if (next_code_allocation != NULL && (((next_code_info_t*)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
+            next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+        }
+
+        if (reload_requested) {
+            next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+        }
+        else if (result.return_code == 0) {
+            next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
+            if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
+                skip_repl = true;
+                skip_wait = true;
+            }
+        }
+        else {
+            next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
+            // Deep sleep cannot be skipped
+            // TODO: settings in deep sleep should persist, using a new sleep memory API
+            if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR
+                && !(result.return_code & PYEXEC_DEEP_SLEEP)) {
+                skip_repl = true;
+                skip_wait = true;
+            }
+        }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
-            return reload_requested;
+            skip_repl = reload_requested;
+            skip_wait = true;
         }
 
         if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
@@ -378,12 +429,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
     #endif
-    bool skip_repl = false;
-    while (true) {
+    while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
         // If a reload was requested by the supervisor or autoreload, return
         if (reload_requested) {
+            next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+            // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
+            // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
+            // "no" for now, mainly because it's a bit less code. At this point, we have both a
+            // success or error and a reload, so let's have both of the respective options take
+            // effect (in OR combination).
             reload_requested = false;
             skip_repl = true;
             break;
@@ -518,6 +574,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             port_idle_until_interrupt();
         }
     }
+
+    // free code allocation if unused
+    if ((next_code_options & next_code_stickiness_situation) == 0) {
+        free_memory(next_code_allocation);
+        next_code_allocation = NULL;
+    }
+
     // Done waiting, start the board back up.
     #if CIRCUITPY_STATUS_LED
     if (led_active) {
@@ -531,6 +594,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         board_init();
     }
     #endif
+
     return skip_repl;
 }
 
