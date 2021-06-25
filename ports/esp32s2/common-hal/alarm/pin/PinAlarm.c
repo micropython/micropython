@@ -27,16 +27,16 @@
 
 #include "py/runtime.h"
 
-#include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/esp_port.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "components/driver/include/driver/rtc_io.h"
-#include "components/esp32s2/include/esp_sleep.h"
-#include "components/freertos/include/freertos/FreeRTOS.h"
-#include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
+#include "components/esp_system/include/esp_sleep.h"
+#include "components/hal/esp32s2/include/hal/gpio_ll.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
+#include "components/freertos/include/freertos/FreeRTOS.h"
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
