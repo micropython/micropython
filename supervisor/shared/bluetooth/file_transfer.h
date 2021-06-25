@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+#include <stdbool.h>
 
-#if CIRCUITPY_AUDIOBUSIO
-#include "common-hal/audiobusio/I2SOut.h"
-#endif
+void supervisor_bluetooth_file_transfer_background(void);
+void supervisor_start_bluetooth_file_transfer(void);
+void supervisor_bluetooth_file_transfer_disconnected(void);
 
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
-
-void port_start_background_task(void) {
-}
-void port_finish_background_task(void) {
-}
-
-void port_background_task(void) {
-    #if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_background();
-    #endif
-    #if CIRCUITPY_AUDIOBUSIO
-    i2s_background();
-    #endif
-}
+#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H

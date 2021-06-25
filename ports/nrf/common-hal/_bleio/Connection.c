@@ -311,6 +311,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                     // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
                     // Indicate ATTR table change because we may have reloaded since the peer last
                     // connected.
+                    mp_printf(&mp_plat_print, "restore sys attrs\n");
                     sd_ble_gatts_service_changed(self->conn_handle, 0xC, 0xFFFF);
                 } else {
                     // No matching bonding found, so use fresh system attributes.
@@ -533,7 +534,8 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
             characteristic, m_char_discovery_service, gattc_char->handle_value, uuid,
             props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
             GATT_MAX_DATA_LENGTH, false,   // max_length, fixed_length: values don't matter for gattc
-            mp_const_empty_bytes);
+            mp_const_empty_bytes,
+            NULL);
 
         mp_obj_list_append(MP_OBJ_FROM_PTR(m_char_discovery_service->characteristic_list),
             MP_OBJ_FROM_PTR(characteristic));

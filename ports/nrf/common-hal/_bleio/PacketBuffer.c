@@ -173,6 +173,23 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
+        case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
+            if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+                break;
+            }
+            uint16_t conn_handle = ble_evt->evt.gatts_evt.conn_handle;
+            // Check to see if the bond restored the HVX state.
+            uint16_t cccd;
+            ble_gatts_value_t value;
+            value.len = sizeof(uint16_t);
+            value.offset = 0;
+            value.p_value = (uint8_t *)&cccd;
+            sd_ble_gatts_value_get(conn_handle, self->characteristic->cccd_handle, &value);
+            if (cccd & BLE_GATT_HVX_NOTIFICATION) {
+                self->conn_handle = conn_handle;
+            }
+            break;
+        }
         case BLE_GAP_EVT_CONNECTED:
             break;
         case BLE_GAP_EVT_DISCONNECTED:
