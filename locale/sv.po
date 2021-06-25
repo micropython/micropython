@@ -55,6 +55,10 @@ msgid " is of type %q\n"
 msgstr " är av typen %q\n"
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " utdata:\n"
 
@@ -2561,7 +2565,7 @@ msgstr "argumentet argsort måste vara en ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort är inte implementerad för tillplattade matriser"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argumentet har fel typ"
 

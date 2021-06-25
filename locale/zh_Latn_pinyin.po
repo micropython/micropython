@@ -56,6 +56,10 @@ msgid " is of type %q\n"
 msgstr " shì %q lèi xíng\n"
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " shūchū:\n"
 
@@ -2560,7 +2564,7 @@ msgstr "argsort cānshù bìxū shì ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
 

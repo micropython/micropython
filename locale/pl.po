@@ -53,6 +53,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " wyjście:\n"
 
@@ -2524,7 +2528,7 @@ msgstr ""
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argument ma zły typ"
 
