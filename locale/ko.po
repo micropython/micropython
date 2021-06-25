@@ -598,10 +598,6 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "잘못된 크기의 버퍼. >1 여야합니다"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr ""
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -874,6 +870,10 @@ msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1670,7 +1670,6 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1711,6 +1710,10 @@ msgstr ""
 #, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
 msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c

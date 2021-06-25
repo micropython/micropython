@@ -607,10 +607,6 @@ msgstr "Huǎn chōng qū bì xū shì 512 zì jié de bèi shù"
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Huǎn chōng qū tài dà ， wú fǎ fēn pèi"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -886,6 +882,10 @@ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1690,7 +1690,6 @@ msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1735,6 +1734,10 @@ msgid ""
 msgstr ""
 "Jǐn zhīchí Windows géshì, zhīchí wèi yāsuō de BMP: Gěi dìng de biāo tóu "
 "dàxiǎo wèi %d"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
@@ -4470,6 +4473,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Huǎn chōng qū tài dà ， wú fǎ fēn pèi"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "interp shì wèi děng zhǎng de 1D shùzǔ dìngyì de"

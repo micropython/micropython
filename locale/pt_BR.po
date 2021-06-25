@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-21 22:27+0000\n"
+"PO-Revision-Date: 2021-06-24 23:11+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: main.c
 msgid ""
@@ -94,7 +94,7 @@ msgstr "Os índices %q devem ser inteiros, e não %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "o comprimento %q deve ser %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -102,11 +102,11 @@ msgstr "A lista %q deve ser uma lista"
 
 #: py/argcheck.c
 msgid "%q must <= %d"
-msgstr ""
+msgstr "o %q deve ser <= %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "o %q deve ser %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -118,7 +118,7 @@ msgstr "%q deve ser 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "o %q deve ser >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -138,7 +138,7 @@ msgstr "%q deve ser None ou entre 1 e len(report_descriptor)-1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q deve ser uma string"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -150,12 +150,12 @@ msgstr "%q deve estar entre %d e %d"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
+msgstr "o %q deve ser do tipo %q"
 
 #: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
 #: shared-bindings/keypad/ShiftRegisterKeys.c
 msgid "%q must store bytes"
-msgstr ""
+msgstr "o %q deve armazenar bytes"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -613,10 +613,6 @@ msgstr "O buffer deve ser um múltiplo de 512 bytes"
 msgid "Buffer must be at least length 1"
 msgstr "O comprimento do buffer deve ter pelo menos 1"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "O buffer é muito grande e incapaz de alocar"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -897,6 +893,10 @@ msgstr "O pino de dados 0 deve ser alinhado por bytes."
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Pedaço de dados deve seguir o pedaço de cortes"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1703,7 +1703,6 @@ msgstr "O firmware do sistema nórdico está sem memória"
 msgid "Not a valid IP string"
 msgstr "Não é uma sequência válida de IP"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1748,6 +1747,10 @@ msgid ""
 msgstr ""
 "O BMP descompactado é compatível apenas no formato Windows: o tamanho do "
 "cabeçalho é %d"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
@@ -2665,7 +2668,7 @@ msgstr "a operação binário %q não foi implementada"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "bits deve ser 32 ou menos"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3289,7 +3292,7 @@ msgstr "o gráfico deve ter 2048 bytes de comprimento"
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "o hash é final"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -4514,6 +4517,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "O buffer é muito grande e incapaz de alocar"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "o interp é definido para matrizes 1D de igual comprimento"
