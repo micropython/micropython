@@ -40,6 +40,10 @@ size_t common_hal_usb_cdc_serial_read(usb_cdc_serial_obj_t *self, uint8_t *data,
     uint32_t total_num_read = tud_cdc_n_read(self->idx, data, len);
 
     if (wait_forever || wait_for_timeout) {
+        // Continue filling the buffer past what we already read.
+        len -= total_num_read;
+        data += total_num_read;
+
         // Read more if we have time.
         // Use special routine to avoid pulling in uint64-float-compatible math routines.
         uint64_t timeout_ms = float_to_uint64(self->timeout * 1000);  // Junk value if timeout < 0.
@@ -78,6 +82,10 @@ size_t common_hal_usb_cdc_serial_write(usb_cdc_serial_obj_t *self, const uint8_t
     tud_cdc_n_write_flush(self->idx);
 
     if (wait_forever || wait_for_timeout) {
+        // Continue writing the rest of the buffer.
+        len -= total_num_written;
+        data += total_num_written;
+
         // Write more if we have time.
         // Use special routine to avoid pulling in uint64-float-compatible math routines.
         uint64_t timeout_ms = float_to_uint64(self->write_timeout * 1000);  // Junk value if write_timeout < 0.
