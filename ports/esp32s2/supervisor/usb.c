@@ -31,11 +31,11 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
-#include "components/soc/soc/esp32s2/include/soc/usb_periph.h"
-#include "components/driver/include/driver/periph_ctrl.h"
 #include "components/driver/include/driver/gpio.h"
+#include "components/driver/include/driver/periph_ctrl.h"
 #include "components/esp_rom/include/esp32s2/rom/gpio.h"
-#include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
+#include "components/hal/esp32s2/include/hal/gpio_ll.h"
+#include "components/soc/esp32s2/include/soc/usb_periph.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
