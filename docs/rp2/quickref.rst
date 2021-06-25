@@ -59,7 +59,12 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. The software timer is available currently, and there are unlimited number of them available(limited by memory). There is no need to specify the timer id (id=-1 is supported at the moment) as it will be set autoatically. 
+RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. The software timer is available currently, and there are unlimited number of them available(limited by memory). There is no need to specify the timer id (id=-1 is supported at the moment) as it will be set autoatically. Use the :mod:`machine.timer1 module::
+
+    from machine import Timer
+
+    tim0 = Timer(0)
+    tim0.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(0))
 
 
 .. _rp2_Pins_and_GPIO:
