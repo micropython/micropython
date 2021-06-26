@@ -46,6 +46,7 @@
 //|
 //|         """Represents a single I2C device and manages locking the bus and the device
 //|         address.
+//|
 //|         :param ~busio.I2C i2c: The I2C bus the device is on
 //|         :param int device_address: The 7 bit device address
 //|         :param bool probe: Probe for the device upon object creation, default is true
@@ -114,6 +115,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit_
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|         as if ``buf[start:end]``. This will not cause an allocation like
 //|         ``buf[start:end]`` will so it saves memory.
+//|
 //|         :param bytearray buf: buffer to write into
 //|         :param int start: Index to start writing at
 //|         :param int end: Index to write up to but not include; if None, use ``len(buf)``"""
@@ -157,6 +159,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 2,
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|         as if ``buffer[start:end]``. This will not cause an allocation like
 //|         ``buffer[start:end]`` will so it saves memory.
+//|
 //|         :param bytearray buf: buffer containing the bytes to write
 //|         :param int start: Index to start writing from
 //|         :param int end: Index to read up to but not include; if None, use ``len(buf)``
@@ -208,6 +211,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 2, adafruit_
 //|         will be sliced as if ``in_buffer[in_start:in_end]``. This will not
 //|         cause an allocation like ``in_buffer[in_start:in_end]`` will so
 //|         it saves memory.
+//|
 //|         :param bytearray out_buffer: buffer containing the bytes to write
 //|         :param bytearray in_buffer: buffer containing the bytes to read into
 //|         :param int out_start: Index to start writing from
