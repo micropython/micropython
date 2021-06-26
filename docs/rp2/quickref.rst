@@ -59,7 +59,14 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-How do they work?
+RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. The software timer is available currently, and there are unlimited number of them available(limited by memory). There is no need to specify the timer id (id=-1 is supported at the moment) as it will be set autoatically. Use the :mod:`machine.Timer` class:
+
+    from machine import Timer
+
+    tim = Timer(-1)
+    tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
+    tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2)) 
+
 
 .. _rp2_Pins_and_GPIO:
 
@@ -92,11 +99,19 @@ See :ref:`machine.UART <machine.UART>`. ::
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
 
+.. note::
+ 	
+	REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for details on how to enable REPL over UART.
+
 
 PWM (pulse width modulation)
-----------------------------
 
-How does PWM work on the RPi RP2xxx?
+----------------------------
+There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. 
+
+
+The channels can be clocked by external sources, using an edge-sensitive input mode for frequency measurement, and a level-sensitive input mode for duty cycle measurement.
+
 
 Use the ``machine.PWM`` class::
 
@@ -112,7 +127,7 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
-How does the ADC module work?
+RP2040 has five ADC channels in total, four of which are 12-bit SAR based ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can be connected with GP26,GP27,GP28. The fourth is used to measure the VSYS voltage on the board.The standard ADC range is 0-3.3V.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
@@ -202,13 +217,13 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 2, 12, 48, 0, 0)) # set a specific date and time
+    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
 
 WDT (Watchdog timer)
 --------------------
 
-Is there a watchdog timer?
+The RP2XXX port has a watchdog which is a countdown timer that can restart parts of the chip if it reaches zero. This helps in restarting the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
@@ -221,7 +236,7 @@ See :ref:`machine.WDT <machine.WDT>`. ::
 Deep-sleep mode
 ---------------
 
-Is there deep-sleep support for the rp2?
+There are many 'deep sleep' methods provided by pico's SDK libraries.We can ulitlise these methods to put the processor into a deep sleep mode where it will have a less power consumption when the execution of code isn't so important.
 
 The following code can be used to sleep, wake and check the reset cause::
 
@@ -286,3 +301,4 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
     r, g, b = ap[0]
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
+
