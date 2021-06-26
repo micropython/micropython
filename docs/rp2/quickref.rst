@@ -229,22 +229,6 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
-Deep-sleep mode
----------------
-
-There are many 'deep sleep' methods provided by pico's SDK libraries.We can ulitlise these methods to put the processor into a deep sleep mode where it will have a less power consumption when the execution of code isn't so important.
-
-The following code can be used to sleep, wake and check the reset cause::
-
-    import machine
-
-    # check if the device woke from a deep sleep
-    if machine.reset_cause() == machine.DEEPSLEEP_RESET:
-        print('woke from a deep sleep')
-
-    # put the device to sleep for 10 seconds
-    machine.deepsleep(10000)
-
 OneWire driver
 --------------
 
