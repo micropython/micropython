@@ -394,7 +394,6 @@ function ci_unix_standard_run_perfbench {
 }
 
 function ci_unix_coverage_setup {
-    sudo apt-get install lcov
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
