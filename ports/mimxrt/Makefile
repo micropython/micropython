@@ -116,10 +116,15 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/drivers/fsl_adc.c \
+	$(MCU_DIR)/drivers/fsl_cache.c \
 	$(MCU_DIR)/drivers/fsl_clock.c \
+	$(MCU_DIR)/drivers/fsl_dmamux.c \
+	$(MCU_DIR)/drivers/fsl_edma.c \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
+	$(MCU_DIR)/drivers/fsl_lpspi.c \
+	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_flexram.c \
 	$(MCU_DIR)/drivers/fsl_flexspi.c \
@@ -134,12 +139,15 @@ SRC_C = \
 	ticks.c \
 	tusb_port.c \
 	board_init.c \
+	dma_channel.c \
 	$(BOARD_DIR)/flash_config.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
+	machine_spi.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -149,7 +157,9 @@ SRC_C = \
 	hal/flexspi_nor_flash.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/gchelper_native.c \
+	lib/utils/mpirq.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
@@ -262,13 +272,16 @@ SRC_QSTR += \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
+	machine_spi.c \
 	machine_timer.c \
+	machine_uart.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
+	lib/utils/mpirq.c \
 	lib/utils/sys_stdio_mphal.c \
 	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \

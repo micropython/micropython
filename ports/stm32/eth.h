@@ -35,5 +35,6 @@ struct netif *eth_netif(eth_t *self);
 int eth_link_status(eth_t *self);
 int eth_start(eth_t *self);
 int eth_stop(eth_t *self);
+void eth_low_power_mode(eth_t *self, bool enable);
 
 #endif // MICROPY_INCLUDED_STM32_ETH_H

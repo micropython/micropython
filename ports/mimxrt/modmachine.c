@@ -28,6 +28,7 @@
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_i2c.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
 #include "led.h"
@@ -48,6 +49,25 @@ STATIC mp_obj_t machine_freq(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 
+STATIC mp_obj_t machine_idle(void) {
+    MICROPY_EVENT_POLL_HOOK;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
+
+STATIC mp_obj_t machine_disable_irq(void) {
+    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
+    return mp_obj_new_int(state);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
+
+STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
+    uint32_t state = mp_obj_get_int(state_in);
+    MICROPY_END_ATOMIC_SECTION(state);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -65,6 +85,15 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

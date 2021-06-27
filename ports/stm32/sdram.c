@@ -276,6 +276,13 @@ void sdram_leave_low_power(void) {
         (0 << 9U));                                                  // Mode Register Definition
 }
 
+#if __GNUC__ >= 11
+// Prevent array bounds warnings when accessing SDRAM_START_ADDRESS as a memory pointer.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
 bool sdram_test(bool fast) {
     uint8_t const pattern = 0xaa;
     uint8_t const antipattern = 0x55;
@@ -324,5 +331,9 @@ bool sdram_test(bool fast) {
 
     return true;
 }
+
+#if __GNUC__ >= 11
+#pragma GCC diagnostic pop
+#endif
 
 #endif // FMC_SDRAM_BANK

@@ -307,8 +307,8 @@ STATIC void call_py_func_with_lock(ffi_cif *cif, void *ret, void **args, void *u
         nlr_pop();
     } else {
         // Uncaught exception
-        printf("Uncaught exception in FFI callback!\n");
-        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        mp_printf(MICROPY_ERROR_PRINTER, "Uncaught exception in FFI callback\n");
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(nlr.ret_val));
     }
 
     gc_unlock();
@@ -318,7 +318,6 @@ STATIC void call_py_func_with_lock(ffi_cif *cif, void *ret, void **args, void *u
 }
 
 STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
     // first 3 args are positional: retttype, func, paramtypes.
     mp_obj_t rettype_in = pos_args[0];
     mp_obj_t func_in = pos_args[1];

@@ -56,4 +56,11 @@ void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t d
 void soft_timer_insert(soft_timer_entry_t *entry, uint32_t initial_delta_ms);
 void soft_timer_remove(soft_timer_entry_t *entry);
 
+// The timer will be reinserted into the heap so that it is called after initial_delta_ms milliseconds.
+// After that, if it's periodic, it will continue to be called every entry->delta_ms milliseconds.
+static inline void soft_timer_reinsert(soft_timer_entry_t *entry, uint32_t initial_delta_ms) {
+    soft_timer_remove(entry);
+    soft_timer_insert(entry, initial_delta_ms);
+}
+
 #endif // MICROPY_INCLUDED_STM32_SOFTTIMER_H

@@ -1,11 +1,11 @@
-import sys
+import sys, time
 
 try:
     import select, termios
 except ImportError:
     termios = None
     select = None
-    import msvcrt
+    import msvcrt, signal
 
 
 class ConsolePosix:
@@ -31,9 +31,9 @@ class ConsolePosix:
     def exit(self):
         termios.tcsetattr(self.infd, termios.TCSANOW, self.orig_attr)
 
-    def waitchar(self):
-        # TODO pyb.serial might not have fd
-        select.select([console_in.infd, pyb.serial.fd], [], [])
+    def waitchar(self, pyb_serial):
+        # TODO pyb_serial might not have fd
+        select.select([self.infd, pyb_serial.fd], [], [])
 
     def readchar(self):
         res = select.select([self.infd], [], [], 0)
@@ -75,20 +75,29 @@ class ConsoleWindows:
         b"\x94": b"Z",  # Ctrl-Tab = BACKTAB,
     }
 
+    def __init__(self):
+        self.ctrl_c = 0
+
+    def _sigint_handler(self, signo, frame):
+        self.ctrl_c += 1
+
     def enter(self):
-        pass
+        signal.signal(signal.SIGINT, self._sigint_handler)
 
     def exit(self):
-        pass
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def inWaiting(self):
-        return 1 if msvcrt.kbhit() else 0
+        return 1 if self.ctrl_c or msvcrt.kbhit() else 0
 
-    def waitchar(self):
-        while not (self.inWaiting() or pyb.serial.inWaiting()):
+    def waitchar(self, pyb_serial):
+        while not (self.inWaiting() or pyb_serial.inWaiting()):
             time.sleep(0.01)
 
     def readchar(self):
+        if self.ctrl_c:
+            self.ctrl_c -= 1
+            return b"\x03"
         if msvcrt.kbhit():
             ch = msvcrt.getch()
             while ch in b"\x00\xe0":  # arrow or function key prefix?
@@ -120,7 +129,7 @@ else:
 
     # Windows VT mode ( >= win10 only)
     # https://bugs.python.org/msg291732
-    import ctypes
+    import ctypes, os
     from ctypes import wintypes
 
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)

@@ -345,7 +345,7 @@ void gc_collect_start(void) {
 // Address sanitizer needs to know that the access to ptrs[i] must always be
 // considered OK, even if it's a load from an address that would normally be
 // prohibited (due to being undefined, in a red zone, etc).
-#ifdef __GNUC__
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 __attribute__((no_sanitize_address))
 #endif
 static void *gc_get_ptr(void **ptrs, int i) {
