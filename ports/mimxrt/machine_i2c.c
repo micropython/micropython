@@ -48,7 +48,6 @@ typedef struct _machine_i2c_obj_t {
     LPI2C_Type *i2c_inst;
     uint8_t i2c_id;
     uint8_t i2c_hw_id;
-    uint8_t mode;
     bool transfer_busy;
     status_t transfer_status;
     lpi2c_master_config_t *master_config;
@@ -118,9 +117,8 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
     self->base.type = &machine_hw_i2c_type;
     self->i2c_id = i2c_id;
-    self->i2c_hw_id = i2c_index_table[i2c_id];  // the hw spi number 1..n
+    self->i2c_hw_id = i2c_index_table[i2c_id];  // the hw i2c number 1..n
     self->i2c_inst = i2c_base_ptr_table[self->i2c_hw_id];
-    self->mode = 0;
 
     uint8_t drive = args[ARG_drive].u_int;
     if (drive < 1 || drive > 7) {
