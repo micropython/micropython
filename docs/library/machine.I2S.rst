@@ -31,7 +31,7 @@ I2S objects can be created and initialized using::
                     bits=16,                       
                     format=I2S.MONO,
                     rate=44100, 
-                    bufferlen=20000)
+                    ibuf=20000)
                    
     audio_in = I2S(2, 
                    sck=sck_pin, ws=ws_pin, sdin=sdin_pin,    
@@ -39,7 +39,7 @@ I2S objects can be created and initialized using::
                    bits=32,                       
                    format=I2S.STEREO,
                    rate=22050, 
-                   bufferlen=20000)
+                   ibuf=20000)
                     
 3 modes of operation are supported:
  - blocking 
@@ -72,7 +72,7 @@ uasyncio::
 Constructor
 -----------
 
-.. class:: I2S(id, *, sck, ws, sd, mode, bits, format, rate, bufferlen)
+.. class:: I2S(id, *, sck, ws, sd, mode, bits, format, rate, ibuf)
 
    Construct an I2S object of the given id:
    
@@ -93,7 +93,7 @@ Constructor
      - ``bits`` specifies sample size (bits), 16 or 32
      - ``format`` specifies channel format, STEREO or MONO
      - ``rate`` specifies audio sampling rate (samples/s)
-     - ``bufferlen`` specifies internal buffer length (bytes)
+     - ``ibuf`` specifies internal buffer length (bytes)
      
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while 
    sample data is transfered between the internal buffer and the I2S peripheral unit. 
@@ -114,13 +114,15 @@ Methods
 .. method::  I2S.readinto(buf)
 
   Read audio samples into the buffer specified by ``buf``.  ``buf`` must support the buffer protocol, such as bytearray or array. 
-  "buf" byte ordering is little-endian.  For Stereo format, left channel sample precedes right channel sample. 
+  "buf" byte ordering is little-endian.  For Stereo format, left channel sample precedes right channel sample. For Mono format, 
+  the left channel sample data is used.
   Returns number of bytes read 
   
 .. method::  I2S.write(buf)
 
   Write audio samples contained in ``buf``. ``buf`` must support the buffer protocol, such as bytearray or array.
-  "buf" byte ordering is little-endian.  For Stereo format, left channel sample precedes right channel sample.
+  "buf" byte ordering is little-endian.  For Stereo format, left channel sample precedes right channel sample. For Mono format, 
+  the sample data is written to both the right and left channels.
   Returns number of bytes written 
   
 .. method::  I2S.irq(handler)

@@ -137,7 +137,7 @@ typedef struct _machine_i2s_obj_t {
     int8_t bits;
     format_t format;
     int32_t rate;
-    int32_t bufferlen;
+    int32_t ibuf;
     mp_obj_t callback_for_non_blocking;
     uint8_t dma_buffer[SIZEOF_DMA_BUFFER_IN_BYTES + 0x1f]; // 0x1f related to D-Cache alignment
     uint8_t *dma_buffer_dcache_aligned;
@@ -290,7 +290,7 @@ uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *app
     //   For every frame coming from the ring buffer (8 bytes), 2 bytes are "cherry picked" and
     //   copied to the supplied app buffer.
     //   Thus, for every 1 byte copied to the app buffer, 4 bytes are read from the ring buffer.
-    //   If a 10kB app buffer is supplied, 40kB of audio samples is read from the ring buffer.
+    //   If a 8kB app buffer is supplied, 32kB of audio samples is read from the ring buffer.
 
     uint32_t num_bytes_copied_to_appbuf = 0;
     uint8_t *app_p = (uint8_t *)appbuf->buf;
@@ -675,18 +675,18 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         ARG_bits,
         ARG_format,
         ARG_rate,
-        ARG_bufferlen,
+        ARG_ibuf,
     };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sck,              MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_ws,               MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sd,               MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mode,             MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_bits,             MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_format,           MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,             MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_bufferlen,        MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sd,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -755,14 +755,14 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is Rate valid?
     // Not checked
 
-    // is Bufferlen valid?
-    int32_t ring_buffer_len = args[ARG_bufferlen].u_int;
+    // is Ibuf valid?
+    int32_t ring_buffer_len = args[ARG_ibuf].u_int;
     if (ring_buffer_len > 0) {
         uint8_t *buffer = m_new(uint8_t, ring_buffer_len);
         self->ring_buffer_storage = buffer;
         ringbuf_init(&self->ring_buffer, buffer, ring_buffer_len);
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid bufferlen"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid buf"));
     }
 
     self->sck = MP_OBJ_TO_PTR(args[ARG_sck].u_obj);
@@ -772,7 +772,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->bits = i2s_bits;
     self->format = i2s_format;
     self->rate = args[ARG_rate].u_int;
-    self->bufferlen = ring_buffer_len;
+    self->ibuf = ring_buffer_len;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->non_blocking_descriptor.copy_in_progress = false;
     self->io_mode = BLOCKING;
@@ -819,14 +819,14 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         "sd="MP_HAL_PIN_FMT ",\n"
         "mode=%u,\n"
         "bits=%u, format=%u,\n"
-        "rate=%d, bufferlen=%d)",
+        "rate=%d, ibuf=%d)",
         self->i2s_id,
         mp_hal_pin_name(self->sck),
         mp_hal_pin_name(self->ws),
         mp_hal_pin_name(self->sd),
         self->mode,
         self->bits, self->format,
-        self->rate, self->bufferlen
+        self->rate, self->ibuf
         );
 }
 
