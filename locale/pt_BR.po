@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-24 23:11+0000\n"
+"PO-Revision-Date: 2021-06-25 18:00+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -53,6 +53,10 @@ msgstr "  Arquivo \"%q\", linha %d"
 #: py/builtinhelp.c
 msgid " is of type %q\n"
 msgstr " é do tipo %q\n"
+
+#: main.c
+msgid " not found.\n"
+msgstr ""
 
 #: main.c
 msgid " output:\n"
@@ -896,7 +900,7 @@ msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
-msgstr ""
+msgstr "Os dados não são compatíveis com publicidade direcionada"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1750,7 +1754,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
-msgstr ""
+msgstr "Somente anúncios conectáveis podem ser direcionados"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
@@ -2086,6 +2090,10 @@ msgstr "Houve um erro na inicialização SPI"
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
 msgstr "Houve um erro na reinicialização SPI"
+
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -2591,7 +2599,7 @@ msgstr "O argumento argsort deve ser um ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort não é implementado para matrizes achatadas"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argumento tem tipo errado"
 

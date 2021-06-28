@@ -53,6 +53,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " 出力:\n"
 
@@ -2044,6 +2048,10 @@ msgstr "SPI初期化エラー"
 msgid "SPI Re-initialization error"
 msgstr "SPI再初期化エラー"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
@@ -2522,7 +2530,7 @@ msgstr "argsortの引数はndarrayでなければなりません"
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr ""
 
