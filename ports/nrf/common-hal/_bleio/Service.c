@@ -153,7 +153,6 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         char_md.p_char_user_desc = (const uint8_t *)user_description;
         char_md.char_user_desc_max_size = strlen(user_description);
         char_md.char_user_desc_size = strlen(user_description);
-        mp_printf(&mp_plat_print, "user description %s\n", user_description);
     }
 
     bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);

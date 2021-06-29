@@ -311,7 +311,6 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                     // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
                     // Indicate ATTR table change because we may have reloaded since the peer last
                     // connected.
-                    mp_printf(&mp_plat_print, "restore sys attrs\n");
                     sd_ble_gatts_service_changed(self->conn_handle, 0xC, 0xFFFF);
                 } else {
                     // No matching bonding found, so use fresh system attributes.

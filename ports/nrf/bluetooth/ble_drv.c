@@ -38,8 +38,6 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-// #include "supervisor/shared/bluetooth.h"
-
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 // Flag indicating progress of internal flash operation.

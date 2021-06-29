@@ -87,9 +87,9 @@ bool boot_in_discovery_mode = false;
 bool advertising = false;
 
 STATIC void supervisor_bluetooth_start_advertising(void) {
-    // #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    // return;
-    // #else
+    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    return;
+    #else
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -98,7 +98,6 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     #if CIRCUITPY_USB
     // Don't advertise when we have USB instead of BLE.
     if (!bonded && !boot_in_discovery_mode) {
-        mp_printf(&mp_plat_print, "skipping advertising\n");
         return;
     }
     #endif
@@ -112,7 +111,6 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     // Advertise with less power when doing so publicly to reduce who can hear us. This will make it
     // harder for someone with bad intentions to pair from a distance.
     if (!bonded) {
-        mp_printf(&mp_plat_print, "public advertising\n");
         tx_power = -40;
         adv = public_advertising_data;
         adv_len = sizeof(public_advertising_data);
@@ -130,9 +128,9 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         scan_response_len,
         tx_power,
         NULL);
-    mp_printf(&mp_plat_print, "advert %d\n", status);
     // This may fail if we are already advertising.
     advertising = status == NRF_SUCCESS;
+    #endif
 }
 
 #define BLE_DISCOVERY_DATA_GUARD 0xbb0000bb
@@ -144,21 +142,19 @@ void supervisor_bluetooth_init(void) {
     if ((reset_state & BLE_DISCOVERY_DATA_GUARD_MASK) == BLE_DISCOVERY_DATA_GUARD) {
         ble_mode = (reset_state & ~BLE_DISCOVERY_DATA_GUARD_MASK) >> 8;
     }
-    // const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     boot_in_discovery_mode = false;
-    // if (reset_reason != RESET_REASON_POWER_ON &&
-    //     reset_reason != RESET_REASON_RESET_PIN &&
-    //     reset_reason != RESET_REASON_UNKNOWN &&
-    //     reset_reason != RESET_REASON_SOFTWARE) {
-    //     return;
-    // }
+    if (reset_reason != RESET_REASON_POWER_ON &&
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_UNKNOWN &&
+        reset_reason != RESET_REASON_SOFTWARE) {
+        return;
+    }
 
     if (ble_mode == 0) {
         port_set_saved_word(BLE_DISCOVERY_DATA_GUARD | (0x01 << 8));
     }
     // Wait for a while to allow for reset.
-
-    ble_mode = 1;
 
     #ifdef CIRCUITPY_BOOT_BUTTON
     digitalio_digitalinout_obj_t boot_button;
