@@ -322,7 +322,7 @@ STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         mp_obj_t ret = mp_iternext_allow_raise(args[0]);
         if (ret == MP_OBJ_STOP_ITERATION) {
-            mp_raise_type(&mp_type_StopIteration);
+            mp_raise_StopIteration(MP_STATE_THREAD(stop_iteration_arg));
         } else {
             return ret;
         }
@@ -336,7 +336,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_next_obj, 1, 2, mp_builtin_next);
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        mp_raise_type(&mp_type_StopIteration);
+        mp_raise_StopIteration(MP_STATE_THREAD(stop_iteration_arg));
     } else {
         return ret;
     }
