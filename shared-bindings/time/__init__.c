@@ -91,7 +91,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 }
 
 //| class struct_time:
-//|     def __init__(self, time_tuple: Sequence) -> None:
+//|     def __init__(self, time_tuple: Sequence[int]) -> None:
 //|         """Structure used to capture a date and time.  Can be constructed from a `struct_time`, `tuple`, `list`, or `namedtuple` with 9 elements.
 //|
 //|         :param Sequence time_tuple: Sequence of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
