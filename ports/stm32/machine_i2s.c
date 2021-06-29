@@ -152,6 +152,8 @@ typedef struct _machine_i2s_obj_t {
     const dma_descr_t *dma_descr_rx;
 } machine_i2s_obj_t;
 
+STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
+
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
@@ -162,8 +164,13 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
     { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
-//  This is used by the DMA callback functions to access the I2S object
 STATIC machine_i2s_obj_t *machine_i2s_obj[MAX_I2S_STM32];
+
+void machine_i2s_init0() {
+    for (uint8_t i = 0; i < MAX_I2S_STM32; i++) {
+        machine_i2s_obj[i] = NULL;
+    }
+}
 
 // Ring Buffer
 // Thread safe when used with these constraints:
@@ -171,14 +178,14 @@ STATIC machine_i2s_obj_t *machine_i2s_obj[MAX_I2S_STM32];
 // - Sequential atomic operations
 // One byte of capacity is used to detect buffer empty/full
 
-void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size) {
+STATIC void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size) {
     rbuf->buffer = buffer;
     rbuf->size = size;
     rbuf->head = 0;
     rbuf->tail = 0;
 }
 
-bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
+STATIC bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
     size_t next_tail = (rbuf->tail + 1) % rbuf->size;
 
     if (next_tail != rbuf->head) {
@@ -191,7 +198,7 @@ bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
     return false;
 }
 
-bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
+STATIC bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
     if (rbuf->head == rbuf->tail) {
         // empty
         return false;
@@ -202,19 +209,19 @@ bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
     return true;
 }
 
-bool ringbuf_is_empty(ring_buf_t *rbuf) {
+STATIC bool ringbuf_is_empty(ring_buf_t *rbuf) {
     return rbuf->head == rbuf->tail;
 }
 
-bool ringbuf_is_full(ring_buf_t *rbuf) {
+STATIC bool ringbuf_is_full(ring_buf_t *rbuf) {
     return ((rbuf->tail + 1) % rbuf->size) == rbuf->head;
 }
 
-size_t ringbuf_available_data(ring_buf_t *rbuf) {
+STATIC size_t ringbuf_available_data(ring_buf_t *rbuf) {
     return (rbuf->tail - rbuf->head + rbuf->size) % rbuf->size;
 }
 
-size_t ringbuf_available_space(ring_buf_t *rbuf) {
+STATIC size_t ringbuf_available_space(ring_buf_t *rbuf) {
     return rbuf->size - ringbuf_available_data(rbuf) - 1;
 }
 
@@ -280,7 +287,7 @@ STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
     }
 }
 
-uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+STATIC uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
 
     // copy audio samples from the ring buffer to the app buffer
     // loop, copying samples until the app buffer is filled
@@ -345,7 +352,7 @@ exit:
 }
 
 // function is used in IRQ context
-void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
+STATIC void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
     // attempt to copy a block of audio samples from the ring buffer to the supplied app buffer.
     // audio samples will be formatted as part of the copy operation
@@ -386,7 +393,7 @@ void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
     }
 }
 
-uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+STATIC uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
 
     // copy audio samples from the app buffer to the ring buffer
     // loop, reading samples until the app buffer is emptied
@@ -417,7 +424,7 @@ uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbu
 }
 
 // function is used in IRQ context
-void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
+STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
     // copy audio samples from app buffer into ring buffer
     uint32_t num_bytes_remaining_to_copy = self->non_blocking_descriptor.appbuf.len - self->non_blocking_descriptor.index;
@@ -762,7 +769,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         self->ring_buffer_storage = buffer;
         ringbuf_init(&self->ring_buffer, buffer, ring_buffer_len);
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid buf"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid ibuf"));
     }
 
     self->sck = MP_OBJ_TO_PTR(args[ARG_sck].u_obj);
@@ -833,23 +840,31 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
     uint8_t i2s_id = mp_obj_get_int(args[0]);
-    machine_i2s_obj_t *self = m_new_obj(machine_i2s_obj_t);
+    uint8_t i2s_id_zero_base = 0;
 
     if (0) {
     #ifdef MICROPY_HW_I2S1
     } else if (i2s_id == 1) {
-        machine_i2s_obj[0] = self;
+        i2s_id_zero_base = 0;
     #endif
     #ifdef MICROPY_HW_I2S2
     } else if (i2s_id == 2) {
-        machine_i2s_obj[1] = self;
+        i2s_id_zero_base = 1;
     #endif
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
-    self->base.type = &machine_i2s_type;
-    self->i2s_id = i2s_id;
+    machine_i2s_obj_t *self;
+    if (machine_i2s_obj[i2s_id_zero_base] == NULL) {
+        self = m_new_obj(machine_i2s_obj_t);
+        machine_i2s_obj[i2s_id_zero_base] = self;
+        self->base.type = &machine_i2s_type;
+        self->i2s_id = i2s_id;
+    } else {
+        self = machine_i2s_obj[i2s_id_zero_base];
+        machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
+    }
 
     // align DMA buffer start to the cache line size (32 bytes)
     self->dma_buffer_dcache_aligned = (uint8_t *)((uint32_t)(self->dma_buffer + 0x1f) & ~0x1f);
@@ -862,7 +877,9 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 }
 
 STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_i2s_init_helper(MP_OBJ_TO_PTR(pos_args[0]), n_pos_args - 1, pos_args + 1, kw_args);
+    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
+    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);

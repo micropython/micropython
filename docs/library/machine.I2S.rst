@@ -81,8 +81,8 @@ Constructor
    ``id`` is board and port specific:
  
      - PYBv1.0/v1.1: has one I2S bus with id=2.
-     - PYBD-SFxW: has two I2S busses with id=1 and id=2. 
-     - ESP32: has two I2S busses with id=0 and id=1. 
+     - PYBD-SFxW: has two I2S buses with id=1 and id=2. 
+     - ESP32: has two I2S buses with id=0 and id=1. 
    
    Keyword-only parameters that are supported on all ports:
     

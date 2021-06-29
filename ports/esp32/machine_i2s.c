@@ -133,6 +133,8 @@ typedef struct _machine_i2s_obj_t {
     TaskHandle_t non_blocking_mode_task;
 } machine_i2s_obj_t;
 
+STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
+
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo, with the L and R channels reversed) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
@@ -142,6 +144,14 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
     { 6,  7,  2,  3, -1, -1, -1, -1 },  // Stereo, 16-bits
     { 4,  5,  6,  7,  0,  1,  2,  3 },  // Stereo, 32-bits
 };
+
+STATIC machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX];
+
+void machine_i2s_init0() {
+    for (i2s_port_t p = 0; p < I2S_NUM_MAX; p++) {
+        machine_i2s_obj[p] = NULL;
+    }
+}
 
 //  The following function takes a sample buffer and swaps L/R channels
 //
@@ -426,8 +436,6 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->non_blocking_mode_task = NULL;
     self->io_mode = BLOCKING;
 
-    i2s_driver_uninstall(self->port);  // uninstall any previous configuration
-
     i2s_config_t i2s_config;
     i2s_config.communication_format = I2S_COMM_FORMAT_I2S;
     i2s_config.mode = mode;
@@ -490,9 +498,16 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
-    machine_i2s_obj_t *self = m_new_obj(machine_i2s_obj_t);
-    self->base.type = &machine_i2s_type;
-    self->port = port;
+    machine_i2s_obj_t *self;
+    if (machine_i2s_obj[port] == NULL) {
+        self = m_new_obj(machine_i2s_obj_t);
+        machine_i2s_obj[port] = self;
+        self->base.type = &machine_i2s_type;
+        self->port = port;
+    } else {
+        self = machine_i2s_obj[port];
+        machine_i2s_deinit(self);
+    }
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
@@ -502,7 +517,9 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 }
 
 STATIC mp_obj_t machine_i2s_obj_init(mp_uint_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_i2s_init_helper(pos_args[0], n_pos_args - 1, pos_args + 1, kw_args);
+    machine_i2s_obj_t *self = pos_args[0];
+    machine_i2s_deinit(self);
+    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_obj_init);

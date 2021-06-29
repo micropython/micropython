@@ -233,7 +233,7 @@ See :ref:`machine.I2S <machine.I2S>`. ::
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
     
 PYBv1.0/v1.1 has one I2S bus with id=2.  
-PYBD-SFxW has two I2S busses with id=1 and id=2.  
+PYBD-SFxW has two I2S buses with id=1 and id=2.  
 I2S is shared with SPI.  
     
 CAN bus (controller area network)

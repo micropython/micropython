@@ -527,6 +527,10 @@ soft_reset:
     pyb_usb_init0();
     #endif
 
+    #if MICROPY_HW_ENABLE_I2S
+    machine_i2s_init0();
+    #endif
+
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
