@@ -96,6 +96,16 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 UART (serial bus)
 -----------------
 
+There are two pins which can be used as RX/TX pins but we can map them into a
+number of other pins. The pins are 1/2, 6/7, 11/12, 16/17, 21/22, 26/27 and can
+be seen in the pin diagram below:
+
+.. image:: img/UARTpinout.jpg
+    :alt: Pin Diagram Raspberry Pi Pico
+    :width: 640px
+
+
+
 See :ref:`machine.UART <machine.UART>`. ::
 
     from machine import UART
