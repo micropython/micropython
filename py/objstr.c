@@ -233,6 +233,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
         return MP_OBJ_FROM_PTR(o);
     }
 
+    if (n_args > 1) {
+        goto wrong_args;
+    }
+
     if (mp_obj_is_small_int(args[0])) {
         mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
         if (len < 0) {
@@ -242,10 +246,6 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
         return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    }
-
-    if (n_args > 1) {
-        goto wrong_args;
     }
 
     // check if __bytes__ exists, and if so delegate to it
