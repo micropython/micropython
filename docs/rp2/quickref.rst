@@ -7,10 +7,12 @@ Quick reference for the RP2
     :alt: Raspberry Pi Pico
     :width: 640px
 
-The Raspberry Pi Pico Development Board (image attribution: Raspberry Pi Foundation).
+The Raspberry Pi Pico Development Board (image attribution: Raspberry Pi
+Foundation).
 
-Below is a quick reference for Raspberry Pi RP2xxx boards.  If it is your first time
-working with this board it may be useful to get an overview of the microcontroller:
+Below is a quick reference for Raspberry Pi RP2xxx boards.  If it is your first
+time working with this board it may be useful to get an overview of the
+microcontroller:
 
 .. toctree::
    :maxdepth: 1
@@ -21,16 +23,15 @@ working with this board it may be useful to get an overview of the microcontroll
 Installing MicroPython
 ----------------------
 
-See the corresponding section of tutorial: :ref:`rp2_intro`. It also includes
-a troubleshooting subsection.
+See the corresponding section of tutorial: :ref:`rp2_intro`. It also includes a
+troubleshooting subsection.
 
 General board control
 ---------------------
 
-The MicroPython REPL is on the USB serial port.
-Tab-completion is useful to find out what methods an object has.
-Paste mode (ctrl-E) is useful to paste a large slab of Python code into
-the REPL.
+The MicroPython REPL is on the USB serial port. Tab-completion is useful to find
+out what methods an object has. Paste mode (ctrl-E) is useful to paste a large
+slab of Python code into the REPL.
 
 The :mod:`machine` module::
 
@@ -59,7 +60,11 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-RP2040's system timer peripheral provides a global microsecond timebase and generates interrupts for the same. The software timer is available currently, and there are unlimited number of them available(limited by memory). There is no need to specify the timer id (id=-1 is supported at the moment) as it will be set automatically. Use the :mod:`machine.Timer` class:
+RP2040's system timer peripheral provides a global microsecond timebase and
+generates interrupts for the same. The software timer is available currently,
+and there are unlimited number of them available(limited by memory). There is no
+need to specify the timer id (id=-1 is supported at the moment) as it will be
+set automatically. Use the :mod:`machine.Timer` class:
 
     from machine import Timer
 
@@ -101,13 +106,15 @@ See :ref:`machine.UART <machine.UART>`. ::
 
 .. note::
  	
-	REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for details on how to enable REPL over UART.
+	REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for
+	details on how to enable REPL over UART.
 
 
 PWM (pulse width modulation)
-
 ----------------------------
-There are 8 independent channels each of which have two outputs making it 16 PWM channels in total which can be clocked from 7Hz to 125Mhz. 
+
+There are 8 independent channels each of which have two outputs making it 16 PWM
+channels in total which can be clocked from 7Hz to 125Mhz. 
 
 Use the ``machine.PWM`` class::
 
@@ -123,7 +130,12 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
-RP2040 has five ADC channels in total, four of which are 12-bit SAR based ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can be connected with GP26,GP27,GP28. The fourth is used to measure the VSYS voltage on the board.The standard ADC range is 0-3.3V. The fifth channel is connected to the in-built temperature sensor and can be used for measuring the temperature by reading the analog values.
+RP2040 has five ADC channels in total, four of which are 12-bit SAR based ADCs:
+GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can be
+connected with GP26,GP27,GP28. The fourth is used to measure the VSYS voltage on
+the board.The standard ADC range is 0-3.3V. The fifth channel is connected to
+the in-built temperature sensor and can be used for measuring the temperature by
+reading the analog values.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
@@ -167,8 +179,8 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
 Hardware SPI bus
 ----------------
 
-Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class and
-has the same methods as software SPI above::
+Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class and has
+the same methods as software SPI above::
 
     from machine import Pin, SPI
 
@@ -219,7 +231,10 @@ See :ref:`machine.RTC <machine.RTC>` ::
 WDT (Watchdog timer)
 --------------------
 
-The RP2XXX port has a watchdog which is a countdown timer that can restart parts of the chip if it reaches zero. This helps in restarting the processor if software gets stuck in an infinite loop. The programmer must periodically write a value to the watchdog to stop it from reaching zero.
+The RP2XXX port has a watchdog which is a countdown timer that can restart parts
+of the chip if it reaches zero. This helps in restarting the processor if
+software gets stuck in an infinite loop. The programmer must periodically write
+a value to the watchdog to stop it from reaching zero.
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
