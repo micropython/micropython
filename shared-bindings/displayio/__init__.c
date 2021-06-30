@@ -70,6 +70,10 @@ MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB565, DISPLAY
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB565_SWAPPED, DISPLAYIO_COLORSPACE_RGB565_SWAPPED);
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555, DISPLAYIO_COLORSPACE_RGB555);
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB555_SWAPPED, DISPLAYIO_COLORSPACE_RGB555_SWAPPED);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, BGR565, DISPLAYIO_COLORSPACE_BGR565);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, BGR565_SWAPPED, DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, BGR555, DISPLAYIO_COLORSPACE_BGR555);
+MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, BGR555_SWAPPED, DISPLAYIO_COLORSPACE_BGR555_SWAPPED);
 
 //| class Colorspace:
 //|     """The colorspace for a `ColorConverter` to operate in"""
@@ -95,6 +99,10 @@ MAKE_ENUM_MAP(displayio_colorspace) {
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB565_SWAPPED),
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB555),
     MAKE_ENUM_MAP_ENTRY(displayio_colorspace, RGB555_SWAPPED),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR565),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR565_SWAPPED),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR555),
+    MAKE_ENUM_MAP_ENTRY(displayio_colorspace, BGR555_SWAPPED),
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_colorspace_locals_dict, displayio_colorspace_locals_table);
 
