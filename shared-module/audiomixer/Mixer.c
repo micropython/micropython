@@ -94,7 +94,7 @@ bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t *self) {
 }
 
 void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel) {
     for (uint8_t i = 0; i < self->voice_count; i++) {
         common_hal_audiomixer_mixervoice_stop(self->voice[i]);
@@ -280,11 +280,11 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t *self,
 }
 
 audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel,
     uint8_t **buffer,
     uint32_t *buffer_length) {
-    if (!single_channel) {
+    if (!single_channel_output) {
         channel = 0;
     }
 
@@ -351,13 +351,13 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t *
     return GET_BUFFER_MORE_DATA;
 }
 
-void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t *self, bool single_channel,
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = false;
     *samples_signed = self->samples_signed;
     *max_buffer_length = self->len;
-    if (single_channel) {
+    if (single_channel_output) {
         *spacing = self->channel_count;
     } else {
         *spacing = 1;

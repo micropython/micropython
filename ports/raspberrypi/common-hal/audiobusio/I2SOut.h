@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
@@ -36,10 +37,10 @@
 // We don't bit pack because we'll only have two at most. Its better to save code size instead.
 typedef struct {
     mp_obj_base_t base;
-    bool left_justified;
     rp2pio_statemachine_obj_t state_machine;
-    bool playing;
     audio_dma_t dma;
+    bool left_justified;
+    bool playing;
 } audiobusio_i2sout_obj_t;
 
 void i2sout_reset(void);

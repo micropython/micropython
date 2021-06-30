@@ -96,11 +96,6 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
         mp_raise_RuntimeError(translate("All timers in use"));
     }
 
-    claim_pin(left_channel);
-    if (right_channel != NULL) {
-        claim_pin(right_channel);
-    }
-
     audio_dma_init(&self->dma);
     self->pacing_timer = NUM_DMA_TIMERS;
 
@@ -220,7 +215,10 @@ bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t 
     if (!playing && self->pacing_timer < NUM_DMA_TIMERS) {
         dma_hw->timer[self->pacing_timer] = 0;
         self->pacing_timer = NUM_DMA_TIMERS;
+
+        audio_dma_stop(&self->dma);
     }
+
     return playing;
 }
 
