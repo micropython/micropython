@@ -96,9 +96,10 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 UART (serial bus)
 -----------------
 
-There are two pins which can be used as RX/TX pins but we can map them into a
-number of other pins. The pins are 1/2, 6/7, 11/12, 16/17, 21/22, 26/27 and can
-be seen in the pin diagram below:
+There are two UARTs, UART0 and UIART1. UART0 can be mapped to GPIO 1/2, 12/13
+and 16/17, and UART1 to GPIO 6/7 and 8/9. Since for using the UART GPIO numbers
+have to be used, these should be mentioned and can be seen in the pin diagram
+below:
 
 .. image:: img/UARTpinout.png
     :alt: Pin Diagram Raspberry Pi Pico
@@ -108,9 +109,8 @@ be seen in the pin diagram below:
 
 See :ref:`machine.UART <machine.UART>`. ::
 
-    from machine import UART
-
-    uart1 = UART(1, baudrate=9600, tx=33, rx=32)
+    from machine import UART, Pin
+    uart1 = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
 
