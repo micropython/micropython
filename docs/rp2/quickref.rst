@@ -152,6 +152,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     from machine import ADC, Pin
     adc = ADC(Pin(26))     # create ADC object on ADC pin
     adc.read_u16()         # read value, 0-65535 across voltage range 0.0v - 3.3v
+
 Software SPI bus
 ----------------
 
@@ -221,9 +222,8 @@ The driver is accessed via the :ref:`machine.I2C <machine.I2C>` class and
 has the same methods as software I2C above::
 
     from machine import Pin, I2C
-
-    i2c = I2C(0)
-    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
+    i2c = I2C(0)   # default assignment: scl=Pin(9), sda=Pin(8)
+    i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400000)
 
 Real time clock (RTC)
 ---------------------
