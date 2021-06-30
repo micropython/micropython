@@ -237,7 +237,7 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
 //|     def __bool__(self) -> bool: ...
 //|
 //|     def __len__(self) -> int:
-//|         """Returns the current pulse length
+//|         """Returns the number of pulse durations currently stored.
 //|
 //|         This allows you to::
 //|
