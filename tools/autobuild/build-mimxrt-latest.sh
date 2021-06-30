@@ -31,6 +31,6 @@ if [ ! -r modmimxrt.c ]; then
 fi
 
 # build the boards
-do_build Teensy_4.0 TEENSY40 hex
-do_build Teensy_4.1 TEENSY41 hex
+do_build TEENSY40 TEENSY40 hex
+do_build TEENSY41 TEENSY41 hex
 do_build MIMXRT1020_EVK MIMXRT1020_EVK bin
