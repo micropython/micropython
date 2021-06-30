@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a bug in CircuitPython
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        ## Bug Report
+        Thanks! for testing out CircuitPython. Now that you have got a
+        problem... you can file a bug report for it. 
+  - type: input
+    id: firmware
+    attributes:
+      label: CircuitPython version
+      description: >-
+        Include the version of CircuitPython you're running. You can see it in
+        the `boot_out.txt` file, as well as in the REPL.
+      placeholder: >-
+        Adafruit CircuitPython 6.2.0-beta.2 on 2021-03-01; Raspberry Pi Pico
+        with rp2040
+  - type: textarea
+    id: code
+    attributes:
+      label: Code/REPL
+      placeholder: >-
+        import busio, bitbangio 
+        i2c = bitbangio.I2C(board.GP1, board.GP0)
+      render: python
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Behavior
+      description: What happens when you run the code above? Include any error messages.
+      placeholder: >-
+        Traceback (most recent call last):   
+          File "<stdin>", line 1, in <module>
+          TimeoutError: Clock stretch too long
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Optionally, describe the bug in more detail.
+      placeholder: >-
+        - Error while using i2c... 
+        - Only happens when... 
+        - might be related to #4291...
+  - type: textarea
+    id: more-info
+    attributes:
+      label: Additional information
+      description: >-
+        Optionally, add any other information like hardware connection, scope
+        output etc. If you have already done some debugging, mention it here.
