@@ -188,6 +188,20 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -Werror
 )
 
+set_source_files_properties(
+    ${PICO_SDK_PATH}/src/rp2_common/pico_double/double_math.c
+    ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_math.c
+    PROPERTIES
+    COMPILE_OPTIONS "-Wno-error=uninitialized"
+)
+
+set_source_files_properties(
+    ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/rp2040/dcd_rp2040.c
+    ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/rp2040/rp2040_usb.c
+    PROPERTIES
+    COMPILE_OPTIONS "-Wno-error=array-bounds;-Wno-error=unused-but-set-variable"
+)
+
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
