@@ -156,11 +156,6 @@ msgstr "%q deve estar entre %d e %d"
 msgid "%q must of type %q"
 msgstr "o %q deve ser do tipo %q"
 
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
-msgstr "o %q deve armazenar bytes"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -4525,6 +4520,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "o %q deve armazenar bytes"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "O buffer é muito grande e incapaz de alocar"
