@@ -55,6 +55,17 @@
 #define PIN_ADC_MASK            PIN_ADC1
 #define pin_adc_table           pin_adc1
 
+#if defined(STM32H7)
+// On the H7 ADC3 is used for ADCAll to be able to read internal
+// channels. For all other GPIO channels, ADC12 is used instead.
+#define ADCALLx                 (ADC3)
+#define pin_adcall_table        pin_adc3
+#else
+// Use ADC1 for ADCAll instance by default for all other MCUs.
+#define ADCALLx                 (ADC1)
+#define pin_adcall_table        pin_adc1
+#endif
+
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
 
 #if defined(STM32F0)
@@ -724,24 +735,14 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
         if (en_mask & (1 << channel)) {
             // Channels 0-16 correspond to real pins. Configure the GPIO pin in
             // ADC mode.
-            #if defined(STM32H7)
-            const pin_obj_t *pin = pin_adc3[channel];
-            #else
-            const pin_obj_t *pin = pin_adc_table[channel];
-            #endif
+            const pin_obj_t *pin = pin_adcall_table[channel];
             if (pin) {
                 mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
             }
         }
     }
 
-    #if defined(STM32H7)
-    // On the H7 the internal channels are connected to ADC3. To read internal channels
-    // with ADCAll, ADC3 must be used here, and ADC12 is used to read the GPIO channels.
-    adc_all->handle.Instance = ADC3;
-    #else
-    adc_all->handle.Instance = ADCx;
-    #endif
+    adc_all->handle.Instance = ADCALLx;
     adcx_init_periph(&adc_all->handle, resolution);
 }
 
