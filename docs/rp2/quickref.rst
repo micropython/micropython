@@ -62,7 +62,7 @@ Timers
 
 RP2040's system timer peripheral provides a global microsecond timebase and
 generates interrupts for the same. The software timer is available currently,
-and there are unlimited number of them available(limited by memory). There is no
+and there are unlimited number of them available (limited by memory). There is no
 need to specify the timer id (id=-1 is supported at the moment) as it will be
 set automatically. Use the :mod:`machine.Timer` class:
 
@@ -96,7 +96,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 UART (serial bus)
 -----------------
 
-There are two UARTs, UART0 and UIART1. UART0 can be mapped to GPIO 1/2, 12/13
+There are two UARTs, UART0 and UART1. UART0 can be mapped to GPIO 1/2, 12/13
 and 16/17, and UART1 to GPIO 6/7 and 8/9. Since for using the UART GPIO numbers
 have to be used, these should be mentioned and can be seen in the pin diagram
 below:
@@ -123,7 +123,7 @@ See :ref:`machine.UART <machine.UART>`. ::
 PWM (pulse width modulation)
 ----------------------------
 
-There are 8 independent channels each of which have two outputs making it 16 PWM
+There are 8 independent channels each of which have 2 outputs making it 16 PWM
 channels in total which can be clocked from 7Hz to 125Mhz. 
 
 Use the ``machine.PWM`` class::
@@ -142,8 +142,8 @@ ADC (analog to digital conversion)
 
 RP2040 has five ADC channels in total, four of which are 12-bit SAR based ADCs:
 GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can be
-connected with GP26,GP27,GP28. The fourth is used to measure the VSYS voltage on
-the board.The standard ADC range is 0-3.3V. The fifth channel is connected to
+connected with GP26, GP27, GP28. The fourth is used to measure the VSYS voltage on
+the board. The standard ADC range is 0-3.3V. The fifth channel is connected to
 the in-built temperature sensor and can be used for measuring the temperature by
 reading the analog values.
 
