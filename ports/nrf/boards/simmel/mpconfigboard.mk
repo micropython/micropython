@@ -43,3 +43,5 @@ CIRCUITPY_WATCHDOG = 1
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
+SUPEROPT_VM = 0
+SUPEROPT_GC = 0

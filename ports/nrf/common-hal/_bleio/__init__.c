@@ -96,6 +96,8 @@ void check_sec_status(uint8_t sec_status) {
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
+    // Set this explicitly to save data.
+    common_hal_bleio_adapter_obj.base.type = &bleio_adapter_type;
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
@@ -107,12 +109,8 @@ void bleio_reset() {
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter
-// It currently only has properties and no state
-bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
-    .base = {
-        .type = &bleio_adapter_type,
-    },
-};
+// It currently only has properties and no state. Inited by bleio_reset
+bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {

@@ -275,9 +275,26 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     // Align the next chunk to a sector boundary.
     uint32_t offset = command->offset;
     size_t chunk_size = MIN(total_write_length - offset, 512 - (offset % 512));
+    // Special case when truncating the file. (Deleting stuff off the end.)
+    if (chunk_size == 0) {
+        f_lseek(&active_file, offset);
+        f_truncate(&active_file);
+        f_close(&active_file);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+    }
     response.offset = offset;
     response.free_space = chunk_size;
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
+    if (chunk_size == 0) {
+        // Don't reload until everything is written out of the packet buffer.
+        common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
+        // Trigger an autoreload
+        autoreload_now();
+        return ANY_COMMAND;
+    }
+
     return WRITE_DATA;
 }
 
@@ -474,7 +491,12 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
 STATIC uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
 STATIC volatile size_t current_offset;
 STATIC uint8_t next_command;
+STATIC bool running = false;
 void supervisor_bluetooth_file_transfer_background(void) {
+    if (running) {
+        return;
+    }
+    running = true;
     mp_int_t size = 1;
     while (size > 0) {
         size = common_hal_bleio_packet_buffer_readinto(&_transfer_packet_buffer, current_command + current_offset, COMMAND_SIZE - current_offset);
@@ -527,9 +549,11 @@ void supervisor_bluetooth_file_transfer_background(void) {
             current_offset = 0;
         }
     }
+    running = false;
 }
 
 void supervisor_bluetooth_file_transfer_disconnected(void) {
     next_command = ANY_COMMAND;
+    current_offset = 0;
     f_close(&active_file);
 }
