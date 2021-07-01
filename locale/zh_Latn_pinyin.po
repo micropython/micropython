@@ -539,7 +539,7 @@ msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dā
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "wèi shēn dù bì xū bāo hán 1 dào 6， ér bù shì %d"
+msgstr "wèi shēn dù bì xū bāo hán 1 dào 6, ér bù shì %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -614,7 +614,7 @@ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Huǎn chōng qū tài duǎn ， àn %d zì jié"
+msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
@@ -2177,7 +2177,7 @@ msgid ""
 "Increase the stack size if you know how. If not:"
 msgstr ""
 "diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
-"rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu："
+"rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2359,7 +2359,7 @@ msgstr "Wúfǎ xiě rù nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr "wú fǎ xiě rù sleep_memory。"
+msgstr "wú fǎ xiě rù sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -3419,7 +3419,7 @@ msgstr "wúxiào de cānshù"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr "wú xiào bits_per_pixel %d， bì xū shì, 1, 4, 8, 16, 24, huò 32"
+msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 4, 8, 16, 24, huò 32"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3878,7 +3878,7 @@ msgstr "chāo gāo zhuǎnhuàn zhǎng zhěng shùzì shí"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr "bāo zhuāng yù qī de %d bāo zhuāng xiàng mù （dé dào %d)"
+msgstr "bāo zhuāng yù qī de %d bāo zhuāng xiàng mù (dé dào %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -4483,7 +4483,7 @@ msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Buffer too large and unable to allocate"
-#~ msgstr "Huǎn chōng qū tài dà ， wú fǎ fēn pèi"
+#~ msgstr "Huǎn chōng qū tài dà , wú fǎ fēn pèi"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "interp shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
