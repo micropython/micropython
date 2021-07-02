@@ -163,6 +163,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
     self->duty_cycle = duty;
 
+    claim_pin(pin);
+
     if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
         return PWMOUT_INVALID_FREQUENCY;
     }

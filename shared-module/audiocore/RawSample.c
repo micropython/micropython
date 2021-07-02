@@ -67,17 +67,17 @@ uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t *
 }
 
 void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel) {
 }
 
 audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel,
     uint8_t **buffer,
     uint32_t *buffer_length) {
     *buffer_length = self->len;
-    if (single_channel) {
+    if (single_channel_output) {
         *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8);
     } else {
         *buffer = self->buffer;
@@ -85,13 +85,13 @@ audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t
     return GET_BUFFER_DONE;
 }
 
-void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t *self, bool single_channel,
+void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = true;
     *samples_signed = self->samples_signed;
     *max_buffer_length = self->len;
-    if (single_channel) {
+    if (single_channel_output) {
         *spacing = self->channel_count;
     } else {
         *spacing = 1;

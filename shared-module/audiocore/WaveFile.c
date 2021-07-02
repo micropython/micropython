@@ -169,9 +169,9 @@ uint32_t audioio_wavefile_max_buffer_length(audioio_wavefile_obj_t *self) {
 }
 
 void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel) {
-    if (single_channel && channel == 1) {
+    if (single_channel_output && channel == 1) {
         return;
     }
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
@@ -184,11 +184,11 @@ void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t *self,
 }
 
 audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel,
     uint8_t **buffer,
     uint32_t *buffer_length) {
-    if (!single_channel) {
+    if (!single_channel_output) {
         channel = 0;
     }
 
@@ -265,13 +265,14 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t *
     return self->bytes_remaining == 0 ? GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;
 }
 
-void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t *self, bool single_channel,
+void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing) {
     *single_buffer = false;
+    // In WAV files, 8-bit samples are always unsigned, and larger samples are always signed.
     *samples_signed = self->bits_per_sample > 8;
     *max_buffer_length = 512;
-    if (single_channel) {
+    if (single_channel_output) {
         *spacing = self->channel_count;
     } else {
         *spacing = 1;
