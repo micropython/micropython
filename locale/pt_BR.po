@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-25 18:00+0000\n"
+"PO-Revision-Date: 2021-06-30 17:19+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -56,7 +56,7 @@ msgstr " é do tipo %q\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " não encontrado.\n"
 
 #: main.c
 msgid " output:\n"
@@ -155,11 +155,6 @@ msgstr "%q deve estar entre %d e %d"
 #: py/argcheck.c
 msgid "%q must of type %q"
 msgstr "o %q deve ser do tipo %q"
-
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
-msgstr "o %q deve armazenar bytes"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -2093,7 +2088,7 @@ msgstr "Houve um erro na reinicialização SPI"
 
 #: ports/esp32s2/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
-msgstr ""
+msgstr "A configuração SPI falhou"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -4525,6 +4520,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "o %q deve armazenar bytes"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "O buffer é muito grande e incapaz de alocar"

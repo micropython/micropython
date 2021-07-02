@@ -155,11 +155,6 @@ msgstr "%q måste vara mellan %d och %d"
 msgid "%q must of type %q"
 msgstr "%q måste av typen %q"
 
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
-msgstr "%q måste lagra bytes"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -4484,6 +4479,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q måste lagra bytes"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Bufferten är för stor och kan inte allokeras"
