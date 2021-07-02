@@ -31,7 +31,6 @@
 #include <dlfcn.h>
 #include <ffi.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "py/runtime.h"
 #include "py/binary.h"
@@ -508,9 +507,6 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
-        } else if (mp_obj_is_type(a, &fficallback_type)) {
-            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
-            values[i].ffi = (ffi_arg)(intptr_t)p->func;
         } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
@@ -519,6 +515,9 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
                 goto error;
             }
             values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
+        } else if (mp_obj_is_type(a, &fficallback_type)) {
+            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
+            values[i].ffi = (ffi_arg)(intptr_t)p->func;
         } else {
             goto error;
         }
@@ -552,13 +551,11 @@ STATIC mp_obj_t fficallback_cfun(mp_obj_t self_in) {
     mp_obj_fficallback_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int_from_ull((uintptr_t)self->func);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fficallback_cfun_obj, fficallback_cfun);
 
 STATIC const mp_rom_map_elem_t fficallback_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cfun), MP_ROM_PTR(&fficallback_cfun_obj) }
 };
-
 STATIC MP_DEFINE_CONST_DICT(fficallback_locals_dict, fficallback_locals_dict_table);
 
 STATIC const mp_obj_type_t fficallback_type = {
