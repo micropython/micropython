@@ -118,8 +118,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
     spi_never_reset[self->host_id] = true;
     common_hal_never_reset_pin(self->clock);
-    common_hal_never_reset_pin(self->MOSI);
-    common_hal_never_reset_pin(self->MISO);
+    if (self->MOSI != NULL) {
+        common_hal_never_reset_pin(self->MOSI);
+    }
+    if (self->MISO != NULL) {
+        common_hal_never_reset_pin(self->MISO);
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
