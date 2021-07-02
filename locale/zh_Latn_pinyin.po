@@ -157,11 +157,6 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 msgid "%q must of type %q"
 msgstr "%q bì xū lèi xíng %q"
 
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
-msgstr "%q bì xū cún chǔ zì jié"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -4481,6 +4476,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q bì xū cún chǔ zì jié"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Huǎn chōng qū tài dà , wú fǎ fēn pèi"
