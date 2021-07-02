@@ -36,11 +36,6 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
-#if CIRCUITPY_BLEIO
-#include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/__init__.h"
-#endif
-
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif

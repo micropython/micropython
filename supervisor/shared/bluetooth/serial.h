@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
-#define MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_SERIAL_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_SERIAL_H
 
 #include <stdbool.h>
 
-#include "ble_drv.h"
+void supervisor_start_bluetooth_serial(void);
 
-void ble_uart_init(void);
-bool ble_uart_connected(void);
-char ble_uart_rx_chr(void);
-bool ble_uart_stdin_any(void);
-void ble_uart_stdout_tx_str(const char *text);
+bool ble_serial_connected(void);
+bool ble_serial_available(void);
+char ble_serial_read_char(void);
+void ble_serial_write(const char *text, size_t len);
 
-#endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
+#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_SERIAL_H

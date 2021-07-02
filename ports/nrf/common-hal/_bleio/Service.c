@@ -112,7 +112,8 @@ STATIC void _expand_range(uint16_t new_value, uint16_t *start, uint16_t *end) {
 
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
-    mp_buffer_info_t *initial_value_bufinfo) {
+    mp_buffer_info_t *initial_value_bufinfo,
+    const char *user_description) {
     ble_gatts_char_md_t char_md = {
         .char_props.broadcast = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
         .char_props.read = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
@@ -140,6 +141,18 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         bleio_attribute_gatts_set_security_mode(&cccd_md.write_perm, characteristic->read_perm);
 
         char_md.p_cccd_md = &cccd_md;
+    }
+
+    ble_gatts_attr_md_t user_desc_md;
+    if (user_description != NULL && strlen(user_description) > 0) {
+        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&user_desc_md.read_perm);
+        // If the description is on the Python heap, then have the SD copy it. If not, assume it's
+        // static and will live for longer than the SD.
+        user_desc_md.vloc = gc_nbytes(user_description) > 0 ? BLE_GATTS_VLOC_STACK : BLE_GATTS_VLOC_USER;
+        char_md.p_user_desc_md = &user_desc_md;
+        char_md.p_char_user_desc = (const uint8_t *)user_description;
+        char_md.char_user_desc_max_size = strlen(user_description);
+        char_md.char_user_desc_size = strlen(user_description);
     }
 
     bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);

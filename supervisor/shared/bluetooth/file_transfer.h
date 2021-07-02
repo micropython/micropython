@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H
 
-#include "nrfx_spim.h"
-#include "py/obj.h"
+#include <stdbool.h>
 
-typedef struct {
-    nrfx_spim_t spim;
-    uint32_t max_frequency;
-    uint32_t max_xfer_size;
-} spim_peripheral_t;
+void supervisor_bluetooth_file_transfer_background(void);
+void supervisor_start_bluetooth_file_transfer(void);
+void supervisor_bluetooth_file_transfer_disconnected(void);
 
-typedef struct {
-    mp_obj_base_t base;
-    const spim_peripheral_t *spim_peripheral;
-    bool has_lock;
-    uint8_t clock_pin_number;
-    uint8_t MOSI_pin_number;
-    uint8_t MISO_pin_number;
-} busio_spi_obj_t;
-
-void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
+#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_H
