@@ -29,12 +29,8 @@
 
 #include <stdbool.h>
 
-#include "shared-bindings/_bleio/Characteristic.h"
-
 void supervisor_bluetooth_background(void);
 void supervisor_bluetooth_init(void);
 void supervisor_start_bluetooth(void);
-
-extern bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H

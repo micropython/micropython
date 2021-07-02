@@ -40,7 +40,7 @@
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "supervisor/shared/bluetooth.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"

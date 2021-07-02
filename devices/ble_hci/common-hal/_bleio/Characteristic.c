@@ -41,7 +41,7 @@
 #define CCCD_INDICATE 0x2
 
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo, const char *user_description) {
     self->service = service;
     self->uuid = uuid;
     self->decl_handle = BLE_GATT_HANDLE_INVALID;
@@ -66,7 +66,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     if (service->is_remote) {
         self->handle = handle;
     } else {
-        common_hal_bleio_service_add_characteristic(self->service, self, initial_value_bufinfo);
+        common_hal_bleio_service_add_characteristic(self->service, self, initial_value_bufinfo, user_description);
     }
 }
 

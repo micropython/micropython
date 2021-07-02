@@ -50,6 +50,9 @@ CIRCUITPY_ALARM ?= 1
 # Turn on the BLE file service
 CIRCUITPY_BLE_FILE_SERVICE ?= 1
 
+# Turn on the BLE serial service
+CIRCUITPY_SERIAL_BLE ?= 1
+
 CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE ?= 1
 
 # nRF52840-specific

@@ -71,7 +71,7 @@
 
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
-#include "supervisor/shared/bluetooth.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 #endif
 
 #if CIRCUITPY_BOARD
