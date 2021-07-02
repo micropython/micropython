@@ -66,6 +66,8 @@ cd ../esp32
 ${AUTODIR}/build-esp32-latest.sh ${IDF_PATH_V4} ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../rp2
 ${AUTODIR}/build-rp2-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../mimxrt
+${AUTODIR}/build-mimxrt-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 

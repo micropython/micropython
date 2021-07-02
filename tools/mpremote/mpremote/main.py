@@ -166,7 +166,7 @@ def do_connect(args):
             for p in sorted(serial.tools.list_ports.comports()):
                 print(
                     "{} {} {:04x}:{:04x} {} {}".format(
-                        p.device, p.serial_number, p.pid, p.vid, p.manufacturer, p.product
+                        p.device, p.serial_number, p.vid, p.pid, p.manufacturer, p.product
                     )
                 )
             return None
