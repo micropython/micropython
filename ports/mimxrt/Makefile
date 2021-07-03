@@ -43,7 +43,7 @@ MICROPY_VFS_FAT ?= 1
 # Include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/tinyusb lib/nxp_driver
+GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
 LD_FILES = boards/$(MCU_SERIES).ld boards/common.ld
@@ -79,7 +79,7 @@ INC += -I$(TOP)/lib/tinyusb/src
 
 CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
-CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT)
+CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT) -DBOARD_$(BOARD)
 CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
 	-DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
@@ -134,6 +134,34 @@ LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
+ifeq ($(MICROPY_PY_LWIP), 1)
+
+INC += -Ilwip_inc
+INC += -Ihal/phy
+
+SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
+
+SRC_ETH_C += \
+	hal/phy/mdio/enet/fsl_enet_mdio.c \
+	hal/phy/device/phydp83825/fsl_phydp83825.c \
+	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
+	hal/phy/device/phylan8720/fsl_phylan8720.c \
+	lib/mbedtls_errors/mp_mbedtls_errors.c \
+	$(MCU_DIR)/drivers/fsl_enet.c \
+
+SRC_QSTR += \
+	extmod/modlwip.c \
+	extmod/modnetwork.c \
+	extmod/moduwebsocket.c \
+	extmod/modusocket.c \
+	network_lan.c \
+
+CFLAGS += -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
+	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+
+endif
+
 # TinyUSB Stack source
 SRC_TINYUSB_C += \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
@@ -164,6 +192,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
+	$(MCU_DIR)/drivers/fsl_ocotp.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
@@ -183,7 +212,11 @@ SRC_C += \
 	board_init.c \
 	dma_channel.c \
 	drivers/bus/softspi.c \
+	eth.c \
+	extmod/modnetwork.c \
 	extmod/modonewire.c \
+	extmod/modusocket.c \
+	extmod/uos_dupterm.c \
 	fatfs_port.c \
 	led.c \
 	machine_adc.c \
@@ -197,6 +230,7 @@ SRC_C += \
 	machine_timer.c \
 	machine_uart.c \
 	main.c \
+	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
 	mimxrt_sdram.c \
 	modmachine.c \
@@ -204,10 +238,16 @@ SRC_C += \
 	moduos.c \
 	modutime.c \
 	mphalport.c \
+	mpnetworkport.c \
+	network_lan.c \
+	pendsv.c \
 	pin.c \
 	sdcard.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
+	shared/netutils/netutils.c \
+	shared/netutils/trace.c \
+	shared/netutils/dhcpserver.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_native.c \
 	shared/runtime/mpirq.c \
@@ -215,10 +255,13 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
+	systick.c \
 	ticks.c \
 	tusb_port.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_HAL_IMX_C) \
+	$(SRC_ETH_C) \
+
 
 ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
 SRC_C += \
@@ -334,6 +377,7 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # List of sources for qstr extraction
 SRC_QSTR += \
 	extmod/modonewire.c \
+	extmod/uos_dupterm.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \

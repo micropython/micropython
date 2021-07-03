@@ -117,3 +117,24 @@
 #define MIMXRT_IOMUXC_SEMC_WE IOMUXC_GPIO_EMC_09_SEMC_WE
 
 #define MIMXRT_IOMUXC_SEMC_CS0 IOMUXC_GPIO_EMC_12_SEMC_CS0
+
+// Network definitions
+// Transceiver Phy Address
+#define ENET_PHY_ADDRESS    (2)
+#define ENET_PHY_OPS        phyksz8081_ops
+
+// Etherner PIN definitions
+#define ENET_RESET_PIN      pin_GPIO_AD_B0_04
+#define ENET_INT_PIN        pin_GPIO_AD_B1_06
+
+#define IOMUX_TABLE_ENET \
+    { IOMUXC_GPIO_AD_B0_08_ENET_REF_CLK1, 1, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_09_ENET_RDATA01, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_10_ENET_RDATA00, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_11_ENET_RX_EN, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_12_ENET_RX_ER, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_13_ENET_TX_EN, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_14_ENET_TDATA00, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_AD_B0_15_ENET_TDATA01, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_EMC_40_ENET_MDIO, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_EMC_41_ENET_MDC, 0, 0xB0E9u },

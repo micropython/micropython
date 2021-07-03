@@ -36,7 +36,15 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
+#include "pendsv.h"
 #include "modmachine.h"
+
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
+#include "systick.h"
+#include "extmod/modnetwork.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -47,9 +55,21 @@ int main(void) {
     ticks_init();
     tusb_init();
     led_init();
+    pendsv_init();
 
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
+
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
 
     for (;;) {
         gc_init(&_gc_heap_start, &_gc_heap_end);
@@ -58,6 +78,9 @@ int main(void) {
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+        #if MICROPY_PY_NETWORK
+        mod_network_init();
+        #endif
 
         // Initialise sub-systems.
         readline_init0();
@@ -93,6 +116,9 @@ int main(void) {
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         machine_pin_irq_deinit();
+        #if MICROPY_PY_NETWORK
+        mod_network_deinit();
+        #endif
         gc_sweep_all();
         mp_deinit();
     }

@@ -29,10 +29,12 @@
 
 #include <stdint.h>
 #include "ticks.h"
+#include "py/ringbuf.h"
 #include "pin.h"
 #include "fsl_clock.h"
 
 #define MP_HAL_PIN_FMT                  "%q"
+extern ringbuf_t stdin_ringbuf;
 
 #define mp_hal_pin_obj_t const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   pin_find(o)
@@ -85,5 +87,15 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return CLOCK_GetCpuClkFreq();
 }
 
+enum {
+    MP_HAL_MAC_WLAN0 = 0,
+    MP_HAL_MAC_WLAN1,
+    MP_HAL_MAC_BDADDR,
+    MP_HAL_MAC_ETH0,
+};
+
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
