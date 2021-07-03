@@ -398,6 +398,9 @@ See :ref:`machine.I2S <machine.I2S>`. ::
     i2s = I2S(1, sck=Pin(33), ws=Pin(25), sd=Pin(32), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
     
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
+
 ESP32 has two I2S buses with id=0 and id=1
 
 Real time clock (RTC)

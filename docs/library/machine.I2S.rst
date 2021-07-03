@@ -8,6 +8,9 @@ I2S is a synchronous serial protocol used to connect digital audio devices.
 At the physical level, a bus consists of 3 lines: SCK, WS, SD.
 The I2S class supports Master operation.  Slave operation is not supported.
 
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
+
 I2S objects can be created and initialized using::
 
     from machine import I2S
