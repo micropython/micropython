@@ -26,7 +26,7 @@ def time():
     finally:
         s.close()
     val = struct.unpack("!I", msg[40:44])[0]
-    return val - NTP_DELTA
+    return val
 
 
 # There's currently no timezone support in MicroPython, and the RTC is set in UTC time.

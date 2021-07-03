@@ -42,6 +42,7 @@ _gc_heap_start = ORIGIN(m_sdram);
 _gc_heap_end = ORIGIN(m_sdram) + LENGTH(m_sdram);
 #else
 /* Use second OCRAM bank for GC heap. */
+/* Use all OCRAM for the GC heap. */
 _gc_heap_start = ORIGIN(m_ocrm);
 _gc_heap_end = ORIGIN(m_ocrm) + LENGTH(m_ocrm);
 #endif
