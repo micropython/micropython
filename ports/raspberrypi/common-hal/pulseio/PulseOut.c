@@ -43,6 +43,7 @@ static volatile uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 pwmio_pwmout_obj_t *pwmout_obj;
 volatile uint16_t current_duty_cycle;
+static uint32_t min_pulse = 0;
 
 void pulse_finish(void) {
     pulse_index++;
@@ -51,7 +52,12 @@ void pulse_finish(void) {
     if (pulse_index >= pulse_length) {
         return;
     }
-    add_alarm_in_us(pulse_buffer[pulse_index], pulseout_interrupt_handler, NULL, false);
+    uint64_t delay = pulse_buffer[pulse_index];
+    if (delay < min_pulse ) {
+            delay = min_pulse;
+    }
+
+    add_alarm_in_us(delay, pulseout_interrupt_handler, NULL, false);
     if (pulse_index % 2 == 0) {
         common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
     }
@@ -78,6 +84,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     self->pin = carrier->pin->number;
     self->slice = carrier->slice;
     pwm_set_enabled(pwmout_obj->slice,false);
+    min_pulse = (1000000 / pwmout_obj->actual_frequency) / 2;
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -107,6 +114,6 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
         RUN_BACKGROUND_TASKS;
     }
     // Short delay to give pin time to settle before disabling PWM
-    common_hal_mcu_delay_us(25);
+    common_hal_mcu_delay_us(min_pulse);
     pwm_set_enabled(pwmout_obj->slice,false);
 }
