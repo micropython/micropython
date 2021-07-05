@@ -1,6 +1,5 @@
 # Notes: the offset of the partition table itself is set in
-# $ESPIDF/components/partition_table/Kconfig.projbuild and the
-# offset of the factory/ota_0 partition is set in makeimg.py
+# $IDF_PATH/components/partition_table/Kconfig.projbuild.
 # Name,   Type, SubType, Offset,  Size, Flags
 nvs,      data, nvs,     0x9000,  0x6000,
 phy_init, data, phy,     0xf000,  0x1000,

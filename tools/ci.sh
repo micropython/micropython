@@ -139,6 +139,25 @@ function ci_esp8266_build {
 }
 
 ########################################################################################
+# ports/javascript
+
+function ci_javascript_setup {
+    git clone https://github.com/emscripten-core/emsdk.git
+    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
+}
+
+function ci_javascript_build {
+    source emsdk/emsdk_env.sh
+    git submodule update --init --recursive lib/lv_bindings
+    make ${MAKEOPTS} -C ports/javascript
+}
+
+function ci_javascript_run_tests {
+    # This port is very slow at running, so only run a few of the tests.
+    (cd tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
+}
+
+########################################################################################
 # ports/mimxrt
 
 function ci_mimxrt_setup {
@@ -172,6 +191,7 @@ function ci_nrf_build {
 # ports/powerpc
 
 function ci_powerpc_setup {
+    sudo apt-get update
     sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 }
 
@@ -375,7 +395,6 @@ function ci_unix_standard_run_perfbench {
 }
 
 function ci_unix_coverage_setup {
-    sudo apt-get install lcov
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version

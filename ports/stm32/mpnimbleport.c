@@ -40,6 +40,7 @@
 #include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
 #include "extmod/nimble/hal/hal_uart.h"
+#include "mpbthciport.h"
 
 // Get any pending data from the UART and send it to NimBLE's HCI buffers.
 // Any further processing by NimBLE will be run via its event queue.
@@ -55,6 +56,12 @@ void mp_bluetooth_hci_poll(void) {
 
         // Run any remaining events (e.g. if there was no UART data).
         mp_bluetooth_nimble_os_eventq_run_all();
+    }
+
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
+        // Call this function again in 128ms to check for new events.
+        // TODO: improve this by only calling back when needed.
+        mp_bluetooth_hci_poll_in_ms(128);
     }
 }
 

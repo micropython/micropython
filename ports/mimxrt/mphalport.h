@@ -76,9 +76,5 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
-static inline uint64_t mp_hal_time_ns(void) {
-    // TODO: Implement this function.
-    return 0UL;
-}
 
 #endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H

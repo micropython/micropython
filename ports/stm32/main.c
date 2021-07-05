@@ -54,6 +54,7 @@
 #endif
 
 #include "boardctrl.h"
+#include "mpbthciport.h"
 #include "mpu.h"
 #include "rfcore.h"
 #include "systick.h"
@@ -440,8 +441,7 @@ void stm32_main(uint32_t reset_mode) {
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
     #if MICROPY_PY_BLUETOOTH
-    extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
-    systick_enable_dispatch(SYSTICK_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_systick);
+    mp_bluetooth_hci_init();
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -662,6 +662,7 @@ soft_reset_exit:
     MICROPY_BOARD_END_SOFT_RESET(&state);
 
     gc_sweep_all();
+    mp_deinit();
 
     goto soft_reset;
 }

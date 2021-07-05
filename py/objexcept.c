@@ -163,17 +163,24 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         if (o->args == NULL || o->args->len == 0) {
             mp_print_str(print, "");
             return;
-        } else if (o->args->len == 1) {
-            #if MICROPY_PY_UERRNO
-            // try to provide a nice OSError error message
-            if (o->base.type == &mp_type_OSError && mp_obj_is_small_int(o->args->items[0])) {
-                qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTRnull) {
-                    mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
-                    return;
+        }
+
+        #if MICROPY_PY_UERRNO
+        // try to provide a nice OSError error message
+        if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
+            qstr qst = mp_errno_to_str(o->args->items[0]);
+            if (qst != MP_QSTRnull) {
+                mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                if (o->args->len > 1) {
+                    mp_print_str(print, ": ");
+                    mp_obj_print_helper(print, o->args->items[1], PRINT_STR);
                 }
+                return;
             }
-            #endif
+        }
+        #endif
+
+        if (o->args->len == 1) {
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }

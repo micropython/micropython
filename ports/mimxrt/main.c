@@ -36,6 +36,7 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
+#include "modmachine.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -69,7 +70,8 @@ int main(void) {
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -90,6 +92,7 @@ int main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();
     }
@@ -128,8 +131,23 @@ const char mimxrt_help_text[] =
     "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
     "    methods: init(..), value([v]), high(), low())\n"
     "\n"
-    "Pin IO modes are: Pin.IN, Pin.OUT, Pin.OPEN_DRAIN\n"
-    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
+    "    Pins are numbered board specific, either 0-n, or 'D0'-'Dn', or 'A0' - 'An',\n"
+    "    according to the boards's pinout sheet.\n"
+    "    Pin IO modes are: Pin.IN, Pin.OUT, Pin.OPEN_DRAIN\n"
+    "    Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
+    "  machine.ADC(pin) -- make an analog object from a pin\n"
+    "    methods: read_u16()\n"
+    "  machine.UART(id, baudrate=115200) -- create an UART object (id=1 - 8)\n"
+    "    methods: init(), write(buf), any()\n"
+    "             buf=read(n), readinto(buf), buf=readline()\n"
+    "    The RX and TX pins are fixed and board-specific.\n"
+    "  machine.SoftI2C() -- create an Soft I2C object\n"
+    "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
+    "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
+    "  machine.SoftSPI(baudrate=1000000) -- create an SPI object ()\n"
+    "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
+    "  machine.Timer(id, freq, callback) -- create a hardware timer object (id=0,1,2)\n"
+    "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
     "\n"
     "Useful control commands:\n"
     "  CTRL-C -- interrupt a running program\n"

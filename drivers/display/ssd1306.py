@@ -15,6 +15,7 @@ SET_PAGE_ADDR = const(0x22)
 SET_DISP_START_LINE = const(0x40)
 SET_SEG_REMAP = const(0xA0)
 SET_MUX_RATIO = const(0xA8)
+SET_IREF_SELECT = const(0xAD)
 SET_COM_OUT_DIR = const(0xC0)
 SET_DISP_OFFSET = const(0xD3)
 SET_COM_PIN_CFG = const(0xDA)
@@ -63,6 +64,8 @@ class SSD1306(framebuf.FrameBuffer):
             0xFF,  # maximum
             SET_ENTIRE_ON,  # output follows RAM contents
             SET_NORM_INV,  # not inverted
+            SET_IREF_SELECT,
+            0x30,  # enable internal IREF during display on
             # charge pump
             SET_CHARGE_PUMP,
             0x10 if self.external_vcc else 0x14,
@@ -92,10 +95,11 @@ class SSD1306(framebuf.FrameBuffer):
     def show(self):
         x0 = 0
         x1 = self.width - 1
-        if self.width == 64:
-            # displays with width of 64 pixels are shifted by 32
-            x0 += 32
-            x1 += 32
+        if self.width != 128:
+            # narrow displays use centred columns
+            col_offset = (128 - self.width) // 2
+            x0 += col_offset
+            x1 += col_offset
         self.write_cmd(SET_COL_ADDR)
         self.write_cmd(x0)
         self.write_cmd(x1)

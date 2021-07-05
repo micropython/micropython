@@ -106,14 +106,14 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
         #endif
-        if ((e & ~(1 << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
+        if ((e & ~(1U << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
             // handle case of -0 (when sign is set but rest of bits are zero)
             e = 0;
         } else {
-            e += ((1 << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
+            e += ((1U << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
         }
     } else {
-        e &= ~((1 << MP_FLOAT_EXP_SHIFT_I32) - 1);
+        e &= ~((1U << MP_FLOAT_EXP_SHIFT_I32) - 1);
     }
     // 8 * sizeof(uintptr_t) counts the number of bits for a small int
     // TODO provide a way to configure this properly

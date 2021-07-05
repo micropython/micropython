@@ -17,28 +17,13 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote repl                    -- enter REPL
 """
 
-import os, select, sys, time
+import os, sys
 import serial.tools.list_ports
 
 from . import pyboardextended as pyboard
 from .console import Console, ConsolePosix
 
 _PROG = "mpremote"
-
-_AUTO_CONNECT_SEARCH_LIST = [
-    "/dev/ttyACM0",
-    "/dev/ttyACM1",
-    "/dev/ttyACM2",
-    "/dev/ttyACM3",
-    "/dev/ttyUSB0",
-    "/dev/ttyUSB1",
-    "/dev/ttyUSB2",
-    "/dev/ttyUSB3",
-    "COM0",
-    "COM1",
-    "COM2",
-    "COM3",
-]
 
 _BUILTIN_COMMAND_EXPANSIONS = {
     # Device connection shortcuts.
@@ -181,20 +166,18 @@ def do_connect(args):
             for p in sorted(serial.tools.list_ports.comports()):
                 print(
                     "{} {} {:04x}:{:04x} {} {}".format(
-                        p.device, p.serial_number, p.pid, p.vid, p.manufacturer, p.product
+                        p.device, p.serial_number, p.vid, p.pid, p.manufacturer, p.product
                     )
                 )
             return None
         elif dev == "auto":
             # Auto-detect and auto-connect to the first available device.
-            ports = serial.tools.list_ports.comports()
-            for dev in _AUTO_CONNECT_SEARCH_LIST:
-                if any(p.device == dev for p in ports):
-                    try:
-                        return pyboard.PyboardExtended(dev, baudrate=115200)
-                    except pyboard.PyboardError as er:
-                        if not er.args[0].startswith("failed to access"):
-                            raise er
+            for p in sorted(serial.tools.list_ports.comports()):
+                try:
+                    return pyboard.PyboardExtended(p.device, baudrate=115200)
+                except pyboard.PyboardError as er:
+                    if not er.args[0].startswith("failed to access"):
+                        raise er
             raise pyboard.PyboardError("no device found")
         elif dev.startswith("id:"):
             # Search for a device with the given serial number.
@@ -266,12 +249,7 @@ def do_filesystem(pyb, args):
 
 def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
     while True:
-        if isinstance(console_in, ConsolePosix):
-            # TODO pyb.serial might not have fd
-            select.select([console_in.infd, pyb.serial.fd], [], [])
-        else:
-            while not (console_in.inWaiting() or pyb.serial.inWaiting()):
-                time.sleep(0.01)
+        console_in.waitchar(pyb.serial)
         c = console_in.readchar()
         if c:
             if c == b"\x1d":  # ctrl-], quit
