@@ -54,7 +54,7 @@ void pulse_finish(void) {
     }
     uint64_t delay = pulse_buffer[pulse_index];
     if (delay < min_pulse ) {
-            delay = min_pulse;
+        delay = min_pulse;
     }
 
     add_alarm_in_us(delay, pulseout_interrupt_handler, NULL, false);
