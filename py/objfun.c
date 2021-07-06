@@ -62,8 +62,10 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_builtin_0_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_builtin_0_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -75,10 +77,12 @@ STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_1 = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_builtin_1_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_builtin_1_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -90,10 +94,12 @@ STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_2 = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_builtin_2_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_builtin_2_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -105,10 +111,12 @@ STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_3 = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_builtin_3_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_builtin_3_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -136,10 +144,12 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
 const mp_obj_type_t mp_type_fun_builtin_var = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_builtin_var_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_builtin_var_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 /******************************************************************************/
@@ -362,16 +372,18 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
     #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
     #endif
-    .call = fun_bc_call,
-    .unary_op = mp_generic_unary_op,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
     #endif
+    EXTENDED_FIELDS(
+        .call = fun_bc_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
@@ -414,10 +426,12 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
 
 const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_native_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_native_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
@@ -522,10 +536,12 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 
 STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = fun_asm_call,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .call = fun_asm_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {

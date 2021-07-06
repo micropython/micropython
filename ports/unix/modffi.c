@@ -485,9 +485,12 @@ error:
 
 STATIC const mp_obj_type_t ffifunc_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
-    .call = ffifunc_call,
+    EXTENDED_FIELDS(
+        .call = ffifunc_call,
+        ),
 };
 
 // FFI callback for Python function

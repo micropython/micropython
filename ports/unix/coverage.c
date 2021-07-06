@@ -108,8 +108,11 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
     { &mp_type_type },
-    .protocol = &fileio_stream_p,
+    .flags = MP_TYPE_FLAG_FULL,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
+    EXTENDED_FIELDS(
+        .protocol = &fileio_stream_p,
+        ),
 };
 
 // stream read returns non-blocking error
@@ -136,8 +139,11 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     { &mp_type_type },
-    .protocol = &textio_stream_p2,
+    .flags = MP_TYPE_FLAG_FULL,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
+    EXTENDED_FIELDS(
+        .protocol = &textio_stream_p2,
+        ),
 };
 
 // str/bytes objects without a valid hash

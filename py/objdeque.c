@@ -163,8 +163,10 @@ const mp_obj_type_t mp_type_deque = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
-    .unary_op = deque_unary_op,
     .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = deque_unary_op,
+        ),
 };
 
 #endif // MICROPY_PY_COLLECTIONS_DEQUE

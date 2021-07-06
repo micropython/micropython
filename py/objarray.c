@@ -744,31 +744,36 @@ STATIC MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_array,
     .print = array_print,
     .make_new = array_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
+    EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_bytearray,
     .print = array_print,
     .make_new = bytearray_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_dict_t *)&bytearray_locals_dict,
+    EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
@@ -784,20 +789,22 @@ STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table
 
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
-    #endif
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
     #if MICROPY_CPYTHON_COMPAT
     .locals_dict = (mp_obj_dict_t *)&memoryview_locals_dict,
     #endif
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    .attr = memoryview_attr,
+    #endif
+    EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
@@ -853,9 +860,12 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = array_it_iternext,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = array_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {

@@ -90,8 +90,10 @@ const mp_obj_type_t mp_type_bool = {
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,
-    .unary_op = bool_unary_op,
-    .binary_op = bool_binary_op,
+    EXTENDED_FIELDS(
+        .unary_op = bool_unary_op,
+        .binary_op = bool_binary_op,
+        ),
 };
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS

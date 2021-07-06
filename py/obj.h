@@ -50,6 +50,7 @@ typedef const void *mp_const_obj_t;
 // This mp_obj_type_t struct is a concrete MicroPython object which holds info
 // about a type.  See below for actual definition of the struct.
 typedef struct _mp_obj_type_t mp_obj_type_t;
+typedef struct _mp_obj_full_type_t mp_obj_full_type_t;
 
 // Anything that wants to be a concrete MicroPython object must have mp_obj_base_t
 // as its first member (small ints, qstr objs and inline floats are not concrete).
@@ -564,14 +565,14 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 struct _mp_obj_type_ext {
     // Corresponds to __call__ special method, ie T(...).
-#define MP_TYPE_CALL(o) ext[0].call = o
+#define MP_TYPE_CALL ext[0].call
     mp_call_fun_t call;
 
     // Implements unary and binary operations.
     // Can return MP_OBJ_NULL if the operation is not supported.
-#define MP_TYPE_UNARY_OP(o) ext[0].unary_op = (o)
+#define MP_TYPE_UNARY_OP ext[0].unary_op
     mp_unary_op_fun_t unary_op;
-#define MP_TYPE_BINARY_OP(o) ext[0].binary_op = (o)
+#define MP_TYPE_BINARY_OP ext[0].binary_op
     mp_binary_op_fun_t binary_op;
 
     // Implements load, store and delete subscripting:
@@ -579,26 +580,26 @@ struct _mp_obj_type_ext {
     //  - value = MP_OBJ_NULL means delete
     //  - all other values mean store the value
     // Can return MP_OBJ_NULL if operation not supported.
-#define MP_TYPE_SUBSCR(o) ext[0].subscr = (o)
+#define MP_TYPE_SUBSCR ext[0].subscr
     mp_subscr_fun_t subscr;
 
     // Corresponds to __iter__ special method.
     // Can use the given mp_obj_iter_buf_t to store iterator object,
     // otherwise can return a pointer to an object on the heap.
-#define MP_TYPE_GETITER(o) ext[0].getiter = (o)
+#define MP_TYPE_GETITER ext[0].getiter
     mp_getiter_fun_t getiter;
 
     // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
     // as an optimisation instead of raising StopIteration() with no args.
-#define MP_TYPE_ITERNEXT(o) ext[0].iternext = (o)
+#define MP_TYPE_ITERNEXT ext[0].iternext
     mp_fun_1_t iternext;
 
     // Implements the buffer protocol if supported by this type.
-#define MP_TYPE_GETBUFFER(o) ext[0].buffer_p.getbuffer = (o)
+#define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
     mp_buffer_p_t buffer_p;
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
-#define MP_TYPE_PROTOCOL(o) ext[0].protocol = (o)
+#define MP_TYPE_PROTOCOL ext[0].protocol
     const void *protocol;
 };
 
@@ -608,7 +609,6 @@ struct _mp_obj_type_t {
 
     // Flags associated with this type.
     uint16_t flags;
-
     // The name of this type, a qstr.
     uint16_t name;
 
@@ -640,6 +640,7 @@ struct _mp_obj_type_t {
     //  - 2 or more parents: pointer to a tuple object containing the parent types
     const void *parent;
 
+#define EXTENDED_FIELDS(...) .ext[0] = { __VA_ARGS__ }
     struct _mp_obj_type_ext ext[];
 };
 
@@ -894,6 +895,7 @@ mp_obj_t mp_obj_new_module(qstr module_name);
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
 const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
+const mp_obj_full_type_t *mp_obj_get_full_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 #define mp_obj_get_type_qstr(o_in) (mp_obj_get_type((o_in))->name)
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects

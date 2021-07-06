@@ -185,8 +185,10 @@ const mp_obj_type_t mp_type_float = {
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,
-    .unary_op = float_unary_op,
-    .binary_op = float_binary_op,
+    EXTENDED_FIELDS(
+        .unary_op = float_unary_op,
+        .binary_op = float_binary_op,
+        ),
 };
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D

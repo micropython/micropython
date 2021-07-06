@@ -61,8 +61,10 @@ STATIC const mp_obj_type_t mp_type_it = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = it_iternext,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = it_iternext,
+        ),
 };
 
 // args are those returned from mp_load_method_maybe (ie either an attribute or a method)

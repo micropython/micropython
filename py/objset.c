@@ -549,10 +549,12 @@ const mp_obj_type_t mp_type_set = {
     .name = MP_QSTR_set,
     .print = set_print,
     .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
     .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = set_unary_op,
+        .binary_op = set_binary_op,
+        .getiter = set_getiter,
+        ),
 };
 
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -575,10 +577,12 @@ const mp_obj_type_t mp_type_frozenset = {
     .name = MP_QSTR_frozenset,
     .print = set_print,
     .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
     .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = set_unary_op,
+        .binary_op = set_binary_op,
+        .getiter = set_getiter,
+        ),
 };
 #endif
 

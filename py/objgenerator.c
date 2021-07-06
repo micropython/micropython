@@ -159,11 +159,13 @@ const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_generator,
-    .call = gen_wrap_call,
-    .unary_op = mp_generic_unary_op,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
     #endif
+    EXTENDED_FIELDS(
+        .call = gen_wrap_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 
@@ -415,8 +417,10 @@ const mp_obj_type_t mp_type_gen_instance = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .unary_op = mp_generic_unary_op,
-    .getiter = mp_identity_getiter,
-    .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        .getiter = mp_identity_getiter,
+        .iternext = gen_instance_iternext,
+        ),
 };

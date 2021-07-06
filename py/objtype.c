@@ -1150,9 +1150,11 @@ const mp_obj_type_t mp_type_type = {
     .name = MP_QSTR_type,
     .print = type_print,
     .make_new = type_make_new,
-    .call = type_call,
-    .unary_op = mp_generic_unary_op,
     .attr = type_attr,
+    EXTENDED_FIELDS(
+        .call = type_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
@@ -1194,27 +1196,27 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         #endif
     }
 
-    mp_obj_type_t *o = m_new0_ll(mp_obj_type_t, 1);
+    mp_obj_full_type_t *o = m_new0_ll(mp_obj_full_type_t, 1);
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;
     o->print = instance_print;
     o->make_new = mp_obj_instance_make_new;
-    o->call = mp_obj_instance_call;
-    o->unary_op = instance_unary_op;
-    o->binary_op = instance_binary_op;
     o->attr = mp_obj_instance_attr;
-    o->subscr = instance_subscr;
-    o->getiter = mp_obj_instance_getiter;
+    o->MP_TYPE_CALL = mp_obj_instance_call;
+    o->MP_TYPE_UNARY_OP = instance_unary_op;
+    o->MP_TYPE_BINARY_OP = instance_binary_op;
+    o->MP_TYPE_SUBSCR = instance_subscr;
+    o->MP_TYPE_GETITER = mp_obj_instance_getiter;
     // o->iternext = ; not implemented
-    o->buffer_p.get_buffer = instance_get_buffer;
+    o->MP_TYPE_GET_BUFFER = instance_get_buffer;
 
     if (bases_len > 0) {
         // Inherit protocol from a base class. This allows to define an
         // abstract base class which would translate C-level protocol to
         // Python method calls, and any subclass inheriting from it will
         // support this feature.
-        o->protocol = ((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0]))->protocol;
+        o->MP_TYPE_PROTOCOL = mp_type_protocol((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0]));
 
         if (bases_len >= 2) {
             #if MICROPY_MULTIPLE_INHERITANCE
@@ -1245,7 +1247,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     #endif
 
     const mp_obj_type_t *native_base;
-    size_t num_native_bases = instance_count_native_bases(o, &native_base);
+    size_t num_native_bases = instance_count_native_bases((mp_obj_type_t *)o, &native_base);
     if (num_native_bases > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("multiple bases have instance lay-out conflict"));
     }

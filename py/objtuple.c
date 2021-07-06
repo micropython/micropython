@@ -233,11 +233,13 @@ const mp_obj_type_t mp_type_tuple = {
     .name = MP_QSTR_tuple,
     .print = mp_obj_tuple_print,
     .make_new = mp_obj_tuple_make_new,
-    .unary_op = mp_obj_tuple_unary_op,
-    .binary_op = mp_obj_tuple_binary_op,
-    .subscr = mp_obj_tuple_subscr,
-    .getiter = mp_obj_tuple_getiter,
     .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        ),
 };
 
 // the zero-length tuple

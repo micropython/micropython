@@ -101,6 +101,12 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     #endif
 }
 
+const mp_obj_full_type_t *mp_obj_get_full_type(mp_const_obj_t o_in) {
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
+    assert(type->flags & MP_TYPE_FLAG_FULL);
+    return (mp_obj_full_type_t *)type;
+}
+
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
@@ -623,10 +629,10 @@ typedef struct {
 
 STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
     mp_obj_generic_it_t *self = MP_OBJ_TO_PTR(self_in);
-    const mp_obj_type_t *type = mp_obj_get_type(self->obj);
-    mp_obj_t current_length = mp_type_unary_op(type)(MP_UNARY_OP_LEN, self->obj);
+    const mp_obj_full_type_t *type = mp_obj_get_full_type(self->obj);
+    mp_obj_t current_length = type->MP_TYPE_UNARY_OP(MP_UNARY_OP_LEN, self->obj);
     if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
-        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        mp_obj_t o_out = type->ext[0].subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
         self->cur += 1;
         return o_out;
     } else {
@@ -673,16 +679,25 @@ mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 }
 
 mp_call_fun_t mp_type_call(const mp_obj_type_t *type) {
-    return type->call;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->ext[0].call;
 }
 
 mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *type) {
-    return type->unary_op;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->ext[0].unary_op;
 }
 
 
 mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *type) {
-    return type->binary_op;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->ext[0].binary_op;
 }
 
 
@@ -692,27 +707,42 @@ mp_attr_fun_t mp_type_attr(const mp_obj_type_t *type) {
 
 
 mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *type) {
-    return type->subscr;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->MP_TYPE_SUBSCR;
 }
 
 
 mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *type) {
-    return type->getiter;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->MP_TYPE_GETITER;
 }
 
 
 mp_fun_1_t mp_type_iternext(const mp_obj_type_t *type) {
-    return type->iternext;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->MP_TYPE_ITERNEXT;
 }
 
 
 mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *type) {
-    return type->buffer_p.get_buffer;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->MP_TYPE_GET_BUFFER;
 }
 
 
 const void *mp_type_protocol(const mp_obj_type_t *type) {
-    return type->protocol;
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return NULL;
+    }
+    return type->MP_TYPE_PROTOCOL;
 }
 
 
@@ -721,5 +751,8 @@ const void *mp_type_parent(const mp_obj_type_t *type) {
 }
 
 size_t mp_type_size(const mp_obj_type_t *type) {
-    return sizeof(mp_obj_type_t);
+    if (!(type->flags & MP_TYPE_FLAG_FULL)) {
+        return sizeof(mp_obj_type_t);
+    }
+    return sizeof(mp_obj_full_type_t);
 }

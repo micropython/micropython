@@ -461,8 +461,10 @@ STATIC const mp_obj_type_t mp_type_dict_view_it = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = dict_view_it_iternext,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = dict_view_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
@@ -514,8 +516,10 @@ STATIC const mp_obj_type_t mp_type_dict_view = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_dict_view,
     .print = dict_view_print,
-    .binary_op = dict_view_binary_op,
-    .getiter = dict_view_getiter,
+    EXTENDED_FIELDS(
+        .binary_op = dict_view_binary_op,
+        .getiter = dict_view_getiter,
+        ),
 };
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
@@ -590,11 +594,13 @@ const mp_obj_type_t mp_type_dict = {
     .name = MP_QSTR_dict,
     .print = dict_print,
     .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
     .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = dict_unary_op,
+        .binary_op = dict_binary_op,
+        .subscr = dict_subscr,
+        .getiter = dict_getiter,
+        ),
 };
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
@@ -604,12 +610,14 @@ const mp_obj_type_t mp_type_ordereddict = {
     .name = MP_QSTR_OrderedDict,
     .print = dict_print,
     .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
     .parent = &mp_type_dict,
     .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = dict_unary_op,
+        .binary_op = dict_binary_op,
+        .subscr = dict_subscr,
+        .getiter = dict_getiter,
+        ),
 };
 #endif
 

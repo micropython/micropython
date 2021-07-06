@@ -161,9 +161,11 @@ const mp_obj_type_t mp_type_complex = {
     .name = MP_QSTR_complex,
     .print = complex_print,
     .make_new = complex_make_new,
-    .unary_op = complex_unary_op,
-    .binary_op = complex_binary_op,
     .attr = complex_attr,
+    EXTENDED_FIELDS(
+        .unary_op = complex_unary_op,
+        .binary_op = complex_binary_op,
+        ),
 };
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {

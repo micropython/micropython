@@ -298,11 +298,13 @@ STATIC const mp_obj_type_t btree_type = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_btree,
     .print = btree_print,
-    .getiter = btree_getiter,
-    .iternext = btree_iternext,
-    .binary_op = btree_binary_op,
-    .subscr = btree_subscr,
     .locals_dict = (void *)&btree_locals_dict,
+    EXTENDED_FIELDS(
+        .getiter = btree_getiter,
+        .iternext = btree_iternext,
+        .binary_op = btree_binary_op,
+        .subscr = btree_subscr,
+        ),
 };
 #endif
 

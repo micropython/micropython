@@ -69,6 +69,8 @@ const mp_obj_type_t mp_type_map = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_map,
     .make_new = map_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = map_iternext,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = map_iternext,
+        ),
 };

@@ -288,8 +288,10 @@ STATIC const mp_obj_type_t task_type = {
     .name = MP_QSTR_Task,
     .make_new = task_make_new,
     .attr = task_attr,
-    .getiter = task_getiter,
-    .iternext = task_iternext,
+    EXTENDED_FIELDS(
+        .getiter = task_getiter,
+        .iternext = task_iternext,
+        ),
 };
 
 /******************************************************************************/

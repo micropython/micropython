@@ -48,7 +48,9 @@ const mp_obj_type_t mp_type_NoneType = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_NoneType,
     .print = none_print,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS

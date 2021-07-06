@@ -38,7 +38,7 @@
 #if MICROPY_PY_COLLECTIONS
 
 typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_type_t base;
+    mp_obj_full_type_t base;
     size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;

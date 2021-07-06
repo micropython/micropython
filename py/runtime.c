@@ -1005,7 +1005,9 @@ STATIC const mp_obj_type_t mp_type_checked_fun = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
-    .call = checked_fun_call,
+    EXTENDED_FIELDS(
+        .call = checked_fun_call,
+        )
 };
 
 STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {

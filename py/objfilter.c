@@ -66,8 +66,10 @@ const mp_obj_type_t mp_type_filter = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_filter,
     .make_new = filter_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = filter_iternext,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = filter_iternext,
+        ),
 };
 
 #endif // MICROPY_PY_BUILTINS_FILTER

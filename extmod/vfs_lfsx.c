@@ -491,6 +491,8 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     .name = MP_QSTR_VfsLfs2,
     #endif
     .make_new = MP_VFS_LFSx(make_new),
-    .protocol = &MP_VFS_LFSx(proto),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
+    EXTENDED_FIELDS(
+        .protocol = &MP_VFS_LFSx(proto),
+        ),
 };

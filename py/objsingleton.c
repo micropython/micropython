@@ -48,7 +48,9 @@ const mp_obj_type_t mp_type_singleton = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_,
     .print = singleton_print,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 const mp_obj_singleton_t mp_const_ellipsis_obj = {{&mp_type_singleton}, MP_QSTR_Ellipsis};

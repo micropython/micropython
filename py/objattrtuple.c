@@ -86,11 +86,13 @@ const mp_obj_type_t mp_type_attrtuple = {
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_tuple, // reuse tuple to save on a qstr
     .print = mp_obj_attrtuple_print,
-    .unary_op = mp_obj_tuple_unary_op,
-    .binary_op = mp_obj_tuple_binary_op,
     .attr = mp_obj_attrtuple_attr,
-    .subscr = mp_obj_tuple_subscr,
-    .getiter = mp_obj_tuple_getiter,
+    EXTENDED_FIELDS(
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        ),
 };
 
 #endif // MICROPY_PY_ATTRTUPLE

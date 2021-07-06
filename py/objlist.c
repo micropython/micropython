@@ -465,11 +465,13 @@ const mp_obj_type_t mp_type_list = {
     .name = MP_QSTR_list,
     .print = list_print,
     .make_new = list_make_new,
-    .unary_op = list_unary_op,
-    .binary_op = list_binary_op,
-    .subscr = list_subscr,
-    .getiter = list_getiter,
     .locals_dict = (mp_obj_dict_t *)&list_locals_dict,
+    EXTENDED_FIELDS(
+        .unary_op = list_unary_op,
+        .binary_op = list_binary_op,
+        .subscr = list_subscr,
+        .getiter = list_getiter,
+        ),
 };
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n) {

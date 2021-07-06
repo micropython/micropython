@@ -2039,11 +2039,13 @@ const mp_obj_type_t mp_type_bytes = {
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,
-    .binary_op = mp_obj_str_binary_op,
-    .subscr = bytes_subscr,
-    .getiter = mp_obj_new_bytes_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
+    EXTENDED_FIELDS(
+        .binary_op = mp_obj_str_binary_op,
+        .subscr = bytes_subscr,
+        .getiter = mp_obj_new_bytes_iterator,
+        .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+        ),
 };
 
 // The zero-length bytes object, with data that includes a null-terminating byte

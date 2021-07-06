@@ -85,7 +85,9 @@ const mp_obj_type_t mp_type_closure = {
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = closure_print,
     #endif
-    .call = closure_call,
+    EXTENDED_FIELDS(
+        .call = closure_call,
+        )
 };
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed) {

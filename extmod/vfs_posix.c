@@ -354,9 +354,11 @@ const mp_obj_type_t mp_type_vfs_posix = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_VfsPosix,
-    .make_new = vfs_posix_make_new,
-    .protocol = &vfs_posix_proto,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
+    .make_new = vfs_posix_make_new,
+    EXTENDED_FIELDS(
+        .protocol = &vfs_posix_proto,
+        ),
 };
 
 #endif // MICROPY_VFS_POSIX
