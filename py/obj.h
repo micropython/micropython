@@ -534,6 +534,8 @@ typedef struct _mp_obj_iter_buf_t {
 // It's rounded up in case mp_obj_base_t is smaller than mp_obj_t (eg for OBJ_REPR_D).
 #define MP_OBJ_ITER_BUF_NSLOTS ((sizeof(mp_obj_iter_buf_t) + sizeof(mp_obj_t) - 1) / sizeof(mp_obj_t))
 
+struct _mp_buffer_info_t;
+
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
 typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -542,6 +544,7 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+typedef mp_int_t (*mp_getbuffer_fun_t)(mp_obj_t obj, struct _mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -626,6 +629,18 @@ struct _mp_obj_type_t {
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
 };
+
+extern size_t mp_type_size(const mp_obj_type_t *);
+extern mp_call_fun_t mp_type_call(const mp_obj_type_t *);
+extern mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *);
+extern mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *);
+extern mp_attr_fun_t mp_type_attr(const mp_obj_type_t *);
+extern mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *);
+extern mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *);
+extern mp_fun_1_t mp_type_iternext(const mp_obj_type_t *);
+extern mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *);
+extern const void *mp_type_protocol(const mp_obj_type_t *);
+extern const void *mp_type_parent(const mp_obj_type_t *);
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
@@ -761,11 +776,11 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 #endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
-#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
+#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && mp_type_binary_op(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type) == mp_obj_str_binary_op))
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 // type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
+#define mp_obj_is_tuple_compatible(o) (mp_type_getiter(mp_obj_get_type(o)) == mp_obj_tuple_getiter)
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {

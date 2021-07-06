@@ -455,19 +455,22 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
-        } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
-            mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
-            mp_buffer_info_t bufinfo;
-            int ret = o->type->buffer_p.get_buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
-            if (ret != 0) {
+        } else {
+            mp_getbuffer_fun_t get_buffer = mp_type_getbuffer(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type);
+            if (get_buffer != NULL) {
+                mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
+                mp_buffer_info_t bufinfo;
+                int ret = get_buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+                if (ret != 0) {
+                    goto error;
+                }
+                values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
+            } else if (mp_obj_is_type(a, &fficallback_type)) {
+                mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
+                values[i].ffi = (ffi_arg)(intptr_t)p->func;
+            } else {
                 goto error;
             }
-            values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
-        } else if (mp_obj_is_type(a, &fficallback_type)) {
-            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
-            values[i].ffi = (ffi_arg)(intptr_t)p->func;
-        } else {
-            goto error;
         }
         valueptrs[i] = &values[i];
     }

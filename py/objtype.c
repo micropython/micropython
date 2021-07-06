@@ -59,17 +59,20 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         if (type == &mp_type_object) {
             // Not a "real" type, end search here.
             return count;
-        } else if (mp_obj_is_native_type(type)) {
+        }
+        if (mp_obj_is_native_type(type)) {
             // Native types don't have parents (at least not from our perspective) so end.
             *last_native_base = type;
             return count + 1;
-        } else if (type->parent == NULL) {
+        }
+        const void *parent = mp_type_parent(type);
+        if (parent == NULL) {
             // No parents so end search here.
             return count;
         #if MICROPY_MULTIPLE_INHERITANCE
-        } else if (((mp_obj_base_t *)type->parent)->type == &mp_type_tuple) {
+        } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
             // Multiple parents, search through them all recursively.
-            const mp_obj_tuple_t *parent_tuple = type->parent;
+            const mp_obj_tuple_t *parent_tuple = parent;
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len;
             for (; item < top; ++item) {
@@ -81,7 +84,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         #endif
         } else {
             // A single parent, use iteration to continue the search.
-            type = type->parent;
+            type = parent;
         }
     }
 }
@@ -159,7 +162,8 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
         if (lookup->meth_offset != 0 && mp_obj_is_native_type(type)) {
             #pragma GCC diagnostic push
             #pragma GCC diagnostic ignored "-Wcast-align"
-            if (*(void **)((char *)type + lookup->meth_offset) != NULL) {
+            size_t sz = mp_type_size(type);
+            if (lookup->meth_offset < sz && *(void **)((char *)type + lookup->meth_offset) != NULL) {
                 #pragma GCC diagnostic pop
                 DEBUG_printf("mp_obj_class_lookup: Matched special meth slot (off=%d) for %s\n",
                     lookup->meth_offset, qstr_str(lookup->attr));
@@ -211,12 +215,14 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
 
         // attribute not found, keep searching base classes
 
-        if (type->parent == NULL) {
+        const void *parent = mp_type_parent(type);
+        if (parent == NULL) {
             DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
+        }
         #if MICROPY_MULTIPLE_INHERITANCE
-        } else if (((mp_obj_base_t *)type->parent)->type == &mp_type_tuple) {
-            const mp_obj_tuple_t *parent_tuple = type->parent;
+        if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
+            const mp_obj_tuple_t *parent_tuple = parent;
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len - 1;
             for (; item < top; ++item) {
@@ -235,10 +241,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
             // search last base (simple tail recursion elimination)
             assert(mp_obj_is_type(*item, &mp_type_type));
             type = (mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
-        #endif
-        } else {
-            type = type->parent;
+            continue;
         }
+        #endif
+        type = parent;
         if (type == &mp_type_object) {
             // Not a "real" type
             return;
@@ -1079,7 +1085,8 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = mp_const_empty_tuple;
                 return;
             }
-            mp_obj_t parent_obj = self->parent ? MP_OBJ_FROM_PTR(self->parent) : MP_OBJ_FROM_PTR(&mp_type_object);
+            const void *parent = mp_type_parent(self);
+            mp_obj_t parent_obj = parent ? MP_OBJ_FROM_PTR(parent) : MP_OBJ_FROM_PTR(&mp_type_object);
             #if MICROPY_MULTIPLE_INHERITANCE
             if (mp_obj_is_type(parent_obj, &mp_type_tuple)) {
                 dest[0] = parent_obj;
@@ -1324,11 +1331,12 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         lookup.meth_offset = offsetof(mp_obj_type_t, make_new);
     }
 
-    if (type->parent == NULL) {
+    const void *parent = mp_type_parent(type);
+    if (parent == NULL) {
         // no parents, do nothing
     #if MICROPY_MULTIPLE_INHERITANCE
-    } else if (((mp_obj_base_t *)type->parent)->type == &mp_type_tuple) {
-        const mp_obj_tuple_t *parent_tuple = type->parent;
+    } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
+        const mp_obj_tuple_t *parent_tuple = parent;
         size_t len = parent_tuple->len;
         const mp_obj_t *items = parent_tuple->items;
         for (size_t i = 0; i < len; i++) {
@@ -1344,8 +1352,8 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             }
         }
     #endif
-    } else if (type->parent != &mp_type_object) {
-        mp_obj_class_lookup(&lookup, type->parent);
+    } else if (parent != &mp_type_object) {
+        mp_obj_class_lookup(&lookup, parent);
     }
 
     if (dest[0] != MP_OBJ_NULL) {
@@ -1419,14 +1427,15 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         }
 
         const mp_obj_type_t *self = MP_OBJ_TO_PTR(object);
+        const void *parent = mp_type_parent(self);
 
-        if (self->parent == NULL) {
+        if (parent == NULL) {
             // type has no parents
             return false;
         #if MICROPY_MULTIPLE_INHERITANCE
-        } else if (((mp_obj_base_t *)self->parent)->type == &mp_type_tuple) {
+        } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
             // get the base objects (they should be type objects)
-            const mp_obj_tuple_t *parent_tuple = self->parent;
+            const mp_obj_tuple_t *parent_tuple = parent;
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len - 1;
 
@@ -1442,7 +1451,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         #endif
         } else {
             // type has 1 parent
-            object = MP_OBJ_FROM_PTR(self->parent);
+            object = MP_OBJ_FROM_PTR(parent);
         }
     }
 }

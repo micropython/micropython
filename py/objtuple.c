@@ -108,7 +108,7 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
     const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    if (another_type->getiter != mp_obj_tuple_getiter) {
+    if (mp_type_getiter(another_type) != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
         another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
@@ -184,7 +184,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
-        if (self->base.type->subscr != &mp_obj_tuple_subscr) {
+        if (mp_type_subscr(self->base.type) != &mp_obj_tuple_subscr) {
             self = mp_obj_cast_to_native_base(self_in, &mp_type_tuple);
         }
 
