@@ -141,10 +141,6 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(os_term_dup_obj)) {
         if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
@@ -156,25 +152,6 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
     // and also to telnet
     telnet_tx_strn(str, len);
-}
-
-void mp_hal_stdout_tx_strn_cooked (const char *str, size_t len) {
-    int32_t nslen = 0;
-    const char *_str = str;
-
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n') {
-            mp_hal_stdout_tx_strn(_str, nslen);
-            mp_hal_stdout_tx_strn("\r\n", 2);
-            _str += nslen + 1;
-            nslen = 0;
-        } else {
-            nslen++;
-        }
-    }
-    if (_str < str + len) {
-        mp_hal_stdout_tx_strn(_str, nslen);
-    }
 }
 
 int mp_hal_stdin_rx_chr(void) {

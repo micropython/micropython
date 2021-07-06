@@ -167,6 +167,7 @@ LIB_SRC_C += $(addprefix lib/,\
 	utils/gchelper_native.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
+	utils/stdout_helpers.c \
 	utils/sys_stdio_mphal.c \
 	utils/mpirq.c \
 	)

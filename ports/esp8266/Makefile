@@ -145,6 +145,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
+	utils/stdout_helpers.c \
 	utils/sys_stdio_mphal.c \
 	)
 
