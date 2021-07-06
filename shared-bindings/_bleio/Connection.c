@@ -266,7 +266,10 @@ STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_local
 
 const mp_obj_type_t bleio_connection_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_Connection,
     .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
-    .unary_op = mp_generic_unary_op,
+    EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        ),
 };

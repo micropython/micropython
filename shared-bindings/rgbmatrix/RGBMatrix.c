@@ -439,9 +439,12 @@ STATIC mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_
 
 const mp_obj_type_t rgbmatrix_RGBMatrix_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_RGBMatrix,
-    .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
-    .make_new = rgbmatrix_rgbmatrix_make_new,
-    .protocol = &rgbmatrix_rgbmatrix_proto,
     .locals_dict = (mp_obj_dict_t *)&rgbmatrix_rgbmatrix_locals_dict,
+    .make_new = rgbmatrix_rgbmatrix_make_new,
+    EXTENDED_FIELDS(
+        .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
+        .protocol = &rgbmatrix_rgbmatrix_proto,
+        ),
 };

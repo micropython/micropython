@@ -115,8 +115,10 @@ const mp_obj_type_t usb_midi_portin_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_PortIn,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &usb_midi_portin_stream_p,
     .locals_dict = (mp_obj_dict_t *)&usb_midi_portin_locals_dict,
+    EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &usb_midi_portin_stream_p,
+        ),
 };

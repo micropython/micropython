@@ -297,7 +297,10 @@ STATIC const audiosample_p_t audiomixer_mixer_proto = {
 const mp_obj_type_t audiomixer_mixer_type = {
     { &mp_type_type },
     .name = MP_QSTR_Mixer,
+    .flags = MP_TYPE_FLAG_FULL,
     .make_new = audiomixer_mixer_make_new,
     .locals_dict = (mp_obj_dict_t *)&audiomixer_mixer_locals_dict,
-    .protocol = &audiomixer_mixer_proto,
+    EXTENDED_FIELDS(
+        .protocol = &audiomixer_mixer_proto,
+        ),
 };

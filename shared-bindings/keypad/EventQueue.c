@@ -146,7 +146,10 @@ STATIC MP_DEFINE_CONST_DICT(keypad_eventqueue_locals_dict, keypad_eventqueue_loc
 
 const mp_obj_type_t keypad_eventqueue_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_Keys,
-    .unary_op = keypad_eventqueue_unary_op,
+    EXTENDED_FIELDS(
+        .unary_op = keypad_eventqueue_unary_op,
+        ),
     .locals_dict = (mp_obj_t)&keypad_eventqueue_locals_dict,
 };
