@@ -44,9 +44,12 @@ static uint16_t pulse_length;
 pwmio_pwmout_obj_t *pwmout_obj;
 volatile uint16_t current_duty_cycle;
 static uint32_t min_pulse = 0;
+static alarm_id_t cur_alarm;
 
 void pulse_finish(void) {
     pulse_index++;
+    // Turn off the current alarm
+    cancel_alarm(cur_alarm);
     // Turn pwm pin off by setting duty cyle to 1.
     common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,1);
     if (pulse_index >= pulse_length) {
@@ -56,8 +59,12 @@ void pulse_finish(void) {
     if (delay < min_pulse) {
         delay = min_pulse;
     }
-
-    add_alarm_in_us(delay, pulseout_interrupt_handler, NULL, false);
+    cur_alarm = 0;
+    // if the alarm cannot be set, try again with a longer delay
+    while (cur_alarm == 0) {
+        cur_alarm = add_alarm_in_us(delay, pulseout_interrupt_handler, NULL, false);
+	delay = delay + 1;
+    }
     if (pulse_index % 2 == 0) {
         common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
     }
