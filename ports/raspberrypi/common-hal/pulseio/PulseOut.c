@@ -63,7 +63,7 @@ void pulse_finish(void) {
     // if the alarm cannot be set, try again with a longer delay
     while (cur_alarm == 0) {
         cur_alarm = add_alarm_in_us(delay, pulseout_interrupt_handler, NULL, false);
-	delay = delay + 1;
+        delay = delay + 1;
     }
     if (pulse_index % 2 == 0) {
         common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,current_duty_cycle);
