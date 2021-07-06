@@ -484,6 +484,7 @@ STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     #if LFS_BUILD_VERSION == 1
     .name = MP_QSTR_VfsLfs1,
     #else

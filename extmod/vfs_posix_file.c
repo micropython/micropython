@@ -213,6 +213,7 @@ STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_posix_fileio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_FileIO,
     .print = vfs_posix_file_print,
     .make_new = vfs_posix_file_make_new,

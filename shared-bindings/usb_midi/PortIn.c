@@ -113,6 +113,7 @@ STATIC const mp_stream_p_t usb_midi_portin_stream_p = {
 
 const mp_obj_type_t usb_midi_portin_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_PortIn,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,

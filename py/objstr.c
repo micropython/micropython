@@ -2035,6 +2035,7 @@ const mp_obj_type_t mp_type_str = {
 // Reuses most of methods from str
 const mp_obj_type_t mp_type_bytes = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,

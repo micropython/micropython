@@ -54,6 +54,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 
 STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
     .iternext = range_it_iternext,

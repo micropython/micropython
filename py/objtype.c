@@ -440,7 +440,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = op_name,
-        .meth_offset = offsetof(mp_obj_type_t, unary_op),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].unary_op),
         .dest = member,
         .is_type = false,
     };
@@ -568,7 +568,7 @@ retry:;
     struct class_lookup_data lookup = {
         .obj = lhs,
         .attr = op_name,
-        .meth_offset = offsetof(mp_obj_type_t, binary_op),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].binary_op),
         .dest = dest,
         .is_type = false,
     };
@@ -839,7 +839,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     mp_obj_t member[4] = {MP_OBJ_NULL, MP_OBJ_NULL, index, value};
     struct class_lookup_data lookup = {
         .obj = self,
-        .meth_offset = offsetof(mp_obj_type_t, subscr),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].subscr),
         .dest = member,
         .is_type = false,
     };
@@ -856,7 +856,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
-        mp_obj_t ret = subobj_type->subscr(self_in, index, value);
+        mp_obj_t ret = subobj_type->ext[0].subscr(self_in, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         return ret;
@@ -878,7 +878,7 @@ STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in, mp_obj_t *member) {
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___call__,
-        .meth_offset = offsetof(mp_obj_type_t, call),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].call),
         .dest = member,
         .is_type = false,
     };
@@ -917,7 +917,7 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___iter__,
-        .meth_offset = offsetof(mp_obj_type_t, getiter),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].getiter),
         .dest = member,
         .is_type = false,
     };
@@ -929,7 +929,7 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
         if (iter_buf == NULL) {
             iter_buf = m_new_obj(mp_obj_iter_buf_t);
         }
-        return type->getiter(self->subobj[0], iter_buf);
+        return type->ext[0].getiter(self->subobj[0], iter_buf);
     } else {
         return mp_call_method_n_kw(0, 0, member);
     }
@@ -941,14 +941,14 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR_, // don't actually look for a method
-        .meth_offset = offsetof(mp_obj_type_t, buffer_p.get_buffer),
+        .meth_offset = offsetof(mp_obj_type_t, ext[0].buffer_p.get_buffer),
         .dest = member,
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        return type->buffer_p.get_buffer(self->subobj[0], bufinfo, flags);
+        return type->ext[0].buffer_p.get_buffer(self->subobj[0], bufinfo, flags);
     } else {
         return 1; // object does not support buffer protocol
     }
@@ -1146,6 +1146,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_type,
     .print = type_print,
     .make_new = type_make_new,
@@ -1167,7 +1168,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
 
     // Basic validation of base classes
     uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
-        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST;
+        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST | MP_TYPE_FLAG_FULL;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);

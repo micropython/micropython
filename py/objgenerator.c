@@ -157,7 +157,7 @@ static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
@@ -412,6 +412,7 @@ STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_t
 
 const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .unary_op = mp_generic_unary_op,

@@ -310,6 +310,7 @@ STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
 
 const mp_obj_type_t usb_cdc_serial_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_Serial,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,

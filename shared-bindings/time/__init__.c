@@ -112,6 +112,7 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
         .base = {
             .type = &mp_type_type
         },
+        .flags = MP_TYPE_FLAG_FULL,
         .name = MP_QSTR_struct_time,
         .print = namedtuple_print,
         .make_new = struct_time_make_new,

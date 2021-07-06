@@ -226,6 +226,7 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_FileIO,
     .print = MP_VFS_LFSx(file_print),
     .getiter = mp_identity_getiter,

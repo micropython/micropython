@@ -160,6 +160,7 @@ STATIC MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 
 const mp_obj_type_t mp_type_deque = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
     .unary_op = deque_unary_op,

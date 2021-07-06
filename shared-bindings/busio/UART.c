@@ -422,6 +422,7 @@ STATIC const mp_stream_p_t uart_stream_p = {
 
 const mp_obj_type_t busio_uart_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_UART,
     .make_new = busio_uart_make_new,
     .getiter = mp_identity_getiter,

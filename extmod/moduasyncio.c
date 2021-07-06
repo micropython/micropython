@@ -284,6 +284,7 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t task_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_Task,
     .make_new = task_make_new,
     .attr = task_attr,

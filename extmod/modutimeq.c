@@ -193,6 +193,7 @@ STATIC MP_DEFINE_CONST_DICT(utimeq_locals_dict, utimeq_locals_dict_table);
 
 STATIC const mp_obj_type_t utimeq_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
     .unary_op = utimeq_unary_op,

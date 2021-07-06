@@ -474,6 +474,7 @@ STATIC const mp_vfs_proto_t fat_vfs_proto = {
 
 const mp_obj_type_t mp_fat_vfs_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
     .protocol = &fat_vfs_proto,

@@ -129,6 +129,7 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 
 STATIC const mp_obj_type_t stdio_obj_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,

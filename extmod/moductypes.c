@@ -622,6 +622,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
 STATIC const mp_obj_type_t uctypes_struct_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_struct,
     .print = uctypes_struct_print,
     .make_new = uctypes_struct_make_new,

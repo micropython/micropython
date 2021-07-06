@@ -122,6 +122,7 @@ STATIC const mp_stream_p_t decompio_stream_p = {
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_obj_type_t decompio_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_DecompIO,
     .make_new = decompio_make_new,
     .protocol = &decompio_stream_p,

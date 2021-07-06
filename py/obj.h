@@ -515,6 +515,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 #define MP_TYPE_FLAG_BINDS_SELF (0x0020)
 #define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
+#define MP_TYPE_FLAG_FULL (0x0080) // contains the 'ext' fields
 
 typedef enum {
     PRINT_STR = 0,
@@ -556,10 +557,50 @@ typedef struct _mp_buffer_info_t {
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
 typedef struct _mp_buffer_p_t {
-    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+    mp_getbuffer_fun_t get_buffer;
 } mp_buffer_p_t;
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
+struct _mp_obj_type_ext {
+    // Corresponds to __call__ special method, ie T(...).
+#define MP_TYPE_CALL(o) ext[0].call = o
+    mp_call_fun_t call;
+
+    // Implements unary and binary operations.
+    // Can return MP_OBJ_NULL if the operation is not supported.
+#define MP_TYPE_UNARY_OP(o) ext[0].unary_op = (o)
+    mp_unary_op_fun_t unary_op;
+#define MP_TYPE_BINARY_OP(o) ext[0].binary_op = (o)
+    mp_binary_op_fun_t binary_op;
+
+    // Implements load, store and delete subscripting:
+    //  - value = MP_OBJ_SENTINEL means load
+    //  - value = MP_OBJ_NULL means delete
+    //  - all other values mean store the value
+    // Can return MP_OBJ_NULL if operation not supported.
+#define MP_TYPE_SUBSCR(o) ext[0].subscr = (o)
+    mp_subscr_fun_t subscr;
+
+    // Corresponds to __iter__ special method.
+    // Can use the given mp_obj_iter_buf_t to store iterator object,
+    // otherwise can return a pointer to an object on the heap.
+#define MP_TYPE_GETITER(o) ext[0].getiter = (o)
+    mp_getiter_fun_t getiter;
+
+    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
+    // as an optimisation instead of raising StopIteration() with no args.
+#define MP_TYPE_ITERNEXT(o) ext[0].iternext = (o)
+    mp_fun_1_t iternext;
+
+    // Implements the buffer protocol if supported by this type.
+#define MP_TYPE_GETBUFFER(o) ext[0].buffer_p.getbuffer = (o)
+    mp_buffer_p_t buffer_p;
+
+    // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
+#define MP_TYPE_PROTOCOL(o) ext[0].protocol = (o)
+    const void *protocol;
+};
 
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
@@ -571,19 +612,14 @@ struct _mp_obj_type_t {
     // The name of this type, a qstr.
     uint16_t name;
 
-    // Corresponds to __repr__ and __str__ special methods.
-    mp_print_fun_t print;
+    // A dict mapping qstrs to objects local methods/constants/etc.
+    struct _mp_obj_dict_t *locals_dict;
 
     // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
     mp_make_new_fun_t make_new;
 
-    // Corresponds to __call__ special method, ie T(...).
-    mp_call_fun_t call;
-
-    // Implements unary and binary operations.
-    // Can return MP_OBJ_NULL if the operation is not supported.
-    mp_unary_op_fun_t unary_op;
-    mp_binary_op_fun_t binary_op;
+    // Corresponds to __repr__ and __str__ special methods.
+    mp_print_fun_t print;
 
     // Implements load, store and delete attribute.
     //
@@ -598,27 +634,46 @@ struct _mp_obj_type_t {
     //          for success set dest[0] = MP_OBJ_NULL
     mp_attr_fun_t attr;
 
-    // Implements load, store and delete subscripting:
-    //  - value = MP_OBJ_SENTINEL means load
-    //  - value = MP_OBJ_NULL means delete
-    //  - all other values mean store the value
-    // Can return MP_OBJ_NULL if operation not supported.
-    mp_subscr_fun_t subscr;
+    // A pointer to the parents of this type:
+    //  - 0 parents: pointer is NULL (object is implicitly the single parent)
+    //  - 1 parent: a pointer to the type of that parent
+    //  - 2 or more parents: pointer to a tuple object containing the parent types
+    const void *parent;
 
-    // Corresponds to __iter__ special method.
-    // Can use the given mp_obj_iter_buf_t to store iterator object,
-    // otherwise can return a pointer to an object on the heap.
-    mp_getiter_fun_t getiter;
+    struct _mp_obj_type_ext ext[];
+};
 
-    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
-    // as an optimisation instead of raising StopIteration() with no args.
-    mp_fun_1_t iternext;
+struct _mp_obj_full_type_t {
+    // A type is an object so must start with this entry, which points to mp_type_type.
+    mp_obj_base_t base;
 
-    // Implements the buffer protocol if supported by this type.
-    mp_buffer_p_t buffer_p;
+    // Flags associated with this type.
+    uint16_t flags;
 
-    // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
-    const void *protocol;
+    // The name of this type, a qstr.
+    uint16_t name;
+
+    // A dict mapping qstrs to objects local methods/constants/etc.
+    struct _mp_obj_dict_t *locals_dict;
+
+    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
+    mp_make_new_fun_t make_new;
+
+    // Corresponds to __repr__ and __str__ special methods.
+    mp_print_fun_t print;
+
+    // Implements load, store and delete attribute.
+    //
+    // dest[0] = MP_OBJ_NULL means load
+    //  return: for fail, do nothing
+    //          for attr, dest[0] = value
+    //          for method, dest[0] = method, dest[1] = self
+    //
+    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
+    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
+    //  return: for fail, do nothing
+    //          for success set dest[0] = MP_OBJ_NULL
+    mp_attr_fun_t attr;
 
     // A pointer to the parents of this type:
     //  - 0 parents: pointer is NULL (object is implicitly the single parent)
@@ -626,9 +681,9 @@ struct _mp_obj_type_t {
     //  - 2 or more parents: pointer to a tuple object containing the parent types
     const void *parent;
 
-    // A dict mapping qstrs to objects local methods/constants/etc.
-    struct _mp_obj_dict_t *locals_dict;
+    struct _mp_obj_type_ext ext[1];
 };
+
 
 extern size_t mp_type_size(const mp_obj_type_t *);
 extern mp_call_fun_t mp_type_call(const mp_obj_type_t *);

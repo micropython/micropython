@@ -86,7 +86,7 @@ STATIC mp_obj_t bool_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 
 const mp_obj_type_t mp_type_bool = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, // can match all numeric types
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_FULL, // can match all numeric types
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,

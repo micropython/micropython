@@ -60,7 +60,7 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_0 = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_function,
     .call = fun_builtin_0_call,
     .unary_op = mp_generic_unary_op,

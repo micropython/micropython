@@ -71,6 +71,7 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_reversed = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_reversed,
     .make_new = reversed_make_new,
     .getiter = mp_identity_getiter,
