@@ -53,7 +53,7 @@ void pulse_finish(void) {
         return;
     }
     uint64_t delay = pulse_buffer[pulse_index];
-    if (delay < min_pulse ) {
+    if (delay < min_pulse) {
         delay = min_pulse;
     }
 
