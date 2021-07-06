@@ -1316,6 +1316,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_USELECT (0)
 #endif
 
+// Whether to enable the select() function in the "uselect" module (baremetal
+// implementation). This is present for compatibility but can be disabled to
+// save space.
+#ifndef MICROPY_PY_USELECT_SELECT
+#define MICROPY_PY_USELECT_SELECT (1)
+#endif
+
 // Whether to provide "utime" module functions implementation
 // in terms of mp_hal_* functions.
 #ifndef MICROPY_PY_UTIME_MP_HAL
