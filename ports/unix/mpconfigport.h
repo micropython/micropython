@@ -151,8 +151,8 @@
 #if MICROPY_PY_USSL
 #define MICROPY_PY_UHASHLIB_MD5     (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
-#define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
+#define MICROPY_PY_UCRYPTOLIB       (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UBINASCII_CRC32  (1)
 #define MICROPY_PY_URANDOM          (1)
