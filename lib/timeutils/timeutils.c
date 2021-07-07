@@ -213,3 +213,10 @@ mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
     }
     return timeutils_seconds_since_2000(year, month, mday, hours, minutes, seconds);
 }
+
+// Calculate the weekday from the date.
+// The result is zero based with 0 = Monday.
+// by Michael Keith and Tom Craver, 1990.
+int timeutils_calc_weekday(int y, int m, int d) {
+    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
+}

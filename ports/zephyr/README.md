@@ -4,7 +4,7 @@ MicroPython port to Zephyr RTOS
 This is a work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-This port requires Zephyr version v2.5.0, and may also work on higher
+This port requires Zephyr version v2.6.0, and may also work on higher
 versions.  All boards supported
 by Zephyr (with standard level of features support, like UART console)
 should work with MicroPython (but not all were tested).
@@ -15,6 +15,7 @@ Features supported at this time:
 * `utime` module for time measurements and delays.
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
+* `machine.SPI` class for SPI control.
 * `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
@@ -38,13 +39,13 @@ setup is correct.
 If you already have Zephyr installed but are having issues building the
 MicroPython port then try installing the correct version of Zephyr via:
 
-    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v2.5.0
+    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v2.6.0
 
 Alternatively, you don't have to redo the Zephyr installation to just
 switch from master to a tagged release, you can instead do:
 
     $ cd zephyrproject/zephyr
-    $ git checkout v2.5.0
+    $ git checkout v2.6.0
     $ west update
 
 With Zephyr installed you may then need to configure your environment,
@@ -134,6 +135,14 @@ Example of using I2C to scan for I2C slaves:
 
     i2c = I2C("I2C_0")
     i2c.scan()
+
+Example of using SPI to write a buffer to the MOSI pin:
+
+    from machine import SPI
+
+    spi = SPI("SPI_0")
+    spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
+    spi.write(b'abcd')
 
 
 Minimal build

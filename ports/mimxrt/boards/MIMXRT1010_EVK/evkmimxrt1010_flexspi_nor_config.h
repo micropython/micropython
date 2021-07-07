@@ -211,34 +211,19 @@ typedef struct _FlexSPIConfig
 } flexspi_mem_config_t;
 
 /*  */
-#define NOR_CMD_INDEX_READ CMD_INDEX_READ               //!< 0
-#define NOR_CMD_INDEX_READSTATUS CMD_INDEX_READSTATUS   //!< 1
-#define NOR_CMD_INDEX_WRITEENABLE CMD_INDEX_WRITEENABLE //!< 2
-#define NOR_CMD_INDEX_ERASESECTOR 3                     //!< 3
-#define NOR_CMD_INDEX_PAGEPROGRAM CMD_INDEX_WRITE       //!< 4
-#define NOR_CMD_INDEX_CHIPERASE 5                       //!< 5
-#define NOR_CMD_INDEX_DUMMY 6                           //!< 6
-#define NOR_CMD_INDEX_ERASEBLOCK 7                      //!< 7
-
-#define NOR_CMD_LUT_SEQ_IDX_READ CMD_LUT_SEQ_IDX_READ //!< 0  READ LUT sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUS \
-    CMD_LUT_SEQ_IDX_READSTATUS //!< 1  Read Status LUT sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUS_XPI \
-    2 //!< 2  Read status DPI/QPI/OPI sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE \
-    CMD_LUT_SEQ_IDX_WRITEENABLE //!< 3  Write Enable sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE_XPI \
-    4 //!< 4  Write Enable DPI/QPI/OPI sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR 5 //!< 5  Erase Sector sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_ERASEBLOCK 8  //!< 8 Erase Block sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM \
-    CMD_LUT_SEQ_IDX_WRITE                //!< 9  Program sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11 //!< 11 Chip Erase sequence in lookupTable id stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_READ_SFDP 13 //!< 13 Read SFDP sequence in lookupTable id stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_RESTORE_NOCMD \
-    14 //!< 14 Restore 0-4-4/0-8-8 mode sequence id in lookupTable stored in config block
-#define NOR_CMD_LUT_SEQ_IDX_EXIT_NOCMD \
-    15 //!< 15 Exit 0-4-4/0-8-8 mode sequence id in lookupTable stored in config blobk
+#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL 0
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUSREG 1
+#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD 2
+#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE 3
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUS_XPI 4
+#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR 5
+#define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG 6
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD 7
+#define NOR_CMD_LUT_SEQ_IDX_READID 8
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM 9
+#define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
+#define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11
+#define NOR_CMD_LUT_SEQ_IDX_EXITQPI 12
 
 /*
  *  Serial NOR configuration block
@@ -258,6 +243,9 @@ typedef struct _flexspi_nor_config
     uint32_t blockSize;             //!< Block size
     uint32_t reserve2[11];          //!< Reserved for future use
 } flexspi_nor_config_t;
+
+#define FLASH_BUSY_STATUS_POL 0
+#define FLASH_BUSY_STATUS_OFFSET 0
 
 #ifdef __cplusplus
 extern "C" {

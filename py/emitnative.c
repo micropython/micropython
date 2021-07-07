@@ -1769,7 +1769,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             int reg_index = REG_ARG_2;
             int reg_value = REG_ARG_3;
             emit_pre_pop_reg_flexible(emit, &vtype_base, &reg_base, reg_index, reg_value);
-            #if N_X86
+            #if N_X64 || N_X86
             // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
             emit_pre_pop_reg(emit, &vtype_value, reg_value);
             #else
@@ -1856,7 +1856,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                     MP_ERROR_TEXT("can't store with '%q' index"), vtype_to_qstr(vtype_index));
             }
-            #if N_X86
+            #if N_X64 || N_X86
             // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
             emit_pre_pop_reg(emit, &vtype_value, reg_value);
             #else

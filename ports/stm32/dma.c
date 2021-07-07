@@ -40,7 +40,7 @@
 #define DMA_IDLE_TICK_MAX   (8) // 8*8 = 64 msec
 #define DMA_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & DMA_SYSTICK_MASK) == 0)
 
-#define ENABLE_SDIO (MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD)
+#define ENABLE_SDIO (MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD || MICROPY_PY_NETWORK_CYW43)
 
 typedef enum {
     dma_id_not_defined=-1,
@@ -102,6 +102,31 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .PeriphBurst = DMA_PBURST_INC4
     #endif
 };
+
+#if MICROPY_HW_ENABLE_I2S
+// Default parameters to dma_init() for i2s; Channel and Direction
+// vary depending on the peripheral instance so they get passed separately
+static const DMA_InitTypeDef dma_init_struct_i2s = {
+    #if defined(STM32F4) || defined(STM32F7)
+    .Channel = 0,
+    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
+    .Request = 0,
+    #endif
+    .Direction = DMA_MEMORY_TO_PERIPH,
+    .PeriphInc = DMA_PINC_DISABLE,
+    .MemInc = DMA_MINC_ENABLE,
+    .PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD,
+    .MemDataAlignment = DMA_MDATAALIGN_HALFWORD,
+    .Mode = DMA_CIRCULAR,
+    .Priority = DMA_PRIORITY_LOW,
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    .FIFOMode = DMA_FIFOMODE_DISABLE,
+    .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst = DMA_MBURST_SINGLE,
+    .PeriphBurst = DMA_PBURST_SINGLE
+    #endif
+};
+#endif
 
 #if ENABLE_SDIO && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
@@ -242,6 +267,10 @@ const dma_descr_t dma_I2C_3_RX = { DMA1_Stream2, DMA_CHANNEL_3, dma_id_2,   &dma
 const dma_descr_t dma_I2C_2_RX = { DMA1_Stream2, DMA_CHANNEL_7, dma_id_2,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { DMA1_Stream3, DMA_CHANNEL_0, dma_id_3,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { DMA1_Stream4, DMA_CHANNEL_0, dma_id_4,   &dma_init_struct_spi_i2c };
+#if MICROPY_HW_ENABLE_I2S
+const dma_descr_t dma_I2S_2_RX = { DMA1_Stream3, DMA_CHANNEL_0, dma_id_3,   &dma_init_struct_i2s };
+const dma_descr_t dma_I2S_2_TX = { DMA1_Stream4, DMA_CHANNEL_0, dma_id_4,   &dma_init_struct_i2s };
+#endif
 const dma_descr_t dma_I2C_3_TX = { DMA1_Stream4, DMA_CHANNEL_3, dma_id_4,   &dma_init_struct_spi_i2c };
 #if defined(STM32F7)
 const dma_descr_t dma_I2C_4_TX = { DMA1_Stream5, DMA_CHANNEL_2, dma_id_5,   &dma_init_struct_spi_i2c };
@@ -266,6 +295,9 @@ const dma_descr_t dma_SDMMC_2 = { DMA2_Stream0, DMA_CHANNEL_11, dma_id_8,  &dma_
 const dma_descr_t dma_DCMI_0 = { DMA2_Stream1, DMA_CHANNEL_1, dma_id_9,  &dma_init_struct_dcmi };
 #endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_spi_i2c };
+#if MICROPY_HW_ENABLE_I2S
+const dma_descr_t dma_I2S_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_i2s };
+#endif
 const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_CHANNEL_2, dma_id_11,  &dma_init_struct_spi_i2c };
 #if ENABLE_SDIO
 const dma_descr_t dma_SDIO_0 = { DMA2_Stream3, DMA_CHANNEL_4, dma_id_11,  &dma_init_struct_sdio };
@@ -275,6 +307,9 @@ const dma_descr_t dma_SPI_5_TX = { DMA2_Stream4, DMA_CHANNEL_2, dma_id_12,  &dma
 const dma_descr_t dma_SPI_4_TX = { DMA2_Stream4, DMA_CHANNEL_5, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { DMA2_Stream5, DMA_CHANNEL_1, dma_id_13,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Stream5, DMA_CHANNEL_3, dma_id_13,  &dma_init_struct_spi_i2c };
+#if MICROPY_HW_ENABLE_I2S
+const dma_descr_t dma_I2S_1_TX = { DMA2_Stream5, DMA_CHANNEL_3, dma_id_13,  &dma_init_struct_i2s };
+#endif
 // #if defined(STM32F7) && defined(SDMMC2) && ENABLE_SDIO
 // const dma_descr_t dma_SDMMC_2 = { DMA2_Stream5, DMA_CHANNEL_11, dma_id_13,  &dma_init_struct_sdio };
 // #endif
@@ -1120,6 +1155,36 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         init->FIFOMode              // DMDIS
         | init->FIFOThreshold       // FTH
     ;
+
+    #if defined(STM32H7)
+    // Configure DMAMUX
+    uint32_t request = descr->sub_instance & DMAMUX_CxCR_DMAREQ_ID;
+    if ((dma >= DMA1_Stream0 && dma <= DMA1_Stream7) || (dma >= DMA2_Stream0 && dma <= DMA2_Stream7)) {
+        // DMA1/2 channels 0 to 7 are hardwired to DMAMUX1 channels 0-15.
+        uint32_t stream = (((uint32_t)dma & 0xff) - 16) / 24 + ((dma >= DMA2_Stream0) ? 8 : 0);
+        // Set DMAMUX channel peripheral request.
+        ((DMAMUX_Channel_TypeDef *)(((uint32_t)DMAMUX1_Channel0) + (stream * 4)))->CCR = request;
+        DMAMUX1_ChannelStatus->CFR = 1 << (stream & 0x1F);
+        // Configure DMAMUX request generator if needed.
+        if (request >= DMA_REQUEST_GENERATOR0 && request <= DMA_REQUEST_GENERATOR7) {
+            ((DMAMUX_RequestGen_TypeDef *)(((uint32_t)DMAMUX1_RequestGenerator0) + ((request - 1) * 4)))->RGCR = 0;
+            DMAMUX1_RequestGenStatus->RGCFR = 1 << (request - 1);
+        }
+    #if ENABLE_BDMA // TODO: BDMA is Not currently supported by this driver.
+    } else if (dma >= BDMA_Channel0 && dma <= BDMA_Channel7) {
+        // BDMA channels 0 to 7 are hardwired to DMAMUX2 channels 0-7.
+        uint32_t stream = (((uint32_t)dma & 0xff) - 8) / 20;
+        // Set DMAMUX channel peripheral request.
+        ((DMAMUX_Channel_TypeDef *)(((uint32_t)DMAMUX2_Channel0) + (stream * 4)))->CCR = request;
+        DMAMUX2_ChannelStatus->CFR = 1 << (stream & 0x1F);
+        // Configure DMAMUX request generator if needed.
+        if (request >= DMA_REQUEST_GENERATOR0 && request <= DMA_REQUEST_GENERATOR7) {
+            ((DMAMUX_RequestGen_TypeDef *)(((uint32_t)DMAMUX2_RequestGenerator0) + ((request - 1) * 4)))->RGCR = 0;
+            DMAMUX2_RequestGenStatus->RGCFR = 1 << (request - 1);
+        }
+    #endif // ENABLE_BDMA
+    }
+    #endif // STM32H7
 }
 
 void dma_nohal_deinit(const dma_descr_t *descr) {

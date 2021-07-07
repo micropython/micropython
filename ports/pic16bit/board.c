@@ -140,7 +140,7 @@ int switch_get(int sw) {
 // TODO need an irq
 void uart_rx_irq(void) {
     if (c == interrupt_char) {
-        MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(keyboard_interrupt_obj);
+        MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_STATE_PORT(keyboard_interrupt_obj);
     }
 }
 */

@@ -25,9 +25,9 @@ def do_connect(peer_addr, tls, handshake):
         # print("Connecting to", peer_addr)
         s.connect(peer_addr)
     except OSError as er:
-        print("connect:", er.args[0] == errno.EINPROGRESS)
-        if er.args[0] != errno.EINPROGRESS:
-            print("  got", er.args[0])
+        print("connect:", er.errno == errno.EINPROGRESS)
+        if er.errno != errno.EINPROGRESS:
+            print("  got", er.errno)
     # wrap with ssl/tls if desired
     if tls:
         try:
@@ -67,7 +67,7 @@ def test(peer_addr, tls=False, handshake=False):
         except OSError as er:
             #
             dp(er)
-            print("send:", er.args[0] in (errno.EAGAIN, errno.EINPROGRESS))
+            print("send:", er.errno in (errno.EAGAIN, errno.EINPROGRESS))
         s.close()
     else:  # fake it...
         print("connect:", True)
@@ -103,7 +103,7 @@ def test(peer_addr, tls=False, handshake=False):
             print("recv:", s.recv(10))
         except OSError as er:
             dp(er)
-            print("recv:", er.args[0] == errno.EAGAIN)
+            print("recv:", er.errno == errno.EAGAIN)
         s.close()
     else:  # fake it...
         print("connect:", True)

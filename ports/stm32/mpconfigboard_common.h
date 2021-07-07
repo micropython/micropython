@@ -47,6 +47,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
+#ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
@@ -107,14 +112,24 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
-// SD/MMC interface bus width (defaults to 4 bits)
-#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
-#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+// Which SDMMC peripheral to use for the SD/MMC card driver (1 or 2)
+#ifndef MICROPY_HW_SDCARD_SDMMC
+#define MICROPY_HW_SDCARD_SDMMC (1)
+#endif
+
+// SD/MMC card driver interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDCARD_BUS_WIDTH
+#define MICROPY_HW_SDCARD_BUS_WIDTH (4)
 #endif
 
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
+#endif
+
+// Which SDMMC peripheral to use for the SDIO driver (1 or 2)
+#ifndef MICROPY_HW_SDIO_SDMMC
+#define MICROPY_HW_SDIO_SDMMC (1)
 #endif
 
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
@@ -262,6 +277,26 @@
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
 #endif
 
+// RF core BLE configuration (a board should define
+// MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES to override all values)
+#ifndef MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES       (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES         (0)
+#define MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE      (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_LINK                  (1)
+#define MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION     (1)
+#define MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE   (0)
+#define MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT              (0x79)
+#define MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU               (0)
+#define MICROPY_HW_RFCORE_BLE_SLAVE_SCA                 (0)
+#define MICROPY_HW_RFCORE_BLE_MASTER_SCA                (0)
+#define MICROPY_HW_RFCORE_BLE_LSE_SOURCE                (0) // use LSE to clock the rfcore (see errata 2.2.1)
+#define MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH     (0xffffffff)
+#define MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME          (0x148)
+#define MICROPY_HW_RFCORE_BLE_VITERBI_MODE              (1)
+#define MICROPY_HW_RFCORE_BLE_LL_ONLY                   (1) // use LL only, we provide the rest of the BLE stack
+#endif
+
 #else
 #error Unsupported MCU series
 #endif
@@ -287,6 +322,25 @@
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS)
 #else
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_ON)
+#endif
+#endif
+
+// Configure the default bus clock divider values
+#ifndef MICROPY_HW_CLK_AHB_DIV
+#if defined(STM32H7)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_HCLK_DIV2)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_APB1_DIV2)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_APB2_DIV2)
+#define MICROPY_HW_CLK_APB3_DIV (RCC_APB3_DIV2)
+#define MICROPY_HW_CLK_APB4_DIV (RCC_APB4_DIV2)
+#elif defined(STM32L4)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV1)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV1)
+#else
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV4)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV2)
 #endif
 #endif
 
@@ -342,6 +396,15 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
+// generates the relevant AF constants.
+#if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1
+#define MICROPY_HW_SDMMC1_CK (1)
+#endif
+#if MICROPY_HW_SDCARD_SDMMC == 2 || MICROPY_HW_SDIO_SDMMC == 2
+#define MICROPY_HW_SDMMC2_CK (1)
 #endif
 
 // Whether the USB peripheral is device-only, or multiple OTG

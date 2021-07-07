@@ -145,7 +145,7 @@ overflow:
 
 value_error:
     {
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_ValueError,
             MP_ERROR_TEXT("invalid syntax for integer"));
         raise_exc(exc, lex);

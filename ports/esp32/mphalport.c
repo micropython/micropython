@@ -32,7 +32,14 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/uart.h"
+#endif
 
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -43,10 +50,11 @@
 #include "lib/timeutils/timeutils.h"
 #include "lib/utils/pyexec.h"
 #include "mphalport.h"
+#include "usb.h"
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[256];
+STATIC uint8_t stdin_ringbuf_array[260];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
@@ -110,9 +118,13 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
+    #if CONFIG_USB_ENABLED
+    usb_tx_strn(str, len);
+    #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }

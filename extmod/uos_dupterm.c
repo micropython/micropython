@@ -133,7 +133,7 @@ int mp_uos_dupterm_rx_chr(void) {
                 nlr_pop();
                 if (buf[0] == mp_interrupt_char) {
                     // Signal keyboard interrupt to be raised as soon as the VM resumes
-                    mp_keyboard_interrupt();
+                    mp_sched_keyboard_interrupt();
                     return -2;
                 }
                 return buf[0];

@@ -37,7 +37,14 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
+
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/spiram.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/spiram.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/spiram.h"
+#endif
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -50,6 +57,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "uart.h"
+#include "usb.h"
 #include "modmachine.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
@@ -72,7 +80,11 @@ void mp_task(void *pvParameter) {
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
+    #if CONFIG_USB_ENABLED
+    usb_init();
+    #else
     uart_init();
+    #endif
     machine_init();
 
     // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
@@ -94,6 +106,18 @@ void mp_task(void *pvParameter) {
             mp_task_heap = malloc(mp_task_heap_size);
             break;
     }
+    #elif CONFIG_ESP32S2_SPIRAM_SUPPORT || CONFIG_ESP32S3_SPIRAM_SUPPORT
+    // Try to use the entire external SPIRAM directly for the heap
+    size_t mp_task_heap_size;
+    size_t esp_spiram_size = esp_spiram_get_size();
+    void *mp_task_heap = (void *)0x3ff80000 - esp_spiram_size;
+    if (esp_spiram_size > 0) {
+        mp_task_heap_size = esp_spiram_size;
+    } else {
+        // No SPIRAM, fallback to normal allocation
+        mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+        mp_task_heap = malloc(mp_task_heap_size);
+    }
     #else
     // Allocate the uPy heap using malloc and get the largest available region
     size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
@@ -114,6 +138,7 @@ soft_reset:
 
     // initialise peripherals
     machine_pins_init();
+    machine_i2s_init0();
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");

@@ -7,8 +7,7 @@ CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \
 	-Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
-	-DMICROPY_UNIX_COVERAGE \
-	-DMODULE_CEXAMPLE_ENABLED=1 -DMODULE_CPPEXAMPLE_ENABLED=1
+	-DMICROPY_UNIX_COVERAGE
 
 LDFLAGS += -fprofile-arcs -ftest-coverage
 

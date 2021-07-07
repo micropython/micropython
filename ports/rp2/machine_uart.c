@@ -28,9 +28,12 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "py/ringbuf.h"
 #include "modmachine.h"
 
+#include "hardware/irq.h"
 #include "hardware/uart.h"
+#include "hardware/regs/uart.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_UART_BITS (8)
@@ -39,10 +42,17 @@
 #define DEFAULT_UART0_RX (1)
 #define DEFAULT_UART1_TX (4)
 #define DEFAULT_UART1_RX (5)
+#define DEFAULT_BUFFER_SIZE (256)
+#define MIN_BUFFER_SIZE  (32)
+#define MAX_BUFFER_SIZE  (32766)
 
 #define IS_VALID_PERIPH(uart, pin)  (((((pin) + 4) & 8) >> 3) == (uart))
 #define IS_VALID_TX(uart, pin)      (((pin) & 3) == 0 && IS_VALID_PERIPH(uart, pin))
 #define IS_VALID_RX(uart, pin)      (((pin) & 3) == 1 && IS_VALID_PERIPH(uart, pin))
+
+#define UART_INVERT_TX (1)
+#define UART_INVERT_RX (2)
+#define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -54,27 +64,84 @@ typedef struct _machine_uart_obj_t {
     uint8_t stop;
     uint8_t tx;
     uint8_t rx;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    uint8_t invert;
+    ringbuf_t read_buffer;
+    bool read_lock;
+    ringbuf_t write_buffer;
+    bool write_lock;
 } machine_uart_obj_t;
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
-    {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART0_TX, DEFAULT_UART0_RX},
-    {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP, DEFAULT_UART1_TX, DEFAULT_UART1_RX},
+    {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
+     DEFAULT_UART0_TX, DEFAULT_UART0_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+    {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
+     DEFAULT_UART1_TX, DEFAULT_UART1_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0,},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
+STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+
+/******************************************************************************/
+// IRQ and buffer handling
+
+// take all bytes from the fifo and store them, if possible, in the buffer
+STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
+    while (uart_is_readable(self->uart)) {
+        // try to write the data, ignore the fail
+        ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+    }
+}
+
+// take bytes from the buffer and put them into the UART FIFO
+STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self) {
+    while (uart_is_writable(self->uart) && ringbuf_avail(&self->write_buffer) > 0) {
+        // get a byte from the buffer and put it into the uart
+        uart_get_hw(self->uart)->dr = ringbuf_get(&(self->write_buffer));
+    }
+}
+
+STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
+    if (uart_get_hw(self->uart)->mis & UART_UARTMIS_RXMIS_BITS) { // rx interrupt?
+        // clear all interrupt bits but tx
+        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
+        if (!self->read_lock) {
+            uart_drain_rx_fifo(self);
+        }
+    }
+    if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
+        // clear all interrupt bits but rx
+        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_RXIC_BITS);
+        if (!self->write_lock) {
+            uart_fill_tx_fifo(self);
+        }
+    }
+}
+
+STATIC void uart0_irq_handler(void) {
+    uart_service_interrupt(&machine_uart_obj[0]);
+}
+
+STATIC void uart1_irq_handler(void) {
+    uart_service_interrupt(&machine_uart_obj[1]);
+}
 
 /******************************************************************************/
 // MicroPython bindings for UART
 
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, "
+        "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx);
+        self->stop, self->tx, self->rx, self->write_buffer.size - 1, self->read_buffer.size - 1,
+        self->timeout, self->timeout_char, _invert_name[self->invert]);
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx };
+    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
+           ARG_timeout, ARG_timeout_char, ARG_invert, ARG_txbuf, ARG_rxbuf};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
@@ -83,6 +150,11 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // Parse args.
@@ -140,16 +212,90 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->rx = rx;
     }
 
+    // Set timeout if configured.
+    if (args[ARG_timeout].u_int >= 0) {
+        self->timeout = args[ARG_timeout].u_int;
+    }
+
+    // Set timeout_char if configured.
+    if (args[ARG_timeout_char].u_int >= 0) {
+        self->timeout_char = args[ARG_timeout_char].u_int;
+    }
+
+    // Set line inversion if configured.
+    if (args[ARG_invert].u_int >= 0) {
+        if (args[ARG_invert].u_int & ~UART_INVERT_MASK) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad inversion mask"));
+        }
+        self->invert = args[ARG_invert].u_int;
+    }
+
+    self->read_lock = false;
+
+    // Set the RX buffer size if configured.
+    size_t rxbuf_len = DEFAULT_BUFFER_SIZE;
+    if (args[ARG_rxbuf].u_int > 0) {
+        rxbuf_len = args[ARG_rxbuf].u_int;
+        if (rxbuf_len < MIN_BUFFER_SIZE) {
+            rxbuf_len = MIN_BUFFER_SIZE;
+        } else if (rxbuf_len > MAX_BUFFER_SIZE) {
+            mp_raise_ValueError(MP_ERROR_TEXT("rxbuf too large"));
+        }
+    }
+
+    // Set the TX buffer size if configured.
+    size_t txbuf_len = DEFAULT_BUFFER_SIZE;
+    if (args[ARG_txbuf].u_int > 0) {
+        txbuf_len = args[ARG_txbuf].u_int;
+        if (txbuf_len < MIN_BUFFER_SIZE) {
+            txbuf_len = MIN_BUFFER_SIZE;
+        } else if (txbuf_len > MAX_BUFFER_SIZE) {
+            mp_raise_ValueError(MP_ERROR_TEXT("txbuf too large"));
+        }
+    }
+
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
     if (n_args > 1 || n_kw > 0 || self->baudrate == 0) {
         if (self->baudrate == 0) {
             self->baudrate = DEFAULT_UART_BAUDRATE;
         }
+
+        // Make sure timeout_char is at least as long as a whole character (13 bits to be safe).
+        uint32_t min_timeout_char = 13000 / self->baudrate + 1;
+        if (self->timeout_char < min_timeout_char) {
+            self->timeout_char = min_timeout_char;
+        }
+
         uart_init(self->uart, self->baudrate);
         uart_set_format(self->uart, self->bits, self->stop, self->parity);
         uart_set_fifo_enabled(self->uart, true);
         gpio_set_function(self->tx, GPIO_FUNC_UART);
         gpio_set_function(self->rx, GPIO_FUNC_UART);
+        if (self->invert & UART_INVERT_RX) {
+            gpio_set_inover(self->rx, GPIO_OVERRIDE_INVERT);
+        }
+        if (self->invert & UART_INVERT_TX) {
+            gpio_set_outover(self->tx, GPIO_OVERRIDE_INVERT);
+        }
+
+        // Allocate the RX/TX buffers.
+        ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
+        MP_STATE_PORT(rp2_uart_rx_buffer[uart_id]) = self->read_buffer.buf;
+
+        ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
+        MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
+
+        // Set the irq handler.
+        if (self->uart_id == 0) {
+            irq_set_exclusive_handler(UART0_IRQ, uart0_irq_handler);
+            irq_set_enabled(UART0_IRQ, true);
+        } else {
+            irq_set_exclusive_handler(UART1_IRQ, uart1_irq_handler);
+            irq_set_enabled(UART1_IRQ, true);
+        }
+
+        // Enable the uart irq; this macro sets the rx irq level to 4.
+        uart_set_irq_enables(self->uart, true, true);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -157,7 +303,11 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(uart_is_readable(self->uart));
+    // get all bytes from the fifo first
+    self->read_lock = true;
+    uart_drain_rx_fifo(self);
+    self->read_lock = false;
+    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
@@ -179,32 +329,83 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
+
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
 STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO support timeout
+    uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
+    uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
     uint8_t *dest = buf_in;
-    for (size_t i = 0; i < size; ++i) {
-        while (!uart_is_readable(self->uart)) {
+
+    for (size_t i = 0; i < size; i++) {
+        // Wait for the first/next character
+        while (ringbuf_avail(&self->read_buffer) == 0) {
+            if (time_us_64() > t) {  // timed out
+                if (i <= 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
             MICROPY_EVENT_POLL_HOOK
+            // Force a few incoming bytes to the buffer
+            self->read_lock = true;
+            uart_drain_rx_fifo(self);
+            self->read_lock = false;
         }
-        *dest++ = uart_get_hw(self->uart)->dr;
+        *dest++ = ringbuf_get(&(self->read_buffer));
+        t = time_us_64() + timeout_char_us;
     }
     return size;
 }
 
 STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO support timeout
+    uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
+    uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
     const uint8_t *src = buf_in;
-    for (size_t i = 0; i < size; ++i) {
-        while (!uart_is_writable(self->uart)) {
+    size_t i = 0;
+
+    // Put as many bytes as possible into the transmit buffer.
+    while (i < size && ringbuf_free(&(self->write_buffer)) > 0) {
+        ringbuf_put(&(self->write_buffer), *src++);
+        ++i;
+    }
+
+    // Kickstart the UART transmit.
+    self->write_lock = true;
+    uart_fill_tx_fifo(self);
+    self->write_lock = false;
+
+    // Send the next characters while busy waiting.
+    while (i < size) {
+        // Wait for the first/next character to be sent.
+        while (ringbuf_free(&(self->write_buffer)) == 0) {
+            if (time_us_64() > t) {  // timed out
+                if (i <= 0) {
+                    *errcode = MP_EAGAIN;
+                    return MP_STREAM_ERROR;
+                } else {
+                    return i;
+                }
+            }
             MICROPY_EVENT_POLL_HOOK
         }
-        uart_get_hw(self->uart)->dr = *src++;
+        ringbuf_put(&(self->write_buffer), *src++);
+        ++i;
+        t = time_us_64() + timeout_char_us;
+        self->write_lock = true;
+        uart_fill_tx_fifo(self);
+        self->write_lock = false;
     }
+
+    // Just in case the fifo was drained during refill of the ringbuf.
     return size;
 }
 
@@ -214,10 +415,10 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && uart_is_readable(self->uart)) {
+        if ((flags & MP_STREAM_POLL_RD) && ringbuf_avail(&self->read_buffer) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && uart_is_writable(self->uart)) {
+        if ((flags & MP_STREAM_POLL_WR) && ringbuf_free(&self->write_buffer) > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {

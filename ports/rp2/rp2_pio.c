@@ -66,6 +66,7 @@ typedef struct _rp2_state_machine_irq_obj_t {
 } rp2_state_machine_irq_obj_t;
 
 STATIC const rp2_state_machine_obj_t rp2_state_machine_obj[8];
+STATIC uint8_t rp2_state_machine_initial_pc[8];
 
 STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
@@ -139,8 +140,8 @@ enum {
 typedef struct _asm_pio_config_t {
     int8_t base;
     uint8_t count;
-    uint8_t pindirs;
-    uint8_t pinvals;
+    uint32_t pindirs;
+    uint32_t pinvals;
 } asm_pio_config_t;
 
 STATIC void asm_pio_override_shiftctrl(mp_obj_t arg, uint32_t bits, uint32_t lsb, pio_sm_config *config) {
@@ -359,6 +360,10 @@ STATIC const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SHIFT_LEFT), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_SHIFT_RIGHT), MP_ROM_INT(1) },
 
+    { MP_ROM_QSTR(MP_QSTR_JOIN_NONE), MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_JOIN_TX), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_JOIN_RX), MP_ROM_INT(2) },
+
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM0), MP_ROM_INT(0x100) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM1), MP_ROM_INT(0x200) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_SM2), MP_ROM_INT(0x400) },
@@ -459,16 +464,28 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     if (offset < 0) {
         rp2_pio_add_program(&rp2_pio_obj[PIO_NUM(self->pio)], args[ARG_prog].u_obj);
         offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + PIO_NUM(self->pio)]);
+        rp2_state_machine_initial_pc[self->id] = offset;
     }
 
     // Compute the clock divider.
-    float div;
+    uint16_t clkdiv_int;
+    uint8_t clkdiv_frac;
     if (args[ARG_freq].u_int < 0) {
-        div = 1;
+        // Default: run at CPU frequency.
+        clkdiv_int = 1;
+        clkdiv_frac = 0;
     } else if (args[ARG_freq].u_int == 0) {
-        div = 0;
+        // Special case of 0: set clkdiv to 0.
+        clkdiv_int = 0;
+        clkdiv_frac = 0;
     } else {
-        div = (float)clock_get_hz(clk_sys) / (float)args[ARG_freq].u_int;
+        // Frequency given in Hz, compute clkdiv from it.
+        uint64_t div = (uint64_t)clock_get_hz(clk_sys) * 256ULL / (uint64_t)args[ARG_freq].u_int;
+        if (!(div >= 1 * 256 && div <= 65536 * 256)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("freq out of range"));
+        }
+        clkdiv_int = div / 256;
+        clkdiv_frac = div & 0xff;
     }
 
     // Disable and reset the state machine.
@@ -476,7 +493,7 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
 
     // Build the state machine config.
     pio_sm_config config = pio_get_default_sm_config();
-    sm_config_set_clkdiv(&config, div);
+    sm_config_set_clkdiv_int_frac(&config, clkdiv_int, clkdiv_frac);
     config.execctrl = mp_obj_get_int_truncated(prog[PROG_EXECCTRL]);
     config.shiftctrl = mp_obj_get_int_truncated(prog[PROG_SHIFTCTRL]);
 
@@ -581,6 +598,15 @@ STATIC mp_obj_t rp2_state_machine_active(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_state_machine_active_obj, 1, 2, rp2_state_machine_active);
 
+// StateMachine.restart()
+STATIC mp_obj_t rp2_state_machine_restart(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pio_sm_restart(self->pio, self->sm);
+    pio_sm_exec(self->pio, self->sm, pio_encode_jmp(rp2_state_machine_initial_pc[self->id]));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_restart_obj, rp2_state_machine_restart);
+
 // StateMachine.exec(instr)
 STATIC mp_obj_t rp2_state_machine_exec(mp_obj_t self_in, mp_obj_t instr_in) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -608,6 +634,9 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
             } else {
                 bufinfo.typecode |= 0x20; // make lowercase to support upper and lower
             }
+            if (bufinfo.len == 0) { // edge case: buffer of zero length supplied
+                return args[1];
+            }
         }
         if (n_args > 2) {
             shift = mp_obj_get_int(args[2]);
@@ -625,9 +654,6 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
         if (dest == NULL) {
             return mp_obj_new_int_from_uint(value);
         }
-        if (dest >= dest_top) {
-            return args[1];
-        }
         if (bufinfo.typecode == 'b') {
             *(uint8_t *)dest = value;
             dest += sizeof(uint8_t);
@@ -639,6 +665,9 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
             dest += sizeof(uint32_t);
         } else {
             mp_raise_ValueError("unsupported buffer type");
+        }
+        if (dest >= dest_top) {
+            return args[1];
         }
     }
 }
@@ -685,6 +714,20 @@ STATIC mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rp2_state_machine_put_obj, 2, 3, rp2_state_machine_put);
+
+// StateMachine.rx_fifo()
+STATIC mp_obj_t rp2_state_machine_rx_fifo(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(pio_sm_get_rx_fifo_level(self->pio, self->sm));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_rx_fifo_obj, rp2_state_machine_rx_fifo);
+
+// StateMachine.tx_fifo()
+STATIC mp_obj_t rp2_state_machine_tx_fifo(mp_obj_t self_in) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(pio_sm_get_tx_fifo_level(self->pio, self->sm));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_tx_fifo_obj, rp2_state_machine_tx_fifo);
 
 // StateMachine.irq(handler=None, trigger=0|1, hard=False)
 STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -745,9 +788,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_state_machine_irq_obj, 1, rp2_state_machin
 STATIC const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&rp2_state_machine_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&rp2_state_machine_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&rp2_state_machine_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_exec), MP_ROM_PTR(&rp2_state_machine_exec_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&rp2_state_machine_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&rp2_state_machine_put_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rx_fifo), MP_ROM_PTR(&rp2_state_machine_rx_fifo_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tx_fifo), MP_ROM_PTR(&rp2_state_machine_tx_fifo_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_state_machine_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_state_machine_locals_dict, rp2_state_machine_locals_dict_table);

@@ -60,7 +60,7 @@ def _makedirs(name, mode=0o777):
             os.mkdir(s)
             ret = True
         except OSError as e:
-            if e.args[0] != errno.EEXIST and e.args[0] != errno.EISDIR:
+            if e.errno != errno.EEXIST and e.errno != errno.EISDIR:
                 raise e
             ret = False
     return ret

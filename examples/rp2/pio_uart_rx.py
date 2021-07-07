@@ -22,6 +22,7 @@ PIO_RX_PIN = Pin(3, Pin.IN, Pin.PULL_UP)
     autopush=True,
     push_thresh=8,
     in_shiftdir=rp2.PIO.SHIFT_RIGHT,
+    fifo_join=PIO.JOIN_RX,
 )
 def uart_rx_mini():
     # fmt: off

@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 
-// Possible DMA configurations for SPI busses:
+// Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
 // SPI2_TX: DMA1_Stream4.CHANNEL_0
@@ -633,7 +633,11 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
+            #if defined(STM32H7)
+            uint log_prescaler = (spi->Init.BaudRatePrescaler >> 28) + 1;
+            #else
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
+            #endif
             uint baudrate = spi_get_source_freq(spi) >> log_prescaler;
             if (legacy) {
                 mp_printf(print, ", SPI.MASTER");

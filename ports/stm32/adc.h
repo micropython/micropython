@@ -26,8 +26,13 @@
 #ifndef MICROPY_INCLUDED_STM32_ADC_H
 #define MICROPY_INCLUDED_STM32_ADC_H
 
+#if !BUILDING_MBOOT
 extern const mp_obj_type_t pyb_adc_type;
 extern const mp_obj_type_t pyb_adc_all_type;
+#endif
+
+void adc_config(ADC_TypeDef *adc, uint32_t bits);
+uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time);
 
 #if defined(ADC_CHANNEL_VBAT)
 
