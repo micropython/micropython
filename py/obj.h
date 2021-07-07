@@ -565,14 +565,11 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 struct _mp_obj_type_ext {
     // Corresponds to __call__ special method, ie T(...).
-#define MP_TYPE_CALL ext[0].call
     mp_call_fun_t call;
 
     // Implements unary and binary operations.
     // Can return MP_OBJ_NULL if the operation is not supported.
-#define MP_TYPE_UNARY_OP ext[0].unary_op
     mp_unary_op_fun_t unary_op;
-#define MP_TYPE_BINARY_OP ext[0].binary_op
     mp_binary_op_fun_t binary_op;
 
     // Implements load, store and delete subscripting:
@@ -580,26 +577,21 @@ struct _mp_obj_type_ext {
     //  - value = MP_OBJ_NULL means delete
     //  - all other values mean store the value
     // Can return MP_OBJ_NULL if operation not supported.
-#define MP_TYPE_SUBSCR ext[0].subscr
     mp_subscr_fun_t subscr;
 
     // Corresponds to __iter__ special method.
     // Can use the given mp_obj_iter_buf_t to store iterator object,
     // otherwise can return a pointer to an object on the heap.
-#define MP_TYPE_GETITER ext[0].getiter
     mp_getiter_fun_t getiter;
 
     // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
     // as an optimisation instead of raising StopIteration() with no args.
-#define MP_TYPE_ITERNEXT ext[0].iternext
     mp_fun_1_t iternext;
 
     // Implements the buffer protocol if supported by this type.
-#define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
     mp_buffer_p_t buffer_p;
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
-#define MP_TYPE_PROTOCOL ext[0].protocol
     const void *protocol;
 };
 
@@ -686,17 +678,34 @@ struct _mp_obj_full_type_t {
 };
 
 
-extern size_t mp_type_size(const mp_obj_type_t *);
+// If the type object in question is known to have the extended fields, you can
+// refer to type->MP_TYPE_CALL.  Otherwise, you have to use mp_type_call(type)
+// The same goes for other fields within the extended region.
+#define MP_TYPE_CALL ext[0].call
+#define MP_TYPE_UNARY_OP ext[0].unary_op
+#define MP_TYPE_BINARY_OP ext[0].binary_op
+#define MP_TYPE_SUBSCR ext[0].subscr
+#define MP_TYPE_GETITER ext[0].getiter
+#define MP_TYPE_ITERNEXT ext[0].iternext
+#define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
+#define MP_TYPE_PROTOCOL ext[0].protocol
 extern mp_call_fun_t mp_type_call(const mp_obj_type_t *);
 extern mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *);
-extern mp_attr_fun_t mp_type_attr(const mp_obj_type_t *);
 extern mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *);
 extern mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *);
 extern mp_fun_1_t mp_type_iternext(const mp_obj_type_t *);
 extern mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *);
 extern const void *mp_type_protocol(const mp_obj_type_t *);
+
+// These fields ended up not being placed in the extended area, but accessors
+// were created for them anyway.
+extern mp_attr_fun_t mp_type_attr(const mp_obj_type_t *);
 extern const void *mp_type_parent(const mp_obj_type_t *);
+
+// Return the size of a type object, which can be one of two lengths depending whether it has
+// the extended fields or not.
+extern size_t mp_type_size(const mp_obj_type_t *);
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
