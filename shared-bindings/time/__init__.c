@@ -166,7 +166,7 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     mp_obj_t *elems;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
@@ -275,7 +275,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
