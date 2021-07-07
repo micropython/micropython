@@ -640,7 +640,7 @@ struct _mp_obj_type_t {
     //  - 2 or more parents: pointer to a tuple object containing the parent types
     const void *parent;
 
-#define EXTENDED_FIELDS(...) .ext[0] = { __VA_ARGS__ }
+#define EXTENDED_FIELDS(...) .ext = {{ __VA_ARGS__ }}
     struct _mp_obj_type_ext ext[];
 };
 
