@@ -6,52 +6,87 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set main target and component locations
-set(MICROPYTHON_TARGET firmware)
-get_filename_component(MPY_DIR "../.." ABSOLUTE)
+set(MICROPY_TARGET firmware)
+get_filename_component(MICROPY_DIR "../.." ABSOLUTE)
 if (PICO_SDK_PATH_OVERRIDE)
     set(PICO_SDK_PATH ${PICO_SDK_PATH_OVERRIDE})
 else()
     set(PICO_SDK_PATH ../../lib/pico-sdk)
 endif()
 
+# Use the local tinyusb instead of the one in pico-sdk
+set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
+
+# Set the location of this port's directory.
+set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
+
+# Set the board if it's not already set.
+if(NOT MICROPY_BOARD)
+    set(MICROPY_BOARD PICO)
+endif()
+
+# Set the PICO_BOARD if it's not already set.
+if(NOT PICO_BOARD)
+    string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
+endif()
+
+# Set the board directory and check that it exists.
+if(NOT MICROPY_BOARD_DIR)
+    set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
+endif()
+if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
+    message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
+endif()
+
+# Include board config
+include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake) 
+
 # Include component cmake fragments
-include(micropy_py.cmake)
-include(micropy_extmod.cmake)
+include(${MICROPY_DIR}/py/py.cmake)
+include(${MICROPY_DIR}/extmod/extmod.cmake)
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 
 # Define the top-level project
-project(${MICROPYTHON_TARGET})
+project(${MICROPY_TARGET})
 
 pico_sdk_init()
 
-add_executable(${MICROPYTHON_TARGET})
+include(${MICROPY_DIR}/py/usermod.cmake)
 
-set(SOURCE_LIB
-    ${MPY_DIR}/lib/littlefs/lfs1.c
-    ${MPY_DIR}/lib/littlefs/lfs1_util.c
-    ${MPY_DIR}/lib/littlefs/lfs2.c
-    ${MPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MPY_DIR}/lib/mp-readline/readline.c
-    ${MPY_DIR}/lib/oofatfs/ff.c
-    ${MPY_DIR}/lib/oofatfs/ffunicode.c
-    ${MPY_DIR}/lib/timeutils/timeutils.c
-    ${MPY_DIR}/lib/utils/gchelper_m0.s
-    ${MPY_DIR}/lib/utils/gchelper_native.c
-    ${MPY_DIR}/lib/utils/mpirq.c
-    ${MPY_DIR}/lib/utils/stdout_helpers.c
-    ${MPY_DIR}/lib/utils/sys_stdio_mphal.c
-    ${MPY_DIR}/lib/utils/pyexec.c
+add_executable(${MICROPY_TARGET})
+
+set(MICROPY_QSTRDEFS_PORT
+    ${PROJECT_SOURCE_DIR}/qstrdefsport.h
 )
 
-set(SOURCE_DRIVERS
-    ${MPY_DIR}/drivers/bus/softspi.c
+set(MICROPY_SOURCE_LIB
+    ${MICROPY_DIR}/lib/littlefs/lfs1.c
+    ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
+    ${MICROPY_DIR}/lib/littlefs/lfs2.c
+    ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+    ${MICROPY_DIR}/lib/mp-readline/readline.c
+    ${MICROPY_DIR}/lib/oofatfs/ff.c
+    ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    ${MICROPY_DIR}/lib/timeutils/timeutils.c
+    ${MICROPY_DIR}/lib/utils/gchelper_m0.s
+    ${MICROPY_DIR}/lib/utils/gchelper_native.c
+    ${MICROPY_DIR}/lib/utils/mpirq.c
+    ${MICROPY_DIR}/lib/utils/pyexec.c
+    ${MICROPY_DIR}/lib/utils/stdout_helpers.c
+    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
 )
 
-set(SOURCE_PORT
+set(MICROPY_SOURCE_DRIVERS
+    ${MICROPY_DIR}/drivers/bus/softspi.c
+)
+
+set(MICROPY_SOURCE_PORT
+    fatfs_port.c
     machine_adc.c
     machine_i2c.c
     machine_pin.c
     machine_pwm.c
+    machine_rtc.c
     machine_spi.c
     machine_timer.c
     machine_uart.c
@@ -69,15 +104,17 @@ set(SOURCE_PORT
     uart.c
 )
 
-set(SOURCE_QSTR
-    ${SOURCE_PY}
-    ${SOURCE_EXTMOD}
-    ${MPY_DIR}/lib/utils/mpirq.c
-    ${MPY_DIR}/lib/utils/sys_stdio_mphal.c
+set(MICROPY_SOURCE_QSTR
+    ${MICROPY_SOURCE_PY}
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
+    ${MICROPY_DIR}/lib/utils/mpirq.c
+    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
     ${PROJECT_SOURCE_DIR}/machine_pwm.c
+    ${PROJECT_SOURCE_DIR}/machine_rtc.c
     ${PROJECT_SOURCE_DIR}/machine_spi.c
     ${PROJECT_SOURCE_DIR}/machine_timer.c
     ${PROJECT_SOURCE_DIR}/machine_uart.c
@@ -90,37 +127,71 @@ set(SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
 )
 
-set(MPY_QSTR_DEFS ${PROJECT_SOURCE_DIR}/qstrdefsport.h)
+set(PICO_SDK_COMPONENTS
+    hardware_adc
+    hardware_base
+    hardware_clocks
+    hardware_dma
+    hardware_flash
+    hardware_gpio
+    hardware_i2c
+    hardware_irq
+    hardware_pio
+    hardware_pwm
+    hardware_regs
+    hardware_rtc
+    hardware_spi
+    hardware_structs
+    hardware_sync
+    hardware_timer
+    hardware_uart
+    hardware_watchdog
+    pico_base_headers
+    pico_binary_info
+    pico_bootrom
+    pico_multicore
+    pico_platform
+    pico_stdio
+    pico_stdlib
+    pico_sync
+    pico_time
+    pico_unique_id
+    pico_util
+    tinyusb_common
+    tinyusb_device
+)
 
 # Define mpy-cross flags and frozen manifest
-set(MPY_CROSS_FLAGS -march=armv7m)
-set(FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/manifest.py)
+set(MICROPY_CROSS_FLAGS -march=armv7m)
+set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
-include(micropy_rules.cmake)
-
-target_sources(${MICROPYTHON_TARGET} PRIVATE
-    ${SOURCE_PY}
-    ${SOURCE_EXTMOD}
-    ${SOURCE_LIB}
-    ${SOURCE_DRIVERS}
-    ${SOURCE_PORT}
+target_sources(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_SOURCE_PY}
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_LIB}
+    ${MICROPY_SOURCE_DRIVERS}
+    ${MICROPY_SOURCE_PORT}
 )
 
-target_include_directories(${MICROPYTHON_TARGET} PRIVATE
-                           "${PROJECT_SOURCE_DIR}"
-                           "${MPY_DIR}"
-                           "${CMAKE_BINARY_DIR}"
-                           )
+target_link_libraries(${MICROPY_TARGET} usermod)
 
-target_compile_options(${MICROPYTHON_TARGET} PRIVATE
+target_include_directories(${MICROPY_TARGET} PRIVATE
+    ${MICROPY_INC_CORE}
+    ${MICROPY_INC_USERMOD}
+    ${MICROPY_BOARD_DIR}
+    "${PROJECT_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}"
+)
+
+target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
-    #-Werror
-    -DFFCONF_H=\"${MPY_DIR}/lib/oofatfs/ffconf.h\"
-    -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
-    -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+    -Werror
 )
 
-target_compile_definitions(${MICROPYTHON_TARGET} PRIVATE
+target_compile_definitions(${MICROPY_TARGET} PRIVATE
+    FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
+    LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
+    LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
     PICO_FLOAT_PROPAGATE_NANS=1
     PICO_STACK_SIZE=0x2000
     PICO_CORE1_STACK_SIZE=0
@@ -128,36 +199,33 @@ target_compile_definitions(${MICROPYTHON_TARGET} PRIVATE
     PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
     MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
     PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
+    PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
 )
 
-target_link_libraries(${MICROPYTHON_TARGET}
-    hardware_adc
-    hardware_dma
-    hardware_flash
-    hardware_i2c
-    hardware_pio
-    hardware_pwm
-    hardware_rtc
-    hardware_spi
-    hardware_sync
-    pico_multicore
-    pico_stdlib_headers
-    pico_stdlib
-    pico_unique_id
-    tinyusb_device
+target_link_libraries(${MICROPY_TARGET}
+    ${PICO_SDK_COMPONENTS}
 )
 
 # todo this is a bit brittle, but we want to move a few source files into RAM (which requires
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
 if (PICO_ON_DEVICE AND NOT PICO_NO_FLASH AND NOT PICO_COPY_TO_RAM)
-    pico_set_linker_script(${MICROPYTHON_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp.ld)
+    pico_set_linker_script(${MICROPY_TARGET} ${CMAKE_CURRENT_LIST_DIR}/memmap_mp.ld)
 endif()
 
-pico_add_extra_outputs(${MICROPYTHON_TARGET})
+pico_add_extra_outputs(${MICROPY_TARGET})
 
-add_custom_command(TARGET ${MICROPYTHON_TARGET}
+add_custom_command(TARGET ${MICROPY_TARGET}
     POST_BUILD
-    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPYTHON_TARGET}.elf
+    COMMAND arm-none-eabi-size --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
     VERBATIM
 )
+
+# Collect all the include directories and compile definitions for the pico-sdk components.
+foreach(comp ${PICO_SDK_COMPONENTS})
+    micropy_gather_target_properties(${comp})
+    micropy_gather_target_properties(${comp}_headers)
+endforeach()
+
+# Include the main MicroPython cmake rules.
+include(${MICROPY_DIR}/py/mkrules.cmake)

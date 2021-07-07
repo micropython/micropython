@@ -44,3 +44,6 @@ try:
 except OSError:
     print("OSError")
 f.close()
+
+# close() on a closed file
+f.close()

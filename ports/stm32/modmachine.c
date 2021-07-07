@@ -270,16 +270,16 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
     }
 
     if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
         // With a string/bytes given, pass its data to the custom bootloader
         size_t len;
         const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)0x08000000);
+        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
         memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
     }
     #endif
 
@@ -406,7 +406,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
+    #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
@@ -425,8 +427,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     #endif
+    #if MICROPY_PY_MACHINE_SPI
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },

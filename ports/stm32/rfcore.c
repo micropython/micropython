@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
+#include "mpbthciport.h"
 #include "rtc.h"
 #include "rfcore.h"
 
@@ -417,6 +418,12 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
 
         // If this node is allocated from the memmgr event pool, then place it into the free buffer.
         if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {
+            // Wait for C2 to indicate that it has finished using the free buffer,
+            // so that we can link the newly-freed memory in to this buffer.
+            // If waiting is needed then it is typically between 5 and 20 microseconds.
+            while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_MM)) {
+            }
+
             // Place memory back in free pool.
             tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
             added_to_free_queue = true;
@@ -548,30 +555,30 @@ static const struct {
     uint16_t AttMtu;
     uint16_t SlaveSca;
     uint8_t MasterSca;
-    uint8_t LsSource;               // 0=LSE 1=internal RO
+    uint8_t LsSource;
     uint32_t MaxConnEventLength;
     uint16_t HsStartupTime;
     uint8_t ViterbiEnable;
-    uint8_t LlOnly;                 // 0=LL+Host, 1=LL only
+    uint8_t LlOnly;
     uint8_t HwVersion;
 } ble_init_params = {
-    0,
-    0,
-    0, // NumAttrRecord
-    0, // NumAttrServ
-    0, // AttrValueArrSize
-    1, // NumOfLinks
-    1, // ExtendedPacketLengthEnable
-    0, // PrWriteListSize
-    0x79, // MblockCount
-    0, // AttMtu
-    0, // SlaveSca
-    0, // MasterSca
-    1, // LsSource
-    0xffffffff, // MaxConnEventLength
-    0x148, // HsStartupTime
-    0, // ViterbiEnable
-    1, // LlOnly
+    0, // pBleBufferAddress
+    0, // BleBufferSize
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES,
+    MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES,
+    MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE,
+    MICROPY_HW_RFCORE_BLE_NUM_LINK,
+    MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION,
+    MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE,
+    MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT,
+    MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU,
+    MICROPY_HW_RFCORE_BLE_SLAVE_SCA,
+    MICROPY_HW_RFCORE_BLE_MASTER_SCA,
+    MICROPY_HW_RFCORE_BLE_LSE_SOURCE,
+    MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH,
+    MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME,
+    MICROPY_HW_RFCORE_BLE_VITERBI_MODE,
+    MICROPY_HW_RFCORE_BLE_LL_ONLY,
     0, // HwVersion
 };
 
@@ -604,6 +611,24 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == HCI_KIND_BT_CMD) {
+        // The STM32WB has a problem when address resolution is enabled: under certain
+        // conditions the MCU can get into a state where it draws an additional 10mA
+        // or so and eventually ends up with a broken BLE RX path in the silicon.  A
+        // simple way to reproduce this is to enable address resolution (which is the
+        // default for NimBLE) and start the device advertising.  If there is enough
+        // BLE activity in the vicinity then the device will at some point enter the
+        // bad state and, if left long enough, will have permanent BLE RX damage.
+        //
+        // STMicroelectronics are aware of this issue.  The only known workaround at
+        // this stage is to not enable address resolution.  We do that here by
+        // intercepting any command that enables address resolution and convert it
+        // into a command that disables address resolution.
+        //
+        // OGF=0x08 OCF=0x002d HCI_LE_Set_Address_Resolution_Enable
+        if (len == 5 && memcmp(src + 1, "\x2d\x20\x01\x01", 4) == 0) {
+            src = (const uint8_t *)"\x01\x2d\x20\x01\x00";
+        }
+
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == HCI_KIND_BT_ACL) {
@@ -690,8 +715,7 @@ void IPCC_C1_RX_IRQHandler(void) {
 
         #if MICROPY_PY_BLUETOOTH
         // Queue up the scheduler to process UART data and run events.
-        extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
-        mp_bluetooth_hci_systick(0);
+        mp_bluetooth_hci_poll_now();
         #endif
     }
 

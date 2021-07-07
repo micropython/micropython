@@ -532,6 +532,7 @@ class RawCodeNative(RawCode):
             if config.native_arch in (
                 MP_NATIVE_ARCH_X86,
                 MP_NATIVE_ARCH_X64,
+                MP_NATIVE_ARCH_ARMV6,
                 MP_NATIVE_ARCH_XTENSA,
                 MP_NATIVE_ARCH_XTENSAWIN,
             ):

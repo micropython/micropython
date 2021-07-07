@@ -595,7 +595,7 @@ STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
     print->print_strn(print->data, (const char *)data, len);
 }
 
-#define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
+#define BYTES_FOR_INT ((MP_BYTES_PER_OBJ_WORD * 8 + 6) / 7)
 STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);

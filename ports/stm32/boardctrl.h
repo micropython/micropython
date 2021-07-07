@@ -28,6 +28,10 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP powerctrl_check_enter_bootloader
+#endif
+
 #ifndef MICROPY_BOARD_EARLY_INIT
 #define MICROPY_BOARD_EARLY_INIT()
 #endif
@@ -40,20 +44,12 @@
 #define MICROPY_BOARD_TOP_SOFT_RESET_LOOP boardctrl_top_soft_reset_loop
 #endif
 
-#ifndef MICROPY_BOARD_BEFORE_BOOT_PY
-#define MICROPY_BOARD_BEFORE_BOOT_PY boardctrl_before_boot_py
+#ifndef MICROPY_BOARD_RUN_BOOT_PY
+#define MICROPY_BOARD_RUN_BOOT_PY boardctrl_run_boot_py
 #endif
 
-#ifndef MICROPY_BOARD_AFTER_BOOT_PY
-#define MICROPY_BOARD_AFTER_BOOT_PY boardctrl_after_boot_py
-#endif
-
-#ifndef MICROPY_BOARD_BEFORE_MAIN_PY
-#define MICROPY_BOARD_BEFORE_MAIN_PY boardctrl_before_main_py
-#endif
-
-#ifndef MICROPY_BOARD_AFTER_MAIN_PY
-#define MICROPY_BOARD_AFTER_MAIN_PY boardctrl_after_main_py
+#ifndef MICROPY_BOARD_RUN_MAIN_PY
+#define MICROPY_BOARD_RUN_MAIN_PY boardctrl_run_main_py
 #endif
 
 #ifndef MICROPY_BOARD_START_SOFT_RESET
@@ -64,20 +60,29 @@
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
 #endif
 
+// Constants to return from boardctrl_run_boot_py, boardctrl_run_main_py.
+enum {
+    BOARDCTRL_CONTINUE,
+    BOARDCTRL_GOTO_SOFT_RESET_EXIT,
+};
+
+// Constants for boardctrl_state_t.reset_mode.
+enum {
+    BOARDCTRL_RESET_MODE_NORMAL = 1,
+    BOARDCTRL_RESET_MODE_SAFE_MODE = 2,
+    BOARDCTRL_RESET_MODE_FACTORY_FILESYSTEM = 3,
+    BOARDCTRL_RESET_MODE_BOOTLOADER = 4,
+};
+
 typedef struct _boardctrl_state_t {
     uint8_t reset_mode;
-    bool run_boot_py;
-    bool run_main_py;
     bool log_soft_reset;
-    int last_ret;
 } boardctrl_state_t;
 
 void boardctrl_before_soft_reset_loop(boardctrl_state_t *state);
 void boardctrl_top_soft_reset_loop(boardctrl_state_t *state);
-void boardctrl_before_boot_py(boardctrl_state_t *state);
-void boardctrl_after_boot_py(boardctrl_state_t *state);
-void boardctrl_before_main_py(boardctrl_state_t *state);
-void boardctrl_after_main_py(boardctrl_state_t *state);
+int boardctrl_run_boot_py(boardctrl_state_t *state);
+int boardctrl_run_main_py(boardctrl_state_t *state);
 void boardctrl_start_soft_reset(boardctrl_state_t *state);
 void boardctrl_end_soft_reset(boardctrl_state_t *state);
 

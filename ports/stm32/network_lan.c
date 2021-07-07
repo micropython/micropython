@@ -134,6 +134,10 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
                         eth_set_trace(self->eth, mp_obj_get_int(e->value));
                         break;
                     }
+                    case MP_QSTR_low_power: {
+                        eth_low_power_mode(self->eth, mp_obj_get_int(e->value));
+                        break;
+                    }
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }

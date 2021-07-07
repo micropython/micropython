@@ -52,7 +52,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
     (void)wanted_char;
     tud_cdc_read_char(); // discard interrupt char
-    mp_keyboard_interrupt();
+    mp_sched_keyboard_interrupt();
 }
 
 void mp_hal_set_interrupt_char(int c) {

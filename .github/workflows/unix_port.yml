@@ -2,9 +2,9 @@ name: Build lv_micropython unix port
 
 on:
   push:
-    branches: [ master, lvgl_javascript ]
+    branches: [ master, lvgl_javascript, dev-8.0 ]
   pull_request:
-    branches: [ master, lvgl_javascript ]
+    branches: [ master, lvgl_javascript, dev-8.0 ]
 
 jobs:
   build:
@@ -23,12 +23,7 @@ jobs:
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build the unix port
-      run: make -j $(nproc) -C ports/unix
-    - name: Run advanced_demo
-      run: >
-        echo "import gc,utime;
-        utime.sleep(5);
-        gc.collect();
-        utime.sleep(5)" | 
-        ports/unix/micropython -i lib/lv_bindings/examples/advanced_demo.py
-    
+      run: make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
+    - name: Run tests
+      run: lib/lv_bindings/tests/run.sh
+

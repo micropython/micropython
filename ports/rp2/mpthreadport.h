@@ -34,6 +34,7 @@ typedef struct mutex mp_thread_mutex_t;
 extern void *core_state[2];
 
 void mp_thread_init(void);
+void mp_thread_deinit(void);
 void mp_thread_gc_others(void);
 
 static inline void mp_thread_set_state(struct _mp_state_thread_t *state) {
@@ -41,7 +42,7 @@ static inline void mp_thread_set_state(struct _mp_state_thread_t *state) {
 }
 
 static inline struct _mp_state_thread_t *mp_thread_get_state(void) {
-    return core_state[get_core_num()];
+    return (struct _mp_state_thread_t *)core_state[get_core_num()];
 }
 
 static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {

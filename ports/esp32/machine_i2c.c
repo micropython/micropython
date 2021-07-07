@@ -32,10 +32,20 @@
 
 #include "driver/i2c.h"
 
-#define I2C_0_DEFAULT_SCL (GPIO_NUM_18)
-#define I2C_0_DEFAULT_SDA (GPIO_NUM_19)
-#define I2C_1_DEFAULT_SCL (GPIO_NUM_25)
-#define I2C_1_DEFAULT_SDA (GPIO_NUM_26)
+#ifndef MICROPY_HW_I2C0_SCL
+#define MICROPY_HW_I2C0_SCL (GPIO_NUM_18)
+#define MICROPY_HW_I2C0_SDA (GPIO_NUM_19)
+#endif
+
+#ifndef MICROPY_HW_I2C1_SCL
+#if CONFIG_IDF_TARGET_ESP32
+#define MICROPY_HW_I2C1_SCL (GPIO_NUM_25)
+#define MICROPY_HW_I2C1_SDA (GPIO_NUM_26)
+#else
+#define MICROPY_HW_I2C1_SCL (GPIO_NUM_9)
+#define MICROPY_HW_I2C1_SDA (GPIO_NUM_8)
+#endif
+#endif
 
 #define I2C_DEFAULT_TIMEOUT_US (10000) // 10ms
 
@@ -120,7 +130,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Parse args
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
@@ -144,11 +154,11 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
         self->base.type = &machine_hw_i2c_type;
         self->port = i2c_id;
         if (self->port == I2C_NUM_0) {
-            self->scl = I2C_0_DEFAULT_SCL;
-            self->sda = I2C_0_DEFAULT_SDA;
+            self->scl = MICROPY_HW_I2C0_SCL;
+            self->sda = MICROPY_HW_I2C0_SDA;
         } else {
-            self->scl = I2C_1_DEFAULT_SCL;
-            self->sda = I2C_1_DEFAULT_SDA;
+            self->scl = MICROPY_HW_I2C1_SCL;
+            self->sda = MICROPY_HW_I2C1_SDA;
         }
         first_init = true;
     }

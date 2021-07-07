@@ -109,6 +109,16 @@ Methods
 
    Return value: number of bytes sent.
 
+.. method:: USB_VCP.irq(handler=None, trigger=IRQ_RX, hard=False)
+
+   Register *handler* to be called whenever an event specified by *trigger*
+   occurs.  The *handler* function must take exactly one argument, which will
+   be the USB VCP object.  Pass in ``None`` to disable the callback.
+
+   Valid values for *trigger* are:
+
+     - ``USB_VCP.IRQ_RX``: new data is available for reading from the USB VCP object.
+
 
 Constants
 ---------
@@ -117,3 +127,7 @@ Constants
           USB_VCP.CTS
 
    to select the flow control type.
+
+.. data:: USB_VCP.IRQ_RX
+
+   IRQ trigger values for :meth:`USB_VCP.irq`.

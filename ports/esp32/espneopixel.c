@@ -11,9 +11,17 @@
 
 void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numBytes, uint8_t timing) {
     uint8_t *p, *end, pix, mask;
-    uint32_t t, time0, time1, period, c, startTime, pinMask;
+    uint32_t t, time0, time1, period, c, startTime, pinMask, gpio_reg_set, gpio_reg_clear;
 
-    pinMask = 1 << pin;
+    if (pin < 32) {
+        pinMask = 1 << pin;
+        gpio_reg_set = GPIO_OUT_W1TS_REG;
+        gpio_reg_clear = GPIO_OUT_W1TC_REG;
+    } else {
+        pinMask = 1 << (pin - 32);
+        gpio_reg_set = GPIO_OUT1_W1TS_REG;
+        gpio_reg_clear = GPIO_OUT1_W1TC_REG;
+    }
     p = pixels;
     end = p + numBytes;
     pix = *p++;
@@ -42,12 +50,12 @@ void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numByte
         while (((c = mp_hal_ticks_cpu()) - startTime) < period) {
             ;                                                       // Wait for bit start
         }
-        GPIO_REG_WRITE(GPIO_OUT_W1TS_REG, pinMask);                 // Set high
+        GPIO_REG_WRITE(gpio_reg_set, pinMask);                      // Set high
         startTime = c;                                              // Save start time
         while (((c = mp_hal_ticks_cpu()) - startTime) < t) {
             ;                                                       // Wait high duration
         }
-        GPIO_REG_WRITE(GPIO_OUT_W1TC_REG, pinMask);                 // Set low
+        GPIO_REG_WRITE(gpio_reg_clear, pinMask);                    // Set low
         if (!(mask >>= 1)) {                                        // Next bit/byte
             if (p >= end) {
                 break;

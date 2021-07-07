@@ -26,7 +26,7 @@ For this example to work the WIZnet5x00 module must have the following connectio
     - nSS connected to X5
     - nRESET connected to X4
 
-It is possible to use other SPI busses and other pins for nSS and nRESET.
+It is possible to use other SPI buses and other pins for nSS and nRESET.
 
 Constructors
 ------------

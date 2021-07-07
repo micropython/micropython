@@ -27,6 +27,8 @@ def test_one(site, opts):
 
         s.write(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "latin"))
         resp = s.read(4096)
+        if resp[:7] != b"HTTP/1.":
+            raise ValueError("response doesn't start with HTTP/1.")
         # print(resp)
 
     finally:
@@ -36,10 +38,10 @@ def test_one(site, opts):
 SITES = [
     "google.com",
     "www.google.com",
+    "micropython.org",
+    "pypi.org",
     "api.telegram.org",
     {"host": "api.pushbullet.com", "sni": True},
-    # "w9rybpfril.execute-api.ap-southeast-2.amazonaws.com",
-    {"host": "w9rybpfril.execute-api.ap-southeast-2.amazonaws.com", "sni": True},
 ]
 
 

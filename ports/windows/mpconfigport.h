@@ -66,6 +66,7 @@
 #define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
+#define MICROPY_PY_DELATTR_SETATTR  (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (1)
@@ -76,12 +77,14 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
 #define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_POW3    (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_ATEXIT       (1)
 #define MICROPY_PY_SYS_PLATFORM     "win32"
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
 #define MICROPY_PY_SYS_PATH_DEFAULT "~/.micropython/lib"
@@ -94,6 +97,7 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_MATH_ISCLOSE     (1)
 #define MICROPY_PY_CMATH            (1)
+#define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 #define MICROPY_MODULE_FROZEN_STR   (0)
@@ -167,10 +171,10 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #if MICROPY_PY_LVGL
 #ifndef MICROPY_INCLUDED_PY_MPSTATE_H
 #define MICROPY_INCLUDED_PY_MPSTATE_H
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
 #undef MICROPY_INCLUDED_PY_MPSTATE_H
 #else
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
 #endif
 #define MICROPY_PY_LVGL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
     #if MICROPY_PY_LVGL_SDL

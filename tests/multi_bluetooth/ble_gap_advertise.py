@@ -30,14 +30,14 @@ def instance0():
 def instance1():
     multitest.next()
     finished = False
-    adv_types = set()
+    adv_types = {}
     adv_data = None
 
     def irq(ev, data):
         nonlocal finished, adv_types, adv_data
         if ev == _IRQ_SCAN_RESULT:
             if data[0] == BDADDR[0] and data[1] == BDADDR[1]:
-                adv_types.add(data[2])
+                adv_types[data[2]] = True
                 if adv_data is None:
                     adv_data = bytes(data[4])
                 else:

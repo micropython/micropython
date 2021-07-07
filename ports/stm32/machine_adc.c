@@ -96,7 +96,7 @@ STATIC const uint8_t adc_cr_to_bits_table[] = {16, 14, 12, 10, 8, 8, 8, 8};
 STATIC const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
 
-STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
+void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     // Configure ADC clock source and enable ADC clock
     #if defined(STM32L4) || defined(STM32WB)
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
@@ -331,7 +331,7 @@ STATIC uint32_t adc_read_channel(ADC_TypeDef *adc) {
     return value;
 }
 
-STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     if (channel == ADC_CHANNEL_VREF) {
         return 0xffff;
     }
@@ -356,6 +356,8 @@ STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint
 
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
+
+#if !BUILDING_MBOOT
 
 const mp_obj_type_t machine_adc_type;
 
@@ -462,3 +464,5 @@ const mp_obj_type_t machine_adc_type = {
     .make_new = machine_adc_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };
+
+#endif

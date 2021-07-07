@@ -46,6 +46,11 @@ void mp_thread_init(void) {
     core1_entry = NULL;
 }
 
+void mp_thread_deinit(void) {
+    multicore_reset_core1();
+    core1_entry = NULL;
+}
+
 void mp_thread_gc_others(void) {
     if (get_core_num() == 0) {
         // GC running on core0, trace core1's stack, if it's running.

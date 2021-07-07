@@ -34,7 +34,7 @@ def preprocess():
     for source in sources:
         if source.endswith(".cpp"):
             cxxsources.append(source)
-        else:
+        elif source.endswith(".c"):
             csources.append(source)
     try:
         os.makedirs(os.path.dirname(args.output[0]))

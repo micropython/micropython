@@ -43,6 +43,12 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (0)
 #endif
 
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+// Enable the client by default if we're enabling central mode. It's possible
+// to enable client without central though.
+#define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE)
+#endif
+
 #ifndef MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 // This can be enabled if the BLE stack runs entirely in scheduler context
 // and therefore is able to call directly into the VM to run Python callbacks.
@@ -365,7 +371,9 @@ int mp_bluetooth_gap_scan_stop(void);
 
 // Connect to a found peripheral.
 int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms);
+#endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 // Find all primary services on the connected peripheral.
 int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid);
 
@@ -383,7 +391,7 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
 
 // Initiate MTU exchange for a specific connection using the preferred MTU.
 int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle);
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 int mp_bluetooth_l2cap_listen(uint16_t psm, uint16_t mtu);
@@ -440,7 +448,9 @@ void mp_bluetooth_gap_on_scan_complete(void);
 
 // Notify modbluetooth of a scan result.
 void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 // Notify modbluetooth that a service was found (either by discover-all, or discover-by-uuid).
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid);
 
@@ -458,14 +468,14 @@ void mp_bluetooth_gattc_on_data_available(uint8_t event, uint16_t conn_handle, u
 
 // Notify modbluetooth that a read or write operation has completed.
 void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle, uint16_t value_handle, uint16_t status);
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
-mp_int_t mp_bluetooth_gattc_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu);
-void mp_bluetooth_gattc_on_l2cap_connect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu);
-void mp_bluetooth_gattc_on_l2cap_disconnect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t status);
-void mp_bluetooth_gattc_on_l2cap_send_ready(uint16_t conn_handle, uint16_t cid, uint8_t status);
-void mp_bluetooth_gattc_on_l2cap_recv(uint16_t conn_handle, uint16_t cid);
+mp_int_t mp_bluetooth_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu);
+void mp_bluetooth_on_l2cap_connect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu);
+void mp_bluetooth_on_l2cap_disconnect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t status);
+void mp_bluetooth_on_l2cap_send_ready(uint16_t conn_handle, uint16_t cid, uint8_t status);
+void mp_bluetooth_on_l2cap_recv(uint16_t conn_handle, uint16_t cid);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 // For stacks that don't manage attribute value data (currently all of them), helpers
