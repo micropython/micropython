@@ -823,7 +823,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // check for more specific object types.
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
-#define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (&(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name) == &((t)->name))) // this does not work for checking int, str or fun; use below macros for that
 #if MICROPY_OBJ_IMMEDIATE_OBJS
 // bool's are immediates, not real objects, so test for the 2 possible values.
 #define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
