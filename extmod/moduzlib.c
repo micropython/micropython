@@ -255,7 +255,7 @@ STATIC mp_obj_t mod_uzlib_gzip(size_t n_args, const mp_obj_t *args) {
     memcpy(dest_buf+offset+sizeof(crc), &len, sizeof(len));
 
     // free all temporarily used memory
-    free(comp->out.outbuf);     // free internal buffer allocated by compression
+    gc_free(comp->out.outbuf);     // free internal buffer allocated by compression
     gc_free(comp->hash_table);
     m_del_obj(struct uzlib_comp, comp);
     

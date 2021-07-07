@@ -36,10 +36,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <assert.h>
 #include "defl_static.h"
 
-#define snew(type) ( (type *) malloc(sizeof(type)) )
-#define snewn(n, type) ( (type *) malloc((n) * sizeof(type)) )
-#define sresize(x, n, type) ( (type *) realloc((x), (n) * sizeof(type)) )
-#define sfree(x) ( free((x)) )
+#define snew(type) ( (type *) gc_malloc(sizeof(type)) )
+#define snewn(n, type) ( (type *) gc_malloc((n) * sizeof(type)) )
+#define sresize(x, n, type) ( (type *) gc_realloc((x), (n) * sizeof(type), true) )
+#define sfree(x) ( gc_free((x)) )
 
 #ifndef FALSE
 #define FALSE 0
