@@ -38,14 +38,23 @@
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_UART_BITS (8)
 #define DEFAULT_UART_STOP (1)
-#define DEFAULT_UART0_TX (0)
-#define DEFAULT_UART0_RX (1)
-#define DEFAULT_UART0_CTS (2)
-#define DEFAULT_UART0_RTS (3)
-#define DEFAULT_UART1_TX (4)
-#define DEFAULT_UART1_RX (5)
-#define DEFAULT_UART1_CTS (6)
-#define DEFAULT_UART1_RTS (7)
+
+// UART 0 default pins
+#if !defined(MICROPY_HW_UART0_TX)
+#define MICROPY_HW_UART0_TX (0)
+#define MICROPY_HW_UART0_RX (1)
+#define MICROPY_HW_UART0_CTS (2)
+#define MICROPY_HW_UART0_RTS (3)
+#endif
+
+// UART 1 default pins
+#if !defined(MICROPY_HW_UART1_TX)
+#define MICROPY_HW_UART1_TX (4)
+#define MICROPY_HW_UART1_RX (5)
+#define MICROPY_HW_UART1_CTS (6)
+#define MICROPY_HW_UART1_RTS (7)
+#endif
+
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
@@ -87,9 +96,11 @@ typedef struct _machine_uart_obj_t {
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART0_TX, DEFAULT_UART0_RX, DEFAULT_UART0_CTS, DEFAULT_UART0_RTS, 0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+     MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX, MICROPY_HW_UART0_CTS, MICROPY_HW_UART0_RTS,
+     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART1_TX, DEFAULT_UART1_RX, DEFAULT_UART1_CTS, DEFAULT_UART1_RTS, 0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+     MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX, MICROPY_HW_UART1_CTS, MICROPY_HW_UART1_RTS,
+     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
