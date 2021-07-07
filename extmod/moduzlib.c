@@ -216,6 +216,7 @@ STATIC mp_obj_t mod_uzlib_compress(size_t n_args, const mp_obj_t *args) {
 
     struct uzlib_comp *comp = m_new0(struct uzlib_comp, 1);
 
+    // set deflate compression parameters for gzip
     comp->dict_size = 32768;
     if (n_args > 1) {
         comp->dict_size = 1 << MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -229,36 +230,39 @@ STATIC mp_obj_t mod_uzlib_compress(size_t n_args, const mp_obj_t *args) {
     uzlib_compress(comp, bufinfo.buf, len);
     zlib_finish_block(&comp->out);
 
-    printf("compressed from %u to %u raw bytes\n", len, comp->out.outlen);
+    DEBUG_printf("compressed from %u to %u raw bytes\n", len, comp->out.outlen);
 
-    mp_uint_t dest_buf_size = (comp->out.outlen + 6 + (3*sizeof(int)));
+    // allocate final buffer incl. 10 header bytes and 8 trailing bytes
+    mp_uint_t dest_buf_size = comp->out.outlen + 18;
     byte *dest_buf = m_new(byte, dest_buf_size);
 
-    int i = 0;
-    dest_buf[i++] = 0x1f;
-    dest_buf[i++] = 0x8b;
-    dest_buf[i++] = 0x08;
-    dest_buf[i++] = 0x00; // FLG
-    int mtime = 0;
-    memcpy(&dest_buf[i], &mtime, sizeof(mtime));
-    i += sizeof(mtime);
-    dest_buf[i++] = 0x04; // XFL
-    dest_buf[i++] = 0x03; // OS
+    /* GZIP header bytes:                                  */
+    /* 0-1: GZIP ID1, ID2 = 0x1f, 0x8b                     */
+    /* 2:   compression method (8 = deflate)               */
+    /* 3:   flags (0 = no additional header fields)        */
+    /* 4-7: modification time (0 = none)                   */
+    /* 8:   extra flags (4 = compressor used fastest algo) */
+    /* 9:   operating system (3 = unix)                    */
+    static const unsigned char gzip_header[] =
+    { 0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03 };
 
-    memcpy(&dest_buf[i], comp->out.outbuf, comp->out.outlen);
-    i += comp->out.outlen;
+    memcpy(dest_buf, gzip_header, sizeof(gzip_header));
+    memcpy(dest_buf + sizeof(gzip_header), comp->out.outbuf, comp->out.outlen);
 
-    unsigned int crc = ~uzlib_crc32(bufinfo.buf, len, ~0);
-    memcpy(&dest_buf[i], &crc, sizeof(crc));
-    i += sizeof(crc);
+    // append 32 bit crc of original data
+    uint32_t offset = sizeof(gzip_header) + comp->out.outlen;
+    uint32_t crc = ~uzlib_crc32(bufinfo.buf, len, ~0);
+    memcpy(dest_buf + offset, &crc, sizeof(crc));
+    // append 32 bit length of original data
+    memcpy(dest_buf + offset + sizeof(crc), &len, sizeof(len));
 
-    memcpy(&dest_buf[i], &len, sizeof(len));
-    i += sizeof(len);
-
-    mp_obj_t res = mp_obj_new_bytearray_by_ref(dest_buf_size, dest_buf);
+    // free all temporarily used memory
+    gc_free(comp->out.outbuf);     // free internal buffer allocated by compression
     gc_free(comp->hash_table);
     m_del_obj(struct uzlib_comp, comp);
-    return res;
+
+    // return result as MP bytearray
+    return mp_obj_new_bytearray_by_ref(dest_buf_size, dest_buf);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_compress_obj, 1, 2, mod_uzlib_compress);
 
