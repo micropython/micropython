@@ -320,7 +320,10 @@ STATIC MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict
 
 const mp_obj_type_t ssl_sslsocket_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_FULL,
     .name = MP_QSTR_SSLSocket,
     .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
-    .unary_op = ssl_sslsocket_unary_op,
+    EXTENDED_FIELDS(
+        .unary_op = ssl_sslsocket_unary_op,
+        )
 };
