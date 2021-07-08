@@ -169,14 +169,19 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     uint8_t dma_trigger_source) {
     // Use two DMA channels to play because the DMA can't wrap to itself without the
     // buffer being power of two aligned.
-    dma->channel[0] = dma_claim_unused_channel(false);
-    dma->channel[1] = dma_claim_unused_channel(false);
-    if (dma->channel[0] == NUM_DMA_CHANNELS || dma->channel[1] == NUM_DMA_CHANNELS) {
-        if (dma->channel[0] < NUM_DMA_CHANNELS) {
-            dma_channel_unclaim(dma->channel[0]);
-        }
+    int dma_channel_0_maybe = dma_claim_unused_channel(false);
+    if (dma_channel_0_maybe < 0) {
         return AUDIO_DMA_DMA_BUSY;
     }
+
+    int dma_channel_1_maybe = dma_claim_unused_channel(false);
+    if (dma_channel_1_maybe < 0) {
+        dma_channel_unclaim((uint)dma_channel_0_maybe);
+        return AUDIO_DMA_DMA_BUSY;
+    }
+
+    dma->channel[0] = (uint8_t)dma_channel_0_maybe;
+    dma->channel[1] = (uint8_t)dma_channel_1_maybe;
 
     dma->sample = sample;
     dma->loop = loop;
