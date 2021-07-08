@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2021 Kattni Rembor
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef CP_SHARED_BINDINGS_PIXELBUF_INIT_H
-#define CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+#include "shared-bindings/rainbow/__init__.h"
 
-#endif // CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+const int32_t colorwheel(float pos) {
+    if (pos > 255) {
+        pos = pos - ((uint32_t)(pos / 256) * 256);
+    }
+    if (pos < 85) {
+        return (uint8_t)(255 - (pos * 3)) << 16 | (uint8_t)(pos * 3) << 8;
+    } else if (pos < 170) {
+        pos -= 85;
+        return (uint8_t)(255 - (pos * 3)) << 8 | (uint8_t)(pos * 3);
+    } else {
+        pos -= 170;
+        return (uint8_t)(pos * 3) << 16 | (uint8_t)(255 - (pos * 3));
+    }
+}

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2021 Kattni Rembor
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef CP_SHARED_BINDINGS_PIXELBUF_INIT_H
-#define CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+#include "shared-bindings/rainbow/__init__.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
+//| """`rainbow` module.
+//|
+//| Provides the `colorwheel()` function."""
+//|
+//| def colorwheel(n: float) -> int:
+//|     """C implementation of the common colorwheel() function found in many examples.
+//|     Returns the colorwheel RGB value as an integer value for n (usable in neopixel and dotstar)."""
+//|     ...
+//|
+STATIC mp_obj_t rainbow_colorwheel(mp_obj_t n) {
+    return MP_OBJ_NEW_SMALL_INT(colorwheel(mp_obj_is_small_int(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_get_float(n)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rainbow_colorwheel_obj, rainbow_colorwheel);
 
-#endif // CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+STATIC const mp_rom_map_elem_t rainbow_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rainbow) },
+    { MP_ROM_QSTR(MP_QSTR_colorwheel), MP_ROM_PTR(&rainbow_colorwheel_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(rainbow_module_globals, rainbow_module_globals_table);
+
+const mp_obj_module_t rainbow_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&rainbow_module_globals,
+};

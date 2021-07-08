@@ -44,8 +44,6 @@
 #include "extmod/ulab/code/ndarray.h"
 #endif
 
-extern const int32_t colorwheel(float pos);
-
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 
 //| class PixelBuf:

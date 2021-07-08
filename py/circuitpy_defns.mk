@@ -229,6 +229,9 @@ endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
+ifeq ($(CIRCUITPY_RAINBOW),1)
+SRC_PATTERNS += rainbow/%
+endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
@@ -533,6 +536,7 @@ SRC_SHARED_MODULE_ALL = \
 	network/__init__.c \
 	msgpack/__init__.c \
 	os/__init__.c \
+	rainbow/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
