@@ -56,7 +56,7 @@
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
 //|         :param Bitmap bitmap: The bitmap storing one or more tiles.
-//|         :param ColorConverter or Palette pixel_shader: The pixel shader that produces colors from values
+//|         :param ColorConverter,Palette pixel_shader: The pixel shader that produces colors from values
 //|         :param int width: Width of the grid in tiles.
 //|         :param int height: Height of the grid in tiles.
 //|         :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
