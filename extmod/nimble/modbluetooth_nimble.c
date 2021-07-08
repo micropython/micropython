@@ -1682,7 +1682,19 @@ int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *b
         *stalled = true;
         err = 0;
     } else {
-        *stalled = false;
+        if (err) {
+            // Anything except stalled means it won't attempt to send,
+            // so free the mbuf (we're failing the op entirely).
+            os_mbuf_free_chain(sdu_tx);
+        } else {
+            *stalled = false;
+        }
+    }
+
+    // Sometimes we see what looks like BLE_HS_EAGAIN (but it's actually
+    // OS_ENOMEM in disguise). Fixed in NimBLE v1.4.
+    if (err == OS_ENOMEM) {
+        return MP_ENOMEM;
     }
 
     // Other error codes such as BLE_HS_EBUSY (we're stalled) or BLE_HS_EBADDATA (bigger than MTU).
