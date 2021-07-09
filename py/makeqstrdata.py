@@ -9,6 +9,7 @@ supervisor/shared/translate.h
 
 from __future__ import print_function
 
+import bisect
 import re
 import sys
 
@@ -330,6 +331,7 @@ def compute_huffman_coding(translations, compression_filename):
                 end_unused = min(ord_c, end_unused)
     max_words = end_unused - 0x80
 
+    bits_per_codepoint = 16 if max_ord > 255 else 8
     values_type = "uint16_t" if max_ord > 255 else "uint8_t"
     max_words_len = 160 if max_ord > 255 else 255
 
@@ -346,17 +348,46 @@ def compute_huffman_coding(translations, compression_filename):
         extractor = TextSplitter(words)
         counter = collections.Counter()
         for t in texts:
+            for atom in extractor.iter(t):
+                counter[atom] += 1
+        cb = huffman.codebook(counter.items())
+        lengths = sorted(dict((v, len(cb[k])) for k, v in counter.items()).items())
+
+        def bit_length(s):
+            return sum(len(cb[c]) for c in s)
+
+        def est_len(occ):
+            idx = bisect.bisect_left(lengths, (occ, 0))
+            return lengths[idx][1] + 1
+
+        # The cost of adding a dictionary word is just its storage size
+        # while its savings is the difference between the original
+        # huffman bit-length of the string and the estimated bit-length
+        # of the dictionary word, times the number of times the word appears.
+        #
+        # The difference between the two is the net savings, in bits.
+        def est_net_savings(s, occ):
+            savings = occ * (bit_length(s) - est_len(occ))
+            cost = len(s) * bits_per_codepoint
+            return savings - cost
+
+        counter = collections.Counter()
+        for t in texts:
             for (found, word) in extractor.iter_words(t):
                 if not found:
                     for substr in iter_substrings(word, minlen=3, maxlen=9):
                         counter[substr] += 1
 
-        # Score the candidates we found.  This is an empirical formula only,
-        # chosen for its effectiveness.
+        # Score the candidates we found.  This is a semi-empirical formula that
+        # attempts to model the number of bits saved as closely as possible.
+        #
+        # It attempts to compute the codeword lengths of the original word
+        # to the codeword length the dictionary entry would get, times
+        # the number of occurrences, less the ovehead of the entries in the
+        # words[] array.
+
         scores = sorted(
-            ((s, (len(s) - 1) ** (occ + 4)) for (s, occ) in counter.items() if occ > 4),
-            key=lambda x: x[1],
-            reverse=True,
+            ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items()), key=lambda x: x[1]
         )
 
         # Pick the one with the highest score.
