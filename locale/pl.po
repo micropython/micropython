@@ -53,6 +53,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " wyjście:\n"
 
@@ -88,8 +92,20 @@ msgstr "%q poza zakresem"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
@@ -100,7 +116,11 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q musi być >= 0"
 
@@ -116,12 +136,20 @@ msgstr "%q musi być >= 1"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q musi być krotką o długości 2"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -573,10 +601,6 @@ msgstr "Bufor musi być wielokrotnością 512 bajtów"
 msgid "Buffer must be at least length 1"
 msgstr "Bufor musi mieć długość 1 lub więcej"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Bufor jest zbyt duży i nie można go przydzielić"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -852,6 +876,10 @@ msgstr ""
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Fragment danych musi następować po fragmencie fmt"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1649,7 +1677,6 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1692,6 +1719,10 @@ msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr "Wspierane są tylko nieskompresowane pliki BMP: wielkość nagłówka %d"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
+
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1713,6 +1744,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
@@ -2008,6 +2040,10 @@ msgstr "Błąd inicjowania SPI"
 msgid "SPI Re-initialization error"
 msgstr "Błąd ponownej inicjalizacji SPI"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
@@ -2046,6 +2082,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2190,6 +2227,7 @@ msgstr "Zbyt wiele wyświetlaczy"
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr ""
@@ -2489,7 +2527,7 @@ msgstr ""
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argument ma zły typ"
 
@@ -2563,6 +2601,10 @@ msgstr "zły typecode"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "brak dwu-argumentowego operatora %q"
+
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3175,6 +3217,10 @@ msgstr ""
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic musi mieć 2048 bajtów długości"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -4388,6 +4434,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Bufor jest zbyt duży i nie można go przydzielić"
 
 #~ msgid "wrong operand type"
 #~ msgstr "zły typ operandu"

@@ -654,15 +654,6 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
                (tx && dma_channel_is_busy(chan_tx))) {
             // TODO: We should idle here until we get a DMA interrupt or something else.
             RUN_BACKGROUND_TASKS;
-            if (mp_hal_is_interrupted()) {
-                if (rx && dma_channel_is_busy(chan_rx)) {
-                    dma_channel_abort(chan_rx);
-                }
-                if (tx && dma_channel_is_busy(chan_tx)) {
-                    dma_channel_abort(chan_tx);
-                }
-                break;
-            }
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
         self->pio->fdebug = stall_mask;
@@ -677,7 +668,7 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         dma_channel_unclaim(chan_tx);
     }
 
-    if (!use_dma && !mp_hal_is_interrupted()) {
+    if (!use_dma) {
         // Use software for small transfers, or if couldn't claim two DMA channels
         size_t rx_remaining = in_len / in_stride_in_bytes;
         size_t tx_remaining = out_len / out_stride_in_bytes;
@@ -706,9 +697,6 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
                 --rx_remaining;
             }
             RUN_BACKGROUND_TASKS;
-            if (mp_hal_is_interrupted()) {
-                break;
-            }
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
         self->pio->fdebug = stall_mask;
@@ -719,9 +707,6 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         while (!pio_sm_is_tx_fifo_empty(self->pio, self->state_machine) ||
                (self->wait_for_txstall && (self->pio->fdebug & stall_mask) == 0)) {
             RUN_BACKGROUND_TASKS;
-            if (mp_hal_is_interrupted()) {
-                break;
-            }
         }
     }
     return true;

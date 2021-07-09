@@ -45,7 +45,11 @@
 //|         ...
 //|
 
-//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: Optional[ReadableBuffer] = None) -> Characteristic:
+//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0,
+//|                        read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN,
+//|                        max_length: int = 20, fixed_length: bool = False,
+//|                        initial_value: Optional[ReadableBuffer] = None,
+//|                        user_description: Optional[str] = None) -> Characteristic:
 //|         """Create a new Characteristic object, and add it to this Service.
 //|
 //|         :param Service service: The service that will provide this characteristic
@@ -65,6 +69,7 @@
 //|         :param bool fixed_length: True if the characteristic value is of fixed length.
 //|         :param ~_typing.ReadableBuffer initial_value: The initial value for this characteristic. If not given, will be
 //|          filled with zeros.
+//|         :param str user_description: User friendly description of the characteristic
 //|
 //|         :return: the new Characteristic."""
 //|         ...
@@ -73,7 +78,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     // class is arg[0], which we can ignore.
 
     enum { ARG_service, ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm,
-           ARG_max_length, ARG_fixed_length, ARG_initial_value };
+           ARG_max_length, ARG_fixed_length, ARG_initial_value, ARG_user_description };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_service,  MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -83,6 +88,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
         { MP_QSTR_max_length, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 20} },
         { MP_QSTR_fixed_length, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_initial_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_user_description, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -132,6 +138,11 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
         mp_raise_ValueError(translate("initial_value length is wrong"));
     }
 
+    const char *user_description = NULL;
+    if (args[ARG_user_description].u_obj != mp_const_none) {
+        user_description = mp_obj_str_get_str(args[ARG_user_description].u_obj);
+    }
+
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
     characteristic->base.type = &bleio_characteristic_type;
 
@@ -140,7 +151,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     common_hal_bleio_characteristic_construct(
         characteristic, MP_OBJ_TO_PTR(service_obj), 0, MP_OBJ_TO_PTR(uuid_obj),
         properties, read_perm, write_perm,
-        max_length, fixed_length, &initial_value_bufinfo);
+        max_length, fixed_length, &initial_value_bufinfo,
+        user_description);
 
     return MP_OBJ_FROM_PTR(characteristic);
 }

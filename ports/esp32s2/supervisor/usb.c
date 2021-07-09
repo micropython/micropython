@@ -31,11 +31,11 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
-#include "components/soc/soc/esp32s2/include/soc/usb_periph.h"
-#include "components/driver/include/driver/periph_ctrl.h"
 #include "components/driver/include/driver/gpio.h"
+#include "components/driver/include/driver/periph_ctrl.h"
 #include "components/esp_rom/include/esp32s2/rom/gpio.h"
-#include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
+#include "components/hal/esp32s2/include/hal/gpio_ll.h"
+#include "components/soc/esp32s2/include/soc/usb_periph.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -120,7 +120,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_read_flush();    // flush read fifo
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
         // So, we must notify the other task when a CTRL-C is received.
         xTaskNotifyGive(circuitpython_task);

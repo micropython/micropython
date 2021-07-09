@@ -34,6 +34,7 @@
 #include "lib/oofatfs/ff.h"
 #include "py/mpstate.h"
 
+#include "shared-module/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
 
@@ -41,16 +42,29 @@
 
 static bool ejected[1] = {true};
 
-void usb_msc_mount(void) {
-    // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
-    // power the device, eject, unplug and plug it back in to get the drive.
+// Lock to track if something else is using the filesystem when USB is plugged in. If so, the drive
+// will be made available once the lock is released.
+static bool _usb_msc_lock = false;
+static bool _usb_connected_while_locked = false;
+
+STATIC void _usb_msc_uneject(void) {
     for (uint8_t i = 0; i < sizeof(ejected); i++) {
         ejected[i] = false;
     }
 }
 
-void usb_msc_umount(void) {
+void usb_msc_mount(void) {
+    // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
+    // power the device, eject, unplug and plug it back in to get the drive.
+    if (_usb_msc_lock) {
+        _usb_connected_while_locked = true;
+        return;
+    }
+    _usb_msc_uneject();
+    _usb_connected_while_locked = false;
+}
 
+void usb_msc_umount(void) {
 }
 
 bool usb_msc_ejected(void) {
@@ -59,6 +73,25 @@ bool usb_msc_ejected(void) {
         all_ejected &= ejected[i];
     }
     return all_ejected;
+}
+
+bool usb_msc_lock(void) {
+    if ((storage_usb_enabled() && !usb_msc_ejected()) || _usb_msc_lock) {
+        return false;
+    }
+    _usb_msc_lock = true;
+    return true;
+}
+
+void usb_msc_unlock(void) {
+    if (!_usb_msc_lock) {
+        // Mismatched unlock.
+        return;
+    }
+    if (_usb_connected_while_locked) {
+        _usb_msc_uneject();
+    }
+    _usb_msc_lock = false;
 }
 
 // The root FS is always at the end of the list.

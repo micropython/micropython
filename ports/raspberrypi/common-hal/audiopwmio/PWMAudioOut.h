@@ -38,6 +38,7 @@ typedef struct {
     audio_dma_t dma;
     uint16_t quiescent_value;
     uint8_t pacing_timer;
+    bool stereo;     // if false, only using left_pwm.
 } audiopwmio_pwmaudioout_obj_t;
 
 void audiopwmout_reset(void);

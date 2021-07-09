@@ -83,15 +83,37 @@ STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_
     }
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service,
+    uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props,
+    bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm,
+    mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo,
+    const char *user_description) {
     self->service = service;
     self->uuid = uuid;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->initial_value = mp_obj_new_bytes(initial_value_bufinfo->buf, initial_value_bufinfo->len);
-    self->descriptor_list = mp_obj_new_list(0, NULL);
+    self->initial_value_len = 0;
+    self->initial_value = NULL;
+    if (initial_value_bufinfo != NULL) {
+        // Copy the initial value if it's on the heap. Otherwise it's internal and we may not be able
+        // to allocate.
+        self->initial_value_len = initial_value_bufinfo->len;
+        if (gc_alloc_possible()) {
+            if (gc_nbytes(initial_value_bufinfo->buf) > 0) {
+                uint8_t *initial_value = m_malloc(self->initial_value_len, false);
+                memcpy(initial_value, initial_value_bufinfo->buf, self->initial_value_len);
+                self->initial_value = initial_value;
+            } else {
+                self->initial_value = initial_value_bufinfo->buf;
+            }
+            self->descriptor_list = mp_obj_new_list(0, NULL);
+        } else {
+            self->initial_value = initial_value_bufinfo->buf;
+            self->descriptor_list = NULL;
+        }
+    }
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
@@ -104,11 +126,14 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     if (service->is_remote) {
         self->handle = handle;
     } else {
-        common_hal_bleio_service_add_characteristic(self->service, self, initial_value_bufinfo);
+        common_hal_bleio_service_add_characteristic(self->service, self, initial_value_bufinfo, user_description);
     }
 }
 
 mp_obj_tuple_t *common_hal_bleio_characteristic_get_descriptors(bleio_characteristic_obj_t *self) {
+    if (self->descriptor_list == NULL) {
+        return mp_const_empty_tuple;
+    }
     return mp_obj_new_tuple(self->descriptor_list->len, self->descriptor_list->items);
 }
 
@@ -193,6 +218,11 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 }
 
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
+    if (self->descriptor_list == NULL) {
+        // This should only happen from internal use so we just fail silently instead of raising an
+        // exception.
+        return;
+    }
     ble_uuid_t desc_uuid;
     bleio_uuid_convert_to_nrf_ble_uuid(descriptor->uuid, &desc_uuid);
 

@@ -51,7 +51,7 @@
 #endif
 
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
-STATIC spim_peripheral_t spim_peripherals[] = {
+STATIC const spim_peripheral_t spim_peripherals[] = {
     #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
     // SPIM3 exists only on nRF52840 and supports 32MHz max. All other SPIM's are only 8MHz max.
     // Allocate SPIM3 first.

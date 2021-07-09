@@ -153,6 +153,7 @@
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
+	branch = circuitpython-v4.3
 [submodule "ports/esp32s2/certificates/nina-fw"]
 	path = ports/esp32s2/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git

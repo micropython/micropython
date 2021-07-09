@@ -29,7 +29,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "components/soc/include/hal/i2c_types.h"
+#include "components/hal/include/hal/i2c_types.h"
 #include "FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "py/obj.h"
@@ -39,7 +39,8 @@ typedef struct {
     const mcu_pin_obj_t *scl_pin;
     const mcu_pin_obj_t *sda_pin;
     i2c_port_t i2c_num;
-    StaticSemaphore_t semaphore;
+    SemaphoreHandle_t xSemaphore;
+    StaticSemaphore_t xSemaphoreBuffer;
     bool has_lock;
 } busio_i2c_obj_t;
 

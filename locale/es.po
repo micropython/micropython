@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-13 04:32+0000\n"
+"PO-Revision-Date: 2021-06-27 12:33+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: main.c
 msgid ""
@@ -57,6 +57,10 @@ msgid " is of type %q\n"
 msgstr " es de tipo %q\n"
 
 #: main.c
+msgid " not found.\n"
+msgstr " no encontrado.\n"
+
+#: main.c
 msgid " output:\n"
 msgstr " salida:\n"
 
@@ -94,9 +98,21 @@ msgstr "%q indice fuera de rango"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr "el tamaño de %q debe ser %q"
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q lista debe ser una lista"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr "%q debe ser <= %d"
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr "%q debe ser %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -106,7 +122,11 @@ msgstr "%q debe ser de 0-255"
 msgid "%q must be 1-255"
 msgstr "%q debe estar entre 1-255"
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr "%q debe ser >= %d"
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q debe ser >= 0"
 
@@ -122,13 +142,21 @@ msgstr "%q debe ser >= 1"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr "%q debe ser None o entre 1 y len(report_descriptor)-1"
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr "%q debe ser una cadena"
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q debe ser una tupla de longitud 2"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q debe estar entre %d y %d"
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr "%q debe ser de tipo %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -582,10 +610,6 @@ msgstr "Búfer deber ser un múltiplo de 512 bytes"
 msgid "Buffer must be at least length 1"
 msgstr "Buffer debe ser de longitud 1 como minimo"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Buffer demasiado grande e incapaz de asignar"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -865,6 +889,10 @@ msgstr "El pin de datos 0 debe ser alineado a byte."
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Trozo de datos debe seguir fmt chunk"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr "Datos sin capacidad de anuncio dirigido"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1320,7 +1348,7 @@ msgstr "data_count inválido %d"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
-msgstr ""
+msgstr "Inválidos los data_pins[%d]"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1675,7 +1703,6 @@ msgstr "El firmware del sistema Nordic no tiene memoria"
 msgid "Not a valid IP string"
 msgstr "No es una cadena de IP válida"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1722,6 +1749,10 @@ msgstr ""
 "Solo formato de Windows, sin comprimir BMP soportado: tamaño de encabezado "
 "dado es %d"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr "Solo se puede dirigir a los anuncios conectables"
+
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Este hardware solo tiene capacidad para detección de borde"
@@ -1745,6 +1776,7 @@ msgstr "Solamente una TouchAlarm puede ser configurada durante deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Solamente una alarm.time puede ser configurada."
@@ -2053,6 +2085,10 @@ msgstr "Error de inicio de SPI"
 msgid "SPI Re-initialization error"
 msgstr "Error de reinicialización de SPI"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr "Configuración de SPI fallida"
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr "Periférico SPI en uso"
@@ -2091,6 +2127,7 @@ msgstr "El conteo de pines de Side set debe estar entre 1 y 5"
 msgid "Size not supported"
 msgstr "Sin capacidades para el tamaño"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Memoria de sueño no disponible"
@@ -2245,6 +2282,7 @@ msgstr "Muchos displays"
 msgid "Total data to write is larger than %q"
 msgstr "La cantidad total de datos es mas grande que %q"
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr "Alarmas táctiles no disponibles"
@@ -2551,7 +2589,7 @@ msgstr "El argumento para argsort debe ser un ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "El argot no está implementado para arrays aplanados"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "el argumento tiene un tipo erroneo"
 
@@ -2625,6 +2663,10 @@ msgstr "typecode erroneo"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "operacion binaria %q no implementada"
+
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr "los bits deben ser 32 o menos"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3243,6 +3285,10 @@ msgstr "el generador genero StopIteration"
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic debe ser 2048 bytes de largo"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr "el hash es final"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -4464,6 +4510,12 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q debe almacenar bytes"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Buffer demasiado grande e incapaz de asignar"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "interp está definido para arreglos de 1D del mismo tamaño"

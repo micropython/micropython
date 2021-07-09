@@ -46,7 +46,7 @@
 //|         lines respectively.
 //|
 //|         .. seealso:: Using this class directly requires careful lock management.
-//|             Instead, use :class:`~adafruit_bus_device.i2c_device.I2CDevice` to
+//|             Instead, use :class:`~adafruit_bus_device.I2CDevice` to
 //|             manage locks.
 //|
 //|         .. seealso:: Using this class to directly read registers requires manual
@@ -56,7 +56,8 @@
 //|         :param ~microcontroller.Pin scl: The clock pin
 //|         :param ~microcontroller.Pin sda: The data pin
 //|         :param int frequency: The clock frequency in Hertz
-//|         :param int timeout: The maximum clock stretching timeut - (used only for bitbangio.I2C; ignored for busio.I2C)
+//|         :param int timeout: The maximum clock stretching timeut - (used only for
+//|             :class:`bitbangio.I2C`; ignored for :class:`busio.I2C`)
 //|
 //|         .. note:: On the nRF52840, only one I2C object may be created,
 //|            except on the Circuit Playground Bluefruit, which allows two,
@@ -239,7 +240,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|         to poll for the existence of a device.
 //|
 //|         :param int address: 7-bit device address
-//|         :param ~_typing.ReadbleBuffer buffer: buffer containing the bytes to write
+//|         :param ~_typing.ReadableBuffer buffer: buffer containing the bytes to write
 //|         :param int start: Index to start writing from
 //|         :param int end: Index to read up to but not include. Defaults to ``len(buffer)``"""
 //|         ...
@@ -286,12 +287,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 //|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|         ``in_buffer`` can be the same buffer because they are used sequentially.
 //|
-//|         if ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
+//|         If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
 //|         as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
 //|         will so it saves memory.
 //|
 //|         :param int address: 7-bit device address
-//|         :param ~_typing.ReadbleBuffer out_buffer: buffer containing the bytes to write
+//|         :param ~_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
 //|         :param ~_typing.WriteableBuffer in_buffer: buffer to write into
 //|         :param int out_start: Index to start writing from
 //|         :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``

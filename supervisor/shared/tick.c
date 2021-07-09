@@ -36,11 +36,6 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
-#if CIRCUITPY_BLEIO
-#include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/__init__.h"
-#endif
-
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -51,6 +46,10 @@
 
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
+#endif
+
+#if CIRCUITPY_KEYPAD
+#include "shared-module/keypad/__init__.h"
 #endif
 
 #if CIRCUITPY_NETWORK
@@ -86,11 +85,6 @@ void supervisor_background_tasks(void *unused) {
     #endif
     filesystem_background();
 
-    #if CIRCUITPY_BLEIO
-    supervisor_bluetooth_background();
-    bleio_background();
-    #endif
-
     port_background_task();
 
     assert_heap_ok();
@@ -108,9 +102,11 @@ void supervisor_tick(void) {
     #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
     #endif
+
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     autoreload_tick();
     #endif
+
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
@@ -121,6 +117,11 @@ void supervisor_tick(void) {
         #endif
     }
     #endif
+
+    #if CIRCUITPY_KEYPAD
+    keypad_tick();
+    #endif
+
     background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 

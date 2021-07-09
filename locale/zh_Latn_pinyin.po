@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-19 20:18+0000\n"
+"PO-Revision-Date: 2021-07-06 16:32+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: main.c
 msgid ""
@@ -56,6 +56,10 @@ msgid " is of type %q\n"
 msgstr " shì %q lèi xíng\n"
 
 #: main.c
+msgid " not found.\n"
+msgstr " wèi zhǎo dào.\n"
+
+#: main.c
 msgid " output:\n"
 msgstr " shūchū:\n"
 
@@ -93,9 +97,21 @@ msgstr "%q suǒyǐn chāochū fànwéi"
 msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr "%q cháng dù bì xū wéi %q"
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q lièbiǎo bìxū shì lièbiǎo"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr "%q bì xū <= %d"
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr "%q bì xū wéi %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -105,7 +121,11 @@ msgstr "%q bì xū wéi 0-255"
 msgid "%q must be 1-255"
 msgstr "%q bì xū wéi 1-255"
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr "%q bì xū >= %d"
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q Bìxū > = 0"
 
@@ -121,13 +141,21 @@ msgstr "%q bìxū dàyú huò děngyú 1"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr "%q bì xū shì yí gè zì fú chuàn"
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q bì xū zài %d hé %d zhī jiān"
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr "%q bì xū lèi xíng %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -506,7 +534,7 @@ msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dā
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "wèi shēn dù bì xū bāo hán 1 dào 6， ér bù shì %d"
+msgstr "wèi shēn dù bì xū bāo hán 1 dào 6, ér bù shì %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -578,14 +606,10 @@ msgstr "Huǎn chōng qū bì xū shì 512 zì jié de bèi shù"
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Huǎn chōng qū tài dà ， wú fǎ fēn pèi"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Huǎn chōng qū tài duǎn ， àn %d zì jié"
+msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
@@ -857,6 +881,10 @@ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr "bù zhī chí dìng xiàng guǎng gào de shù jù"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1309,7 +1337,7 @@ msgstr "wú xiào data_count %d"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
-msgstr ""
+msgstr "wú xiào data_pins[%d]"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1661,7 +1689,6 @@ msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1707,6 +1734,10 @@ msgstr ""
 "Jǐn zhīchí Windows géshì, zhīchí wèi yāsuō de BMP: Gěi dìng de biāo tóu "
 "dàxiǎo wèi %d"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr "zhǐ yǒu kě lián jiē de guǎng gào cái néng bèi yǐn dǎo"
+
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "cǐ yìng jiàn shàng jǐn tí gòng biān yuán jiǎn cè"
@@ -1730,6 +1761,7 @@ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mi
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "zhǐ néng shè zhì yí gè bào jǐng."
@@ -2032,6 +2064,10 @@ msgstr "SPI chūshǐhuà cuòwù"
 msgid "SPI Re-initialization error"
 msgstr "SPI chóngxīn chūshǐhuà cuòwù"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr "SPI pèi zhì shī bài"
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr "SPI wài shè zhèng zài shǐ yòng zhōng"
@@ -2070,6 +2106,7 @@ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
 msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "shuì mián jì yì bù kě yòng"
@@ -2135,7 +2172,7 @@ msgid ""
 "Increase the stack size if you know how. If not:"
 msgstr ""
 "diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
-"rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu："
+"rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2221,6 +2258,7 @@ msgstr "Xiǎnshì tài duō"
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr "bù kě yòng chù mō bào jǐng qì"
@@ -2316,7 +2354,7 @@ msgstr "Wúfǎ xiě rù nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr "wú fǎ xiě rù sleep_memory。"
+msgstr "wú fǎ xiě rù sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2525,7 +2563,7 @@ msgstr "argsort cānshù bìxū shì ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
 
@@ -2599,6 +2637,10 @@ msgstr "cuòwù de dàimǎ lèixíng"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
+
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr "wèi bì xū shì 32 huò gèng shǎo"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3217,6 +3259,10 @@ msgstr "fā diàn jī tí chū tíng zhǐ"
 msgid "graphic must be 2048 bytes long"
 msgstr "túxíng bìxū wèi 2048 zì jié"
 
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr "hā xī shì zuì zhōng de"
+
 #: extmod/moduheapq.c
 msgid "heap must be a list"
 msgstr "duī bìxū shì yīgè lièbiǎo"
@@ -3368,7 +3414,7 @@ msgstr "wúxiào de cānshù"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr "wú xiào bits_per_pixel %d， bì xū shì, 1, 4, 8, 16, 24, huò 32"
+msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 4, 8, 16, 24, huò 32"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3827,7 +3873,7 @@ msgstr "chāo gāo zhuǎnhuàn zhǎng zhěng shùzì shí"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr "bāo zhuāng yù qī de %d bāo zhuāng xiàng mù （dé dào %d)"
+msgstr "bāo zhuāng yù qī de %d bāo zhuāng xiàng mù (dé dào %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -4430,6 +4476,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q bì xū cún chǔ zì jié"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Huǎn chōng qū tài dà , wú fǎ fēn pèi"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "interp shì wèi děng zhǎng de 1D shùzǔ dìngyì de"

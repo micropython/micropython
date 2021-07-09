@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
@@ -105,5 +106,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
         // signal.
         RUN_BACKGROUND_TASKS;
     }
+    // Short delay to give pin time to settle before disabling PWM
+    common_hal_mcu_delay_us(25);
     pwm_set_enabled(pwmout_obj->slice,false);
 }

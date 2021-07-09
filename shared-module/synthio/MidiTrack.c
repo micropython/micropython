@@ -165,7 +165,7 @@ uint8_t common_hal_synthio_miditrack_get_channel_count(synthio_miditrack_obj_t *
 }
 
 void synthio_miditrack_reset_buffer(synthio_miditrack_obj_t *self,
-    bool single_channel, uint8_t channel) {
+    bool single_channel_output, uint8_t channel) {
 
     self->next_span = 0;
 }
@@ -174,7 +174,7 @@ STATIC const uint16_t notes[] = {8372, 8870, 9397, 9956, 10548, 11175, 11840,
                                  12544, 13290, 14080, 14917, 15804}; // 9th octave
 
 audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t *self,
-    bool single_channel, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
+    bool single_channel_output, uint8_t channel, uint8_t **buffer, uint32_t *buffer_length) {
 
     if (self->next_span >= self->total_spans) {
         *buffer_length = 0;
@@ -202,7 +202,7 @@ audioio_get_buffer_result_t synthio_miditrack_get_buffer(synthio_miditrack_obj_t
            GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;
 }
 
-void synthio_miditrack_get_buffer_structure(synthio_miditrack_obj_t *self, bool single_channel,
+void synthio_miditrack_get_buffer_structure(synthio_miditrack_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed, uint32_t *max_buffer_length, uint8_t *spacing) {
 
     *single_buffer = true;

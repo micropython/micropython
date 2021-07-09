@@ -30,6 +30,7 @@
 #include "py/reload.h"
 #include "supervisor/shared/tick.h"
 
+supervisor_allocation *next_code_allocation;
 #include "shared-bindings/supervisor/Runtime.h"
 
 static volatile uint32_t autoreload_delay_ms = 0;

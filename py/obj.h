@@ -794,8 +794,13 @@ extern uint64_t float_to_uint64(float f);
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+#define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
+#define mp_obj_new_exception_msg_varg(exc_type, ...) mp_obj_new_exception(exc_type)
+#else
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+#endif
 #ifdef va_start
 mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 #endif

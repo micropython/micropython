@@ -367,9 +367,11 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
     return exc_type->make_new(exc_type, n_args, args, NULL);
 }
 
+#if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     return mp_obj_new_exception_msg_varg(exc_type, msg);
 }
+#endif
 
 // The following struct and function implement a simple printer that conservatively
 // allocates memory and truncates the output data if no more memory can be obtained.

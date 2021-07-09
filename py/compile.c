@@ -1795,16 +1795,6 @@ STATIC void compile_yield_from(compiler_t *comp) {
 }
 
 #if MICROPY_PY_ASYNC_AWAIT
-STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int scope_flags = comp->scope_cur->scope_flags;
-    if ((scope_flags & MP_SCOPE_FLAG_ASYNC) != 0) {
-        return true;
-    }
-    compile_syntax_error(comp, (mp_parse_node_t)pns,
-        MP_ERROR_TEXT("'await', 'async for' or 'async with' outside async function"));
-    return false;
-}
-
 STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
     EMIT_ARG(load_method, method, false);
     EMIT_ARG(call_method, 0, 0, 0);
@@ -1813,11 +1803,6 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
-
-    if (!compile_require_async_context(comp, pns)) {
-        return;
-    }
-
     qstr context = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
     uint while_else_label = comp_next_label(comp);
     uint try_exception_label = comp_next_label(comp);
@@ -1980,9 +1965,6 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_
 }
 
 STATIC void compile_async_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (!compile_require_async_context(comp, pns)) {
-        return;
-    }
     // get the nodes for the pre-bit of the with (the a as b, c as d, ... bit)
     mp_parse_node_t *nodes;
     size_t n = mp_parse_node_extract_list(&pns->nodes[0], PN_with_stmt_list, &nodes);
@@ -2000,13 +1982,23 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t *)pns0->nodes[4];
         fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_ASYNC;
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
-        // async for
-        compile_async_for_stmt(comp, pns0);
     } else {
-        // async with
-        assert(MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_with_stmt);
-        compile_async_with_stmt(comp, pns0);
+        // async for/with; first verify the scope is a generator
+        int scope_flags = comp->scope_cur->scope_flags;
+        if (!(scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns0,
+                MP_ERROR_TEXT("'await', 'async for' or 'async with' outside async function"));
+            return;
+        }
+
+        if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
+            // async for
+            compile_async_for_stmt(comp, pns0);
+        } else {
+            // async with
+            assert(MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_with_stmt);
+            compile_async_with_stmt(comp, pns0);
+        }
     }
 }
 #endif
@@ -2627,7 +2619,7 @@ STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *
                     compile_node(comp, pn_i);
                     if (is_dict) {
                         if (!is_key_value) {
-                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("invalid syntax"));
                             #else
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("expecting key:value for dict"));
@@ -2637,7 +2629,7 @@ STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *
                         EMIT(store_map);
                     } else {
                         if (is_key_value) {
-                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("invalid syntax"));
                             #else
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("expecting just a value for set"));
@@ -2799,7 +2791,6 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
         compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("'await' outside function"));
         return;
     }
-    compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
 
     // If it's an awaitable thing, need to reach for the __await__ method for the coroutine.

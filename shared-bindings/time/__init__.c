@@ -80,20 +80,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
-        return namedtuple_make_new(type, n_args, args, kw_args);
-    }
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(args[0], &len, &items);
+    if (len != 9) {
+        mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
+    }
     return namedtuple_make_new(type, len, items, NULL);
 }
 
 //| class struct_time:
-//|     def __init__(self, time_tuple: Tuple[int, int, int, int, int, int, int, int, int]) -> None:
-//|         """Structure used to capture a date and time. Note that it takes a tuple!
+//|     def __init__(self, time_tuple: Sequence[int]) -> None:
+//|         """Structure used to capture a date and time.  Can be constructed from a `struct_time`, `tuple`, `list`, or `namedtuple` with 9 elements.
 //|
-//|         :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
+//|         :param Sequence time_tuple: Sequence of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
 //|
 //|           * ``tm_year``: the year, 2017 for example
 //|           * ``tm_mon``: the month, range [1, 12]

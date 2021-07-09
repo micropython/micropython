@@ -7,7 +7,8 @@ SRC_SUPERVISOR = \
 	supervisor/shared/cpu.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
-        supervisor/shared/memory.c \
+	supervisor/shared/lock.c \
+	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
@@ -27,7 +28,17 @@ SPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth.c supervisor/bluetooth.c
+	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
+  CIRCUITPY_CREATOR_ID ?= $(USB_VID)
+  CIRCUITPY_CREATION_ID ?= $(USB_PID)
+  CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
+  CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
+  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/file_transfer.c
+  endif
+  ifeq ($(CIRCUITPY_SERIAL_BLE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/serial.c
+  endif
 endif
 
 # Choose which flash filesystem impl to use.

@@ -51,6 +51,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " uitvoer:\n"
 
@@ -86,9 +90,21 @@ msgstr "%q index buiten bereik"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indexen moeten integers zijn, niet %s"
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q lijst moet een lijst zijn"
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -98,7 +114,11 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q moet >= 0 zijn"
 
@@ -114,12 +134,20 @@ msgstr "%q moet >= 1 zijn"
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q moet een tuple van lengte 2 zijn"
 
 #: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
 msgid "%q must be between %d and %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -571,10 +599,6 @@ msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 msgid "Buffer must be at least length 1"
 msgstr "Buffer moet op zijn minst lengte 1 zijn"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Buffer is te groot en niet in staat te alloceren"
-
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
@@ -852,6 +876,10 @@ msgstr ""
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Data chunk moet gevolgd worden door fmt chunk"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1650,7 +1678,6 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "Geen geldige IP string"
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1697,6 +1724,10 @@ msgstr ""
 "Alleen Windows formaat en ongecomprimeerd BMP ondersteund: gegeven header "
 "grootte is %d"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
+
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1720,6 +1751,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Slechts één alarm.time alarm kan worden ingesteld."
@@ -2027,6 +2059,10 @@ msgstr "SPI Init Fout"
 msgid "SPI Re-initialization error"
 msgstr "SPI Herinitialisatie Fout"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
@@ -2065,6 +2101,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "Afmeting niet ondersteund"
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2209,6 +2246,7 @@ msgstr "Teveel beeldschermen"
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr ""
@@ -2513,7 +2551,7 @@ msgstr "argsort argument moet een ndarray zijn"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort wordt niet geïmplementeerd voor vlakke arrays"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argument heeft onjuist type"
 
@@ -2587,6 +2625,10 @@ msgstr "verkeerde typecode"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "binaire op %q niet geïmplementeerd"
+
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
@@ -3203,6 +3245,10 @@ msgstr ""
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic moet 2048 bytes lang zijn"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -4420,6 +4466,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Buffer is te groot en niet in staat te alloceren"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr ""
