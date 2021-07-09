@@ -390,8 +390,8 @@ def compute_huffman_coding(translations, compression_filename):
             ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items()), key=lambda x: x[1]
         )
 
-        # Pick the one with the highest score.
-        if not scores:
+        # Pick the one with the highest score.  The score must be negative.
+        if not scores or scores[0][-1] >= 0:
             break
 
         word = scores[0][0]
