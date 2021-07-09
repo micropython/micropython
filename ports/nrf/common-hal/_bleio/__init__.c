@@ -102,6 +102,7 @@ void bleio_reset() {
         return;
     }
 
+    supervisor_stop_bluetooth();
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     bonding_reset();

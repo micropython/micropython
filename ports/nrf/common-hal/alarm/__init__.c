@@ -42,10 +42,6 @@
 
 #include "supervisor/port.h"
 #include "supervisor/serial.h"  // serial_connected()
-#ifdef NRF_DEBUG_PRINT
-#include "supervisor/serial.h" // dbg_printf()
-extern int dbg_check_RTCprescaler(void);
-#endif
 #include "supervisor/qspi_flash.h"
 
 #include "nrf.h"
@@ -102,7 +98,7 @@ static const char *cause_str[] = {
 };
 void print_wakeup_cause(nrf_sleep_source_t cause) {
     if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
-        dbg_printf("wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
+        mp_printf(&mp_plat_print, "wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
             cause_str[(int)cause]);
     }
 }
@@ -223,7 +219,7 @@ void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
         port_idle_until_interrupt();
         #ifdef NRF_DEBUG_PRINT
         if (ct > 0) {
-            dbg_printf("_");
+            mp_printf(&mp_plat_print, "_");
             --ct;
         }
         #endif
@@ -237,7 +233,7 @@ void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
         }
     }
     #ifdef NRF_DEBUG_PRINT
-    dbg_printf("%c\r\n", reason);
+    mp_printf(&mp_plat_print, "%c\r\n", reason);
     #endif
 
     #if defined(MICROPY_QSPI_CS)
@@ -252,7 +248,7 @@ void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
     } else {
         sec = (double)(tickdiff * prescaler) / 1024;
     }
-    dbg_printf("lapse %6.1f sec\r\n", sec);
+    mp_printf(&mp_plat_print, "lapse %6.1f sec\r\n", sec);
     #endif
 }
 
@@ -262,7 +258,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     _setup_sleep_alarms(false, n_alarms, alarms);
 
     #ifdef NRF_DEBUG_PRINT
-    dbg_printf("\r\nlight sleep...");
+    mp_printf(&mp_plat_print, "\r\nlight sleep...");
     #endif
 
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
@@ -305,17 +301,14 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_time_timealarm_prepare_for_deep_sleep();
 
     #ifdef NRF_DEBUG_PRINT
-    dbg_printf("\r\ndeep sleep...");
+    mp_printf(&mp_plat_print, "\r\ndeep sleep...");
     #endif
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
     tick_set_prescaler(PRESCALER_VALUE_IN_DEEP_SLEEP - 1);
-    #ifdef NRF_DEBUG_PRINT
-    dbg_check_RTCprescaler(); // XXX
-    #endif
     system_on_idle_until_alarm(timediff_ms, PRESCALER_VALUE_IN_DEEP_SLEEP);
 
     #ifdef NRF_DEBUG_PRINT
-    dbg_printf("RESET...\r\n\r\n");
+    mp_printf(&mp_plat_print, "RESET...\r\n\r\n");
     #endif
 
     reset_cpu();
@@ -326,30 +319,12 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     }
 }
 
-// old version deep sleep code that was used in common_hal_alarm_enter_deep_sleep()
-//   for anyone who might want true System OFF sleep ..
-#if 0
-void OLD_go_system_off(void) {
-    sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_NONE;
-    sleepmem_wakeup_pin = WAKEUP_PIN_UNDEF;
-    uint8_t sd_enabled;
-    sd_softdevice_is_enabled(&sd_enabled);
-    set_memory_retention();
-    dbg_printf("OLD go system off.. %d\r\n", sd_enabled);
-    if (sd_enabled) {
-        sd_power_system_off();
-    } else {
-        NRF_POWER->SYSTEMOFF = 1;
-    }
-}
-#endif
-
 void common_hal_alarm_pretending_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
 
     #ifdef NRF_DEBUG_PRINT
-    dbg_printf("\r\npretending to deep sleep...");
+    mp_printf(&mp_plat_print, "\r\npretending to deep sleep...");
     #endif
 
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();

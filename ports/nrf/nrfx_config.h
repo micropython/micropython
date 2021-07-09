@@ -76,6 +76,9 @@
 #define NRFX_UARTE_ENABLED 1
 #define NRFX_UARTE0_ENABLED 1
 #define NRFX_UARTE1_ENABLED 1
+// Higher priority than non-timing sensitive BLE so that we can log over UART
+// from it.
+#define NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY 3
 
 // PWM
 #define NRFX_PWM0_ENABLED 1

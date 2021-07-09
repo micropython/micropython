@@ -252,7 +252,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     path[command->path_length] = '\0';
 
     // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB_MSC
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
     if (storage_usb_enabled() && !usb_msc_lock()) {
         response.status = STATUS_ERROR;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
@@ -506,11 +506,13 @@ void supervisor_bluetooth_file_transfer_background(void) {
         }
         // TODO: If size < 0 return an error.
         current_offset += size;
-        // mp_printf(&mp_plat_print, "buffer[:%d]:", current_offset);
-        // for (size_t i = 0; i < current_offset; i++) {
-        //     mp_printf(&mp_plat_print, " (%x %c)", current_command[i], current_command[i]);
-        // }
-        // mp_printf(&mp_plat_print, "\n");
+        #if CIRCUITPY_VERBOSE_BLE
+        mp_printf(&mp_plat_print, "buffer[:%d]:", current_offset);
+        for (size_t i = 0; i < current_offset; i++) {
+            mp_printf(&mp_plat_print, " (%x %c)", current_command[i], current_command[i]);
+        }
+        mp_printf(&mp_plat_print, "\n");
+        #endif
         uint8_t current_state = current_command[0];
         // mp_printf(&mp_plat_print, "current command 0x%02x\n", current_state);
         // Check for protocol error.

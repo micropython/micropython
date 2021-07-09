@@ -40,6 +40,8 @@
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "supervisor/shared/tick.h"
 
+#include "supervisor/shared/bluetooth/serial.h"
+
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
@@ -482,8 +484,8 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
 }
 
 void common_hal_bleio_packet_buffer_flush(bleio_packet_buffer_obj_t *self) {
-    while (self->pending_size != 0 &&
-           self->packet_queued &&
+    while ((self->pending_size != 0 ||
+            self->packet_queued) &&
            self->conn_handle != BLE_CONN_HANDLE_INVALID &&
            !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;

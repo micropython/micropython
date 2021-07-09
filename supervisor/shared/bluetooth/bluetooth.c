@@ -161,6 +161,9 @@ void supervisor_bluetooth_init(void) {
     common_hal_digitalio_digitalinout_construct(&boot_button, CIRCUITPY_BOOT_BUTTON);
     common_hal_digitalio_digitalinout_switch_to_input(&boot_button, PULL_UP);
     #endif
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
+    #endif
     uint64_t start_ticks = supervisor_ticks_ms64();
     uint64_t diff = 0;
     if (ble_mode != 0) {
@@ -232,4 +235,14 @@ void supervisor_start_bluetooth(void) {
 
     // Kick off advertisments
     supervisor_bluetooth_background();
+}
+
+void supervisor_stop_bluetooth(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    return;
+    #endif
+
+    #if CIRCUITPY_SERIAL_BLE
+    supervisor_stop_bluetooth_serial();
+    #endif
 }
