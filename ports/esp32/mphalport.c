@@ -47,8 +47,8 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
-#include "lib/timeutils/timeutils.h"
-#include "lib/utils/pyexec.h"
+#include "shared/timeutils/timeutils.h"
+#include "shared/runtime/pyexec.h"
 #include "mphalport.h"
 #include "usb.h"
 

@@ -53,27 +53,27 @@ SRC_C = \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
-	lib/libc/string0.c \
 	lib/libm/ef_sqrt.c \
 	lib/libm/fmodf.c \
 	lib/libm/math.c \
 	lib/libm/nearbyintf.c \
-	lib/mp-readline/readline.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/device/usbd_control.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/tinyusb/src/tusb.c \
-	lib/utils/gchelper_native.c \
-	lib/utils/printf.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/gchelper_native.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
 
 ifeq ($(MCU_SERIES),SAMD21)
-SRC_S = lib/utils/gchelper_m0.s
+SRC_S = shared/runtime/gchelper_m0.s
 else
-SRC_S = lib/utils/gchelper_m3.s
+SRC_S = shared/runtime/gchelper_m3.s
 endif
 
 # List of sources for qstr extraction

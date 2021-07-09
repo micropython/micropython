@@ -35,7 +35,7 @@
 
 #if MICROPY_PY_LWIP
 
-#include "lib/netutils/dhcpserver.h"
+#include "shared/netutils/dhcpserver.h"
 #include "lwip/udp.h"
 
 #define DHCPDISCOVER    (1)

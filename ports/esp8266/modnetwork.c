@@ -31,7 +31,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"

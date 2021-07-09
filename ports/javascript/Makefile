@@ -24,11 +24,11 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-SRC_LIB = $(addprefix lib/,\
-	utils/interrupt_char.c \
-	utils/stdout_helpers.c \
-	utils/pyexec.c \
-	mp-readline/readline.c \
+SRC_SHARED = $(addprefix shared/,\
+	runtime/interrupt_char.c \
+	runtime/stdout_helpers.c \
+	runtime/pyexec.c \
+	readline/readline.c \
 	)
 
 SRC_C = \
@@ -39,7 +39,7 @@ SRC_C = \
 SRC_QSTR += $(SRC_C)
 
 OBJ += $(PY_O)
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 JSFLAGS += -s ASYNCIFY

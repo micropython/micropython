@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "user_interface.h"
 #include "modmachine.h"
 

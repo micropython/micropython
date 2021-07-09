@@ -39,7 +39,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "bufhelper.h"
 #include "storage.h"
 #include "sdcard.h"

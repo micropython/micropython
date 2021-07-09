@@ -49,7 +49,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"

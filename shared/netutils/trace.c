@@ -25,7 +25,7 @@
  */
 
 #include "py/mphal.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 
 static uint32_t get_be16(const uint8_t *buf) {
     return buf[0] << 8 | buf[1];

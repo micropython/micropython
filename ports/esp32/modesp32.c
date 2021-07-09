@@ -40,7 +40,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 #include "modesp32.h"

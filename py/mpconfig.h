@@ -1063,7 +1063,7 @@ typedef double mp_float_t;
 #endif
 
 // Whether to provide the built-in input() function. The implementation of this
-// uses mp-readline, so can only be enabled if the port uses this readline.
+// uses shared/readline, so can only be enabled if the port uses this readline.
 #ifndef MICROPY_PY_BUILTINS_INPUT
 #define MICROPY_PY_BUILTINS_INPUT (0)
 #endif

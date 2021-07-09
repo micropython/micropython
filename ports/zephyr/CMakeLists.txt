@@ -54,14 +54,18 @@ set(MICROPY_SOURCE_PORT
 )
 list(TRANSFORM MICROPY_SOURCE_PORT PREPEND ${MICROPY_PORT_DIR}/)
 
-set(MICROPY_SOURCE_LIB
+set(MICROPY_SOURCE_SHARED
+    libc/printf.c
+    readline/readline.c
+    runtime/interrupt_char.c
+    runtime/mpirq.c
+    runtime/pyexec.c
+    runtime/stdout_helpers.c
     timeutils/timeutils.c
-    utils/mpirq.c
-    utils/stdout_helpers.c
-    utils/printf.c
-    utils/pyexec.c
-    utils/interrupt_char.c
-    mp-readline/readline.c
+)
+list(TRANSFORM MICROPY_SOURCE_SHARED PREPEND ${MICROPY_DIR}/shared/)
+
+set(MICROPY_SOURCE_LIB
     oofatfs/ff.c
     oofatfs/ffunicode.c
     littlefs/lfs1.c
@@ -74,6 +78,7 @@ list(TRANSFORM MICROPY_SOURCE_LIB PREPEND ${MICROPY_DIR}/lib/)
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
 )

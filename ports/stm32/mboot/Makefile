@@ -105,9 +105,9 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+$(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 LIB_SRC_C += \
-	lib/libc/string0.c \
+	shared/libc/string0.c \
 	lib/littlefs/lfs1.c \
 	lib/littlefs/lfs1_util.c \
 	lib/littlefs/lfs2.c \

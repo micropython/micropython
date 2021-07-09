@@ -285,7 +285,7 @@ void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
 // Task-based UART interface
 
 #include "py/obj.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 #if MICROPY_REPL_EVENT_DRIVEN
 void ICACHE_FLASH_ATTR uart_task_handler(os_event_t *evt) {

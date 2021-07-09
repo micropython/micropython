@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "boardctrl.h"
 #include "led.h"
 #include "usrsw.h"

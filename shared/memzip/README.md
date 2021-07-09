@@ -10,13 +10,13 @@ a C file which contains the data from the zip file.
 A typical addition to a makefile would look like:
 ```
 SRC_C += \
-    lib/memzip/import.c \
-    lib/memzip/lexermemzip.c \
-    lib/memzip/memzip.c \
+    shared/memzip/import.c \
+    shared/memzip/lexermemzip.c \
+    shared/memzip/memzip.c \
 
 OBJ += $(BUILD)/memzip-files.o
 
-MAKE_MEMZIP = ../lib/memzip/make-memzip.py
+MAKE_MEMZIP = ../shared/memzip/make-memzip.py
 
 $(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
     $(call compile_c)

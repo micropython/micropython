@@ -34,7 +34,7 @@
 
 #if MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP
 
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "drivers/wiznet5k/ethernet/socket.h"
 #include "lwip/err.h"
 #include "lwip/dns.h"

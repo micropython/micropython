@@ -1,4 +1,4 @@
-LIB_SRC_C = lib/upytesthelper/upytesthelper.c
+LIB_SRC_C = shared/upytesthelper/upytesthelper.c
 
 FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 

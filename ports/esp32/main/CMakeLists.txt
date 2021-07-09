@@ -15,21 +15,24 @@ set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_DIR}/qstrdefsport.h
 )
 
+set(MICROPY_SOURCE_SHARED
+    ${MICROPY_DIR}/shared/readline/readline.c
+    ${MICROPY_DIR}/shared/netutils/netutils.c
+    ${MICROPY_DIR}/shared/timeutils/timeutils.c
+    ${MICROPY_DIR}/shared/runtime/interrupt_char.c
+    ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
+    ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/runtime/pyexec.c
+)
+
 set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1.c
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
-    ${MICROPY_DIR}/lib/mp-readline/readline.c
-    ${MICROPY_DIR}/lib/netutils/netutils.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
-    ${MICROPY_DIR}/lib/timeutils/timeutils.c
-    ${MICROPY_DIR}/lib/utils/interrupt_char.c
-    ${MICROPY_DIR}/lib/utils/stdout_helpers.c
-    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
-    ${MICROPY_DIR}/lib/utils/pyexec.c
 )
 
 set(MICROPY_SOURCE_DRIVERS
@@ -80,6 +83,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_USERMOD}
+    ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
 )
@@ -142,6 +146,7 @@ idf_component_register(
     SRCS
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
+        ${MICROPY_SOURCE_SHARED}
         ${MICROPY_SOURCE_LIB}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}

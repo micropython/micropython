@@ -155,15 +155,15 @@ SRC_C = \
 	moduos.c \
 	mphalport.c \
 	hal/flexspi_nor_flash.c \
-	lib/mp-readline/readline.c \
-	lib/libc/string0.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/gchelper_native.c \
-	lib/utils/mpirq.c \
-	lib/utils/printf.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/gchelper_native.c \
+	shared/runtime/mpirq.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
+	shared/runtime/sys_stdio_mphal.c \
+	shared/timeutils/timeutils.c \
 	drivers/bus/softspi.c \
 	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
@@ -264,7 +264,7 @@ endif
 
 SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 
-SRC_S = lib/utils/gchelper_m3.s \
+SRC_S = shared/runtime/gchelper_m3.s \
 
 # List of sources for qstr extraction
 SRC_QSTR += \
@@ -281,8 +281,8 @@ SRC_QSTR += \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
-	lib/utils/mpirq.c \
-	lib/utils/sys_stdio_mphal.c \
+	shared/runtime/mpirq.c \
+	shared/runtime/sys_stdio_mphal.c \
 	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \
 

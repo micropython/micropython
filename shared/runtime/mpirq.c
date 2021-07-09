@@ -29,7 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 
 #if MICROPY_ENABLE_SCHEDULER
 

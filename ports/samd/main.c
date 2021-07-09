@@ -29,8 +29,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 

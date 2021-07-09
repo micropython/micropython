@@ -40,7 +40,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "esp_eth.h"
 #include "esp_wifi.h"
 #include "esp_log.h"

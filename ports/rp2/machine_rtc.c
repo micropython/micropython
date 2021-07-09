@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "hardware/rtc.h"
 #include "pico/util/datetime.h"
 #include "modmachine.h"

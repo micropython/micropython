@@ -42,7 +42,7 @@
 #include "pendsv.h"
 
 #include "py/obj.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_USB

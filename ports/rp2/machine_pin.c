@@ -29,7 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include "extmod/virtpin.h"
 

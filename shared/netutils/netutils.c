@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 
 // Takes an array with a raw IPv4 address and returns something like '192.168.0.1'.
 mp_obj_t netutils_format_ipv4_addr(uint8_t *ip, netutils_endian_t endian) {
