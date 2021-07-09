@@ -54,7 +54,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 
 STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
     EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
@@ -217,7 +217,7 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_range,
     .print = range_print,
     .make_new = range_make_new,

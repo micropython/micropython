@@ -175,7 +175,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
 const mp_obj_type_t alarm_sleep_memory_type = {
     { &mp_type_type },
     .name = MP_QSTR_SleepMemory,
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_t)&alarm_sleep_memory_locals_dict,
     EXTENDED_FIELDS(
         .subscr = alarm_sleep_memory_subscr,

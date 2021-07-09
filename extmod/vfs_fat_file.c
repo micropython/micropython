@@ -244,7 +244,7 @@ STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_fat_fileio = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
@@ -267,7 +267,7 @@ STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_fat_textio = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TextIOWrapper,
     .print = file_obj_print,
     .make_new = file_obj_make_new,

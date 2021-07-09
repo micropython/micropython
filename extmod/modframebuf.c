@@ -602,7 +602,7 @@ STATIC MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_framebuf = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FrameBuffer,
     .make_new = framebuf_make_new,
     .locals_dict = (mp_obj_dict_t *)&framebuf_locals_dict,

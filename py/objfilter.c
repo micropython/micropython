@@ -63,7 +63,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_filter = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_filter,
     .make_new = filter_make_new,
     EXTENDED_FIELDS(

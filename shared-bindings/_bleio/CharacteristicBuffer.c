@@ -238,7 +238,7 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
 
 const mp_obj_type_t bleio_characteristic_buffer_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_CharacteristicBuffer,
     .make_new = bleio_characteristic_buffer_make_new,
     .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_buffer_locals_dict,

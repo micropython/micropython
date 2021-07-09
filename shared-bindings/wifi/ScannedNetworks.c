@@ -63,7 +63,7 @@ STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t wifi_scannednetworks_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ScannedNetworks,
     EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,

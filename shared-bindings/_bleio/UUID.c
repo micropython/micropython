@@ -300,7 +300,7 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 
 const mp_obj_type_t bleio_uuid_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_UUID,
     .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,

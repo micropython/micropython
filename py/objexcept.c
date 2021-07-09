@@ -626,7 +626,7 @@ STATIC const mp_obj_namedtuple_type_t code_type_obj = {
         .base = {
             .type = &mp_type_type
         },
-        .flags = MP_TYPE_FLAG_FULL,
+        .flags = MP_TYPE_FLAG_EXTENDED,
         .name = MP_QSTR_code,
         .print = namedtuple_print,
         .make_new = namedtuple_make_new,
@@ -731,7 +731,7 @@ STATIC const mp_obj_namedtuple_type_t traceback_type_obj = {
         .base = {
             .type = &mp_type_type
         },
-        .flags = MP_TYPE_FLAG_FULL,
+        .flags = MP_TYPE_FLAG_EXTENDED,
         .name = MP_QSTR_traceback,
         .print = namedtuple_print,
         .make_new = namedtuple_make_new,

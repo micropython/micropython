@@ -157,7 +157,7 @@ static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
@@ -414,7 +414,7 @@ STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_t
 
 const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,

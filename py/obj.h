@@ -516,7 +516,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 #define MP_TYPE_FLAG_BINDS_SELF (0x0020)
 #define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
-#define MP_TYPE_FLAG_FULL (0x0080) // contains the 'ext' fields
+#define MP_TYPE_FLAG_EXTENDED (0x0080) // contains the 'ext' fields
 
 typedef enum {
     PRINT_STR = 0,

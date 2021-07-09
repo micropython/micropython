@@ -118,7 +118,7 @@ STATIC const mp_stream_p_t terminalio_terminal_stream_p = {
 
 const mp_obj_type_t terminalio_terminal_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Terminal,
     .make_new = terminalio_terminal_make_new,
     .locals_dict = (mp_obj_dict_t *)&terminalio_terminal_locals_dict,

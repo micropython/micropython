@@ -45,7 +45,7 @@ STATIC void none_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 
 const mp_obj_type_t mp_type_NoneType = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_NoneType,
     .print = none_print,
     EXTENDED_FIELDS(

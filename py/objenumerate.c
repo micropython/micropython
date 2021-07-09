@@ -71,7 +71,7 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, con
 
 const mp_obj_type_t mp_type_enumerate = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_enumerate,
     .make_new = enumerate_make_new,
     EXTENDED_FIELDS(

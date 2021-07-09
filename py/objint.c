@@ -571,7 +571,7 @@ STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .print = mp_obj_int_print,
     .make_new = mp_obj_int_make_new,
     .locals_dict = (mp_obj_dict_t *)&int_locals_dict,

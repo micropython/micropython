@@ -226,7 +226,7 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     .print = MP_VFS_LFSx(file_print),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
@@ -248,7 +248,7 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TextIOWrapper,
     .print = MP_VFS_LFSx(file_print),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),

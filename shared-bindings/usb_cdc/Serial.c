@@ -310,7 +310,7 @@ STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
 
 const mp_obj_type_t usb_cdc_serial_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Serial,
     .locals_dict = (mp_obj_dict_t *)&usb_cdc_serial_locals_dict,
     EXTENDED_FIELDS(

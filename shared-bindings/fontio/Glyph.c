@@ -58,7 +58,7 @@ const mp_obj_namedtuple_type_t fontio_glyph_type = {
             .type = &mp_type_type
         },
         .name = MP_QSTR_Glyph,
-        .flags = MP_TYPE_FLAG_FULL,
+        .flags = MP_TYPE_FLAG_EXTENDED,
         .print = namedtuple_print,
         .make_new = namedtuple_make_new,
         .parent = &mp_type_tuple,

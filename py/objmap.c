@@ -66,7 +66,7 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_map = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_map,
     .make_new = map_make_new,
     EXTENDED_FIELDS(

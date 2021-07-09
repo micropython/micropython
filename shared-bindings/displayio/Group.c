@@ -357,7 +357,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_
 
 const mp_obj_type_t displayio_group_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Group,
     .make_new = displayio_group_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,

@@ -190,7 +190,7 @@ STATIC MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4add
 
 const mp_obj_type_t ipaddress_ipv4address_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Address,
     .make_new = ipaddress_ipv4address_make_new,
     .locals_dict = (mp_obj_dict_t *)&ipaddress_ipv4address_locals_dict,

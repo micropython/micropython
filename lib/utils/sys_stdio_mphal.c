@@ -129,7 +129,7 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 
 STATIC const mp_obj_type_t stdio_obj_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,
@@ -169,7 +169,7 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
 STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .print = stdio_obj_print,
     .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
     EXTENDED_FIELDS(

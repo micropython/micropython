@@ -368,7 +368,7 @@ STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, m
 
 const mp_obj_type_t displayio_bitmap_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Bitmap,
     .make_new = displayio_bitmap_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,

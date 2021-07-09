@@ -744,7 +744,7 @@ STATIC MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_array,
     .print = array_print,
     .make_new = array_make_new,
@@ -762,7 +762,7 @@ const mp_obj_type_t mp_type_array = {
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_bytearray,
     .print = array_print,
     .make_new = bytearray_make_new,
@@ -789,7 +789,7 @@ STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table
 
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
     #if MICROPY_CPYTHON_COMPAT
@@ -860,7 +860,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
     EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,

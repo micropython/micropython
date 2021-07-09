@@ -204,7 +204,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_loc
 
 const mp_obj_type_t displayio_palette_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Palette,
     .make_new = displayio_palette_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_palette_locals_dict,

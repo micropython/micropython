@@ -246,7 +246,7 @@ STATIC const mp_stream_p_t stringio_stream_p = {
 
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_StringIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
@@ -268,7 +268,7 @@ STATIC const mp_stream_p_t bytesio_stream_p = {
 
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_BytesIO,
     .print = stringio_print,
     .make_new = stringio_make_new,

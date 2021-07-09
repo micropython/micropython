@@ -62,7 +62,7 @@ STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t bleio_scanresults_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ScanResults,
     EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
