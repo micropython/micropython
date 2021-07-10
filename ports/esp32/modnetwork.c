@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2016, 2017 Nick Moore @mnemote
  * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
+ * Copyright (c) 2021 "Matthew Arcidy" <marcidy@gmail.com>
  *
  * Based on esp8266/modnetwork.c which is Copyright (c) 2015 Paul Sokolovsky
  * And the ESP IDF example code which is Public Domain / CC0
@@ -127,6 +128,9 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
 
+// Set to "true" if the STA interface completed a scan for APs.
+static bool wifi_sta_scan_done = false;
+
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
 static bool wifi_sta_connect_requested = false;
@@ -152,6 +156,10 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         case SYSTEM_EVENT_STA_START:
             ESP_LOGI("wifi", "STA_START");
             wifi_sta_reconnects = 0;
+            break;
+        case SYSTEM_EVENT_SCAN_DONE:
+            ESP_LOGI("wifi", "SCAN_DONE");
+            wifi_sta_scan_done = true;
             break;
         case SYSTEM_EVENT_STA_CONNECTED:
             ESP_LOGI("network", "CONNECTED");
@@ -454,9 +462,52 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
+STATIC mp_obj_t esp_get_scan_results(mp_obj_t self_in) {
+    if (!wifi_sta_scan_done) {
+        ESP_LOGI("wifi", "Scan not complete");
+        return mp_const_none;
+    }
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    uint16_t count = 0;
+    ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
+    if (count == 0) {
+        ESP_LOGI("wifi", "No AP records found");
+        wifi_sta_scan_done = false;
+        return list;
+    }
+    wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
+    ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
+    for (uint16_t i = 0; i < count; i++) {
+        mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+        uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
+        int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
+        t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
+        t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
+        t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
+        t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
+        t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
+        t->items[5] = mp_const_false; // XXX hidden?
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
+    }
+    free(wifi_ap_records);
+    wifi_sta_scan_done = false;
+    return list;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_get_scan_results_obj, esp_get_scan_results);
+
+STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t *self_in = MP_OBJ_TO_PTR(args[0]);
+    bool blocking = true;
+    
+    // If 1 arg or 2nd arg is True, blocking scan
+    if (n_args  > 1) {
+        blocking = mp_obj_is_true(args[1]);
+    }
+
     // check that STA mode is active
     wifi_mode_t mode;
     ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
@@ -464,35 +515,27 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
-    mp_obj_t list = mp_obj_new_list(0, NULL);
     wifi_scan_config_t config = { 0 };
     // XXX how do we scan hidden APs (and if we can scan them, are they really hidden?)
-    MP_THREAD_GIL_EXIT();
-    esp_err_t status = esp_wifi_scan_start(&config, 1);
-    MP_THREAD_GIL_ENTER();
-    if (status == 0) {
-        uint16_t count = 0;
-        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
-        wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
-        for (uint16_t i = 0; i < count; i++) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
-            int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
-            t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
-            t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
-            t->items[5] = mp_const_false; // XXX hidden?
-            mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
+
+    if (blocking) {
+        MP_THREAD_GIL_EXIT();
+        esp_err_t status = esp_wifi_scan_start(&config, 1);
+        MP_THREAD_GIL_ENTER();
+
+        if (status == 0) {
+            return esp_get_scan_results(self_in);
         }
-        free(wifi_ap_records);
+    } else {
+        ESP_LOGI("wifi", "Attempting non-blocking scan");
+        ESP_EXCEPTIONS(esp_wifi_scan_start(&config, 0));
     }
-    return list;
+
+    wifi_sta_scan_done = false;
+    return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_scan_obj, 1, 2, esp_scan);
 
 STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -759,6 +802,7 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_scan_results), MP_ROM_PTR(&esp_get_scan_results_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);

@@ -110,6 +110,14 @@ calling ``wlan.config(reconnects=n)``, where n are the number of desired reconne
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
 
+``wlan.scan()`` accepts a boolean argument which defaults to `True` to run a 
+scan for Access Points.  By default, the scan is blocking and returns the results 
+as a list.  ``wlan.scan(False)`` will run a non-blocking scan.  When the 
+non-blocking scan completes, the results are available by calling 
+``wlan.get_scan_results()``.  If a scan is in progress, any other commands 
+which change the state of the interface will cancel the scan.
+
+
 Delay and timing
 ----------------
 
