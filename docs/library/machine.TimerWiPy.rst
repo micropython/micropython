@@ -16,7 +16,7 @@ the most flexible and heterogeneous kind of hardware in MCUs and SoCs,
 differently greatly from a model to a model. MicroPython's Timer class
 defines a baseline operation of executing a callback with a given period
 (or once after some delay), and allow specific boards to define more
-non-standard behavior (which thus won't be portable to other boards).
+non-standard behaviour (which thus won't be portable to other boards).
 
 See discussion of :ref:`important constraints <machine_callbacks>` on
 Timer callbacks.
@@ -39,7 +39,7 @@ Constructors
 Methods
 -------
 
-.. method:: TimerWiPy.init(mode, \*, width=16)
+.. method:: TimerWiPy.init(mode, *, width=16)
 
    Initialise the timer. Example::
 
@@ -64,7 +64,7 @@ Methods
 
    Deinitialises the timer. Stops the timer, and disables the timer peripheral.
 
-.. method:: TimerWiPy.channel(channel, \**, freq, period, polarity=TimerWiPy.POSITIVE, duty_cycle=0)
+.. method:: TimerWiPy.channel(channel, **, freq, period, polarity=TimerWiPy.POSITIVE, duty_cycle=0)
 
    If only a channel identifier passed, then a previously initialized channel
    object is returned (or ``None`` if there is no previous channel).
@@ -113,9 +113,9 @@ TimerChannel objects are created using the Timer.channel() method.
 Methods
 -------
 
-.. method:: timerchannel.irq(\*, trigger, priority=1, handler=None)
+.. method:: timerchannel.irq(*, trigger, priority=1, handler=None)
 
-    The behavior of this callback is heavily dependent on the operating
+    The behaviour of this callback is heavily dependent on the operating
     mode of the timer channel:
 
         - If mode is ``TimerWiPy.PERIODIC`` the callback is executed periodically

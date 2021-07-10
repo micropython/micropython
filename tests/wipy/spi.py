@@ -1,17 +1,17 @@
-'''
+"""
 SPI test for the CC3200 based boards.
-'''
+"""
 
 from machine import SPI
 import os
 
 mch = os.uname().machine
-if 'LaunchPad' in mch:
-    spi_pins = ('GP14', 'GP16', 'GP30')
-elif 'WiPy' in mch:
-    spi_pins = ('GP14', 'GP16', 'GP30')
+if "LaunchPad" in mch:
+    spi_pins = ("GP14", "GP16", "GP30")
+elif "WiPy" in mch:
+    spi_pins = ("GP14", "GP16", "GP30")
 else:
-    raise Exception('Board not supported!')
+    raise Exception("Board not supported!")
 
 spi = SPI(0, SPI.MASTER, baudrate=2000000, polarity=0, phase=0, firstbit=SPI.MSB, pins=spi_pins)
 print(spi)
@@ -27,15 +27,15 @@ spi = SPI(0, SPI.MASTER, baudrate=10000000, polarity=1, phase=1)
 print(spi)
 spi.init(baudrate=20000000, polarity=0, phase=0)
 print(spi)
-spi=SPI()
+spi = SPI()
 print(spi)
 SPI(mode=SPI.MASTER)
 SPI(mode=SPI.MASTER, pins=spi_pins)
-SPI(id=0, mode=SPI.MASTER, polarity=0, phase=0, pins=('GP14', 'GP16', 'GP15'))
-SPI(0, SPI.MASTER, polarity=0, phase=0, pins=('GP31', 'GP16', 'GP15'))
+SPI(id=0, mode=SPI.MASTER, polarity=0, phase=0, pins=("GP14", "GP16", "GP15"))
+SPI(0, SPI.MASTER, polarity=0, phase=0, pins=("GP31", "GP16", "GP15"))
 
 spi = SPI(0, SPI.MASTER, baudrate=10000000, polarity=0, phase=0, pins=spi_pins)
-print(spi.write('123456') == 6)
+print(spi.write("123456") == 6)
 buffer_r = bytearray(10)
 print(spi.readinto(buffer_r) == 10)
 print(spi.readinto(buffer_r, write=0x55) == 10)
@@ -76,7 +76,7 @@ print(spi.write_readinto(buffer_w, buffer_r) == 12)
 print(buffer_w == buffer_r)
 
 # check for memory leaks...
-for i in range (0, 1000):
+for i in range(0, 1000):
     spi = SPI(0, SPI.MASTER, baudrate=1000000)
 
 # test deinit
@@ -112,7 +112,7 @@ except:
     print("Exception")
 
 try:
-    spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=2, phase=0, pins=('GP1', 'GP2'))
+    spi = SPI(0, mode=SPI.MASTER, baudrate=2000000, polarity=2, phase=0, pins=("GP1", "GP2"))
 except:
     print("Exception")
 
@@ -133,7 +133,7 @@ except Exception:
     print("Exception")
 
 try:
-    spi.spi.write('abc')
+    spi.spi.write("abc")
 except Exception:
     print("Exception")
 

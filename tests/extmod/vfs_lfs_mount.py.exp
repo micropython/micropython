@@ -1,6 +1,16 @@
 test <class 'VfsLfs1'>
+OSError(19,)
 hello from lfs
 package
+hello from lfs
+lfsmod2.py: print("hello from lfs")
+
+OSError(30,)
 test <class 'VfsLfs2'>
+OSError(19,)
 hello from lfs
 package
+hello from lfs
+lfsmod2.py: print("hello from lfs")
+
+OSError(36,)

@@ -1,6 +1,9 @@
-# test waiting within "async for" aiter/anext functions
+# test waiting within "async for" __anext__ function
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 if sys.implementation.name == 'micropython':
     # uPy allows normal generators to be awaitables
     coroutine = lambda f: f
@@ -21,9 +24,8 @@ class ARange:
         self.cur = 0
         self.high = high
 
-    async def __aiter__(self):
+    def __aiter__(self):
         print('aiter')
-        print('f returned:', await f(10))
         return self
 
     async def __anext__(self):

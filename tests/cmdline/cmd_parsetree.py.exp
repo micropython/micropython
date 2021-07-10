@@ -1,31 +1,31 @@
 ----------------
-[   4] rule(1) (n=9)
+[   4] \(rule\|file_input_2\)(1) (n=9)
          tok(4)
-[   4]   rule(22) (n=4)
+[   4]   \(rule\|for_stmt\)(22) (n=4)
            id(i)
-[   4]     rule(44) (n=1)
+[   4]     \(rule\|atom_paren\)(45) (n=1)
              NULL
-[   5]     rule(8) (n=0)
+[   5]     \(rule\|pass_stmt\)(8) (n=0)
            NULL
-[   6]   rule(5) (n=2)
+[   6]   \(rule\|expr_stmt\)(5) (n=2)
            id(a)
            tok(14)
-[   7]   rule(5) (n=2)
+[   7]   \(rule\|expr_stmt\)(5) (n=2)
            id(b)
            str(str)
-[   8]   rule(5) (n=2)
+[   8]   \(rule\|expr_stmt\)(5) (n=2)
            id(c)
 [   8]     literal \.\+
-[   9]   rule(5) (n=2)
+[   9]   \(rule\|expr_stmt\)(5) (n=2)
            id(d)
            bytes(bytes)
-[  10]   rule(5) (n=2)
+[  10]   \(rule\|expr_stmt\)(5) (n=2)
            id(e)
 [  10]     literal \.\+
-[  11]   rule(5) (n=2)
+[  11]   \(rule\|expr_stmt\)(5) (n=2)
            id(f)
 [  11]     literal \.\+
-[  12]   rule(5) (n=2)
+[  12]   \(rule\|expr_stmt\)(5) (n=2)
            id(g)
            int(123)
 ----------------

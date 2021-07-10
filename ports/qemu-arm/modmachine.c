@@ -43,5 +43,5 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };

@@ -684,7 +684,7 @@ static void ftp_process_cmd (void) {
     if (E_FTP_RESULT_OK == (result = ftp_recv_non_blocking(ftp_data.c_sd, ftp_cmd_buffer, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX, &len))) {
         // bufptr is moved as commands are being popped
         ftp_cmd_index_t cmd = ftp_pop_command(&bufptr);
-        if (!ftp_data.loggin.passvalid && (cmd != E_FTP_CMD_USER && cmd != E_FTP_CMD_PASS && cmd != E_FTP_CMD_QUIT)) {
+        if (!ftp_data.loggin.passvalid && (cmd != E_FTP_CMD_USER && cmd != E_FTP_CMD_PASS && cmd != E_FTP_CMD_QUIT && cmd != E_FTP_CMD_FEAT)) {
             ftp_send_reply(332, NULL);
             return;
         }
@@ -718,7 +718,8 @@ static void ftp_process_cmd (void) {
             break;
         case E_FTP_CMD_PWD:
         case E_FTP_CMD_XPWD:
-            ftp_send_reply(257, ftp_path);
+            snprintf((char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, "\"%s\"", ftp_path);
+            ftp_send_reply(257, (char *)ftp_data.dBuffer);
             break;
         case E_FTP_CMD_SIZE:
             {

@@ -1,0 +1,15 @@
+Copying current to next partition
+########
+Partition copied, booting into it
+########
+Not confirming boot ok and resetting back into first
+########
+Booting into second partition again
+########
+Confirming boot ok and rebooting into same partition
+########
+Booting into original partition
+########
+Confirming boot ok and DONE!
+
+SUCCESS!

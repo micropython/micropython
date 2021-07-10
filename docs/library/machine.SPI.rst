@@ -11,25 +11,39 @@ SS (Slave Select), to select a particular device on a bus with which
 communication takes place. Management of an SS signal should happen in
 user code (via machine.Pin class).
 
+Both hardware and software SPI implementations exist via the
+:ref:`machine.SPI <machine.SPI>` and `machine.SoftSPI` classes.  Hardware SPI uses underlying
+hardware support of the system to perform the reads/writes and is usually
+efficient and fast but may have restrictions on which pins can be used.
+Software SPI is implemented by bit-banging and can be used on any pin but
+is not as efficient.  These classes have the same methods available and
+differ primarily in the way they are constructed.
+
 Constructors
 ------------
 
 .. class:: SPI(id, ...)
 
-   Construct an SPI object on the given bus, ``id``. Values of ``id`` depend
+   Construct an SPI object on the given bus, *id*. Values of *id* depend
    on a particular port and its hardware. Values 0, 1, etc. are commonly used
-   to select hardware SPI block #0, #1, etc. Value -1 can be used for
-   bitbanging (software) implementation of SPI (if supported by a port).
+   to select hardware SPI block #0, #1, etc.
 
    With no additional parameters, the SPI object is created but not
    initialised (it has the settings from the last initialisation of
    the bus, if any).  If extra arguments are given, the bus is initialised.
    See ``init`` for parameters of initialisation.
 
+.. _machine.SoftSPI:
+.. class:: SoftSPI(baudrate=500000, *, polarity=0, phase=0, bits=8, firstbit=MSB, sck=None, mosi=None, miso=None)
+
+   Construct a new software SPI object.  Additional parameters must be
+   given, usually at least *sck*, *mosi* and *miso*, and these are used
+   to initialise the bus.  See `SPI.init` for a description of the parameters.
+
 Methods
 -------
 
-.. method:: SPI.init(baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=None, mosi=None, miso=None, pins=(SCK, MOSI, MISO))
+.. method:: SPI.init(baudrate=1000000, *, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=None, mosi=None, miso=None, pins=(SCK, MOSI, MISO))
 
    Initialise the SPI bus with the given parameters:
 

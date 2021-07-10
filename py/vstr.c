@@ -140,37 +140,37 @@ char *vstr_null_terminated_str(vstr_t *vstr) {
 }
 
 void vstr_add_byte(vstr_t *vstr, byte b) {
-    byte *buf = (byte*)vstr_add_len(vstr, 1);
+    byte *buf = (byte *)vstr_add_len(vstr, 1);
     buf[0] = b;
 }
 
 void vstr_add_char(vstr_t *vstr, unichar c) {
-#if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
     // TODO: Can this be simplified and deduplicated?
     // Is it worth just calling vstr_add_len(vstr, 4)?
     if (c < 0x80) {
-        byte *buf = (byte*)vstr_add_len(vstr, 1);
+        byte *buf = (byte *)vstr_add_len(vstr, 1);
         *buf = (byte)c;
     } else if (c < 0x800) {
-        byte *buf = (byte*)vstr_add_len(vstr, 2);
+        byte *buf = (byte *)vstr_add_len(vstr, 2);
         buf[0] = (c >> 6) | 0xC0;
         buf[1] = (c & 0x3F) | 0x80;
     } else if (c < 0x10000) {
-        byte *buf = (byte*)vstr_add_len(vstr, 3);
+        byte *buf = (byte *)vstr_add_len(vstr, 3);
         buf[0] = (c >> 12) | 0xE0;
         buf[1] = ((c >> 6) & 0x3F) | 0x80;
         buf[2] = (c & 0x3F) | 0x80;
     } else {
         assert(c < 0x110000);
-        byte *buf = (byte*)vstr_add_len(vstr, 4);
+        byte *buf = (byte *)vstr_add_len(vstr, 4);
         buf[0] = (c >> 18) | 0xF0;
         buf[1] = ((c >> 12) & 0x3F) | 0x80;
         buf[2] = ((c >> 6) & 0x3F) | 0x80;
         buf[3] = (c & 0x3F) | 0x80;
     }
-#else
+    #else
     vstr_add_byte(vstr, c);
-#endif
+    #endif
 }
 
 void vstr_add_str(vstr_t *vstr, const char *str) {

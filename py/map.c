@@ -40,17 +40,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// Fixed empty map. Useful when need to call kw-receiving functions
-// without any keywords from C, etc.
-const mp_map_t mp_const_empty_map = {
-    .all_keys_are_qstrs = 0,
-    .is_fixed = 1,
-    .is_ordered = 1,
-    .used = 0,
-    .alloc = 0,
-    .table = NULL,
-};
-
 // This table of sizes is used to control the growth of hash tables.
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be
@@ -96,7 +85,7 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 1;
     map->is_ordered = 1;
-    map->table = (mp_map_elem_t*)table;
+    map->table = (mp_map_elem_t *)table;
 }
 
 // Differentiate from mp_map_clear() - semantics is different
@@ -177,6 +166,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     --map->used;
                     memmove(elem, elem + 1, (top - elem - 1) * sizeof(*elem));
                     // put the found element after the end so the caller can access it if needed
+                    // note: caller must NULL the value so the GC can clean up (e.g. see dict_get_helper).
                     elem = &map->table[map->used];
                     elem->key = MP_OBJ_NULL;
                     elem->value = value;

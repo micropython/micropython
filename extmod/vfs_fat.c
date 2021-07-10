@@ -142,7 +142,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
-            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+            t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
         if (fno.fattrib & AM_DIR) {
             // dir
@@ -256,7 +256,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
-/// Change current directory.
+// Change current directory.
 STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path;
@@ -272,7 +272,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 
-/// Get the current directory.
+// Get the current directory.
 STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
@@ -284,8 +284,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 
-/// \function stat(path)
-/// Get the status of a file or directory.
+// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
@@ -311,14 +310,14 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-    mp_int_t seconds = timeutils_seconds_since_2000(
+    mp_int_t seconds = timeutils_seconds_since_epoch(
         1980 + ((fno.fdate >> 9) & 0x7f),
         (fno.fdate >> 5) & 0x0f,
         fno.fdate & 0x1f,
         (fno.ftime >> 11) & 0x1f,
         (fno.ftime >> 5) & 0x3f,
         2 * (fno.ftime & 0x1f)
-    );
+        );
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -326,9 +325,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(fno.fsize); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(seconds); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
+    t->items[7] = mp_obj_new_int_from_uint(seconds); // st_atime
+    t->items[8] = mp_obj_new_int_from_uint(seconds); // st_mtime
+    t->items[9] = mp_obj_new_int_from_uint(seconds); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -425,7 +424,7 @@ const mp_obj_type_t mp_fat_vfs_type = {
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
     .protocol = &fat_vfs_proto,
-    .locals_dict = (mp_obj_dict_t*)&fat_vfs_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
 
 };
 

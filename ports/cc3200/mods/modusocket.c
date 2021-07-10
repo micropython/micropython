@@ -38,7 +38,6 @@
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
-#include "mpexception.h"
 
 /******************************************************************************/
 // The following set of macros and functions provide a glue between the CC3100

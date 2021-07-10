@@ -17,11 +17,13 @@ try:
 except TypeError:
     print("TypeError")
 
+
 def pop_and_print(h):
     l = []
     while h:
         l.append(str(heapq.heappop(h)))
-    print(' '.join(l))
+    print(" ".join(l))
+
 
 h = []
 heapq.heappush(h, 3)

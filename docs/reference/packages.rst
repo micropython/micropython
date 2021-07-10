@@ -14,8 +14,8 @@ packages:
 
 1. Python modules and packages are turned into distribution package
    archives, and published at the Python Package Index (PyPI).
-2. `upip` package manager can be used to install a distribution package
-   on a `MicroPython port` with networking capabilities (for example,
+2. :term:`upip` package manager can be used to install a distribution package
+   on a :term:`MicroPython port` with networking capabilities (for example,
    on the Unix port).
 3. For ports without networking capabilities, an "installation image"
    can be prepared on the Unix port, and transferred to a device by
@@ -51,14 +51,14 @@ even by the smallest devices.
 Besides the small compression dictionary size, MicroPython distribution
 packages also have other optimizations, like removing any files from
 the archive which aren't used by the installation process. In particular,
-`upip` package manager doesn't execute ``setup.py`` during installation
+:term:`upip` package manager doesn't execute ``setup.py`` during installation
 (see below), and thus that file is not included in the archive.
 
 At the same time, these optimizations make MicroPython distribution
-packages not compatible with `CPython`'s package manager, ``pip``.
+packages not compatible with :term:`CPython`'s package manager, ``pip``.
 This isn't considered a big problem, because:
 
-1. Packages can be installed with `upip`, and then can be used with
+1. Packages can be installed with :term:`upip`, and then can be used with
    CPython (if they are compatible with it).
 2. In the other direction, majority of CPython packages would be
    incompatible with MicroPython by various reasons, first of all,
@@ -73,12 +73,12 @@ resource constrained devices.
 ------------------------
 
 MicroPython distribution packages are intended to be installed using
-the `upip` package manager. `upip` is a Python application which is
+the :term:`upip` package manager. :term:`upip` is a Python application which is
 usually distributed (as frozen bytecode) with network-enabled
-`MicroPython ports <MicroPython port>`. At the very least,
-`upip` is available in the `MicroPython Unix port`.
+:term:`MicroPython ports <MicroPython port>`. At the very least,
+:term:`upip` is available in the :term:`MicroPython Unix port`.
 
-On any `MicroPython port` providing `upip`, it can be accessed as
+On any :term:`MicroPython port` providing :term:`upip`, it can be accessed as
 following::
 
     import upip
@@ -123,12 +123,12 @@ commands which corresponds to the example above are::
 Cross-installing packages
 -------------------------
 
-For `MicroPython ports <MicroPython port>` without native networking
+For :term:`MicroPython ports <MicroPython port>` without native networking
 capabilities, the recommend process is "cross-installing" them into a
-"directory image" using the `MicroPython Unix port`, and then
+"directory image" using the :term:`MicroPython Unix port`, and then
 transferring this image to a device by suitable means.
 
-Installing to a directory image involves using ``-p`` switch to `upip`::
+Installing to a directory image involves using ``-p`` switch to :term:`upip`::
 
     micropython -m upip install -p install_dir micropython-pystone_lowmem
 
@@ -137,13 +137,13 @@ packages) will be available in the ``install_dir/`` subdirectory. You
 would need to transfer contents of this directory (without the
 ``install_dir/`` prefix) to the device, at the suitable location, where
 it can be found by the Python ``import`` statement (see discussion of
-the `upip` installation path above).
+the :term:`upip` installation path above).
 
 
 Cross-installing packages with freezing
 ---------------------------------------
 
-For the low-memory `MicroPython ports <MicroPython port>`, the process
+For the low-memory :term:`MicroPython ports <MicroPython port>`, the process
 described in the previous section does not provide the most efficient
 resource usage,because the packages are installed in the source form,
 so need to be compiled to the bytecome on each import. This compilation
@@ -160,7 +160,7 @@ mentioned above:
 * Filesystem is not required for frozen packages.
 
 Using frozen bytecode requires building the executable (firmware)
-for a given `MicroPython port` from the C source code. Consequently,
+for a given :term:`MicroPython port` from the C source code. Consequently,
 the process is:
 
 1. Follow the instructions for a particular port on setting up a
@@ -168,7 +168,7 @@ the process is:
    study instructions in ``ports/esp8266/README.md`` and follow them.
    Make sure you can build the port and deploy the resulting
    executable/firmware successfully before proceeding to the next steps.
-2. Build `MicroPython Unix port` and make sure it is in your PATH and
+2. Build :term:`MicroPython Unix port` and make sure it is in your PATH and
    you can execute ``micropython``.
 3. Change to port's directory (e.g. ``ports/esp8266/`` for ESP8266).
 4. Run ``make clean-frozen``. This step cleans up any previous
@@ -188,7 +188,7 @@ Few notes:
 1. Step 5 in the sequence above assumes that the distribution package
    is available from PyPI. If that is not the case, you would need
    to copy Python source files manually to ``modules/`` subdirectory
-   of the port port directory. (Note that upip does not support
+   of the port directory. (Note that upip does not support
    installing from e.g. version control repositories).
 2. The firmware for baremetal devices usually has size restrictions,
    so adding too many frozen modules may overflow it. Usually, you
@@ -281,7 +281,7 @@ following calls::
     pkg_resources.resource_stream(__name__, "data/page.html")
     pkg_resources.resource_stream(__name__, "data/image.png")
 
-You can develop and debug using the `MicroPython Unix port` as usual.
+You can develop and debug using the :term:`MicroPython Unix port` as usual.
 When time comes to make a distribution package out of it, just use
 overridden "sdist" command from sdist_upip.py module as described in
 the previous section.

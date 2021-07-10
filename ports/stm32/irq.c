@@ -27,44 +27,28 @@
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "irq.h"
-
-/// \moduleref pyb
+#include "modmachine.h"
 
 #if IRQ_ENABLE_STATS
 uint32_t irq_stats[IRQ_STATS_MAX] = {0};
 #endif
 
-/// \function wfi()
-/// Wait for an interrupt.
-/// This executies a `wfi` instruction which reduces power consumption
-/// of the MCU until an interrupt occurs, at which point execution continues.
-STATIC mp_obj_t pyb_wfi(void) {
-    __WFI();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
-
-/// \function disable_irq()
-/// Disable interrupt requests.
-/// Returns the previous IRQ state: `False`/`True` for disabled/enabled IRQs
-/// respectively.  This return value can be passed to enable_irq to restore
-/// the IRQ to its original state.
-STATIC mp_obj_t pyb_disable_irq(void) {
+// disable_irq()
+// Disable interrupt requests.
+// Returns the previous IRQ state which can be passed to enable_irq.
+STATIC mp_obj_t machine_disable_irq(void) {
     return mp_obj_new_bool(disable_irq() == IRQ_STATE_ENABLED);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
+MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
-/// \function enable_irq(state=True)
-/// Enable interrupt requests.
-/// If `state` is `True` (the default value) then IRQs are enabled.
-/// If `state` is `False` then IRQs are disabled.  The most common use of
-/// this function is to pass it the value returned by `disable_irq` to
-/// exit a critical section.
-STATIC mp_obj_t pyb_enable_irq(uint n_args, const mp_obj_t *arg) {
+// enable_irq(state=True)
+// Enable interrupt requests, based on the argument, which is usually the
+// value returned by a previous call to disable_irq.
+STATIC mp_obj_t machine_enable_irq(uint n_args, const mp_obj_t *arg) {
     enable_irq((n_args == 0 || mp_obj_is_true(arg[0])) ? IRQ_STATE_ENABLED : IRQ_STATE_DISABLED);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_enable_irq_obj, 0, 1, pyb_enable_irq);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj, 0, 1, machine_enable_irq);
 
 #if IRQ_ENABLE_STATS
 // return a memoryview of the irq statistics array

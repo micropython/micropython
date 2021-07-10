@@ -223,4 +223,8 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     }
 }
 
+void USBD_IRQHandler(void) {
+    tud_int_handler(0);
+}
+
 #endif // MICROPY_HW_USB_CDC

@@ -149,7 +149,7 @@ STATIC void async_stop(void) {
 STATIC void wait_for_event(void) {
     while (!wakeup_event) {
         // allow CTRL-C to stop the animation
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
             async_stop();
             return;
         }
@@ -305,7 +305,7 @@ static void draw_object(mp_obj_t obj) {
             async_stop();
         }
     } else {
-        MP_STATE_VM(mp_pending_exception) = mp_obj_new_exception_msg(&mp_type_TypeError, "not an image.");
+        mp_sched_exception(mp_obj_new_exception_msg(&mp_type_TypeError, MP_ERROR_TEXT("not an image.")));
         async_stop();
     }
 }
@@ -341,7 +341,7 @@ static void microbit_display_update(void) {
                     if (mp_obj_get_type(nlr.ret_val) == &mp_type_MemoryError) {
                         mp_printf(&mp_plat_print, "Allocation in interrupt handler");
                     }
-                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(nlr.ret_val);
+                    mp_sched_exception(MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
                 obj = MP_OBJ_STOP_ITERATION;
             }
@@ -499,10 +499,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(microbit_display_clear_obj, microbit_display_clear_fun
 
 void microbit_display_set_pixel(microbit_display_obj_t *display, mp_int_t x, mp_int_t y, mp_int_t bright) {
     if (x < 0 || y < 0 || x > 4 || y > 4) {
-        mp_raise_ValueError("index out of bounds.");
+        mp_raise_ValueError(MP_ERROR_TEXT("index out of bounds."));
     }
     if (bright < 0 || bright > MAX_BRIGHTNESS) {
-        mp_raise_ValueError("brightness out of bounds.");
+        mp_raise_ValueError(MP_ERROR_TEXT("brightness out of bounds."));
     }
     display->image_buffer[x][y] = bright;
     display->brightnesses |= (1 << bright);
@@ -518,7 +518,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_display_set_pixel_obj, 4, 4, microb
 
 mp_int_t microbit_display_get_pixel(microbit_display_obj_t *display, mp_int_t x, mp_int_t y) {
     if (x < 0 || y < 0 || x > 4 || y > 4) {
-        mp_raise_ValueError("index out of bounds.");
+        mp_raise_ValueError(MP_ERROR_TEXT("index out of bounds."));
     }
     return display->image_buffer[x][y];
 }

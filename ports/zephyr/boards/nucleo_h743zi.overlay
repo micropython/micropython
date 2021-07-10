@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) 2021 Thomas Popp
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* delete the already defined storage partition and create a new and bigger one */
+/delete-node/ &storage_partition;
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+
+		/* storage slot: 1024 KB in Flash Memory Bank 2 */
+		storage_partition: partition@100000 {
+			label = "storage";
+			reg = <0x00100000 0x100000>;
+		};
+	};
+};

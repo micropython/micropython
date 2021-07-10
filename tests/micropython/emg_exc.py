@@ -1,7 +1,8 @@
 # test that emergency exceptions work
 
 import micropython
-import sys
+import usys
+
 try:
     import uio
 except ImportError:
@@ -14,6 +15,7 @@ try:
 except AttributeError:
     pass
 
+
 def f():
     micropython.heap_lock()
     try:
@@ -24,11 +26,12 @@ def f():
 
     # print the exception
     buf = uio.StringIO()
-    sys.print_exception(exc, buf)
+    usys.print_exception(exc, buf)
     for l in buf.getvalue().split("\n"):
         if l.startswith("  File "):
             print(l.split('"')[2])
         else:
             print(l)
+
 
 f()

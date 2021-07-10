@@ -31,6 +31,8 @@
 #include "py/gc.h"
 #include "lib/utils/mpirq.h"
 
+#if MICROPY_ENABLE_SCHEDULER
+
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
@@ -51,19 +53,25 @@ const mp_arg_t mp_irq_init_args[] = {
 
 mp_irq_obj_t *mp_irq_new(const mp_irq_methods_t *methods, mp_obj_t parent) {
     mp_irq_obj_t *self = m_new0(mp_irq_obj_t, 1);
+    mp_irq_init(self, methods, parent);
+    return self;
+}
+
+void mp_irq_init(mp_irq_obj_t *self, const mp_irq_methods_t *methods, mp_obj_t parent) {
     self->base.type = &mp_irq_type;
-    self->methods = (mp_irq_methods_t*)methods;
+    self->methods = (mp_irq_methods_t *)methods;
     self->parent = parent;
     self->handler = mp_const_none;
     self->ishard = false;
-    return self;
 }
 
 void mp_irq_handler(mp_irq_obj_t *self) {
     if (self->handler != mp_const_none) {
         if (self->ishard) {
-            // When executing code within a handler we must lock the GC to prevent
-            // any memory allocations.
+            // When executing code within a handler we must lock the scheduler to
+            // prevent any scheduled callbacks from running, and lock the GC to
+            // prevent any memory allocations.
+            mp_sched_lock();
             gc_lock();
             nlr_buf_t nlr;
             if (nlr_push(&nlr) == 0) {
@@ -77,6 +85,7 @@ void mp_irq_handler(mp_irq_obj_t *self) {
                 mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             }
             gc_unlock();
+            mp_sched_unlock();
         } else {
             // Schedule call to user function
             mp_sched_schedule(self->handler, self->parent);
@@ -120,5 +129,7 @@ const mp_obj_type_t mp_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_irq,
     .call = mp_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&mp_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_irq_locals_dict,
 };
+
+#endif // MICROPY_ENABLE_SCHEDULER

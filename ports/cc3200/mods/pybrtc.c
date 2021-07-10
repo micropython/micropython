@@ -41,7 +41,6 @@
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
-#include "mpexception.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -201,7 +200,7 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 
     // verify the tuple
     if (len < 3 || len > 8) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 
     tm.tm_year = mp_obj_get_int(items[0]);
@@ -370,7 +369,7 @@ STATIC mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     if (mp_obj_is_type(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (repeat) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
         f_mseconds = pyb_rtc_datetime_s_us (args[1].u_obj, &f_seconds) / 1000;
     } else { // then it must be an integer
@@ -452,7 +451,7 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     return _irq;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 

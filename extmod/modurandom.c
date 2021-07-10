@@ -31,25 +31,38 @@
 
 #if MICROPY_PY_URANDOM
 
+// Work out if the seed will be set on import or not.
+#if MICROPY_MODULE_BUILTIN_INIT && defined(MICROPY_PY_URANDOM_SEED_INIT_FUNC)
+#define SEED_ON_IMPORT (1)
+#else
+#define SEED_ON_IMPORT (0)
+#endif
+
 // Yasmarang random number generator
 // by Ilya Levin
 // http://www.literatecode.com/yasmarang
 // Public Domain
 
 #if !MICROPY_ENABLE_DYNRUNTIME
+#if SEED_ON_IMPORT
+// If the state is seeded on import then keep these variables in the BSS.
+STATIC uint32_t yasmarang_pad, yasmarang_n, yasmarang_d;
+STATIC uint8_t yasmarang_dat;
+#else
+// Without seed-on-import these variables must be initialised via the data section.
 STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
 #endif
+#endif
 
-STATIC uint32_t yasmarang(void)
-{
-   yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
-   yasmarang_pad = (yasmarang_pad<<3) + (yasmarang_pad>>29);
-   yasmarang_n = yasmarang_pad | 2;
-   yasmarang_d ^= (yasmarang_pad<<31) + (yasmarang_pad>>1);
-   yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d>>8) ^ 1;
+STATIC uint32_t yasmarang(void) {
+    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
+    yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
+    yasmarang_n = yasmarang_pad | 2;
+    yasmarang_d ^= (yasmarang_pad << 31) + (yasmarang_pad >> 1);
+    yasmarang_dat ^= (char)yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
 
-   return (yasmarang_pad^(yasmarang_d<<5)^(yasmarang_pad>>18)^(yasmarang_dat<<1));
+    return yasmarang_pad ^ (yasmarang_d << 5) ^ (yasmarang_pad >> 18) ^ (yasmarang_dat << 1);
 }  /* yasmarang */
 
 // End of Yasmarang
@@ -74,8 +87,11 @@ STATIC uint32_t yasmarang_randbelow(uint32_t n) {
 
 STATIC mp_obj_t mod_urandom_getrandbits(mp_obj_t num_in) {
     int n = mp_obj_get_int(num_in);
-    if (n > 32 || n == 0) {
-        mp_raise_ValueError(NULL);
+    if (n > 32 || n < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bits must be 32 or less"));
+    }
+    if (n == 0) {
+        return MP_OBJ_NEW_SMALL_INT(0);
     }
     uint32_t mask = ~0;
     // Beware of C undefined behavior when shifting by >= than bit size
@@ -84,15 +100,24 @@ STATIC mp_obj_t mod_urandom_getrandbits(mp_obj_t num_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_getrandbits_obj, mod_urandom_getrandbits);
 
-STATIC mp_obj_t mod_urandom_seed(mp_obj_t seed_in) {
-    mp_uint_t seed = mp_obj_get_int_truncated(seed_in);
+STATIC mp_obj_t mod_urandom_seed(size_t n_args, const mp_obj_t *args) {
+    mp_uint_t seed;
+    if (n_args == 0 || args[0] == mp_const_none) {
+        #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+        seed = MICROPY_PY_URANDOM_SEED_INIT_FUNC;
+        #else
+        mp_raise_ValueError(MP_ERROR_TEXT("no default seed"));
+        #endif
+    } else {
+        seed = mp_obj_get_int_truncated(args[0]);
+    }
     yasmarang_pad = seed;
     yasmarang_n = 69;
     yasmarang_d = 233;
     yasmarang_dat = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_seed_obj, mod_urandom_seed);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_urandom_seed_obj, 0, 1, mod_urandom_seed);
 
 #if MICROPY_PY_URANDOM_EXTRA_FUNCS
 
@@ -154,7 +179,7 @@ STATIC mp_obj_t mod_urandom_choice(mp_obj_t seq) {
     if (len > 0) {
         return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL);
     } else {
-        nlr_raise(mp_obj_new_exception(&mp_type_IndexError));
+        mp_raise_type(&mp_type_IndexError);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);
@@ -163,19 +188,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
 STATIC mp_float_t yasmarang_float(void) {
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    typedef uint64_t mp_float_int_t;
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    typedef uint32_t mp_float_int_t;
-    #endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_int_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
-        #else
-        struct { mp_float_int_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
-        #endif
-    } u;
+    mp_float_union_t u;
     u.p.sgn = 0;
     u.p.exp = (1 << (MP_FLOAT_EXP_BITS - 1)) - 1;
     if (MP_FLOAT_FRAC_BITS <= 32) {
@@ -202,9 +215,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_urandom_uniform_obj, mod_urandom_uniform);
 
 #endif // MICROPY_PY_URANDOM_EXTRA_FUNCS
 
-#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+#if SEED_ON_IMPORT
 STATIC mp_obj_t mod_urandom___init__() {
-    mod_urandom_seed(MP_OBJ_NEW_SMALL_INT(MICROPY_PY_URANDOM_SEED_INIT_FUNC));
+    // This module may be imported by more than one name so need to ensure
+    // that it's only ever seeded once.
+    static bool seeded = false;
+    if (!seeded) {
+        seeded = true;
+        mod_urandom_seed(0, NULL);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__);
@@ -213,7 +232,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__)
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_urandom_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_urandom) },
-    #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+    #if SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&mod_urandom___init___obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_getrandbits), MP_ROM_PTR(&mod_urandom_getrandbits_obj) },
@@ -233,8 +252,8 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_urandom_globals, mp_module_urandom_globals
 
 const mp_obj_module_t mp_module_urandom = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_urandom_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 #endif
 
-#endif //MICROPY_PY_URANDOM
+#endif // MICROPY_PY_URANDOM

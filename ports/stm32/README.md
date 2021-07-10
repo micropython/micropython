@@ -53,11 +53,31 @@ The default board is PYBV10 but any of the names of the subdirectories in the
 should produce binary images in the `build-PYBV11/` subdirectory (or the
 equivalent directory for the board specified).
 
-You must then get your board/microcontroller into DFU mode.  On the pyboard
-connect the 3V3 pin to the P1/DFU pin with a wire (they are next to each
-other on the bottom left of the board, second row from the bottom) and then
-reset (by pressing the RST button) or power on the board.  Then flash the
-firmware using the command:
+
+### Flashing the Firmware using DFU mode
+
+You must then get your board/microcontroller into DFU (Device Firmware
+Update) mode.
+
+If you already have MicroPython installed on the board you can do that by
+calling `machine.bootloader()` on the board, either at the REPL or using
+`pyboard.py`. A nice property of this approach is that you can automate it
+so you can update the board without manually pressing any buttons.
+
+If you do not have MicroPython running yet, temporarily jumper your board's
+DFU pin (typ. BOOT0) to 3.3v and reset or power-on the board.
+
+On a pyboard the P1/DFU pin and a 3.3v pin are next to each other (on the
+bottom left of the board, second row from the bottom) and the reset button
+is labeled RST.
+
+For the pyboard D-series you can enter the mboot DFU bootloader by holding down
+the USR button, pressing and releasing the RST button, and continuing to hold
+down USR until the LED is white (4th in the cycle), then let go of USR while
+the LED is white. The LED will then flash red once per second to indicate it
+is in USB DFU mode.
+
+Once the board is in DFU mode, flash the firmware using the command:
 
     $ make BOARD=PYBV11 deploy
 

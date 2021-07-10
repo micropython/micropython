@@ -36,7 +36,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -74,7 +74,7 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 machine_rtc_config_t machine_rtc_config = {
     .ext1_pins = 0,
     .ext0_pin = -1
-    };
+};
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -93,7 +93,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         gettimeofday(&tv, NULL);
         timeutils_struct_time_t tm;
 
-        timeutils_seconds_since_2000_to_struct_time(tv.tv_sec, &tm);
+        timeutils_seconds_since_epoch_to_struct_time(tv.tv_sec, &tm);
 
         mp_obj_t tuple[8] = {
             mp_obj_new_int(tm.tm_year),
@@ -114,7 +114,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
         struct timeval tv = {0};
-        tv.tv_sec = timeutils_seconds_since_2000(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), mp_obj_get_int(items[4]), mp_obj_get_int(items[5]), mp_obj_get_int(items[6]));
+        tv.tv_sec = timeutils_seconds_since_epoch(mp_obj_get_int(items[0]), mp_obj_get_int(items[1]), mp_obj_get_int(items[2]), mp_obj_get_int(items[4]), mp_obj_get_int(items[5]), mp_obj_get_int(items[6]));
         tv.tv_usec = mp_obj_get_int(items[7]);
         settimeofday(&tv, NULL);
 
@@ -146,7 +146,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
         uint8_t rtcram[MICROPY_HW_RTC_USER_MEM_MAX];
-        memcpy((char*)rtcram, (char*)rtc_user_mem_data, rtc_user_mem_len);
+        memcpy((char *)rtcram, (char *)rtc_user_mem_data, rtc_user_mem_len);
         return mp_obj_new_bytes(rtcram, rtc_user_mem_len);
     } else {
         // write RTC memory
@@ -154,9 +154,9 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MICROPY_HW_RTC_USER_MEM_MAX) {
-            mp_raise_ValueError("buffer too long");
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too long"));
         }
-        memcpy( (char *) rtc_user_mem_data, (char *) bufinfo.buf, bufinfo.len);
+        memcpy((char *)rtc_user_mem_data, (char *)bufinfo.buf, bufinfo.len);
         rtc_user_mem_len = bufinfo.len;
         return mp_const_none;
     }

@@ -11,6 +11,7 @@ except:
     print("SKIP")
     raise SystemExit
 
+
 class Pin(machine.PinBase):
     def __init__(self):
         self.v = 0

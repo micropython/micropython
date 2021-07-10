@@ -1,0 +1,23 @@
+name: cc3200 port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/cc3200/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_cc3200_setup
+    - name: Build
+      run: source tools/ci.sh && ci_cc3200_build

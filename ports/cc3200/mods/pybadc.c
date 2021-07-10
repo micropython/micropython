@@ -47,7 +47,6 @@
 #include "pybpin.h"
 #include "pybsleep.h"
 #include "pins.h"
-#include "mpexception.h"
 
 
 /******************************************************************************
@@ -153,7 +152,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     // check the number of bits
     if (args[1].u_int != 12) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 
     // setup the object
@@ -172,7 +171,7 @@ STATIC mp_obj_t adc_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_adc_init_args[1], args);
     // check the number of bits
     if (args[0].u_int != 12) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     pyb_adc_init(pos_args[0]);
     return mp_const_none;
@@ -205,11 +204,11 @@ STATIC mp_obj_t adc_channel(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     if (args[0].u_obj != MP_OBJ_NULL) {
         ch_id = mp_obj_get_int(args[0].u_obj);
         if (ch_id >= PYB_ADC_NUM_CHANNELS) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         } else if (args[1].u_obj != mp_const_none) {
             uint pin_ch_id = pin_find_peripheral_type (args[1].u_obj, PIN_FN_ADC, 0);
             if (ch_id != pin_ch_id) {
-                mp_raise_ValueError(mpexception_value_invalid_arguments);
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
             }
         }
     } else {

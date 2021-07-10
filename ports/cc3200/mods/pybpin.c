@@ -44,7 +44,6 @@
 #include "mpirq.h"
 #include "pins.h"
 #include "pybsleep.h"
-#include "mpexception.h"
 #include "mperror.h"
 
 
@@ -142,7 +141,7 @@ pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint strength) {
@@ -182,7 +181,7 @@ uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type) 
             return pin_o->af_list[i].unit;
         }
     }
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit) {
@@ -192,13 +191,13 @@ uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit) 
             return pin_o->af_list[i].type;
         }
     }
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
     int8_t af = pin_obj_find_af(pin, fn, unit, type);
     if (af < 0) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     return af;
 }
@@ -423,18 +422,18 @@ STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t prio
 STATIC void pin_validate_mode (uint mode) {
     if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT && mode != PIN_TYPE_OD &&
         mode != GPIO_DIR_MODE_ALT && mode != GPIO_DIR_MODE_ALT_OD) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 STATIC void pin_validate_pull (uint pull) {
     if (pull != PIN_TYPE_STD && pull != PIN_TYPE_STD_PU && pull != PIN_TYPE_STD_PD) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
 STATIC void pin_validate_drive(uint strength) {
     if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
@@ -447,7 +446,7 @@ STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8
             return;
         }
     }
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC uint8_t pin_get_value (const pin_obj_t* self) {
@@ -588,7 +587,7 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, size_t n_args, const mp_obj
     return mp_const_none;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -895,7 +894,7 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     return _irq;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 

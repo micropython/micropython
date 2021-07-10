@@ -51,7 +51,7 @@
 
 // For MCUs with a device-only USB peripheral
 #define USBD_PMA_RESERVE                      (64)
-#define USBD_PMA_NUM_FIFO                     (8)
+#define USBD_PMA_NUM_FIFO                     (16) // Maximum 8 endpoints, 2 FIFOs each
 
 // For MCUs with multiple OTG USB peripherals
 #define USBD_FS_NUM_TX_FIFO                   (6)

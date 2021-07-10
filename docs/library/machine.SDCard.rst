@@ -23,7 +23,7 @@ arguments that might need to be set in order to use either a non-standard slot
 or a non-standard pin assignment. The exact subset of arguments supported will
 vary from platform to platform.
 
-.. class:: SDCard(slot=1, width=1, cd=None, wp=None, sck=None, miso=None, mosi=None, cs=None)
+.. class:: SDCard(slot=1, width=1, cd=None, wp=None, sck=None, miso=None, mosi=None, cs=None, freq=20000000)
 
     This class provides access to SD or MMC storage cards using either
     a dedicated SD/MMC interface hardware or through an SPI channel.
@@ -50,6 +50,8 @@ vary from platform to platform.
      - *mosi* can be used to specify an SPI mosi pin.
 
      - *cs* can be used to specify an SPI chip select pin.
+     
+     - *freq* selects the SD/MMC interface frequency in Hz (only supported on the ESP32).
 
 Implementation-specific details
 -------------------------------

@@ -15,6 +15,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS  (1)
 #define MICROPY_PY_IO_FILEIO            (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER     (1)
+#define MICROPY_PY_UASYNCIO             (1)
 #define MICROPY_PY_URE_SUB              (1)
 #define MICROPY_PY_UCRYPTOLIB           (1)
 #define MICROPY_PY_FRAMEBUF             (1)

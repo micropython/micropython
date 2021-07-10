@@ -36,11 +36,11 @@
 
 #define LEAPOCH ((31 + 29) * 86400)
 
-#define DAYS_PER_400Y (365*400 + 97)
-#define DAYS_PER_100Y (365*100 + 24)
-#define DAYS_PER_4Y   (365*4   + 1)
+#define DAYS_PER_400Y (365 * 400 + 97)
+#define DAYS_PER_100Y (365 * 100 + 24)
+#define DAYS_PER_4Y   (365 * 4 + 1)
 
-STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+STATIC const uint16_t days_since_jan1[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
 bool timeutils_is_leap_year(mp_uint_t year) {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
@@ -158,7 +158,7 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
         + (year - 2000) * 31536000;
 }
 
-mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
     // Normalize the tuple. This allows things like:
@@ -212,4 +212,11 @@ mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
         }
     }
     return timeutils_seconds_since_2000(year, month, mday, hours, minutes, seconds);
+}
+
+// Calculate the weekday from the date.
+// The result is zero based with 0 = Monday.
+// by Michael Keith and Tom Craver, 1990.
+int timeutils_calc_weekday(int y, int m, int d) {
+    return ((d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) + 6) % 7;
 }

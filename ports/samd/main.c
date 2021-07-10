@@ -65,9 +65,7 @@ void samd_main(void) {
 
 void gc_collect(void) {
     gc_collect_start();
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-    gc_collect_root((void**)sp, ((uintptr_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
 }
 
@@ -92,7 +90,7 @@ void nlr_jump_fail(void *val) {
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     mp_printf(MP_PYTHON_PRINTER, "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    for(;;) {
+    for (;;) {
     }
 }
 #endif

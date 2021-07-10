@@ -18,7 +18,7 @@ Conceptual hierarchy
    Conceptual hierarchy of stream base classes is simplified in MicroPython,
    as described in this section.
 
-(Abstract) base stream classes, which serve as a foundation for behavior
+(Abstract) base stream classes, which serve as a foundation for behaviour
 of all the concrete classes, adhere to few dichotomies (pair-wise
 classifications) in CPython. In MicroPython, they are somewhat simplified
 and made implicit to achieve higher efficiencies and save resources.
@@ -41,15 +41,15 @@ more concise and efficient programs - something which is highly desirable
 for MicroPython. So, while MicroPython doesn't support buffered streams,
 it still provides for no-short-operations streams. Whether there will
 be short operations or not depends on each particular class' needs, but
-developers are strongly advised to favor no-short-operations behavior
+developers are strongly advised to favour no-short-operations behaviour
 for the reasons stated above. For example, MicroPython sockets are
 guaranteed to avoid short read/writes. Actually, at this time, there is
 no example of a short-operations stream class in the core, and one would
 be a port-specific class, where such a need is governed by hardware
 peculiarities.
 
-The no-short-operations behavior gets tricky in case of non-blocking
-streams, blocking vs non-blocking behavior being another CPython dichotomy,
+The no-short-operations behaviour gets tricky in case of non-blocking
+streams, blocking vs non-blocking behaviour being another CPython dichotomy,
 fully supported by MicroPython. Non-blocking streams never wait for
 data either to arrive or be written - they read/write whatever possible,
 or signal lack of data (or ability to write data). Clearly, this conflicts
@@ -114,7 +114,9 @@ Classes
         Get the current contents of the underlying buffer which holds data.
 
 .. class:: StringIO(alloc_size)
+    :noindex:
 .. class:: BytesIO(alloc_size)
+    :noindex:
 
     Create an empty `StringIO`/`BytesIO` object, preallocated to hold up
     to *alloc_size* number of bytes. That means that writing that amount

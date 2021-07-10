@@ -21,7 +21,8 @@ language which can be compiled to stand-alone machine code can be put into a
 
 A native .mpy module is built using the ``mpy_ld.py`` tool, which is found in the
 ``tools/`` directory of the project.  This tool takes a set of object files
-(.o files) and links them together to create a native .mpy files.
+(.o files) and links them together to create a native .mpy files.  It requires
+CPython 3 and the library pyelftools v0.25 or greater.
 
 Supported features and limitations
 ----------------------------------
@@ -66,6 +67,19 @@ The known limitations are:
 
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
+
+Linker limitation: the native module is not linked against the symbol table of the
+full MicroPython firmware.  Rather, it is linked against an explicit table of exported
+symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
+build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
+function, for example.
+
+New symbols can be added to the end of the table and the firmware rebuilt.
+The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the
+same location.  This allows ``mpy_ld.py`` to be able to pick the new symbols up and
+provide relocations for them when the mpy is imported.  Finally, if the symbol is a
+function, a macro or stub should be added to ``py/dynruntime.h`` to make it easy to
+call the function.
 
 Defining a native module
 ------------------------
@@ -152,10 +166,10 @@ The file ``Makefile`` contains:
     MPY_DIR = ../../..
 
     # Name of module
-    MOD = features0
+    MOD = factorial
 
     # Source files (.c or .py)
-    SRC = features0.c
+    SRC = factorial.c
 
     # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
     ARCH = x64
@@ -165,6 +179,14 @@ The file ``Makefile`` contains:
 
 Compiling the module
 --------------------
+
+The prerequisite tools needed to build a native .mpy file are:
+
+* The MicroPython repository (at least the ``py/`` and ``tools/`` directories).
+* CPython 3, and the library pyelftools (eg ``pip install 'pyelftools>=0.25'``).
+* GNU make.
+* A C compiler for the target architecture (if C source is used).
+* Optionally ``mpy-cross``, built from the MicroPython repository (if .py source is used).
 
 Be sure to select the correct ``ARCH`` for the target you are going to run on.
 Then build with::
@@ -180,7 +202,7 @@ Module usage in MicroPython
 
 Once the module is built there should be a file called ``factorial.mpy``.  Copy
 this so it is accessible on the filesystem of your MicroPython system and can be
-found in the import path.  The module con now be accessed in Python just like any
+found in the import path.  The module can now be accessed in Python just like any
 other module, for example::
 
     import factorial

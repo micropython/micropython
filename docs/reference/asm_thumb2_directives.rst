@@ -1,4 +1,4 @@
-Assembler Directives
+Assembler directives
 ====================
 
 Labels

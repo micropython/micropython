@@ -29,8 +29,9 @@
 #include <stdio.h>
 
 #include "driver/uart.h"
+#include "soc/uart_periph.h"
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
 
 STATIC void uart_irq_handler(void *arg);
@@ -48,15 +49,13 @@ STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
     uart->int_clr.frm_err = 1;
     uart->int_clr.rxfifo_tout = 1;
     while (uart->status.rxfifo_cnt) {
+        #if CONFIG_IDF_TARGET_ESP32
         uint8_t c = uart->fifo.rw_byte;
+        #elif CONFIG_IDF_TARGET_ESP32S2
+        uint8_t c = READ_PERI_REG(UART_FIFO_AHB_REG(0)); // UART0
+        #endif
         if (c == mp_interrupt_char) {
-            // inline version of mp_keyboard_interrupt();
-            MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
-            #if MICROPY_ENABLE_SCHEDULER
-            if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-                MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-            }
-            #endif
+            mp_sched_keyboard_interrupt();
         } else {
             // this is an inline function so will be in IRAM
             ringbuf_put(&stdin_ringbuf, c);

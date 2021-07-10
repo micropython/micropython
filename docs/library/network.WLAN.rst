@@ -32,7 +32,7 @@ Methods
     argument is passed. Otherwise, query current state if no argument is
     provided. Most other methods require active interface.
 
-.. method:: WLAN.connect(ssid=None, password=None, \*, bssid=None)
+.. method:: WLAN.connect(ssid=None, password=None, *, bssid=None)
 
     Connect to the specified wireless network, using the specified password.
     If *bssid* is given then the connection will be restricted to the
@@ -101,7 +101,7 @@ Methods
     nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
 .. method:: WLAN.config('param')
-.. method:: WLAN.config(param=value, ...)
+            WLAN.config(param=value, ...)
 
    Get or set general network interface parameters. These methods allow to work
    with additional parameters beyond standard IP configuration (as dealt with by
@@ -117,7 +117,7 @@ Methods
     print(ap.config('channel'))
 
    Following are commonly supported parameters (availability of a specific parameter
-   depends on network technology type, driver, and `MicroPython port`).
+   depends on network technology type, driver, and :term:`MicroPython port`).
 
    =============  ===========
    Parameter      Description
@@ -129,4 +129,5 @@ Methods
    authmode       Authentication mode supported (enumeration, see module constants)
    password       Access password (string)
    dhcp_hostname  The DHCP hostname to use
+   reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    =============  ===========

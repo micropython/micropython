@@ -59,10 +59,10 @@ void Reset_Handler(void) {
     #endif
 
     // SCB->VTOR
-    *((volatile uint32_t*)0xe000ed08) = (uint32_t)&isr_vector;
+    *((volatile uint32_t *)0xe000ed08) = (uint32_t)&isr_vector;
 
     // SCB->CCR: enable 8-byte stack alignment for IRQ handlers, in accord with EABI
-    *((volatile uint32_t*)0xe000ed14) |= 1 << 9;
+    *((volatile uint32_t *)0xe000ed14) |= 1 << 9;
 
     // Initialise the cpu and peripherals
     samd_init();

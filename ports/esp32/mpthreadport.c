@@ -34,9 +34,6 @@
 #include "mpthreadport.h"
 
 #include "esp_task.h"
-#if !MICROPY_ESP_IDF_4
-#include "freertos/semphr.h"
-#endif
 
 #if MICROPY_PY_THREAD
 
@@ -75,7 +72,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
-        gc_collect_root((void**)&th, 1);
+        gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1); // probably not needed
         if (th->id == xTaskGetCurrentTaskHandle()) {
             continue;
@@ -83,7 +80,7 @@ void mp_thread_gc_others(void) {
         if (!th->ready) {
             continue;
         }
-        gc_collect_root(th->stack, th->stack_len); // probably not needed
+        gc_collect_root(th->stack, th->stack_len);
     }
     mp_thread_mutex_unlock(&thread_mutex);
 }
@@ -92,7 +89,7 @@ mp_state_thread_t *mp_thread_get_state(void) {
     return pvTaskGetThreadLocalStoragePointer(NULL, 1);
 }
 
-void mp_thread_set_state(void *state) {
+void mp_thread_set_state(mp_state_thread_t *state) {
     vTaskSetThreadLocalStoragePointer(NULL, 1, state);
 }
 
@@ -107,17 +104,18 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void*) = NULL;
+STATIC void *(*ext_thread_entry)(void *) = NULL;
 
 STATIC void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
     vTaskDelete(NULL);
-    for (;;);
+    for (;;) {;
+    }
 }
 
-void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, int priority, char *name) {
+void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -136,24 +134,24 @@ void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, i
     BaseType_t result = xTaskCreatePinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id, MP_TASK_COREID);
     if (result != pdPASS) {
         mp_thread_mutex_unlock(&thread_mutex);
-        mp_raise_msg(&mp_type_OSError, "can't create thread");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't create thread"));
     }
-
-    // adjust the stack_size to provide room to recover from hitting the limit
-    *stack_size -= 1024;
 
     // add thread to linked list of all threads
     th->ready = 0;
     th->arg = arg;
     th->stack = pxTaskGetStackStart(th->id);
-    th->stack_len = *stack_size / sizeof(StackType_t);
+    th->stack_len = *stack_size / sizeof(uintptr_t);
     th->next = thread;
     thread = th;
+
+    // adjust the stack_size to provide room to recover from hitting the limit
+    *stack_size -= 1024;
 
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     mp_thread_create_ex(entry, arg, stack_size, MP_THREAD_PRIORITY, "mp_thread");
 }
 
@@ -168,6 +166,8 @@ void mp_thread_finish(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
+// This is called from the FreeRTOS idle task and is not within Python context,
+// so MP_STATE_THREAD is not valid and it does not have the GIL.
 void vPortCleanUpTCB(void *tcb) {
     if (thread == NULL) {
         // threading not yet initialised
@@ -177,15 +177,14 @@ void vPortCleanUpTCB(void *tcb) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; prev = th, th = th->next) {
         // unlink the node from the list
-        if ((void*)th->id == tcb) {
+        if ((void *)th->id == tcb) {
             if (prev != NULL) {
                 prev->next = th->next;
             } else {
                 // move the start pointer
                 thread = th->next;
             }
-            // explicitly release all its memory
-            m_del(thread_t, th, 1);
+            // The "th" memory will eventually be reclaimed by the GC.
             break;
         }
     }
@@ -193,11 +192,14 @@ void vPortCleanUpTCB(void *tcb) {
 }
 
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
-    mutex->handle = xSemaphoreCreateMutexStatic(&mutex->buffer);
+    // Need a binary semaphore so a lock can be acquired on one Python thread
+    // and then released on another.
+    mutex->handle = xSemaphoreCreateBinaryStatic(&mutex->buffer);
+    xSemaphoreGive(mutex->handle);
 }
 
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    return (pdTRUE == xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0));
+    return pdTRUE == xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {

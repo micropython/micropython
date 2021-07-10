@@ -1,24 +1,29 @@
 # test store to ptr32 type
 
+
 @micropython.viper
-def set(dest:ptr32, val:int):
+def set(dest: ptr32, val: int):
     dest[0] = val
 
-@micropython.viper
-def set1(dest:ptr32, val:int):
-    dest[1] = val
 
 @micropython.viper
-def memset(dest:ptr32, val:int, n:int):
+def set1(dest: ptr32, val: int):
+    dest[1] = val
+
+
+@micropython.viper
+def memset(dest: ptr32, val: int, n: int):
     for i in range(n):
         dest[i] = val
 
+
 @micropython.viper
-def memset2(dest_in, val:int):
+def memset2(dest_in, val: int):
     dest = ptr32(dest_in)
     n = int(len(dest_in)) >> 2
     for i in range(n):
         dest[i] = val
+
 
 b = bytearray(8)
 print(b)

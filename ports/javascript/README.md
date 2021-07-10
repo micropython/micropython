@@ -7,17 +7,7 @@ Dependencies
 ------------
 
 Building micropython.js bears the same requirements as the standard MicroPython
-ports with the addition of Emscripten (and uglify-js for the minified file). 
-
-A standard installation of Emscripten should provide functional code, however
-if memory errors are encountered it may be worthwhile to modify the tool.
-`emscripten-fastcomp/lib/Target/JSBackend.cpp` may require the minor fix 
-found in JSBackend.patch. This patch attempts to address situations where
-C code running through Emscripten is denied access to Javascript variables 
-leading to false-positives in the MicroPython garbage collector as variables 
-with pointers exclusively in Javascript will be erased prematurely.
-Refer to Emscripten documentation for instructions on building Emscripten 
-from source.
+ports with the addition of Emscripten (and uglify-js for the minified file).
 
 Build instructions
 ------------------
@@ -39,15 +29,15 @@ Access the repl with:
 
 Stack size may be modified using:
 
-	$ node build/micropython.js -X stack=64K
+    $ node build/micropython.js -X stack=64K
 
 Where stack size may be represented in Bytes, KiB or MiB.
 
 MicroPython scripts may be executed using:
 
-	$ node build/micropython.js hello.py
+    $ node build/micropython.js hello.py
 
-Alternatively micropython.js may by accessed by other javascript programs in node 
+Alternatively micropython.js may by accessed by other javascript programs in node
 using the require command and the general API outlined below. For example:
 
 ```javascript
@@ -85,7 +75,7 @@ demonstrates basic functionality:
 ```
 
 MicroPython code execution will suspend the browser so be sure to atomize usage
-within this environment. Unfortunately interrupts have not been implemented for the 
+within this environment. Unfortunately interrupts have not been implemented for the
 browser.
 
 Testing
@@ -124,5 +114,5 @@ the repl.
 mp_js_process_char(char)
 ```
 
-Input character into MicroPython repl. `char` must be of type `number`. This 
+Input character into MicroPython repl. `char` must be of type `number`. This
 will execute MicroPython code when necessary.

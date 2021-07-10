@@ -34,22 +34,24 @@
 
 #if MICROPY_HW_ENABLE_STORAGE
 
+#if MICROPY_VFS_FAT
+
 static const char fresh_boot_py[] =
-"# boot.py -- run on boot-up\r\n"
-"# can run arbitrary Python, but best to keep it minimal\r\n"
-"\r\n"
-"import machine\r\n"
-"import pyb\r\n"
-"pyb.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU\r\n"
-"#pyb.main('main.py') # main script to run after this one\r\n"
+    "# boot.py -- run on boot-up\r\n"
+    "# can run arbitrary Python, but best to keep it minimal\r\n"
+    "\r\n"
+    "import machine\r\n"
+    "import pyb\r\n"
+    "pyb.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU\r\n"
+    "#pyb.main('main.py') # main script to run after this one\r\n"
 #if MICROPY_HW_ENABLE_USB
-"#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
-"#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+    "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
+    "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
 #endif
 ;
 
 static const char fresh_main_py[] =
-"# main.py -- put your code here!\r\n"
+    "# main.py -- put your code here!\r\n"
 ;
 
 #if MICROPY_HW_ENABLE_USB
@@ -58,18 +60,18 @@ static const char fresh_pybcdc_inf[] =
 ;
 
 static const char fresh_readme_txt[] =
-"This is a MicroPython board\r\n"
-"\r\n"
-"You can get started right away by writing your Python code in 'main.py'.\r\n"
-"\r\n"
-"For a serial prompt:\r\n"
-" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
-"   Then use a terminal program like Hyperterminal or putty.\r\n"
-" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
-" - Linux: use the command: screen /dev/ttyACM0\r\n"
-"\r\n"
-"Please visit http://micropython.org/help/ for further help.\r\n"
+    "This is a MicroPython board\r\n"
+    "\r\n"
+    "You can get started right away by writing your Python code in 'main.py'.\r\n"
+    "\r\n"
+    "For a serial prompt:\r\n"
+    " - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
+    "   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+    "   Then use a terminal program like Hyperterminal or putty.\r\n"
+    " - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
+    " - Linux: use the command: screen /dev/ttyACM0\r\n"
+    "\r\n"
+    "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
 #endif
 
@@ -127,5 +129,14 @@ MP_WEAK int factory_reset_create_filesystem(void) {
 
     return 0; // success
 }
+
+#else
+
+// If FAT is not enabled then it's up to the board to create a fresh filesystem.
+MP_WEAK int factory_reset_create_filesystem(void) {
+    return 0; // success
+}
+
+#endif
 
 #endif // MICROPY_HW_ENABLE_STORAGE

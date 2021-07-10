@@ -26,6 +26,13 @@ else
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
+ifneq ($(BOOTLOADER),)
+	BOOTLOADER_UPPER = $(shell echo $(BOOTLOADER) | tr '[:lower:]' '[:upper:]')
+	# Use additional bootloader linker script
+	LD_FILES += boards/$(MCU_SUB_VARIANT)_$(BOOTLOADER)_$(BOOTLOADER_VERSION_MAJOR).$(BOOTLOADER_VERSION_MINOR).x.ld
+	CFLAGS += -DBOOTLOADER_$(BOOTLOADER_UPPER)_VERSION=$(BOOTLOADER_MAJOR)$(BOOTLOADER_MINOR)
+endif
+
 LD_FILES += boards/memory.ld boards/common.ld
 
 ifneq ($(LD_FILE),)
@@ -37,6 +44,11 @@ endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+
+# MicroPython feature configurations
+ifeq ($(DEBUG), 0)
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+endif
 
 # include py core make definitions
 include ../../py/py.mk
@@ -56,7 +68,6 @@ INC += -I./../../lib/cmsis/inc
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
-INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I./modules/board
 INC += -I../../lib/mp-readline
@@ -97,7 +108,7 @@ CFLAGS_MCU_m33 = $(CFLAGS_CORTEX_M) -mcpu=cortex-m33 -march=armv8-m.main+dsp -mc
 
 CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 
-CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
+CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft
 
 LTO ?= 1
 ifeq ($(LTO),1)
@@ -109,7 +120,7 @@ endif
 
 
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
-CFLAGS += $(INC) -Wall -Werror -g -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
+CFLAGS += $(INC) -Wall -Werror -g -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
@@ -149,8 +160,17 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
+        libm/roundf.c \
 	)
 
 endif
@@ -174,8 +194,17 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
+        libm/roundf.c \
         )
 
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
@@ -209,6 +238,7 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_uart.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
+	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
 	nrfx_spi.c \
@@ -230,6 +260,7 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/flash.c \
+	drivers/rng.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -259,7 +290,6 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	class/cdc/cdc_device.c \
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
-	portable/nordic/nrf5x/hal_nrf5x.c \
 	)
 endif
 
@@ -292,7 +322,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	music/modmusic.c \
 	music/musictunes.c \
 	ble/modble.c \
-	random/modrandom.c \
 	)
 
 # Custom micropython startup file with smaller interrupt vector table
@@ -416,17 +445,60 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).elf
 	    -ex 'quit' \
 	    $<
 
+else ifeq ($(FLASHER), openocd)
+
+OPENOCD ?= openocd
+
+ifeq ($(MCU_VARIANT), nrf51)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else ifeq ($(MCU_VARIANT), nrf52)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else
+$(error Unsupported openocd target)
+endif
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $< verify reset" -c "exit"
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $(SOFTDEV_HEX) verify reset" -c "exit"
+
+else ifeq ($(FLASHER), nrfutil)
+
+NRFUTIL_PORT ?= /dev/ttyACM0
+NRFUTIL_SD_REQ ?= 0x00
+
+ifeq ($(SD), s140)
+NRFUTIL_SD_REQ = 0xB6
+endif
+
+.PHONY: nrfutil_dfu_sd nrfutil_dfu_deploy
+.NOTPARALLEL: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+# DFU both SD and app in case of target "sd"
+sd: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)hexmerge.py -o $(BUILD)/stripped_sd.hex --range=0x1000: $(SOFTDEV_HEX)
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
+
+nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
+
+deploy: nrfutil_dfu_deploy
 endif
 
 flash: deploy
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES)
+SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR

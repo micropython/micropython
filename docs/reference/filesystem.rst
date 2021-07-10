@@ -178,7 +178,8 @@ Board                 FAT    littlefs v1  littlefs v2
 ====================  =====  ===========  ===========
 pyboard 1.0, 1.1, D   Yes    No           Yes
 Other STM32           Yes    No           No
-ESP8266               Yes    No           No
+ESP8266 (1M)          No     No           Yes
+ESP8266 (2M+)         Yes    No           Yes
 ESP32                 Yes    No           Yes
 ====================  =====  ===========  ===========
 

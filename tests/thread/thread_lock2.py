@@ -10,10 +10,12 @@ import _thread
 
 lock = _thread.allocate_lock()
 
+
 def thread_entry():
     lock.acquire()
-    print('have it')
+    print("have it")
     lock.release()
+
 
 # spawn the threads
 for i in range(4):
@@ -21,4 +23,4 @@ for i in range(4):
 
 # wait for threads to finish
 time.sleep(1)
-print('done')
+print("done")

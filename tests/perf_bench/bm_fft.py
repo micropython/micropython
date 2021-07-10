@@ -3,6 +3,7 @@
 
 import math, cmath
 
+
 def transform_radix2(vector, inverse):
     # Returns the integer whose value is the reverse of the lowest 'bits' bits of the integer 'x'.
     def reverse(x, bits):
@@ -34,6 +35,7 @@ def transform_radix2(vector, inverse):
         size *= 2
     return vector
 
+
 ###########################################################################
 # Benchmark interface
 
@@ -43,6 +45,7 @@ bm_params = {
     (1000, 1000): (20, 512),
     (5000, 1000): (100, 512),
 }
+
 
 def bm_setup(params):
     state = None

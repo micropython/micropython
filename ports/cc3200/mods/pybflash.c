@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-//#include <stdint.h>
-//#include <string.h>
-
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"

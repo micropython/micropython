@@ -112,7 +112,7 @@ Filesystem access
 Terminal redirection and duplication
 ------------------------------------
 
-.. function:: dupterm(stream_object, index=0)
+.. function:: dupterm(stream_object, index=0, /)
 
    Duplicate or switch the MicroPython terminal (the REPL) on the given `stream`-like
    object. The *stream_object* argument must be a native stream object, or derive
@@ -144,7 +144,7 @@ programs.  Ports that have this functionality provide the :func:`mount` and
 :func:`umount` functions, and possibly various filesystem implementations
 represented by VFS classes.
 
-.. function:: mount(fsobj, mount_point, \*, readonly)
+.. function:: mount(fsobj, mount_point, *, readonly)
 
     Mount the filesystem object *fsobj* at the location in the VFS given by the
     *mount_point* string.  *fsobj* can be a a VFS object that has a ``mount()``
@@ -178,7 +178,7 @@ represented by VFS classes.
 
         Build a FAT filesystem on *block_dev*.
 
-.. class:: VfsLfs1(block_dev)
+.. class:: VfsLfs1(block_dev, readsize=32, progsize=32, lookahead=32)
 
     Create a filesystem object that uses the `littlefs v1 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
@@ -187,23 +187,31 @@ represented by VFS classes.
 
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev)
+    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs1 filesystem on *block_dev*.
 
     .. note:: There are reports of littlefs v1 failing in certain situations,
               for details see `littlefs issue 347`_.
 
-.. class:: VfsLfs2(block_dev)
+.. class:: VfsLfs2(block_dev, readsize=32, progsize=32, lookahead=32, mtime=True)
 
     Create a filesystem object that uses the `littlefs v2 filesystem format`_.
     Storage of the littlefs filesystem is provided by *block_dev*, which must
     support the :ref:`extended interface <block-device-interface>`.
     Objects created by this constructor can be mounted using :func:`mount`.
 
+    The *mtime* argument enables modification timestamps for files, stored using
+    littlefs attributes.  This option can be disabled or enabled differently each
+    mount time and timestamps will only be added or updated if *mtime* is enabled,
+    otherwise the timestamps will remain untouched.  Littlefs v2 filesystems without
+    timestamps will work without reformatting and timestamps will be added
+    transparently to existing files once they are opened for writing.  When *mtime*
+    is enabled `uos.stat` on files without timestamps will return 0 for the timestamp.
+
     See :ref:`filesystem` for more information.
 
-    .. staticmethod:: mkfs(block_dev)
+    .. staticmethod:: mkfs(block_dev, readsize=32, progsize=32, lookahead=32)
 
         Build a Lfs2 filesystem on *block_dev*.
 
@@ -218,11 +226,19 @@ represented by VFS classes.
 Block devices
 -------------
 
-A block device is an object which implements the block protocol, which is a set
-of methods described below by the :class:`AbstractBlockDev` class.  A concrete
-implementation of this class will usually allow access to the memory-like
-functionality a piece of hardware (like flash memory).  A block device can be
-used by a particular filesystem driver to store the data for its filesystem.
+A block device is an object which implements the block protocol. This enables a
+device to support MicroPython filesystems. The physical hardware is represented
+by a user defined class. The :class:`AbstractBlockDev` class is a template for
+the design of such a class: MicroPython does not actually provide that class,
+but an actual block device class must implement the methods described below.
+
+A concrete implementation of this class will usually allow access to the
+memory-like functionality of a piece of hardware (like flash memory). A block
+device can be formatted to any supported filesystem and mounted using ``uos``
+methods.
+
+See :ref:`filesystem` for example implementations of block devices using the
+two variants of the block protocol described below.
 
 .. _block-device-interface:
 
@@ -244,7 +260,7 @@ that the block device supports the extended interface.
     dependent on the specific block device.
 
     .. method:: readblocks(block_num, buf)
-    .. method:: readblocks(block_num, buf, offset)
+                readblocks(block_num, buf, offset)
 
         The first form reads aligned, multiples of blocks.
         Starting at the block given by the index *block_num*, read blocks from
@@ -259,7 +275,7 @@ that the block device supports the extended interface.
         The number of bytes to read is given by the length of *buf*.
 
     .. method:: writeblocks(block_num, buf)
-    .. method:: writeblocks(block_num, buf, offset)
+                writeblocks(block_num, buf, offset)
 
         The first form writes aligned, multiples of blocks, and requires that the
         blocks that are written to be first erased (if necessary) by this method.
@@ -294,5 +310,12 @@ that the block device supports the extended interface.
             (*arg* is unused)
           - 6 -- erase a block, *arg* is the block number to erase
 
-See :ref:`filesystem` for example implementations of block devices using both
-protocols.
+       As a minimum ``ioctl(4, ...)`` must be intercepted; for littlefs
+       ``ioctl(6, ...)`` must also be intercepted. The need for others is
+       hardware dependent.
+
+       Unless otherwise stated ``ioctl(op, arg)`` can return ``None``.
+       Consequently an implementation can ignore unused values of ``op``. Where
+       ``op`` is intercepted, the return value for operations 4 and 5 are as
+       detailed above. Other operations should return 0 on success and non-zero
+       for failure, with the value returned being an ``OSError`` errno code.

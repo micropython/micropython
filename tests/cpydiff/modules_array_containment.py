@@ -5,4 +5,5 @@ cause: Unknown
 workaround: Unknown
 """
 import array
-print(1 in array.array('B', b'12'))
+
+print(1 in array.array("B", b"12"))

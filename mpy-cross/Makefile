@@ -18,7 +18,7 @@ INC += -I$(TOP)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
 CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
 
@@ -48,6 +48,7 @@ LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 SRC_C = \
 	main.c \
 	gccollect.c \
+	lib/utils/gchelper_generic.c \
 
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)

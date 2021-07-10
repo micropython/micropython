@@ -41,7 +41,6 @@
 #include "prcm.h"
 #include "shamd5.h"
 #include "cryptohash.h"
-#include "mpexception.h"
 
 
 /******************************************************************************

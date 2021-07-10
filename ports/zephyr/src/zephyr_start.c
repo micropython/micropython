@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 #include <zephyr.h>
-#include <console.h>
+#include <console/console.h>
 #include "zephyr_getchar.h"
 
 int real_main(void);
@@ -36,4 +36,8 @@ void main(void) {
     zephyr_getchar_init();
 #endif
     real_main();
+
+    // This is needed so the linker includes k_timer_init, z_impl_k_timer_start
+    // and z_impl_k_timer_stop, as used by libmicropython.a.
+    k_timer_start(NULL, K_MSEC(0), K_MSEC(0));
 }

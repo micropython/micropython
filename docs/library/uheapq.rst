@@ -6,9 +6,11 @@
 
 |see_cpython_module| :mod:`python:heapq`.
 
-This module implements the heap queue algorithm.
+This module implements the
+`min heap queue algorithm <https://en.wikipedia.org/wiki/Heap_%28data_structure%29>`_.
 
-A heap queue is simply a list that has its elements stored in a certain way.
+A heap queue is essentially a list that has its elements stored in such a way
+that the first item of the list is always the smallest.
 
 Functions
 ---------
@@ -19,8 +21,10 @@ Functions
 
 .. function:: heappop(heap)
 
-   Pop the first item from the ``heap``, and return it.  Raises IndexError if
-   heap is empty.
+   Pop the first item from the ``heap``, and return it.  Raise ``IndexError`` if
+   ``heap`` is empty.
+   
+   The returned item will be the smallest item in the ``heap``.
 
 .. function:: heapify(x)
 

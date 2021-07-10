@@ -24,10 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef NRF5_MPCONFIGPORT_H__
-#define NRF5_MPCONFIGPORT_H__
-
 #include <mpconfigboard.h>
+
+#if defined(NRF51822)
+  #include "mpconfigdevice_nrf51822.h"
+#elif defined(NRF52832)
+  #include "mpconfigdevice_nrf52832.h"
+#elif defined(NRF52840)
+  #include "mpconfigdevice_nrf52840.h"
+#elif defined(NRF9160)
+  #include "mpconfigdevice_nrf9160.h"
+#else
+  #pragma error "Device not defined"
+#endif
 
 // options to control how MicroPython is built
 #ifndef MICROPY_VFS
@@ -35,8 +44,6 @@
 #endif
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
@@ -105,31 +112,25 @@
 #define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_IO_FILEIO        (0)
-#define MICROPY_PY_UERRNO           (0)
-#define MICROPY_PY_UBINASCII        (0)
-#define MICROPY_PY_URANDOM          (0)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
+#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_UCTYPES          (0)
 #define MICROPY_PY_UZLIB            (0)
 #define MICROPY_PY_UJSON            (0)
 #define MICROPY_PY_URE              (0)
 #define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
@@ -174,10 +175,9 @@
 #define MICROPY_PY_MACHINE_RTCOUNTER (0)
 #endif
 
-#ifndef MICROPY_PY_RANDOM_HW_RNG
-#define MICROPY_PY_RANDOM_HW_RNG    (0)
+#ifndef MICROPY_PY_TIME_TICKS
+#define MICROPY_PY_TIME_TICKS       (1)
 #endif
-
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
@@ -197,9 +197,7 @@
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
-
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
@@ -218,7 +216,6 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
-extern const struct _mp_obj_module_t random_module;
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -230,12 +227,6 @@ extern const struct _mp_obj_module_t random_module;
 #define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
 #else
 #define MUSIC_MODULE
-#endif
-
-#if MICROPY_PY_RANDOM_HW_RNG
-#define RANDOM_MODULE                       { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
-#else
-#define RANDOM_MODULE
 #endif
 
 #if BOARD_SPECIFIC_MODULES
@@ -263,7 +254,6 @@ extern const struct _mp_obj_module_t ble_module;
     BLE_MODULE \
     MUSIC_MODULE \
     UBLUEPY_MODULE \
-    RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
 
 
@@ -275,7 +265,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
-    RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
 
 
@@ -330,11 +319,18 @@ extern const struct _mp_obj_module_t ble_module;
     /* micro:bit root pointers */ \
     void *async_data[2]; \
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        __WFI(); \
+    } while (0);
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
 
+#ifndef MP_NEED_LOG2
+#define MP_NEED_LOG2                (1)
 #endif

@@ -1,13 +1,13 @@
 MicroPython port to the ESP32
 =============================
 
-This is an experimental port of MicroPython to the Espressif ESP32
-microcontroller.  It uses the ESP-IDF framework and MicroPython runs as
+This is a port of MicroPython to the Espressif ESP32 series of
+microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
 Supported features include:
 - REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and 96k Python heap.
+- 16k stack for the MicroPython task and approximately 100k Python heap.
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
@@ -15,102 +15,65 @@ Supported features include:
 - The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
   TouchPad, WDT and Timer.
 - The network module with WLAN (WiFi) support.
+- Bluetooth low-energy (BLE) support via the bluetooth module.
 
-Development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
+Initial development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
 
-Setting up the toolchain and ESP-IDF
-------------------------------------
+Setting up ESP-IDF and the build environment
+--------------------------------------------
 
-There are two main components that are needed to build the firmware:
-- the Xtensa cross-compiler that targets the CPU in the ESP32 (this is
-  different to the compiler used by the ESP8266)
-- the Espressif IDF (IoT development framework, aka SDK)
+MicroPython on ESP32 requires the Espressif IDF version 4 (IoT development
+framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
+manage the ESP32 microcontroller, as well as a way to manage the required
+build environment and toolchains needed to build the firmware.
 
-The ESP-IDF changes quickly and MicroPython only supports certain versions. The
-git hash of these versions (one for 3.x, one for 4.x) can be found by running
-`make` without a configured `ESPIDF`. Then you can fetch only the given esp-idf
-using the following command:
+The ESP-IDF changes quickly and MicroPython only supports certain versions.
+Currently MicroPython supports v4.0.2, v4.1.1 and v4.2,
+although other IDF v4 versions may also work.
 
-    $ git clone https://github.com/espressif/esp-idf.git
-    $ git checkout <Current supported ESP-IDF commit hash>
-    $ git submodule update --init --recursive
+To install the ESP-IDF the full instructions can be found at the
+[Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/v4.0.2/get-started/index.html#installation-step-by-step).
 
-Note: The ESP IDF v4.x support is currently experimental.
+If you are on a Windows machine then the [Windows Subsystem for
+Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide) is the
+most efficient way to install the ESP32 toolchain and build the project. If
+you use WSL then follow the Linux instructions rather than the Windows
+instructions.
 
-The binary toolchain (binutils, gcc, etc.) can be installed using the following
-guides:
+The Espressif instructions will guide you through using the `install.sh`
+(or `install.bat`) script to download the toolchain and set up your environment.
+The steps to take are summarised below.
 
-  * [Linux installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/linux-setup.html)
-  * [MacOS installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/macos-setup.html)
-  * [Windows installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/windows-setup.html)
+To check out a copy of the IDF use git clone:
 
-If you are on a Windows machine then the
-[Windows Subsystem for Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide)
-is the most efficient way to install the ESP32 toolchain and build the project.
-If you use WSL then follow the
-[Linux guidelines](https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
-for the ESP-IDF instead of the Windows ones.
-
-You will also need either Python 2 or Python 3, along with the `pyserial` and
-`pyparsing` packages installed for the version of Python that you will be using
-(when building you can use, eg, `make PYTHON=python2` to specify the version
-used).  To install the required packages do:
 ```bash
-$ pip install pyserial 'pyparsing<2.4'
+$ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-It is recommended to use a Python virtual environment if your system package
-manager already provides these libraries, especially as the IDF v4.x is
-currently incompatible with pyparsing 2.4 and higher.
+You can replace `v4.0.2` with `v4.1.1` or `v4.2` or any other supported version.
+(You don't need a full recursive clone; see the `ci_esp32_setup` function in
+`tools/ci.sh` in this repository for more detailed set-up commands.)
 
-Once everything is set up you should have a functioning toolchain with
-prefix xtensa-esp32-elf- (or otherwise if you configured it differently)
-as well as a copy of the ESP-IDF repository. You will need to update your `PATH`
-environment variable to include the ESP32 toolchain. For example, you can issue
-the following commands on (at least) Linux:
+If you already have a copy of the IDF then checkout a version compatible with
+MicroPython and update the submodules using:
 
-    $ export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
-
-You can put this command in your `.profile` or `.bash_login`.
-
-You then need to set the `ESPIDF` environment/makefile variable to point to
-the root of the ESP-IDF repository.  You can set the variable in your PATH,
-or at the command line when calling make, or in your own custom `makefile`.
-The last option is recommended as it allows you to easily configure other
-variables for the build.  In that case, create a new file in the esp32
-directory called `makefile` and add the following lines to that file:
-```
-ESPIDF = <path to root of esp-idf repository>
-BOARD = GENERIC
-#PORT = /dev/ttyUSB0
-#FLASH_MODE = qio
-#FLASH_SIZE = 4MB
-#CROSS_COMPILE = xtensa-esp32-elf-
-
-include Makefile
-```
-Be sure to enter the correct path to your local copy of the IDF repository
-(and use `$(HOME)`, not tilde, to reference your home directory).
-If your filesystem is case-insensitive then you'll need to use `GNUmakefile`
-instead of `makefile`.
-If the Xtensa cross-compiler is not in your path you can use the
-`CROSS_COMPILE` variable to set its location.  Other options of interest
-are `PORT` for the serial port of your esp32 module, and `FLASH_MODE`
-(which may need to be `dio` for some modules)
-and `FLASH_SIZE`.  See the Makefile for further information.
-
-The default ESP IDF configuration settings are provided by the `GENERIC`
-board definition in the directory `boards/GENERIC`. For a custom configuration
-you can define your own board directory.
-
-The `BOARD` variable can be set on the make command line:
 ```bash
-$ make BOARD=TINYPICO
+$ cd esp-idf
+$ git checkout v4.2
+$ git submodule update --init --recursive
 ```
-or added to your custom `makefile` (or `GNUmakefile`) described above. There
-is also a `GENERIC_SPIRAM` board for for ESP32 modules that have external
-SPIRAM, but prefer to use a specific board target (or define your own as
-necessary).
+
+After you've cloned and checked out the IDF to the correct version, run the
+`install.sh` script:
+
+```bash
+$ cd esp-idf
+$ ./install.sh       # (or install.bat on Windows)
+$ source export.sh   # (or export.bat on Windows)
+```
+
+The `install.sh` step only needs to be done once. You will need to source
+`export.sh` for every new session.
 
 Building the firmware
 ---------------------
@@ -118,28 +81,31 @@ Building the firmware
 The MicroPython cross-compiler must be built to pre-compile some of the
 built-in scripts to bytecode.  This can be done by (from the root of
 this repository):
+
 ```bash
 $ make -C mpy-cross
 ```
 
 Then to build MicroPython for the ESP32 run:
+
 ```bash
 $ cd ports/esp32
 $ make submodules
 $ make
 ```
-This will produce binary firmware images in the `build/` subdirectory
-(three of them: bootloader.bin, partitions.bin and application.bin).
+
+This will produce a combined `firmware.bin` image in the `build-GENERIC/`
+subdirectory (this firmware image is made up of: bootloader.bin, partitions.bin
+and micropython.bin).
 
 To flash the firmware you must have your ESP32 module in the bootloader
 mode and connected to a serial port on your PC.  Refer to the documentation
-for your particular ESP32 module for how to do this.  The serial port and
-flash settings are set in the `Makefile`, and can be overridden in your
-local `makefile`; see above for more details.
+for your particular ESP32 module for how to do this.
+You will also need to have user permissions to access the `/dev/ttyUSB0` device.
+On Linux, you can enable this by adding your user to the `dialout` group, and
+rebooting or logging out and in again. (Note: on some distributions this may
+be the `uucp` group, run `ls -la /dev/ttyUSB0` to check.)
 
-You will also need to have user permissions to access the /dev/ttyUSB0 device.
-On Linux, you can enable this by adding your user to the `dialout` group,
-and rebooting or logging out and in again.
 ```bash
 $ sudo adduser <username> dialout
 ```
@@ -147,26 +113,53 @@ $ sudo adduser <username> dialout
 If you are installing MicroPython to your module for the first time, or
 after installing any other firmware, you should first erase the flash
 completely:
+
 ```bash
 $ make erase
 ```
 
 To flash the MicroPython firmware to your ESP32 use:
+
 ```bash
 $ make deploy
 ```
-This will use the `esptool.py` script (provided by ESP-IDF) to download the
-binary images.
 
-Getting a Python prompt
------------------------
+The default ESP32 board build by the above commands is the `GENERIC` one, which
+should work on most ESP32 modules.  You can specify a different board by passing
+`BOARD=<board>` to the make commands, for example:
+
+```bash
+$ make BOARD=GENERIC_SPIRAM
+```
+
+Note: the above "make" commands are thin wrappers for the underlying `idf.py`
+build tool that is part of the ESP-IDF.  You can instead use `idf.py` directly,
+for example:
+
+```bash
+$ idf.py build
+$ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
+$ idf.py flash
+```
+
+Getting a Python prompt on the device
+-------------------------------------
 
 You can get a prompt via the serial port, via UART0, which is the same UART
 that is used for programming the firmware.  The baudrate for the REPL is
 115200 and you can use a command such as:
+
 ```bash
 $ picocom -b 115200 /dev/ttyUSB0
 ```
+
+or
+
+```bash
+$ miniterm.py /dev/ttyUSB0 115200
+```
+
+You can also use `idf.py monitor`.
 
 Configuring the WiFi and using the board
 ----------------------------------------
@@ -207,9 +200,27 @@ import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
+Defining a custom ESP32 board
+-----------------------------
+
+The default ESP-IDF configuration settings are provided by the `GENERIC`
+board definition in the directory `boards/GENERIC`. For a custom configuration
+you can define your own board directory.  Start a new board configuration by
+copying an existing one (like `GENERIC`) and modifying it to suit your board.
+
+MicroPython specific configuration values are defined in the board-specific
+`mpconfigboard.h` file, which is included by `mpconfigport.h`.  Additional
+settings are put in `mpconfigboard.cmake`, including a list of `sdkconfig`
+files that configure ESP-IDF settings.  Some standard `sdkconfig` files are
+provided in the `boards/` directory, like `boards/sdkconfig.ble`.  You can
+also define custom ones in your board directory.
+
+See existing board definitions for further examples of configuration.
+
+Configuration
 Troubleshooting
 ---------------
 
-* Continuous reboots after programming: Ensure FLASH_MODE is correct for your
-  board (e.g. ESP-WROOM-32 should be DIO). Then perform a `make clean`, rebuild,
-  redeploy.
+* Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
+  correct for your board (e.g. ESP-WROOM-32 should be DIO). Then perform a
+  `make clean`, rebuild, redeploy.

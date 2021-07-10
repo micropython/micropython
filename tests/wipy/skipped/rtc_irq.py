@@ -1,6 +1,6 @@
-'''
+"""
 RTC IRQ test for the CC3200 based boards.
-'''
+"""
 
 from machine import RTC
 import machine
@@ -8,20 +8,24 @@ import os
 import time
 
 mch = os.uname().machine
-if not 'LaunchPad' in mch and not 'WiPy' in mch:
-    raise Exception('Board not supported!')
+if not "LaunchPad" in mch and not "WiPy" in mch:
+    raise Exception("Board not supported!")
+
 
 def rtc_ticks_ms(rtc):
     timedate = rtc.now()
     return (timedate[5] * 1000) + (timedate[6] // 1000)
 
+
 rtc_irq_count = 0
 
-def alarm_handler (rtc_o):
+
+def alarm_handler(rtc_o):
     global rtc_irq
     global rtc_irq_count
     if rtc_irq.flags() & RTC.ALARM0:
         rtc_irq_count += 1
+
 
 rtc = RTC()
 rtc.alarm(time=500, repeat=True)
@@ -81,9 +85,9 @@ while rtc_irq_count < 3:
 try:
     rtc_irq = rtc.irq(trigger=10, handler=alarm_handler)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc_irq = rtc.irq(trigger=RTC.ALARM0, wake=1789456)
 except:
-    print('Exception')
+    print("Exception")

@@ -98,7 +98,7 @@ STATIC bool is_object_type(const char *jtypesig) {
 STATIC void check_exception(void) {
     jobject exc = JJ1(ExceptionOccurred);
     if (exc) {
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         mp_obj_t py_e = new_jobject(exc);
         JJ1(ExceptionClear);
         if (JJ(IsInstanceOf, exc, IndexException_class)) {
@@ -142,7 +142,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = new_jobject(obj);
             return;
         }
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
@@ -157,7 +157,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
 
 STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        mp_raise_TypeError("kwargs not supported");
+        mp_raise_TypeError(MP_ERROR_TEXT("kwargs not supported"));
     }
     mp_obj_jclass_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -179,7 +179,7 @@ STATIC const mp_obj_type_t jclass_type = {
     .print = jclass_print,
     .attr = jclass_attr,
     .call = jclass_call,
-    .locals_dict = (mp_obj_dict_t*)&jclass_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&jclass_locals_dict,
 };
 
 STATIC mp_obj_t new_jclass(jclass jc) {
@@ -220,7 +220,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = new_jobject(obj);
             return;
         }
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
@@ -246,7 +246,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     mp_uint_t idx = mp_obj_get_int(index);
     char class_name[64];
     get_jclass_name(self->obj, class_name);
-    //printf("class: %s\n", class_name);
+    // printf("class: %s\n", class_name);
 
     if (class_name[0] == '[') {
         if (class_name[1] == 'L' || class_name[1] == '[') {
@@ -288,7 +288,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     }
 
 
-return MP_OBJ_NULL;
+    return MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -364,10 +364,10 @@ STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 #define IMATCH(s, static) ((!strncmp(s, static, sizeof(static) - 1)) && (s += sizeof(static) - 1))
 
 #define CHECK_TYPE(java_type_name) \
-                if (strncmp(arg_type, java_type_name, sizeof(java_type_name) - 1) != 0) { \
-                    return false; \
-                } \
-                arg_type += sizeof(java_type_name) - 1;
+    if (strncmp(arg_type, java_type_name, sizeof(java_type_name) - 1) != 0) { \
+        return false; \
+    } \
+    arg_type += sizeof(java_type_name) - 1;
 
 STATIC const char *strprev(const char *s, char c) {
     while (*s != c) {
@@ -412,7 +412,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         if (!MATCH(expected_type, "java.lang.Object")) {
             char class_name[64];
             get_jclass_name(jo->obj, class_name);
-            //printf("Arg class: %s\n", class_name);
+            // printf("Arg class: %s\n", class_name);
             if (strcmp(class_name, expected_type) != 0) {
                 return false;
             }
@@ -425,13 +425,13 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
             return false;
         }
     } else if (arg == mp_const_none) {
-        //printf("TODO: Check java arg type!!\n");
+        // printf("TODO: Check java arg type!!\n");
         while (isalpha(*arg_type) || *arg_type == '.') {
             arg_type++;
         }
         out->l = NULL;
     } else {
-        mp_raise_TypeError("arg type not supported");
+        mp_raise_TypeError(MP_ERROR_TEXT("arg type not supported"));
     }
 
     *jtypesig = arg_type;
@@ -470,7 +470,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
         jobject name_o = JJ(CallObjectMethod, meth, Object_toString_mid);
         const char *decl = JJ(GetStringUTFChars, name_o, NULL);
         const char *arg_types = strchr(decl, '(') + 1;
-        //const char *arg_types_end = strchr(arg_types, ')');
+        // const char *arg_types_end = strchr(arg_types, ')');
 //        printf("method[%d]=%p %s\n", i, meth, decl);
 
         const char *meth_name = NULL;
@@ -481,7 +481,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             ret_type = strprev(ret_type, ' ') + 1;
 
             int name_len = strlen(name);
-            if (strncmp(name, meth_name, name_len/*arg_types - meth_name - 1*/) || meth_name[name_len] != '('/*(*/) {
+            if (strncmp(name, meth_name, name_len /*arg_types - meth_name - 1*/) || meth_name[name_len] != '(' /*(*/) {
                 goto next_method;
             }
         }
@@ -531,7 +531,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
                     ret = new_jobject(res);
                 } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
-                    mp_raise_TypeError("cannot handle return type");
+                    mp_raise_TypeError(MP_ERROR_TEXT("can't handle return type"));
                 }
 
                 JJ(ReleaseStringUTFChars, name_o, decl);
@@ -541,19 +541,19 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             }
         }
 
-next_method:
+    next_method:
         JJ(ReleaseStringUTFChars, name_o, decl);
         JJ(DeleteLocalRef, name_o);
         JJ(DeleteLocalRef, meth);
     }
 
-    mp_raise_TypeError("method not found");
+    mp_raise_TypeError(MP_ERROR_TEXT("method not found"));
 }
 
 
 STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        mp_raise_TypeError("kwargs not supported");
+        mp_raise_TypeError(MP_ERROR_TEXT("kwargs not supported"));
     }
     mp_obj_jmethod_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -599,13 +599,13 @@ STATIC void create_jvm(void) {
 
     void *libjvm = dlopen(LIBJVM_SO, RTLD_NOW | RTLD_GLOBAL);
     if (!libjvm) {
-        mp_raise_msg(&mp_type_OSError, "unable to load libjvm.so, use LD_LIBRARY_PATH");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("unable to load libjvm.so, use LD_LIBRARY_PATH"));
     }
-    int (*_JNI_CreateJavaVM)(void*, void**, void*) = dlsym(libjvm, "JNI_CreateJavaVM");
+    int (*_JNI_CreateJavaVM)(void *, void **, void *) = dlsym(libjvm, "JNI_CreateJavaVM");
 
-    int st = _JNI_CreateJavaVM(&jvm, (void**)&env, &args);
+    int st = _JNI_CreateJavaVM(&jvm, (void **)&env, &args);
     if (st < 0 || !env) {
-        mp_raise_msg(&mp_type_OSError, "unable to create JVM");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("unable to create JVM"));
     }
 
     Class_class = JJ(FindClass, "java/lang/Class");
@@ -614,26 +614,26 @@ STATIC void create_jvm(void) {
 
     jclass Object_class = JJ(FindClass, "java/lang/Object");
     Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
-                                     "()Ljava/lang/String;");
+        MP_ERROR_TEXT("()Ljava/lang/String;"));
 
     Class_getName_mid = (*env)->GetMethodID(env, Class_class, "getName",
-                                     "()Ljava/lang/String;");
+        MP_ERROR_TEXT("()Ljava/lang/String;"));
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
-                                     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+        MP_ERROR_TEXT("(Ljava/lang/String;)Ljava/lang/reflect/Field;"));
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",
-                                     "()[Ljava/lang/reflect/Method;");
+        MP_ERROR_TEXT("()[Ljava/lang/reflect/Method;"));
     Class_getConstructors_mid = (*env)->GetMethodID(env, Class_class, "getConstructors",
-                                     "()[Ljava/lang/reflect/Constructor;");
+        MP_ERROR_TEXT("()[Ljava/lang/reflect/Constructor;"));
     Method_getName_mid = (*env)->GetMethodID(env, method_class, "getName",
-                                     "()Ljava/lang/String;");
+        MP_ERROR_TEXT("()Ljava/lang/String;"));
 
     List_class = JJ(FindClass, "java/util/List");
     List_get_mid = JJ(GetMethodID, List_class, "get",
-                                     "(I)Ljava/lang/Object;");
+        MP_ERROR_TEXT("(I)Ljava/lang/Object;"));
     List_set_mid = JJ(GetMethodID, List_class, "set",
-                                     "(ILjava/lang/Object;)Ljava/lang/Object;");
+        MP_ERROR_TEXT("(ILjava/lang/Object;)Ljava/lang/Object;"));
     List_size_mid = JJ(GetMethodID, List_class, "size",
-                                     "()I");
+        MP_ERROR_TEXT("()I"));
     IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 
@@ -715,5 +715,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
 
 const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_jni_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };

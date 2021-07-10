@@ -20,16 +20,13 @@ ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
 ifndef BUILD_VERBOSE
+$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
 BUILD_VERBOSE = 0
 endif
 ifeq ($(BUILD_VERBOSE),0)
 Q = @
 else
 Q =
-endif
-# Since this is a new feature, advertise it
-ifeq ($(BUILD_VERBOSE),0)
-$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
 endif
 
 # default settings; can be overridden in main Makefile
@@ -55,11 +52,6 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
-ifeq ($(MICROPY_FORCE_32BIT),1)
-CC += -m32
-CXX += -m32
-LD += -m32
-endif
 
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py

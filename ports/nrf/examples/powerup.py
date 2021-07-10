@@ -41,11 +41,13 @@ from machine import ADC
 from machine import Pin
 from ubluepy import Peripheral, Scanner, constants
 
+
 def bytes_to_str(bytes):
     string = ""
     for b in bytes:
         string += chr(b)
     return string
+
 
 def get_device_names(scan_entries):
     dev_names = []
@@ -53,9 +55,10 @@ def get_device_names(scan_entries):
         scan = e.getScanData()
         if scan:
             for s in scan:
-               if s[0] == constants.ad_types.AD_TYPE_COMPLETE_LOCAL_NAME:
-                   dev_names.append((e, bytes_to_str(s[2])))
+                if s[0] == constants.ad_types.AD_TYPE_COMPLETE_LOCAL_NAME:
+                    dev_names.append((e, bytes_to_str(s[2])))
     return dev_names
+
 
 def find_device_by_name(name):
     s = Scanner()
@@ -65,6 +68,7 @@ def find_device_by_name(name):
     for dev in device_names:
         if name == dev[1]:
             return dev[0]
+
 
 class PowerUp3:
     def __init__(self):
@@ -76,14 +80,14 @@ class PowerUp3:
         self.btn_speed_off = Pin("P16", mode=Pin.IN, pull=Pin.PULL_UP)
 
         self.x_mid = 0
-        
+
         self.calibrate()
         self.connect()
         self.loop()
-        
+
     def read_stick_x(self):
         return self.x_adc.value()
-        
+
     def button_speed_up(self):
         return not bool(self.btn_speed_up.value())
 
@@ -146,7 +150,7 @@ class PowerUp3:
             self.angle(0)
 
     def rudder_left(self, angle):
-        steps = (angle // self.interval_size_left)
+        steps = angle // self.interval_size_left
         new_angle = 60 - steps
 
         if self.old_angle != new_angle:
@@ -154,7 +158,7 @@ class PowerUp3:
             self.old_angle = new_angle
 
     def rudder_right(self, angle):
-        steps = (angle // self.interval_size_right)
+        steps = angle // self.interval_size_right
         new_angle = -steps
 
         if self.old_angle != new_angle:
@@ -162,9 +166,9 @@ class PowerUp3:
             self.old_angle = new_angle
 
     def throttle(self, speed):
-        if (speed > 200):
+        if speed > 200:
             speed = 200
-        elif (speed < 0):
+        elif speed < 0:
             speed = 0
 
         if self.old_speed != speed:
@@ -188,10 +192,10 @@ class PowerUp3:
 
             # read out new angle
             new_angle = self.read_stick_x()
-            if (new_angle < 256):
-                if (new_angle > right_threshold):
+            if new_angle < 256:
+                if new_angle > right_threshold:
                     self.rudder_right(new_angle - self.x_mid)
-                elif (new_angle < left_threshold):
+                elif new_angle < left_threshold:
                     self.rudder_left(new_angle)
                 else:
                     self.rudder_center()

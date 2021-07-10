@@ -10,10 +10,10 @@ except ImportError:
 try:
     random.randint
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
-print('randrange')
+print("randrange")
 for i in range(50):
     assert 0 <= random.randrange(4) < 4
     assert 2 <= random.randrange(2, 6) < 6
@@ -25,27 +25,27 @@ for i in range(50):
 try:
     random.randrange(0)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 
 # empty range
 try:
     random.randrange(2, 1)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 
 # zero step
 try:
     random.randrange(2, 1, 0)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 
 # empty range
 try:
     random.randrange(2, 1, 1)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 
-print('randint')
+print("randint")
 for i in range(50):
     assert 0 <= random.randint(0, 4) <= 4
     assert 2 <= random.randint(2, 6) <= 6
@@ -55,9 +55,9 @@ for i in range(50):
 try:
     random.randint(2, 1)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 
-print('choice')
+print("choice")
 lst = [1, 2, 5, 6]
 for i in range(50):
     assert random.choice(lst) in lst
@@ -66,4 +66,4 @@ for i in range(50):
 try:
     random.choice([])
 except IndexError:
-    print('IndexError')
+    print("IndexError")

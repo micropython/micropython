@@ -28,12 +28,22 @@
 
 #include "genhdr/pins.h"
 
+// For simplicity just convert all HAL errors to one errno.
+static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
+    return status == HAL_OK ? 0 : -1;
+}
+
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
 #define MP_HAL_PIN_MODE_INPUT           (0)
 #define MP_HAL_PIN_MODE_OUTPUT          (1)
 #define MP_HAL_PIN_MODE_ALT             (2)
 #define MP_HAL_PIN_MODE_ANALOG          (3)
+#if defined(GPIO_ASCR_ASC0)
+#define MP_HAL_PIN_MODE_ADC             (11)
+#else
+#define MP_HAL_PIN_MODE_ADC             (3)
+#endif
 #define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
 #define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
 #define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)
@@ -53,7 +63,7 @@
 #define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 #define mp_hal_pin_read(p)      ((((GPIO_TypeDef*)((p) & ~0xf))->IDR >> ((p) & 0xf)) & 1)
-#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
 
 void mp_hal_pin_config(uint32_t port_pin, uint32_t mode, uint32_t pull, uint32_t alt);
 void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed);

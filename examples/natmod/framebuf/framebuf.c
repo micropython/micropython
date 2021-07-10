@@ -1,4 +1,3 @@
-#define MICROPY_ENABLE_DYNRUNTIME (1)
 #define MICROPY_PY_FRAMEBUF (1)
 
 #include "py/dynruntime.h"

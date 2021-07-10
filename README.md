@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/micropython/micropython.png?branch=master)](https://travis-ci.org/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
+[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
 
 The MicroPython project
 =======================
@@ -99,7 +99,7 @@ Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
-    $ ./micropython --help
+    $ ./micropython -h
 
 Run complete testsuite:
 
@@ -144,7 +144,7 @@ options (like cross-compiling), the same set of options should be passed
 to `make deplibs`. To actually enable/disable use of dependencies, edit
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the options.
 For example, to build SSL module (required for `upip` tool described above,
-and so enabled by dfeault), `MICROPY_PY_USSL` should be set to 1.
+and so enabled by default), `MICROPY_PY_USSL` should be set to 1.
 
 For some ports, building required dependences is transparent, and happens
 automatically.  But they still need to be fetched with the `make submodules`

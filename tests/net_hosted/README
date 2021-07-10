@@ -8,4 +8,4 @@ not yet fully correspond to the functional specification above.
 So far, these tests are not run as part of the main testsuite and need
 to be run seperately (from the main test/ directory):
 
-    ./run-tests net_hosted/*.py
+    ./run-tests.py net_hosted/*.py

@@ -9,7 +9,6 @@ import random
 
 
 class GVector(object):
-
     def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
@@ -19,9 +18,9 @@ class GVector(object):
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
     def dist(self, other):
-        return math.sqrt((self.x - other.x) ** 2
-                         + (self.y - other.y) ** 2
-                         + (self.z - other.z) ** 2)
+        return math.sqrt(
+            (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2
+        )
 
     def __add__(self, other):
         if not isinstance(other, GVector):
@@ -35,14 +34,15 @@ class GVector(object):
     def __mul__(self, other):
         v = GVector(self.x * other, self.y * other, self.z * other)
         return v
+
     __rmul__ = __mul__
 
     def linear_combination(self, other, l1, l2=None):
         if l2 is None:
             l2 = 1 - l1
-        v = GVector(self.x * l1 + other.x * l2,
-                    self.y * l1 + other.y * l2,
-                    self.z * l1 + other.z * l2)
+        v = GVector(
+            self.x * l1 + other.x * l2, self.y * l1 + other.y * l2, self.z * l1 + other.z * l2
+        )
         return v
 
     def __str__(self):
@@ -75,8 +75,7 @@ class Spline(object):
 
     def GetDomain(self):
         """Returns the domain of the B-Spline"""
-        return (self.knots[self.degree - 1],
-                self.knots[len(self.knots) - self.degree])
+        return (self.knots[self.degree - 1], self.knots[len(self.knots) - self.degree])
 
     def __call__(self, u):
         """Calculates a point of the B-Spline using de Boors Algorithm"""
@@ -88,8 +87,7 @@ class Spline(object):
         if u == dom[1]:
             return self.points[-1]
         I = self.GetIndex(u)
-        d = [self.points[I - self.degree + 1 + ii]
-             for ii in range(self.degree + 1)]
+        d = [self.points[I - self.degree + 1 + ii] for ii in range(self.degree + 1)]
         U = self.knots
         for ik in range(1, self.degree + 1):
             for ii in range(I - self.degree + ik + 1, I + 2):
@@ -120,16 +118,15 @@ class Spline(object):
 
 def write_ppm(im, w, h, filename):
     with open(filename, "wb") as f:
-        f.write(b'P6\n%i %i\n255\n' % (w, h))
+        f.write(b"P6\n%i %i\n255\n" % (w, h))
         for j in range(h):
             for i in range(w):
                 val = im[j * w + i]
                 c = val * 255
-                f.write(b'%c%c%c' % (c, c, c))
+                f.write(b"%c%c%c" % (c, c, c))
 
 
 class Chaosgame(object):
-
     def __init__(self, splines, thickness, subdivs):
         self.splines = splines
         self.thickness = thickness
@@ -178,10 +175,8 @@ class Chaosgame(object):
             neighbour = self.splines[trafo[0]](t + 1 / 50000)
             derivative = basepoint - neighbour
         if derivative.Mag() != 0:
-            basepoint.x += derivative.y / derivative.Mag() * (y - 0.5) * \
-                self.thickness
-            basepoint.y += -derivative.x / derivative.Mag() * (y - 0.5) * \
-                self.thickness
+            basepoint.x += derivative.y / derivative.Mag() * (y - 0.5) * self.thickness
+            basepoint.y += -derivative.x / derivative.Mag() * (y - 0.5) * self.thickness
         else:
             # can happen, especially with single precision float
             pass
@@ -204,8 +199,7 @@ class Chaosgame(object):
         random.seed(rng_seed)
 
         im = bytearray(w * h)
-        point = GVector((self.maxx + self.minx) / 2,
-                        (self.maxy + self.miny) / 2, 0)
+        point = GVector((self.maxx + self.minx) / 2, (self.maxy + self.miny) / 2, 0)
         for _ in range(iterations):
             point = self.transform_point(point)
             x = (point.x - self.minx) / self.width * w
@@ -230,29 +224,42 @@ bm_params = {
     (5000, 1000): (0.25, 400, 500, 500, 7000, 1234),
 }
 
+
 def bm_setup(params):
     splines = [
-        Spline([
-            GVector(1.597, 3.304, 0.0),
-            GVector(1.576, 4.123, 0.0),
-            GVector(1.313, 5.288, 0.0),
-            GVector(1.619, 5.330, 0.0),
-            GVector(2.890, 5.503, 0.0),
-            GVector(2.373, 4.382, 0.0),
-            GVector(1.662, 4.360, 0.0)],
-            3, [0, 0, 0, 1, 1, 1, 2, 2, 2]),
-        Spline([
-            GVector(2.805, 4.017, 0.0),
-            GVector(2.551, 3.525, 0.0),
-            GVector(1.979, 2.620, 0.0),
-            GVector(1.979, 2.620, 0.0)],
-            3, [0, 0, 0, 1, 1, 1]),
-        Spline([
-            GVector(2.002, 4.011, 0.0),
-            GVector(2.335, 3.313, 0.0),
-            GVector(2.367, 3.233, 0.0),
-            GVector(2.367, 3.233, 0.0)],
-            3, [0, 0, 0, 1, 1, 1])
+        Spline(
+            [
+                GVector(1.597, 3.304, 0.0),
+                GVector(1.576, 4.123, 0.0),
+                GVector(1.313, 5.288, 0.0),
+                GVector(1.619, 5.330, 0.0),
+                GVector(2.890, 5.503, 0.0),
+                GVector(2.373, 4.382, 0.0),
+                GVector(1.662, 4.360, 0.0),
+            ],
+            3,
+            [0, 0, 0, 1, 1, 1, 2, 2, 2],
+        ),
+        Spline(
+            [
+                GVector(2.805, 4.017, 0.0),
+                GVector(2.551, 3.525, 0.0),
+                GVector(1.979, 2.620, 0.0),
+                GVector(1.979, 2.620, 0.0),
+            ],
+            3,
+            [0, 0, 0, 1, 1, 1],
+        ),
+        Spline(
+            [
+                GVector(2.002, 4.011, 0.0),
+                GVector(2.335, 3.313, 0.0),
+                GVector(2.367, 3.233, 0.0),
+                GVector(2.367, 3.233, 0.0),
+            ],
+            3,
+            [0, 0, 0, 1, 1, 1],
+        ),
     ]
 
     chaos = Chaosgame(splines, params[0], params[1])
@@ -267,7 +274,7 @@ def bm_setup(params):
         norm = params[4]
         # Images are not the same when floating point behaviour is different,
         # so return percentage of pixels that are set (rounded to int).
-        #write_ppm(image, params[2], params[3], 'out-.ppm')
+        # write_ppm(image, params[2], params[3], 'out-.ppm')
         pix = int(100 * sum(image) / len(image))
         return norm, pix
 

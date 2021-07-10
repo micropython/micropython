@@ -42,7 +42,7 @@
 #define STORAGE_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & STORAGE_SYSTICK_MASK) == 0)
 
 #if defined(MICROPY_HW_BDEV2_IOCTL)
-#define FLASH_PART2_START_BLOCK (FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0))
+#define FLASH_PART2_START_BLOCK (FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0))
 #endif
 
 static bool storage_is_initialised = false;
@@ -140,7 +140,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 }
 
 bool storage_read_block(uint8_t *dest, uint32_t block) {
-    //printf("RD %u\n", block);
+    // printf("RD %u\n", block);
     if (block == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -172,7 +172,7 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 }
 
 bool storage_write_block(const uint8_t *src, uint32_t block) {
-    //printf("WR %u\n", block);
+    // printf("WR %u\n", block);
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;
@@ -248,6 +248,13 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 
 #ifndef PYB_FLASH_NATIVE_BLOCK_SIZE
 #define PYB_FLASH_NATIVE_BLOCK_SIZE (FLASH_BLOCK_SIZE)
+#endif
+
+#if defined(MICROPY_HW_BDEV_READBLOCKS_EXT)
+// Size of blocks is PYB_FLASH_NATIVE_BLOCK_SIZE
+int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint32_t len) {
+    return MICROPY_HW_BDEV_READBLOCKS_EXT(dest, block, offset, len);
+}
 #endif
 
 typedef struct _pyb_flash_obj_t {
@@ -333,8 +340,12 @@ STATIC mp_obj_t pyb_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     else if (self != &pyb_flash_obj) {
         // Extended block read on a sub-section of the flash storage
         uint32_t offset = mp_obj_get_int(args[3]);
-        block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
-        ret = MICROPY_HW_BDEV_READBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        if ((block_num * PYB_FLASH_NATIVE_BLOCK_SIZE) >= self->len) {
+            ret = -MP_EFAULT; // Bad address
+        } else {
+            block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
+            ret = MICROPY_HW_BDEV_READBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        }
     }
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
@@ -356,8 +367,12 @@ STATIC mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     else if (self != &pyb_flash_obj) {
         // Extended block write on a sub-section of the flash storage
         uint32_t offset = mp_obj_get_int(args[3]);
-        block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
-        ret = MICROPY_HW_BDEV_WRITEBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        if ((block_num * PYB_FLASH_NATIVE_BLOCK_SIZE) >= self->len) {
+            ret = -MP_EFAULT; // Bad address
+        } else {
+            block_num += self->start / PYB_FLASH_NATIVE_BLOCK_SIZE;
+            ret = MICROPY_HW_BDEV_WRITEBLOCKS_EXT(bufinfo.buf, block_num, offset, bufinfo.len);
+        }
     }
     #endif
     return MP_OBJ_NEW_SMALL_INT(ret);
@@ -384,8 +399,12 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             }
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
-        case MP_BLOCKDEV_IOCTL_DEINIT: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case MP_BLOCKDEV_IOCTL_SYNC: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);                                             // TODO properly
+        case MP_BLOCKDEV_IOCTL_SYNC:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);
 
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: {
             mp_int_t n;
@@ -423,7 +442,8 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
 
-        default: return mp_const_none;
+        default:
+            return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
@@ -441,14 +461,16 @@ const mp_obj_type_t pyb_flash_type = {
     .name = MP_QSTR_Flash,
     .print = pyb_flash_print,
     .make_new = pyb_flash_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_flash_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_flash_locals_dict,
 };
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
+    #if MICROPY_FATFS_MULTI_PARTITION
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
+    #endif
     vfs->blockdev.readblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_readblocks_obj);
     vfs->blockdev.readblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
     vfs->blockdev.readblocks[2] = MP_OBJ_FROM_PTR(storage_read_blocks); // native version

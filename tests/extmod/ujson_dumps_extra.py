@@ -6,4 +6,4 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-print(ujson.dumps(b'1234'))
+print(ujson.dumps(b"1234"))

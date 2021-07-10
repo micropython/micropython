@@ -36,8 +36,28 @@
 
 #include "driver/spi_master.h"
 
+// Default pins for SPI(1), can be overridden by a board
+#ifndef MICROPY_HW_SPI1_SCK
+#define MICROPY_HW_SPI1_SCK (14)
+#define MICROPY_HW_SPI1_MOSI (13)
+#define MICROPY_HW_SPI1_MISO (12)
+#endif
+
+// Default pins for SPI(2), can be overridden by a board
+#ifndef MICROPY_HW_SPI2_SCK
+#define MICROPY_HW_SPI2_SCK (18)
+#define MICROPY_HW_SPI2_MOSI (23)
+#define MICROPY_HW_SPI2_MISO (19)
+#endif
+
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
+
+typedef struct _machine_hw_spi_default_pins_t {
+    int8_t sck;
+    int8_t mosi;
+    int8_t miso;
+} machine_hw_spi_default_pins_t;
 
 typedef struct _machine_hw_spi_obj_t {
     mp_obj_base_t base;
@@ -58,27 +78,33 @@ typedef struct _machine_hw_spi_obj_t {
     } state;
 } machine_hw_spi_obj_t;
 
+// Default pin mappings for the hardware SPI instances
+STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
+    { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
+    { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
+};
+
 // Static objects mapping to HSPI and VSPI hardware peripherals
 STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];
 
 STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     switch (spi_bus_remove_device(self->spi)) {
         case ESP_ERR_INVALID_ARG:
-            mp_raise_msg(&mp_type_OSError, "invalid configuration");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
             return;
 
         case ESP_ERR_INVALID_STATE:
-            mp_raise_msg(&mp_type_OSError, "SPI device already freed");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI device already freed"));
             return;
     }
 
     switch (spi_bus_free(self->host)) {
         case ESP_ERR_INVALID_ARG:
-            mp_raise_msg(&mp_type_OSError, "invalid configuration");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
             return;
 
         case ESP_ERR_INVALID_STATE:
-            mp_raise_msg(&mp_type_OSError, "SPI bus already freed");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI bus already freed"));
             return;
     }
 
@@ -94,16 +120,16 @@ STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
 }
 
 STATIC void machine_hw_spi_init_internal(
-    machine_hw_spi_obj_t    *self,
-    int8_t                  host,
-    int32_t                 baudrate,
-    int8_t                  polarity,
-    int8_t                  phase,
-    int8_t                  bits,
-    int8_t                  firstbit,
-    int8_t                  sck,
-    int8_t                  mosi,
-    int8_t                  miso) {
+    machine_hw_spi_obj_t *self,
+    int8_t host,
+    int32_t baudrate,
+    int8_t polarity,
+    int8_t phase,
+    int8_t bits,
+    int8_t firstbit,
+    int8_t sck,
+    int8_t mosi,
+    int8_t miso) {
 
     // if we're not initialized, then we're
     // implicitly 'changed', since this is the init routine
@@ -129,7 +155,7 @@ STATIC void machine_hw_spi_init_internal(
     }
 
     if (phase != -1 && phase != self->phase) {
-        self->phase =  phase;
+        self->phase = phase;
         changed = true;
     }
 
@@ -158,8 +184,12 @@ STATIC void machine_hw_spi_init_internal(
         changed = true;
     }
 
-    if (self->host != HSPI_HOST && self->host != VSPI_HOST) {
-        mp_raise_ValueError("SPI ID must be either HSPI(1) or VSPI(2)");
+    if (self->host != HSPI_HOST
+        #ifdef VSPI_HOST
+        && self->host != VSPI_HOST
+        #endif
+        ) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), self->host);
     }
 
     if (changed) {
@@ -188,41 +218,43 @@ STATIC void machine_hw_spi_init_internal(
         .pre_cb = NULL
     };
 
-    //Initialize the SPI bus
+    // Initialize the SPI bus
 
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
         dma_chan = 1;
+    #ifdef VSPI_HOST
     } else if (self->host == VSPI_HOST) {
         dma_chan = 2;
+    #endif
     }
 
     ret = spi_bus_initialize(self->host, &buscfg, dma_chan);
     switch (ret) {
         case ESP_ERR_INVALID_ARG:
-            mp_raise_msg(&mp_type_OSError, "invalid configuration");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
             return;
 
         case ESP_ERR_INVALID_STATE:
-            mp_raise_msg(&mp_type_OSError, "SPI host already in use");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SPI host already in use"));
             return;
     }
 
     ret = spi_bus_add_device(self->host, &devcfg, &self->spi);
     switch (ret) {
         case ESP_ERR_INVALID_ARG:
-            mp_raise_msg(&mp_type_OSError, "invalid configuration");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
             spi_bus_free(self->host);
             return;
 
         case ESP_ERR_NO_MEM:
-            mp_raise_msg(&mp_type_OSError, "out of memory");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
             spi_bus_free(self->host);
             return;
 
         case ESP_ERR_NOT_FOUND:
-            mp_raise_msg(&mp_type_OSError, "no free slots");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no free slots"));
             spi_bus_free(self->host);
             return;
     }
@@ -230,7 +262,7 @@ STATIC void machine_hw_spi_init_internal(
 }
 
 STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
     if (self->state == MACHINE_HW_SPI_STATE_INIT) {
         self->state = MACHINE_HW_SPI_STATE_DEINIT;
         machine_hw_spi_deinit_internal(self);
@@ -241,7 +273,7 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
-        mp_raise_msg(&mp_type_OSError, "transfer on deinitialized SPI");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("transfer on deinitialized SPI"));
         return;
     }
 
@@ -295,13 +327,13 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
 STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(id=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d)",
-              self->host, self->baudrate, self->polarity,
-              self->phase, self->bits, self->firstbit,
-              self->sck, self->mosi, self->miso);
+        self->host, self->baudrate, self->polarity,
+        self->phase, self->bits, self->firstbit,
+        self->sck, self->mosi, self->miso);
 }
 
 STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
 
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
@@ -318,7 +350,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
+        allowed_args, args);
     int8_t sck, mosi, miso;
 
     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
@@ -346,11 +378,13 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
     }
 
     machine_hw_spi_init_internal(self, args[ARG_id].u_int, args[ARG_baudrate].u_int,
-                                 args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
-                                 args[ARG_firstbit].u_int, sck, mosi, miso);
+        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+        args[ARG_firstbit].u_int, sck, mosi, miso);
 }
 
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args);
+
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
@@ -367,12 +401,41 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     machine_hw_spi_obj_t *self;
+    const machine_hw_spi_default_pins_t *default_pins;
     if (args[ARG_id].u_int == HSPI_HOST) {
         self = &machine_hw_spi_obj[0];
+        default_pins = &machine_hw_spi_default_pins[0];
     } else {
         self = &machine_hw_spi_obj[1];
+        default_pins = &machine_hw_spi_default_pins[1];
     }
     self->base.type = &machine_hw_spi_type;
+
+    int8_t sck, mosi, miso;
+
+    if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
+        sck = default_pins->sck;
+    } else if (args[ARG_sck].u_obj == mp_const_none) {
+        sck = -1;
+    } else {
+        sck = machine_pin_get_id(args[ARG_sck].u_obj);
+    }
+
+    if (args[ARG_mosi].u_obj == MP_OBJ_NULL) {
+        mosi = default_pins->mosi;
+    } else if (args[ARG_mosi].u_obj == mp_const_none) {
+        mosi = -1;
+    } else {
+        mosi = machine_pin_get_id(args[ARG_mosi].u_obj);
+    }
+
+    if (args[ARG_miso].u_obj == MP_OBJ_NULL) {
+        miso = default_pins->miso;
+    } else if (args[ARG_miso].u_obj == mp_const_none) {
+        miso = -1;
+    } else {
+        miso = machine_pin_get_id(args[ARG_miso].u_obj);
+    }
 
     machine_hw_spi_init_internal(
         self,
@@ -382,9 +445,9 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         args[ARG_phase].u_int,
         args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj),
-        args[ARG_mosi].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_mosi].u_obj),
-        args[ARG_miso].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_miso].u_obj));
+        sck,
+        mosi,
+        miso);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -401,5 +464,5 @@ const mp_obj_type_t machine_hw_spi_type = {
     .print = machine_hw_spi_print,
     .make_new = machine_hw_spi_make_new,
     .protocol = &machine_hw_spi_p,
-    .locals_dict = (mp_obj_dict_t *) &mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

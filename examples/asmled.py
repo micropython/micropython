@@ -2,8 +2,8 @@
 # this version is overly verbose and uses word stores
 @micropython.asm_thumb
 def flash_led(r0):
-    movw(r1, (stm.GPIOA + stm.GPIO_BSRRL) & 0xffff)
-    movt(r1, ((stm.GPIOA + stm.GPIO_BSRRL) >> 16) & 0x7fff)
+    movw(r1, (stm.GPIOA + stm.GPIO_BSRRL) & 0xFFFF)
+    movt(r1, ((stm.GPIOA + stm.GPIO_BSRRL) >> 16) & 0x7FFF)
     movw(r2, 1 << 13)
     movt(r2, 0)
     movw(r3, 0)
@@ -17,8 +17,8 @@ def flash_led(r0):
     str(r2, [r1, 0])
 
     # delay for a bit
-    movw(r4, 5599900 & 0xffff)
-    movt(r4, (5599900 >> 16) & 0xffff)
+    movw(r4, 5599900 & 0xFFFF)
+    movt(r4, (5599900 >> 16) & 0xFFFF)
     label(delay_on)
     sub(r4, r4, 1)
     cmp(r4, 0)
@@ -28,8 +28,8 @@ def flash_led(r0):
     str(r3, [r1, 0])
 
     # delay for a bit
-    movw(r4, 5599900 & 0xffff)
-    movt(r4, (5599900 >> 16) & 0xffff)
+    movw(r4, 5599900 & 0xFFFF)
+    movt(r4, (5599900 >> 16) & 0xFFFF)
     label(delay_off)
     sub(r4, r4, 1)
     cmp(r4, 0)
@@ -40,6 +40,7 @@ def flash_led(r0):
     label(loop_entry)
     cmp(r0, 0)
     bgt(loop1)
+
 
 # flash LED #2 using inline assembler
 # this version uses half-word sortes, and the convenience assembler operation 'movwt'
@@ -80,6 +81,7 @@ def flash_led_v2(r0):
     label(loop_entry)
     cmp(r0, 0)
     bgt(loop1)
+
 
 flash_led(5)
 flash_led_v2(5)

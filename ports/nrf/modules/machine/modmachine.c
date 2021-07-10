@@ -147,7 +147,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_soft_reset(void) {
     pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
@@ -196,14 +196,15 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_soft_reset),         MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) },
-#if MICROPY_HW_ENABLE_RNG
-    { MP_ROM_QSTR(MP_QSTR_rng),                MP_ROM_PTR(&random_module) },
-#endif
     { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_lightsleep),         MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),        MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_mem8),               MP_ROM_PTR(&machine_mem8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem16),              MP_ROM_PTR(&machine_mem16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem32),              MP_ROM_PTR(&machine_mem32_obj) },
+    
 #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART),               MP_ROM_PTR(&machine_hard_uart_type) },
 #endif
@@ -211,7 +212,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI),                MP_ROM_PTR(&machine_hard_spi_type) },
 #endif
 #if MICROPY_PY_MACHINE_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_hard_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftI2C),            MP_ROM_PTR(&mp_machine_soft_i2c_type) },
 #endif
 #if MICROPY_PY_MACHINE_ADC
     { MP_ROM_QSTR(MP_QSTR_ADC),                MP_ROM_PTR(&machine_adc_type) },

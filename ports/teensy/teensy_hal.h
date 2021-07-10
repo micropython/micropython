@@ -3,7 +3,7 @@
 
 #ifdef  USE_FULL_ASSERT
   #define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
-  void assert_failed(uint8_t* file, uint32_t line);
+void assert_failed(uint8_t *file, uint32_t line);
 #else
   #define assert_param(expr) ((void)0)
 #endif /* USE_FULL_ASSERT */
@@ -41,12 +41,12 @@ typedef struct {
 } SPI_TypeDef;
 
 typedef struct {
-    volatile    uint32_t    PDOR;   // Output register
-    volatile    uint32_t    PSOR;   // Set output register
-    volatile    uint32_t    PCOR;   // Clear output register
-    volatile    uint32_t    PTOR;   // Toggle output register
-    volatile    uint32_t    PDIR;   // Data Input register
-    volatile    uint32_t    PDDR;   // Data Direction register
+    volatile uint32_t PDOR;         // Output register
+    volatile uint32_t PSOR;         // Set output register
+    volatile uint32_t PCOR;         // Clear output register
+    volatile uint32_t PTOR;         // Toggle output register
+    volatile uint32_t PDIR;         // Data Input register
+    volatile uint32_t PDDR;         // Data Direction register
 } GPIO_TypeDef;
 
 #define GPIO_OUTPUT_TYPE    ((uint32_t)0x00000010)  // Indicates OD
@@ -60,19 +60,19 @@ typedef struct {
 #define GPIO_MODE_IT_RISING ((uint32_t)1)
 #define GPIO_MODE_IT_FALLING ((uint32_t)2)
 
-#define IS_GPIO_MODE(MODE) (((MODE) == GPIO_MODE_INPUT)              ||\
-                            ((MODE) == GPIO_MODE_OUTPUT_PP)          ||\
-                            ((MODE) == GPIO_MODE_OUTPUT_OD)          ||\
-                            ((MODE) == GPIO_MODE_AF_PP)              ||\
-                            ((MODE) == GPIO_MODE_AF_OD)              ||\
-                            ((MODE) == GPIO_MODE_ANALOG))
+#define IS_GPIO_MODE(MODE) (((MODE) == GPIO_MODE_INPUT) || \
+    ((MODE) == GPIO_MODE_OUTPUT_PP) || \
+    ((MODE) == GPIO_MODE_OUTPUT_OD) || \
+    ((MODE) == GPIO_MODE_AF_PP) || \
+    ((MODE) == GPIO_MODE_AF_OD) || \
+    ((MODE) == GPIO_MODE_ANALOG))
 
 #define GPIO_NOPULL         ((uint32_t)0)
 #define GPIO_PULLUP         ((uint32_t)1)
 #define GPIO_PULLDOWN       ((uint32_t)2)
 
 #define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || ((PULL) == GPIO_PULLUP) || \
-                            ((PULL) == GPIO_PULLDOWN))
+    ((PULL) == GPIO_PULLDOWN))
 
 #define GPIO_SPEED_FREQ_LOW       ((uint32_t)0)
 #define GPIO_SPEED_FREQ_MEDIUM    ((uint32_t)1)
@@ -82,11 +82,11 @@ typedef struct {
 #define IS_GPIO_AF(af)      ((af) >= 0 && (af) <= 7)
 
 typedef struct {
-    uint32_t    Pin;
-    uint32_t    Mode;
-    uint32_t    Pull;
-    uint32_t    Speed;
-    uint32_t    Alternate;
+    uint32_t Pin;
+    uint32_t Mode;
+    uint32_t Pull;
+    uint32_t Speed;
+    uint32_t Alternate;
 } GPIO_InitTypeDef;
 
 #define GPIO_PORT_TO_PORT_NUM(GPIOx) \
@@ -110,8 +110,8 @@ typedef struct {
 #define GPIO_AF6_I2C1   6
 #define GPIO_AF7_FTM1   7
 
-__attribute__(( always_inline )) static inline void __WFI(void) {
-  __asm volatile ("wfi");
+__attribute__((always_inline)) static inline void __WFI(void) {
+    __asm volatile ("wfi");
 }
 
 void mp_hal_set_interrupt_char(int c);
@@ -121,8 +121,8 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *init);
 
 struct _pin_obj_t;
-#define mp_hal_pin_obj_t const struct _pin_obj_t*
+#define mp_hal_pin_obj_t const struct _pin_obj_t *
 #define mp_hal_pin_high(p) (((p)->gpio->PSOR) = (p)->pin_mask)
 #define mp_hal_pin_low(p)  (((p)->gpio->PCOR) = (p)->pin_mask)
 #define mp_hal_pin_read(p) (((p)->gpio->PDIR >> (p)->pin) & 1)
-#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))

@@ -2,8 +2,8 @@
 
 import os, pyb
 
-if not 'PYBv1.' in os.uname().machine:
-    print('SKIP')
+if not "PYBv1." in os.uname().machine:
+    print("SKIP")
     raise SystemExit
 
 # test creating UART by id/name

@@ -37,7 +37,8 @@
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
-#define MICROPY_PY_RANDOM_HW_RNG    (1)
+
+#define MICROPY_HW_ENABLE_RNG       (1)
 
 #define MICROPY_HW_HAS_LED          (0)
 

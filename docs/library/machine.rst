@@ -27,9 +27,23 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
+.. function:: soft_reset()
+
+   Performs a soft reset of the interpreter, deleting all Python objects and
+   resetting the Python heap.  It tries to retain the method by which the user
+   is connected to the MicroPython REPL (eg serial, USB, Wifi).
+
 .. function:: reset_cause()
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
+
+.. function:: bootloader([value])
+
+   Reset the device and enter its bootloader.  This is typically used to put the
+   device into a state where it can be programmed with new firmware.
+
+   Some ports support passing in an optional *value* argument which can control
+   which bootloader to enter, what to pass to it, or other things.
 
 Interrupt related functions
 ---------------------------
@@ -50,9 +64,11 @@ Interrupt related functions
 Power related functions
 -----------------------
 
-.. function:: freq()
+.. function:: freq([hz])
 
-    Returns CPU frequency in hertz.
+    Returns the CPU frequency in hertz.
+
+    On some ports this can also be used to set the CPU frequency by passing in *hz*.
 
 .. function:: idle()
 
@@ -73,7 +89,7 @@ Power related functions
    If *time_ms* is specified then this will be the maximum time in milliseconds that
    the sleep will last for.  Otherwise the sleep can last indefinitely.
 
-   With or without a timout, execution may resume at any time if there are events
+   With or without a timeout, execution may resume at any time if there are events
    that require processing.  Such events, or wake sources, should be configured before
    sleeping, like `Pin` change or `RTC` timeout.
 
@@ -105,7 +121,7 @@ Miscellaneous functions
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
 
-.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000)
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000, /)
 
    Time a pulse on the given *pin*, and return the duration of the pulse in
    microseconds.  The *pulse_level* argument should be 0 to time a low pulse
@@ -161,9 +177,11 @@ Classes
    machine.Pin.rst
    machine.Signal.rst
    machine.ADC.rst
+   machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2S.rst   
    machine.RTC.rst
    machine.Timer.rst
    machine.WDT.rst

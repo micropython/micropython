@@ -55,7 +55,7 @@ Following is the guide when Signal vs Pin should be used:
 * Use Pin: If you implement a higher-level protocol or bus to communicate
   with more complex devices.
 
-The split between Pin and Signal come from the usecases above and the
+The split between Pin and Signal come from the use cases above and the
 architecture of MicroPython: Pin offers the lowest overhead, which may
 be important when bit-banging protocols. But Signal adds additional
 flexibility on top of Pin, at the cost of minor overhead (much smaller
@@ -75,7 +75,7 @@ Constructors
 ------------
 
 .. class:: Signal(pin_obj, invert=False)
-           Signal(pin_arguments..., \*, invert=False)
+           Signal(pin_arguments..., *, invert=False)
 
    Create a Signal object. There're two ways to create it:
 

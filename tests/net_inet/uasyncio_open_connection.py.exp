@@ -1,0 +1,5 @@
+write GET
+read response
+read: b'HTTP/1.1 200 OK'
+close
+done

@@ -34,15 +34,15 @@
 
 #if MICROPY_PY_THREAD
 
-#define PYB_MUTEX_UNLOCKED ((void*)0)
-#define PYB_MUTEX_LOCKED ((void*)1)
+#define PYB_MUTEX_UNLOCKED ((void *)0)
+#define PYB_MUTEX_LOCKED ((void *)1)
 
 // These macros are used when we only need to protect against a thread
 // switch; other interrupts are still allowed to proceed.
 #define RAISE_IRQ_PRI() raise_irq_pri(IRQ_PRI_PENDSV)
 #define RESTORE_IRQ_PRI(state) restore_irq_pri(state)
 
-extern void __fatal_error(const char*);
+extern void __fatal_error(const char *);
 
 volatile int pyb_thread_enabled;
 pyb_thread_t *volatile pyb_thread_all;
@@ -94,7 +94,7 @@ STATIC void pyb_thread_terminate(void) {
     // take current thread off the run list
     pyb_thread_remove_from_runable(thread);
     // take current thread off the list of all threads
-    for (pyb_thread_t **n = (pyb_thread_t**)&pyb_thread_all;; n = &(*n)->all_next) {
+    for (pyb_thread_t **n = (pyb_thread_t **)&pyb_thread_all;; n = &(*n)->all_next) {
         if (*n == thread) {
             *n = thread->all_next;
             break;
@@ -116,7 +116,7 @@ STATIC void pyb_thread_terminate(void) {
 }
 
 uint32_t pyb_thread_new(pyb_thread_t *thread, void *stack, size_t stack_len, void *entry, void *arg) {
-    uint32_t *stack_top = (uint32_t*)stack + stack_len; // stack is full descending
+    uint32_t *stack_top = (uint32_t *)stack + stack_len; // stack is full descending
     *--stack_top = 0x01000000; // xPSR (thumb bit set)
     *--stack_top = (uint32_t)entry & 0xfffffffe; // pc (must have bit 0 cleared, even for thumb code)
     *--stack_top = (uint32_t)pyb_thread_terminate; // lr

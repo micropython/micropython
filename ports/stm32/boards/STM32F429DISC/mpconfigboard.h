@@ -22,11 +22,11 @@
 #define MICROPY_HW_UART2_TX     (pin_D8)
 #define MICROPY_HW_UART2_RX     (pin_D9)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C3_SCL (pin_A8)
 #define MICROPY_HW_I2C3_SDA (pin_C9)
 
-// SPI busses
+// SPI buses
 //#define MICROPY_HW_SPI1_NSS     (pin_A4)
 //#define MICROPY_HW_SPI1_SCK     (pin_A5)
 //#define MICROPY_HW_SPI1_MISO    (pin_A6)
@@ -52,7 +52,7 @@
 //#define MICROPY_HW_SPI6_MISO    (pin_G12)
 //#define MICROPY_HW_SPI6_MOSI    (pin_G14)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_TX (pin_B9)
 #define MICROPY_HW_CAN1_RX (pin_B8)
 #define MICROPY_HW_CAN2_TX (pin_B13)
@@ -79,8 +79,8 @@
 // SDRAM
 #define MICROPY_HW_SDRAM_SIZE  (64 / 8 * 1024 * 1024)  // 64 Mbit
 #define MICROPY_HW_SDRAM_STARTUP_TEST             (1)
-#define MICROPY_HEAP_START              sdram_start()
-#define MICROPY_HEAP_END                sdram_end()
+#define MICROPY_HEAP_START  ((sdram_valid) ? sdram_start() : &_heap_start)
+#define MICROPY_HEAP_END    ((sdram_valid) ? sdram_end() : &_heap_end)
 
 // Timing configuration for 90 Mhz (11.90ns) of SD clock frequency (180Mhz/2)
 #define MICROPY_HW_SDRAM_TIMING_TMRD        (2)

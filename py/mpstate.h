@@ -80,7 +80,6 @@ typedef struct _mp_state_mem_t {
 
     int gc_stack_overflow;
     MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
-    uint16_t gc_lock_depth;
 
     // This variable controls auto garbage collection.  If set to 0 then the
     // GC won't automatically run when gc_alloc can't find enough blocks.  But
@@ -98,7 +97,7 @@ typedef struct _mp_state_mem_t {
     size_t gc_collected;
     #endif
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
     #endif
@@ -138,9 +137,6 @@ typedef struct _mp_state_vm_t {
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
 
-    // pending exception object (MP_OBJ_NULL if not pending)
-    volatile mp_obj_t mp_pending_exception;
-
     #if MICROPY_ENABLE_SCHEDULER
     mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH];
     #endif
@@ -165,6 +161,11 @@ typedef struct _mp_state_vm_t {
     // dictionary for overridden builtins
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     mp_obj_dict_t *mp_module_builtins_override_dict;
+    #endif
+
+    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+    // An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
+    mp_obj_t track_reloc_code_list;
     #endif
 
     // include any root pointers defined by a port
@@ -203,7 +204,7 @@ typedef struct _mp_state_vm_t {
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make qstr interning thread-safe.
     mp_thread_mutex_t qstr_mutex;
     #endif
@@ -248,6 +249,9 @@ typedef struct _mp_state_thread_t {
     uint8_t *pystack_cur;
     #endif
 
+    // Locking of the GC is done per thread.
+    uint16_t gc_lock_depth;
+
     ////////////////////////////////////////////////////////////
     // START ROOT POINTER SECTION
     // Everything that needs GC scanning must start here, and
@@ -258,6 +262,9 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_globals;
 
     nlr_buf_t *nlr_top;
+
+    // pending exception object (MP_OBJ_NULL if not pending)
+    volatile mp_obj_t mp_pending_exception;
 
     #if MICROPY_PY_SYS_SETTRACE
     mp_obj_t prof_trace_callback;
@@ -278,12 +285,13 @@ extern mp_state_ctx_t mp_state_ctx;
 
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
+#define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #else
-#define MP_STATE_THREAD(x) (mp_state_ctx.thread.x)
+#define MP_STATE_THREAD(x)  MP_STATE_MAIN_THREAD(x)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPSTATE_H

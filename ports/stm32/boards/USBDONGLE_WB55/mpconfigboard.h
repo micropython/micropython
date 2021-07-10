@@ -10,7 +10,6 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
-#define MICROPY_HW_ENABLE_ADC       (0)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 
@@ -23,6 +22,11 @@
 // I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
+
+// SPI buses
+#define MICROPY_HW_SPI1_SCK         (pin_A5) // pin 8 on CN1
+#define MICROPY_HW_SPI1_MISO        (pin_A6) // pin 9 on CN1
+#define MICROPY_HW_SPI1_MOSI        (pin_A7) // pin 10 on CN1
 
 // User switch; pressing the button makes the input go low
 #define MICROPY_HW_USRSW_PIN        (pin_A10)

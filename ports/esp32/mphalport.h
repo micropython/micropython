@@ -35,18 +35,24 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-// The core that the MicroPython task(s) are pinned to
-#define MP_TASK_COREID (1)
+// The core that the MicroPython task(s) are pinned to.
+// Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
+// with the ringbuffer and scheduler MP needs to be on the same core.
+// See https://github.com/micropython/micropython/issues/5489
+#define MP_TASK_COREID (0)
 
 extern TaskHandle_t mp_main_task_handle;
 
 extern ringbuf_t stdin_ringbuf;
 
+// Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
+void check_esp_err(esp_err_t code);
+
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
-  uint32_t ccount;
-  __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
-  return ccount;
+    uint32_t ccount;
+    __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));
+    return ccount;
 }
 
 void mp_hal_delay_us(uint32_t);

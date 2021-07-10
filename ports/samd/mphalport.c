@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
 #include "samd_soc.h"
 #include "tusb.h"
 
@@ -36,23 +35,11 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
     (void)wanted_char;
     tud_cdc_read_char(); // discard interrupt char
-    mp_keyboard_interrupt();
+    mp_sched_keyboard_interrupt();
 }
 
 void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-    }
     tud_cdc_set_wanted_char(c);
-}
-
-void mp_keyboard_interrupt(void) {
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
-    #if MICROPY_ENABLE_SCHEDULER
-    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-    }
-    #endif
 }
 
 #endif
@@ -93,20 +80,20 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     if (tud_cdc_connected()) {
         for (size_t i = 0; i < len;) {
             uint32_t n = len - i;
-            uint32_t n2 = tud_cdc_write(str + i, n);
-            if (n2 < n) {
-                while (!tud_cdc_write_flush()) {
-                    __WFI();
-                }
+            if (n > CFG_TUD_CDC_EP_BUFSIZE) {
+                n = CFG_TUD_CDC_EP_BUFSIZE;
             }
+            while (n > tud_cdc_write_available()) {
+                __WFI();
+            }
+            uint32_t n2 = tud_cdc_write(str + i, n);
+            tud_cdc_write_flush();
             i += n2;
-        }
-        while (!tud_cdc_write_flush()) {
-            __WFI();
         }
     }
     while (len--) {
-        while (!(USARTx->USART.INTFLAG.bit.DRE)) { }
+        while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+        }
         USARTx->USART.DATA.bit.DATA = *str++;
     }
 }

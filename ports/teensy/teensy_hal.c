@@ -9,17 +9,17 @@
 #include "Arduino.h"
 
 mp_uint_t mp_hal_ticks_ms(void) {
-  return millis();
+    return millis();
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-  delay(ms);
+    delay(ms);
 }
 
 void mp_hal_set_interrupt_char(int c) {
-  // The teensy 3.1 usb stack doesn't currently have the notion of generating
-  // an exception when a certain character is received. That just means that
-  // you can't press Control-C and get your python script to stop.
+    // The teensy 3.1 usb stack doesn't currently have the notion of generating
+    // an exception when a certain character is received. That just means that
+    // you can't press Control-C and get your python script to stop.
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {

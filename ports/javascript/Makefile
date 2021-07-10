@@ -6,24 +6,16 @@ QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
 
-CC = emcc -g4
-LD = emcc -g4
+CC = emcc
+LD = emcc
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-CPP = clang -E
-
-ifdef EMSCRIPTEN
-    CPP += -isystem $(EMSCRIPTEN)/system/include/libc -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
-endif
-
-CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
-LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
-
-CFLAGS += -O0 -DNDEBUG
-CFLAGS += -fdata-sections -ffunction-sections
+CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
+CFLAGS += -O3 -DNDEBUG
+CFLAGS += $(INC)
 
 ifneq ($(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
@@ -46,12 +38,12 @@ SRC_C = \
 
 SRC_QSTR += $(SRC_C)
 
-OBJ = 
-OBJ = $(PY_O) 
+OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-JSFLAGS = -O0 -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" -s "BINARYEN_TRAP_MODE='clamp'" --memory-init-file 0 --js-library library.js
+JSFLAGS += -s ASYNCIFY
+JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_sched_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" -s --memory-init-file 0 --js-library library.js
 
 all: $(BUILD)/micropython.js
 
@@ -63,8 +55,11 @@ $(BUILD)/micropython.js: $(OBJ) library.js wrapper.js
 min: $(BUILD)/micropython.js
 	uglifyjs $< -c -o $(BUILD)/micropython.min.js
 
-test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
+test: $(BUILD)/micropython.js $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1
+
+# Disable errors for array-bounds warnings on "sp[-MP_OBJ_ITER_BUF_NSLOTS + 2]" access.
+$(BUILD)/py/vm.o: CFLAGS += -Wno-error=array-bounds
 
 include $(TOP)/py/mkrules.mk

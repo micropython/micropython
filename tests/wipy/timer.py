@@ -1,18 +1,18 @@
-'''
+"""
 Timer test for the CC3200 based boards.
-'''
+"""
 
 from machine import Timer
 import os
 import time
 
 mch = os.uname().machine
-if 'LaunchPad' in mch:
-    pwm_pin = ('GP24')
-elif 'WiPy' in mch:
-    pwm_pin = ('GP24')
+if "LaunchPad" in mch:
+    pwm_pin = "GP24"
+elif "WiPy" in mch:
+    pwm_pin = "GP24"
 else:
-    raise Exception('Board not supported!')
+    raise Exception("Board not supported!")
 
 for i in range(4):
     tim = Timer(i, mode=Timer.PERIODIC)
@@ -48,6 +48,7 @@ class TimerTest:
 
     def timer_isr(self, tim_ch):
         self.int_count += 1
+
 
 timer_test = TimerTest()
 ch = timer_test.tim.channel(Timer.A, freq=5)
@@ -92,26 +93,26 @@ for i in range(1000):
 try:
     tim = Timer(0, mode=12)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     tim = Timer(4, mode=Timer.ONE_SHOT)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     tim = Timer(0, mode=Timer.PWM, width=32)
 except:
-    print('Exception')
+    print("Exception")
 
 tim = Timer(0, mode=Timer.PWM)
 
 try:
     ch = tim.channel(TIMER_A | TIMER_B, freq=10)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     ch = tim.channel(TIMER_A, freq=4)
 except:
-    print('Exception')
+    print("Exception")

@@ -12,6 +12,11 @@ Supported format codes: ``b``, ``B``, ``h``, ``H``, ``i``, ``I``, ``l``,
 ``L``, ``q``, ``Q``, ``s``, ``P``, ``f``, ``d`` (the latter 2 depending
 on the floating-point support).
 
+.. admonition:: Difference to CPython
+   :class: attention
+
+   Whitespace is not supported in format strings.
+
 Functions
 ---------
 
@@ -35,7 +40,7 @@ Functions
    Unpack from the *data* according to the format string *fmt*.
    The return value is a tuple of the unpacked values.
 
-.. function:: unpack_from(fmt, data, offset=0)
+.. function:: unpack_from(fmt, data, offset=0, /)
 
    Unpack from the *data* starting at *offset* according to the format string
    *fmt*. *offset* may be negative to count from the end of *buffer*. The return

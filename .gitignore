@@ -27,8 +27,7 @@ build-*/
 
 # Test failure outputs
 ######################
-tests/*.exp
-tests/*.out
+tests/results/*
 
 # Python cache files
 ######################
@@ -43,3 +42,7 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# MacOS desktop metadata files
+######################
+.DS_Store

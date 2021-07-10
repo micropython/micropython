@@ -45,7 +45,6 @@
 #include "pybuart.h"
 #include "mpirq.h"
 #include "pybsleep.h"
-#include "mpexception.h"
 #include "osi.h"
 #include "utils.h"
 #include "pin.h"
@@ -251,7 +250,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
             if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
                 // raise an exception when interrupts are finished
-                mp_keyboard_interrupt();
+                mp_sched_keyboard_interrupt();
             } else { // there's always a read buffer available
                 uint16_t next_head = (self->read_buf_head + 1) % PYBUART_RX_BUFFER_LEN;
                 if (next_head != self->read_buf_tail) {
@@ -431,7 +430,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
     return mp_const_none;
 
 error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC const mp_arg_t pyb_uart_init_args[] = {
@@ -555,7 +554,7 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return uart_irq_new (self, trigger, priority, args[2].u_obj);
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 

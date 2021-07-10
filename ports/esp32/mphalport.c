@@ -28,28 +28,66 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if MICROPY_ESP_IDF_4
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/uart.h"
-#else
-#include "rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/uart.h"
 #endif
 
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/stream.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/utils/pyexec.h"
 #include "mphalport.h"
+#include "usb.h"
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[256];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+STATIC uint8_t stdin_ringbuf_array[260];
+ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
+
+// Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
+void check_esp_err(esp_err_t code) {
+    if (code != ESP_OK) {
+        // map esp-idf error code to posix error code
+        uint32_t pcode = -code;
+        switch (code) {
+            case ESP_ERR_NO_MEM:
+                pcode = MP_ENOMEM;
+                break;
+            case ESP_ERR_TIMEOUT:
+                pcode = MP_ETIMEDOUT;
+                break;
+            case ESP_ERR_NOT_SUPPORTED:
+                pcode = MP_EOPNOTSUPP;
+                break;
+        }
+        // construct string object
+        mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+        if (o_str == NULL) {
+            mp_raise_OSError(pcode);
+            return;
+        }
+        o_str->base.type = &mp_type_str;
+        o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
+        o_str->len = strlen((char *)o_str->data);
+        o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        // raise
+        mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
+        nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+    }
+}
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
@@ -70,43 +108,23 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     // Only release the GIL if many characters are being sent
     bool release_gil = len > 20;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
+    #if CONFIG_USB_ENABLED
+    usb_tx_strn(str, len);
+    #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
     mp_uos_dupterm_tx_strn(str, len);
-}
-
-// Efficiently convert "\n" to "\r\n"
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    const char *last = str;
-    while (len--) {
-        if (*str == '\n') {
-            if (str > last) {
-                mp_hal_stdout_tx_strn(last, str - last);
-            }
-            mp_hal_stdout_tx_strn("\r\n", 2);
-            ++str;
-            last = str;
-        } else {
-            ++str;
-        }
-    }
-    if (str > last) {
-        mp_hal_stdout_tx_strn(last, str - last);
-    }
 }
 
 uint32_t mp_hal_ticks_ms(void) {
@@ -157,17 +175,18 @@ void mp_hal_delay_us(uint32_t us) {
         if (dt + pend_overhead < us) {
             // we have enough time to service pending events
             // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 }
 
-/*
-extern int mp_stream_errno;
-int *__errno() {
-    return &mp_stream_errno;
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t ns = tv.tv_sec * 1000000000ULL;
+    ns += (uint64_t)tv.tv_usec * 1000ULL;
+    return ns;
 }
-*/
 
 // Wake up the main task if it is sleeping
 void mp_hal_wake_main_task_from_isr(void) {

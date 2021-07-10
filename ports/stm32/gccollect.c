@@ -32,6 +32,7 @@
 #include "py/mpthread.h"
 #include "lib/utils/gchelper.h"
 #include "gccollect.h"
+#include "softtimer.h"
 #include "systick.h"
 
 void gc_collect(void) {
@@ -43,17 +44,16 @@ void gc_collect(void) {
     // start the GC
     gc_collect_start();
 
-    // get the registers and the sp
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-
-    // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    // trace the stack and registers
+    gc_helper_collect_regs_and_stack();
 
     // trace root pointers from any threads
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
     #endif
+
+    // trace soft timer nodes
+    soft_timer_gc_mark_all();
 
     // end the GC
     gc_collect_end();

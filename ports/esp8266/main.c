@@ -47,7 +47,7 @@
 STATIC char heap[38 * 1024];
 
 STATIC void mp_reset(void) {
-    mp_stack_set_top((void*)0x40000000);
+    mp_stack_set_top((void *)0x40000000);
     mp_stack_set_limit(8192);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
@@ -158,7 +158,7 @@ void MP_FASTCODE(nlr_jump_fail)(void *val) {
     }
 }
 
-//void __assert(const char *file, int line, const char *func, const char *expr) {
+// void __assert(const char *file, int line, const char *func, const char *expr) {
 void __assert(const char *file, int line, const char *expr) {
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     for (;;) {

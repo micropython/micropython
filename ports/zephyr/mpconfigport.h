@@ -29,6 +29,7 @@
 #include "autoconf.h"
 // Included here to get basic Zephyr environment (macros, etc.)
 #include <zephyr.h>
+#include <drivers/spi.h>
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
@@ -52,6 +53,7 @@
 #define MICROPY_PY_BUILTINS_REVERSED (0)
 #define MICROPY_PY_BUILTINS_SET     (0)
 #define MICROPY_PY_BUILTINS_STR_COUNT (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
 #define MICROPY_PY_ARRAY            (0)
@@ -61,7 +63,9 @@
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
+#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SPI_MSB (SPI_TRANSFER_MSB)
+#define MICROPY_PY_MACHINE_SPI_LSB (SPI_TRANSFER_LSB)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_PY_STRUCT           (0)
@@ -70,8 +74,16 @@
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_USOCKET          (1)
 #endif
+#ifdef CONFIG_BT
+#define MICROPY_PY_BLUETOOTH        (1)
+#ifdef CONFIG_BT_CENTRAL
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+#define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (0)
+#endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_UOS              (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_ZEPHYR           (1)
@@ -80,11 +92,24 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_VFS                 (1)
+#define MICROPY_READER_VFS          (MICROPY_VFS)
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_NORTC            (1)
 
 // Saving extra crumbs to make sure binary fits in 128K
 #define MICROPY_COMP_CONST_FOLDING  (0)
 #define MICROPY_COMP_CONST (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
+
+void mp_hal_signal_event(void);
+#define MICROPY_SCHED_HOOK_SCHEDULED mp_hal_signal_event()
 
 #define MICROPY_PY_SYS_PLATFORM "zephyr"
 
@@ -100,7 +125,7 @@
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-#define MICROPY_MODULE_FROZEN_STR   (1)
+#define MICROPY_MODULE_FROZEN_STR   (0)
 
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
@@ -109,13 +134,22 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+    void *machine_pin_irq_list; /* Linked list of pin irq objects */ \
+    struct _mp_bluetooth_zephyr_root_pointers_t *bluetooth_zephyr_root_pointers;
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_zephyr;
 extern const struct _mp_obj_module_t mp_module_zsensor;
+
+#if MICROPY_PY_UOS
+#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
+#else
+#define MICROPY_PY_UOS_DEF
+#endif
 
 #if MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
@@ -143,6 +177,7 @@ extern const struct _mp_obj_module_t mp_module_zsensor;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
+    MICROPY_PY_UOS_DEF \
     MICROPY_PY_USOCKET_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_ZEPHYR_DEF \
@@ -150,4 +185,7 @@ extern const struct _mp_obj_module_t mp_module_zsensor;
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
+#define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
+#define MICROPY_END_ATOMIC_SECTION irq_unlock

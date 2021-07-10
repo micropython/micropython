@@ -37,6 +37,8 @@ SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
 	)
+
+$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
 endif
 
 ################################################################################
@@ -47,7 +49,7 @@ CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 AXTLS_DIR = lib/axtls
-$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
+$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition -Dmp_stream_errno=errno $(AXTLS_DEFS_EXTRA)
 SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	ssl/asn1.c \
 	ssl/loader.c \

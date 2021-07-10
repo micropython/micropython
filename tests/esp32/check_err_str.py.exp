@@ -1,0 +1,4 @@
+[Errno 2] ENOENT
+(-5379, 'ESP_ERR_OTA_VALIDATE_FAILED')
+exc: 
+-5379

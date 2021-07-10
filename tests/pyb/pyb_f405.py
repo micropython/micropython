@@ -2,8 +2,8 @@
 
 import os, pyb
 
-if not 'STM32F405' in os.uname().machine:
-    print('SKIP')
+if not "STM32F405" in os.uname().machine:
+    print("SKIP")
     raise SystemExit
 
 print(pyb.freq())
@@ -15,4 +15,3 @@ try:
     i2c.recv(1, 1)
 except OSError as e:
     print(repr(e))
-
