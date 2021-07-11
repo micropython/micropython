@@ -53,6 +53,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr " wyjście:\n"
 
@@ -146,11 +150,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
-
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -2041,6 +2040,10 @@ msgstr "Błąd inicjowania SPI"
 msgid "SPI Re-initialization error"
 msgstr "Błąd ponownej inicjalizacji SPI"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
@@ -2524,7 +2527,7 @@ msgstr ""
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argument ma zły typ"
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2018 Rose Hooper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,6 @@
 #ifdef CIRCUITPY_ULAB
 #include "extmod/ulab/code/ndarray.h"
 #endif
-
-extern const int32_t colorwheel(float pos);
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 

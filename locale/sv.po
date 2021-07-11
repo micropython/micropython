@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-06-24 12:16+0000\n"
+"PO-Revision-Date: 2021-06-27 12:33+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -55,6 +55,10 @@ msgid " is of type %q\n"
 msgstr " är av typen %q\n"
 
 #: main.c
+msgid " not found.\n"
+msgstr " hittades inte.\n"
+
+#: main.c
 msgid " output:\n"
 msgstr " utdata:\n"
 
@@ -93,7 +97,7 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "längden på %q måste vara %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -101,11 +105,11 @@ msgstr "%q-listan måste vara en lista"
 
 #: py/argcheck.c
 msgid "%q must <= %d"
-msgstr ""
+msgstr "%q måste vara <=%d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q måste vara %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
@@ -117,7 +121,7 @@ msgstr "%q måste vara 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q måste vara >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -137,7 +141,7 @@ msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q måste vara en sträng"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -149,12 +153,7 @@ msgstr "%q måste vara mellan %d och %d"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
-
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q must store bytes"
-msgstr ""
+msgstr "%q måste av typen %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -886,7 +885,7 @@ msgstr "Datasegmentet måste följa fmt-segmentet"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
-msgstr ""
+msgstr "Data stöds inte med riktad annonsering"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
@@ -1734,7 +1733,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
-msgstr ""
+msgstr "Endast anslutningsbara annonseringar kan dirigeras"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
@@ -2065,6 +2064,10 @@ msgstr "SPI Init-fel"
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
 msgstr "SPI reinitialiseringsfel"
+
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr "SPI-konfigurationen misslyckades"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -2561,7 +2564,7 @@ msgstr "argumentet argsort måste vara en ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort är inte implementerad för tillplattade matriser"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "argumentet har fel typ"
 
@@ -4476,6 +4479,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q måste lagra bytes"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Bufferten är för stor och kan inte allokeras"

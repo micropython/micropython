@@ -24,22 +24,7 @@
  * THE SOFTWARE.
  */
 
-#if !CIRCUITPY_BLE_FILE_SERVICE
-
-void supervisor_bluetooth_init(void) {
-}
-
-void supervisor_start_bluetooth(void) {
-}
-
-void supervisor_bluetooth_background(void) {
-}
-
-#else
-
 #include <string.h>
-
-#include "supervisor/shared/bluetooth.h"
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
@@ -50,11 +35,6 @@ void supervisor_bluetooth_background(void) {
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
-#if defined(CIRCUITPY_BOOT_BUTTON)
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
-#include "shared-bindings/microcontroller/Processor.h"
-#include "shared-bindings/microcontroller/ResetReason.h"
 #include "shared-module/storage/__init__.h"
 
 #include "bluetooth/ble_drv.h"
@@ -62,169 +42,34 @@ void supervisor_bluetooth_background(void) {
 #include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include "py/mpstate.h"
 
-bleio_service_obj_t supervisor_ble_service;
-bleio_uuid_obj_t supervisor_ble_service_uuid;
-bleio_characteristic_obj_t supervisor_ble_version_characteristic;
-bleio_uuid_obj_t supervisor_ble_version_uuid;
-bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
-bleio_uuid_obj_t supervisor_ble_transfer_uuid;
+STATIC bleio_service_obj_t supervisor_ble_service;
+STATIC bleio_uuid_obj_t supervisor_ble_service_uuid;
+STATIC bleio_characteristic_obj_t supervisor_ble_version_characteristic;
+STATIC bleio_uuid_obj_t supervisor_ble_version_uuid;
+STATIC bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
+STATIC bleio_uuid_obj_t supervisor_ble_transfer_uuid;
 
 // This is the base UUID for the file transfer service.
 const uint8_t file_transfer_base_uuid[16] = {0x72, 0x65, 0x66, 0x73, 0x6e, 0x61, 0x72, 0x54, 0x65, 0x6c, 0x69, 0x46, 0x00, 0x00, 0xaf, 0xad };
-// This standard advertisement advertises the CircuitPython editing service and a CIRCUITPY short name.
-const uint8_t public_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
-                                            0x02, 0x0a, 0xd8,  // 3-5 TX power level -40
-                                            0x03, 0x02, 0xbb, 0xfe,  // 6 - 9 Incomplete service list (File Transfer service)
-                                            0x0e, 0xff, 0x22, 0x08,  // 10 - 13 Adafruit Manufacturer Data
-                                            0x0a, 0x04, 0x00,        // 14 - 16 Creator ID / Creation ID
-                                            CIRCUITPY_CREATOR_ID & 0xff,              // 17 - 20 Creator ID
-                                            (CIRCUITPY_CREATOR_ID >> 8) & 0xff,
-                                            (CIRCUITPY_CREATOR_ID >> 16) & 0xff,
-                                            (CIRCUITPY_CREATOR_ID >> 24) & 0xff,
-                                            CIRCUITPY_CREATION_ID & 0xff,              // 21 - 24 Creation ID
-                                            (CIRCUITPY_CREATION_ID >> 8) & 0xff,
-                                            (CIRCUITPY_CREATION_ID >> 16) & 0xff,
-                                            (CIRCUITPY_CREATION_ID >> 24) & 0xff,
-                                            0x05, 0x08, 0x43, 0x49, 0x52, 0x43  // 25 - 31 - Short name
-};
-const uint8_t private_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
-                                             0x02, 0x0a, 0x00 // 3-5 TX power level 0
-};
-// This scan response advertises the full CIRCUITPYXXXX device name.
-uint8_t circuitpython_scan_response_data[15] = {0x0e, 0x09, 0x43, 0x49, 0x52, 0x43, 0x55, 0x49, 0x54, 0x50, 0x59, 0x00, 0x00, 0x00, 0x00};
-mp_obj_list_t service_list;
-mp_obj_t service_list_items[1];
-mp_obj_list_t characteristic_list;
-mp_obj_t characteristic_list_items[2];
+
+STATIC mp_obj_list_t characteristic_list;
+STATIC mp_obj_t characteristic_list_items[2];
 // 2 * 10 ringbuf packets, 512 for a disk sector and 12 for the file transfer write header.
 #define PACKET_BUFFER_SIZE (2 * 10 + 512 + 12)
 // uint32_t so its aligned
-uint32_t _buffer[PACKET_BUFFER_SIZE / 4 + 1];
-uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
-ble_drv_evt_handler_entry_t static_handler_entry;
-bleio_packet_buffer_obj_t _transfer_packet_buffer;
-bool boot_in_discovery_mode = false;
-bool advertising = false;
+STATIC uint32_t _buffer[PACKET_BUFFER_SIZE / 4 + 1];
+STATIC uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
+STATIC uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
+STATIC ble_drv_evt_handler_entry_t static_handler_entry;
+STATIC bleio_packet_buffer_obj_t _transfer_packet_buffer;
 
-STATIC void supervisor_bluetooth_start_advertising(void) {
-    bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
-    if (is_connected) {
-        return;
-    }
-    bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
-    #if CIRCUITPY_USB
-    // Don't advertise when we have USB instead of BLE.
-    if (!bonded && !boot_in_discovery_mode) {
-        // mp_printf(&mp_plat_print, "skipping advertising\n");
-        return;
-    }
-    #endif
-    uint32_t timeout = 0;
-    float interval = 0.1f;
-    int tx_power = 0;
-    const uint8_t *adv = private_advertising_data;
-    size_t adv_len = sizeof(private_advertising_data);
-    const uint8_t *scan_response = NULL;
-    size_t scan_response_len = 0;
-    // Advertise with less power when doing so publicly to reduce who can hear us. This will make it
-    // harder for someone with bad intentions to pair from a distance.
-    if (!bonded) {
-        tx_power = -40;
-        adv = public_advertising_data;
-        adv_len = sizeof(public_advertising_data);
-        scan_response = circuitpython_scan_response_data;
-        scan_response_len = sizeof(circuitpython_scan_response_data);
-    }
-    uint32_t status = _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
-        true,
-        bonded, // Advertise anonymously if we are bonded
-        timeout,
-        interval,
-        adv,
-        adv_len,
-        scan_response,
-        scan_response_len,
-        tx_power,
-        NULL);
-    // This may fail if we are already advertising.
-    advertising = status == NRF_SUCCESS;
-}
-
-#define BLE_DISCOVERY_DATA_GUARD 0xbb0000bb
-#define BLE_DISCOVERY_DATA_GUARD_MASK 0xff0000ff
-
-void supervisor_bluetooth_init(void) {
-    uint32_t reset_state = port_get_saved_word();
-    uint32_t ble_mode = 0;
-    if ((reset_state & BLE_DISCOVERY_DATA_GUARD_MASK) == BLE_DISCOVERY_DATA_GUARD) {
-        ble_mode = (reset_state & ~BLE_DISCOVERY_DATA_GUARD_MASK) >> 8;
-    }
-    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
-    boot_in_discovery_mode = false;
-    if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN &&
-        reset_reason != RESET_REASON_UNKNOWN &&
-        reset_reason != RESET_REASON_SOFTWARE) {
-        return;
-    }
-
-    // ble_mode = 1;
-
-    if (ble_mode == 0) {
-        port_set_saved_word(BLE_DISCOVERY_DATA_GUARD | (0x01 << 8));
-    }
-    // Wait for a while to allow for reset.
-
-    #ifdef CIRCUITPY_BOOT_BUTTON
-    digitalio_digitalinout_obj_t boot_button;
-    common_hal_digitalio_digitalinout_construct(&boot_button, CIRCUITPY_BOOT_BUTTON);
-    common_hal_digitalio_digitalinout_switch_to_input(&boot_button, PULL_UP);
-    #endif
-    uint64_t start_ticks = supervisor_ticks_ms64();
-    uint64_t diff = 0;
-    if (ble_mode != 0) {
-        #ifdef CIRCUITPY_STATUS_LED
-        new_status_color(0x0000ff);
-        #endif
-        common_hal_bleio_adapter_erase_bonding(&common_hal_bleio_adapter_obj);
-        boot_in_discovery_mode = true;
-        reset_state = 0x0;
-    }
-    while (diff < 1000) {
-        #ifdef CIRCUITPY_STATUS_LED
-        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        bool led_on = ble_mode != 0 || (diff % 150) <= 75;
-        if (led_on) {
-            new_status_color(0x0000ff);
-        } else {
-            new_status_color(BLACK);
-        }
-        #endif
-        #ifdef CIRCUITPY_BOOT_BUTTON
-        if (!common_hal_digitalio_digitalinout_get_value(&boot_button)) {
-            boot_in_discovery_mode = true;
-            break;
-        }
-        #endif
-        diff = supervisor_ticks_ms64() - start_ticks;
-    }
-    #if CIRCUITPY_STATUS_LED
-    new_status_color(BLACK);
-    status_led_deinit();
-    #endif
-    port_set_saved_word(reset_state);
-}
-
-void supervisor_start_bluetooth(void) {
-    common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
-
+void supervisor_start_bluetooth_file_transfer(void) {
     supervisor_ble_service_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_service_uuid, 0xfebb, NULL);
 
@@ -249,7 +94,8 @@ void supervisor_start_bluetooth(void) {
         SECURITY_MODE_NO_ACCESS,
         4,                                       // max length
         true,                                       // fixed length
-        NULL);                                       // no initial value
+        NULL,                                       // no initial value
+        NULL); // no description
 
     uint32_t version = 1;
     mp_buffer_info_t bufinfo;
@@ -269,71 +115,24 @@ void supervisor_start_bluetooth(void) {
         SECURITY_MODE_ENC_NO_MITM,
         BLE_GATTS_VAR_ATTR_LEN_MAX,                  // max length
         false,                                       // fixed length
-        NULL);                                       // no initial value
+        NULL,                                       // no initial valuen
+        NULL);
 
     _common_hal_bleio_packet_buffer_construct(
         &_transfer_packet_buffer, &supervisor_ble_transfer_characteristic,
         _buffer, PACKET_BUFFER_SIZE,
         _outgoing1, _outgoing2, BLE_GATTS_VAR_ATTR_LEN_MAX,
         &static_handler_entry);
-
-    // Kick off advertisments
-    supervisor_bluetooth_background();
 }
 
 #define COMMAND_SIZE 1024
 
 #define ANY_COMMAND 0x00
 #define THIS_COMMAND 0x01
-#define READ 0x10
-#define READ_DATA 0x11
-#define READ_PACING 0x12
-#define WRITE 0x20
-#define WRITE_PACING 0x21
-#define WRITE_DATA 0x22
-#define DELETE 0x30
-#define DELETE_STATUS 0x31
-#define MKDIR 0x40
-#define MKDIR_STATUS 0x41
-#define LISTDIR 0x50
-#define LISTDIR_ENTRY 0x51
-
-#define STATUS_OK 0x01
-#define STATUS_ERROR 0x02
-#define STATUS_ERROR_NO_FILE 0x03
-#define STATUS_ERROR_PROTOCOL 0x04
 
 // Used by read and write.
-FIL active_file;
-
-struct read_command {
-    uint8_t command;
-    uint8_t reserved;
-    uint16_t path_length;
-    uint32_t chunk_offset;
-    uint32_t chunk_size;
-    uint8_t path[];
-};
-
-struct read_data {
-    uint8_t command;
-    uint8_t status;
-    uint16_t reserved;
-    uint32_t chunk_offset;
-    uint32_t total_length;
-    uint32_t data_size;
-    uint8_t data[];
-};
-
-struct read_pacing {
-    uint8_t command;
-    uint8_t status;
-    uint16_t reserved;
-    uint32_t chunk_offset;
-    uint32_t chunk_size;
-};
-
-uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
+STATIC FIL active_file;
+STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     struct read_command *command = (struct read_command *)raw_buf;
     size_t header_size = 12;
     size_t response_size = 16;
@@ -390,7 +189,7 @@ uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     return READ_PACING;
 }
 
-uint8_t _process_read_pacing(const uint8_t *command, size_t command_len) {
+STATIC uint8_t _process_read_pacing(const uint8_t *command, size_t command_len) {
     size_t response_size = 4 * sizeof(uint32_t);
     uint32_t response[response_size / sizeof(uint32_t)];
     uint8_t *response_bytes = (uint8_t *)response;
@@ -429,35 +228,9 @@ uint8_t _process_read_pacing(const uint8_t *command, size_t command_len) {
 }
 
 // Used by write and write data to know when the write is complete.
-size_t total_write_length;
+STATIC size_t total_write_length;
 
-struct write_command {
-    uint8_t command;
-    uint8_t reserved;
-    uint16_t path_length;
-    uint32_t offset;
-    uint32_t total_length;
-    uint8_t path[];
-};
-
-struct write_data {
-    uint8_t command;
-    uint8_t status;
-    uint16_t reserved;
-    uint32_t offset;
-    uint32_t data_size;
-    uint8_t data[];
-};
-
-struct write_pacing {
-    uint8_t command;
-    uint8_t status;
-    uint16_t reserved;
-    uint32_t offset;
-    uint32_t free_space;
-};
-
-uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
+STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     struct write_command *command = (struct write_command *)raw_buf;
     size_t header_size = 12;
     struct write_pacing response;
@@ -502,13 +275,30 @@ uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     // Align the next chunk to a sector boundary.
     uint32_t offset = command->offset;
     size_t chunk_size = MIN(total_write_length - offset, 512 - (offset % 512));
+    // Special case when truncating the file. (Deleting stuff off the end.)
+    if (chunk_size == 0) {
+        f_lseek(&active_file, offset);
+        f_truncate(&active_file);
+        f_close(&active_file);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+    }
     response.offset = offset;
     response.free_space = chunk_size;
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
+    if (chunk_size == 0) {
+        // Don't reload until everything is written out of the packet buffer.
+        common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
+        // Trigger an autoreload
+        autoreload_now();
+        return ANY_COMMAND;
+    }
+
     return WRITE_DATA;
 }
 
-uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
+STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     struct write_data *command = (struct write_data *)raw_buf;
     size_t header_size = 12;
     struct write_pacing response;
@@ -561,28 +351,16 @@ uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     return WRITE_DATA;
 }
 
-struct delete_command {
-    uint8_t command;
-    uint8_t reserved;
-    uint16_t path_length;
-    uint8_t path[];
-};
-
-struct delete_response {
-    uint8_t command;
-    uint8_t status;
-};
-
-uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
+STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     const struct delete_command *command = (struct delete_command *)raw_buf;
     size_t header_size = 4;
-    struct delete_response response;
+    struct delete_status response;
     response.command = DELETE_STATUS;
     response.status = STATUS_OK;
     if (command->path_length > (COMMAND_SIZE - header_size - 1)) { // -1 for the null we'll write
         // TODO: throw away any more packets of path.
         response.status = STATUS_ERROR;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_response), NULL, 0);
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
         return ANY_COMMAND;
     }
     // We need to receive another packet to have the full path.
@@ -596,32 +374,20 @@ uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
-    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_response), NULL, 0);
+    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
     return ANY_COMMAND;
 }
 
-struct mkdir_command {
-    uint8_t command;
-    uint8_t reserved;
-    uint16_t path_length;
-    uint8_t path[];
-};
-
-struct mkdir_response {
-    uint8_t command;
-    uint8_t status;
-};
-
-uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
+STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     const struct mkdir_command *command = (struct mkdir_command *)raw_buf;
     size_t header_size = 4;
-    struct mkdir_response response;
+    struct mkdir_status response;
     response.command = MKDIR_STATUS;
     response.status = STATUS_OK;
     if (command->path_length > (COMMAND_SIZE - header_size - 1)) { // -1 for the null we'll write
         // TODO: throw away any more packets of path.
         response.status = STATUS_ERROR;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_response), NULL, 0);
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
         return ANY_COMMAND;
     }
     // We need to receive another packet to have the full path.
@@ -636,29 +402,11 @@ uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
-    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_response), NULL, 0);
+    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
     return ANY_COMMAND;
 }
 
-struct listdir_command {
-    uint8_t command;
-    uint8_t reserved;
-    uint16_t path_length;
-    uint8_t path[];
-};
-
-struct listdir_entry {
-    uint8_t command;
-    uint8_t status;
-    uint16_t path_length;
-    uint32_t entry_number;
-    uint32_t entry_count;
-    uint32_t flags;
-    uint32_t file_size;
-    uint8_t path[];
-};
-
-uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
+STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     const struct listdir_command *command = (struct listdir_command *)raw_buf;
     struct listdir_entry *entry = (struct listdir_entry *)raw_buf;
     size_t header_size = 4;
@@ -740,22 +488,15 @@ uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
 
 // Background state that must live across background calls. After the _process
 // helpers to force them to not use them.
-uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
-volatile size_t current_offset;
-uint8_t next_command;
-bool was_connected;
-void supervisor_bluetooth_background(void) {
-    bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
-    if (was_connected && !is_connected) {
-        f_close(&active_file);
-    }
-    was_connected = is_connected;
-    if (!is_connected) {
-        next_command = 0;
-        supervisor_bluetooth_start_advertising();
+STATIC uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
+STATIC volatile size_t current_offset;
+STATIC uint8_t next_command;
+STATIC bool running = false;
+void supervisor_bluetooth_file_transfer_background(void) {
+    if (running) {
         return;
     }
-
+    running = true;
     mp_int_t size = 1;
     while (size > 0) {
         size = common_hal_bleio_packet_buffer_readinto(&_transfer_packet_buffer, current_command + current_offset, COMMAND_SIZE - current_offset);
@@ -808,6 +549,11 @@ void supervisor_bluetooth_background(void) {
             current_offset = 0;
         }
     }
+    running = false;
 }
 
-#endif // #else
+void supervisor_bluetooth_file_transfer_disconnected(void) {
+    next_command = ANY_COMMAND;
+    current_offset = 0;
+    f_close(&active_file);
+}

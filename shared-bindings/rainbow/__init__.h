@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Kattni Rembor
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef CP_SHARED_BINDINGS_RAINBOW_INIT_H
+#define CP_SHARED_BINDINGS_RAINBOW_INIT_H
+#include <stdint.h>
 
-#include <stdbool.h>
+const int32_t colorwheel(float pos);
 
-#include "shared-bindings/_bleio/Characteristic.h"
-
-void supervisor_bluetooth_background(void);
-void supervisor_bluetooth_init(void);
-void supervisor_start_bluetooth(void);
-
-extern bleio_characteristic_obj_t supervisor_ble_transfer_characteristic;
-
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#endif // CP_SHARED_BINDINGS_RAINBOW_INIT_H

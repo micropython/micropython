@@ -195,6 +195,9 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
         // no args: construct an empty bytearray
         return MP_OBJ_FROM_PTR(array_new(BYTEARRAY_TYPECODE, 0));
     } else if (mp_obj_is_int(args[0])) {
+        if (n_args > 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("wrong number of arguments"));
+        }
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);

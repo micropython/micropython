@@ -65,7 +65,7 @@
 //|            peripherals.
 //|
 //|         .. seealso:: Using this class directly requires careful lock management.
-//|             Instead, use :class:`~adafruit_bus_device.spi_device.SPIDevice` to
+//|             Instead, use :class:`~adafruit_bus_device.SPIDevice` to
 //|             manage locks.
 //|
 //|         .. seealso:: Using this class to directly read registers requires manual

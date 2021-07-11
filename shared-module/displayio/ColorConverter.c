@@ -176,6 +176,28 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         }
         break;
 
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+            pixel = __builtin_bswap16(pixel);
+            MP_FALLTHROUGH;
+        case DISPLAYIO_COLORSPACE_BGR565: {
+            uint32_t b8 = (pixel >> 11) << 3;
+            uint32_t g8 = ((pixel >> 5) << 2) & 0xff;
+            uint32_t r8 = (pixel << 3) & 0xff;
+            pixel = (r8 << 16) | (g8 << 8) | b8;
+        }
+        break;
+
+        case DISPLAYIO_COLORSPACE_BGR555_SWAPPED:
+            pixel = __builtin_bswap16(pixel);
+            MP_FALLTHROUGH;
+        case DISPLAYIO_COLORSPACE_BGR555: {
+            uint32_t b8 = (pixel >> 10) << 3;
+            uint32_t g8 = ((pixel >> 5) << 3) & 0xff;
+            uint32_t r8 = (pixel << 3) & 0xff;
+            pixel = (r8 << 16) | (g8 << 8) | b8;
+        }
+        break;
+
         case DISPLAYIO_COLORSPACE_RGB888:
             break;
     }

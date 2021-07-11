@@ -80,20 +80,34 @@ STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
+void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
+    bleio_characteristic_obj_t *characteristic,
+    mp_float_t timeout,
+    uint8_t *buffer, size_t buffer_size,
+    void *static_handler_entry) {
+
+    self->characteristic = characteristic;
+    self->timeout_ms = timeout * 1000;
+
+    self->ringbuf.buf = (uint8_t *)buffer;
+    self->ringbuf.size = buffer_size;
+    self->ringbuf.iget = 0;
+    self->ringbuf.iput = 0;
+
+    if (static_handler_entry != NULL) {
+        ble_drv_add_event_handler_entry((ble_drv_evt_handler_entry_t *)static_handler_entry, characteristic_buffer_on_ble_evt, self);
+    } else {
+        ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
+    }
+}
+
 // Assumes that timeout and buffer_size have been validated before call.
 void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,
     size_t buffer_size) {
-
-    self->characteristic = characteristic;
-    self->timeout_ms = timeout * 1000;
-    // This is a macro.
-    // true means long-lived, so it won't be moved.
-    ringbuf_alloc(&self->ringbuf, buffer_size, true);
-
-    ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
-
+    uint8_t *buffer = m_malloc(buffer_size, true);
+    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL);
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
