@@ -361,11 +361,26 @@ def compute_huffman_coding(translations, compression_filename):
             return lengths[idx][1] + 1
 
         # The cost of adding a dictionary word is just its storage size
-        # while its savings is the difference between the original
+        # while its savings is close to the difference between the original
         # huffman bit-length of the string and the estimated bit-length
         # of the dictionary word, times the number of times the word appears.
         #
-        # The difference between the two is the net savings, in bits.
+        # The savings is not strictly accurate because including a word into
+        # the Huffman tree bumps up the encoding lengths of all words in the
+        # same subtree.  In the extreme case when the new word is so frequent
+        # that it gets a one-bit encoding, all other words will cost an extra
+        # bit each.
+        #
+        # Another source of inaccuracy is that compressed strings end up
+        # on byte boundaries, not bit boundaries, so saving 1 bit somewhere
+        # might not save a byte.
+        #
+        # In fact, when this change was first made, some translations (luckily,
+        # ones on boards not at all close to full) wasted up to 40 bytes,
+        # while the most constrained boards typically gained 100 bytes or
+        # more.
+        #
+        # The difference between the two is the estimated net savings, in bits.
         def est_net_savings(s, occ):
             savings = occ * (bit_length(s) - est_len(occ))
             cost = len(s) * bits_per_codepoint
