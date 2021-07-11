@@ -62,38 +62,6 @@ SECTIONS
         _etext = .;
     } >FLASH_APP
 
-    _sidata = LOADADDR(.data);
-
-    .data :
-    {
-        . = ALIGN(4);
-        _sdata = .;
-        *(.data*)
-        . = ALIGN(4);
-        _edata = .;
-    } >RAM AT> FLASH_APP
-
-    .bss :
-    {
-        . = ALIGN(4);
-        _sbss = .;
-        *(.bss*)
-        *(COMMON)
-        . = ALIGN(4);
-        _ebss = .;
-    } >RAM
-
-    .heap :
-    {
-        . = ALIGN(4);
-        . = . + _minimum_heap_size;
-        . = ALIGN(4);
-    } >RAM
-
-    .stack :
-    {
-        . = ALIGN(4);
-        . = . + _minimum_stack_size;
-        . = ALIGN(4);
-    } >RAM
+    INCLUDE common_extratext_data_in_flash_app.ld
+    INCLUDE common_bss_heap_stack.ld
 }

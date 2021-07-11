@@ -14,6 +14,7 @@ SUPPORTED_FN = {
     "I2S": ["CK", "MCK", "SD", "WS", "EXTSD"],
     "USART": ["RX", "TX", "CTS", "RTS", "CK"],
     "UART": ["RX", "TX", "CTS", "RTS"],
+    "LPUART": ["RX", "TX", "CTS", "RTS"],
     "SPI": ["NSS", "SCK", "MISO", "MOSI"],
     "SDMMC": ["CK", "CMD", "D0", "D1", "D2", "D3"],
     "CAN": ["TX", "RX"],
@@ -21,9 +22,10 @@ SUPPORTED_FN = {
 
 CONDITIONAL_VAR = {
     "I2C": "MICROPY_HW_I2C{num}_SCL",
-    "I2S": "MICROPY_HW_ENABLE_I2S{num}",
+    "I2S": "MICROPY_HW_I2S{num}",
     "SPI": "MICROPY_HW_SPI{num}_SCK",
     "UART": "MICROPY_HW_UART{num}_TX",
+    "LPUART": "MICROPY_HW_LPUART{num}_TX",
     "USART": "MICROPY_HW_UART{num}_TX",
     "SDMMC": "MICROPY_HW_SDMMC{num}_CK",
     "CAN": "MICROPY_HW_CAN{num}_TX",
@@ -285,6 +287,7 @@ class Pins(object):
     def __init__(self):
         self.cpu_pins = []  # list of NamedPin objects
         self.board_pins = []  # list of NamedPin objects
+        self.adc_table_size = {}  # maps ADC number X to size of pin_adcX table
 
     def find_pin(self, port_num, pin_num):
         for named_pin in self.cpu_pins:
@@ -351,27 +354,27 @@ class Pins(object):
         self.print_named("board", self.board_pins)
 
     def print_adc(self, adc_num):
-        print("")
-        print("const pin_obj_t * const pin_adc{:d}[] = {{".format(adc_num))
-        for channel in range(17):
-            if channel == 16:
-                print("#if defined(STM32L4)")
-            adc_found = False
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if (
-                    pin.is_board_pin()
-                    and (pin.adc_num & (1 << (adc_num - 1)))
-                    and (pin.adc_channel == channel)
-                ):
-                    print("  &pin_{:s}_obj, // {:d}".format(pin.cpu_pin_name(), channel))
-                    adc_found = True
-                    break
-            if not adc_found:
-                print("  NULL,    // {:d}".format(channel))
-            if channel == 16:
-                print("#endif")
-        print("};")
+        adc_pins = {}
+        for named_pin in self.cpu_pins:
+            pin = named_pin.pin()
+            if (
+                pin.is_board_pin()
+                and not named_pin.is_hidden()
+                and (pin.adc_num & (1 << (adc_num - 1)))
+            ):
+                adc_pins[pin.adc_channel] = pin
+        if adc_pins:
+            table_size = max(adc_pins) + 1
+            self.adc_table_size[adc_num] = table_size
+            print("")
+            print("const pin_obj_t * const pin_adc{:d}[{:d}] = {{".format(adc_num, table_size))
+            for channel in range(table_size):
+                if channel in adc_pins:
+                    obj = "&pin_{:s}_obj".format(adc_pins[channel].cpu_pin_name())
+                else:
+                    obj = "NULL"
+                print("  [{:d}] = {},".format(channel, obj))
+            print("};")
 
     def print_header(self, hdr_filename, obj_decls):
         with open(hdr_filename, "wt") as hdr_file:
@@ -380,9 +383,12 @@ class Pins(object):
                     pin = named_pin.pin()
                     if pin.is_board_pin():
                         pin.print_header(hdr_file)
-                hdr_file.write("extern const pin_obj_t * const pin_adc1[];\n")
-                hdr_file.write("extern const pin_obj_t * const pin_adc2[];\n")
-                hdr_file.write("extern const pin_obj_t * const pin_adc3[];\n")
+                for adc_num, table_size in self.adc_table_size.items():
+                    hdr_file.write(
+                        "extern const pin_obj_t * const pin_adc{:d}[{:d}];\n".format(
+                            adc_num, table_size
+                        )
+                    )
             # provide #define's mapping board to cpu name
             for named_pin in self.board_pins:
                 hdr_file.write(
@@ -567,9 +573,8 @@ def main():
         with open(args.prefix_filename, "r") as prefix_file:
             print(prefix_file.read())
     pins.print()
-    pins.print_adc(1)
-    pins.print_adc(2)
-    pins.print_adc(3)
+    for i in range(1, 4):
+        pins.print_adc(i)
     pins.print_header(args.hdr_filename, args.hdr_obj_decls)
     pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)

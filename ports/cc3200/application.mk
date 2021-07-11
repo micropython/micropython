@@ -147,6 +147,7 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	utils/gchelper_native.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
+	utils/stdout_helpers.c \
 	utils/sys_stdio_mphal.c \
 	)
 
@@ -182,7 +183,7 @@ ifeq ($(BTYPE), release)
 CFLAGS += -DNDEBUG
 else
 ifeq ($(BTYPE), debug)
-CFLAGS += -DNDEBUG
+CFLAGS += -DDEBUG
 else
 $(error Invalid BTYPE specified)
 endif

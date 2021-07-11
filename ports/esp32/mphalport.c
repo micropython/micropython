@@ -33,10 +33,12 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if MICROPY_ESP_IDF_4
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/uart.h"
-#else
-#include "rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/uart.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/uart.h"
 #endif
 
 #include "py/obj.h"
@@ -48,11 +50,12 @@
 #include "lib/timeutils/timeutils.h"
 #include "lib/utils/pyexec.h"
 #include "mphalport.h"
+#include "usb.h"
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[256];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+STATIC uint8_t stdin_ringbuf_array[260];
+ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 void check_esp_err(esp_err_t code) {
@@ -105,43 +108,23 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     // Only release the GIL if many characters are being sent
     bool release_gil = len > 20;
     if (release_gil) {
         MP_THREAD_GIL_EXIT();
     }
+    #if CONFIG_USB_ENABLED
+    usb_tx_strn(str, len);
+    #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
+    #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }
     mp_uos_dupterm_tx_strn(str, len);
-}
-
-// Efficiently convert "\n" to "\r\n"
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    const char *last = str;
-    while (len--) {
-        if (*str == '\n') {
-            if (str > last) {
-                mp_hal_stdout_tx_strn(last, str - last);
-            }
-            mp_hal_stdout_tx_strn("\r\n", 2);
-            ++str;
-            last = str;
-        } else {
-            ++str;
-        }
-    }
-    if (str > last) {
-        mp_hal_stdout_tx_strn(last, str - last);
-    }
 }
 
 uint32_t mp_hal_ticks_ms(void) {

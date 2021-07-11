@@ -1,13 +1,12 @@
 [submodule "lib/axtls"]
 	path = lib/axtls
-	url = https://github.com/pfalcon/axtls
-	branch = micropython
+	url = https://github.com/micropython/axtls.git
 [submodule "lib/libffi"]
 	path = lib/libffi
 	url = https://github.com/atgreen/libffi
 [submodule "lib/lwip"]
 	path = lib/lwip
-	url = https://git.savannah.gnu.org/r/lwip.git
+	url = https://github.com/lwip-tcpip/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
@@ -36,3 +35,9 @@
 [submodule "lib/nxp_driver"]
 	path = lib/nxp_driver
 	url = https://github.com/hathach/nxp_driver.git
+[submodule "lib/libhydrogen"]
+	path = lib/libhydrogen
+	url = https://github.com/jedisct1/libhydrogen.git
+[submodule "lib/pico-sdk"]
+	path = lib/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git

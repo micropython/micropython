@@ -163,17 +163,24 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         if (o->args == NULL || o->args->len == 0) {
             mp_print_str(print, "");
             return;
-        } else if (o->args->len == 1) {
-            #if MICROPY_PY_UERRNO
-            // try to provide a nice OSError error message
-            if (o->base.type == &mp_type_OSError && mp_obj_is_small_int(o->args->items[0])) {
-                qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTRnull) {
-                    mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
-                    return;
+        }
+
+        #if MICROPY_PY_UERRNO
+        // try to provide a nice OSError error message
+        if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
+            qstr qst = mp_errno_to_str(o->args->items[0]);
+            if (qst != MP_QSTRnull) {
+                mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                if (o->args->len > 1) {
+                    mp_print_str(print, ": ");
+                    mp_obj_print_helper(print, o->args->items[1], PRINT_STR);
                 }
+                return;
             }
-            #endif
+        }
+        #endif
+
+        if (o->args->len == 1) {
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
@@ -208,7 +215,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // reserved room (after the traceback data) for a tuple with 1 element.
         // Otherwise we are free to use the whole buffer after the traceback data.
         if (o_tuple == NULL && mp_emergency_exception_buf_size >=
-            EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(n_args)) {
+            (mp_int_t)(EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(n_args))) {
             o_tuple = (mp_obj_tuple_t *)
                 ((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_TUPLE_OFFSET);
         }
@@ -261,7 +268,9 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR_args) {
         decompress_error_text_maybe(self);
         dest[0] = MP_OBJ_FROM_PTR(self->args);
-    } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
+    } else if (attr == MP_QSTR_value || attr == MP_QSTR_errno) {
+        // These are aliases for args[0]: .value for StopIteration and .errno for OSError.
+        // For efficiency let these attributes apply to all exception instances.
         dest[0] = mp_obj_exception_get_value(self_in);
     }
 }
@@ -371,6 +380,8 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
     return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
+#if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
+
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     // Check that the given type is an exception type
     assert(exc_type->make_new == mp_obj_exception_make_new);
@@ -383,7 +394,7 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_te
     // that buffer to store the string object, reserving room at the start for the
     // traceback and 1-tuple.
     if (o_str == NULL
-        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t)) {
+        && mp_emergency_exception_buf_size >= (mp_int_t)(EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t))) {
         o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
             + EMG_BUF_STR_OFFSET);
     }
@@ -465,7 +476,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
     // that buffer to store the string object and its data (at least 16 bytes for
     // the string data), reserving room at the start for the traceback and 1-tuple.
     if ((o_str == NULL || o_str_buf == NULL)
-        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
+        && mp_emergency_exception_buf_size >= (mp_int_t)(EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16)) {
         used_emg_buf = true;
         o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_STR_OFFSET);
         o_str_buf = (byte *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_STR_BUF_OFFSET);
@@ -515,6 +526,8 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
+
+#endif
 
 // return true if the given object is an exception type
 bool mp_obj_is_exception_type(mp_obj_t self_in) {
@@ -573,7 +586,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         self->traceback_data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
         if (self->traceback_data == NULL) {
             #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-            if (mp_emergency_exception_buf_size >= EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE) {
+            if (mp_emergency_exception_buf_size >= (mp_int_t)(EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE)) {
                 // There is room in the emergency buffer for traceback data
                 size_t *tb = (size_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
                     + EMG_BUF_TRACEBACK_OFFSET);

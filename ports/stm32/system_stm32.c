@@ -272,9 +272,9 @@ void SystemClock_Config(void) {
         n = MICROPY_HW_CLK_PLLN;
         p = MICROPY_HW_CLK_PLLP;
         q = MICROPY_HW_CLK_PLLQ;
-        h = RCC_SYSCLK_DIV1;
-        b1 = RCC_HCLK_DIV4;
-        b2 = RCC_HCLK_DIV2;
+        h = MICROPY_HW_CLK_AHB_DIV;
+        b1 = MICROPY_HW_CLK_APB1_DIV;
+        b2 = MICROPY_HW_CLK_APB2_DIV;
     } else {
         h <<= 4;
         b1 <<= 10;
@@ -285,9 +285,9 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLP = p; // MICROPY_HW_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = q; // MICROPY_HW_CLK_PLLQ;
 
-    RCC_ClkInitStruct.AHBCLKDivider = h; // RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = b1; // RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = b2; // RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.AHBCLKDivider = h;
+    RCC_ClkInitStruct.APB1CLKDivider = b1;
+    RCC_ClkInitStruct.APB2CLKDivider = b2;
     #else // defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
@@ -304,20 +304,20 @@ void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32F4) || defined(STM32F7)
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
     #elif defined(STM32L4)
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
     #elif defined(STM32H7)
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
+    RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
+    RCC_ClkInitStruct.APB4CLKDivider = MICROPY_HW_CLK_APB4_DIV;
     #endif
     #endif
 
@@ -351,8 +351,8 @@ void SystemClock_Config(void) {
 
     uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
-    bool need_pllsai = vco_out % 48 != 0;
-    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {
+    bool need_pll48 = vco_out % 48 != 0;
+    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pll48) != 0) {
         __fatal_error("HAL_RCC_ClockConfig");
     }
 
@@ -424,6 +424,11 @@ void SystemClock_Config(void) {
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
+    #endif
+
+    #if defined(STM32H7) && !defined(NDEBUG)
+    // Enable the Debug Module in low-power modes.
+    DBGMCU->CR |= (DBGMCU_CR_DBG_SLEEPD1 | DBGMCU_CR_DBG_STOPD1 | DBGMCU_CR_DBG_STANDBYD1);
     #endif
 }
 

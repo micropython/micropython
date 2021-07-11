@@ -31,12 +31,22 @@
 
 #if MICROPY_PY_UASYNCIO
 
+// Used when task cannot be guaranteed to be non-NULL.
+#define TASK_PAIRHEAP(task) ((task) ? &(task)->pairheap : NULL)
+
+#define TASK_STATE_RUNNING_NOT_WAITED_ON (mp_const_true)
+#define TASK_STATE_DONE_NOT_WAITED_ON (mp_const_none)
+#define TASK_STATE_DONE_WAS_WAITED_ON (mp_const_false)
+
+#define TASK_IS_DONE(task) ( \
+    (task)->state == TASK_STATE_DONE_NOT_WAITED_ON \
+    || (task)->state == TASK_STATE_DONE_WAS_WAITED_ON)
+
 typedef struct _mp_obj_task_t {
     mp_pairheap_t pairheap;
     mp_obj_t coro;
     mp_obj_t data;
-    mp_obj_t waiting;
-
+    mp_obj_t state;
     mp_obj_t ph_key;
 } mp_obj_task_t;
 
@@ -103,7 +113,7 @@ STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
         assert(mp_obj_is_small_int(args[2]));
         task->ph_key = args[2];
     }
-    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, &self->heap->pairheap, &task->pairheap);
+    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, TASK_PAIRHEAP(self->heap), TASK_PAIRHEAP(task));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_sorted_obj, 2, 3, task_queue_push_sorted);
@@ -156,7 +166,7 @@ STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     mp_pairheap_init_node(task_lt, &self->pairheap);
     self->coro = args[0];
     self->data = mp_const_none;
-    self->waiting = mp_const_none;
+    self->state = TASK_STATE_RUNNING_NOT_WAITED_ON;
     self->ph_key = MP_OBJ_NEW_SMALL_INT(0);
     if (n_args == 2) {
         uasyncio_context = args[1];
@@ -164,10 +174,16 @@ STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
+STATIC mp_obj_t task_done(mp_obj_t self_in) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(TASK_IS_DONE(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_done_obj, task_done);
+
 STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     // Check if task is already finished.
-    if (self->coro == mp_const_none) {
+    if (TASK_IS_DONE(self)) {
         return mp_const_false;
     }
     // Can't cancel self (not supported yet).
@@ -217,10 +233,11 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = self->coro;
         } else if (attr == MP_QSTR_data) {
             dest[0] = self->data;
-        } else if (attr == MP_QSTR_waiting) {
-            if (self->waiting != mp_const_none) {
-                dest[0] = self->waiting;
-            }
+        } else if (attr == MP_QSTR_state) {
+            dest[0] = self->state;
+        } else if (attr == MP_QSTR_done) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
+            dest[1] = self_in;
         } else if (attr == MP_QSTR_cancel) {
             dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
             dest[1] = self_in;
@@ -229,14 +246,11 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
     } else if (dest[1] != MP_OBJ_NULL) {
         // Store
-        if (attr == MP_QSTR_coro) {
-            self->coro = dest[1];
-            dest[0] = MP_OBJ_NULL;
-        } else if (attr == MP_QSTR_data) {
+        if (attr == MP_QSTR_data) {
             self->data = dest[1];
             dest[0] = MP_OBJ_NULL;
-        } else if (attr == MP_QSTR_waiting) {
-            self->waiting = dest[1];
+        } else if (attr == MP_QSTR_state) {
+            self->state = dest[1];
             dest[0] = MP_OBJ_NULL;
         }
     }
@@ -245,21 +259,25 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->waiting == mp_const_none) {
-        self->waiting = task_queue_make_new(&task_queue_type, 0, 0, NULL);
+    if (TASK_IS_DONE(self)) {
+        // Signal that the completed-task has been await'ed on.
+        self->state = TASK_STATE_DONE_WAS_WAITED_ON;
+    } else if (self->state == TASK_STATE_RUNNING_NOT_WAITED_ON) {
+        // Allocate the waiting queue.
+        self->state = task_queue_make_new(&task_queue_type, 0, 0, NULL);
     }
     return self_in;
 }
 
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->coro == mp_const_none) {
+    if (TASK_IS_DONE(self)) {
         // Task finished, raise return value to caller so it can continue.
         nlr_raise(self->data);
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
-        mp_obj_t args[2] = { self->waiting, cur_task };
+        mp_obj_t args[2] = { self->state, cur_task };
         task_queue_push_sorted(2, args);
         // Set calling task's data to this task that it waits on, to double-link it.
         ((mp_obj_task_t *)MP_OBJ_TO_PTR(cur_task))->data = self_in;

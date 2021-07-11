@@ -51,9 +51,12 @@ typedef struct _mp_machine_i2c_buf_t {
 } mp_machine_i2c_buf_t;
 
 // I2C protocol
-// the first 4 methods can be NULL, meaning operation is not supported
-// transfer_single only needs to be set if transfer=mp_machine_i2c_transfer_adaptor
+// - init must be non-NULL
+// - start/stop/read/write can be NULL, meaning operation is not supported
+// - transfer must be non-NULL
+// - transfer_single only needs to be set if transfer=mp_machine_i2c_transfer_adaptor
 typedef struct _mp_machine_i2c_p_t {
+    void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
@@ -71,7 +74,7 @@ typedef struct _mp_machine_soft_i2c_obj_t {
 } mp_machine_soft_i2c_obj_t;
 
 extern const mp_obj_type_t mp_machine_soft_i2c_type;
-extern const mp_obj_dict_t mp_machine_soft_i2c_locals_dict;
+extern const mp_obj_dict_t mp_machine_i2c_locals_dict;
 
 int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
 int mp_machine_soft_i2c_transfer(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);

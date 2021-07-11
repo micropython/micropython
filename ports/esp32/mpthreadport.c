@@ -34,9 +34,6 @@
 #include "mpthreadport.h"
 
 #include "esp_task.h"
-#if !MICROPY_ESP_IDF_4
-#include "freertos/semphr.h"
-#endif
 
 #if MICROPY_PY_THREAD
 
@@ -169,6 +166,8 @@ void mp_thread_finish(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
+// This is called from the FreeRTOS idle task and is not within Python context,
+// so MP_STATE_THREAD is not valid and it does not have the GIL.
 void vPortCleanUpTCB(void *tcb) {
     if (thread == NULL) {
         // threading not yet initialised
@@ -185,8 +184,7 @@ void vPortCleanUpTCB(void *tcb) {
                 // move the start pointer
                 thread = th->next;
             }
-            // explicitly release all its memory
-            m_del(thread_t, th, 1);
+            // The "th" memory will eventually be reclaimed by the GC.
             break;
         }
     }
@@ -194,7 +192,10 @@ void vPortCleanUpTCB(void *tcb) {
 }
 
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
-    mutex->handle = xSemaphoreCreateMutexStatic(&mutex->buffer);
+    // Need a binary semaphore so a lock can be acquired on one Python thread
+    // and then released on another.
+    mutex->handle = xSemaphoreCreateBinaryStatic(&mutex->buffer);
+    xSemaphoreGive(mutex->handle);
 }
 
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {

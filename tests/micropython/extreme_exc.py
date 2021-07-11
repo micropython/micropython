@@ -126,7 +126,7 @@ def main():
         )
     except Exception as er:
         e = er
-    lst[0] = None
+    lst[0][0] = None
     lst = None
     print(repr(e)[:10])
 

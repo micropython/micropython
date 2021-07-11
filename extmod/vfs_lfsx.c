@@ -423,10 +423,16 @@ STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(statvfs_obj), MP_VFS_LFSx(statvfs));
 
 STATIC mp_obj_t MP_VFS_LFSx(mount)(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
-    (void)self_in;
-    (void)readonly;
+    MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     (void)mkfs;
-    // already called LFSx_API(mount) in MP_VFS_LFSx(make_new)
+
+    // Make block device read-only if requested.
+    if (mp_obj_is_true(readonly)) {
+        self->blockdev.writeblocks[0] = MP_OBJ_NULL;
+    }
+
+    // Already called LFSx_API(mount) in MP_VFS_LFSx(make_new) so the filesystem is ready.
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(mount_obj), MP_VFS_LFSx(mount));

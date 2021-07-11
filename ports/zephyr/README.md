@@ -4,7 +4,7 @@ MicroPython port to Zephyr RTOS
 This is a work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-This port requires Zephyr version 2.4.0, and may also work on higher
+This port requires Zephyr version v2.6.0, and may also work on higher
 versions.  All boards supported
 by Zephyr (with standard level of features support, like UART console)
 should work with MicroPython (but not all were tested).
@@ -15,6 +15,7 @@ Features supported at this time:
 * `utime` module for time measurements and delays.
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
+* `machine.SPI` class for SPI control.
 * `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
@@ -38,59 +39,60 @@ setup is correct.
 If you already have Zephyr installed but are having issues building the
 MicroPython port then try installing the correct version of Zephyr via:
 
-    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v2.4.0
+    $ west init zephyrproject -m https://github.com/zephyrproject-rtos/zephyr --mr v2.6.0
 
 Alternatively, you don't have to redo the Zephyr installation to just
 switch from master to a tagged release, you can instead do:
 
     $ cd zephyrproject/zephyr
-    $ git checkout v2.4.0
+    $ git checkout v2.6.0
     $ west update
 
 With Zephyr installed you may then need to configure your environment,
 for example by sourcing `zephyrproject/zephyr/zephyr-env.sh`.
 
-Once Zephyr is ready to use you can build the MicroPython port.
-In the port subdirectory `ports/zephyr/` run:
+Once Zephyr is ready to use you can build the MicroPython port just like any
+other Zephyr application. You can do this anywhere in your file system, it does
+not have to be in the `ports/zephyr` directory. Assuming you have cloned the
+MicroPython repository into your home directory, you can build the Zephyr port
+for a frdm_k64f board like this:
 
-    $ make BOARD=<board>
+    $ west build -b frdm_k64f ~/micropython/ports/zephyr
 
-If you don't specify BOARD, the default is `qemu_x86` (x86 target running
-in QEMU emulator).  Consult the Zephyr documentation above for the list of
+To build for QEMU instead:
+
+    $ west build -b qemu_x86 ~/micropython/ports/zephyr
+
+Consult the Zephyr documentation above for the list of
 supported boards.  Board configuration files appearing in `ports/zephyr/boards/`
 correspond to boards that have been tested with MicroPython and may have
 additional options enabled, like filesystem support.
 
-
 Running
 -------
+
+To flash the resulting firmware to your board:
+
+    $ west flash
+
+Or, to flash it to your board and start a gdb debug session:
+
+    $ west debug
 
 To run the resulting firmware in QEMU (for BOARDs like qemu_x86,
 qemu_cortex_m3):
 
-    make run
+    $ west build -t run
 
-With the default configuration, networking is now enabled, so you need to
-follow instructions in https://wiki.zephyrproject.org/view/Networking-with-Qemu
-to setup host side of TAP/SLIP networking. If you get error like:
+Networking is enabled with the default configuration, so you need to follow
+instructions in
+https://docs.zephyrproject.org/latest/guides/networking/qemu_setup.html#networking-with-qemu
+to setup the host side of TAP/SLIP networking. If you get an error like:
 
     could not connect serial device to character backend 'unix:/tmp/slip.sock'
 
-it's a sign that you didn't followed instructions above. If you would like
+it's a sign that you didn't follow the instructions above. If you would like
 to just run it quickly without extra setup, see "minimal" build below.
-
-For deploying/flashing a firmware on a real board, follow Zephyr
-documentation for a given board, including known issues for that board
-(if any). (Mind again that networking is enabled for the default build,
-so you should know if there're any special requirements in that regard,
-cf. for example QEMU networking requirements above; real hardware boards
-generally should not have any special requirements, unless there're known
-issues).
-
-For example, to deploy firmware on the FRDM-K64F board run:
-
-    $ make BOARD=frdm_k64f flash
-
 
 Quick example
 -------------
@@ -134,6 +136,14 @@ Example of using I2C to scan for I2C slaves:
     i2c = I2C("I2C_0")
     i2c.scan()
 
+Example of using SPI to write a buffer to the MOSI pin:
+
+    from machine import SPI
+
+    spi = SPI("SPI_0")
+    spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
+    spi.write(b'abcd')
+
 
 Minimal build
 -------------
@@ -151,9 +161,10 @@ enabled over time.
 
 To make a minimal build:
 
-    ./make-minimal BOARD=<board>
+    $ west build -b qemu_x86 ~/micropython/ports/zephyr -- -DCONF_FILE=prj_minimal.conf
 
 To run a minimal build in QEMU without requiring TAP networking setup
-run the following after you built image with the previous command:
+run the following after you built an image with the previous command:
 
-    ./make-minimal BOARD=<qemu_x86_nommu|qemu_x86|qemu_cortex_m3> run
+    $ west build -t run
+

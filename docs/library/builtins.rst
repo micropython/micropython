@@ -176,10 +176,6 @@ Exceptions
 
 .. exception:: OSError
 
-    |see_cpython| `python:OSError`. MicroPython doesn't implement ``errno``
-    attribute, instead use the standard way to access exception arguments:
-    ``exc.args[0]``.
-
 .. exception:: RuntimeError
 
 .. exception:: StopIteration

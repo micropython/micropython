@@ -1970,13 +1970,23 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t *)pns0->nodes[4];
         fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
-        // async for
-        compile_async_for_stmt(comp, pns0);
     } else {
-        // async with
-        assert(MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_with_stmt);
-        compile_async_with_stmt(comp, pns0);
+        // async for/with; first verify the scope is a generator
+        int scope_flags = comp->scope_cur->scope_flags;
+        if (!(scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns0,
+                MP_ERROR_TEXT("async for/with outside async function"));
+            return;
+        }
+
+        if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
+            // async for
+            compile_async_for_stmt(comp, pns0);
+        } else {
+            // async with
+            assert(MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_with_stmt);
+            compile_async_with_stmt(comp, pns0);
+        }
     }
 }
 #endif
@@ -2597,7 +2607,7 @@ STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *
                     compile_node(comp, pn_i);
                     if (is_dict) {
                         if (!is_key_value) {
-                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("invalid syntax"));
                             #else
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("expecting key:value for dict"));
@@ -2607,7 +2617,7 @@ STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *
                         EMIT(store_map);
                     } else {
                         if (is_key_value) {
-                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                            #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("invalid syntax"));
                             #else
                             compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("expecting just a value for set"));

@@ -532,6 +532,7 @@ class RawCodeNative(RawCode):
             if config.native_arch in (
                 MP_NATIVE_ARCH_X86,
                 MP_NATIVE_ARCH_X64,
+                MP_NATIVE_ARCH_ARMV6,
                 MP_NATIVE_ARCH_XTENSA,
                 MP_NATIVE_ARCH_XTENSAWIN,
             ):
@@ -915,6 +916,17 @@ def freeze_mpy(base_qstrs, raw_codes):
     for rc in raw_codes:
         print("    &raw_code_%s," % rc.escaped_name)
     print("};")
+
+    # If a port defines MICROPY_FROZEN_LIST_ITEM then list all modules wrapped in that macro.
+    print("#ifdef MICROPY_FROZEN_LIST_ITEM")
+    for rc in raw_codes:
+        module_name = rc.source_file.str
+        if module_name.endswith("/__init__.py"):
+            short_name = module_name[: -len("/__init__.py")]
+        else:
+            short_name = module_name[: -len(".py")]
+        print('MICROPY_FROZEN_LIST_ITEM("%s", "%s")' % (short_name, module_name))
+    print("#endif")
 
 
 def merge_mpy(raw_codes, output_file):

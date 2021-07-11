@@ -235,7 +235,7 @@ class LockedCounter:
 count = LockedCounter()
 
 
-def thread_entry():
+def thread_entry(n_loop):
     global count
 
     aes = AES(256)
@@ -244,7 +244,7 @@ def thread_entry():
     data = bytearray(128)
     # from now on we don't use the heap
 
-    for loop in range(5):
+    for loop in range(n_loop):
         # encrypt
         aes.set_key(key)
         aes.set_iv(iv)
@@ -265,8 +265,20 @@ def thread_entry():
 
 
 if __name__ == "__main__":
-    n_thread = 20
+    import sys
+
+    if sys.platform == "rp2":
+        n_thread = 1
+        n_loop = 2
+    elif sys.platform in ("esp32", "pyboard"):
+        n_thread = 2
+        n_loop = 2
+    else:
+        n_thread = 20
+        n_loop = 5
     for i in range(n_thread):
-        _thread.start_new_thread(thread_entry, ())
+        _thread.start_new_thread(thread_entry, (n_loop,))
+    thread_entry(n_loop)
     while count.value < n_thread:
         time.sleep(1)
+    print("done")

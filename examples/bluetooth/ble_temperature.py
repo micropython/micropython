@@ -15,12 +15,16 @@ _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
 _IRQ_GATTS_INDICATE_DONE = const(20)
 
+_FLAG_READ = const(0x0002)
+_FLAG_NOTIFY = const(0x0010)
+_FLAG_INDICATE = const(0x0020)
+
 # org.bluetooth.service.environmental_sensing
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
 _TEMP_CHAR = (
     bluetooth.UUID(0x2A6E),
-    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY | bluetooth.FLAG_INDICATE,
+    _FLAG_READ | _FLAG_NOTIFY | _FLAG_INDICATE,
 )
 _ENV_SENSE_SERVICE = (
     _ENV_SENSE_UUID,

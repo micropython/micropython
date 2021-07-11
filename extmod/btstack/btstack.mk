@@ -11,6 +11,8 @@ EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
 INC += -I$(TOP)/$(BTSTACK_EXTMOD_DIR)
 
 CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
 
 BTSTACK_DIR = $(TOP)/lib/btstack
 
@@ -28,7 +30,6 @@ INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
 	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
-	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
@@ -66,11 +67,12 @@ endif
 LIB_SRC_C += $(SRC_BTSTACK)
 
 # Suppress some warnings.
-BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wimplicit-fallthrough=0
 ifneq ($(CC),clang)
 BTSTACK_WARNING_CFLAGS += -Wno-format
 endif
 $(BUILD)/lib/btstack/src/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
+$(BUILD)/lib/btstack/platform/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
 
 endif
 endif

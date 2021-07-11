@@ -39,7 +39,7 @@
 #define MICROPY_HW_UART6_TX     (pin_C6)  // D6
 #define MICROPY_HW_UART6_RX     (pin_C7)  // D5
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_NAME "I2C1"
 #define MICROPY_HW_I2C1_SCL (pin_B6)  // SCL
 #define MICROPY_HW_I2C1_SDA (pin_B7)  // SDA
@@ -47,7 +47,7 @@
 #define MICROPY_HW_I2C2_SCL (pin_B10)  // TX
 #define MICROPY_HW_I2C2_SDA (pin_B11)  // RX
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NAME "SPIFLASH"
 #define MICROPY_HW_SPI1_NSS  (pin_A15) // FLASH CS
 #define MICROPY_HW_SPI1_SCK  (pin_B3) // FLASH CLK
@@ -59,7 +59,7 @@
 #define MICROPY_HW_SPI2_MISO (pin_B14) // MISO
 #define MICROPY_HW_SPI2_MOSI (pin_B15) // MOSI
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_NAME "CAN1"
 #define MICROPY_HW_CAN1_TX   (pin_B9) // D10
 #define MICROPY_HW_CAN1_RX   (pin_B8) // D9

@@ -34,13 +34,27 @@ import subprocess
 # Public functions to be used in the manifest
 
 
-def include(manifest):
+def include(manifest, **kwargs):
     """Include another manifest.
 
     The manifest argument can be a string (filename) or an iterable of
     strings.
 
     Relative paths are resolved with respect to the current manifest file.
+
+    Optional kwargs can be provided which will be available to the
+    included script via the `options` variable.
+
+    e.g. include("path.py", extra_features=True)
+
+    in path.py:
+        options.defaults(standard_features=True)
+
+        # freeze minimal modules.
+        if options.standard_features:
+            # freeze standard modules.
+        if options.extra_features:
+            # freeze extra modules.
     """
 
     if not isinstance(manifest, str):
@@ -53,7 +67,7 @@ def include(manifest):
             # Applies to includes and input files.
             prev_cwd = os.getcwd()
             os.chdir(os.path.dirname(manifest))
-            exec(f.read())
+            exec(f.read(), globals(), {"options": IncludeOptions(**kwargs)})
             os.chdir(prev_cwd)
 
 
@@ -125,6 +139,18 @@ VARS = {}
 manifest_list = []
 
 
+class IncludeOptions:
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
+        self._defaults = {}
+
+    def defaults(self, **kwargs):
+        self._defaults = kwargs
+
+    def __getattr__(self, name):
+        return self._kwargs.get(name, self._defaults.get(name, None))
+
+
 class FreezeError(Exception):
     pass
 
@@ -172,6 +198,8 @@ def mkdir(filename):
 
 def freeze_internal(kind, path, script, opt):
     path = convert_path(path)
+    if not os.path.isdir(path):
+        raise FreezeError("freeze path must be a directory: {}".format(path))
     if script is None and kind == KIND_AS_STR:
         if any(f[0] == KIND_AS_STR for f in manifest_list):
             raise FreezeError("can only freeze one str directory")
@@ -220,6 +248,7 @@ def main():
         "-f", "--mpy-cross-flags", default="", help="flags to pass to mpy-cross"
     )
     cmd_parser.add_argument("-v", "--var", action="append", help="variables to substitute")
+    cmd_parser.add_argument("--mpy-tool-flags", default="", help="flags to pass to mpy-tool")
     cmd_parser.add_argument("files", nargs="+", help="input manifest list")
     args = cmd_parser.parse_args()
 
@@ -313,6 +342,7 @@ def main():
                 "-q",
                 args.build_dir + "/genhdr/qstrdefs.preprocessed.h",
             ]
+            + args.mpy_tool_flags.split()
             + mpy_files
         )
         if res != 0:

@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_DFU_H
 #define MICROPY_INCLUDED_STM32_MBOOT_DFU_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // DFU spec: https://www.usb.org/sites/default/files/DFU_1.1.pdf
@@ -38,6 +39,14 @@
 
 #define MBOOT_ERROR_STR_INVALID_ADDRESS_IDX 0x11
 #define MBOOT_ERROR_STR_INVALID_ADDRESS "Address out of range"
+
+#if MBOOT_ENABLE_PACKING
+#define MBOOT_ERROR_STR_INVALID_SIG_IDX 0x12
+#define MBOOT_ERROR_STR_INVALID_SIG "Invalid signature in file"
+
+#define MBOOT_ERROR_STR_INVALID_READ_IDX 0x13
+#define MBOOT_ERROR_STR_INVALID_READ "Read support disabled on encrypted bootloader"
+#endif
 
 // DFU class requests
 enum {
@@ -98,12 +107,13 @@ typedef struct _dfu_state_t {
     dfu_cmd_t cmd;
     dfu_status_t status;
     uint8_t error;
+    bool leave_dfu;
     uint16_t wBlockNum;
     uint16_t wLength;
     uint32_t addr;
     uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
 } dfu_context_t;
 
-static dfu_context_t dfu_context SECTION_NOZERO_BSS;
+extern dfu_context_t dfu_context;
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_DFU_H

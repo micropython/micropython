@@ -200,7 +200,8 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         const uint8_t *ip = bytecode; \
         size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args; \
         MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state_out_var, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args); \
-                                    \
+        (void)scope_flags; (void)n_pos_args; (void)n_kwonly_args; (void)n_def_args; \
+        \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
             + n_exc_stack * sizeof(mp_exc_stack_t);                \
@@ -354,6 +355,10 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     if (attr == MP_QSTR___name__) {
         dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(self_in));
+    }
+    if (attr == MP_QSTR___globals__) {
+        mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+        dest[0] = MP_OBJ_FROM_PTR(self->globals);
     }
 }
 #endif

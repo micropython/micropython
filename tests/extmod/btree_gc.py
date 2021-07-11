@@ -21,3 +21,6 @@ for i in range(N):
     db[b"thekey" + str(i)] = b"thelongvalue" + str(i)
     print(db[b"thekey" + str(i)])
     gc.collect()
+
+# Reclaim memory allocated by the db object.
+db.close()

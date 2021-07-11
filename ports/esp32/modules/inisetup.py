@@ -21,7 +21,7 @@ def fs_corrupted():
     while 1:
         print(
             """\
-FAT filesystem appears to be corrupted. If you had important data there, you
+The filesystem appears to be corrupted. If you had important data there, you
 may want to make a flash snapshot to try to recover it. Otherwise, perform
 factory reprogramming of MicroPython firmware (completely erase flash, followed
 by firmware programming).

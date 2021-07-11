@@ -123,6 +123,7 @@ class Task:
     def __init__(self, coro, globals=None):
         self.coro = coro  # Coroutine of this Task
         self.data = None  # General data for queue it is waiting on
+        self.state = True  # None, False, True or a TaskQueue instance
         self.ph_key = 0  # Pairing heap
         self.ph_child = None  # Paring heap
         self.ph_child_last = None  # Paring heap
@@ -130,24 +131,30 @@ class Task:
         self.ph_rightmost_parent = None  # Paring heap
 
     def __iter__(self):
-        if not hasattr(self, "waiting"):
-            # Lazily allocated head of linked list of Tasks waiting on completion of this task.
-            self.waiting = TaskQueue()
+        if not self.state:
+            # Task finished, signal that is has been await'ed on.
+            self.state = False
+        elif self.state is True:
+            # Allocated head of linked list of Tasks waiting on completion of this task.
+            self.state = TaskQueue()
         return self
 
     def __next__(self):
-        if not self.coro:
+        if not self.state:
             # Task finished, raise return value to caller so it can continue.
             raise self.data
         else:
             # Put calling task on waiting queue.
-            self.waiting.push_head(core.cur_task)
+            self.state.push_head(core.cur_task)
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
+    def done(self):
+        return not self.state
+
     def cancel(self):
         # Check if task is already finished.
-        if self.coro is None:
+        if not self.state:
             return False
         # Can't cancel self (not supported yet).
         if self is core.cur_task:

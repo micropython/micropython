@@ -47,6 +47,7 @@ enum {
     AF_FN_I2C,
     AF_FN_USART,
     AF_FN_UART = AF_FN_USART,
+    AF_FN_LPUART,
     AF_FN_SPI,
     AF_FN_I2S,
     AF_FN_SDMMC,
@@ -77,6 +78,10 @@ enum {
     AF_PIN_TYPE_UART_RX  = AF_PIN_TYPE_USART_RX,
     AF_PIN_TYPE_UART_CTS = AF_PIN_TYPE_USART_CTS,
     AF_PIN_TYPE_UART_RTS = AF_PIN_TYPE_USART_RTS,
+    AF_PIN_TYPE_LPUART_TX  = AF_PIN_TYPE_USART_TX,
+    AF_PIN_TYPE_LPUART_RX  = AF_PIN_TYPE_USART_RX,
+    AF_PIN_TYPE_LPUART_CTS = AF_PIN_TYPE_USART_CTS,
+    AF_PIN_TYPE_LPUART_RTS = AF_PIN_TYPE_USART_RTS,
 
     AF_PIN_TYPE_SPI_MOSI = 0,
     AF_PIN_TYPE_SPI_MISO,
@@ -104,6 +109,7 @@ enum {
 // some #defines to massage things. Also I2S and SPI share the same
 // peripheral.
 
+#define GPIO_AF5_I2S1   GPIO_AF5_SPI1
 #define GPIO_AF5_I2S2   GPIO_AF5_SPI2
 #define GPIO_AF5_I2S3   GPIO_AF5_I2S3ext
 #define GPIO_AF6_I2S2   GPIO_AF6_I2S2ext
@@ -111,6 +117,7 @@ enum {
 #define GPIO_AF7_I2S2   GPIO_AF7_SPI2
 #define GPIO_AF7_I2S3   GPIO_AF7_I2S3ext
 
+#define I2S1  SPI1
 #define I2S2  SPI2
 #define I2S3  SPI3
 

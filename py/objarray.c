@@ -201,11 +201,7 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
     mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
-    self->base.type = &mp_type_memoryview;
-    self->typecode = typecode;
-    self->memview_offset = 0;
-    self->len = nitems;
-    self->items = items;
+    mp_obj_memoryview_init(self, typecode, 0, nitems, items);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -223,6 +219,14 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
     mp_obj_array_t *self = MP_OBJ_TO_PTR(mp_obj_new_memoryview(bufinfo.typecode,
         bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
         bufinfo.buf));
+
+    // If the input object is a memoryview then need to point the items of the
+    // new memoryview to the start of the buffer so the GC can trace it.
+    if (mp_obj_get_type(args[0]) == &mp_type_memoryview) {
+        mp_obj_array_t *other = MP_OBJ_TO_PTR(args[0]);
+        self->memview_offset = other->memview_offset;
+        self->items = other->items;
+    }
 
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
@@ -256,6 +260,17 @@ STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         default:
             return MP_OBJ_NULL;      // op not supported
     }
+}
+
+STATIC int typecode_for_comparison(int typecode, bool *is_unsigned) {
+    if (typecode == BYTEARRAY_TYPECODE) {
+        typecode = 'B';
+    }
+    if (typecode <= 'Z') {
+        typecode += 32; // to lowercase
+        *is_unsigned = true;
+    }
+    return typecode;
 }
 
 STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
@@ -312,14 +327,33 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             return mp_const_false;
         }
 
-        case MP_BINARY_OP_EQUAL: {
+        case MP_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL: {
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;
             array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
             if (!mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
                 return mp_const_false;
             }
-            return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+            // mp_seq_cmp_bytes is used so only compatible representations can be correctly compared.
+            // The type doesn't matter: array/bytearray/str/bytes all have the same buffer layout, so
+            // just check if the typecodes are compatible; for testing equality the types should have the
+            // same code except for signedness, and not be floating point because nan never equals nan.
+            // For > and < the types should be the same and unsigned.
+            // Note that typecode_for_comparison always returns lowercase letters to save code size.
+            // No need for (& TYPECODE_MASK) here: xxx_get_buffer already takes care of that.
+            bool is_unsigned = false;
+            const int lhs_code = typecode_for_comparison(lhs_bufinfo.typecode, &is_unsigned);
+            const int rhs_code = typecode_for_comparison(rhs_bufinfo.typecode, &is_unsigned);
+            if (lhs_code == rhs_code && lhs_code != 'f' && lhs_code != 'd' && (op == MP_BINARY_OP_EQUAL || is_unsigned)) {
+                return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+            }
+            // mp_obj_equal_not_equal treats returning MP_OBJ_NULL as 'fall back to pointer comparison'
+            // for MP_BINARY_OP_EQUAL but that is incompatible with CPython.
+            mp_raise_NotImplementedError(NULL);
         }
 
         default:
@@ -634,7 +668,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t array_it_type = {
+STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
@@ -645,7 +679,7 @@ STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_bu
     assert(sizeof(mp_obj_array_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_array_t *array = MP_OBJ_TO_PTR(array_in);
     mp_obj_array_it_t *o = (mp_obj_array_it_t *)iter_buf;
-    o->base.type = &array_it_type;
+    o->base.type = &mp_type_array_it;
     o->array = array;
     o->offset = 0;
     o->cur = 0;

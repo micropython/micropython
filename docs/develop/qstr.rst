@@ -1,3 +1,5 @@
+.. _qstr:
+
 MicroPython string interning
 ============================
 
@@ -51,12 +53,13 @@ Processing happens in the following stages:
    through the C pre-processor.  This means that any conditionally disabled code
    will be removed, and macros expanded.  This means we don't add strings to the
    pool that won't be used in the final firmware.  Because at this stage (thanks
-   to the ``NO_QSTR`` macro added by ``QSTR_GEN_EXTRA_CFLAGS``) there is no
+   to the ``NO_QSTR`` macro added by ``QSTR_GEN_CFLAGS``) there is no
    definition for ``MP_QSTR_Foo`` it passes through this stage unaffected.  This
    file also includes comments from the preprocessor that include line number
    information.  Note that this step only uses files that have changed, which
    means that ``qstr.i.last`` will only contain data from files that have
    changed since the last compile.
+   
 2. ``qstr.split`` is an empty file created after running ``makeqstrdefs.py split``
    on qstr.i.last. It's just used as a dependency to indicate that the step ran.
    This script outputs one file per input C file,  ``genhdr/qstr/...file.c.qstr``,
@@ -71,8 +74,8 @@ Processing happens in the following stages:
    data is written to another file (``qstrdefs.collected.h.hash``) which allows
    it to track changes across builds.
 
-4. ``qstrdefs.preprocessed.h`` adds in the QSTRs from qstrdefs*.  It
-   concatenates ``qstrdefs.collected.h`` with ``qstrdefs*.h``, then it transforms
+4. Generate an enumeration, each entry of which maps a ``MP_QSTR_Foo`` to it's corresponding index.
+   It concatenates ``qstrdefs.collected.h`` with ``qstrdefs*.h``, then it transforms
    each line from ``Q(Foo)`` to ``"Q(Foo)"`` so they pass through the preprocessor
    unchanged.  Then the preprocessor is used to deal with any conditional
    compilation in ``qstrdefs*.h``.  Then the transformation is undone back to

@@ -26,6 +26,13 @@ else
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
+ifneq ($(BOOTLOADER),)
+	BOOTLOADER_UPPER = $(shell echo $(BOOTLOADER) | tr '[:lower:]' '[:upper:]')
+	# Use additional bootloader linker script
+	LD_FILES += boards/$(MCU_SUB_VARIANT)_$(BOOTLOADER)_$(BOOTLOADER_VERSION_MAJOR).$(BOOTLOADER_VERSION_MINOR).x.ld
+	CFLAGS += -DBOOTLOADER_$(BOOTLOADER_UPPER)_VERSION=$(BOOTLOADER_MAJOR)$(BOOTLOADER_MINOR)
+endif
+
 LD_FILES += boards/memory.ld boards/common.ld
 
 ifneq ($(LD_FILE),)
@@ -153,8 +160,16 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
         libm/roundf.c \
 	)
 
@@ -179,8 +194,17 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
+        libm/roundf.c \
         )
 
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
@@ -439,6 +463,31 @@ deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $(SOFTDEV_HEX) verify reset" -c "exit"
 
+else ifeq ($(FLASHER), nrfutil)
+
+NRFUTIL_PORT ?= /dev/ttyACM0
+NRFUTIL_SD_REQ ?= 0x00
+
+ifeq ($(SD), s140)
+NRFUTIL_SD_REQ = 0xB6
+endif
+
+.PHONY: nrfutil_dfu_sd nrfutil_dfu_deploy
+.NOTPARALLEL: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+# DFU both SD and app in case of target "sd"
+sd: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)hexmerge.py -o $(BUILD)/stripped_sd.hex --range=0x1000: $(SOFTDEV_HEX)
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
+
+nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
+
+deploy: nrfutil_dfu_deploy
 endif
 
 flash: deploy
@@ -449,7 +498,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD) 
+SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR

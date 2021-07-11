@@ -22,6 +22,7 @@ void STM32L476DISC_board_early_init(void);
 // block device config for SPI flash
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
 #define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
     (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
@@ -49,19 +50,19 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI2_NSS     (pin_D0)
 #define MICROPY_HW_SPI2_SCK     (pin_D1)
 #define MICROPY_HW_SPI2_MISO    (pin_D3)
 #define MICROPY_HW_SPI2_MOSI    (pin_D4)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_TX (pin_B9)
 #define MICROPY_HW_CAN1_RX (pin_B8)
 

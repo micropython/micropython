@@ -40,6 +40,7 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
 #if !USE_QSPI_XIP
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
 #define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
     (op) == BDEV_IOCTL_NUM_BLOCKS ? ((1 << MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2) / 8 / FLASH_BLOCK_SIZE) : \
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
@@ -58,19 +59,19 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// SPI
+// SPI buses
 #define MICROPY_HW_SPI2_NSS         (pin_A11)
 #define MICROPY_HW_SPI2_SCK         (pin_A12)
 #define MICROPY_HW_SPI2_MISO        (pin_B14)
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
-// CAN busses
+// CAN buses
 #define MICROPY_HW_CAN1_TX          (pin_B9)
 #define MICROPY_HW_CAN1_RX          (pin_B8)
 #define MICROPY_HW_CAN2_TX          (pin_B13)
@@ -89,13 +90,14 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
-// SD card detect switch
-#define MICROPY_HW_SDMMC2_CK                (pin_D6)
-#define MICROPY_HW_SDMMC2_CMD               (pin_D7)
-#define MICROPY_HW_SDMMC2_D0                (pin_G9)
-#define MICROPY_HW_SDMMC2_D1                (pin_G10)
-#define MICROPY_HW_SDMMC2_D2                (pin_B3)
-#define MICROPY_HW_SDMMC2_D3                (pin_B4)
+// SD card
+#define MICROPY_HW_SDCARD_SDMMC             (2)
+#define MICROPY_HW_SDCARD_CK                (pin_D6)
+#define MICROPY_HW_SDCARD_CMD               (pin_D7)
+#define MICROPY_HW_SDCARD_D0                (pin_G9)
+#define MICROPY_HW_SDCARD_D1                (pin_G10)
+#define MICROPY_HW_SDCARD_D2                (pin_B3)
+#define MICROPY_HW_SDCARD_D3                (pin_B4)
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_I15)
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)

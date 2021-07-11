@@ -14,13 +14,11 @@ Functions
 
 .. function:: hexlify(data, [sep])
 
-   Convert binary data to hexadecimal representation. Returns bytes string.
+   Convert the bytes in the *data* object to a hexadecimal representation.
+   Returns a bytes object.
 
-   .. admonition:: Difference to CPython
-      :class: attention
-
-      If additional argument, *sep* is supplied, it is used as a separator
-      between hexadecimal values.
+   If the additional argument *sep* is supplied it is used as a separator
+   between hexadecimal values.
 
 .. function:: unhexlify(data)
 
