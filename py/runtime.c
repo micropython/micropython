@@ -282,7 +282,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        mp_unary_op_fun_t unary_op = mp_type_unary_op(type);
+        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
         if (unary_op != NULL) {
             mp_obj_t result = unary_op(op, arg);
             if (result != MP_OBJ_NULL) {

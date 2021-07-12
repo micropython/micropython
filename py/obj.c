@@ -201,7 +201,7 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
         }
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        mp_unary_op_fun_t unary_op = mp_type_unary_op(type);
+        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
         if (unary_op) {
             mp_obj_t result = unary_op(MP_UNARY_OP_BOOL, arg);
             if (result != MP_OBJ_NULL) {
@@ -564,7 +564,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(o_in);
-        mp_unary_op_fun_t unary_op = mp_type_unary_op(type);
+        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
         if (unary_op != NULL) {
             return unary_op(MP_UNARY_OP_LEN, o_in);
         } else {
@@ -685,7 +685,7 @@ mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *type) {
     return type->ext[0].call;
 }
 
-mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *type) {
+mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }

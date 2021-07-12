@@ -663,7 +663,7 @@ struct _mp_obj_full_type_t {
 #define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
 #define MP_TYPE_PROTOCOL ext[0].protocol
 extern mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *);
-extern mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *);
+extern mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *);
 extern mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *);
 extern mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *);
