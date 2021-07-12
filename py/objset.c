@@ -550,7 +550,7 @@ const mp_obj_type_t mp_type_set = {
     .print = set_print,
     .make_new = set_make_new,
     .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = set_unary_op,
         .binary_op = set_binary_op,
         .getiter = set_getiter,
@@ -578,7 +578,7 @@ const mp_obj_type_t mp_type_frozenset = {
     .print = set_print,
     .make_new = set_make_new,
     .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = set_unary_op,
         .binary_op = set_binary_op,
         .getiter = set_getiter,

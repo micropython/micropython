@@ -478,7 +478,7 @@ const mp_obj_type_t mp_fat_vfs_type = {
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
     .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &fat_vfs_proto,
         ),
 

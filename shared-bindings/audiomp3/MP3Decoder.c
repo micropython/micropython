@@ -264,7 +264,7 @@ const mp_obj_type_t audiomp3_mp3file_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = audiomp3_mp3file_make_new,
     .locals_dict = (mp_obj_dict_t *)&audiomp3_mp3file_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &audiomp3_mp3file_proto,
         ),
 };

@@ -174,7 +174,7 @@ const mp_obj_type_t canio_listener_type = {
     .name = MP_QSTR_Listener,
     .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&canio_listener_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = canio_iternext,
         ),

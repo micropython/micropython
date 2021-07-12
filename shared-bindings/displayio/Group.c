@@ -361,7 +361,7 @@ const mp_obj_type_t displayio_group_type = {
     .name = MP_QSTR_Group,
     .make_new = displayio_group_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = group_subscr,
         .unary_op = group_unary_op,
         .getiter = mp_obj_new_generic_iterator,

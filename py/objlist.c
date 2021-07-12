@@ -466,7 +466,7 @@ const mp_obj_type_t mp_type_list = {
     .print = list_print,
     .make_new = list_make_new,
     .locals_dict = (mp_obj_dict_t *)&list_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = list_unary_op,
         .binary_op = list_binary_op,
         .subscr = list_subscr,

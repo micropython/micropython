@@ -305,7 +305,7 @@ const mp_obj_type_t bleio_uuid_type = {
     .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,
     .locals_dict = (mp_obj_dict_t *)&bleio_uuid_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = bleio_uuid_unary_op,
         .binary_op = bleio_uuid_binary_op,
         ),

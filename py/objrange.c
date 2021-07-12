@@ -56,7 +56,7 @@ STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = range_it_iternext,
         ),
@@ -224,7 +224,7 @@ const mp_obj_type_t mp_type_range = {
     #if MICROPY_PY_BUILTINS_RANGE_ATTRS
     .attr = range_attr,
     #endif
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = range_unary_op,
         #if MICROPY_PY_BUILTINS_RANGE_BINOP
         .binary_op = range_binary_op,

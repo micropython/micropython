@@ -443,7 +443,7 @@ const mp_obj_type_t rgbmatrix_RGBMatrix_type = {
     .name = MP_QSTR_RGBMatrix,
     .locals_dict = (mp_obj_dict_t *)&rgbmatrix_rgbmatrix_locals_dict,
     .make_new = rgbmatrix_rgbmatrix_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
         .protocol = &rgbmatrix_rgbmatrix_proto,
         ),

@@ -162,7 +162,7 @@ const mp_obj_type_t mp_type_gen_wrap = {
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
     #endif
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = gen_wrap_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -418,7 +418,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
         .getiter = mp_identity_getiter,
         .iternext = gen_instance_iternext,

@@ -299,7 +299,7 @@ STATIC const mp_obj_type_t btree_type = {
     .name = MP_QSTR_btree,
     .print = btree_print,
     .locals_dict = (void *)&btree_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = btree_getiter,
         .iternext = btree_iternext,
         .binary_op = btree_binary_op,

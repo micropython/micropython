@@ -185,7 +185,7 @@ const mp_obj_type_t mp_type_float = {
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = float_unary_op,
         .binary_op = float_binary_op,
         ),

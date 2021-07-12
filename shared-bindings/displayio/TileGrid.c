@@ -398,7 +398,7 @@ const mp_obj_type_t displayio_tilegrid_type = {
     .name = MP_QSTR_TileGrid,
     .make_new = displayio_tilegrid_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_tilegrid_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = tilegrid_subscr,
         ),
 };

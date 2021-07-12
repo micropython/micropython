@@ -162,7 +162,7 @@ const mp_obj_type_t mp_type_complex = {
     .print = complex_print,
     .make_new = complex_make_new,
     .attr = complex_attr,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = complex_unary_op,
         .binary_op = complex_binary_op,
         ),

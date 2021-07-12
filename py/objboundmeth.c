@@ -102,7 +102,7 @@ STATIC const mp_obj_type_t mp_type_bound_meth = {
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = bound_meth_print,
     #endif
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = bound_meth_call,
         ),
     #if MICROPY_PY_FUNCTION_ATTRS

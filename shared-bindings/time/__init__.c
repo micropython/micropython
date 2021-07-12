@@ -118,7 +118,7 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
         .parent = &mp_type_tuple,
         .make_new = struct_time_make_new,
         .attr = namedtuple_attr,
-        EXTENDED_FIELDS(
+        MP_TYPE_EXTENDED_FIELDS(
             .unary_op = mp_obj_tuple_unary_op,
             .binary_op = mp_obj_tuple_binary_op,
             .subscr = mp_obj_tuple_subscr,

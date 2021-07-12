@@ -148,7 +148,7 @@ const mp_obj_type_t keypad_eventqueue_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Keys,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = keypad_eventqueue_unary_op,
         ),
     .locals_dict = (mp_obj_t)&keypad_eventqueue_locals_dict,

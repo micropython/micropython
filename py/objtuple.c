@@ -234,7 +234,7 @@ const mp_obj_type_t mp_type_tuple = {
     .print = mp_obj_tuple_print,
     .make_new = mp_obj_tuple_make_new,
     .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_obj_tuple_unary_op,
         .binary_op = mp_obj_tuple_binary_op,
         .subscr = mp_obj_tuple_subscr,

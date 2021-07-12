@@ -197,7 +197,7 @@ STATIC const mp_obj_type_t utimeq_type = {
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
     .locals_dict = (void *)&utimeq_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = utimeq_unary_op,
         ),
 };

@@ -230,7 +230,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     .name = MP_QSTR_FileIO,
     .print = MP_VFS_LFSx(file_print),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &MP_VFS_LFSx(fileio_stream_p),
@@ -252,7 +252,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     .name = MP_QSTR_TextIOWrapper,
     .print = MP_VFS_LFSx(file_print),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &MP_VFS_LFSx(textio_stream_p),

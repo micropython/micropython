@@ -2040,7 +2040,7 @@ const mp_obj_type_t mp_type_bytes = {
     .print = str_print,
     .make_new = bytes_make_new,
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .binary_op = mp_obj_str_binary_op,
         .subscr = bytes_subscr,
         .getiter = mp_obj_new_bytes_iterator,

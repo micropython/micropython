@@ -62,7 +62,7 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_builtin_0_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -79,7 +79,7 @@ const mp_obj_type_t mp_type_fun_builtin_1 = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_builtin_1_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -96,7 +96,7 @@ const mp_obj_type_t mp_type_fun_builtin_2 = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_builtin_2_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -113,7 +113,7 @@ const mp_obj_type_t mp_type_fun_builtin_3 = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_builtin_3_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -146,7 +146,7 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_builtin_var_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -380,7 +380,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
     #endif
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_bc_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -428,7 +428,7 @@ const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_native_call,
         .unary_op = mp_generic_unary_op,
         ),
@@ -538,7 +538,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = fun_asm_call,
         .unary_op = mp_generic_unary_op,
         ),

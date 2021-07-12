@@ -220,7 +220,7 @@ const mp_obj_type_t bleio_address_type = {
     .make_new = bleio_address_make_new,
     .print = bleio_address_print,
     .locals_dict = (mp_obj_dict_t *)&bleio_address_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = bleio_address_unary_op,
         .binary_op = bleio_address_binary_op,
         ),

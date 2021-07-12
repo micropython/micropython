@@ -218,7 +218,7 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
     .print = vfs_posix_file_print,
     .make_new = vfs_posix_file_make_new,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &vfs_posix_fileio_stream_p,
@@ -241,7 +241,7 @@ const mp_obj_type_t mp_type_vfs_posix_textio = {
     .print = vfs_posix_file_print,
     .make_new = vfs_posix_file_make_new,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &vfs_posix_textio_stream_p,

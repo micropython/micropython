@@ -176,7 +176,7 @@ const mp_obj_type_t keypad_event_type = {
     .make_new = keypad_event_make_new,
     .print = keypad_event_print,
     .locals_dict = (mp_obj_dict_t *)&keypad_event_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = keypad_event_unary_op,
         .binary_op = keypad_event_binary_op,
         ),

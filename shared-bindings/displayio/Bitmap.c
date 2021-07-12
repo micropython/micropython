@@ -372,7 +372,7 @@ const mp_obj_type_t displayio_bitmap_type = {
     .name = MP_QSTR_Bitmap,
     .make_new = displayio_bitmap_make_new,
     .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = bitmap_subscr,
         .buffer_p = { .get_buffer = bitmap_get_buffer },
         ),

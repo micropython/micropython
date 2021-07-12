@@ -74,7 +74,7 @@ const mp_obj_type_t mp_type_enumerate = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_enumerate,
     .make_new = enumerate_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .iternext = enumerate_iternext,
         .getiter = mp_identity_getiter,
         )

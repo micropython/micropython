@@ -488,7 +488,7 @@ STATIC const mp_obj_type_t ffifunc_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = ffifunc_call,
         ),
 };

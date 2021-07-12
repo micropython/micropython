@@ -492,7 +492,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     #endif
     .make_new = MP_VFS_LFSx(make_new),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &MP_VFS_LFSx(proto),
         ),
 };

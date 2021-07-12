@@ -749,7 +749,7 @@ const mp_obj_type_t mp_type_array = {
     .print = array_print,
     .make_new = array_make_new,
     .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,
         .unary_op = array_unary_op,
         .binary_op = array_binary_op,
@@ -767,7 +767,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .print = array_print,
     .make_new = bytearray_make_new,
     .locals_dict = (mp_obj_dict_t *)&bytearray_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,
         .unary_op = array_unary_op,
         .binary_op = array_binary_op,
@@ -798,7 +798,7 @@ const mp_obj_type_t mp_type_memoryview = {
     #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .attr = memoryview_attr,
     #endif
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,
         .unary_op = array_unary_op,
         .binary_op = array_binary_op,
@@ -862,7 +862,7 @@ STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = array_it_iternext,
         ),

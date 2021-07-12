@@ -313,7 +313,7 @@ const mp_obj_type_t pulseio_pulsein_type = {
     .name = MP_QSTR_PulseIn,
     .make_new = pulseio_pulsein_make_new,
     .locals_dict = (mp_obj_dict_t *)&pulseio_pulsein_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = pulsein_subscr,
         .unary_op = pulsein_unary_op,
         ),

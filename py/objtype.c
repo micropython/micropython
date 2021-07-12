@@ -1151,7 +1151,7 @@ const mp_obj_type_t mp_type_type = {
     .print = type_print,
     .make_new = type_make_new,
     .attr = type_attr,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .call = type_call,
         .unary_op = mp_generic_unary_op,
         ),

@@ -126,7 +126,7 @@ STATIC const mp_obj_type_t decompio_type = {
     .name = MP_QSTR_DecompIO,
     .make_new = decompio_make_new,
     .locals_dict = (void *)&decompio_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &decompio_stream_p,
         ),
 };

@@ -356,7 +356,7 @@ const mp_obj_type_t mp_type_vfs_posix = {
     .name = MP_QSTR_VfsPosix,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
     .make_new = vfs_posix_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &vfs_posix_proto,
         ),
 };

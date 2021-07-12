@@ -90,7 +90,7 @@ const mp_obj_type_t mp_type_bool = {
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = bool_unary_op,
         .binary_op = bool_binary_op,
         ),

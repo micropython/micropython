@@ -216,7 +216,7 @@ const mp_obj_type_t audioio_wavefile_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = audioio_wavefile_make_new,
     .locals_dict = (mp_obj_dict_t *)&audioio_wavefile_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &audioio_wavefile_proto,
         ),
 };

@@ -323,7 +323,7 @@ const mp_obj_type_t ssl_sslsocket_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_SSLSocket,
     .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = ssl_sslsocket_unary_op,
         )
 };

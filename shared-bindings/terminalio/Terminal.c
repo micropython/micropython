@@ -122,7 +122,7 @@ const mp_obj_type_t terminalio_terminal_type = {
     .name = MP_QSTR_Terminal,
     .make_new = terminalio_terminal_make_new,
     .locals_dict = (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &terminalio_terminal_stream_p,

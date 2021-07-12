@@ -87,7 +87,7 @@ const mp_obj_type_t mp_type_attrtuple = {
     .name = MP_QSTR_tuple, // reuse tuple to save on a qstr
     .print = mp_obj_attrtuple_print,
     .attr = mp_obj_attrtuple_attr,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_obj_tuple_unary_op,
         .binary_op = mp_obj_tuple_binary_op,
         .subscr = mp_obj_tuple_subscr,

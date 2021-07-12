@@ -49,7 +49,7 @@ const mp_obj_type_t mp_type_polymorph_iter = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = polymorph_it_iternext,
         ),

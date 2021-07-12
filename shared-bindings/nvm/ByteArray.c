@@ -171,7 +171,7 @@ const mp_obj_type_t nvm_bytearray_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ByteArray,
     .locals_dict = (mp_obj_t)&nvm_bytearray_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = nvm_bytearray_subscr,
         .unary_op = nvm_bytearray_unary_op,
         ),

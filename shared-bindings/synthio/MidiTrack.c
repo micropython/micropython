@@ -166,7 +166,7 @@ const mp_obj_type_t synthio_miditrack_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = synthio_miditrack_make_new,
     .locals_dict = (mp_obj_dict_t *)&synthio_miditrack_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &synthio_miditrack_proto,
         ),
 };

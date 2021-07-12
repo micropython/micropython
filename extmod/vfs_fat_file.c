@@ -249,7 +249,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
     .print = file_obj_print,
     .make_new = file_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &vfs_fat_fileio_stream_p,
@@ -272,7 +272,7 @@ const mp_obj_type_t mp_type_vfs_fat_textio = {
     .print = file_obj_print,
     .make_new = file_obj_make_new,
     .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = mp_stream_unbuffered_iter,
         .protocol = &vfs_fat_textio_stream_p,

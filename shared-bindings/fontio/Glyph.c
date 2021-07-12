@@ -63,7 +63,7 @@ const mp_obj_namedtuple_type_t fontio_glyph_type = {
         .make_new = namedtuple_make_new,
         .parent = &mp_type_tuple,
         .attr = namedtuple_attr,
-        EXTENDED_FIELDS(
+        MP_TYPE_EXTENDED_FIELDS(
             .unary_op = mp_obj_tuple_unary_op,
             .binary_op = mp_obj_tuple_binary_op,
             .subscr = mp_obj_tuple_subscr,

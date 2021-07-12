@@ -74,7 +74,7 @@ const mp_obj_type_t mp_type_reversed = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_reversed,
     .make_new = reversed_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = reversed_iternext,
         ),

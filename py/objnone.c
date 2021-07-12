@@ -48,7 +48,7 @@ const mp_obj_type_t mp_type_NoneType = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_NoneType,
     .print = none_print,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
         ),
 };

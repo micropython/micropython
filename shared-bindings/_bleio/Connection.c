@@ -269,7 +269,7 @@ const mp_obj_type_t bleio_connection_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Connection,
     .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = mp_generic_unary_op,
         ),
 };

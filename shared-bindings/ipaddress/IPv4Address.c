@@ -195,7 +195,7 @@ const mp_obj_type_t ipaddress_ipv4address_type = {
     .make_new = ipaddress_ipv4address_make_new,
     .locals_dict = (mp_obj_dict_t *)&ipaddress_ipv4address_locals_dict,
     .print = ipaddress_ipv4address_print,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = ipaddress_ipv4address_unary_op,
         .binary_op = ipaddress_ipv4address_binary_op,
         )

@@ -316,7 +316,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_poll,
     .locals_dict = (void *)&poll_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = poll_iternext,
         ),

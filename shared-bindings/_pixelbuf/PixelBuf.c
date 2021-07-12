@@ -386,7 +386,7 @@ const mp_obj_type_t pixelbuf_pixelbuf_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
     .make_new = pixelbuf_pixelbuf_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = pixelbuf_pixelbuf_subscr,
         .unary_op = pixelbuf_pixelbuf_unary_op,
         .getiter = mp_obj_new_generic_iterator,

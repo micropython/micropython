@@ -164,7 +164,7 @@ const mp_obj_type_t mp_type_deque = {
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
     .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = deque_unary_op,
         ),
 };

@@ -300,7 +300,7 @@ const mp_obj_type_t audiomixer_mixer_type = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = audiomixer_mixer_make_new,
     .locals_dict = (mp_obj_dict_t *)&audiomixer_mixer_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &audiomixer_mixer_proto,
         ),
 };

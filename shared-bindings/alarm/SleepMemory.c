@@ -177,7 +177,7 @@ const mp_obj_type_t alarm_sleep_memory_type = {
     .name = MP_QSTR_SleepMemory,
     .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_t)&alarm_sleep_memory_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = alarm_sleep_memory_subscr,
         .unary_op = alarm_sleep_memory_unary_op,
         ),

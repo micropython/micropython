@@ -461,7 +461,7 @@ STATIC const mp_obj_type_t mp_type_dict_view_it = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .getiter = mp_identity_getiter,
         .iternext = dict_view_it_iternext,
         ),
@@ -516,7 +516,7 @@ STATIC const mp_obj_type_t mp_type_dict_view = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_dict_view,
     .print = dict_view_print,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .binary_op = dict_view_binary_op,
         .getiter = dict_view_getiter,
         ),
@@ -595,7 +595,7 @@ const mp_obj_type_t mp_type_dict = {
     .print = dict_print,
     .make_new = mp_obj_dict_make_new,
     .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = dict_unary_op,
         .binary_op = dict_binary_op,
         .subscr = dict_subscr,
@@ -612,7 +612,7 @@ const mp_obj_type_t mp_type_ordereddict = {
     .make_new = mp_obj_dict_make_new,
     .parent = &mp_type_dict,
     .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .unary_op = dict_unary_op,
         .binary_op = dict_binary_op,
         .subscr = dict_subscr,

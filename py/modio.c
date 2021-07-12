@@ -106,7 +106,7 @@ STATIC const mp_obj_type_t mp_type_iobase = {
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_IOBase,
     .make_new = iobase_make_new,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &iobase_p,
         ),
 };
@@ -206,7 +206,7 @@ STATIC const mp_obj_type_t mp_type_bufwriter = {
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
     .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
         .protocol = &bufwriter_stream_p,
         ),
 };
