@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/rainbow/__init__.h"
+#include "shared-bindings/rainbowio/__init__.h"
 
 const int32_t colorwheel(float pos) {
     if (pos > 255) {

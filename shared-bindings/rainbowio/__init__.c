@@ -24,10 +24,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef CP_SHARED_BINDINGS_RAINBOW_INIT_H
-#define CP_SHARED_BINDINGS_RAINBOW_INIT_H
-#include <stdint.h>
+#include "shared-bindings/rainbowio/__init__.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
+//| """`rainbowio` module.
+//|
+//| Provides the `colorwheel()` function."""
+//|
+//| def colorwheel(n: float) -> int:
+//|     """C implementation of the common colorwheel() function found in many examples.
+//|     Returns the colorwheel RGB value as an integer value for n (usable in neopixel and dotstar)."""
+//|     ...
+//|
+STATIC mp_obj_t rainbowio_colorwheel(mp_obj_t n) {
+    return MP_OBJ_NEW_SMALL_INT(colorwheel(mp_obj_is_small_int(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_get_float(n)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rainbowio_colorwheel_obj, rainbowio_colorwheel);
 
-const int32_t colorwheel(float pos);
+STATIC const mp_rom_map_elem_t rainbowio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rainbowio) },
+    { MP_ROM_QSTR(MP_QSTR_colorwheel), MP_ROM_PTR(&rainbowio_colorwheel_obj) },
+};
 
-#endif // CP_SHARED_BINDINGS_RAINBOW_INIT_H
+STATIC MP_DEFINE_CONST_DICT(rainbowio_module_globals, rainbowio_module_globals_table);
+
+const mp_obj_module_t rainbowio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&rainbowio_module_globals,
+};
