@@ -1284,6 +1284,11 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
     return btstack_error_to_errno(gap_connect(btstack_addr, addr_type));
 }
 
+int mp_bluetooth_gap_peripheral_connect_cancel(void) {
+    DEBUG_printf("mp_bluetooth_gap_peripheral_connect_cancel\n");
+    return btstack_error_to_errno(gap_connect_cancel());
+}
+
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT

@@ -630,6 +630,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gatts_register_services_obj, blue
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 2) {
+        if (args[1] == mp_const_none) {
+            int err = mp_bluetooth_gap_peripheral_connect_cancel();
+            return bluetooth_handle_errno(err);
+        }
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid addr"));
+    }
     uint8_t addr_type = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -652,7 +659,7 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
     int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms, min_conn_interval_us, max_conn_interval_us);
     return bluetooth_handle_errno(err);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 3, 6, bluetooth_ble_gap_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 2, 6, bluetooth_ble_gap_connect);
 
 STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
     // Default is indefinite scan, with the NimBLE "background scan" interval and window.

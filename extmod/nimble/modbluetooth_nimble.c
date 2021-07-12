@@ -1236,6 +1236,15 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
     return ble_hs_err_to_errno(err);
 }
 
+int mp_bluetooth_gap_peripheral_connect_cancel(void) {
+    DEBUG_printf("mp_bluetooth_gap_peripheral_connect_cancel\n");
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+    int err = ble_gap_conn_cancel();
+    return ble_hs_err_to_errno(err);
+}
+
 STATIC int ble_gattc_service_cb(uint16_t conn_handle, const struct ble_gatt_error *error, const struct ble_gatt_svc *service, void *arg) {
     DEBUG_printf("ble_gattc_service_cb: conn_handle=%d status=%d start_handle=%d\n", conn_handle, error->status, service ? service->start_handle : -1);
     if (!mp_bluetooth_is_active()) {
