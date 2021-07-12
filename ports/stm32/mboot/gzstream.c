@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "extmod/uzlib/uzlib.h"
+#include "lib/uzlib/uzlib.h"
 #include "gzstream.h"
 #include "mboot.h"
 
