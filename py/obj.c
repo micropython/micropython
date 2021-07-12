@@ -746,7 +746,7 @@ const void *mp_type_get_protocol_slot(const mp_obj_type_t *type) {
 }
 
 
-const void *mp_type_parent(const mp_obj_type_t *type) {
+const void *mp_type_get_parent_slot(const mp_obj_type_t *type) {
     return type->parent;
 }
 

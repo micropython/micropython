@@ -65,7 +65,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
             *last_native_base = type;
             return count + 1;
         }
-        const void *parent = mp_type_parent(type);
+        const void *parent = mp_type_get_parent_slot(type);
         if (parent == NULL) {
             // No parents so end search here.
             return count;
@@ -215,7 +215,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
 
         // attribute not found, keep searching base classes
 
-        const void *parent = mp_type_parent(type);
+        const void *parent = mp_type_get_parent_slot(type);
         if (parent == NULL) {
             DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
@@ -1085,7 +1085,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = mp_const_empty_tuple;
                 return;
             }
-            const void *parent = mp_type_parent(self);
+            const void *parent = mp_type_get_parent_slot(self);
             mp_obj_t parent_obj = parent ? MP_OBJ_FROM_PTR(parent) : MP_OBJ_FROM_PTR(&mp_type_object);
             #if MICROPY_MULTIPLE_INHERITANCE
             if (mp_obj_is_type(parent_obj, &mp_type_tuple)) {
@@ -1334,7 +1334,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         lookup.meth_offset = offsetof(mp_obj_type_t, make_new);
     }
 
-    const void *parent = mp_type_parent(type);
+    const void *parent = mp_type_get_parent_slot(type);
     if (parent == NULL) {
         // no parents, do nothing
     #if MICROPY_MULTIPLE_INHERITANCE
@@ -1430,7 +1430,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         }
 
         const mp_obj_type_t *self = MP_OBJ_TO_PTR(object);
-        const void *parent = mp_type_parent(self);
+        const void *parent = mp_type_get_parent_slot(self);
 
         if (parent == NULL) {
             // type has no parents
