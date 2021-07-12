@@ -667,7 +667,7 @@ extern mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *);
 extern mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *);
 extern mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *);
-extern mp_fun_1_t mp_type_iternext(const mp_obj_type_t *);
+extern mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *);
 extern mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *);
 extern const void *mp_type_protocol(const mp_obj_type_t *);
 

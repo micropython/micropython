@@ -722,7 +722,7 @@ mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *type) {
 }
 
 
-mp_fun_1_t mp_type_iternext(const mp_obj_type_t *type) {
+mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }

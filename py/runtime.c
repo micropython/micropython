@@ -1113,7 +1113,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     }
     #endif
 
-    if (attr == MP_QSTR___next__ && mp_type_iternext(type) != NULL) {
+    if (attr == MP_QSTR___next__ && mp_type_get_iternext_slot(type) != NULL) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
         return;
@@ -1275,7 +1275,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    mp_fun_1_t iternext = mp_type_iternext(type);
+    mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL) {
         return iternext(o_in);
     } else {
@@ -1301,7 +1301,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    mp_fun_1_t iternext = mp_type_iternext(type);
+    mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL) {
         return iternext(o_in);
     } else {
@@ -1342,7 +1342,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 
-    mp_fun_1_t iternext = mp_type_iternext(type);
+    mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL && send_value == mp_const_none) {
         mp_obj_t ret = iternext(self_in);
         *ret_val = ret;
