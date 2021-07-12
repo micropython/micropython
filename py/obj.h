@@ -636,44 +636,17 @@ struct _mp_obj_type_t {
     struct _mp_obj_type_ext ext[];
 };
 
+// _mp_obj_full_type_t must match _mp_obj_type_t exactly, except that the `ext` field
+// is a 1-element array rather than a flexible array member.
 struct _mp_obj_full_type_t {
-    // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
-
-    // Flags associated with this type.
     uint16_t flags;
-
-    // The name of this type, a qstr.
     uint16_t name;
-
-    // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
-
-    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
     mp_make_new_fun_t make_new;
-
-    // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
-
-    // Implements load, store and delete attribute.
-    //
-    // dest[0] = MP_OBJ_NULL means load
-    //  return: for fail, do nothing
-    //          for attr, dest[0] = value
-    //          for method, dest[0] = method, dest[1] = self
-    //
-    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
-    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
-    //  return: for fail, do nothing
-    //          for success set dest[0] = MP_OBJ_NULL
     mp_attr_fun_t attr;
-
-    // A pointer to the parents of this type:
-    //  - 0 parents: pointer is NULL (object is implicitly the single parent)
-    //  - 1 parent: a pointer to the type of that parent
-    //  - 2 or more parents: pointer to a tuple object containing the parent types
     const void *parent;
-
     struct _mp_obj_type_ext ext[1];
 };
 
