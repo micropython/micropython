@@ -39,6 +39,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/time/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
 //| """Supervisor settings"""
@@ -207,6 +208,55 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_next_code_file_obj, 0, supervisor_set_next_code_file);
 
+//| def ticks_ms() -> int:
+//|     """Return the time in milliseconds since an unspecified reference point, wrapping after 2**29ms.
+//|
+//|     The value is initialized so that the first overflow occurs about 65
+//|     seconds after power-on, making it feasible to check that your program
+//|     works properly around an overflow.
+//|
+//|     The wrap value was chosen so that it is always possible to add
+//|     or subtract two `ticks_ms` values without overflow on a board without
+//|     long ints (or without allocating any long integer objects, on boards with
+//|     long ints).
+//|
+//|     This ticks value comes from a low-accuracy clock internal to the
+//|     microcontroller, just like `time.monotonic`.  Due to its low accuracy
+//|     and the fact that it "wraps around" every few days, it is intended
+//|     for working with short term events like advancing an LED animation,
+//|     not for long term events like counting down the time until a holiday.
+//|
+//|     Addition, subtraction, and comparison of ticks values can be done
+//|     with routines like the following::
+//|
+//|         _TICKS_PERIOD = const(1<<29)
+//|         _TICKS_MAX = const(_TICKS_PERIOD-1)
+//|         _TICKS_HALFPERIOD = const(_TICKS_PERIOD//2)
+//|
+//|         def ticks_add(ticks, delta):
+//|             "Add a delta to a base number of ticks, performing wraparound at 2**29ms."
+//|             return (a + b) % _TICKS_PERIOD
+//|
+//|         def ticks_diff(ticks1, ticks2):
+//|             "Compute the signed difference between two ticks values, assuming that they are within 2**28 ticks"
+//|             diff = (ticks1 - ticks2) & _TICKS_MAX
+//|             diff = ((diff + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD
+//|             return diff
+//|
+//|         def ticks_less(ticks1, ticks2):
+//|             "Return true iff ticks1 is less than ticks2, assuming that they are within 2**28 ticks"
+//|             return ticks_diff(ticks1, ticks2) < 0
+//|
+//|     """
+//|     ...
+STATIC mp_obj_t supervisor_ticks_ms(void) {
+    uint64_t ticks_ms = common_hal_time_monotonic_ms();
+    return mp_obj_new_int((ticks_ms + 0x1fff0000) % (1 << 29));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
+
+
+
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
@@ -217,6 +267,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RunReason),  MP_ROM_PTR(&supervisor_run_reason_type) },
     { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);
