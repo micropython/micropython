@@ -4423,7 +4423,7 @@ msgstr "onjuiste as gespecificeerd"
 msgid "wrong input type"
 msgstr "onjuist invoertype"
 
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "onjuist aantal argumenten"
 

@@ -4414,7 +4414,7 @@ msgstr "sumbu yang ditentukan salah"
 msgid "wrong input type"
 msgstr "tipe input salah"
 
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "jumlah argumen salah"
 
