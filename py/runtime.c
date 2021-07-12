@@ -1230,7 +1230,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    mp_getiter_fun_t getiter = mp_type_getiter(type);
+    mp_getiter_fun_t getiter = mp_type_get_getiter_slot(type);
     // Check for native getiter which is the identity.  We handle this case explicitly
     // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
     if (getiter == mp_identity_getiter) {

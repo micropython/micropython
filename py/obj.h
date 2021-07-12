@@ -666,7 +666,7 @@ extern mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *);
 extern mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *);
 extern mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *);
-extern mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *);
+extern mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *);
 extern mp_fun_1_t mp_type_iternext(const mp_obj_type_t *);
 extern mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *);
 extern const void *mp_type_protocol(const mp_obj_type_t *);
@@ -818,7 +818,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 // type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (mp_type_getiter(mp_obj_get_type(o)) == mp_obj_tuple_getiter)
+#define mp_obj_is_tuple_compatible(o) (mp_type_get_getiter_slot(mp_obj_get_type(o)) == mp_obj_tuple_getiter)
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {

@@ -714,7 +714,7 @@ mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *type) {
 }
 
 
-mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *type) {
+mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }
