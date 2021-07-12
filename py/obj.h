@@ -665,7 +665,7 @@ struct _mp_obj_full_type_t {
 extern mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *);
 extern mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *);
-extern mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *);
+extern mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *);
 extern mp_getiter_fun_t mp_type_getiter(const mp_obj_type_t *);
 extern mp_fun_1_t mp_type_iternext(const mp_obj_type_t *);
 extern mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *);

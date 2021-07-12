@@ -564,7 +564,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 size_t src_len;
                 void *src_items;
                 size_t item_sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
-                if (mp_obj_is_obj(value) && mp_type_subscr(((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type) == array_subscr) {
+                if (mp_obj_is_obj(value) && mp_type_get_subscr_slot(((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type) == array_subscr) {
                     // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {

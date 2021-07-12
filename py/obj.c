@@ -575,7 +575,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    mp_subscr_fun_t subscr = mp_type_subscr(type);
+    mp_subscr_fun_t subscr = mp_type_get_subscr_slot(type);
     if (subscr != NULL) {
         mp_obj_t ret = subscr(base, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
@@ -706,7 +706,7 @@ mp_attr_fun_t mp_type_attr(const mp_obj_type_t *type) {
 }
 
 
-mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *type) {
+mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }
