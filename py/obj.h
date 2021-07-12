@@ -652,7 +652,7 @@ struct _mp_obj_full_type_t {
 
 
 // If the type object in question is known to have the extended fields, you can
-// refer to type->MP_TYPE_CALL.  Otherwise, you have to use mp_type_call(type)
+// refer to type->MP_TYPE_CALL.  Otherwise, you have to use mp_type_get_call_slot(type)
 // The same goes for other fields within the extended region.
 #define MP_TYPE_CALL ext[0].call
 #define MP_TYPE_UNARY_OP ext[0].unary_op
@@ -662,7 +662,7 @@ struct _mp_obj_full_type_t {
 #define MP_TYPE_ITERNEXT ext[0].iternext
 #define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
 #define MP_TYPE_PROTOCOL ext[0].protocol
-extern mp_call_fun_t mp_type_call(const mp_obj_type_t *);
+extern mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *);
 extern mp_unary_op_fun_t mp_type_unary_op(const mp_obj_type_t *);
 extern mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *);
 extern mp_subscr_fun_t mp_type_subscr(const mp_obj_type_t *);

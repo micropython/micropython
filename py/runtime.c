@@ -649,7 +649,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
     const mp_obj_type_t *type = mp_obj_get_type(fun_in);
 
     // do the call
-    mp_call_fun_t call = mp_type_call(type);
+    mp_call_fun_t call = mp_type_get_call_slot(type);
     if (call) {
         return call(fun_in, n_args, n_kw, args);
     }

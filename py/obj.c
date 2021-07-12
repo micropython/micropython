@@ -221,7 +221,7 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    const mp_call_fun_t call = mp_type_call(mp_obj_get_type(o_in));
+    const mp_call_fun_t call = mp_type_get_call_slot(mp_obj_get_type(o_in));
     if (call != mp_obj_instance_call) {
         return call != NULL;
     }
@@ -678,7 +678,7 @@ mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-mp_call_fun_t mp_type_call(const mp_obj_type_t *type) {
+mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }
