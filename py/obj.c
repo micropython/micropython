@@ -652,7 +652,7 @@ mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) 
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    const mp_getbuffer_fun_t get_buffer = mp_type_getbuffer(type);
+    const mp_getbuffer_fun_t get_buffer = mp_type_get_getbuffer_slot(type);
     if (get_buffer == NULL) {
         return false;
     }
@@ -730,7 +730,7 @@ mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *type) {
 }
 
 
-mp_getbuffer_fun_t mp_type_getbuffer(const mp_obj_type_t *type) {
+mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }

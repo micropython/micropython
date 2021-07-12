@@ -456,7 +456,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
         } else {
-            mp_getbuffer_fun_t get_buffer = mp_type_getbuffer(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type);
+            mp_getbuffer_fun_t get_buffer = mp_type_get_getbuffer_slot(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type);
             if (get_buffer != NULL) {
                 mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
                 mp_buffer_info_t bufinfo;
