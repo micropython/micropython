@@ -171,10 +171,13 @@ STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_t
 
 const mp_obj_type_t keypad_event_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Event,
     .make_new = keypad_event_make_new,
     .print = keypad_event_print,
-    .unary_op = keypad_event_unary_op,
-    .binary_op = keypad_event_binary_op,
     .locals_dict = (mp_obj_dict_t *)&keypad_event_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = keypad_event_unary_op,
+        .binary_op = keypad_event_binary_op,
+        ),
 };

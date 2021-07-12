@@ -85,8 +85,11 @@ STATIC MP_DEFINE_CONST_DICT(sharpdisplay_framebuffer_locals_dict, sharpdisplay_f
 const mp_obj_type_t sharpdisplay_framebuffer_type = {
     { &mp_type_type },
     .name = MP_QSTR_SharpMemoryFramebuffer,
-    .buffer_p = { .get_buffer = sharpdisplay_framebuffer_get_buffer, },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = sharpdisplay_framebuffer_make_new,
-    .protocol = &sharpdisplay_framebuffer_proto,
     .locals_dict = (mp_obj_dict_t *)&sharpdisplay_framebuffer_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .buffer_p = { .get_buffer = sharpdisplay_framebuffer_get_buffer, },
+        .protocol = &sharpdisplay_framebuffer_proto,
+        ),
 };

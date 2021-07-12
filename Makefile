@@ -54,6 +54,8 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 	-o -path ports/stm/st_driver \
 	-o -path lib/tinyusb \
 	-o -path lib/lwip \
+	-o -path extmod/ulab/circuitpython \
+	-o -path extmod/ulab/micropython \
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 

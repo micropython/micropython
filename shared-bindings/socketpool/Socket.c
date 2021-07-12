@@ -409,7 +409,10 @@ STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_loc
 
 const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Socket,
     .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
-    .unary_op = socketpool_socket_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = socketpool_socket_unary_op,
+        )
 };

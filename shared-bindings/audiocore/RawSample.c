@@ -184,7 +184,10 @@ STATIC const audiosample_p_t audioio_rawsample_proto = {
 const mp_obj_type_t audioio_rawsample_type = {
     { &mp_type_type },
     .name = MP_QSTR_RawSample,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = audioio_rawsample_make_new,
     .locals_dict = (mp_obj_dict_t *)&audioio_rawsample_locals_dict,
-    .protocol = &audioio_rawsample_proto,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &audioio_rawsample_proto,
+        ),
 };

@@ -261,7 +261,10 @@ STATIC const audiosample_p_t audiomp3_mp3file_proto = {
 const mp_obj_type_t audiomp3_mp3file_type = {
     { &mp_type_type },
     .name = MP_QSTR_MP3Decoder,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = audiomp3_mp3file_make_new,
     .locals_dict = (mp_obj_dict_t *)&audiomp3_mp3file_locals_dict,
-    .protocol = &audiomp3_mp3file_proto,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &audiomp3_mp3file_proto,
+        ),
 };

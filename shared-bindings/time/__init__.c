@@ -112,15 +112,18 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
         .base = {
             .type = &mp_type_type
         },
+        .flags = MP_TYPE_FLAG_EXTENDED,
         .name = MP_QSTR_struct_time,
         .print = namedtuple_print,
-        .make_new = struct_time_make_new,
-        .unary_op = mp_obj_tuple_unary_op,
-        .binary_op = mp_obj_tuple_binary_op,
-        .attr = namedtuple_attr,
-        .subscr = mp_obj_tuple_subscr,
-        .getiter = mp_obj_tuple_getiter,
         .parent = &mp_type_tuple,
+        .make_new = struct_time_make_new,
+        .attr = namedtuple_attr,
+        MP_TYPE_EXTENDED_FIELDS(
+            .unary_op = mp_obj_tuple_unary_op,
+            .binary_op = mp_obj_tuple_binary_op,
+            .subscr = mp_obj_tuple_subscr,
+            .getiter = mp_obj_tuple_getiter,
+            ),
     },
     .n_fields = 9,
     .fields = {
@@ -163,7 +166,7 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     mp_obj_t *elems;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
@@ -272,7 +275,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 

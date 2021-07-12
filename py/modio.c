@@ -103,9 +103,12 @@ STATIC const mp_stream_p_t iobase_p = {
 
 STATIC const mp_obj_type_t mp_type_iobase = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_IOBase,
     .make_new = iobase_make_new,
-    .protocol = &iobase_p,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &iobase_p,
+        ),
 };
 
 #endif // MICROPY_PY_IO_IOBASE
@@ -199,10 +202,13 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
 
 STATIC const mp_obj_type_t mp_type_bufwriter = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
-    .protocol = &bufwriter_stream_p,
     .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &bufwriter_stream_p,
+        ),
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 

@@ -295,13 +295,16 @@ STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 STATIC const mp_obj_type_t btree_type = {
     { &mp_type_type },
     // Save on qstr's, reuse same as for module
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_btree,
     .print = btree_print,
-    .getiter = btree_getiter,
-    .iternext = btree_iternext,
-    .binary_op = btree_binary_op,
-    .subscr = btree_subscr,
     .locals_dict = (void *)&btree_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = btree_getiter,
+        .iternext = btree_iternext,
+        .binary_op = btree_binary_op,
+        .subscr = btree_subscr,
+        ),
 };
 #endif
 

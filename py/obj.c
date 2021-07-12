@@ -101,6 +101,12 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     #endif
 }
 
+const mp_obj_full_type_t *mp_obj_get_full_type(mp_const_obj_t o_in) {
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
+    assert(type->flags & MP_TYPE_FLAG_EXTENDED);
+    return (mp_obj_full_type_t *)type;
+}
+
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
@@ -195,8 +201,9 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
         }
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        if (type->unary_op != NULL) {
-            mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
+        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
+        if (unary_op) {
+            mp_obj_t result = unary_op(MP_UNARY_OP_BOOL, arg);
             if (result != MP_OBJ_NULL) {
                 return result == mp_const_true;
             }
@@ -214,7 +221,7 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    const mp_call_fun_t call = mp_obj_get_type(o_in)->call;
+    const mp_call_fun_t call = mp_type_get_call_slot(mp_obj_get_type(o_in));
     if (call != mp_obj_instance_call) {
         return call != NULL;
     }
@@ -281,19 +288,20 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         const mp_obj_type_t *type = mp_obj_get_type(o1);
         // If a full equality test is not needed and the other object is a different
         // type then we don't need to bother trying the comparison.
-        if (type->binary_op != NULL &&
+        mp_binary_op_fun_t binary_op = mp_type_get_binary_op_slot(type);
+        if (binary_op != NULL &&
             ((type->flags & MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) || mp_obj_get_type(o2) == type)) {
             // CPython is asymmetric: it will try __eq__ if there's no __ne__ but not the
             // other way around.  If the class doesn't need a full test we can skip __ne__.
             if (op == MP_BINARY_OP_NOT_EQUAL && (type->flags & MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)) {
-                mp_obj_t r = type->binary_op(MP_BINARY_OP_NOT_EQUAL, o1, o2);
+                mp_obj_t r = binary_op(MP_BINARY_OP_NOT_EQUAL, o1, o2);
                 if (r != MP_OBJ_NULL) {
                     return r;
                 }
             }
 
             // Try calling __eq__.
-            mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = binary_op(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 if (op == MP_BINARY_OP_EQUAL) {
                     return r;
@@ -556,8 +564,9 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(o_in);
-        if (type->unary_op != NULL) {
-            return type->unary_op(MP_UNARY_OP_LEN, o_in);
+        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
+        if (unary_op != NULL) {
+            return unary_op(MP_UNARY_OP_LEN, o_in);
         } else {
             return MP_OBJ_NULL;
         }
@@ -566,8 +575,9 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->subscr != NULL) {
-        mp_obj_t ret = type->subscr(base, index, value);
+    mp_subscr_fun_t subscr = mp_type_get_subscr_slot(type);
+    if (subscr != NULL) {
+        mp_obj_t ret = subscr(base, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
@@ -619,10 +629,10 @@ typedef struct {
 
 STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
     mp_obj_generic_it_t *self = MP_OBJ_TO_PTR(self_in);
-    const mp_obj_type_t *type = mp_obj_get_type(self->obj);
-    mp_obj_t current_length = type->unary_op(MP_UNARY_OP_LEN, self->obj);
+    const mp_obj_full_type_t *type = mp_obj_get_full_type(self->obj);
+    mp_obj_t current_length = type->MP_TYPE_UNARY_OP(MP_UNARY_OP_LEN, self->obj);
     if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
-        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        mp_obj_t o_out = type->ext[0].subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
         self->cur += 1;
         return o_out;
     } else {
@@ -642,10 +652,11 @@ mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) 
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (type->buffer_p.get_buffer == NULL) {
+    const mp_getbuffer_fun_t get_buffer = mp_type_get_getbuffer_slot(type);
+    if (get_buffer == NULL) {
         return false;
     }
-    int ret = type->buffer_p.get_buffer(obj, bufinfo, flags);
+    int ret = get_buffer(obj, bufinfo, flags);
     if (ret != 0) {
         return false;
     }
@@ -665,4 +676,83 @@ mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         default:
             return MP_OBJ_NULL;      // op not supported
     }
+}
+
+mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->ext[0].call;
+}
+
+mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->ext[0].unary_op;
+}
+
+
+mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->ext[0].binary_op;
+}
+
+
+mp_attr_fun_t mp_type_get_attr_slot(const mp_obj_type_t *type) {
+    return type->attr;
+}
+
+
+mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->MP_TYPE_SUBSCR;
+}
+
+
+mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->MP_TYPE_GETITER;
+}
+
+
+mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->MP_TYPE_ITERNEXT;
+}
+
+
+mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->MP_TYPE_GET_BUFFER;
+}
+
+
+const void *mp_type_get_protocol_slot(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return NULL;
+    }
+    return type->MP_TYPE_PROTOCOL;
+}
+
+
+const void *mp_type_get_parent_slot(const mp_obj_type_t *type) {
+    return type->parent;
+}
+
+size_t mp_type_size(const mp_obj_type_t *type) {
+    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
+        return sizeof(mp_obj_type_t);
+    }
+    return sizeof(mp_obj_full_type_t);
 }

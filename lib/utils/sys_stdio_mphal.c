@@ -129,13 +129,16 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 
 STATIC const mp_obj_type_t stdio_obj_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_obj_stream_p,
     .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &stdio_obj_stream_p,
+        ),
 };
 
 const sys_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
@@ -166,11 +169,14 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
 STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_buffer_obj_stream_p,
     .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &stdio_buffer_obj_stream_p,
+        ),
 };
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused

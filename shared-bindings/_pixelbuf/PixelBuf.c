@@ -381,10 +381,12 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_loc
 const mp_obj_type_t pixelbuf_pixelbuf_type = {
     { &mp_type_type },
     .name = MP_QSTR_PixelBuf,
-    .subscr = pixelbuf_pixelbuf_subscr,
-    .make_new = pixelbuf_pixelbuf_make_new,
-    .unary_op = pixelbuf_pixelbuf_unary_op,
-    .getiter = mp_obj_new_generic_iterator,
-    .print = NULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
+    .make_new = pixelbuf_pixelbuf_make_new,
+    MP_TYPE_EXTENDED_FIELDS(
+        .subscr = pixelbuf_pixelbuf_subscr,
+        .unary_op = pixelbuf_pixelbuf_unary_op,
+        .getiter = mp_obj_new_generic_iterator,
+        ),
 };

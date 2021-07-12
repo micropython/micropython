@@ -313,10 +313,13 @@ STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_poll = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_poll,
-    .getiter = mp_identity_getiter,
-    .iternext = poll_iternext,
     .locals_dict = (void *)&poll_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = poll_iternext,
+        ),
 };
 
 STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
