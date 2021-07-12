@@ -144,9 +144,13 @@ STATIC void machine_hw_spi_init_internal(
         changed = true;
     }
 
-    if (baudrate != -1 && baudrate != self->baudrate) {
-        self->baudrate = baudrate;
-        changed = true;
+    if (baudrate != -1) {
+        // calculate the actual clock frequency that the SPI peripheral can produce
+        baudrate = spi_get_actual_clock(APB_CLK_FREQ, baudrate, 0);
+        if (baudrate != self->baudrate) {
+            self->baudrate = baudrate;
+            changed = true;
+        }
     }
 
     if (polarity != -1 && polarity != self->polarity) {
