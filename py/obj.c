@@ -738,7 +738,7 @@ mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *type) {
 }
 
 
-const void *mp_type_protocol(const mp_obj_type_t *type) {
+const void *mp_type_get_protocol_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }

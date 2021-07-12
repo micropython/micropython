@@ -1216,7 +1216,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // abstract base class which would translate C-level protocol to
         // Python method calls, and any subclass inheriting from it will
         // support this feature.
-        o->MP_TYPE_PROTOCOL = mp_type_protocol((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0]));
+        o->MP_TYPE_PROTOCOL = mp_type_get_protocol_slot((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0]));
 
         if (bases_len >= 2) {
             #if MICROPY_MULTIPLE_INHERITANCE

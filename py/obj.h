@@ -669,7 +669,7 @@ extern mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *);
 extern mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *);
 extern mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *);
 extern mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *);
-extern const void *mp_type_protocol(const mp_obj_type_t *);
+extern const void *mp_type_get_protocol_slot(const mp_obj_type_t *);
 
 // These fields ended up not being placed in the extended area, but accessors
 // were created for them anyway.
