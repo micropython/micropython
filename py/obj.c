@@ -701,7 +701,7 @@ mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *type) {
 }
 
 
-mp_attr_fun_t mp_type_attr(const mp_obj_type_t *type) {
+mp_attr_fun_t mp_type_get_attr_slot(const mp_obj_type_t *type) {
     return type->attr;
 }
 

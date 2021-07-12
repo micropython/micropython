@@ -673,7 +673,7 @@ extern const void *mp_type_get_protocol_slot(const mp_obj_type_t *);
 
 // These fields ended up not being placed in the extended area, but accessors
 // were created for them anyway.
-extern mp_attr_fun_t mp_type_attr(const mp_obj_type_t *);
+extern mp_attr_fun_t mp_type_get_attr_slot(const mp_obj_type_t *);
 extern const void *mp_type_get_parent_slot(const mp_obj_type_t *);
 
 // Return the size of a type object, which can be one of two lengths depending whether it has

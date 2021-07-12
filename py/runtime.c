@@ -1118,7 +1118,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         dest[1] = obj;
         return;
     }
-    mp_attr_fun_t attr_fun = mp_type_attr(type);
+    mp_attr_fun_t attr_fun = mp_type_get_attr_slot(type);
     if (attr_fun != NULL) {
         // this type can do its own load, so call it
         attr_fun(obj, attr, dest);
@@ -1179,7 +1179,7 @@ void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catc
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    mp_attr_fun_t attr_fun = mp_type_attr(type);
+    mp_attr_fun_t attr_fun = mp_type_get_attr_slot(type);
     if (attr_fun != NULL) {
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
         attr_fun(base, attr, dest);
