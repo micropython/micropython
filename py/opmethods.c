@@ -47,7 +47,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_op_delitem_obj, op_delitem);
 
 STATIC mp_obj_t op_contains(mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mp_obj_type_t *type = mp_obj_get_type(lhs_in);
-    mp_binary_op_fun_t binary_op = mp_type_binary_op(type);
+    mp_binary_op_fun_t binary_op = mp_type_get_binary_op_slot(type);
     return binary_op(MP_BINARY_OP_CONTAINS, lhs_in, rhs_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_op_contains_obj, op_contains);

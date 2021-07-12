@@ -572,7 +572,7 @@ mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t r
     const mp_obj_type_t *type;
 generic_binary_op:
     type = mp_obj_get_type(lhs);
-    mp_binary_op_fun_t binary_op = mp_type_binary_op(type);
+    mp_binary_op_fun_t binary_op = mp_type_get_binary_op_slot(type);
     if (binary_op != NULL) {
         mp_obj_t result = binary_op(op, lhs, rhs);
         if (result != MP_OBJ_NULL) {

@@ -288,7 +288,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         const mp_obj_type_t *type = mp_obj_get_type(o1);
         // If a full equality test is not needed and the other object is a different
         // type then we don't need to bother trying the comparison.
-        mp_binary_op_fun_t binary_op = mp_type_binary_op(type);
+        mp_binary_op_fun_t binary_op = mp_type_get_binary_op_slot(type);
         if (binary_op != NULL &&
             ((type->flags & MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) || mp_obj_get_type(o2) == type)) {
             // CPython is asymmetric: it will try __eq__ if there's no __ne__ but not the
@@ -693,7 +693,7 @@ mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *type) {
 }
 
 
-mp_binary_op_fun_t mp_type_binary_op(const mp_obj_type_t *type) {
+mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *type) {
     if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
         return NULL;
     }
