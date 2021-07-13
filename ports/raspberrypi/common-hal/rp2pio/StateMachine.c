@@ -497,8 +497,11 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 }
 
 void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self) {
+    common_hal_rp2pio_statemachine_stop(self);
+    // Reset program counter to the original offset. A JMP is 0x0000 plus
+    // the desired offset, so we can just use self->offset.
+    pio_sm_exec(self->pio, self->state_machine,self->offset);
     pio_sm_restart(self->pio, self->state_machine);
-
     uint8_t pio_index = pio_get_index(self->pio);
     uint32_t pins_we_use = _current_sm_pins[pio_index][self->state_machine];
     pio_sm_set_pins_with_mask(self->pio, self->state_machine, self->initial_pin_state, pins_we_use);
