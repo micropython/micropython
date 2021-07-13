@@ -70,7 +70,7 @@ irq(mod, index = None)
 	index : IRQ (0-7)
     see sec 3.4.9 of RPi docs for details
 
-self(dest, data)
+set(dest, data)
 	dest : X, Y, PINS, PINDIRS
 	data : value (0-31)
     see sec 3.4.10 of RPi docs for details
