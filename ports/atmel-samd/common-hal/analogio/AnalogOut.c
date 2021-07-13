@@ -75,6 +75,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     }
 
     self->channel = channel;
+    self->pin = pin;
 
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
@@ -129,7 +130,9 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
         return;
     }
     dac_sync_disable_channel(&self->descriptor, self->channel);
-    reset_pin_number(PIN_PA02);
+    reset_pin_number(self->pin->number);
+    self->pin = NULL;
+
     // Only deinit the DAC on the SAMD51 if both outputs are free.
     #ifdef SAM_D5X_E5X
     if (common_hal_mcu_pin_is_free(&pin_PA02) && common_hal_mcu_pin_is_free(&pin_PA05)) {
