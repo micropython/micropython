@@ -26,6 +26,7 @@ fs_hook_cmds = {
 fs_hook_code = """\
 import uos, uio, ustruct, micropython, usys
 
+SEEK_SET = 0
 
 class RemoteCommand:
     def __init__(self, use_second_port):
@@ -213,11 +214,12 @@ class RemoteFile(uio.IOBase):
         c.end()
         return n
 
-    def seek(self, n):
+    def seek(self, n, whence=SEEK_SET):
         c = self.cmd
         c.begin(CMD_SEEK)
         c.wr_s8(self.fd)
         c.wr_s32(n)
+        c.wr_s8(whence)
         n = c.rd_s32()
         c.end()
         return n
@@ -459,8 +461,9 @@ class PyboardCommand:
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
+        whence = self.rd_s8()
         # self.log_cmd(f"seek {fd} {n}")
-        self.data_files[fd][0].seek(n)
+        n = self.data_files[fd][0].seek(n, whence)
         self.wr_s32(n)
 
     def do_write(self):
