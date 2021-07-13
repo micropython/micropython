@@ -1950,6 +1950,84 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif
 
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type_t *type) {
+    // First argument is the data to convert.
+    // Second argument is an optional separator to be used between values.
+    const char *sep = NULL;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
+    // Code below assumes non-zero buffer length when computing size with
+    // separator, so handle the zero-length case here.
+    if (bufinfo.len == 0) {
+        return mp_const_empty_bytes;
+    }
+
+    vstr_t vstr;
+    size_t out_len = bufinfo.len * 2;
+    if (n_args > 1) {
+        // 1-char separator between hex numbers
+        out_len += bufinfo.len - 1;
+        sep = mp_obj_str_get_str(args[1]);
+    }
+    vstr_init_len(&vstr, out_len);
+    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
+    for (mp_uint_t i = bufinfo.len; i--;) {
+        byte d = (*in >> 4);
+        if (d > 9) {
+            d += 'a' - '9' - 1;
+        }
+        *out++ = d + '0';
+        d = (*in++ & 0xf);
+        if (d > 9) {
+            d += 'a' - '9' - 1;
+        }
+        *out++ = d + '0';
+        if (sep != NULL && i != 0) {
+            *out++ = *sep;
+        }
+    }
+    return mp_obj_new_str_from_vstr(type, &vstr);
+}
+
+mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+
+    if ((bufinfo.len & 1) != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("odd-length string"));
+    }
+    vstr_t vstr;
+    vstr_init_len(&vstr, bufinfo.len / 2);
+    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
+    byte hex_byte = 0;
+    for (mp_uint_t i = bufinfo.len; i--;) {
+        byte hex_ch = *in++;
+        if (unichar_isxdigit(hex_ch)) {
+            hex_byte += unichar_xdigit_value(hex_ch);
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("non-hex digit found"));
+        }
+        if (i & 1) {
+            hex_byte <<= 4;
+        } else {
+            *out++ = hex_byte;
+            hex_byte = 0;
+        }
+    }
+    return mp_obj_new_str_from_vstr(MP_OBJ_TO_PTR(type_in), &vstr);
+}
+
+STATIC mp_obj_t bytes_hex_as_str(size_t n_args, const mp_obj_t *args) {
+    return mp_obj_bytes_hex(n_args, args, &mp_type_str);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_hex_as_str_obj, 1, 2, bytes_hex_as_str);
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bytes_fromhex_obj, mp_obj_bytes_fromhex);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bytes_fromhex_classmethod_obj, MP_ROM_PTR(&bytes_fromhex_obj));
+#endif // MICROPY_PY_BUILTINS_BYTES_HEX
+
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (flags == MP_BUFFER_READ) {
         GET_STR_DATA_LEN(self_in, str_data, str_len);
@@ -1969,6 +2047,10 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&mp_obj_array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&mp_obj_array_extend_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&bytes_hex_as_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fromhex), MP_ROM_PTR(&bytes_fromhex_classmethod_obj) },
     #endif
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
@@ -2018,6 +2100,12 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
 #define TABLE_ENTRIES_COMPAT 0
 #endif
 
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+#define TABLE_ENTRIES_HEX 2
+#else
+#define TABLE_ENTRIES_HEX 0
+#endif
+
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
 #define TABLE_ENTRIES_ARRAY 2
 #else
@@ -2025,8 +2113,8 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
 #endif
 
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_str_locals_dict,
-    array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_COMPAT,
-    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_COMPAT));
+    array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_HEX + TABLE_ENTRIES_COMPAT,
+    MP_ARRAY_SIZE(array_bytearray_str_bytes_locals_table) - (TABLE_ENTRIES_ARRAY + TABLE_ENTRIES_HEX + TABLE_ENTRIES_COMPAT));
 
 #if TABLE_ENTRIES_COMPAT == 0
 #define mp_obj_bytes_locals_dict mp_obj_str_locals_dict
@@ -2046,6 +2134,12 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_bytearray_locals_dict,
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_array_locals_dict,
     array_bytearray_str_bytes_locals_table,
     TABLE_ENTRIES_ARRAY);
+#endif
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX
+MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
+    array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY,
+    1); // Just the "hex" entry.
 #endif
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE

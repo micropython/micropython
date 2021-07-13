@@ -127,7 +127,14 @@ MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
 
+mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type_t *type);
+mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data);
+
 extern const mp_obj_dict_t mp_obj_str_locals_dict;
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX
+extern const mp_obj_dict_t mp_obj_memoryview_locals_dict;
+#endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 extern const mp_obj_dict_t mp_obj_bytearray_locals_dict;

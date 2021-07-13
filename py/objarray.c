@@ -245,6 +245,12 @@ STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
     }
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    else {
+        // Need to forward to locals dict.
+        dest[1] = MP_OBJ_SENTINEL;
+    }
+    #endif
 }
 #endif
 
@@ -606,6 +612,9 @@ const mp_obj_type_t mp_type_memoryview = {
     .binary_op = array_binary_op,
     #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .attr = memoryview_attr,
+    #endif
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    .locals_dict = (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
     #endif
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
