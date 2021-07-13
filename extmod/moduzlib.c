@@ -165,13 +165,14 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     decomp->source_limit = (byte *)bufinfo.buf + bufinfo.len;
 
     int st;
-    bool is_zlib = true;
+    int wbits = n_args > 1 ? MP_OBJ_SMALL_INT_VALUE(args[1]) : 0; // zlib enabled by default
 
-    if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
-        is_zlib = false;
-    }
-
-    if (is_zlib) {
+    if (wbits >= 16) {
+        st = uzlib_gzip_parse_header(decomp);
+        if (st != TINF_OK) {
+            goto error;
+        }
+    } else if (wbits >= 0) {
         st = uzlib_zlib_parse_header(decomp);
         if (st < 0) {
             goto error;
