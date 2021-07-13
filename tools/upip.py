@@ -256,8 +256,12 @@ def install(to_install, install_path=None):
 def get_install_path():
     global install_path
     if install_path is None:
-        # sys.path[0] is current module's path
-        install_path = sys.path[1]
+        # sys.path[0] is current module's path, only use if no other suitable path exists
+        install_path = sys.path[0]
+        for path in sys.path[1:]:
+            if path:
+                install_path = path
+                break
     install_path = expandhome(install_path)
     return install_path
 
