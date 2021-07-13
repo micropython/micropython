@@ -66,14 +66,33 @@ mov(dist, src)
 	src : pin, X, Y, ISR, OSR (all 0-31)
     see sec 3.4.8 of RPi docs for details
 
-irq(mod, index = None)
-	index : IRQ (0-7)
-    see sec 3.4.9 of RPi docs for details
-
 set(dest, data)
 	dest : X, Y, PINS, PINDIRS
 	data : value (0-31)
     see sec 3.4.10 of RPi docs for details
+
+irq(mod, index = None)
+	These are the following forms of this instruction(index is an integer value 
+	from 0-7)
+        * irq(index)
+	* irq(rel(index))
+	* irq(block, index)
+	* irq(block, rel(index))
+	* irq(clear, rel(index))
+	* irq(block | clear, index)
+	* irq(block | clear, rel(index))
+	
+	These can be summarised as two forms:
+	* form 1: irq(index)
+	* form 2: irq(mode,index)
+	  where
+	  * index can be an integer or rel(integer)
+	  * mode can be: block or clear or block | clear
+	  
+	Allowed IRQ numbers are 0-7 (0-3 are visible from to the processor, 4-7 are 
+	internal to the state machines).          
+   see sec 3.4.9 of RPi docs for details
+
 
 
 
