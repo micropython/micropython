@@ -115,7 +115,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Get I2C Object.
     machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
-    self->base.type = &machine_hw_i2c_type;
+    self->base.type = &machine_i2c_type;
     self->i2c_id = i2c_id;
     self->i2c_hw_id = i2c_index_table[i2c_id];  // the hw i2c number 1..n
     self->i2c_inst = i2c_base_ptr_table[self->i2c_hw_id];
@@ -188,7 +188,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
         MICROPY_EVENT_POLL_HOOK
     }
 
-    // Transfer will not send a stop in case of errors like NAK. So it#s done here.
+    // Transfer will not send a stop in case of errors like NAK. So it's done here.
     if (flags & MP_MACHINE_I2C_FLAG_STOP && self->transfer_status != kStatus_Success) {
         LPI2C_MasterStop(self->i2c_inst);
     }
@@ -207,7 +207,7 @@ STATIC const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer_single = machine_i2c_transfer_single,
 };
 
-const mp_obj_type_t machine_hw_i2c_type = {
+const mp_obj_type_t machine_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_i2c_print,
