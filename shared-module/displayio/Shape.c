@@ -56,10 +56,10 @@ void common_hal_displayio_shape_construct(displayio_shape_t *self, uint32_t widt
         self->data[2 * i + 1] = width;
     }
 
-    self->dirty_area.x1=0;
-    self->dirty_area.x2=width;
-    self->dirty_area.y1=0;
-    self->dirty_area.y2=height;
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = width;
+    self->dirty_area.y1 = 0;
+    self->dirty_area.y2 = height;
 }
 
 void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y, uint16_t start_x, uint16_t end_x) {
@@ -130,7 +130,7 @@ uint32_t common_hal_displayio_shape_get_pixel(void *obj, int16_t x, int16_t y) {
     return 1;
 }
 
-displayio_area_t* displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t* tail) {
+displayio_area_t *displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t *tail) {
     if (self->dirty_area.x1 == self->dirty_area.x2) {
         return tail;
     }

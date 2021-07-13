@@ -22,8 +22,8 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-INC +=  -I.
-INC +=  -I$(TOP)
+INC += -I.
+INC += -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -69,6 +69,7 @@ endif
 SRC_C += \
 	main.c \
 	gccollect.c \
+	lib/utils/gchelper_generic.c \
 	supervisor/stub/safe_mode.c \
 	supervisor/stub/stack.c \
 	supervisor/shared/translate.c
@@ -79,7 +80,7 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 	SRC_C += fmode.c
 endif
 
-OBJ = $(PY_O)
+OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h

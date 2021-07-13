@@ -29,14 +29,14 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "components/soc/include/hal/adc_types.h"
+#include "components/hal/include/hal/adc_types.h"
 #include "FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
+    const mcu_pin_obj_t *pin;
 } analogio_analogin_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ANALOGIO_ANALOGIN_H

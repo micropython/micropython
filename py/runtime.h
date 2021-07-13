@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_RUNTIME_H
 #define MICROPY_INCLUDED_PY_RUNTIME_H
 
+#include <stdarg.h>
+
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
@@ -66,30 +68,49 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
-void mp_handle_pending(void);
+void mp_sched_exception(mp_obj_t exc);
+void mp_sched_keyboard_interrupt(void);
+void mp_handle_pending(bool raise_exc);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_sp); }
+#define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
+void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
 void mp_arg_check_num(size_t n_args, mp_map_t *kw_args, size_t n_args_min, size_t n_args_max, bool takes_kw);
-void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_check_num_kw_array(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw);
+void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) { return MP_STATE_THREAD(dict_locals); }
-static inline void PLACE_IN_ITCM(mp_locals_set)(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
-static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_globals_get)(void) { return MP_STATE_THREAD(dict_globals); }
-static inline void PLACE_IN_ITCM(mp_globals_set)(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_globals) = d; }
+mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);
+mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t j, qstr arg_name);
+mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name);
+mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name);
+size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name);
+mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
+mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name);
+
+static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) {
+    return MP_STATE_THREAD(dict_locals);
+}
+static inline void PLACE_IN_ITCM(mp_locals_set)(mp_obj_dict_t * d) {
+    MP_STATE_THREAD(dict_locals) = d;
+}
+static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_globals_get)(void) {
+    return MP_STATE_THREAD(dict_globals);
+}
+static inline void PLACE_IN_ITCM(mp_globals_set)(mp_obj_dict_t * d) {
+    MP_STATE_THREAD(dict_globals) = d;
+}
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -150,10 +171,26 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+NORETURN void mp_raise_type(const mp_obj_type_t *exc_type);
+NORETURN void mp_raise_ValueError_no_msg(void);
+NORETURN void mp_raise_TypeError_no_msg(void);
+NORETURN void mp_raise_NotImplementedError_no_msg(void);
+#define mp_raise_msg(exc_type, msg) mp_raise_type(exc_type)
+#define mp_raise_msg_varg(exc_type, ...) mp_raise_type(exc_type)
+#define mp_raise_ValueError(msg) mp_raise_ValueError_no_msg()
+#define mp_raise_TypeError(msg) mp_raise_TypeError_no_msg()
+#define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
+#else
+#define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
+#if !(defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME)
 NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
+#endif
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr);
+// Only use this string version in native mpy files. Otherwise, use the compressed string version.
+NORETURN void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg);
 NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
 NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
@@ -174,6 +211,7 @@ NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, 
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_MpyError(const compressed_string_t *msg);
 NORETURN void mp_raise_recursion_depth(void);
+#endif
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #undef mp_check_self
@@ -186,16 +224,17 @@ NORETURN void mp_raise_recursion_depth(void);
 #endif
 
 // helper functions for native/viper code
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
-void mp_native_raise(mp_obj_t o);
+int mp_native_type_from_qstr(qstr qst);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type);
 
 #define mp_sys_path (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_path_obj)))
 #define mp_sys_argv (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)))
 
 #if MICROPY_WARNINGS
-void mp_warning(const char *msg, ...);
+#ifndef mp_warning
+void mp_warning(const char *category, const char *msg, ...);
+#endif
 #else
 #define mp_warning(...)
 #endif

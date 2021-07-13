@@ -33,7 +33,7 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
-static void get_nvs_handle(nvs_handle_t * nvs_handle) {
+static void get_nvs_handle(nvs_handle_t *nvs_handle) {
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -51,7 +51,7 @@ static void get_nvs_handle(nvs_handle_t * nvs_handle) {
 }
 
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
+    uint32_t start_index, uint8_t *values, uint32_t len) {
     char index[9];
 
     // start nvs
@@ -77,7 +77,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 }
 
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint32_t len, uint8_t* values) {
+    uint32_t start_index, uint32_t len, uint8_t *values) {
     char index[9];
 
     // start nvs

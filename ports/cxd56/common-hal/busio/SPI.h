@@ -35,7 +35,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    struct spi_dev_s* spi_dev;
+    struct spi_dev_s *spi_dev;
     uint32_t frequency;
     uint8_t phase;
     uint8_t polarity;

@@ -31,13 +31,14 @@ except StopIteration:
     print("StopIteration")
 
 
-# Throwing StopIteration in response to close() is ok
+# Throwing GeneratorExit in response to close() is ok
 def gen2():
     try:
         yield 1
         yield 2
     except:
-        raise StopIteration
+        print('raising GeneratorExit')
+        raise GeneratorExit
 
 g = gen2()
 next(g)

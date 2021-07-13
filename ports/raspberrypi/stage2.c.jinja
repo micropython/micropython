@@ -1,0 +1,196 @@
+#include "sdk/src/rp2040/hardware_structs/include/hardware/structs/ssi.h"
+#include "sdk/src/rp2040/hardware_structs/include/hardware/structs/pads_qspi.h"
+#include "sdk/src/rp2040/hardware_regs/include/hardware/regs/addressmap.h"
+#include "sdk/src/rp2040/hardware_regs/include/hardware/regs/m0plus.h"
+
+// "Mode bits" are 8 special bits sent immediately after
+// the address bits in a "Read Data Fast Quad I/O" command sequence.
+// On W25Q080, the four LSBs are don't care, and if MSBs == 0xa, the
+// next read does not require the 0xeb instruction prefix.
+#define MODE_CONTINUOUS_READ 0xa0
+
+// Define interface width: single/dual/quad IO
+{% if quad_ok %}
+#define FRAME_FORMAT SSI_CTRLR0_SPI_FRF_VALUE_QUAD
+#define TRANSACTION_TYPE SSI_SPI_CTRLR0_TRANS_TYPE_VALUE_2C2A
+// Note that the INST_L field is used to select what XIP data gets pushed into
+// the TX FIFO:
+//      INST_L_0_BITS   {ADDR[23:0],XIP_CMD[7:0]}       Load "mode bits" into XIP_CMD
+//      Anything else   {XIP_CMD[7:0],ADDR[23:0]}       Load SPI command into XIP_CMD
+#define INSTRUCTION_LENGTH SSI_SPI_CTRLR0_INST_L_VALUE_NONE
+#define READ_INSTRUCTION MODE_CONTINUOUS_READ
+#define ADDR_L 8 // 6 for address, 2 for mode
+{% else %}
+#define FRAME_FORMAT SSI_CTRLR0_SPI_FRF_VALUE_STD
+#define TRANSACTION_TYPE SSI_SPI_CTRLR0_TRANS_TYPE_VALUE_1C1A
+#define INSTRUCTION_LENGTH SSI_SPI_CTRLR0_INST_L_VALUE_8B
+#define READ_INSTRUCTION (0x{{ '%02x' % read_command }})
+#define ADDR_L 6 // * 4 = 24
+{% endif %}
+
+#define CMD_READ_STATUS1 0x05
+#define CMD_READ_STATUS2 0x35
+#define CMD_WRITE_ENABLE 0x06
+#define CMD_WRITE_STATUS1 0x01
+#define CMD_WRITE_STATUS2 0x31
+
+#define SREG_DATA 0x02
+
+static uint32_t wait_and_read(uint8_t);
+static uint8_t read_flash_sreg(uint8_t status_command);
+
+// This function is use by the bootloader to enable the XIP flash. It is also
+// used by the SDK to reinit XIP after doing non-read flash interactions such as
+// writing or erasing. This code must compile down to position independent
+// assembly because we don't know where in RAM it'll be when run.
+
+// This must be the first defined function so that it is placed at the start of
+// memory where the bootloader jumps to!
+void __attribute__((section(".entry._stage2_boot"), used)) _stage2_boot(void) {
+    uint32_t lr;
+    asm ("MOV %0, LR\n" : "=r" (lr) );
+
+    // Set aggressive pad configuration for QSPI
+    // - SCLK 8mA drive, no slew limiting
+    // - SDx disable input Schmitt to reduce delay
+
+    // SCLK
+    pads_qspi_hw->io[0] = PADS_QSPI_GPIO_QSPI_SCLK_DRIVE_VALUE_8MA << PADS_QSPI_GPIO_QSPI_SCLK_DRIVE_LSB |
+                          PADS_QSPI_GPIO_QSPI_SCLK_SLEWFAST_BITS;
+
+    // Data lines
+    uint32_t data_settings = pads_qspi_hw->io[1];
+    data_settings &= ~PADS_QSPI_GPIO_QSPI_SCLK_SCHMITT_BITS;
+    pads_qspi_hw->io[2] = data_settings;
+    {% if quad_ok %}
+    pads_qspi_hw->io[1] = data_settings;
+    pads_qspi_hw->io[3] = data_settings;
+    pads_qspi_hw->io[4] = data_settings;
+    {% endif %}
+
+    // Disable the SSI so we can change the settings.
+    ssi_hw->ssienr = 0;
+
+    // QSPI config
+    ssi_hw->baudr = {{ clock_divider }}; // 125 mhz / clock divider
+
+    // Set 1-cycle sample delay. If PICO_FLASH_SPI_CLKDIV == 2 then this means,
+    // if the flash launches data on SCLK posedge, we capture it at the time that
+    // the next SCLK posedge is launched. This is shortly before that posedge
+    // arrives at the flash, so data hold time should be ok. For
+    // PICO_FLASH_SPI_CLKDIV > 2 this pretty much has no effect.
+    ssi_hw->rx_sample_dly = 1;
+
+    // Set a temporary mode for doing simple commands.
+    ssi_hw->ctrlr0 = (7 << SSI_CTRLR0_DFS_32_LSB) | // 8 bits per data frame
+                     (SSI_CTRLR0_TMOD_VALUE_TX_AND_RX << SSI_CTRLR0_TMOD_LSB);
+
+    ssi_hw->ssienr = 0x1;
+
+    {% if quad_ok %}
+    // Program status register.
+    // Enable SSI and select slave 0
+    {% if quad_enable_status_byte == 1 %}
+    uint8_t result = read_flash_sreg(CMD_READ_STATUS1);
+    {% elif quad_enable_status_byte == 2 %}
+    uint8_t result = read_flash_sreg(CMD_READ_STATUS2);
+    {% endif %}
+    if (result != {{ quad_enable_bit_mask }}) {
+        ssi_hw->dr0 = (uint8_t) CMD_WRITE_ENABLE;
+        wait_and_read(1);
+
+        {% if split_status_write %}
+        {% if quad_enable_status_byte == 1 %}
+        ssi_hw->dr0 = (uint8_t) CMD_WRITE_STATUS1;
+        {% elif quad_enable_status_byte == 2 %}
+        ssi_hw->dr0 = (uint8_t) CMD_WRITE_STATUS2;
+        {% endif %}
+        ssi_hw->dr0 = {{ quad_enable_bit_mask }};
+        wait_and_read(2);
+        {% else %}
+        ssi_hw->dr0 = (uint8_t) CMD_WRITE_STATUS1;
+        {% if quad_enable_status_byte == 2 %}
+        ssi_hw->dr0 = 0x0;
+        {% endif %}
+        ssi_hw->dr0 = {{ quad_enable_bit_mask }};
+        wait_and_read({{ quad_enable_status_byte + 1 }});
+        {% endif %}
+        // Wait for the write to complete.
+        while ((read_flash_sreg(CMD_READ_STATUS1) & 0x1) != 0) {}
+    }
+    {% endif %}
+
+    // Disable SSI again so that it can be reconfigured
+    ssi_hw->ssienr = 0;
+
+    // Do a single read to get us in continuous mode.
+
+    // Final SSI ctrlr0 settings. We only change the SPI specific settings later.
+    ssi_hw->ctrlr0 = (FRAME_FORMAT << SSI_CTRLR0_SPI_FRF_LSB) | // Quad I/O mode
+                     (31 << SSI_CTRLR0_DFS_32_LSB)  |       // 32 data bits
+                     (SSI_CTRLR0_TMOD_VALUE_EEPROM_READ << SSI_CTRLR0_TMOD_LSB);    // Send INST/ADDR, Receive Data
+
+    ssi_hw->ctrlr1 = 0; // Single 32b read
+
+    {% if quad_ok %}
+    ssi_hw->spi_ctrlr0 = (ADDR_L << SSI_SPI_CTRLR0_ADDR_L_LSB) | // Address + mode bits
+                         // Hi-Z dummy clocks following address + mode
+                         ({{ wait_cycles }} << SSI_SPI_CTRLR0_WAIT_CYCLES_LSB) |
+                         // 8-bit instruction
+                         (SSI_SPI_CTRLR0_INST_L_VALUE_8B << SSI_SPI_CTRLR0_INST_L_LSB) |
+                         // Send Command in serial mode then address in Quad I/O mode
+                         (SSI_SPI_CTRLR0_TRANS_TYPE_VALUE_1C2A << SSI_SPI_CTRLR0_TRANS_TYPE_LSB);
+
+    // Re-enable the SSI
+    ssi_hw->ssienr = 1;
+
+    // Do a single read to get us in continuous mode.
+    ssi_hw->dr0 = 0x{{ '%02x' % read_command }};
+    ssi_hw->dr0 = MODE_CONTINUOUS_READ;
+    wait_and_read(2);
+
+    // Disable the SSI to switch to no-command mode (because we're setup for continuous.)
+    ssi_hw->ssienr = 0;
+    {% endif %}
+
+    // Final SPI ctrlr0 settings.
+    ssi_hw->spi_ctrlr0 = (READ_INSTRUCTION << SSI_SPI_CTRLR0_XIP_CMD_LSB) | // Mode bits to keep flash in continuous read mode
+                         (ADDR_L << SSI_SPI_CTRLR0_ADDR_L_LSB) |    // Total number of address + mode bits
+                         ({{ wait_cycles }} << SSI_SPI_CTRLR0_WAIT_CYCLES_LSB) |    // Hi-Z dummy clocks following address + mode
+                         (INSTRUCTION_LENGTH << SSI_SPI_CTRLR0_INST_L_LSB) | // Do not send a command, instead send XIP_CMD as mode bits after address
+                         (TRANSACTION_TYPE << SSI_SPI_CTRLR0_TRANS_TYPE_LSB); // Send Address in Quad I/O mode (and Command but that is zero bits long)
+
+    // Re-enable the SSI
+    ssi_hw->ssienr = 1;
+
+    // If lr is 0, then we came from the bootloader.
+    if (lr == 0) {
+        uint32_t* vector_table = (uint32_t*) (XIP_BASE + 0x100);
+        // Switch the vector table to immediately after the stage 2 area.
+        *((uint32_t *) (PPB_BASE + M0PLUS_VTOR_OFFSET)) = (uint32_t) vector_table;
+        // Set the top of the stack according to the vector table.
+        asm volatile ("MSR msp, %0" : : "r" (vector_table[0]) : );
+        // The reset handler is the second entry in the vector table
+        asm volatile ("bx %0" : : "r" (vector_table[1]) : );
+        // Doesn't return. It jumps to the reset handler instead.
+    }
+    // Otherwise we return.
+}
+
+static uint32_t wait_and_read(uint8_t count) {
+    while ((ssi_hw->sr & SSI_SR_TFE_BITS) == 0) {}
+    while ((ssi_hw->sr & SSI_SR_BUSY_BITS) != 0) {}
+    uint32_t result = 0;
+    while (count > 0) {
+        result = ssi_hw->dr0;
+        count--;
+    }
+    return result;
+}
+
+static uint8_t read_flash_sreg(uint8_t status_command) {
+    ssi_hw->dr0 = status_command;
+    ssi_hw->dr0 = status_command;
+
+    return wait_and_read(2);
+}

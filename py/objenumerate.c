@@ -40,7 +40,7 @@ typedef struct _mp_obj_enumerate_t {
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);
 
 STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_iterable, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start, MP_ARG_INT, {.u_int = 0} },
@@ -51,34 +51,37 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, con
         mp_arg_val_t iterable, start;
     } arg_vals;
     mp_arg_parse_all(n_args, args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&arg_vals);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&arg_vals);
 
     // create enumerate object
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = type;
     o->iter = mp_getiter(arg_vals.iterable.u_obj, NULL);
     o->cur = arg_vals.start.u_int;
-#else
+    #else
     (void)kw_args;
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = type;
     o->iter = mp_getiter(args[0], NULL);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
-#endif
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }
 
 const mp_obj_type_t mp_type_enumerate = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_enumerate,
     .make_new = enumerate_make_new,
-    .iternext = enumerate_iternext,
-    .getiter = mp_identity_getiter,
+    MP_TYPE_EXTENDED_FIELDS(
+        .iternext = enumerate_iternext,
+        .getiter = mp_identity_getiter,
+        )
 };
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_enumerate));
+    assert(mp_obj_is_type(self_in, &mp_type_enumerate));
     mp_obj_enumerate_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t next = mp_iternext(self->iter);
     if (next == MP_OBJ_STOP_ITERATION) {

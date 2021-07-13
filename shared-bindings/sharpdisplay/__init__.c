@@ -43,5 +43,5 @@ STATIC MP_DEFINE_CONST_DICT(sharpdisplay_module_globals, sharpdisplay_module_glo
 
 const mp_obj_module_t sharpdisplay_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&sharpdisplay_module_globals,
+    .globals = (mp_obj_dict_t *)&sharpdisplay_module_globals,
 };

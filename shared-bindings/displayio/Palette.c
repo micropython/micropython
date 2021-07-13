@@ -74,10 +74,12 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_const_true;
+        case MP_UNARY_OP_BOOL:
+            return mp_const_true;
         case MP_UNARY_OP_LEN:
             return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_len(self));
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -107,7 +109,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         return MP_OBJ_NULL; // op not supported
     }
     // Slicing not supported. Use a duplicate Palette to swap multiple colors atomically.
-    if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+    if (mp_obj_is_type(index_in, &mp_type_slice)) {
         return MP_OBJ_NULL;
     }
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
@@ -118,8 +120,8 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     }
 
     // Convert a tuple or list to a bytearray.
-    if (MP_OBJ_IS_TYPE(value, &mp_type_tuple) ||
-        MP_OBJ_IS_TYPE(value, &mp_type_list)) {
+    if (mp_obj_is_type(value, &mp_type_tuple) ||
+        mp_obj_is_type(value, &mp_type_list)) {
         value = mp_type_bytes.make_new(&mp_type_bytes, 1, &value, NULL);
     }
 
@@ -130,7 +132,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
             mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
         }
-        uint8_t* buf = bufinfo.buf;
+        uint8_t *buf = bufinfo.buf;
         if (bufinfo.len == 3 || bufinfo.len == 4) {
             color = buf[0] << 16 | buf[1] << 8 | buf[2];
         } else {
@@ -178,18 +180,37 @@ STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t pal
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_obj_make_opaque);
 
+//|     def is_transparent(self, palette_index: int) -> bool:
+//|         """Returns `True` if the palette index is transparent.  Returns `False` if opaque."""
+//|         ...
+//|
+STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t palette_index;
+    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
+        mp_raise_ValueError(translate("palette_index should be an int"));
+    }
+    return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_is_transparent_obj, displayio_palette_obj_is_transparent);
+
 STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_make_transparent), MP_ROM_PTR(&displayio_palette_make_transparent_obj) },
     { MP_ROM_QSTR(MP_QSTR_make_opaque), MP_ROM_PTR(&displayio_palette_make_opaque_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_transparent), MP_ROM_PTR(&displayio_palette_is_transparent_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
 
 const mp_obj_type_t displayio_palette_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Palette,
     .make_new = displayio_palette_make_new,
-    .subscr = palette_subscr,
-    .unary_op = group_unary_op,
-    .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t*)&displayio_palette_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&displayio_palette_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .subscr = palette_subscr,
+        .unary_op = group_unary_op,
+        .getiter = mp_obj_new_generic_iterator,
+        ),
 };

@@ -56,7 +56,7 @@ STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, cons
 }
 
 STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_reversed));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_reversed));
     mp_obj_reversed_t *self = MP_OBJ_TO_PTR(self_in);
 
     // "raise" stop iteration if we are at the end (the start) of the sequence
@@ -71,10 +71,13 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_reversed = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_reversed,
     .make_new = reversed_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = reversed_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = reversed_iternext,
+        ),
 };
 
 #endif // MICROPY_PY_BUILTINS_REVERSED

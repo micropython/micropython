@@ -13,7 +13,7 @@ import rgbmatrix
 import ulab
 
 ReadableBuffer = Union[
-    bytes, bytearray, memoryview, array.array, ulab.array, rgbmatrix.RGBMatrix
+    bytes, bytearray, memoryview, array.array, ulab.ndarray, rgbmatrix.RGBMatrix
 ]
 """Classes that implement the readable buffer protocol
 
@@ -21,24 +21,24 @@ ReadableBuffer = Union[
   - `bytearray`
   - `memoryview`
   - `array.array`
-  - `ulab.array`
+  - `ulab.ndarray`
   - `rgbmatrix.RGBMatrix`
 """
 
 WriteableBuffer = Union[
-    bytearray, memoryview, array.array, ulab.array, rgbmatrix.RGBMatrix
+    bytearray, memoryview, array.array, ulab.ndarray, rgbmatrix.RGBMatrix
 ]
 """Classes that implement the writeable buffer protocol
 
   - `bytearray`
   - `memoryview`
   - `array.array`
-  - `ulab.array`
+  - `ulab.ndarray`
   - `rgbmatrix.RGBMatrix`
 """
 
 AudioSample = Union[
-    audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer, audiomp3.MP3Decoder
+    audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer, audiomp3.MP3Decoder, synthio.MidiTrack
 ]
 """Classes that implement the audiosample protocol
 
@@ -46,6 +46,7 @@ AudioSample = Union[
   - `audiocore.RawSample`
   - `audiomixer.Mixer`
   - `audiomp3.MP3Decoder`
+  - `synthio.MidiTrack`
 
   You can play these back with `audioio.AudioOut`, `audiobusio.I2SOut` or `audiopwmio.PWMAudioOut`.
 """

@@ -41,7 +41,7 @@
 //|     ...
 MP_DEFINE_MEMORYMONITOR_EXCEPTION(AllocationError, Exception)
 
-NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t* fmt, ...) {
+NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_memorymonitor_AllocationError, fmt, argptr);
@@ -72,5 +72,5 @@ void memorymonitor_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
 
 const mp_obj_module_t memorymonitor_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&memorymonitor_module_globals,
+    .globals = (mp_obj_dict_t *)&memorymonitor_module_globals,
 };

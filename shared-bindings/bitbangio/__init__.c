@@ -36,7 +36,6 @@
 #include "shared-bindings/bitbangio/I2C.h"
 #include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-bindings/bitbangio/SPI.h"
-#include "shared-module/bitbangio/types.h"
 
 #include "py/runtime.h"
 
@@ -81,5 +80,5 @@ STATIC MP_DEFINE_CONST_DICT(bitbangio_module_globals, bitbangio_module_globals_t
 
 const mp_obj_module_t bitbangio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&bitbangio_module_globals,
+    .globals = (mp_obj_dict_t *)&bitbangio_module_globals,
 };

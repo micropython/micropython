@@ -104,7 +104,7 @@ STATIC mp_obj_t mp_obj_deque_append(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     if (self->flags & FLAG_CHECK_OVERFLOW && new_i_put == self->i_get) {
-        mp_raise_msg(&mp_type_IndexError, translate("full"));
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("full"));
     }
 
     self->items[self->i_put] = arg;
@@ -124,7 +124,7 @@ STATIC mp_obj_t deque_popleft(mp_obj_t self_in) {
     mp_obj_deque_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->i_get == self->i_put) {
-        mp_raise_msg(&mp_type_IndexError, translate("empty"));
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty"));
     }
 
     mp_obj_t ret = self->items[self->i_get];
@@ -160,10 +160,13 @@ STATIC MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 
 const mp_obj_type_t mp_type_deque = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
-    .unary_op = deque_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&deque_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = deque_unary_op,
+        ),
 };
 
 #endif // MICROPY_PY_COLLECTIONS_DEQUE

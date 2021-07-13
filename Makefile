@@ -7,7 +7,7 @@
 
 # You can set these variables from the command line.
 PYTHON        = python3
-SPHINXOPTS    =
+SPHINXOPTS    = -W --keep-going
 SPHINXBUILD   = sphinx-build
 PAPER         =
 # path to build the generated docs
@@ -40,19 +40,22 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
 # Paths to exclude from TRANSLATE_SOURCES
 # Each must be preceded by "-path"; if any wildcards, enclose in quotes.
 # Separate by "-o" (Find's "or" operand)
 TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 	-o -path "ports/*/build" \
-	-o -path ports/esp32s2/esp-idf \
-	-o -path ports/cxd56/spresense-exported-sdk \
-	-o -path ports/stm/st_driver \
 	-o -path ports/atmel-samd/asf4 \
+	-o -path ports/cxd56/spresense-exported-sdk \
+	-o -path ports/esp32s2/esp-idf \
 	-o -path ports/mimxrt10xx/sdk \
+	-o -path ports/raspberrypi/sdk \
+	-o -path ports/stm/st_driver \
 	-o -path lib/tinyusb \
 	-o -path lib/lwip \
+	-o -path extmod/ulab/circuitpython \
+	-o -path extmod/ulab/micropython \
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
@@ -222,7 +225,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -247,7 +250,7 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 stubs:
@@ -255,6 +258,7 @@ stubs:
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py ports/raspberrypi/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
 
 .PHONY: check-stubs

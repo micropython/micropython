@@ -58,15 +58,14 @@ static uint32_t ws2812_t0l_ticks = 0;
 static uint32_t ws2812_t1l_ticks = 0;
 
 static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size,
-        size_t wanted_num, size_t *translated_size, size_t *item_num)
-{
+    size_t wanted_num, size_t *translated_size, size_t *item_num) {
     if (src == NULL || dest == NULL) {
         *translated_size = 0;
         *item_num = 0;
         return;
     }
-    const rmt_item32_t bit0 = {{{ ws2812_t0h_ticks, 1, ws2812_t0l_ticks, 0 }}}; //Logical 0
-    const rmt_item32_t bit1 = {{{ ws2812_t1h_ticks, 1, ws2812_t1l_ticks, 0 }}}; //Logical 1
+    const rmt_item32_t bit0 = {{{ ws2812_t0h_ticks, 1, ws2812_t0l_ticks, 0 }}}; // Logical 0
+    const rmt_item32_t bit1 = {{{ ws2812_t1h_ticks, 1, ws2812_t1l_ticks, 0 }}}; // Logical 1
     size_t size = 0;
     size_t num = 0;
     uint8_t *psrc = (uint8_t *)src;
@@ -75,9 +74,9 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
         for (int i = 0; i < 8; i++) {
             // MSB first
             if (*psrc & (1 << (7 - i))) {
-                pdest->val =  bit1.val;
+                pdest->val = bit1.val;
             } else {
-                pdest->val =  bit0.val;
+                pdest->val = bit0.val;
             }
             num++;
             pdest++;
@@ -89,7 +88,7 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
     *item_num = num;
 }
 
-void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // Reserve channel
     uint8_t number = digitalinout->pin->number;
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
@@ -118,7 +117,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     rmt_translator_init(config.channel, ws2812_rmt_adapter);
 
     // Write and wait to finish
-    if(rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
+    if (rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
         mp_raise_RuntimeError(translate("Input/output error"));
     }
     rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));

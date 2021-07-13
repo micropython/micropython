@@ -41,16 +41,15 @@
 
 // IDE = "extended ID" flag of packet header.  We always add this bit to the
 // mask because a match is always for just one kind of address length
-#define FILTER16_IDE (1<<3)
-#define FILTER32_IDE (1<<2)
+#define FILTER16_IDE (1 << 3)
+#define FILTER32_IDE (1 << 2)
 
 // Work around a problem reported at
 // https://github.com/espressif/esp-idf/issues/6020 where
 // twai_ll_set_acc_filter does not work under -Os optimization
 __attribute__((optimize("O0")))
 __attribute__((noinline))
-static void canio_set_acc_filter(twai_dev_t* hw, uint32_t code, uint32_t mask, bool single_filter)
-{
+static void canio_set_acc_filter(twai_dev_t *hw, uint32_t code, uint32_t mask, bool single_filter) {
     uint32_t code_swapped = __builtin_bswap32(code);
     uint32_t mask_swapped = __builtin_bswap32(mask);
     for (int i = 0; i < 4; i++) {

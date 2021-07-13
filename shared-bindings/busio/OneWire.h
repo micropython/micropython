@@ -32,12 +32,12 @@
 
 extern const mp_obj_type_t busio_onewire_type;
 
-extern void common_hal_busio_onewire_construct(busio_onewire_obj_t* self,
-    const mcu_pin_obj_t* pin);
-extern void common_hal_busio_onewire_deinit(busio_onewire_obj_t* self);
-extern bool common_hal_busio_onewire_deinited(busio_onewire_obj_t* self);
-extern bool common_hal_busio_onewire_reset(busio_onewire_obj_t* self);
-extern bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t* self);
-extern void common_hal_busio_onewire_write_bit(busio_onewire_obj_t* self, bool bit);
+extern void common_hal_busio_onewire_construct(busio_onewire_obj_t *self,
+    const mcu_pin_obj_t *pin);
+extern void common_hal_busio_onewire_deinit(busio_onewire_obj_t *self);
+extern bool common_hal_busio_onewire_deinited(busio_onewire_obj_t *self);
+extern bool common_hal_busio_onewire_reset(busio_onewire_obj_t *self);
+extern bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t *self);
+extern void common_hal_busio_onewire_write_bit(busio_onewire_obj_t *self, bool bit);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H

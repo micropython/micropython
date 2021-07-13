@@ -74,7 +74,7 @@ uint32_t port_get_saved_word(void);
 // Get the raw tick count since start up. A tick is 1/1024 of a second, a common low frequency
 // clock rate. If subticks is not NULL then the port will fill in the number of subticks where each
 // tick is 32 subticks (for a resolution of 1/32768 or 30.5ish microseconds.)
-uint64_t port_get_raw_ticks(uint8_t* subticks);
+uint64_t port_get_raw_ticks(uint8_t *subticks);
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void);
@@ -99,4 +99,8 @@ void port_background_task(void);
 void port_start_background_task(void);
 void port_finish_background_task(void);
 
+// Some ports need special handling to wake the main task from an interrupt
+// context or other task.  The port must implement the necessary code in this
+// function.  A default weak implementation is provided that does nothing.
+void port_wake_main_task(void);
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

@@ -56,12 +56,12 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t tilegrid = args[ARG_tilegrid].u_obj;
-    if (!MP_OBJ_IS_TYPE(tilegrid, &displayio_tilegrid_type)) {
+    if (!mp_obj_is_type(tilegrid, &displayio_tilegrid_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), displayio_tilegrid_type.name);
     }
 
     mp_obj_t font = args[ARG_font].u_obj;
-    if (!MP_OBJ_IS_TYPE(font, &fontio_builtinfont_type)) {
+    if (!mp_obj_is_type(font, &fontio_builtinfont_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), fontio_builtinfont_type.name);
     }
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
@@ -118,10 +118,13 @@ STATIC const mp_stream_p_t terminalio_terminal_stream_p = {
 
 const mp_obj_type_t terminalio_terminal_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Terminal,
     .make_new = terminalio_terminal_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &terminalio_terminal_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&terminalio_terminal_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &terminalio_terminal_stream_p,
+        ),
 };

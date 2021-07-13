@@ -40,9 +40,10 @@
 
 STATIC bool sd_is_enabled(void) {
     uint8_t sd_en = 0;
-    if (__get_PRIMASK())
+    if (__get_PRIMASK()) {
         return false;
-    (void) sd_softdevice_is_enabled(&sd_en);
+    }
+    (void)sd_softdevice_is_enabled(&sd_en);
     return sd_en;
 }
 
@@ -74,7 +75,7 @@ bool sd_flash_page_erase_sync(uint32_t page_number) {
     return true;
 }
 
-bool sd_flash_write_sync(uint32_t *dest_words, uint32_t* src_words, uint32_t num_words) {
+bool sd_flash_write_sync(uint32_t *dest_words, uint32_t *src_words, uint32_t num_words) {
     sd_flash_operation_start();
     if (sd_flash_write(dest_words, src_words, num_words) != NRF_SUCCESS) {
         return false;
@@ -95,12 +96,29 @@ bool sd_flash_write_sync(uint32_t *dest_words, uint32_t* src_words, uint32_t num
 
 bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
     #ifdef BLUETOOTH_SD
-        if (sd_is_enabled()) {
-            uint32_t err_code;
-            sd_flash_operation_status_t status;
+    if (sd_is_enabled()) {
+        uint32_t err_code;
+        sd_flash_operation_status_t status;
 
+        sd_flash_operation_start();
+        err_code = sd_flash_page_erase(page_addr / FLASH_PAGE_SIZE);
+        if (err_code != NRF_SUCCESS) {
+            return false;
+        }
+        status = sd_flash_operation_wait_until_done();
+        if (status == SD_FLASH_OPERATION_ERROR) {
+            return false;
+        }
+
+        // Divide a full page into parts, because writing a full page causes an assertion failure.
+        // See https://devzone.nordicsemi.com/f/nordic-q-a/40088/sd_flash_write-cause-nrf_fault_id_sd_assert/
+        const size_t BLOCK_PARTS = 2;
+        size_t words_to_write = FLASH_PAGE_SIZE / sizeof(uint32_t) / BLOCK_PARTS;
+        for (size_t i = 0; i < BLOCK_PARTS; i++) {
             sd_flash_operation_start();
-            err_code = sd_flash_page_erase(page_addr / FLASH_PAGE_SIZE);
+            err_code = sd_flash_write(((uint32_t *)page_addr) + i * words_to_write,
+                (uint32_t *)data + i * words_to_write,
+                words_to_write);
             if (err_code != NRF_SUCCESS) {
                 return false;
             }
@@ -108,27 +126,10 @@ bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
             if (status == SD_FLASH_OPERATION_ERROR) {
                 return false;
             }
-
-            // Divide a full page into parts, because writing a full page causes an assertion failure.
-            // See https://devzone.nordicsemi.com/f/nordic-q-a/40088/sd_flash_write-cause-nrf_fault_id_sd_assert/
-            const size_t BLOCK_PARTS = 2;
-            size_t words_to_write = FLASH_PAGE_SIZE / sizeof(uint32_t) / BLOCK_PARTS;
-            for (size_t i = 0; i < BLOCK_PARTS; i++) {
-                sd_flash_operation_start();
-                err_code = sd_flash_write(((uint32_t *)page_addr) + i * words_to_write,
-                                          (uint32_t *)data + i * words_to_write,
-                                          words_to_write);
-                if (err_code != NRF_SUCCESS) {
-                    return false;
-                }
-                status = sd_flash_operation_wait_until_done();
-                if (status == SD_FLASH_OPERATION_ERROR) {
-                    return false;
-                }
-            }
-
-            return true;
         }
+
+        return true;
+    }
     #endif
 
     nrfx_nvmc_page_erase(page_addr);

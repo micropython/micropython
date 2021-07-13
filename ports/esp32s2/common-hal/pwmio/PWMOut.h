@@ -36,8 +36,8 @@ typedef struct {
     ledc_channel_config_t chan_handle;
     uint16_t pin_number;
     uint8_t duty_resolution;
-    bool variable_frequency: 1;
-    bool deinited: 1;
+    bool variable_frequency : 1;
+    bool deinited : 1;
 } pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);

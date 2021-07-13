@@ -33,15 +33,15 @@
 
 
 bleio_uuid_obj_t *bleio_attribute_get_uuid(mp_obj_t *attribute) {
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+    if (mp_obj_is_type(attribute, &bleio_characteristic_type)) {
         bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(attribute);
         return characteristic->uuid;
     }
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_descriptor_type)) {
+    if (mp_obj_is_type(attribute, &bleio_descriptor_type)) {
         bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute);
         return descriptor->uuid;
     }
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_service_type)) {
+    if (mp_obj_is_type(attribute, &bleio_service_type)) {
         bleio_service_obj_t *service = MP_OBJ_TO_PTR(attribute);
         return service->uuid;
     }

@@ -30,12 +30,14 @@
 #include "driver/timer.h"
 
 typedef struct {
+    timg_dev_t *hw;
     timer_idx_t idx;
     timer_group_t group;
 } timer_index_t;
 
-extern void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer);
-extern void peripherals_timer_deinit(timer_index_t * timer);
+extern bool peripherals_timer_init(const timer_config_t *config, timer_index_t *timer);
+extern void peripherals_timer_deinit(timer_index_t *timer);
 extern void peripherals_timer_reset(void);
+extern void peripherals_timer_never_reset(timer_index_t *timer);
 
 #endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H

@@ -62,11 +62,11 @@ STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void
     self->mode = WATCHDOGMODE_NONE;
     mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
     MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
-#if MICROPY_ENABLE_SCHEDULER
+    #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
-#endif
+    #endif
 }
 
 static void timer_free(void) {

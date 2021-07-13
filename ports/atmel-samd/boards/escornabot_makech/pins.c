@@ -1,7 +1,7 @@
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
-    //LEDs
+    // LEDs
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA04) },
     { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PA05) },
@@ -31,7 +31,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA09) },
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA13) },
 
-    //UART
+    // UART
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA01) },
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PA00) },
 

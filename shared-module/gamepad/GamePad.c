@@ -30,7 +30,7 @@
 #include "supervisor/shared/tick.h"
 
 void common_hal_gamepad_gamepad_init(gamepad_obj_t *gamepad,
-                  const mp_obj_t pins[], size_t n_pins) {
+    const mp_obj_t pins[], size_t n_pins) {
     for (size_t i = 0; i < 8; ++i) {
         gamepad->pins[i] = NULL;
     }

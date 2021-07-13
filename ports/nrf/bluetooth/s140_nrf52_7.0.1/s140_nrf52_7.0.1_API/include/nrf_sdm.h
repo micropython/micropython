@@ -130,12 +130,12 @@ the start of the SoftDevice (without MBR)*/
 /** @brief Defines a macro for retrieving the actual SoftDevice Information Structure size value
  *         from a given base address. Use @ref MBR_SIZE as the argument when the SoftDevice is
  *         installed just above the MBR (the usual case). */
-#define SD_INFO_STRUCT_SIZE_GET(baseaddr) (*((uint8_t *) ((baseaddr) + SD_INFO_STRUCT_SIZE_OFFSET)))
+#define SD_INFO_STRUCT_SIZE_GET(baseaddr) (*((uint8_t *)((baseaddr) + SD_INFO_STRUCT_SIZE_OFFSET)))
 
 /** @brief Defines a macro for retrieving the actual SoftDevice size value from a given base
  *         address. Use @ref MBR_SIZE as the argument when the SoftDevice is installed just above
  *         the MBR (the usual case). */
-#define SD_SIZE_GET(baseaddr) (*((uint32_t *) ((baseaddr) + SD_SIZE_OFFSET)))
+#define SD_SIZE_GET(baseaddr) (*((uint32_t *)((baseaddr) + SD_SIZE_OFFSET)))
 
 /** @brief Defines the amount of flash that is used by the SoftDevice.
  *         Add @ref MBR_SIZE to find the first available flash address when the SoftDevice is installed
@@ -146,25 +146,25 @@ the start of the SoftDevice (without MBR)*/
 /** @brief Defines a macro for retrieving the actual FWID value from a given base address. Use
  *         @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR (the usual
  *         case). */
-#define SD_FWID_GET(baseaddr) (*((uint16_t *) ((baseaddr) + SD_FWID_OFFSET)))
+#define SD_FWID_GET(baseaddr) (*((uint16_t *)((baseaddr) + SD_FWID_OFFSET)))
 
 /** @brief Defines a macro for retrieving the actual SoftDevice ID from a given base address. Use
  *         @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR (the
  *         usual case). */
 #define SD_ID_GET(baseaddr) ((SD_INFO_STRUCT_SIZE_GET(baseaddr) > (SD_ID_OFFSET - SOFTDEVICE_INFO_STRUCT_OFFSET)) \
-        ? (*((uint32_t *) ((baseaddr) + SD_ID_OFFSET))) : SDM_INFO_FIELD_INVALID)
+        ? (*((uint32_t *)((baseaddr) + SD_ID_OFFSET))) : SDM_INFO_FIELD_INVALID)
 
 /** @brief Defines a macro for retrieving the actual SoftDevice version from a given base address.
  *         Use @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR
  *         (the usual case). */
 #define SD_VERSION_GET(baseaddr) ((SD_INFO_STRUCT_SIZE_GET(baseaddr) > (SD_VERSION_OFFSET - SOFTDEVICE_INFO_STRUCT_OFFSET)) \
-        ? (*((uint32_t *) ((baseaddr) + SD_VERSION_OFFSET))) : SDM_INFO_FIELD_INVALID)
+        ? (*((uint32_t *)((baseaddr) + SD_VERSION_OFFSET))) : SDM_INFO_FIELD_INVALID)
 
 /** @brief Defines a macro for retrieving the address of SoftDevice unique str based on a given base address.
  *         Use @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR
  *         (the usual case). */
 #define SD_UNIQUE_STR_ADDR_GET(baseaddr) ((SD_INFO_STRUCT_SIZE_GET(baseaddr) > (SD_UNIQUE_STR_OFFSET - SOFTDEVICE_INFO_STRUCT_OFFSET)) \
-        ? (((uint8_t *) ((baseaddr) + SD_UNIQUE_STR_OFFSET))) : SDM_INFO_FIELD_INVALID)
+        ? (((uint8_t *)((baseaddr) + SD_UNIQUE_STR_OFFSET))) : SDM_INFO_FIELD_INVALID)
 
 /**@defgroup NRF_FAULT_ID_RANGES Fault ID ranges
  * @{ */
@@ -174,7 +174,7 @@ the start of the SoftDevice (without MBR)*/
 
 /**@defgroup NRF_FAULT_IDS Fault ID types
  * @{ */
-#define NRF_FAULT_ID_SD_ASSERT    (NRF_FAULT_ID_SD_RANGE_START  + 1)          /**< SoftDevice assertion. The info parameter is reserved for future used. */
+#define NRF_FAULT_ID_SD_ASSERT    (NRF_FAULT_ID_SD_RANGE_START + 1)           /**< SoftDevice assertion. The info parameter is reserved for future used. */
 #define NRF_FAULT_ID_APP_MEMACC   (NRF_FAULT_ID_APP_RANGE_START + 1)          /**< Application invalid memory access. The info parameter will contain 0x00000000,
                                                                                    in case of SoftDevice RAM access violation. In case of SoftDevice peripheral
                                                                                    register violation the info parameter will contain the sub-region number of
@@ -190,11 +190,11 @@ the start of the SoftDevice (without MBR)*/
 /**@brief nRF SoftDevice Manager API SVC numbers. */
 enum NRF_SD_SVCS
 {
-  SD_SOFTDEVICE_ENABLE = SDM_SVC_BASE, /**< ::sd_softdevice_enable */
-  SD_SOFTDEVICE_DISABLE,               /**< ::sd_softdevice_disable */
-  SD_SOFTDEVICE_IS_ENABLED,            /**< ::sd_softdevice_is_enabled */
-  SD_SOFTDEVICE_VECTOR_TABLE_BASE_SET, /**< ::sd_softdevice_vector_table_base_set */
-  SVC_SDM_LAST                         /**< Placeholder for last SDM SVC */
+    SD_SOFTDEVICE_ENABLE = SDM_SVC_BASE, /**< ::sd_softdevice_enable */
+    SD_SOFTDEVICE_DISABLE,             /**< ::sd_softdevice_disable */
+    SD_SOFTDEVICE_IS_ENABLED,          /**< ::sd_softdevice_is_enabled */
+    SD_SOFTDEVICE_VECTOR_TABLE_BASE_SET, /**< ::sd_softdevice_vector_table_base_set */
+    SVC_SDM_LAST                       /**< Placeholder for last SDM SVC */
 };
 
 /** @} */
@@ -237,15 +237,15 @@ enum NRF_SD_SVCS
 /**@brief Type representing LFCLK oscillator source. */
 typedef struct
 {
-  uint8_t source;         /**< LF oscillator clock source, see @ref NRF_CLOCK_LF_SRC. */
-  uint8_t rc_ctiv;        /**< Only for ::NRF_CLOCK_LF_SRC_RC: Calibration timer interval in 1/4 second
+    uint8_t source;       /**< LF oscillator clock source, see @ref NRF_CLOCK_LF_SRC. */
+    uint8_t rc_ctiv;      /**< Only for ::NRF_CLOCK_LF_SRC_RC: Calibration timer interval in 1/4 second
                                units (nRF52: 1-32).
                                @note To avoid excessive clock drift, 0.5 degrees Celsius is the
                                      maximum temperature change allowed in one calibration timer
                                      interval. The interval should be selected to ensure this.
 
                                   @note Must be 0 if source is not ::NRF_CLOCK_LF_SRC_RC.  */
-  uint8_t rc_temp_ctiv;   /**<  Only for ::NRF_CLOCK_LF_SRC_RC: How often (in number of calibration
+    uint8_t rc_temp_ctiv; /**<  Only for ::NRF_CLOCK_LF_SRC_RC: How often (in number of calibration
                                 intervals) the RC oscillator shall be calibrated if the temperature
                                 hasn't changed.
                                      0: Always calibrate even if the temperature hasn't changed.
@@ -263,7 +263,7 @@ typedef struct
                                       least once every 8 seconds and for temperature changes of 0.5
                                       degrees Celsius every 4 seconds. See the Product Specification
                                       for the nRF52 device being used for more information.*/
-  uint8_t accuracy;       /**< External clock accuracy used in the LL to compute timing
+    uint8_t accuracy;     /**< External clock accuracy used in the LL to compute timing
                                windows, see @ref NRF_CLOCK_LF_ACCURACY.*/
 } nrf_clock_lf_cfg_t;
 
@@ -323,7 +323,7 @@ typedef void (*nrf_fault_handler_t)(uint32_t id, uint32_t pc, uint32_t info);
  * @retval ::NRF_ERROR_SDM_LFCLK_SOURCE_UNKNOWN Unknown low frequency clock source selected.
  * @retval ::NRF_ERROR_INVALID_PARAM Invalid clock source configuration supplied in p_clock_lf_cfg.
  */
-SVCALL(SD_SOFTDEVICE_ENABLE, uint32_t, sd_softdevice_enable(nrf_clock_lf_cfg_t const * p_clock_lf_cfg, nrf_fault_handler_t fault_handler));
+SVCALL(SD_SOFTDEVICE_ENABLE, uint32_t, sd_softdevice_enable(nrf_clock_lf_cfg_t const *p_clock_lf_cfg, nrf_fault_handler_t fault_handler));
 
 
 /**@brief Disables the SoftDevice and by extension the protocol stack.

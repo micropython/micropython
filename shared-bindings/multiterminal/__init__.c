@@ -106,5 +106,5 @@ STATIC MP_DEFINE_CONST_DICT(multiterminal_module_globals, multiterminal_module_g
 
 const mp_obj_module_t multiterminal_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&multiterminal_module_globals,
+    .globals = (mp_obj_dict_t *)&multiterminal_module_globals,
 };

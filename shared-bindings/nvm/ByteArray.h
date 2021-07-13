@@ -34,10 +34,10 @@ extern const mp_obj_type_t nvm_bytearray_type;
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self);
 
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint8_t* values, uint32_t len);
+    uint32_t start_index, uint8_t *values, uint32_t len);
 // len and values are intentionally swapped to signify values is an output and
 // also leverage the compiler to validate uses are expected.
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values);
+    uint32_t start_index, uint32_t len, uint8_t *values);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H

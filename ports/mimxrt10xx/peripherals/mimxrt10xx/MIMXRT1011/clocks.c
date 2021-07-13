@@ -74,17 +74,17 @@
 
 const clock_sys_pll_config_t sysPllConfig_BOARD_BootClockRUN = {
     .loopDivider = 1, /* PLL loop divider, Fout = Fin * ( 20 + loopDivider*2 + numerator / denominator ) */
-    .numerator   = 0, /* 30 bit numerator of fractional loop divider */
+    .numerator = 0,   /* 30 bit numerator of fractional loop divider */
     .denominator = 1, /* 30 bit denominator of fractional loop divider */
-    .src         = 0, /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
+    .src = 0,         /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
 };
 const clock_usb_pll_config_t usb1PllConfig_BOARD_BootClockRUN = {
     .loopDivider = 0, /* PLL loop divider, Fout = Fin * 20 */
-    .src         = 0, /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
+    .src = 0,         /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
 };
 const clock_enet_pll_config_t enetPllConfig_BOARD_BootClockRUN = {
     .enableClkOutput500M = true, /* Enable the PLL providing the ENET 500MHz reference clock */
-    .src                 = 0,    /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
+    .src = 0,                    /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
 };
 
 // Based on the hello_world example in the SDK
@@ -111,8 +111,7 @@ void clocks_init(void) {
     /* Setting the VDD_SOC to 1.5V. It is necessary to config CORE to 500Mhz. */
     DCDC->REG3 = (DCDC->REG3 & (~DCDC_REG3_TRG_MASK)) | DCDC_REG3_TRG(0x12);
     /* Waiting for DCDC_STS_DC_OK bit is asserted */
-    while (DCDC_REG0_STS_DC_OK_MASK != (DCDC_REG0_STS_DC_OK_MASK & DCDC->REG0))
-    {
+    while (DCDC_REG0_STS_DC_OK_MASK != (DCDC_REG0_STS_DC_OK_MASK & DCDC->REG0)) {
     }
     /* Set AHB_PODF. */
     CLOCK_SetDiv(kCLOCK_AhbDiv, 0);

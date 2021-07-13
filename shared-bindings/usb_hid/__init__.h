@@ -27,9 +27,15 @@
 #ifndef SHARED_BINDINGS_USB_HID_H
 #define SHARED_BINDINGS_USB_HID_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/obj.h"
+#include "py/objtuple.h"
+#include "shared-module/usb_hid/__init__.h"
 
 extern mp_obj_tuple_t common_hal_usb_hid_devices;
 
-#endif  // SHARED_BINDINGS_USB_HID_H
+void usb_hid_set_devices(mp_obj_t devices);
+
+bool common_hal_usb_hid_disable(void);
+bool common_hal_usb_hid_enable(const mp_obj_t devices_seq);
+
+#endif // SHARED_BINDINGS_USB_HID_H

@@ -4,7 +4,7 @@ import sys
 try:
     uio.resource_stream
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 buf = uio.resource_stream("data", "file2")

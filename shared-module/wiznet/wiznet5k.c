@@ -82,7 +82,7 @@ int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
     DNS_init(0, buf);
-    mp_int_t ret = DNS_run(dns_ip, (uint8_t*)name, out_ip);
+    mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
     m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
     if (ret == 1) {
         // success
@@ -110,9 +110,15 @@ int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     }
 
     switch (socket->u_param.type) {
-        case MOD_NETWORK_SOCK_STREAM: socket->u_param.type = Sn_MR_TCP; break;
-        case MOD_NETWORK_SOCK_DGRAM: socket->u_param.type = Sn_MR_UDP; break;
-        default: *_errno = MP_EINVAL; return -1;
+        case MOD_NETWORK_SOCK_STREAM:
+            socket->u_param.type = Sn_MR_TCP;
+            break;
+        case MOD_NETWORK_SOCK_DGRAM:
+            socket->u_param.type = Sn_MR_UDP;
+            break;
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
     }
 
     if (socket->u_param.fileno == -1) {
@@ -184,11 +190,11 @@ int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_
             socket->u_param.fileno = -1;
             int _errno2;
             if (wiznet5k_socket_socket(socket, &_errno2) != 0) {
-                //printf("(bad resocket %d)\n", _errno2);
+                // printf("(bad resocket %d)\n", _errno2);
             } else if (wiznet5k_socket_bind(socket, NULL, *port, &_errno2) != 0) {
-                //printf("(bad rebind %d)\n", _errno2);
+                // printf("(bad rebind %d)\n", _errno2);
             } else if (wiznet5k_socket_listen(socket, 0, &_errno2) != 0) {
-                //printf("(bad relisten %d)\n", _errno2);
+                // printf("(bad relisten %d)\n", _errno2);
             }
 
             return 0;
@@ -229,7 +235,7 @@ int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_
 
 mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte*)buf, len);
+    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -264,7 +270,7 @@ mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *b
     }
 
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte*)buf, len, ip, port);
+    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte *)buf, len, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -339,7 +345,9 @@ int wiznet5k_start_dhcp(void) {
     if (wiznet5k_obj.dhcp_socket < 0) {
         // Set up the socket to listen on UDP 68 before calling DHCP_init
         wiznet5k_obj.dhcp_socket = get_available_socket(&wiznet5k_obj);
-        if (wiznet5k_obj.dhcp_socket < 0) return MP_EMFILE;
+        if (wiznet5k_obj.dhcp_socket < 0) {
+            return MP_EMFILE;
+        }
 
         WIZCHIP_EXPORT(socket)(wiznet5k_obj.dhcp_socket, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
         DHCP_init(wiznet5k_obj.dhcp_socket, dhcp_buf);
@@ -382,7 +390,7 @@ void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket) {
 mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, const mcu_pin_obj_t *rst_in) {
 
     // init the wiznet5k object
-    wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
+    wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi_in;
     wiznet5k_obj.socket_used = 0;
@@ -397,12 +405,14 @@ mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, co
         1, // HIGH POLARITY
         1, // SECOND PHASE TRANSITION
         8 // 8 BITS
-    );
+        );
 
     common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
     common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.cs, 1, DRIVE_MODE_PUSH_PULL);
 
-    if (rst_in) common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+    if (rst_in) {
+        common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+    }
     wiznet5k_reset();
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
@@ -417,7 +427,7 @@ mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, co
         .dhcp = NETINFO_DHCP,
     };
     network_module_create_random_mac_address(netinfo.mac);
-    ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
+    ctlnetwork(CN_SET_NETINFO, (void *)&netinfo);
 
     // seems we need a small delay after init
     mp_hal_delay_ms(250);

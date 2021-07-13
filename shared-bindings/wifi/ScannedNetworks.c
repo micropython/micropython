@@ -37,7 +37,7 @@
 //|     by a `wifi.Radio`: it has no user-visible constructor."""
 //|
 STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &wifi_scannednetworks_type));
+    mp_check_self(mp_obj_is_type(self_in, &wifi_scannednetworks_type));
     wifi_scannednetworks_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t network = common_hal_wifi_scannednetworks_next(self);
     if (network != mp_const_none) {
@@ -63,7 +63,10 @@ STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t wifi_scannednetworks_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ScannedNetworks,
-    .getiter = mp_identity_getiter,
-    .iternext = scannednetworks_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = scannednetworks_iternext,
+        )
 };

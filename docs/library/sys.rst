@@ -1,5 +1,5 @@
 :mod:`sys` -- system specific functions
-=======================================
+========================================
 
 .. include:: ../templates/unsupported_in_circuitpython.inc
 
@@ -11,25 +11,11 @@
 Functions
 ---------
 
-.. function:: exit(retval=0)
+.. function:: exit(retval=0, /)
 
    Terminate current program with a given exit code. Underlyingly, this
    function raise as `SystemExit` exception. If an argument is given, its
    value given as an argument to `SystemExit`.
-
-.. function:: print_exception(exc, file=sys.stdout)
-
-   Print exception with a traceback to a file-like object *file* (or
-   `sys.stdout` by default).
-
-   .. admonition:: Difference to CPython
-      :class: attention
-
-      This is simplified version of a function which appears in the
-      ``traceback`` module in CPython. Unlike ``traceback.print_exception()``,
-      this function takes just exception value instead of exception type,
-      exception value, and traceback object; *file* argument should be
-      positional; further arguments are not supported.
 
 Constants
 ---------
@@ -122,3 +108,9 @@ Constants
 .. data:: version_info
 
    Python language version that this implementation conforms to, as a tuple of ints.
+
+    .. admonition:: Difference to CPython
+      :class: attention
+
+      Only the first three version numbers (major, minor, micro) are supported and
+      they can be referenced only by index, not by name.

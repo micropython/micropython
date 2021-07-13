@@ -41,8 +41,8 @@ typedef struct _memorymonitor_allocationalarm_obj_t {
     size_t minimum_block_count;
     mp_int_t count;
     // Store the location that points to us so we can remove ourselves.
-    memorymonitor_allocationalarm_obj_t** previous;
-    memorymonitor_allocationalarm_obj_t* next;
+    memorymonitor_allocationalarm_obj_t **previous;
+    memorymonitor_allocationalarm_obj_t *next;
 } memorymonitor_allocationalarm_obj_t;
 
 void memorymonitor_allocationalarms_allocation(size_t block_count);

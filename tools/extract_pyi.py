@@ -16,10 +16,47 @@ import isort
 import black
 
 
-IMPORTS_IGNORE = frozenset({'int', 'float', 'bool', 'str', 'bytes', 'tuple', 'list', 'set', 'dict', 'bytearray', 'slice', 'file', 'buffer', 'range', 'array', 'struct_time'})
-IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence', 'NamedTuple', 'Iterable', 'Iterator', 'Callable', 'AnyStr', 'overload', 'Type'})
-IMPORTS_TYPES = frozenset({'TracebackType'})
-CPY_TYPING = frozenset({'ReadableBuffer', 'WriteableBuffer', 'AudioSample', 'FrameBuffer', 'Alarm'})
+IMPORTS_IGNORE = frozenset(
+    {
+        "int",
+        "float",
+        "bool",
+        "str",
+        "bytes",
+        "tuple",
+        "list",
+        "set",
+        "dict",
+        "bytearray",
+        "slice",
+        "file",
+        "buffer",
+        "range",
+        "array",
+        "struct_time",
+    }
+)
+IMPORTS_TYPING = frozenset(
+    {
+        "Any",
+        "Optional",
+        "Union",
+        "Tuple",
+        "List",
+        "Sequence",
+        "NamedTuple",
+        "Iterable",
+        "Iterator",
+        "Callable",
+        "AnyStr",
+        "overload",
+        "Type",
+    }
+)
+IMPORTS_TYPES = frozenset({"TracebackType"})
+CPY_TYPING = frozenset(
+    {"ReadableBuffer", "WriteableBuffer", "AudioSample", "FrameBuffer", "Alarm"}
+)
 
 
 def is_typed(node, allow_any=False):
@@ -29,8 +66,12 @@ def is_typed(node, allow_any=False):
         return True
     elif isinstance(node, ast.Name) and node.id == "Any":
         return False
-    elif isinstance(node, ast.Attribute) and type(node.value) == ast.Name \
-            and node.value.id == "typing" and node.attr == "Any":
+    elif (
+        isinstance(node, ast.Attribute)
+        and type(node.value) == ast.Name
+        and node.value.id == "typing"
+        and node.attr == "Any"
+    ):
         return False
     return True
 
@@ -50,12 +91,23 @@ def find_stub_issues(tree):
             if sys.version_info >= (3, 8):
                 allargs.extend(node.posonlyargs)
             for arg_node in allargs:
-                if not is_typed(arg_node.annotation) and (arg_node.arg != "self" and arg_node.arg != "cls"):
-                    yield ("WARN", f"Missing argument type: {arg_node.arg} on line {arg_node.lineno}")
+                if not is_typed(arg_node.annotation) and (
+                    arg_node.arg != "self" and arg_node.arg != "cls"
+                ):
+                    yield (
+                        "WARN",
+                        f"Missing argument type: {arg_node.arg} on line {arg_node.lineno}",
+                    )
             if node.vararg and not is_typed(node.vararg.annotation, allow_any=True):
-                yield ("WARN", f"Missing argument type: *{node.vararg.arg} on line {node.vararg.lineno}")
+                yield (
+                    "WARN",
+                    f"Missing argument type: *{node.vararg.arg} on line {node.vararg.lineno}",
+                )
             if node.kwarg and not is_typed(node.kwarg.annotation, allow_any=True):
-                yield ("WARN", f"Missing argument type: **{node.kwarg.arg} on line {node.kwarg.lineno}")
+                yield (
+                    "WARN",
+                    f"Missing argument type: **{node.kwarg.arg} on line {node.kwarg.lineno}",
+                )
         elif isinstance(node, ast.FunctionDef):
             if not is_typed(node.returns):
                 yield ("WARN", f"Missing return type: {node.name} on line {node.lineno}")
@@ -196,7 +248,7 @@ def convert_folder(top_level, stub_directory):
     import_body = "\n".join(import_lines)
     m = re.match(r'(\s*""".*?""")', stub_contents, flags=re.DOTALL)
     if m:
-        stub_contents = m.group(1) + "\n\n" + import_body + "\n\n" + stub_contents[m.end():]
+        stub_contents = m.group(1) + "\n\n" + import_body + "\n\n" + stub_contents[m.end() :]
     else:
         stub_contents = import_body + "\n\n" + stub_contents
 

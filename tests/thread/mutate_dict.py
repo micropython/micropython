@@ -7,7 +7,7 @@
 import _thread
 
 # the shared dict
-di = {'a':'A', 'b':'B', 'c':'C', 'd':'D'}
+di = {"a": "A", "b": "B", "c": "C", "d": "D"}
 
 # main thread function
 def th(n, lo, hi):
@@ -27,6 +27,7 @@ def th(n, lo, hi):
     with lock:
         global n_finished
         n_finished += 1
+
 
 lock = _thread.allocate_lock()
 n_thread = 4

@@ -49,7 +49,7 @@ extern uint32_t __fatfs_flash_length[];
 #define NO_CACHE        0xffffffff
 #define SECTOR_SIZE     0x1000 /* 4K */
 
-uint8_t  _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
+uint8_t _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
 extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
@@ -58,7 +58,7 @@ extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
 
 void PLACE_IN_ITCM(supervisor_flash_init)(void) {
     // Update the LUT to make sure all entries are available.
-    FLEXSPI_UpdateLUT(FLEXSPI, 0, (const uint32_t*) &qspiflash_config.memConfig.lookupTable, 64);
+    FLEXSPI_UpdateLUT(FLEXSPI, 0, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64);
 }
 
 static inline uint32_t lba2addr(uint32_t block) {
@@ -74,7 +74,9 @@ uint32_t supervisor_flash_get_block_count(void) {
 }
 
 void PLACE_IN_ITCM(port_internal_flash_flush)(void) {
-    if (_flash_page_addr == NO_CACHE) return;
+    if (_flash_page_addr == NO_CACHE) {
+        return;
+    }
     status_t status;
 
     // Skip if data is the same
@@ -109,13 +111,13 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     supervisor_flash_flush();
 
     uint32_t src = lba2addr(block);
-    memcpy(dest, (uint8_t*)src, FILESYSTEM_BLOCK_SIZE * num_blocks);
+    memcpy(dest, (uint8_t *)src, FILESYSTEM_BLOCK_SIZE * num_blocks);
     return 0; // success
 }
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
     while (num_blocks) {
-        uint32_t const addr      = lba2addr(lba);
+        uint32_t const addr = lba2addr(lba);
         uint32_t const page_addr = addr & ~(SECTOR_SIZE - 1);
 
         uint32_t count = 8 - (lba % 8); // up to page boundary
@@ -135,8 +137,8 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         memcpy(_flash_cache + (addr & (SECTOR_SIZE - 1)), src, count * FILESYSTEM_BLOCK_SIZE);
 
         // adjust for next run
-        lba        += count;
-        src        += count * FILESYSTEM_BLOCK_SIZE;
+        lba += count;
+        src += count * FILESYSTEM_BLOCK_SIZE;
         num_blocks -= count;
     }
 

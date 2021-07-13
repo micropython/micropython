@@ -32,9 +32,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t* buffer;
-    mp_obj_t* rows;
-    mp_obj_t* cols;
+    uint8_t *buffer;
+    mp_obj_t *rows;
+    mp_obj_t *cols;
     digitalio_digitalinout_obj_t *buttons;
     uint8_t rows_size;
     uint8_t cols_size;
@@ -44,5 +44,6 @@ typedef struct {
 void pew_init(void);
 void pewpew_interrupt_handler(uint8_t index);
 void pew_reset(void);
+uint16_t pew_get_ticks(void);
 
 #endif  // MICROPY_INCLUDED_PEW_PEWPEW_H

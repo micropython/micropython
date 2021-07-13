@@ -46,5 +46,5 @@ STATIC MP_DEFINE_CONST_DICT(fontio_module_globals, fontio_module_globals_table);
 
 const mp_obj_module_t fontio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&fontio_module_globals,
+    .globals = (mp_obj_dict_t *)&fontio_module_globals,
 };

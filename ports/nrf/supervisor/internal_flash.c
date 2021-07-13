@@ -45,7 +45,7 @@
 
 #define NO_CACHE        0xffffffff
 
-uint8_t  _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
+uint8_t _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
 
@@ -64,11 +64,13 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE ;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE;
 }
 
 void port_internal_flash_flush(void) {
-    if (_flash_page_addr == NO_CACHE) return;
+    if (_flash_page_addr == NO_CACHE) {
+        return;
+    }
 
     // Skip if data is the same
     if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
@@ -83,13 +85,13 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     supervisor_flash_flush();
 
     uint32_t src = lba2addr(block);
-    memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
+    memcpy(dest, (uint8_t *)src, FILESYSTEM_BLOCK_SIZE * num_blocks);
     return 0; // success
 }
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
     while (num_blocks) {
-        uint32_t const addr      = lba2addr(lba);
+        uint32_t const addr = lba2addr(lba);
         uint32_t const page_addr = addr & ~(FLASH_PAGE_SIZE - 1);
 
         uint32_t count = 8 - (lba % 8); // up to page boundary
@@ -109,8 +111,8 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         memcpy(_flash_cache + (addr & (FLASH_PAGE_SIZE - 1)), src, count * FILESYSTEM_BLOCK_SIZE);
 
         // adjust for next run
-        lba        += count;
-        src        += count * FILESYSTEM_BLOCK_SIZE;
+        lba += count;
+        src += count * FILESYSTEM_BLOCK_SIZE;
         num_blocks -= count;
     }
 

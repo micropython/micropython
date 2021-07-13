@@ -40,6 +40,105 @@
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
+#if CIRCUITPY_USB_MSC
+#include "tusb.h"
+
+static const uint8_t usb_msc_descriptor_template[] = {
+    // MSC Interface Descriptor
+    0x09,        //  0 bLength
+    0x04,        //  1 bDescriptorType (Interface)
+    0xFF,        //  2 bInterfaceNumber [SET AT RUNTIME]
+#define MSC_INTERFACE_INDEX (2)
+    0x00,        //  3 bAlternateSetting
+    0x02,        //  4 bNumEndpoints 2
+    0x08,        //  5 bInterfaceClass: MSC
+    0x06,        //  6 bInterfaceSubClass: TRANSPARENT
+    0x50,        //  7 bInterfaceProtocol: BULK
+    0xFF,        //  8 iInterface (String Index) [SET AT RUNTIME]
+#define MSC_INTERFACE_STRING_INDEX (8)
+
+    // MSC Endpoint IN Descriptor
+    0x07,        //  9 bLength
+    0x05,        // 10 bDescriptorType (Endpoint)
+    0xFF,        // 11 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | number]
+#define MSC_IN_ENDPOINT_INDEX (11)
+    0x02,        // 12 bmAttributes (Bulk)
+    #if USB_HIGHSPEED
+    0x00, 0x02,  // 13,14 wMaxPacketSize 512
+    #else
+    0x40, 0x00,  // 13,14 wMaxPacketSize 64
+    #endif
+    0x00,        // 15 bInterval 0 (unit depends on device speed)
+
+    // MSC Endpoint OUT Descriptor
+    0x07,        // 16 bLength
+    0x05,        // 17 bDescriptorType (Endpoint)
+    0xFF,        // 18 bEndpointAddress (OUT/H2D) [SET AT RUNTIME]
+#define MSC_OUT_ENDPOINT_INDEX (18)
+    0x02,        // 19 bmAttributes (Bulk)
+    #if USB_HIGHSPEED
+    0x00, 0x02,  // 20,21 wMaxPacketSize 512
+    #else
+    0x40, 0x00,  // 20,21 wMaxPacketSize 64
+    #endif
+    0x00,        // 22 bInterval 0 (unit depends on device speed)
+};
+
+// Is the MSC device enabled?
+bool storage_usb_is_enabled;
+
+void storage_usb_set_defaults(void) {
+    storage_usb_is_enabled = CIRCUITPY_USB_MSC_ENABLED_DEFAULT;
+}
+
+bool storage_usb_enabled(void) {
+    return storage_usb_is_enabled;
+}
+
+size_t storage_usb_descriptor_length(void) {
+    return sizeof(usb_msc_descriptor_template);
+}
+
+static const char storage_interface_name[] = USB_INTERFACE_NAME " Mass Storage";
+
+size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
+    memcpy(descriptor_buf, usb_msc_descriptor_template, sizeof(usb_msc_descriptor_template));
+    descriptor_buf[MSC_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptor_counts->current_interface++;
+
+    descriptor_buf[MSC_IN_ENDPOINT_INDEX] =
+        0x80 | (USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : descriptor_counts->current_endpoint);
+    descriptor_counts->num_in_endpoints++;
+    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] =
+        USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : descriptor_counts->current_endpoint;
+    descriptor_counts->num_out_endpoints++;
+    descriptor_counts->current_endpoint++;
+
+    usb_add_interface_string(*current_interface_string, storage_interface_name);
+    descriptor_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
+    (*current_interface_string)++;
+
+    return sizeof(usb_msc_descriptor_template);
+}
+
+static bool usb_drive_set_enabled(bool enabled) {
+    // We can't change the descriptors once we're connected.
+    if (tud_connected()) {
+        return false;
+    }
+    storage_usb_is_enabled = enabled;
+    return true;
+}
+
+bool common_hal_storage_disable_usb_drive(void) {
+    return usb_drive_set_enabled(false);
+}
+
+bool common_hal_storage_enable_usb_drive(void) {
+    return usb_drive_set_enabled(true);
+}
+#endif // CIRCUITPY_USB_MSC
+
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
         // mount point not found
@@ -57,7 +156,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
     return mp_call_method_n_kw(n_args, 0, meth);
 }
 
-void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool readonly) {
+void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool readonly) {
     // create new object
     mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
     vfs->str = mount_path;
@@ -94,7 +193,7 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
     }
 
     // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t *)&args);
 
     // Insert the vfs into the mount table by pushing it onto the front of the
     // mount table.
@@ -127,7 +226,7 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj) {
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
 }
 
-STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
+STATIC mp_obj_t storage_object_from_path(const char *mount_path) {
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if (strcmp(mount_path, (*vfsp)->str) == 0) {
             return (*vfsp)->obj;
@@ -136,7 +235,7 @@ STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
     mp_raise_OSError(MP_EINVAL);
 }
 
-void common_hal_storage_umount_path(const char* mount_path) {
+void common_hal_storage_umount_path(const char *mount_path) {
     common_hal_storage_umount_object(storage_object_from_path(mount_path));
 }
 
@@ -149,9 +248,9 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
         mp_raise_OSError(MP_EINVAL);
     }
 
-    #ifdef USB_AVAILABLE
-    if (!usb_msc_ejected()) {
-        mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
+    #if CIRCUITPY_USB_MSC
+    if (!usb_msc_ejected() && storage_usb_is_enabled) {
+        mp_raise_RuntimeError(translate("Cannot remount '/' when visible via USB."));
     }
     #endif
 
@@ -160,7 +259,9 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 }
 
 void common_hal_storage_erase_filesystem(void) {
+    #if CIRCUITPY_USB
     usb_disconnect();
+    #endif
     mp_hal_delay_ms(1000);
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();

@@ -1,13 +1,15 @@
-USB_SERIAL_NUMBER_LENGTH = 10
 USB_HIGHSPEED = 1
-USB_RENUMBER_ENDPOINTS = 0
-USB_CDC_EP_NUM_NOTIFICATION = 3
-USB_CDC_EP_NUM_DATA_OUT = 2
-USB_CDC_EP_NUM_DATA_IN = 1
-USB_MSC_EP_NUM_OUT = 5
-USB_MSC_EP_NUM_IN = 4
 
+# Number of USB endpoint pairs.
+USB_NUM_ENDPOINT_PAIRS = 6
+
+# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
+# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
+# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
+
+# Longints can be implemented as mpz, as longlong, or not
+LONGINT_IMPL = MPZ
 
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_AUDIOIO = 0

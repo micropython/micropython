@@ -51,12 +51,21 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
+	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
 	--param max-inline-insns-single=500
 
 #        Use these flags to debug build times and header includes.
 #        -ftime-report
 #        -H
 
+
+# Set a global CIRCUITPY_DEBUG flag.
+# Don't just call it "DEBUG": too many libraries use plain DEBUG.
+ifneq ($(DEBUG),)
+CFLAGS += -DCIRCUITPY_DEBUG=$(DEBUG)
+else
+CFLAGS += -DCIRCUITPY_DEBUG=0
+endif
 
 ###
 # Handle frozen modules.
@@ -130,6 +139,12 @@ endif
 ifeq ($(CIRCUITPY_BITBANG_APA102),1)
 SRC_PATTERNS += bitbangio/SPI%
 endif
+ifeq ($(CIRCUITPY_BITMAPTOOLS),1)
+SRC_PATTERNS += bitmaptools/%
+endif
+ifeq ($(CIRCUITPY_BITOPS),1)
+SRC_PATTERNS += bitops/%
+endif
 ifeq ($(CIRCUITPY_BLEIO),1)
 SRC_PATTERNS += _bleio/%
 endif
@@ -163,6 +178,9 @@ endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
+endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
@@ -181,11 +199,11 @@ endif
 ifeq ($(CIRCUITPY_IPADDRESS),1)
 SRC_PATTERNS += ipaddress/%
 endif
+ifeq ($(CIRCUITPY_KEYPAD),1)
+SRC_PATTERNS += keypad/%
+endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
-endif
-ifeq ($(CIRCUITPY__EVE),1)
-SRC_PATTERNS += _eve/%
 endif
 ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
 SRC_PATTERNS += memorymonitor/%
@@ -211,6 +229,9 @@ endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
+ifeq ($(CIRCUITPY_RAINBOWIO),1)
+SRC_PATTERNS += rainbowio/%
+endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
@@ -225,6 +246,9 @@ SRC_PATTERNS += pwmio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
+endif
+ifeq ($(CIRCUITPY_RP2PIO),1)
+SRC_PATTERNS += rp2pio/%
 endif
 ifeq ($(CIRCUITPY_ROTARYIO),1)
 SRC_PATTERNS += rotaryio/%
@@ -262,6 +286,9 @@ endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
 endif
+ifeq ($(CIRCUITPY_SYNTHIO),1)
+SRC_PATTERNS += synthio/%
+endif
 ifeq ($(CIRCUITPY_TERMINALIO),1)
 SRC_PATTERNS += terminalio/% fontio/%
 endif
@@ -274,11 +301,17 @@ endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
 endif
+ifeq ($(CIRCUITPY_USB_CDC),1)
+SRC_PATTERNS += usb_cdc/%
+endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
+endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+SRC_PATTERNS += usb_vendor/%
 endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
@@ -291,6 +324,12 @@ SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
+endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
+endif
+ifeq ($(CIRCUITPY_MSGPACK),1)
+SRC_PATTERNS += msgpack/%
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
@@ -311,6 +350,7 @@ SRC_COMMON_HAL_ALL = \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
+	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -336,8 +376,11 @@ SRC_COMMON_HAL_ALL = \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
+	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
+	imagecapture/ParallelImageCapture.c \
+	imagecapture/__init__.c \
 	gnss/__init__.c \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
@@ -351,7 +394,6 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -372,6 +414,7 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/Socket.c \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
+	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
@@ -411,7 +454,10 @@ $(filter $(SRC_PATTERNS), \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
+	msgpack/__init__.c \
+	msgpack/ExtType.c \
 	supervisor/RunReason.c \
+	wifi/AuthMode.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -444,6 +490,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
+	bitmaptools/__init__.c \
+	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/I2CDevice.c \
@@ -470,6 +518,12 @@ SRC_SHARED_MODULE_ALL = \
 	framebufferio/__init__.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
+	keypad/__init__.c \
+	keypad/Event.c \
+	keypad/EventQueue.c \
+	keypad/KeyMatrix.c \
+	keypad/ShiftRegisterKeys.c \
+	keypad/Keys.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \
@@ -480,15 +534,20 @@ SRC_SHARED_MODULE_ALL = \
 	memorymonitor/AllocationAlarm.c \
 	memorymonitor/AllocationSize.c \
 	network/__init__.c \
+	msgpack/__init__.c \
 	os/__init__.c \
+	rainbowio/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	rotaryio/IncrementalEncoder.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \
 	sharpdisplay/__init__.c \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	synthio/MidiTrack.c \
+	synthio/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \
@@ -598,6 +657,19 @@ $(addprefix lib/,\
 	)
 endif
 endif
+
+SRC_CIRCUITPY_COMMON = \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/ffunicode.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/buffer_helper.c \
+	lib/utils/context_manager_helpers.c \
+	lib/utils/interrupt_char.c \
+	lib/utils/pyexec.c \
+	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c
 
 ifdef LD_TEMPLATE_FILE
 # Generate a linker script (.ld file) from a template, for those builds that use it.

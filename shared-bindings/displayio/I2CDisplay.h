@@ -34,10 +34,10 @@
 
 extern const mp_obj_type_t displayio_i2cdisplay_type;
 
-void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
-    busio_i2c_obj_t* i2c, uint16_t device_address, const mcu_pin_obj_t* reset);
+void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t *self,
+    busio_i2c_obj_t *i2c, uint16_t device_address, const mcu_pin_obj_t *reset);
 
-void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self);
+void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t *self);
 
 bool common_hal_displayio_i2cdisplay_reset(mp_obj_t self);
 bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t self);

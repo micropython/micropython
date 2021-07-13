@@ -39,89 +39,74 @@
 STATIC bool reserved_can;
 
 twai_timing_config_t get_t_config(int baudrate) {
-    switch(baudrate) {
-    case 1000000:
-    {
-        // TWAI_TIMING_CONFIG_abc expands to a C designated initializer list
-        // { .brp = 4, ...}.  This is only acceptable to the compiler as an
-        // initializer and 'return TWAI_TIMING_CONFIG_1MBITS()` is not valid.
-        // Instead, introduce a temporary, named variable and return it.
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
-        return t_config;
-    }
-    case 800000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_800KBITS();
-        return t_config;
-    }
-    case 500000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
-        return t_config;
-    }
-    case 250000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_250KBITS();
-        return t_config;
-    }
-    case 125000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_125KBITS();
-        return t_config;
-    }
-    case 100000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_100KBITS();
-        return t_config;
-    }
-    case 50000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_50KBITS();
-        return t_config;
-    }
-    case 25000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_25KBITS();
-        return t_config;
-    }
-    case 20000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_20KBITS();
-        return t_config;
-    }
-    case 16000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_16KBITS();
-        return t_config;
-    }
-    case 12500:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_12_5KBITS();
-        return t_config;
-    }
-    case 10000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_10KBITS();
-        return t_config;
-    }
-    case 5000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_5KBITS();
-        return t_config;
-    }
-    case 1000:
-    {
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1KBITS();
-        return t_config;
-    }
-    default:
-        mp_raise_ValueError(translate("Baudrate not supported by peripheral"));
+    switch (baudrate) {
+        case 1000000: {
+            // TWAI_TIMING_CONFIG_abc expands to a C designated initializer list
+            // { .brp = 4, ...}.  This is only acceptable to the compiler as an
+            // initializer and 'return TWAI_TIMING_CONFIG_1MBITS()` is not valid.
+            // Instead, introduce a temporary, named variable and return it.
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
+            return t_config;
+        }
+        case 800000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_800KBITS();
+            return t_config;
+        }
+        case 500000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
+            return t_config;
+        }
+        case 250000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_250KBITS();
+            return t_config;
+        }
+        case 125000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_125KBITS();
+            return t_config;
+        }
+        case 100000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_100KBITS();
+            return t_config;
+        }
+        case 50000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_50KBITS();
+            return t_config;
+        }
+        case 25000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_25KBITS();
+            return t_config;
+        }
+        case 20000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_20KBITS();
+            return t_config;
+        }
+        case 16000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_16KBITS();
+            return t_config;
+        }
+        case 12500: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_12_5KBITS();
+            return t_config;
+        }
+        case 10000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_10KBITS();
+            return t_config;
+        }
+        case 5000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_5KBITS();
+            return t_config;
+        }
+        case 1000: {
+            twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1KBITS();
+            return t_config;
+        }
+        default:
+            mp_raise_ValueError(translate("Baudrate not supported by peripheral"));
     }
 }
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent)
-{
-#define DIV_ROUND(a, b) (((a) + (b)/2) / (b))
+void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+#define DIV_ROUND(a, b) (((a) + (b) / 2) / (b))
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
     if (reserved_can) {
         mp_raise_ValueError(translate("All CAN peripherals are in use"));
@@ -170,25 +155,21 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
     reserved_can = true;
 }
 
-bool common_hal_canio_can_loopback_get(canio_can_obj_t *self)
-{
+bool common_hal_canio_can_loopback_get(canio_can_obj_t *self) {
     return self->loopback;
 }
 
-int common_hal_canio_can_baudrate_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_baudrate_get(canio_can_obj_t *self) {
     return self->baudrate;
 }
 
-int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self) {
     twai_status_info_t info;
     twai_get_status_info(&info);
     return info.tx_error_counter;
 }
 
-int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self) {
     twai_status_info_t info;
     twai_get_status_info(&info);
     return info.rx_error_counter;
@@ -224,7 +205,9 @@ static void can_restart(void) {
 }
 
 void canio_maybe_auto_restart(canio_can_obj_t *self) {
-    if (self->auto_restart) can_restart();
+    if (self->auto_restart) {
+        can_restart();
+    }
 }
 
 void common_hal_canio_can_restart(canio_can_obj_t *self) {
@@ -242,8 +225,7 @@ void common_hal_canio_can_auto_restart_set(canio_can_obj_t *self, bool value) {
     canio_maybe_auto_restart(self);
 }
 
-void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
-{
+void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in) {
     canio_maybe_auto_restart(self);
     canio_message_obj_t *message = message_in;
     bool rtr = message->base.type == &canio_remote_transmission_request_type;
@@ -275,8 +257,7 @@ void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
     }
 }
 
-void common_hal_canio_can_deinit(canio_can_obj_t *self)
-{
+void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     if (self->tx_pin) {
         (void)twai_stop();
         (void)twai_driver_uninstall();

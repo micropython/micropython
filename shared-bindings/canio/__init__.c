@@ -121,5 +121,5 @@ STATIC MP_DEFINE_CONST_DICT(canio_module_globals, canio_module_globals_table);
 
 const mp_obj_module_t canio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&canio_module_globals,
+    .globals = (mp_obj_dict_t *)&canio_module_globals,
 };

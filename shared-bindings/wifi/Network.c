@@ -53,8 +53,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_ssid_obj, wifi_network_get_ssid);
 const mp_obj_property_t wifi_network_ssid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_network_get_ssid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -70,8 +70,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_bssid_obj, wifi_network_get_bssid);
 const mp_obj_property_t wifi_network_bssid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_network_get_bssid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -87,8 +87,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_rssi_obj, wifi_network_get_rssi);
 const mp_obj_property_t wifi_network_rssi_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_network_get_rssi_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 
@@ -104,8 +104,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_channel_obj, wifi_network_get_channel
 const mp_obj_property_t wifi_network_channel_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_network_get_channel_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     country: str
@@ -120,10 +120,25 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_country_obj, wifi_network_get_country
 const mp_obj_property_t wifi_network_country_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_network_get_country_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
+//|     authmode: str
+//|     """String id of the authmode"""
+//|
+STATIC mp_obj_t wifi_network_get_authmode(mp_obj_t self) {
+    return common_hal_wifi_network_get_authmode(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_authmode_obj, wifi_network_get_authmode);
+
+const mp_obj_property_t wifi_network_authmode_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_network_get_authmode_obj,
+               MP_ROM_NONE,
+               MP_ROM_NONE },
+};
 
 STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ssid), MP_ROM_PTR(&wifi_network_ssid_obj) },
@@ -131,6 +146,7 @@ STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rssi), MP_ROM_PTR(&wifi_network_rssi_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&wifi_network_channel_obj) },
     { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&wifi_network_country_obj) },
+    { MP_ROM_QSTR(MP_QSTR_authmode), MP_ROM_PTR(&wifi_network_authmode_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);

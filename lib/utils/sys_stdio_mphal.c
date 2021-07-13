@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
             if (c == '\r') {
                 c = '\n';
             }
-            ((byte*)buf)[i] = c;
+            ((byte *)buf)[i] = c;
         }
         return size;
     } else {
@@ -86,12 +86,9 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
 }
 
 STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void) self;
-
-    // For now, pretend we actually flush the stdio stream.
-    if (request == MP_STREAM_FLUSH) {
-        return 0;
+    (void)self_in;
+    if (request == MP_STREAM_POLL) {
+        return mp_hal_stdio_poll(arg);
     } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
@@ -106,9 +103,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_o
 // TODO gc hook to close the file if not already closed
 
 STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
-#if MICROPY_PY_SYS_STDIO_BUFFER
+    #if MICROPY_PY_SYS_STDIO_BUFFER
     { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
@@ -132,13 +129,16 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 
 STATIC const mp_obj_type_t stdio_obj_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_obj_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&stdio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &stdio_obj_stream_p,
+        ),
 };
 
 const sys_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
@@ -148,7 +148,7 @@ const sys_stdio_obj_t mp_sys_stderr_obj = {{&stdio_obj_type}, .fd = STDIO_FD_ERR
 #if MICROPY_PY_SYS_STDIO_BUFFER
 STATIC mp_uint_t stdio_buffer_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     for (uint i = 0; i < size; i++) {
-        ((byte*)buf)[i] = mp_hal_stdin_rx_chr();
+        ((byte *)buf)[i] = mp_hal_stdin_rx_chr();
     }
     return size;
 }
@@ -162,17 +162,21 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
+    .ioctl = stdio_ioctl,
     .is_text = false,
 };
 
 STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_t)&stdio_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &stdio_buffer_obj_stream_p,
+        ),
 };
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused

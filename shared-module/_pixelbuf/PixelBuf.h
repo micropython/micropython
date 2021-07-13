@@ -1,9 +1,9 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2018 Rose Hooper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,8 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     size_t pixel_count;
-    size_t bytes_per_pixel;
+    uint16_t bytes_per_pixel;
+    uint16_t scaled_brightness;
     pixelbuf_byteorder_details_t byteorder;
     mp_float_t brightness;
     mp_obj_t transmit_buffer_obj;

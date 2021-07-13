@@ -1,9 +1,9 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2018 Rose Hooper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,9 +44,7 @@
 #include "extmod/ulab/code/ndarray.h"
 #endif
 
-extern const int32_t colorwheel(float pos);
-
-static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed);
+static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 
 //| class PixelBuf:
 //|     """A fast RGB[W] pixel buffer for LED and similar devices."""
@@ -113,14 +111,14 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     pixelbuf_pixelbuf_obj_t *self = m_new_obj(pixelbuf_pixelbuf_obj_t);
     self->base.type = &pixelbuf_pixelbuf_type;
     common_hal__pixelbuf_pixelbuf_construct(self, args[ARG_size].u_int,
-    &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
-    header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
+        &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
+        header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed) {
-    if (!MP_OBJ_IS_STR(byteorder_obj)) {
+static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
+    if (!mp_obj_is_str(byteorder_obj)) {
         mp_raise_TypeError(translate("byteorder is not a string"));
     }
 
@@ -167,8 +165,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_g
 const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_bpp_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 
@@ -185,7 +183,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_brightness_obj, pixelbuf_pixelbu
 
 
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t value) {
-    mp_float_t brightness = mp_obj_float_get(value);
+    mp_float_t brightness = mp_obj_get_float(value);
     if (brightness > 1) {
         brightness = 1;
     } else if (brightness < 0) {
@@ -200,7 +198,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_brightness_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_brightness_obj,
               (mp_obj_t)&pixelbuf_pixelbuf_set_brightness_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     auto_write: bool
@@ -222,7 +220,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_auto_write_obj,
               (mp_obj_t)&pixelbuf_pixelbuf_set_auto_write_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     byteorder: str
@@ -236,16 +234,18 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf
 const mp_obj_property_t pixelbuf_pixelbuf_byteorder_str = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_get_byteorder_str,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_const_true;
+        case MP_UNARY_OP_BOOL:
+            return mp_const_true;
         case MP_UNARY_OP_LEN:
             return MP_OBJ_NEW_SMALL_INT(common_hal__pixelbuf_pixelbuf_get_len(self_in));
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -303,8 +303,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     }
 
     if (0) {
-#if MICROPY_PY_BUILTINS_SLICE
-    } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+    #if MICROPY_PY_BUILTINS_SLICE
+    } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
@@ -332,7 +332,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         }
 
         if (value == MP_OBJ_SENTINEL) { // Get
-            mp_obj_tuple_t* t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
             for (uint i = 0; i < slice_len; i++) {
                 t->items[i] = common_hal__pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
             }
@@ -352,7 +352,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             return MP_OBJ_NULL; // op not supported
             #endif
         }
-#endif
+    #endif
     } else { // Single index rather than slice.
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
         size_t index = mp_get_index(mp_obj_get_type(self_in), length, index_in, false);
@@ -379,12 +379,14 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_loc
 
 
 const mp_obj_type_t pixelbuf_pixelbuf_type = {
-        { &mp_type_type },
-        .name = MP_QSTR_PixelBuf,
+    { &mp_type_type },
+    .name = MP_QSTR_PixelBuf,
+    .flags = MP_TYPE_FLAG_EXTENDED,
+    .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
+    .make_new = pixelbuf_pixelbuf_make_new,
+    MP_TYPE_EXTENDED_FIELDS(
         .subscr = pixelbuf_pixelbuf_subscr,
-        .make_new = pixelbuf_pixelbuf_make_new,
         .unary_op = pixelbuf_pixelbuf_unary_op,
         .getiter = mp_obj_new_generic_iterator,
-        .print = NULL,
-        .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
+        ),
 };

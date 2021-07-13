@@ -28,12 +28,17 @@
 #define MICROPY_INCLUDED_SUPERVISOR_USB_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // Ports must call this as frequently as they can in order to keep the USB
 // connection alive and responsive.  Normally this is called from background
 // tasks after the USB IRQ handler is executed, but in specific circumstances
 // it may be necessary to call it directly.
 void usb_background(void);
+
+// Schedule usb background
+void usb_background_schedule(void);
 
 // Ports must call this from their particular USB IRQ handler
 void usb_irq_handler(void);
@@ -42,14 +47,42 @@ void usb_irq_handler(void);
 // TinyUSB.
 void init_usb_hardware(void);
 
+// Temporary hook for code after init. Only used for RP2040.
+void post_usb_init(void);
+
+// Indexes and counts updated as descriptors are built.
+typedef struct {
+    size_t current_interface;
+    size_t current_endpoint;
+    size_t num_in_endpoints;
+    size_t num_out_endpoints;
+} descriptor_counts_t;
+
 // Shared implementation.
 bool usb_enabled(void);
-void usb_init(void);
+void usb_add_interface_string(uint8_t interface_string_index, const char str[]);
+void usb_build_descriptors(void);
 void usb_disconnect(void);
+void usb_init(void);
+void usb_set_defaults(void);
+size_t usb_boot_py_data_size(void);
+void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size);
+void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size);
+
+// Further initialization that must be done with a VM present.
+void usb_setup_with_vm(void);
+
 
 // Propagate plug/unplug events to the MSC logic.
+#if CIRCUITPY_USB_MSC
 void usb_msc_mount(void);
 void usb_msc_umount(void);
 bool usb_msc_ejected(void);
+
+// Locking MSC prevents presenting the drive on plug-in when in use by something
+// else (likely BLE.)
+bool usb_msc_lock(void);
+void usb_msc_unlock(void);
+#endif
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_USB_H

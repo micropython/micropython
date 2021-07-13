@@ -45,12 +45,12 @@ typedef struct canio_can_obj {
     int baudrate;
     const mcu_pin_obj_t *rx_pin;
     const mcu_pin_obj_t *tx_pin;
-    bool loopback:1;
-    bool silent:1;
-    bool auto_restart:1;
-    bool fifo0_in_use:1;
-    bool fifo1_in_use:1;
-    uint8_t periph_index:2;
+    bool loopback : 1;
+    bool silent : 1;
+    bool auto_restart : 1;
+    bool fifo0_in_use : 1;
+    bool fifo1_in_use : 1;
+    uint8_t periph_index : 2;
     uint8_t cancel_mailbox;
     uint8_t start_filter_bank;
     uint8_t end_filter_bank;

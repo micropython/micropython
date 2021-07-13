@@ -40,7 +40,7 @@
 #include "nrfx_gpiote.h"
 
 // obj array to map pin -> self since nrfx hide the mapping
-static pulseio_pulsein_obj_t* _objs[GPIOTE_CH_NUM];
+static pulseio_pulsein_obj_t *_objs[GPIOTE_CH_NUM];
 
 // A single timer is shared amongst all PulseIn objects as a common high speed clock reference.
 static uint8_t refcount = 0;
@@ -57,9 +57,9 @@ static void timer_overflow_event_handler(nrf_timer_event_t event_type, void *p_c
 }
 
 // return index of the object in array
-static int _find_pulsein_obj(pulseio_pulsein_obj_t* obj) {
-    for(size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
-        if ( _objs[i] == obj) {
+static int _find_pulsein_obj(pulseio_pulsein_obj_t *obj) {
+    for (size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++) {
+        if (_objs[i] == obj) {
             return i;
         }
     }
@@ -72,22 +72,24 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     uint32_t current_overflow = overflow_count;
     uint32_t current_count = nrfx_timer_capture(timer, 1);
 
-    pulseio_pulsein_obj_t* self = NULL;
-    for(size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
-        if ( _objs[i] && _objs[i]->pin == pin ) {
+    pulseio_pulsein_obj_t *self = NULL;
+    for (size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++) {
+        if (_objs[i] && _objs[i]->pin == pin) {
             self = _objs[i];
             break;
         }
     }
-    if ( !self ) return;
+    if (!self) {
+        return;
+    }
 
     if (self->first_edge) {
         // first pulse is opposite state from idle
         bool state = nrf_gpio_pin_read(self->pin);
-        if ( self->idle_state != state ) {
+        if (self->idle_state != state) {
             self->first_edge = false;
         }
-    }else {
+    } else {
         uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
 
         // Cap duration at 16 bits.
@@ -110,7 +112,7 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 }
 
 void pulsein_reset(void) {
-    if ( nrfx_gpiote_is_init() ) {
+    if (nrfx_gpiote_is_init()) {
         nrfx_gpiote_uninit();
     }
     nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
@@ -123,14 +125,14 @@ void pulsein_reset(void) {
     memset(_objs, 0, sizeof(_objs));
 }
 
-void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
+void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     int idx = _find_pulsein_obj(NULL);
-    if ( idx < 0 ) {
+    if (idx < 0) {
         mp_raise_NotImplementedError(NULL);
     }
     _objs[idx] = self;
 
-    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
     }
@@ -180,11 +182,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     nrfx_gpiote_in_event_enable(self->pin, true);
 }
 
-bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
-  return self->pin == NO_PIN;
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
+    return self->pin == NO_PIN;
 }
 
-void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
@@ -194,7 +196,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
 
     // mark local array as invalid
     int idx = _find_pulsein_obj(self);
-    if ( idx < 0 ) {
+    if (idx < 0) {
         mp_raise_NotImplementedError(NULL);
     }
     _objs[idx] = NULL;
@@ -208,14 +210,14 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     }
 }
 
-void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
+void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     nrfx_gpiote_in_event_disable(self->pin);
     self->paused = true;
 }
 
-void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t trigger_duration) {
+void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t trigger_duration) {
     // Make sure we're paused.
-    if ( !self->paused ) {
+    if (!self->paused) {
         common_hal_pulseio_pulsein_pause(self);
     }
 
@@ -246,21 +248,21 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t tri
     nrfx_gpiote_in_event_enable(self->pin, true);
 }
 
-void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
-    if ( !self->paused ) {
+void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_disable(self->pin);
     }
 
     self->start = 0;
     self->len = 0;
 
-    if ( !self->paused ) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_enable(self->pin, true);
     }
 }
 
-uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_t index) {
-    if ( !self->paused ) {
+uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_disable(self->pin);
     }
 
@@ -268,26 +270,26 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
         index += self->len;
     }
     if (index < 0 || index >= self->len) {
-        if ( !self->paused ) {
+        if (!self->paused) {
             nrfx_gpiote_in_event_enable(self->pin, true);
         }
         mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
 
-    if ( !self->paused ) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_enable(self->pin, true);
     }
 
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
         mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
 
-    if ( !self->paused ) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_disable(self->pin);
     }
 
@@ -295,21 +297,21 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     self->start = (self->start + 1) % self->maxlen;
     self->len--;
 
-    if ( !self->paused ) {
+    if (!self->paused) {
         nrfx_gpiote_in_event_enable(self->pin, true);
     }
 
     return value;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *self) {
     return self->maxlen;
 }
 
-bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
     return self->paused;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
+uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
     return self->len;
 }

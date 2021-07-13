@@ -62,5 +62,5 @@ STATIC MP_DEFINE_CONST_DICT(ssl_globals, ssl_globals_table);
 
 const mp_obj_module_t ssl_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&ssl_globals,
+    .globals = (mp_obj_dict_t *)&ssl_globals,
 };

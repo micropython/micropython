@@ -70,8 +70,8 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t* sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
 
     bitbangio_i2c_obj_t *self = m_new_obj(bitbangio_i2c_obj_t);
     self->base.type = &bitbangio_i2c_type;
@@ -135,7 +135,7 @@ STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
     for (int addr = 0x08; addr < 0x78; ++addr) {
         bool success = shared_module_bitbangio_i2c_probe(self, addr);
         if (success) {
-           mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
+            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }
     }
     return list;
@@ -191,7 +191,7 @@ STATIC void readfrom(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffe
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
-    uint8_t status = shared_module_bitbangio_i2c_read(self, address, ((uint8_t*)bufinfo.buf) + start, length);
+    uint8_t status = shared_module_bitbangio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -212,7 +212,7 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     readfrom(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-             args[ARG_end].u_int);
+        args[ARG_end].u_int);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
@@ -246,8 +246,8 @@ STATIC void writeto(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer
 
     // do the transfer
     uint8_t status = shared_module_bitbangio_i2c_write(self, address,
-                                                       ((uint8_t*) bufinfo.buf) + start, length,
-                                                       stop);
+        ((uint8_t *)bufinfo.buf) + start, length,
+        stop);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -268,7 +268,7 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     writeto(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-            args[ARG_end].u_int, true);
+        args[ARG_end].u_int, true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
@@ -309,9 +309,9 @@ STATIC mp_obj_t bitbangio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     writeto(self, args[ARG_address].u_int, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int,
-            args[ARG_out_end].u_int, false);
+        args[ARG_out_end].u_int, false);
     readfrom(self, args[ARG_address].u_int, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int,
-             args[ARG_in_end].u_int);
+        args[ARG_in_end].u_int);
 
     return mp_const_none;
 }
@@ -337,5 +337,5 @@ const mp_obj_type_t bitbangio_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .make_new = bitbangio_i2c_make_new,
-    .locals_dict = (mp_obj_dict_t*)&bitbangio_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bitbangio_i2c_locals_dict,
 };

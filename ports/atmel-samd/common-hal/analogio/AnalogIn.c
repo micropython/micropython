@@ -46,8 +46,8 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
-void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     uint8_t adc_index;
     uint8_t adc_channel = 0xff;
     for (adc_index = 0; adc_index < NUM_ADC_PER_PIN; adc_index++) {
@@ -66,7 +66,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
 
-    static Adc* adc_insts[] = ADC_INSTS;
+    static Adc *adc_insts[] = ADC_INSTS;
     self->instance = adc_insts[adc_index];
     self->channel = adc_channel;
     self->pin = pin;
@@ -118,8 +118,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Empirical observation shows the first reading is quite different than subsequent ones.
 
     uint16_t value;
-    adc_sync_read_channel(&adc, self->channel, ((uint8_t*) &value), 2);
-    adc_sync_read_channel(&adc, self->channel, ((uint8_t*) &value), 2);
+    adc_sync_read_channel(&adc, self->channel, ((uint8_t *)&value), 2);
+    adc_sync_read_channel(&adc, self->channel, ((uint8_t *)&value), 2);
 
     adc_sync_deinit(&adc);
     // Shift the value to be 16 bit.

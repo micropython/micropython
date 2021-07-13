@@ -38,15 +38,13 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
-#include "genhdr/autogen_usb_descriptor.h"
-
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 // COMMON CONFIGURATION
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 #ifndef CFG_TUSB_DEBUG
 #define CFG_TUSB_DEBUG              0
 #endif
@@ -55,19 +53,36 @@
 #ifndef CFG_TUSB_OS
 #define CFG_TUSB_OS                 OPT_OS_NONE
 #endif
-//#define CFG_TUD_TASK_QUEUE_SZ     16
+// #define CFG_TUD_TASK_QUEUE_SZ     16
 
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 // DEVICE CONFIGURATION
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 
-#define CFG_TUD_ENDOINT0_SIZE       64
+#if USB_HIGHSPEED
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE)
+#endif
 
-//------------- CLASS -------------//
+// Vendor name included in Inquiry response, max 8 bytes
+#define CFG_TUD_MSC_VENDOR          USB_MANUFACTURER_8
+
+// Product name included in Inquiry response, max 16 bytes
+#define CFG_TUD_MSC_PRODUCT         USB_PRODUCT_16
+#define CFG_TUD_ENDPOINT0_SIZE       64
+
+// ------------- CLASS -------------//
+
+// Will be set to 2 in supervisor.mk if CIRCUITPY_USB_CDC is set.
+#ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC                 1
-#define CFG_TUD_MSC                 1
+#endif
+
+#define CFG_TUD_MSC                 CIRCUITPY_USB_MSC
 #define CFG_TUD_HID                 CIRCUITPY_USB_HID
 #define CFG_TUD_MIDI                CIRCUITPY_USB_MIDI
+#define CFG_TUD_VENDOR              CIRCUITPY_USB_VENDOR
 #define CFG_TUD_CUSTOM_CLASS        0
 
 /*------------------------------------------------------------------*/
@@ -78,15 +93,15 @@
 #define CFG_TUD_MSC_PRODUCT_REV     "1.0"
 
 
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 // USB RAM PLACEMENT
-//--------------------------------------------------------------------+
+// --------------------------------------------------------------------+
 #define CFG_TUSB_ATTR_USBRAM
 #define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
 
 
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* _TUSB_CONFIG_H_ */

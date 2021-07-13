@@ -29,31 +29,31 @@
 #include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-module/busio/OneWire.h"
 
-void common_hal_busio_onewire_construct(busio_onewire_obj_t* self,
-        const mcu_pin_obj_t* pin) {
+void common_hal_busio_onewire_construct(busio_onewire_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     shared_module_bitbangio_onewire_construct(&self->bitbang, pin);
 }
 
-bool common_hal_busio_onewire_deinited(busio_onewire_obj_t* self) {
+bool common_hal_busio_onewire_deinited(busio_onewire_obj_t *self) {
     return shared_module_bitbangio_onewire_deinited(&self->bitbang);
 }
 
-void common_hal_busio_onewire_deinit(busio_onewire_obj_t* self) {
+void common_hal_busio_onewire_deinit(busio_onewire_obj_t *self) {
     if (common_hal_busio_onewire_deinited(self)) {
         return;
     }
     shared_module_bitbangio_onewire_deinit(&self->bitbang);
 }
 
-bool common_hal_busio_onewire_reset(busio_onewire_obj_t* self) {
+bool common_hal_busio_onewire_reset(busio_onewire_obj_t *self) {
     return shared_module_bitbangio_onewire_reset(&self->bitbang);
 }
 
-bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t* self) {
+bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t *self) {
     return shared_module_bitbangio_onewire_read_bit(&self->bitbang);
 }
 
-void common_hal_busio_onewire_write_bit(busio_onewire_obj_t* self,
-        bool bit) {
+void common_hal_busio_onewire_write_bit(busio_onewire_obj_t *self,
+    bool bit) {
     shared_module_bitbangio_onewire_write_bit(&self->bitbang, bit);
 }

@@ -76,8 +76,8 @@ STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, con
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* clkpin = validate_obj_is_free_pin(args[ARG_clkpin].u_obj);
-    const mcu_pin_obj_t* datapin = validate_obj_is_free_pin(args[ARG_datapin].u_obj);
+    const mcu_pin_obj_t *clkpin = validate_obj_is_free_pin(args[ARG_clkpin].u_obj);
+    const mcu_pin_obj_t *datapin = validate_obj_is_free_pin(args[ARG_datapin].u_obj);
 
     ps2io_ps2_obj_t *self = m_new_obj(ps2io_ps2_obj_t);
     self->base.type = &ps2io_ps2_type;
@@ -116,7 +116,7 @@ STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
 //|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_TYPE(args[0], &ps2io_ps2_type));
+    mp_check_self(mp_obj_is_type(args[0], &ps2io_ps2_type));
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     common_hal_ps2io_ps2_deinit(self);
     return mp_const_none;
@@ -215,9 +215,12 @@ STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     check_for_deinit(self);
     uint16_t len = common_hal_ps2io_ps2_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -235,7 +238,10 @@ STATIC MP_DEFINE_CONST_DICT(ps2io_ps2_locals_dict, ps2io_ps2_locals_dict_table);
 const mp_obj_type_t ps2io_ps2_type = {
     { &mp_type_type },
     .name = MP_QSTR_Ps2,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = ps2io_ps2_make_new,
-    .unary_op = ps2_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&ps2io_ps2_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = ps2_unary_op,
+        ),
+    .locals_dict = (mp_obj_dict_t *)&ps2io_ps2_locals_dict,
 };

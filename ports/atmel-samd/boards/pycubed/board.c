@@ -37,10 +37,10 @@
 nvm_bytearray_obj_t bootcnt = {
     .base = {
         .type = &nvm_bytearray_type
-            },
-    .len = ( uint32_t) 8192,
-    .start_address = (uint8_t*) (0x00080000 - 8192)
-    };
+    },
+    .len = (uint32_t)8192,
+    .start_address = (uint8_t *)(0x00080000 - 8192)
+};
 
 
 void board_init(void) {

@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/socketpool/SocketPool.h"
+#include "common-hal/socketpool/Socket.h"
 
 #include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
@@ -33,13 +34,13 @@
 
 #include "bindings/espidf/__init__.h"
 
-void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t* self, mp_obj_t radio) {
+void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio) {
     if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
         mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio"));
     }
 }
 
-socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
+socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
 
     int addr_family;
@@ -65,33 +66,29 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
 
-    int socknum = -1;
-    esp_tls_t* tcp_handle = NULL;
-    if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW) {
-        socknum = lwip_socket(addr_family, socket_type, ipproto);
-    } else {
-        tcp_handle = esp_tls_init();
-
-        if (tcp_handle == NULL) {
-            mp_raise_espidf_MemoryError();
-        }
-    }
-    if (socknum < 0 && tcp_handle == NULL) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
-    }
-
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
-    sock->num = socknum;
-    sock->tcp = tcp_handle;
-    sock->ssl_context = NULL;
+    sock->type = socket_type;
+    sock->family = addr_family;
+    sock->ipproto = ipproto;
     sock->pool = self;
+    sock->timeout_ms = (uint)-1;
+
+    // Create LWIP socket
+    int socknum = -1;
+    socknum = lwip_socket(sock->family, sock->type, sock->ipproto);
+    if (socknum < 0 || !register_open_socket(sock)) {
+        mp_raise_RuntimeError(translate("Out of sockets"));
+    }
+    sock->num = socknum;
+    // Sockets should be nonblocking in most cases
+    lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
     return sock;
 }
 
 
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t* self,
-    const char* host) {
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
+    const char *host) {
 
     const struct addrinfo hints = {
         .ai_family = AF_INET,

@@ -40,15 +40,14 @@
 
 #include "genhdr/candata.h"
 
-STATIC Can * const can_insts[] = CAN_INSTS;
+STATIC Can *const can_insts[] = CAN_INSTS;
 
 STATIC canio_can_obj_t *can_objs[MP_ARRAY_SIZE(can_insts)];
 
 // This must be placed in the first 64kB of RAM
 STATIC COMPILER_SECTION(".canram") canio_can_state_t can_state[MP_ARRAY_SIZE(can_insts)];
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent)
-{
+void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
     mcu_pin_function_t *tx_function = mcu_find_pin_function(can_tx, tx, -1, MP_QSTR_tx);
     int instance = tx_function->instance;
 
@@ -56,7 +55,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 
     const uint32_t can_frequency = CONF_CAN0_FREQUENCY;
 
-#define DIV_ROUND(a, b) (((a) + (b)/2) / (b))
+#define DIV_ROUND(a, b) (((a) + (b) / 2) / (b))
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
 
     uint32_t clocks_per_bit = DIV_ROUND(can_frequency, baudrate);
@@ -97,7 +96,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
         NVIC_ClearPendingIRQ(CAN0_IRQn);
         NVIC_EnableIRQ(CAN0_IRQn);
         hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
-#ifdef CAN1_GCLK_ID
+    #ifdef CAN1_GCLK_ID
     } else if (instance == 1) {
         hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
@@ -106,7 +105,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
         NVIC_ClearPendingIRQ(CAN1_IRQn);
         NVIC_EnableIRQ(CAN1_IRQn);
         hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
-#endif
+    #endif
     }
 
     self->hw->CCCR.bit.FDOE = 0; // neither FD nor Bit Rate Switch enabled
@@ -237,12 +236,12 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
         NVIC_DisableIRQ(CAN0_IRQn);
         NVIC_ClearPendingIRQ(CAN0_IRQn);
         NVIC_EnableIRQ(CAN0_IRQn);
-#ifdef CAN1_GCLK_ID
+    #ifdef CAN1_GCLK_ID
     } else if (instance == 1) {
         NVIC_DisableIRQ(CAN1_IRQn);
         NVIC_ClearPendingIRQ(CAN1_IRQn);
         NVIC_EnableIRQ(CAN1_IRQn);
-#endif
+    #endif
     }
 
     hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
@@ -255,23 +254,19 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
     can_objs[instance] = self;
 }
 
-bool common_hal_canio_can_loopback_get(canio_can_obj_t *self)
-{
+bool common_hal_canio_can_loopback_get(canio_can_obj_t *self) {
     return self->loopback;
 }
 
-int common_hal_canio_can_baudrate_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_baudrate_get(canio_can_obj_t *self) {
     return self->baudrate;
 }
 
-int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self) {
     return self->hw->ECR.bit.TEC;
 }
 
-int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
-{
+int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self) {
     return self->hw->ECR.bit.REC;
 }
 
@@ -313,11 +308,11 @@ static void maybe_auto_restart(canio_can_obj_t *self) {
     }
 }
 
-void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
-{
+void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in) {
     maybe_auto_restart(self);
 
-    canio_message_obj_t *message = message_in;;
+    canio_message_obj_t *message = message_in;
+    ;
     // We have just one dedicated TX buffer, use it!
     canio_can_tx_buffer_t *ent = &self->state->tx_buffer[0];
 
@@ -365,8 +360,7 @@ void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
     }
 }
 
-void common_hal_canio_can_deinit(canio_can_obj_t *self)
-{
+void common_hal_canio_can_deinit(canio_can_obj_t *self) {
     if (self->hw) {
         hri_can_set_CCCR_INIT_bit(self->hw);
         self->hw = 0;
@@ -384,11 +378,11 @@ void common_hal_canio_can_deinit(canio_can_obj_t *self)
 void common_hal_canio_reset(void) {
     memset(can_state, 0, sizeof(can_state));
 
-    for (size_t i=0; i<MP_ARRAY_SIZE(can_insts); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(can_insts); i++) {
         hri_can_set_CCCR_INIT_bit(can_insts[i]);
     }
 
-    for (size_t i=0; i<MP_ARRAY_SIZE(can_objs); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(can_objs); i++) {
         if (can_objs[i]) {
             common_hal_canio_can_deinit(can_objs[i]);
             can_objs[i] = NULL;
@@ -399,7 +393,7 @@ void common_hal_canio_reset(void) {
 
 STATIC void can_handler(int i) {
     canio_can_obj_t *self = can_objs[i];
-    (void) self;
+    (void)self;
 
     Can *hw = can_insts[i];
     uint32_t ir = hri_can_read_IR_reg(hw);

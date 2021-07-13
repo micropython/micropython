@@ -47,8 +47,8 @@ void mp_asm_base_deinit(mp_asm_base_t *as, bool free_code);
 void mp_asm_base_start_pass(mp_asm_base_t *as, int pass);
 uint8_t *mp_asm_base_get_cur_to_write_bytes(mp_asm_base_t *as, size_t num_bytes_to_write);
 void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label);
-void mp_asm_base_align(mp_asm_base_t* as, unsigned int align);
-void mp_asm_base_data(mp_asm_base_t* as, unsigned int bytesize, uintptr_t val);
+void mp_asm_base_align(mp_asm_base_t *as, unsigned int align);
+void mp_asm_base_data(mp_asm_base_t *as, unsigned int bytesize, uintptr_t val);
 
 static inline size_t mp_asm_base_get_code_pos(mp_asm_base_t *as) {
     return as->code_offset;
@@ -60,7 +60,7 @@ static inline size_t mp_asm_base_get_code_size(mp_asm_base_t *as) {
 
 static inline void *mp_asm_base_get_code(mp_asm_base_t *as) {
     #if defined(MP_PLAT_COMMIT_EXEC)
-    return MP_PLAT_COMMIT_EXEC(as->code_base, as->code_size);
+    return MP_PLAT_COMMIT_EXEC(as->code_base, as->code_size, NULL);
     #else
     return as->code_base;
     #endif

@@ -1,7 +1,8 @@
 /*********************************************************************
+* Source:     https://github.com/B-Con/crypto-algorithms
 * Filename:   sha256.c
 * Author:     Brad Conte (brad AT bradconte.com)
-* Copyright:
+* Copyright:  This code is released into the public domain.
 * Disclaimer: This code is presented "as is" without any guarantees.
 * Details:    Implementation of the SHA-256 hashing algorithm.
               SHA-256 is one of the three algorithms in the SHA2
@@ -14,6 +15,7 @@
 
 /*************************** HEADER FILES ***************************/
 #include <stdlib.h>
+#include <string.h>
 #include "sha256.h"
 
 /****************************** MACROS ******************************/

@@ -46,7 +46,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-    boardctl(BOARDIOC_UNIQUEID, (uintptr_t) raw_id);
+    boardctl(BOARDIOC_UNIQUEID, (uintptr_t)raw_id);
 }
 
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {

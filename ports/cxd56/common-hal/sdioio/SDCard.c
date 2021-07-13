@@ -96,15 +96,15 @@ bool common_hal_sdioio_sdcard_configure(sdioio_sdcard_obj_t *self, uint32_t baud
     return true;
 }
 
-uint32_t common_hal_sdioio_sdcard_get_frequency(sdioio_sdcard_obj_t* self) {
+uint32_t common_hal_sdioio_sdcard_get_frequency(sdioio_sdcard_obj_t *self) {
     return self->frequency;
 }
 
-uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t* self) {
+uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
     return self->width;
 }
 
-uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t* self) {
+uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
     return self->count;
 }
 
@@ -114,7 +114,7 @@ STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     }
 }
 
-int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t* self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
+int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
     if (common_hal_sdioio_sdcard_deinited(self)) {
         raise_deinited_error();
     }
@@ -123,13 +123,14 @@ int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t* self, uint32_t star
     return self->inode->u.i_bops->read(self->inode, bufinfo->buf, start_block, bufinfo->len / 512);
 }
 
-int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t* self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
+int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
     if (common_hal_sdioio_sdcard_deinited(self)) {
         raise_deinited_error();
     }
     check_whole_block(bufinfo);
 
-    return self->inode->u.i_bops->write(self->inode, bufinfo->buf, start_block, bufinfo->len / 512);;
+    return self->inode->u.i_bops->write(self->inode, bufinfo->buf, start_block, bufinfo->len / 512);
+    ;
 }
 
 void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {

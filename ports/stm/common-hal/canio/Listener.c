@@ -46,7 +46,7 @@ STATIC void prevent_filter_change(canio_can_obj_t *can) {
 }
 
 STATIC bool filter_in_use(canio_can_obj_t *can, int idx) {
-    return can->filter_hw->FA1R & (1<<idx);
+    return can->filter_hw->FA1R & (1 << idx);
 }
 
 // One filter bank can hold:
@@ -62,19 +62,19 @@ STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches) {
     }
     size_t num_extended_mask = 0;
     size_t num_standard_mask = 1;
-    for(size_t i=0; i<nmatch; i++) {
+    for (size_t i = 0; i < nmatch; i++) {
         if (matches[i]->extended) {
             num_extended_mask += 1;
         } else {
             num_standard_mask += 1;
         }
     }
-    return num_extended_mask + num_standard_mask/2;
+    return num_extended_mask + num_standard_mask / 2;
 }
 
 STATIC size_t num_filters_available(canio_can_obj_t *can) {
     size_t available = 0;
-    for(size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
+    for (size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
         if (!filter_in_use(can, i)) {
             available++;
         }
@@ -87,9 +87,9 @@ STATIC void clear_filters(canio_listener_obj_t *self) {
 
     allow_filter_change(can);
     uint32_t fa1r = can->filter_hw->FA1R;
-    for(size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
+    for (size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
         if (((can->filter_hw->FFA1R >> i) & 1) == self->fifo_idx) {
-            fa1r &= ~(1<<i);
+            fa1r &= ~(1 << i);
         }
     }
     can->filter_hw->FA1R = fa1r;
@@ -98,8 +98,8 @@ STATIC void clear_filters(canio_listener_obj_t *self) {
 
 STATIC int next_filter(canio_can_obj_t *can) {
     uint32_t fa1r = can->filter_hw->FA1R;
-    for(size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
-        if (!(fa1r & (1<<i))) {
+    for (size_t i = can->start_filter_bank; i < can->end_filter_bank; i++) {
+        if (!(fa1r & (1 << i))) {
             return i;
         }
     }
@@ -109,8 +109,8 @@ STATIC int next_filter(canio_can_obj_t *can) {
 
 // IDE = "extended ID" flag of packet header.  We always add this bit to the
 // mask because a match is always for just one kind of address length
-#define FILTER16_IDE (1<<3)
-#define FILTER32_IDE (1<<2)
+#define FILTER16_IDE (1 << 3)
+#define FILTER32_IDE (1 << 2)
 
 STATIC void install_standard_filter(canio_listener_obj_t *self, canio_match_obj_t *match1, canio_match_obj_t *match2) {
     int bank = next_filter(self->can);
@@ -201,8 +201,8 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
         install_all_match_filter(self);
     } else {
         canio_match_obj_t *first_match = NULL;
-        for(size_t i = 0; i<nmatch; i++) {
-            if(matches[i]->extended) {
+        for (size_t i = 0; i < nmatch; i++) {
+            if (matches[i]->extended) {
                 install_extended_filter(self, matches[i]);
             } else {
                 if (first_match) {

@@ -51,7 +51,7 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 STATIC void mp_obj_attrtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_tuple_t *o = MP_OBJ_TO_PTR(o_in);
-    const qstr *fields = (const qstr*)MP_OBJ_TO_PTR(o->items[o->len]);
+    const qstr *fields = (const qstr *)MP_OBJ_TO_PTR(o->items[o->len]);
     mp_obj_attrtuple_print_helper(print, fields, o);
 }
 
@@ -60,7 +60,7 @@ STATIC void mp_obj_attrtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // load attribute
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         size_t len = self->len;
-        const qstr *fields = (const qstr*)MP_OBJ_TO_PTR(self->items[len]);
+        const qstr *fields = (const qstr *)MP_OBJ_TO_PTR(self->items[len]);
         for (size_t i = 0; i < len; i++) {
             if (fields[i] == attr) {
                 dest[0] = self->items[i];
@@ -83,13 +83,16 @@ mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *item
 
 const mp_obj_type_t mp_type_attrtuple = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_tuple, // reuse tuple to save on a qstr
     .print = mp_obj_attrtuple_print,
-    .unary_op = mp_obj_tuple_unary_op,
-    .binary_op = mp_obj_tuple_binary_op,
     .attr = mp_obj_attrtuple_attr,
-    .subscr = mp_obj_tuple_subscr,
-    .getiter = mp_obj_tuple_getiter,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        ),
 };
 
 #endif // MICROPY_PY_ATTRTUPLE

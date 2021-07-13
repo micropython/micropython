@@ -40,25 +40,27 @@
 
 
 static uint8_t pewpew_tc_index = 0xff;
+static volatile uint16_t pewpew_ticks = 0;
 
 
 void pewpew_interrupt_handler(uint8_t index) {
     if (index != pewpew_tc_index) {
         return;
     }
-    Tc* tc = tc_insts[index];
+    Tc *tc = tc_insts[index];
     if (!tc->COUNT16.INTFLAG.bit.MC0) {
         return;
     }
 
     pew_tick();
+    ++pewpew_ticks;
 
     // Clear the interrupt bit.
     tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
 }
 
 void pew_init() {
-    pew_obj_t* pew = MP_STATE_VM(pew_singleton);
+    pew_obj_t *pew = MP_STATE_VM(pew_singleton);
 
     common_hal_digitalio_digitalinout_switch_to_input(pew->buttons, PULL_UP);
 
@@ -95,8 +97,8 @@ void pew_init() {
 
         #ifdef SAMD21
         tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 |
-                                TC_CTRLA_PRESCALER_DIV64 |
-                                TC_CTRLA_WAVEGEN_MFRQ;
+            TC_CTRLA_PRESCALER_DIV64 |
+            TC_CTRLA_WAVEGEN_MFRQ;
         #endif
         #ifdef SAM_D5X_E5X
         tc_reset(tc);
@@ -122,4 +124,8 @@ void pew_reset(void) {
         pewpew_tc_index = 0xff;
     }
     MP_STATE_VM(pew_singleton) = NULL;
+}
+
+uint16_t pew_get_ticks() {
+    return pewpew_ticks;
 }

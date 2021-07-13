@@ -49,7 +49,7 @@ STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *d
 }
 
 STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
-    bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *) param;
+    bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_WRITE: {
             // A client wrote to this server characteristic.
@@ -65,7 +65,7 @@ STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
         case BLE_GATTC_EVT_HVX: {
             // A remote service wrote to this characteristic.
 
-            ble_gattc_evt_hvx_t* evt_hvx = &ble_evt->evt.gattc_evt.params.hvx;
+            ble_gattc_evt_hvx_t *evt_hvx = &ble_evt->evt.gattc_evt.params.hvx;
             // Must be a notification, and event handle must match the handle for my characteristic.
             if (evt_hvx->type == BLE_GATT_HVX_NOTIFICATION &&
                 evt_hvx->handle == self->characteristic->handle) {
@@ -80,30 +80,44 @@ STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
-// Assumes that timeout and buffer_size have been validated before call.
-void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
-                                                      bleio_characteristic_obj_t *characteristic,
-                                                      mp_float_t timeout,
-                                                      size_t buffer_size) {
+void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
+    bleio_characteristic_obj_t *characteristic,
+    mp_float_t timeout,
+    uint8_t *buffer, size_t buffer_size,
+    void *static_handler_entry) {
 
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
-    // This is a macro.
-    // true means long-lived, so it won't be moved.
-    ringbuf_alloc(&self->ringbuf, buffer_size, true);
 
-    ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
+    self->ringbuf.buf = (uint8_t *)buffer;
+    self->ringbuf.size = buffer_size;
+    self->ringbuf.iget = 0;
+    self->ringbuf.iput = 0;
 
+    if (static_handler_entry != NULL) {
+        ble_drv_add_event_handler_entry((ble_drv_evt_handler_entry_t *)static_handler_entry, characteristic_buffer_on_ble_evt, self);
+    } else {
+        ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
+    }
+}
+
+// Assumes that timeout and buffer_size have been validated before call.
+void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
+    bleio_characteristic_obj_t *characteristic,
+    mp_float_t timeout,
+    size_t buffer_size) {
+    uint8_t *buffer = m_malloc(buffer_size, true);
+    _common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer, buffer_size, NULL);
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ((ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
-        if ( mp_hal_is_interrupted() ) {
+        if (mp_hal_is_interrupted()) {
             return 0;
         }
     }
@@ -148,8 +162,8 @@ void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_o
 
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {
     return self->characteristic != NULL &&
-        self->characteristic->service != NULL &&
-        (!self->characteristic->service->is_remote ||
-         (self->characteristic->service->connection != MP_OBJ_NULL &&
-          common_hal_bleio_connection_get_connected(self->characteristic->service->connection)));
+           self->characteristic->service != NULL &&
+           (!self->characteristic->service->is_remote ||
+               (self->characteristic->service->connection != MP_OBJ_NULL &&
+                   common_hal_bleio_connection_get_connected(self->characteristic->service->connection)));
 }

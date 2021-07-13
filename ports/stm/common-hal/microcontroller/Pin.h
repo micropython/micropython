@@ -31,14 +31,6 @@
 
 #include "peripherals/pins.h"
 
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-extern bool apa102_sck_in_use;
-extern bool apa102_mosi_in_use;
-#endif
-
 void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
@@ -46,7 +38,7 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 void claim_pin(uint8_t pin_port, uint8_t pin_number);
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number);
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
-GPIO_TypeDef * pin_port(uint8_t pin_port);
+GPIO_TypeDef *pin_port(uint8_t pin_port);
 uint16_t pin_mask(uint8_t pin_number);
 
 #endif // MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H

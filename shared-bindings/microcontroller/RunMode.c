@@ -79,7 +79,7 @@ STATIC void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         runmode = MP_QSTR_BOOTLOADER;
     }
     mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_RunMode,
-              runmode);
+        runmode);
 }
 
 const mp_obj_type_t mcu_runmode_type = {

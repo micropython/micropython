@@ -33,7 +33,7 @@ import sys
 
 # Open target file
 with open(sys.argv[1]) as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
+    csv_reader = csv.reader(csv_file, delimiter=",")
     line_count = 0
 
     print("STATIC const mp_rom_map_elem_t board_module_globals_table[] = {")
@@ -42,8 +42,8 @@ with open(sys.argv[1]) as csv_file:
         label = row[0]
         pin = row[1]
         if len(pin) < 4:
-            pin = pin[:2] + '0' + pin[2:]
+            pin = pin[:2] + "0" + pin[2:]
         print("{ MP_ROM_QSTR(MP_QSTR_" + label + "), MP_ROM_PTR(&pin_" + pin + ") },")
         line_count += 1
 
-    print(f'Processed {line_count} lines.')
+    print(f"Processed {line_count} lines.")

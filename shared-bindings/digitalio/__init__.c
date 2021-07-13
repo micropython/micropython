@@ -88,5 +88,5 @@ STATIC MP_DEFINE_CONST_DICT(digitalio_module_globals, digitalio_module_globals_t
 
 const mp_obj_module_t digitalio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&digitalio_module_globals,
+    .globals = (mp_obj_dict_t *)&digitalio_module_globals,
 };

@@ -1,2 +1,2 @@
-print('mod1')
-foo = 'mod1.foo'
+print("mod1")
+foo = "mod1.foo"

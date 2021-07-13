@@ -1,4 +1,20 @@
+#include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
+
+STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+    {&mp_type_tuple},
+    8,
+    {
+        MP_ROM_PTR(&pin_GPIO46),
+        MP_ROM_PTR(&pin_GPIO45),
+        MP_ROM_PTR(&pin_GPIO41),
+        MP_ROM_PTR(&pin_GPIO42),
+        MP_ROM_PTR(&pin_GPIO39),
+        MP_ROM_PTR(&pin_GPIO40),
+        MP_ROM_PTR(&pin_GPIO21),
+        MP_ROM_PTR(&pin_GPIO38),
+    }
+};
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO0), MP_ROM_PTR(&pin_GPIO0) },
@@ -54,6 +70,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CAMERA_SIOC), MP_ROM_PTR(&pin_GPIO7) },
 
 
+    { MP_ROM_QSTR(MP_QSTR_CAMERA_DATA), MP_ROM_PTR(&camera_data_tuple) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_D2), MP_ROM_PTR(&pin_GPIO46) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_D3), MP_ROM_PTR(&pin_GPIO45) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_D4), MP_ROM_PTR(&pin_GPIO41) },

@@ -52,17 +52,20 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
     }
 }
 
-STATIC const mp_obj_type_t range_it_type = {
+STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = range_it_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = range_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_range_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_range_it_t *o = (mp_obj_range_it_t*)iter_buf;
-    o->base.type = &range_it_type;
+    mp_obj_range_it_t *o = (mp_obj_range_it_t *)iter_buf;
+    o->base.type = &mp_type_range_it;
     o->cur = cur;
     o->stop = stop;
     o->step = step;
@@ -107,7 +110,7 @@ STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, const m
         if (n_args == 3) {
             o->step = mp_obj_get_int(args[2]);
             if (o->step == 0) {
-                mp_raise_ValueError(translate("zero step"));
+                mp_raise_ValueError(MP_ERROR_TEXT("zero step"));
             }
         }
     }
@@ -134,15 +137,18 @@ STATIC mp_obj_t range_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t len = range_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len > 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len > 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
 #if MICROPY_PY_BUILTINS_RANGE_BINOP
 STATIC mp_obj_t range_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (!MP_OBJ_IS_TYPE(rhs_in, &mp_type_range) || op != MP_BINARY_OP_EQUAL) {
+    if (!mp_obj_is_type(rhs_in, &mp_type_range) || op != MP_BINARY_OP_EQUAL) {
         return MP_OBJ_NULL; // op not supported
     }
     mp_obj_range_t *lhs = MP_OBJ_TO_PTR(lhs_in);
@@ -154,7 +160,7 @@ STATIC mp_obj_t range_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
         && (lhs_len == 0
             || (lhs->start == rhs->start
                 && (lhs_len == 1 || lhs->step == rhs->step)))
-    );
+        );
 }
 #endif
 
@@ -163,8 +169,8 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
         mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
         mp_int_t len = range_len(self);
-#if MICROPY_PY_BUILTINS_SLICE
-        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        #if MICROPY_PY_BUILTINS_SLICE
+        if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             mp_seq_get_fast_slice_indexes(len, index, &slice);
             mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
@@ -178,7 +184,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return MP_OBJ_FROM_PTR(o);
         }
-#endif
+        #endif
         size_t index_val = mp_get_index(self->base.type, len, index, false);
         return MP_OBJ_NEW_SMALL_INT(self->start + index_val * self->step);
     } else {
@@ -211,16 +217,19 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_range,
     .print = range_print,
     .make_new = range_make_new,
-    .unary_op = range_unary_op,
-    #if MICROPY_PY_BUILTINS_RANGE_BINOP
-    .binary_op = range_binary_op,
-    #endif
-    .subscr = range_subscr,
-    .getiter = range_getiter,
-#if MICROPY_PY_BUILTINS_RANGE_ATTRS
+    #if MICROPY_PY_BUILTINS_RANGE_ATTRS
     .attr = range_attr,
-#endif
+    #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = range_unary_op,
+        #if MICROPY_PY_BUILTINS_RANGE_BINOP
+        .binary_op = range_binary_op,
+        #endif
+        .subscr = range_subscr,
+        .getiter = range_getiter,
+        ),
 };

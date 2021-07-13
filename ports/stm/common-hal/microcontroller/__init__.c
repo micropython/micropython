@@ -41,11 +41,12 @@
 #include "supervisor/shared/safe_mode.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
+    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq() / 1000000;
     delay *= ticks_per_us;
     SysTick->LOAD = delay;
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
-    while ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) == 0) {}
+    while ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) == 0) {
+    }
     SysTick->CTRL = 0;
 }
 
@@ -61,7 +62,7 @@ void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables so we
         // "HardFault".
-        asm("bkpt");
+        asm ("bkpt");
     }
     nesting_count--;
     if (nesting_count > 0) {
@@ -72,12 +73,13 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-  if(runmode == RUNMODE_SAFE_MODE)
-    safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+    if (runmode == RUNMODE_SAFE_MODE) {
+        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+    }
 }
 
 void common_hal_mcu_reset(void) {
-    filesystem_flush(); //TODO: implement as part of flash improvements
+    filesystem_flush(); // TODO: implement as part of flash improvements
     NVIC_SystemReset();
 }
 
@@ -96,6 +98,6 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = NVM_BYTEARRAY_BUFFER_SIZE,
-    .start_address = (uint8_t*) (CIRCUITPY_INTERNAL_NVM_START_ADDR)
+    .start_address = (uint8_t *)(CIRCUITPY_INTERNAL_NVM_START_ADDR)
 };
 #endif

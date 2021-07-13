@@ -6,7 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-#f = open("_test.db", "w+b")
+# f = open("_test.db", "w+b")
 f = uio.BytesIO()
 db = btree.open(f, pagesize=512)
 
@@ -65,7 +65,7 @@ print(db.seq(1, b"qux"))
 try:
     db.seq(b"foo1")
 except OSError as e:
-    print(e.args[0] == uerrno.EINVAL)
+    print(e.errno == uerrno.EINVAL)
 
 print(list(db.keys()))
 print(list(db.values()))

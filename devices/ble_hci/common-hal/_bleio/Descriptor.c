@@ -44,7 +44,7 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_c
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
         mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
-                                 max_length_max, fixed_length ? "True" : "False");
+            max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
@@ -60,14 +60,14 @@ bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio
     return self->characteristic;
 }
 
-size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8_t* buf, size_t len) {
+size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8_t *buf, size_t len) {
     // Do GATT operations only if this descriptor has been registered
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-            //uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
-            //FIX have att_read_req fill in a buffer
-            //uint8_t rsp[MAX(len, 512)];
-            //return att_read_req(conn_handle, self->handle, rsp, len);
+            // uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
+            // FIX have att_read_req fill in a buffer
+            // uint8_t rsp[MAX(len, 512)];
+            // return att_read_req(conn_handle, self->handle, rsp, len);
             return 0;
         } else {
             mp_buffer_info_t bufinfo;
@@ -96,7 +96,7 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-            //FIX
+            // FIX
             // uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
             // att_write_req(conn_handle, self->handle, bufinfo->buf, bufinfo->len, rsp);
         } else {

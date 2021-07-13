@@ -47,23 +47,23 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_P0_07, &pin_P1_08, NULL); // SCK, MOSI, MISO
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
         &pin_P0_27, // TFT_DC Command or data
         &pin_P0_05, // TFT_CS Chip select
-	NULL, // no  TFT_RST Reset
-        //&pin_P1_14, // TFT_RST Reset
+        NULL, // no  TFT_RST Reset
+        // &pin_P1_14, // TFT_RST Reset
         60000000, // Baudrate
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t* display = &displays[0].display;
+    displayio_display_obj_t *display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,

@@ -85,7 +85,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     pulseio_pulsein_obj_t *self = m_new_obj(pulseio_pulsein_obj_t);
     self->base.type = &pulseio_pulsein_type;
@@ -211,8 +211,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_maxlen_obj, pulseio_pulsein_obj_ge
 const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pulseio_pulsein_get_maxlen_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     paused: bool
@@ -230,14 +230,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_paused_obj, pulseio_pulsein_obj_ge
 const mp_obj_property_t pulseio_pulsein_paused_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&pulseio_pulsein_get_paused_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE,
+              MP_ROM_NONE},
 };
 
 //|     def __bool__(self) -> bool: ...
 //|
 //|     def __len__(self) -> int:
-//|         """Returns the current pulse length
+//|         """Returns the number of pulse durations currently stored.
 //|
 //|         This allows you to::
 //|
@@ -250,9 +250,12 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     check_for_deinit(self);
     uint16_t len = common_hal_pulseio_pulsein_get_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -273,7 +276,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
         pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
         check_for_deinit(self);
 
-        if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
+        if (mp_obj_is_type(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
             size_t index = mp_get_index(&pulseio_pulsein_type, common_hal_pulseio_pulsein_get_len(self), index_obj, false);
@@ -306,9 +309,12 @@ STATIC MP_DEFINE_CONST_DICT(pulseio_pulsein_locals_dict, pulseio_pulsein_locals_
 
 const mp_obj_type_t pulseio_pulsein_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_PulseIn,
     .make_new = pulseio_pulsein_make_new,
-    .subscr = pulsein_subscr,
-    .unary_op = pulsein_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&pulseio_pulsein_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pulseio_pulsein_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .subscr = pulsein_subscr,
+        .unary_op = pulsein_unary_op,
+        ),
 };

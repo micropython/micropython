@@ -39,14 +39,16 @@ void analogin_init(void) {
     nrf_saadc_enable(NRF_SAADC);
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_CALIBRATEDONE);
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_CALIBRATEOFFSET);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_CALIBRATEDONE) == 0) { }
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_CALIBRATEDONE) == 0) {
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_CALIBRATEDONE);
     nrf_saadc_disable(NRF_SAADC);
 }
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
-    if (pin->adc_channel == 0)
+    if (pin->adc_channel == 0) {
         mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+    }
 
     nrf_gpio_cfg_default(pin->number);
 
@@ -59,8 +61,9 @@ bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
 }
 
 void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
-    if (common_hal_analogio_analogin_deinited(self))
+    if (common_hal_analogio_analogin_deinited(self)) {
         return;
+    }
 
     nrf_gpio_cfg_default(self->pin->number);
 
@@ -88,32 +91,40 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     nrf_saadc_oversample_set(NRF_SAADC, NRF_SAADC_OVERSAMPLE_DISABLED);
     nrf_saadc_enable(NRF_SAADC);
 
-    for (uint32_t i = 0; i < SAADC_CH_NUM; i++)
+    for (uint32_t i = 0; i < SAADC_CH_NUM; i++) {
         nrf_saadc_channel_input_set(NRF_SAADC, i, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+    }
 
     nrf_saadc_channel_init(NRF_SAADC, CHANNEL_NO, &config);
     nrf_saadc_channel_input_set(NRF_SAADC, CHANNEL_NO, self->pin->adc_channel, self->pin->adc_channel);
     nrf_saadc_buffer_init(NRF_SAADC, &value, 1);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_START);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STARTED) == 0);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STARTED) == 0) {
+        ;
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STARTED);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_SAMPLE);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_END) == 0);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_END) == 0) {
+        ;
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_END);
 
     nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_STOP);
-    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STOPPED) == 0);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STOPPED) == 0) {
+        ;
+    }
     nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STOPPED);
 
     nrf_saadc_disable(NRF_SAADC);
 
-    if (value < 0)
+    if (value < 0) {
         value = 0;
+    }
 
     // Map value to from 14 to 16 bits
-    return (value << 2);
+    return value << 2;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

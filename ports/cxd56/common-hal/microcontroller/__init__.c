@@ -49,14 +49,16 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 void common_hal_mcu_delay_us(uint32_t delay) {
     if (delay) {
         unsigned long long ticks = cxd56_get_cpu_baseclk() / 1000000L * delay;
-        if (ticks < DELAY_CORRECTION) return; // delay time already used in calculation
+        if (ticks < DELAY_CORRECTION) {
+            return;                           // delay time already used in calculation
 
+        }
         ticks -= DELAY_CORRECTION;
         ticks /= 6;
         // following loop takes 6 cycles
         do {
-            __asm__ __volatile__("nop");
-        } while(--ticks);
+            __asm__ __volatile__ ("nop");
+        } while (--ticks);
     }
 }
 
@@ -69,9 +71,9 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if(runmode == RUNMODE_BOOTLOADER) {
+    if (runmode == RUNMODE_BOOTLOADER) {
         mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
-    } else if(runmode == RUNMODE_SAFE_MODE) {
+    } else if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
     }
 }

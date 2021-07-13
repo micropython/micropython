@@ -53,11 +53,11 @@ void uart_reset(void) {
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
-    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx,
+    const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts,
+    const mcu_pin_obj_t *rs485_dir, bool rs485_invert,
     uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
-    mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
     if (bits > 8) {
@@ -163,7 +163,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uart_set_parity(self->uart_num, parity_mode);
 
     // Stop is 1 or 2 always.
-    uart_stop_bits_t stop_bits= UART_STOP_BITS_1;
+    uart_stop_bits_t stop_bits = UART_STOP_BITS_1;
     if (stop == 2) {
         stop_bits = UART_STOP_BITS_2;
     }
@@ -291,13 +291,14 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         mp_raise_ValueError(translate("No TX pin"));
     }
 
-    while (len > 0) {
-        int count = uart_tx_chars(self->uart_num, (const char*) data, len);
+    size_t left_to_write = len;
+    while (left_to_write > 0) {
+        int count = uart_tx_chars(self->uart_num, (const char *)data, left_to_write);
         if (count < 0) {
             *errcode = MP_EAGAIN;
             return MP_STREAM_ERROR;
         }
-        len -= count;
+        left_to_write -= count;
         data += count;
         RUN_BACKGROUND_TASKS;
     }
@@ -322,7 +323,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout_ms / 1000.0f);
+    return (mp_float_t)(self->timeout_ms / 1000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {

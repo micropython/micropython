@@ -12,5 +12,5 @@ print(b1 + b2)
 print(b1 + b3)
 print(b3 + b1)
 
-# bytearray construction will use the buffer protocol
-print(bytearray(b1))
+# bytes construction will use the buffer protocol
+print(bytes(b1))

@@ -31,19 +31,13 @@
 
 #include "peripherals/pins.h"
 
-extern bool apa102_mosi_in_use;
-extern bool apa102_sck_in_use;
-
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-
 void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
 void reset_pin_number(gpio_num_t pin_number);
-void common_hal_reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
+void common_hal_reset_pin(const mcu_pin_obj_t *pin);
+void claim_pin(const mcu_pin_obj_t *pin);
+void claim_pin_number(gpio_num_t pin_number);
 bool pin_number_is_free(gpio_num_t pin_number);
 void never_reset_pin_number(gpio_num_t pin_number);
 

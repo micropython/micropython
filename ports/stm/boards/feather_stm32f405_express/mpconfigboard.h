@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather STM32F405 Express"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
@@ -46,7 +46,7 @@
 
 // Bootloader only
 #ifdef UF2_BOOTLOADER_ENABLED
-    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
+    #define BOARD_VTOR_DEFER (1) // Leave VTOR relocation to bootloader
 #endif
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)

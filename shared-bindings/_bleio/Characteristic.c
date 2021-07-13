@@ -45,7 +45,11 @@
 //|         ...
 //|
 
-//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: Optional[ReadableBuffer] = None) -> Characteristic:
+//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0,
+//|                        read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN,
+//|                        max_length: int = 20, fixed_length: bool = False,
+//|                        initial_value: Optional[ReadableBuffer] = None,
+//|                        user_description: Optional[str] = None) -> Characteristic:
 //|         """Create a new Characteristic object, and add it to this Service.
 //|
 //|         :param Service service: The service that will provide this characteristic
@@ -65,6 +69,7 @@
 //|         :param bool fixed_length: True if the characteristic value is of fixed length.
 //|         :param ~_typing.ReadableBuffer initial_value: The initial value for this characteristic. If not given, will be
 //|          filled with zeros.
+//|         :param str user_description: User friendly description of the characteristic
 //|
 //|         :return: the new Characteristic."""
 //|         ...
@@ -73,28 +78,29 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     // class is arg[0], which we can ignore.
 
     enum { ARG_service, ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm,
-           ARG_max_length, ARG_fixed_length, ARG_initial_value };
+           ARG_max_length, ARG_fixed_length, ARG_initial_value, ARG_user_description };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_service,  MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_max_length, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 20} },
-        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_initial_value, MP_ARG_KW_ONLY| MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_properties, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
+        { MP_QSTR_max_length, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 20} },
+        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_initial_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_user_description, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t service_obj = args[ARG_service].u_obj;
-    if (!MP_OBJ_IS_TYPE(service_obj, &bleio_service_type)) {
+    if (!mp_obj_is_type(service_obj, &bleio_service_type)) {
         mp_raise_TypeError(translate("Expected a Service"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
         mp_raise_TypeError(translate("Expected a UUID"));
     }
 
@@ -113,8 +119,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     if (max_length_int < 0) {
         mp_raise_ValueError(translate("max_length must be >= 0"));
     }
-    const size_t max_length = (size_t) max_length_int;
-    const bool fixed_length =  args[ARG_fixed_length].u_bool;
+    const size_t max_length = (size_t)max_length_int;
+    const bool fixed_length = args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
 
     mp_buffer_info_t initial_value_bufinfo;
@@ -129,7 +135,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-            mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError(translate("initial_value length is wrong"));
+    }
+
+    const char *user_description = NULL;
+    if (args[ARG_user_description].u_obj != mp_const_none) {
+        user_description = mp_obj_str_get_str(args[ARG_user_description].u_obj);
     }
 
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
@@ -140,7 +151,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     common_hal_bleio_characteristic_construct(
         characteristic, MP_OBJ_TO_PTR(service_obj), 0, MP_OBJ_TO_PTR(uuid_obj),
         properties, read_perm, write_perm,
-        max_length, fixed_length, &initial_value_bufinfo);
+        max_length, fixed_length, &initial_value_bufinfo,
+        user_description);
 
     return MP_OBJ_FROM_PTR(characteristic);
 }
@@ -164,8 +176,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_properties_obj, bleio_
 const mp_obj_property_t bleio_characteristic_properties_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_properties_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     uuid: Optional[UUID]
@@ -184,8 +196,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_uuid_obj, bleio_charac
 const mp_obj_property_t bleio_characteristic_uuid_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_uuid_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     value: bytearray
@@ -216,7 +228,24 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_value_obj,
                (mp_obj_t)&bleio_characteristic_set_value_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE },
+};
+
+//|     max_length: int
+//|     """The max length of this characteristic."""
+//|
+STATIC mp_obj_t bleio_characteristic_get_max_length(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_characteristic_get_max_length(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_max_length_obj, bleio_characteristic_get_max_length);
+
+const mp_obj_property_t bleio_characteristic_max_length_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_characteristic_get_max_length_obj,
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     descriptors: Descriptor
@@ -233,8 +262,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio
 const mp_obj_property_t bleio_characteristic_descriptors_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_descriptors_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     service: Service
@@ -250,8 +279,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_service_obj, bleio_cha
 const mp_obj_property_t bleio_characteristic_service_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_service_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
+               MP_ROM_NONE,
+               MP_ROM_NONE },
 };
 
 //|     def set_cccd(self, *, notify: bool = False, indicate: bool = False) -> None:
@@ -330,5 +359,5 @@ const mp_obj_type_t bleio_characteristic_type = {
     { &mp_type_type },
     .name = MP_QSTR_Characteristic,
     .print = bleio_characteristic_print,
-    .locals_dict = (mp_obj_dict_t*)&bleio_characteristic_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_locals_dict,
 };

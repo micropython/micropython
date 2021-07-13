@@ -30,7 +30,7 @@
 #include "py/nlr.h"
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t freq, uint32_t timeout) {
+    const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t freq, uint32_t timeout) {
     shared_module_bitbangio_i2c_construct(&self->bitbang, scl, sda, freq, timeout);
 }
 
@@ -59,12 +59,12 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-        const uint8_t * data, size_t len, bool transmit_stop_bit) {
+    const uint8_t *data, size_t len, bool transmit_stop_bit) {
     return shared_module_bitbangio_i2c_write(&self->bitbang, addr, data, len,
         transmit_stop_bit);
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-        uint8_t * data, size_t len) {
+    uint8_t *data, size_t len) {
     return shared_module_bitbangio_i2c_read(&self->bitbang, addr, data, len);
 }

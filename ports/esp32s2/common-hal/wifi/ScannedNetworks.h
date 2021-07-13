@@ -43,7 +43,7 @@ typedef struct {
     EventGroupHandle_t radio_event_group;
 
     // Results from the last channel scan
-    wifi_ap_record_t* results;
+    wifi_ap_record_t *results;
     uint16_t current_result;
     uint16_t total_results;
     uint16_t max_results;

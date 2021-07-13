@@ -66,7 +66,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals
 
 const mp_obj_module_t network_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_network_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };
 
 #endif  // CIRCUITPY_NETWORK

@@ -1,0 +1,1 @@
+print("frzstr1")

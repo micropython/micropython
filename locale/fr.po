@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-12-29 20:38+0000\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2021-05-21 17:47+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: main.c
 msgid ""
@@ -52,6 +52,14 @@ msgstr "  Fichier \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  Fichier \"%q\", ligne %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr " est de type %q\n"
+
+#: main.c
+msgid " not found.\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " sortie :\n"
@@ -63,10 +71,11 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
-"Les broches d'adresse %d et les broches RVB %d indiquent une hauteur de %d, "
-"pas %d"
+"%d broches d'adresse, %d broches RGB et %d pour tile indique une hauteur de "
+"%d, et non %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -76,23 +85,48 @@ msgstr "Échec de %q : %d"
 msgid "%q in use"
 msgstr "%q en cours d'utilisation"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
-msgstr "index %q hors gamme"
+msgstr "index %q hors de portée"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr "indices %q doivent être des chiffres entier, et non %q"
+msgid "%q indices must be integers, not %s"
+msgstr "les indices %q doivent être des entiers, pas %s"
+
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "La liste %q doit être une liste"
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 0-255"
+msgstr ""
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be 1-255"
+msgstr "%q doit être compris entre 1 et 255"
+
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr "%q doit être >= 0"
 
@@ -102,12 +136,29 @@ msgstr "%q doit être >= 0"
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr "%q doit être >=1"
+msgstr "%q doit être >= 1"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q must be None or between 1 and len(report_descriptor)-1"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q doit être un tuple de longueur 2"
 
+#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+msgid "%q must be between %d and %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q est hors de porté"
@@ -122,31 +173,20 @@ msgstr "%q doit être un chiffre entier (int)"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "%q() prend %d paramêtres positionnels mais %d ont été donnés"
+msgstr "%q() prend %d paramètres positionnels mais %d ont été donnés"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr "%s erreur 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr "paramêtre '%q' requis"
-
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
+msgstr "paramètre '%q' requis"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
 msgstr "l'objet '%q' ne supporte pas '%q'"
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr "l'objet '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -160,14 +200,10 @@ msgstr "l'objet '%q' ne peut pas être appelé"
 msgid "'%q' object is not iterable"
 msgstr "l'objet '%q' n'est pas itérable"
 
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr "l'objet '%q' n'est pas souscriptable"
-
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr "'%s' attend un label"
+msgstr "'%s' attend une étiquette"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -192,12 +228,12 @@ msgstr "'%s' attend une adresse de la forme [a, b]"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr "'%s' attend un entier"
+msgstr "'%s' attend un chiffre entier"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr "'%s' attend au plus à r%d"
+msgstr "'%s' attend au plus r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -206,17 +242,36 @@ msgstr "'%s' attend {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
+msgid "'%s' integer %d isn't within range %d..%d"
+msgstr ""
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' l'entier 0x%x ne correspond pas au masque 0x%x"
+msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item assignment"
+msgstr "l'objet %s ne supporte pas l'assignation d'éléments"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object doesn't support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "l'objet '%s' n'a pas d'attribut '%q'"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object isn't subscriptable"
+msgstr ""
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "'=' alignement non autorisé dans la spéc. de format de chaîne"
+msgstr "'=' alignement non permis dans la spécification du format de chaîne"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -224,43 +279,43 @@ msgstr "'S' et 'O' ne sont pas des types de format supportés"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr "'align' nécessite 1 argument"
+msgstr "'align' nécessite 1 paramètre"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr "'await' en dehors d'une fonction"
+msgstr "'await' dehors d'une fonction"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr "'await', 'async for' ou 'async with' au dehors d'une fonction async"
+msgstr "'await', 'async for' ou 'async with' dehors d'une fonction async"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr "'break' en dehors d'une boucle"
+msgstr "'break' dehors d'une boucle"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr "'continue' en dehors d'une boucle"
+msgstr "'continue' dehors d'une boucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr "L'objet « coroutine » n'est pas un itérateur"
+msgstr "L'objet \"coroutine\" n'est pas un itérateur"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr "'data' nécessite au moins 2 arguments"
+msgstr "'data' nécessite au moins 2 paramètres"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
-msgstr "'data' nécessite des arguments entiers"
+msgstr "'data' nécessite des paramètre de chiffres entiers"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr "'label' nécessite 1 argument"
+msgstr "'label' nécessite 1 paramètre"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr "'return' en dehors d'une fonction"
+msgstr "'return' dehors d'une fonction"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
@@ -268,7 +323,7 @@ msgstr "'yield from' dans une fonction async"
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr "'yield' en dehors d'une fonction"
+msgstr "'yield' dehors d'une fonction"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -284,12 +339,16 @@ msgstr "0.0 à une puissance complexe"
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
-msgstr "pow() non supporté avec 3 arguments"
+msgstr "pow() non supporté avec 3 paramètres"
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr "types à 64 bit"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr "Un canal d'interruptions matérielles est déjà utilisé"
+msgstr "Un canal d'interruptions matériel est déjà utilisé"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
@@ -302,7 +361,7 @@ msgstr "L'adresse doit être longue de %d octets"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr "Type d'adresse hors plage"
+msgstr "Type d'adresse hors portée"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -329,20 +388,29 @@ msgid "All SPI peripherals are in use"
 msgstr "Tous les périphériques SPI sont utilisés"
 
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Tous les périphériques UART sont utilisés"
+
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All channels in use"
+msgstr "Tout les canaux sont utilisés"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "All state machines in use"
+msgstr "Tous les automates finis sont utilisés"
+
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
-msgstr "Tous les canaux d'événements de synchro sont utilisés"
+msgstr "Tout les canaux d'événements sync sont utilisés"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Tous les timers pour cette broche sont utilisés"
+msgstr "Tous les minuteurs pour cette broche sont utilisés"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -356,9 +424,10 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr "Tous les timers sont utilisés"
+msgstr "Tous les minuteurs sont utilisés"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
@@ -384,17 +453,23 @@ msgstr "'AnalogOut' n'est pas supporté sur la broche indiquée"
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Fonctionnalité AnalogOut non supportée"
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
-"AnalogOut est seulement 16 bits. Les valeurs doivent être inf. à 65536."
+"AnalogOut est seulement 16 bits. Les valeurs doivent être inférieures à "
+"65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
 msgstr "'AnalogOut' n'est pas supporté sur la broche indiquée"
+
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Another PWMAudioOut is already active"
+msgstr "Un autre PWMAudioOut est déjà actif"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -403,11 +478,11 @@ msgstr "Un autre envoi est déjà actif"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Le tableau doit contenir des demi-mots (type 'H')"
+msgstr "La matrice doit contenir des demi-mots (type 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
+msgstr "Les valeurs de la matrice doivent être des octets singuliers."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
@@ -419,10 +494,14 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Tentative d'allocation de %d blocs"
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running."
+msgid "Attempted heap allocation when VM not running."
 msgstr ""
-"Tentative d'allocation de segments lorsque la machine virtuelle MicroPython "
-"n'est pas en cours d'exécution."
+"Tentative d'allocation à la pile quand la Machine Virtuelle n'est pas en "
+"exécution."
+
+#: shared-bindings/wifi/Radio.c
+msgid "AuthMode.OPEN is not used with password"
+msgstr "AuthMode.OPEN n'est pas utilisé avec un mot de passe"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -442,12 +521,16 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr "Baudrate non prise en charge par le périphérique"
+msgstr "Baudrate non supporté par le périphérique"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
-msgstr "Inférieur à la fréquence d'images minimale"
+msgstr "Au-dessous de la fréquence d'images minimale"
+
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must be sequential pins"
+msgstr "Bit clock et word select doivent êtres sur des broches séquentielles"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -456,7 +539,7 @@ msgstr "'bit clock' et 'word select' doivent partager une horloge"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "Bit depth doit être compris entre 1 et 6 inclus, et non %d"
+msgstr "Bit depth doit être entre 1 et 6 inclusivement, et non %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -468,7 +551,7 @@ msgstr "RX et TX requis pour le contrôle de flux"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr "Les deux entrées doivent supporter les interruptions matérielles"
+msgstr "Les deux broches doivent supporter les interruptions matérielles"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -490,6 +573,10 @@ msgstr "Luminosité non-ajustable"
 msgid "Buffer + offset too small %d %d %d"
 msgstr "Tampon + décalage trop petit %d %d %d"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Buffer elements must be 4 bytes long or less"
+msgstr "Éléments du tampon doit être 4 octets ou moins"
+
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
@@ -506,6 +593,7 @@ msgid "Buffer is too small"
 msgstr "Le tampon est trop petit"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "La longueur du tampon %d est trop grande. Il doit être inférieur à %d"
@@ -519,14 +607,9 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "La mémoire tampon doit être un multiple de 512"
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
-
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
-msgstr "Tampon trop volumineux et impossible à allouer"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
@@ -534,7 +617,9 @@ msgid "Buffer too short by %d bytes"
 msgstr "Tampon trop court de %d octets"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "La broche %d du bus est déjà utilisée"
@@ -550,6 +635,10 @@ msgstr "Les octets 'bytes' doivent être entre 0 et 255."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Les blocs CBC doivent être des multiples de 16 octets"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr "CRC ou somme de contrôle invalide"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -575,6 +664,11 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Impossible de définir CCCD sur une caractéristique locale"
 
+#: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
+#: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+msgid "Cannot change USB devices now"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
@@ -589,8 +683,9 @@ msgstr "Impossible de supprimer les valeurs"
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
+#: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
-msgstr "Ne peut être tiré ('pull') en mode 'output'"
+msgstr "Ne peut être tiré ('pull') en mode sortie ('output')"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
@@ -608,7 +703,7 @@ msgstr "Les 2 canaux de sortie ne peuvent être sur la même broche"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr "Ne peut tirer sur une broche d'entrée seule."
+msgstr "Ne peut tirer ('pull') sur une broche d'entrée ('input') seule."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -619,8 +714,8 @@ msgid "Cannot record to a file"
 msgstr "Impossible d'enregistrer vers un fichier"
 
 #: shared-module/storage/__init__.c
-msgid "Cannot remount '/' when USB is active."
-msgstr "'/' ne peut être remonté quand l'USB est actif."
+msgid "Cannot remount '/' when visible via USB."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
@@ -629,9 +724,14 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr "Ne peut définir les options de socket"
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
-msgstr "Impossible d'affecter une valeur quand la direction est 'input'."
+msgstr ""
+"Impossible d'affecter une valeur quand la direction est entrante ('input')."
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -646,16 +746,12 @@ msgstr "On ne peut faire de sous-classes de tranches"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO."
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
-msgstr ""
-"Impossible de faire varier la fréquence sur une minuterie déjà utilisée"
+msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisée"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Ne peut reveillé sur le board de broche. Seuleument à niveau."
 
@@ -672,21 +768,12 @@ msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Le code principal de CircuitPython s'est écrasé durement. Oups !\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode because you pressed the reset button during "
-"boot. Press again to exit safe mode.\n"
-msgstr ""
-"CircuitPython est en mode sans échec car vous avez appuyé sur le bouton de "
-"réinitialisation pendant le démarrage. Appuyez à nouveau pour quitter le "
-"mode sans échec.\n"
-
-#: supervisor/shared/safe_mode.c
-msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr "CircuitPython n'as pu faire l'allocation de la pile\n"
+msgid "CircuitPython was unable to allocate the heap."
+msgstr "CircuitPython n'as pu faire l'allocation de la pile."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
-msgstr "Echec de l'init. de la broche d'horloge."
+msgstr "Échec de l'initialization de la broche d'horloge."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
@@ -703,7 +790,7 @@ msgstr "L'entrée 'Column' doit être un digitalio.DigitalInOut"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
-msgstr "La commande doit être un entier entre 0 et 255"
+msgstr "La commande doit être un chiffre entier entre 0 et 255"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -717,13 +804,9 @@ msgstr ""
 msgid "Corrupt .mpy file"
 msgstr "Fichier .mpy corrompu"
 
-#: py/emitglue.c
-msgid "Corrupt raw code"
-msgstr "Code brut corrompu"
-
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr "Impossible d'initialisé la Camera"
+msgstr "Impossible d'initialiser Camera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -736,19 +819,11 @@ msgstr "Impossible d'initialiser la carte SD"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 msgid "Could not initialize UART"
-msgstr "L'UART n'a pu être initialisé"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr "Impossible d'initialiser la chaîne"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr "Impossible d'initialiser la minuterie"
+msgstr "Impossible d'initialiser UART"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
-msgstr "Impossible de réinitialiser la chaîne"
+msgstr "Impossible de réinitialiser le canal"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
@@ -766,7 +841,7 @@ msgstr "Impossible d’obtenir l’horloge"
 msgid "Could not set address"
 msgstr "Impossible de définir l’adresse"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Impossible de démarrer PWM"
 
@@ -781,7 +856,7 @@ msgstr "Impossible d'allouer le décodeur"
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate first buffer"
-msgstr "Impossible d'allouer le 1er tampon"
+msgstr "Impossible d'allouer le premier tampon"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
@@ -790,11 +865,11 @@ msgstr "Impossible d'allouer le tampon d'entrée"
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate second buffer"
-msgstr "Impossible d'allouer le 2e tampon"
+msgstr "Impossible d'allouer le deuxième tampon"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
-msgstr "Crash dans le HardFault_Handler."
+msgstr "Échec vers le HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
@@ -813,13 +888,25 @@ msgstr "DAC déjà utilisé"
 msgid "Data 0 pin must be byte aligned"
 msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned."
+msgstr "La broche Data 0 doit être aligné sur l'octet."
+
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
-msgstr "Un bloc de données doit suivre un bloc de format"
+msgstr "Un bloc de données doit suivre un bloc fmt"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
-msgstr "Données trop volumineuses pour un paquet de diffusion"
+msgstr "Données trop volumineuses pour un paquet d'avertissement"
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Deep sleep pins must use a rising edge with pulldown"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -846,7 +933,8 @@ msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
-msgstr "Le mode Drive n'est pas utilisé quand la direction est 'input'."
+msgstr ""
+"Le mode Drive n'est pas utilisé quand la direction est entrante ('input')."
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -863,11 +951,21 @@ msgstr "ESP-IDF échec d'allocation de la mémoire"
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
 
+#: shared-module/synthio/MidiTrack.c
+#, c-format
+msgid "Error in MIDI stream at position %d"
+msgstr "Erreur dans le flot MIDI à la position %d"
+
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "Error: Failure to bind"
+msgstr "Erreur : Impossible de lier"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -885,11 +983,11 @@ msgstr "Un 'DigitalInOut' est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr "Attendu un service"
+msgstr "Un Service est attendu"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr "Un 'UART' est attendu"
+msgstr "Un UART est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -898,7 +996,7 @@ msgstr "Un UUID est attendu"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
-msgstr "Attendu une adresse"
+msgstr "Un Address est attendu"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -912,17 +1010,17 @@ msgstr "Tuple de longueur %d attendu, obtenu %d"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
-"Les publicités étendues avec réponse d'analyse ne sont pas prises en charge."
+"Les avertissement étendues avec analyse de réponse ne sont pas supportées."
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
-msgstr "La FFT est définie pour les ndarrays uniquement"
+msgstr "La FFT est définie uniquement pour les ndarrays"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr "FFT n'est implémenté que pour les tableaux linéaires"
+msgstr "FFT n'est implémenté que pour les matrices linéaires"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Échec du handshake SSL"
 
@@ -936,6 +1034,7 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Echec de l'obtention de mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
 
@@ -944,6 +1043,7 @@ msgstr "Echec de l'allocation du tampon RX"
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -957,13 +1057,17 @@ msgstr "Impossible d’allouer la mémoire pour Wifi"
 msgid "Failed to allocate wifi scan memory"
 msgstr "Impossible d'allouer la mémoire pour le scan wifi"
 
+#: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Failed to buffer the sample"
+msgstr "Échec du tamponage de l'échantillon"
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Impossible de se connecter : erreur interne"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
-msgstr "Impossible de se connecter : délai d'expiration"
+msgstr "Impossible de se connecter: délai dépassé"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
@@ -980,7 +1084,11 @@ msgstr "Impossible de libérer mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
-msgstr "Échec de l'écriture du flash interne."
+msgstr "Échec de l'écriture vers flash interne."
+
+#: supervisor/shared/safe_mode.c
+msgid "Fatal error."
+msgstr "Erreurre fatale."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -990,7 +1098,7 @@ msgstr "Le fichier existe"
 #: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr "Filtre trop complexe"
+msgstr "Filtres trop complexe"
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
@@ -1003,27 +1111,28 @@ msgstr "Format non supporté"
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr "Le framebuffer nécessite %d octets"
+msgstr "FrameBuffer nécessite %d octets"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
-"La fréquence doit correspondre à PWMOut existant à l'aide de cette minuterie"
+"La fréquence doit correspondre à PWMOut existant à l'utilisation de ce "
+"minuteur"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
-msgstr "La fonction nécessite un verrou"
+msgstr "La fonction nécessite un verrou ('lock')"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr "Échec génerique"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Groupe déjà utilisé"
-
-#: shared-module/displayio/Group.c
-msgid "Group full"
-msgstr "Groupe plein"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
@@ -1037,44 +1146,70 @@ msgstr "Matériel utilisé, essayez d'autres broches"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
-msgstr "Hostname doit faire entre 1 et 253 caractères"
+msgstr "Hostname doit être entre 1 et 253 caractères"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
-msgstr "opération d'E/S sur un fichier fermé"
+msgstr "Opération d'E/S sur un fichier fermé"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "Erreur d'initialisation I2C"
 
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "I2C peripheral in use"
+msgstr "périphérique I2C utilisé"
+
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
-msgstr "IV doit être long de %d octets"
+msgstr "IV doit être de longueur de %d octets"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "In-buffer elements must be <= 4 bytes long"
+msgstr "Éléments dans le tampon doivent être <= à 4 octets"
 
 #: py/persistentcode.c
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Fichier .mpy incompatible. Merci de mettre à jour tous les fichiers .mpy."
+"Fichier .mpy incompatible. Merci de mettre à jour tous les fichiers .mpy. "
 "Voir http://adafru.it/mpy-update pour plus d'informations."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
 msgstr "Taille de tampon incorrecte"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Init program size invalid"
+msgstr "Taille du programme d'initialisation non valide"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin direction conflicts with initial out pin direction"
+msgstr ""
+"Direction initiale de \"set pin\" est en conflit avec la direction initiale "
+"de \"out pin\""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Initial set pin state conflicts with initial out pin state"
+msgstr ""
+"État initial de \"set pin\" est en conflit avec l'état initial de \"out pin\""
+
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr "L'initialisation a échoué par manque de mémoire"
+msgstr "Échec d'initialisation par manque de mémoire"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
+msgstr ""
+"La taille (%d) du tampon d'entrée doit être un multiple du nombre (%d) de "
+"brins"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1083,6 +1218,35 @@ msgstr "L'entrée prend trop de temps"
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d jumps on pin"
+msgstr "Instruction %d saute sur la broche"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts in more bits than pin count"
+msgstr ""
+"Instruction %d décale vers l'intérieur de plus de bits que le nombre de "
+"broches"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts out more bits than pin count"
+msgstr ""
+"instruction %d décale vers l'extérieur de plus de bits que le nombre de "
+"broches"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d uses extra pin"
+msgstr "instruction %d utilise des broches supplémentaires"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d waits on input outside of count"
+msgstr "instruction %d attend sur une entrée hors du compte"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1107,6 +1271,8 @@ msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
 
@@ -1114,11 +1280,19 @@ msgstr "Broche invalide pour '%q'"
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr "Sélection de pin %q invalide"
+msgstr "Sélection de broche %q invalide"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valeur d'unité ADC non valide"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Invalid AuthMode"
+msgstr "AuthMode invalide"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Invalid BLE parameter"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
@@ -1126,16 +1300,22 @@ msgstr "Fichier BMP invalide"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr "BSSID Invalide"
+msgstr "BSSID invalide"
 
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
 
+#: shared-bindings/synthio/__init__.c
+msgid "Invalid MIDI file"
+msgstr "Fichier MIDI invalide"
+
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
-#: shared-bindings/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
+#: ports/nrf/common-hal/pwmio/PWMOut.c
+#: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
@@ -1143,30 +1323,42 @@ msgstr "Fréquence de PWM invalide"
 msgid "Invalid Pin"
 msgstr "Broche invalide"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
-msgstr "Argument invalide"
+msgstr "Paramètre invalide"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
 msgstr "Bits par valeur invalides"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Longueur de tampon invalide"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
-msgstr "Chaîne d'octets non valide"
+msgstr "Chaîne byteorder non valide"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr "Période de capture invalide. Gamme valide : 1 à 500"
+msgstr "Période de capture invalide. Portée valide : 1 à 500"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_count %d"
+msgstr "data_count invalide %d"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_pins[%d]"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1180,17 +1372,13 @@ msgstr "Fichier invalide"
 msgid "Invalid format chunk size"
 msgstr "Taille de bloc de formatage invalide"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr "fréquence non Valide"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr "Fréquence invalide fournie"
+msgstr "Fréquence non valide"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr "Accès mémoire invalide."
+msgstr "Accès à la mémoire invalide."
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1203,7 +1391,9 @@ msgstr "Phase invalide"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
@@ -1225,14 +1415,12 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr "Broches non valides pour PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1241,7 +1429,7 @@ msgstr "Polarité invalide"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
-msgstr "Propriétés non valides"
+msgstr "Propriétés invalides"
 
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
@@ -1249,7 +1437,19 @@ msgstr "Mode de lancement invalide."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr "'mode_security' non valide"
+msgstr "'security_mode' invalide"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr "Taille invalide"
+
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
+msgid "Invalid socket for TLS"
+msgstr "Socket non valide pour TLS"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr "État invalide"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1263,9 +1463,10 @@ msgstr "Nombre de voix invalide"
 msgid "Invalid wave file"
 msgstr "Fichier WAVE invalide"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr "Longueur de mot / bit non valide"
+msgstr "Longueur de mot / bit invalide"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1283,38 +1484,26 @@ msgstr "Couche déjà dans un groupe."
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "'Layer' doit être un 'Group' ou une sous-classe 'TileGrid'."
 
-#: py/objslice.c
-msgid "Length must be an int"
-msgstr "La longueur doit être un nombre entier"
-
-#: py/objslice.c
-msgid "Length must be non-negative"
-msgstr "La longueur ne doit pas être négative"
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr "Adresse physique (MAC) invalide"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "Echec de l'init. de la broche MISO."
+msgstr "Échec de l'initialization de la broche MISO."
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
-msgstr "Echec de l'init. de la broche MOSI."
+msgstr "Échec de l'initialization de la broche MOSI."
 
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
-msgstr "La valeur max. de x est %d lors d'une opération miroir"
+msgstr "La valeur maximale de x est %d lors d'une opération miroir"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr "Message limité a 8 bytes"
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr "Le saut MicroPython NLR a échoué. Altération probable de la mémoire."
-
-#: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error."
-msgstr "Erreur fatale MicroPython."
+msgstr "Messages limités à 8 octets"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -1323,6 +1512,38 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Broche MISO ou MOSI manquante"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+msgstr ""
+"first_in_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d waits based on pin"
+msgstr "first_in_pin manquant. L'instruction %d attends dépends de la broche"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+msgstr ""
+"first_out_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1337,11 +1558,15 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
+#: supervisor/shared/safe_mode.c
+msgid "NLR jump failed. Likely memory corruption."
+msgstr "Saut NLR échoué. Corruption de mémoire probable."
+
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "Erreur NVS"
 
-#: py/parse.c
+#: py/qstr.c
 msgid "Name too long"
 msgstr "Nom trop long"
 
@@ -1356,8 +1581,14 @@ msgstr "Pas de DAC sur la puce"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "No DMA pacing timer found"
+msgstr "Aucun minuteur de rythme DMA trouvé"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1377,14 +1608,14 @@ msgstr "Pas de broche MOSI"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
@@ -1406,7 +1637,7 @@ msgstr "Pas de GCLK libre"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
-msgstr "Pas de source matérielle d'aléa disponible"
+msgstr "Aucunes source de valeurs aléatoire matérielle disponible"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
@@ -1417,29 +1648,40 @@ msgstr "Pas de support matériel sur la broche clk"
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in in program"
+msgstr "Programme n'a pas de \"in\""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No in or out in program"
+msgstr "Programme n'a aucun \"in\" ni \"out\""
+
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
 msgstr "Aucune clé n'a été spécifiée"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr "Pas de support entier long"
+msgstr "Pas de support pour chiffre entier long"
 
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more channels available"
-msgstr "Pas de canal supplémentaire disponible"
-
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
-msgid "No more timers available"
-msgstr "Pas d'horloge supplémentaire disponible"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr "Plus de minuteurs disponibles sur cette broche."
+#: shared-module/usb_hid/__init__.c
+#, c-format
+msgid "No more than %d HID devices allowed"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
 msgstr "Aucun réseau avec ce ssid"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No out in program"
+msgstr "Aucun out dans le programme"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr "Aucun pull up trouvé sur SDA ou SCL; vérifiez votre cablage"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1447,19 +1689,23 @@ msgstr "Pas de pulldown sur la broche ; 1Mohm recommandé"
 
 #: py/moduerrno.c
 msgid "No space left on device"
-msgstr "Il n'y a plus d'espace libre sur le périphérique"
+msgstr "Aucun espace libre sur le dispositif"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
-msgstr "Fichier/dossier introuvable"
+msgstr "Fichier/répertoire introuvable"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
-msgstr "Pas de minuterie disponible"
+msgstr "Aucun minuteur disponible"
 
 #: supervisor/shared/safe_mode.c
-msgid "Nordic Soft Device failure assertion."
-msgstr "Affirmation de défaillance du Nordic Soft Device."
+msgid "Nordic system firmware failure assertion."
+msgstr "Assertion échouée du logiciel systême Nordic."
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Nordic system firmware out of memory"
+msgstr "Logiciel systême Nordic hors de mémoire"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -1474,10 +1720,6 @@ msgstr "Non connecté"
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Ne joue pas"
-
-#: main.c
-msgid "Not running saved code.\n"
-msgstr "N'exécute pas le code sauvegardé.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
@@ -1495,24 +1737,37 @@ msgid "Odd parity is not supported"
 msgstr "Parité impaire non supportée"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr "Seules les adresses IPv4 sont prises en charge"
+msgstr "Seulement les adresses IPv4 sont supportées"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr "Seules les sockets IPv4 sont prises en charge"
+msgstr "Seulement les sockets IPv4 sont supportés"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
-"Seul le format BMP Windows, non compressé est supporté : la taille de "
+"Seulement le format BMP Windows, non compressé est supporté : la taille de "
 "l'entête fournie est %d"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Only edge detection is available on this hardware"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only int or string supported for ip"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1520,10 +1775,17 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-"Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
-"ou plus : %d bpp fournis"
+"Seulement les BMP monochromes, 4 bpp ou 8 bpp, ou 16 bpp et plus sont "
+"supportés: %d bpp fournis"
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
+#: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Seulement une alarme alarm.time peut être réglée."
 
@@ -1531,24 +1793,45 @@ msgstr "Seulement une alarme alarm.time peut être réglée."
 msgid "Only one color can be transparent at a time"
 msgstr "Une seule couleur peut être transparente à la fois"
 
-#: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip"
-msgstr "IP n'accepte que les entiers bruts"
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr "Opération ou fonction non supportée"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr "Timeout de l'opération"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr "Hors de mémoire"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Out-buffer elements must be <= 4 bytes long"
+msgstr "Éléments du tampon de sortie doivent être <= à 4 octets"
+
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "Output buffer must be at least %d bytes"
+msgstr "Tampon de sortie doit être au moins %d octets"
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Le sur-échantillonage doit être un multiple de 8."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr "PDMIn non disponible"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
-"La valeur de cycle PWM doit être entre 0 et 65535 inclus (résolution de 16 "
-"bits)"
+"La valeur de duty_cycle de PWM doit être entre 0 et 65535 inclusivement "
+"(résolution de 16 bits)"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1557,37 +1840,66 @@ msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à la construction."
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice already in use"
+msgstr "PWM slice déja utilisée"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "PWM slice channel A already in use"
+msgstr "Canal A de PWM slice est utilisé"
+
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
-msgstr "ParallelBus pas encore pris en charge"
+msgstr "ParallelBus pas encore supporté"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr "Périphérique en utilisation"
 
 #: py/moduerrno.c
 msgid "Permission denied"
 msgstr "Permission refusée"
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+msgid "Pin cannot wake from Deep Sleep"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Pin count must be at least 1"
+msgstr "Nombre de broches doit être au moins 1"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Pin count too large"
+msgstr "Nombre de broches trop élevé"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
+#: ports/raspberrypi/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
-msgstr "La broche ne peut être utilisée pour l'ADC"
+msgstr "La broche 'pin' ne supporte pas les capacitées ADC"
+
+#: ports/stm/common-hal/alarm/pin/PinAlarm.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin interrupt already in use"
+msgstr ""
 
 #: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "La broche est entrée uniquement"
 
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "Pin must be on PWM Channel B"
+msgstr "La broche doit être sur le canal B du PWM"
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
-msgstr "La broche doit prendre en charge les interruptions matérielles"
-
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
-msgstr "Numéro de broche déjà réservé par EXTI"
+msgstr "La broche doit supporter les interruptions matérielles"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1600,21 +1912,30 @@ msgstr ""
 "octets idéal. Si cela ne peut pas être évité, transmettez allow_inefficient "
 "= True au constructeur"
 
+#: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential"
+msgstr "Les broches doivent être séquentielles"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Pins must share PWM slice"
+msgstr "Les broches doivent partager la tranche PWM"
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Ainsi que tout autres modules présents sur le système de fichiers\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr "Polygone a besoin d’au moins 3 points"
+msgstr "Polygon a besoin d’au moins 3 points"
 
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 msgid ""
 "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
 "instead"
 msgstr ""
-"Ce portage n'accepte pas de PWM carrier. Précisez plutôt pin, frequency et "
-"duty cycle"
+"Ce port n'accepte pas de PWM carrier. Précisez plutôt les valeurs pin, "
+"frequency et duty_cycle"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -1624,12 +1945,12 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
-"Ce portage n'accepte pas pins ou frequency. Construisez et passez un PWMOut "
-"Carrier à la place"
+"Ce port n'accepte pas de broches ou de fréquence. Construisez plutôt en "
+"passant un PWMOut Carrier"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
-msgstr "Le tampon de préfixe doit être sur le tas"
+msgstr "Le tampon de préfixe doit être sur la pile"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
@@ -1640,42 +1961,71 @@ msgstr ""
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
-"Feinte de someil profond jusqu'à l'alarme, Ctrl-C ou écriture au fichier.\n"
+"Feinte de someil profond jusqu'à l'alarme, CTRL-C ou écriture au fichier.\n"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does IN without loading ISR"
+msgstr "Le programme fait des entrées sans charger d'ISR"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does OUT without loading OSR"
+msgstr "Le programme fait des sorties sans charger d'OSR"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program must contain at least one 16-bit instruction."
+msgstr "Le programme doit contenir au moins une instruction de 16 bits."
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program size invalid"
+msgstr "Taille du programme invalide"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program too large"
+msgstr "Programme trop grand"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
+msgid "RAISE mode is not implemented"
+msgstr "Mode RAISE n'est pas implémenté"
+
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
-msgstr "Erreur RNG DeInit"
+msgstr "Erreur de désinitialisation du RNG"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr "Erreur d'initialisation RNG"
+msgstr "Erreur d'initialisation du RNG"
+
+#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr "RS485 n'est pas encore supporté sur cet appareil"
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
-msgstr "Inversion RS485 spécifiée lorsqu'elle n'est pas en mode RS485"
+msgstr "Inversion RS485 spécifiée sans être en mode RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
-msgstr "étalonnage de la RTC non supportée sur cette carte"
+msgstr "La calibration du RTC non supportée sur cette carte"
 
 #: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr "RTC non supportée sur cette carte"
+msgstr "RTC non supporté sur cette carte"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr "RTS / CTS / RS485 Pas encore pris en charge sur cet appareil"
+msgstr "RTS / CTS / RS485 Pas encore supporté sur cet appareil"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr "Erreur de génération de nombres aléatoires"
+msgstr "Erreur de génération de chiffres aléatoires"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -1690,9 +2040,13 @@ msgstr "Système de fichier en lecture seule"
 msgid "Read-only object"
 msgstr "Objet en lecture seule"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr "Réponse reçue invalide"
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr "Rafraîchissez trop tôt"
+msgstr "Rafraîchissement trop tôt"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
@@ -1700,7 +2054,11 @@ msgstr "RemoteTransmissionRequests limité à 8 octets"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr "Le mode AES demandé n'est pas pris en charge"
+msgstr "Le mode AES demandé n'est pas supporté"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr "Resource demandée non trouvée"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1711,27 +2069,22 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "L'entrée de ligne 'Row' doit être un digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr "Tourne en mode sécurisé "
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr "Le format de carte SD CSD n'est pas pris en charge"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
+msgstr "Le format de carte SD CSD n'est pas supporté"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
-msgstr "SDIO GetCardInfo erreur %d"
+msgstr "Erreur de SDIO GetCardInfo %d"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO Init Error %d"
-msgstr "SDIO Init erreur %d"
+msgstr "Erreur d'initialisation SDIO %d"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1741,6 +2094,14 @@ msgstr "Erreur d'initialisation SPI"
 msgid "SPI Re-initialization error"
 msgstr "Erreur de réinitialisation SPI"
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "SPI peripheral in use"
+msgstr "Périphérique SPI utilisé"
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Le taux d'échantillonage doit être positif"
@@ -1748,19 +2109,11 @@ msgstr "Le taux d'échantillonage doit être positif"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
+msgstr "Taux d'échantillonage trop élevé. Doit être inférieur à %d"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected CTS pin not valid"
-msgstr "Broche CTS sélectionnée non valide"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-msgid "Selected RTS pin not valid"
-msgstr "Broche RTS sélectionnée non valide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1771,9 +2124,22 @@ msgstr "Sérialiseur en cours d'utilisation"
 msgid "Server side context cannot have hostname"
 msgstr "Un contexte niveau serveur ne peut avoir de hostname"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Set pin count must be between 1 and 5"
+msgstr "Nombre de broches configurées doit être entre 1 et 5"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Side set pin count must be between 1 and 5"
+msgstr "Nombre de broches Side configurées doit être entre 1 et 5"
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr "Taille non prise en charge"
+msgstr "Taille n'est pas supportée"
+
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
+#: ports/stm/common-hal/alarm/SleepMemory.c
+msgid "Sleep Memory not available"
+msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1802,6 +2168,14 @@ msgstr "Fractionnement avec des sous-captures"
 msgid "Stack size must be at least 256"
 msgstr "La pile doit être au moins de 256"
 
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo left must be on PWM channel A"
+msgstr "Canal stéréo gauche doit être sur le canal PWM A"
+
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+msgid "Stereo right must be on PWM channel B"
+msgstr "Canal stéréo droit doit être sur le canal PWM B"
+
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
@@ -1820,23 +2194,19 @@ msgstr "L'entrée du système doit être gnss.SatelliteSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr "Temporisation de lecture dépassée"
+msgstr "Délais de lecture de température dépassée"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase the stack size if you know how, or if not:"
+"Increase the stack size if you know how. If not:"
 msgstr ""
-"Le tas CircuitPython a été corrompu car la pile était trop petite.\n"
-"Veuillez augmenter la taille de la pile si vous savez comment, ou sinon :"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
-"exit safe mode.\n"
+"exit safe mode."
 msgstr ""
-"Le module `microcontrôleur` a été utilisé pour démarrer en mode sans échec. "
-"Appuyez sur reset pour quitter le mode sans échec.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -1846,12 +2216,8 @@ msgstr "La taille de rgb_pins doit être 6, 12, 18, 24 ou 30"
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+"CIRCUITPY)."
 msgstr ""
-"La puissance du microcontrôleur a baissé. Assurez-vous que votre "
-"alimentation\n"
-"assez de puissance pour tout le circuit et appuyez sur reset (après avoir "
-"éjecté CIRCUITPY).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1895,18 +2261,12 @@ msgstr "L'heure est dans le passé."
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid ""
-"Timer was reserved for internal use - declare PWM pins earlier in the program"
-msgstr ""
-"Timer est reservé pour un usage interne - déclarez la broche PWM plus tôt "
-"dans le programme"
-
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
-msgstr "Pour quitter, redémarrez la carte SVP sans "
+msgstr "Pour quitter, SVP redémarrez la carte sans "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
@@ -1919,17 +2279,21 @@ msgid "Too many displays"
 msgstr "Trop d'affichages"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Total data to write is larger than outgoing_packet_length"
+msgid "Total data to write is larger than %q"
+msgstr "Quantité de données à écrire est plus que %q"
+
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
+#: ports/stm/common-hal/alarm/touch/TouchAlarm.c
+msgid "Touch alarms not available"
 msgstr ""
-"Le nombre total de données à écrire est supérieur à outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
-msgstr "Trace (appels les plus récents en dernier) :\n"
+msgstr "Traceback (appels les plus récents en dernier) :\n"
 
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
-msgstr "Argument de type tuple ou struct_time nécessaire"
+msgstr "Paramètre de type tuple ou struct_time requis"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Buffer allocation error"
@@ -1952,16 +2316,24 @@ msgid "UART write error"
 msgstr "Erreur d'écriture UART"
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Busy"
-msgstr "USB occupé"
+msgid "USB busy"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices need more endpoints than are available."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "USB devices specify too many interface names."
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
-msgid "USB Error"
-msgstr "Erreur USB"
+msgid "USB error"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr "La valeur entière UUID doit être 0-0xffff"
+msgstr "La valeur du chiffre entier de UUID doit être 0-0xffff"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1971,17 +2343,19 @@ msgstr ""
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
-"la valeur de l'UUID n'est pas une chaîne de caractères, un entier ou un "
-"tampon d'octets"
+"La valeur de l'UUID n'est pas une chaîne de caractères, un chiffre entier ou "
+"un tampon d'octets"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
 #: ports/esp32s2/common-hal/busio/I2C.c
 msgid "Unable to create lock"
-msgstr "Impossible de créer un verrou"
+msgstr "Impossible de créer un verrou ('lock')"
 
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
@@ -2003,24 +2377,25 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
-msgstr "Impossible d'écrire sur la mémoire non-volatile."
+msgstr "Écriture impossible vers nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr "Impossibilitée d'écriture à sleep_memory."
+msgstr "Écriture impossible vers sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erreur ESP TLS non gérée %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Echec inconnu"
+#, c-format
+msgid "Unknown failure %d"
+msgstr "Échec inconnu %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2038,8 +2413,8 @@ msgstr "Erreur de sécurité inconnue : 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
-msgid "Unknown soft device error: %04x"
-msgstr "Erreur de périphérique logiciel inconnue : %04x"
+msgid "Unknown system firmware error: %04x"
+msgstr "Faute inconnue du logiciel systême : %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -2056,9 +2431,10 @@ msgstr ""
 "appareil ait été refusée ou ignorée."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
-msgstr "Débit non supporté"
+msgstr "Débit en bauds non supporté"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
@@ -2090,10 +2466,9 @@ msgstr "Longueur de valeur != Longueur fixe requise"
 msgid "Value length > max_length"
 msgstr "Longueur de la valeur > max_length"
 
-#: py/emitnative.c
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-"les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr "Version est invalide"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
@@ -2104,6 +2479,7 @@ msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
 "WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
@@ -2116,7 +2492,7 @@ msgstr "WatchDogTimer n'est pas en cours d'exécution"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
-"WatchDogTimer.mode ne peut pas être changé une fois réglé pour WatchDogMode."
+"WatchDogTimer.mode ne peut pas être changé une fois réglé à WatchDogMode."
 "RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
@@ -2152,11 +2528,16 @@ msgstr "Réveil par alarme.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr "Écritures non prises en charge sur la caractéristique"
+msgstr "Écritures non supporté vers les Characteristic"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Vous êtes en mode sans échec : quelque chose d'imprévu s'est passé.\n"
+msgid "You are in safe mode because:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"You pressed the reset button during boot. Press again to exit safe mode."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -2182,11 +2563,6 @@ msgstr "un objet 'bytes-like' est requis"
 msgid "abort() called"
 msgstr "abort() appelé"
 
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "l'adresse %08x n'est pas alignée sur %d octets"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adresse hors limites"
@@ -2195,53 +2571,62 @@ msgstr "adresse hors limites"
 msgid "addresses is empty"
 msgstr "adresses vides"
 
+#: py/compile.c
+msgid "annotation must be an identifier"
+msgstr "l'annotation doit être un identificateur"
+
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: py/objobject.c
+msgid "arg must be user-type"
+msgstr ""
+
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr "L'argument argsort doit être un ndarray"
+msgstr "Le paramêtre argsort doit être un ndarray"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr "argsort n'est pas mis en œuvre pour les tableaux aplatis"
+msgstr "argsort n'est pas mis en œuvre pour les matrices aplatis"
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr "l'argument est d'un mauvais type"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "argument must be ndarray"
-msgstr "l'argument doit être un ndarray"
+#: py/compile.c
+msgid "argument name reused"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
-msgstr "argument num/types ne correspond pas"
+msgstr "Nombre/types de paramètres ne correspondent pas"
 
 #: py/runtime.c
 msgid "argument should be a '%q' not a '%q'"
-msgstr "l'argument devrait être un(e) '%q', pas '%q'"
+msgstr "le paramètre devrait être un(e) '%q', pas '%q'"
 
-#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/transform/transform.c
 msgid "arguments must be ndarrays"
-msgstr "les arguments doivent être des ndarrays"
+msgstr "les paramètres doivent être des ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr "la longueur du tableau et de l'index doit être égale"
+msgstr "la taille de la matrice et de l'index doivent être égaux"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
-msgstr "tableau/octets requis à droite"
+msgstr "matrice/octets requis à la droite"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "tentative d’obtenir (arg)min/(arg)max d'une séquence vide"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "tenter d'obtenir argmin / argmax d'une séquence vide"
 
@@ -2249,15 +2634,15 @@ msgstr "tenter d'obtenir argmin / argmax d'une séquence vide"
 msgid "attributes not supported yet"
 msgstr "attribut pas encore supporté"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis is out of bounds"
 msgstr "axis est hors limites"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr "axis doit être None ou un entier"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "axis too long"
 msgstr "axis trop long"
 
@@ -2281,9 +2666,13 @@ msgstr "mauvais code type"
 msgid "binary op %q not implemented"
 msgstr "opération binaire '%q' non implémentée"
 
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
-msgid "bits must be 7, 8 or 9"
-msgstr "bits doivent être 7, 8 ou 9"
+msgid "bits must be in range 5 to 9"
+msgstr "les bits doivent être compris entre 5 et 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2293,9 +2682,13 @@ msgstr "'bits_per_sample' doivent être 8 ou 16"
 msgid "branch not in range"
 msgstr "branche hors-bornes"
 
-#: shared-bindings/audiocore/RawSample.c
-msgid "buffer must be a bytes-like object"
-msgstr "le tampon doit être un objet bytes-like"
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+msgid "buffer is smaller than requested size"
+msgstr "tampon est plus petit que la taille demandée"
+
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+msgid "buffer size must be a multiple of element size"
+msgstr "taille du tampon doit être un multiple de la taille de l'élement"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2310,17 +2703,13 @@ msgstr "les tranches de tampon doivent être de longueurs égales"
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "tampon trop petit pour le nombre d'octets demandé"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "les boutons doivent être des digitalio.DigitalInOut"
-
-#: py/vm.c
-msgid "byte code not implemented"
-msgstr "bytecode non implémenté"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -2359,10 +2748,6 @@ msgstr "il peut y avoir jusqu'à 4 paramètres pour l'assemblage Thumb"
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maximum 4 paramètres pour l'assembleur Xtensa"
 
-#: py/persistentcode.c
-msgid "can only save bytecode"
-msgstr "ne peut sauvegarder que du bytecode"
-
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
@@ -2372,10 +2757,23 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "ne peut pas assigner à une expression"
 
+#: extmod/moduasyncio.c
+msgid "can't cancel self"
+msgstr ""
+
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "impossible de convertir %q en %q"
+
+#: py/runtime.c
+msgid "can't convert %q to int"
+msgstr "ne peut convertir %q à int"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "ne peut convertir %s en nombre complexe"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2384,6 +2782,14 @@ msgstr "impossible de convertir l'objet '%q' en '%q' implicitement"
 #: py/obj.c
 msgid "can't convert to %q"
 msgstr "impossible de convertir en %q"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "ne peut convertir en nombre complexe"
+
+#: py/runtime.c
+msgid "can't convert to int"
+msgstr "ne peut convertir en entier 'int'"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2424,12 +2830,6 @@ msgstr "impossible de charger depuis '%q'"
 #: py/emitnative.c
 msgid "can't load with '%q' index"
 msgstr "impossible de charger avec l'indice '%q'"
-
-#: py/objgenerator.c
-msgid "can't pend throw to just-started generator"
-msgstr ""
-"on ne peut effectuer une action de type 'pend throw' sur un générateur "
-"fraîchement démarré"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2491,6 +2891,10 @@ msgstr "ne peut pas importer le nom %q"
 msgid "cannot perform relative import"
 msgstr "ne peut pas réaliser un import relatif"
 
+#: extmod/moductypes.c
+msgid "cannot unambiguously get sizeof scalar"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "typage"
@@ -2501,15 +2905,23 @@ msgstr "tampon de caractères trop petit"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(0x110000)"
-msgstr "argument de chr() hors de la gamme range(0x11000)"
+msgstr "paramètre de chr() hors les bornes de range(0x11000)"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
-msgstr "argument de chr() hors de la gamme range(256)"
+msgstr "paramètre de chr() hors les bornes de range(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr "le cercle ne peut être enregistré que dans un seul parent"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "clip point must be (x,y) tuple"
+msgstr "point de coupure doît être un tuple (x,y)"
+
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr "code hors bornes 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2522,8 +2934,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"le tampon de couleur doit être un bytearray ou un tableau de type 'b' ou 'B'"
+msgstr "tampon color doit être un bytearray ou une matrice de type 'b' ou 'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2532,6 +2943,10 @@ msgstr "la couleur doit être entre 0x000000 et 0xffffff"
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
 msgstr "la couleur doit être un entier 'int'"
+
+#: py/emitnative.c
+msgid "comparison of int and uint"
+msgstr ""
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2553,19 +2968,19 @@ msgstr "constante doit être un entier"
 msgid "conversion to object"
 msgstr "conversion en objet"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr "les arguments convolve doivent être des tableaux linéaires"
+msgstr "les paramêtres pour convolve doivent être des matrices linéaires"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr "les arguments convolve doivent être des ndarrays"
+msgstr "les paramêtres pour convolve doivent être des ndarrays"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/numpy/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr "les arguments convolve ne doivent pas être vides"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "n'a pas pu inverser la matrice Vandermonde"
 
@@ -2573,17 +2988,26 @@ msgstr "n'a pas pu inverser la matrice Vandermonde"
 msgid "couldn't determine SD card version"
 msgstr "impossible de déterminer la version de la carte SD"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr "cross est défini pour les tableaux 1D de longueur 3"
+msgstr "cross est défini pour les matrices 1D de longueur 3"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
 msgstr "les données doivent être les objets iterables"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
 msgstr "les données doivent être de longueur égale"
+
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "data pin #%d in use"
+msgstr "broche de donnée #%d utilisée"
+
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr "le type de donnée n'est pas reconnu"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2593,16 +3017,21 @@ msgstr "nombres décimaux non supportés"
 msgid "default 'except' must be last"
 msgstr "l''except' par défaut doit être en dernier"
 
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr "default n'est pas une fonction"
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"le tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
+"le tampon de destination doit être une matrice de type 'B' pour bit_depth = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
-"le tampon de destination doit être un tableau de type 'H' pour bit_depth = 16"
+"le tampon de destination doit être une matrice de type 'H' pour bit_depth = "
+"16"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
@@ -2612,15 +3041,27 @@ msgstr "destination_length doit être un entier >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr "l'argument diff doit être un ndarray"
+msgstr "le paramêtre diff doit être un ndarray"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr "differentiation order hors plage"
+msgstr "differentiation order hors de portée"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: extmod/ulab/code/numpy/transform/transform.c
+msgid "dimensions do not match"
+msgstr "les dimensions ne correspondent pas"
+
+#: py/emitnative.c
+msgid "div/mod not implemented for uint"
+msgstr ""
+
+#: py/objfloat.c py/objint_mpz.c
+msgid "divide by zero"
+msgstr ""
+
+#: py/modmath.c py/objint_longlong.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "division par zéro"
@@ -2629,7 +3070,7 @@ msgstr "division par zéro"
 msgid "empty"
 msgstr "vide"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "tas vide"
 
@@ -2694,6 +3135,10 @@ msgstr "une simple valeur est attendue pour l'ensemble 'set'"
 msgid "expecting key:value for dict"
 msgstr "couple clef:valeur attendu pour un dictionnaire 'dict'"
 
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr "ext_hook n'est pas une fonction"
+
 #: py/argcheck.c
 msgid "extra keyword arguments given"
 msgstr "argument(s) nommé(s) supplémentaire(s) donné(s)"
@@ -2725,7 +3170,7 @@ msgid "f-string: single '}' is not allowed"
 msgstr "f-string : single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
-#: shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -2733,41 +3178,45 @@ msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 msgid "filesystem must provide mount method"
 msgstr "le system de fichier doit fournir une méthode 'mount'"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be a callable"
 msgstr "le premier argument doit être un appelable"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
 msgstr "le premier argument doit être une fonction"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr "le premier argument doit être un tuple de ndarrays"
+msgstr "le premier paramêtre doit être un tuple de ndarrays"
 
-#: extmod/ulab/code/ndarray.c
-msgid "first argument must be an iterable"
-msgstr "le premier argument doit être un itérable"
-
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "first argument must be an ndarray"
-msgstr "le premier argument doit être un ndarray"
+msgstr "le premier paramêtre doit être un ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
 msgstr "le premier argument de super() doit être un type"
 
+#: extmod/ulab/code/scipy/linalg/linalg.c
+msgid "first two arguments must be ndarrays"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "l'ordre d'aplatissement doit être «C» ou «F»"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr "l'argument flip doit être un ndarray"
+msgstr "le paramêtre flip doit être un ndarray"
 
 #: py/objint.c
 msgid "float too big"
 msgstr "nombre à virgule flottante trop grand"
+
+#: py/nativeglue.c
+msgid "float unsupported"
+msgstr "valeures flotantes non supportées"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -2782,8 +3231,8 @@ msgid "full"
 msgstr "plein"
 
 #: py/argcheck.c
-msgid "function does not take keyword arguments"
-msgstr "la fonction ne prend pas d'arguments nommés"
+msgid "function doesn't take keyword arguments"
+msgstr "la fonction n'accepte pas de paramètre nommés"
 
 #: py/argcheck.c
 #, c-format
@@ -2794,18 +3243,18 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "function has the same sign at the ends of interval"
 msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr "La fonction n'est définie que pour les ndarrays"
+msgstr "fonction définie que pour les ndarrays"
 
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr "il manque %d arguments obligatoires à la fonction"
+msgstr "il manque %d argument(s) positionnel(s) requis pour la fonction"
 
 #: py/bc.c
 msgid "function missing keyword-only argument"
@@ -2837,9 +3286,17 @@ msgstr "générateur déjà en cours d'exécution"
 msgid "generator ignored GeneratorExit"
 msgstr "le générateur a ignoré GeneratorExit"
 
+#: py/objgenerator.c py/runtime.c
+msgid "generator raised StopIteration"
+msgstr "générateur (generator) à surlevé StopIteration"
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic doit être long de 2048 octets"
+
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -2852,6 +3309,14 @@ msgstr "identifiant redéfini comme global"
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
 msgstr "identifiant redéfini comme nonlocal"
+
+#: py/compile.c
+msgid "import * not at module level"
+msgstr "import * n'est pas au niveau du module"
+
+#: py/persistentcode.c
+msgid "incompatible native .mpy architecture"
+msgstr "architecture native .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -2869,10 +3334,11 @@ msgstr "espacement incorrect"
 msgid "index is out of bounds"
 msgstr "l'index est hors limites"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
-msgstr "index hors gamme"
+msgstr "index est hors bornes"
 
 #: py/obj.c
 msgid "indices must be integers"
@@ -2883,7 +3349,7 @@ msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 "les indices doivent être des entiers, des tranches ou des listes booléennes"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
 msgstr "les valeurs initiales doivent être itérables"
 
@@ -2900,32 +3366,33 @@ msgid "input and output shapes are not compatible"
 msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr "Paramètre entrant doit être un chiffre entier, un tuple, ou une liste"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
-msgstr "la longueur du tableau d'entrée doit être une puissance de 2"
+msgstr "longueur de la matrice d'entrée doit être une puissance de 2"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr "les tableaux d'entrée ne sont pas compatibles"
+msgstr "les matrices d'entrée ne sont pas compatibles"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input data must be an iterable"
 msgstr "les données d'entrée doivent être un itérable"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "la matrice d'entrée est asymétrique"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
+#: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "la matrice d'entrée est singulière"
 
-#: extmod/ulab/code/user/user.c
+#: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr "l'entrée doit être un tableau dense"
+msgstr "l'entrée doit être un ndarray dense"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
@@ -2935,23 +3402,23 @@ msgstr "l'entrée doit être un tenseur de rang 2"
 msgid "input must be an ndarray"
 msgstr "l'entrée doit être un ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
 msgstr "l'entrée doit être uni-dimensionelle"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
 msgstr "l'entrée doit être une matrice carrée"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr "l'entrée doit être tuple, list, range ou ndarray"
+msgstr "l'entrée 'input' doit être tuple, list, range ou ndarray"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "les vecteurs d'entrée doivent être de longueur égale"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "inputs are not iterable"
 msgstr "les entrées ne sont pas itérables"
 
@@ -2963,26 +3430,37 @@ msgstr "l'argument 2 de int() doit être >=2 et <=36"
 msgid "integer required"
 msgstr "entier requis"
 
-#: extmod/ulab/code/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp est défini pour les tableaux 1D de longueur égale"
+#: extmod/ulab/code/numpy/approx/approx.c
+msgid "interp is defined for 1D iterables of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr "l'intervalle doit être dans la plage %s-%s"
+msgstr "interval doit être dans la portée %s-%s"
+
+#: py/compile.c
+msgid "invalid architecture"
+msgstr "architecture invalide"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "arguments invalides"
 
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificat invalide"
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
 
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "index invalide pour dupterm"
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element size %d for bits_per_pixel %d\n"
+msgstr "taille d'élément %d est invalide pour bits_per_pixel %d\n"
+
+#: shared-bindings/bitmaptools/__init__.c
+#, c-format
+msgid "invalid element_size %d, must be, 1, 2, or 4"
+msgstr "element_size %d est invalide, doit être 1, 2 ou 4"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -2995,10 +3473,6 @@ msgstr "spécification de format invalide"
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
 msgstr "hostname incorrect"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "clé invalide"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3025,10 +3499,6 @@ msgstr "syntaxe invalide pour un entier de base %d"
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "io must be rtc io"
-msgstr "io doit être rtc io"
-
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "l'argument 1 de issubclass() doit être une classe"
@@ -3038,11 +3508,7 @@ msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 "l'argument 2 de issubclass() doit être une classe ou un tuple de classes"
 
-#: extmod/ulab/code/ndarray.c
-msgid "iterables are not of the same length"
-msgstr "les itérables ne sont pas de la même longueur"
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr "les itérations n'ont pas convergé"
 
@@ -3067,11 +3533,11 @@ msgstr "label '%q' non supporté"
 
 #: py/compile.c
 msgid "label redefined"
-msgstr "label redéfini"
+msgstr "étiquette redéfinie"
 
 #: py/stream.c
 msgid "length argument not allowed for this type"
-msgstr "argument 'length' non-permis pour ce type"
+msgstr "paramètre 'length' non-permis pour ce type"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
@@ -3113,11 +3579,7 @@ msgstr "tampon trop petit"
 msgid "math domain error"
 msgstr "erreur de domaine math"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr "les dimensions de la matrice ne correspondent pas"
-
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "la matrice n'est pas définie positive"
 
@@ -3139,13 +3601,17 @@ msgstr "nombre maximal de dimensions est 4"
 msgid "maximum recursion depth exceeded"
 msgstr "profondeur maximale de récursivité dépassée"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
 msgstr "maxiter doit être > 0"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
 msgstr "maxiter devrait être > 0"
+
+#: extmod/ulab/code/numpy/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr "Paramètre pour median doit être un ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3156,11 +3622,15 @@ msgstr "l'allocation de mémoire a échoué en allouant %u octets"
 msgid "memory allocation failed, heap is locked"
 msgstr "l'allocation de mémoire a échoué, le tas est vérrouillé"
 
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr "memoryview: length n'est pas un multiple de itemsize"
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module introuvable"
 
-#: extmod/ulab/code/poly/poly.c
+#: extmod/ulab/code/numpy/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "plus de degrés de liberté que de points de données"
 
@@ -3192,9 +3662,9 @@ msgstr "nom '%q' non défini"
 msgid "name not defined"
 msgstr "nom non défini"
 
-#: py/compile.c
-msgid "name reused for argument"
-msgstr "nom réutilisé comme argument"
+#: py/asmthumb.c
+msgid "native method too big"
+msgstr ""
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3204,6 +3674,10 @@ msgstr "'yield' natif"
 #, c-format
 msgid "need more than %d values to unpack"
 msgstr "nécessite plus de %d valeurs à dégrouper"
+
+#: py/modmath.c
+msgid "negative factorial"
+msgstr "factoriel négatif"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3229,6 +3703,14 @@ msgstr "adapteur réseau non disponible"
 msgid "no binding for nonlocal found"
 msgstr "pas de lien trouvé pour nonlocal"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr "aucun emballeur par défault"
+
+#: extmod/modurandom.c
+msgid "no default seed"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
@@ -3242,9 +3724,13 @@ msgstr "pas de broche de réinitialisation disponible"
 msgid "no response from SD card"
 msgstr "pas de réponse de la carte SD"
 
-#: py/runtime.c
+#: py/objobject.c py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
+
+#: shared-bindings/usb_hid/__init__.c
+msgid "non-Device in %q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3275,10 +3761,6 @@ msgstr "le délai non-zéro doit être > 0.01"
 msgid "non-zero timeout must be >= interval"
 msgstr "le délai non-zéro doit être >= interval"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
-msgstr "norm est défini pour des tableaux 1D et 2D"
-
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "n'est pas un UUID 128 bits"
@@ -3296,16 +3778,21 @@ msgstr "pas assez d'arguments pour la chaîne de format"
 msgid "number of points must be at least 2"
 msgstr "le nombre de points doit être d'au moins 2"
 
-#: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr "l'objet '%q' n'est pas un tuple ou une list"
+#: py/builtinhelp.c
+msgid "object "
+msgstr "objet "
 
 #: py/obj.c
-msgid "object does not support item assignment"
-msgstr "l'objet ne supporte pas l'assignation d'éléments"
+#, c-format
+msgid "object '%s' isn't a tuple or list"
+msgstr "l'objet '%s' n'est pas un tuple ou une liste"
 
 #: py/obj.c
-msgid "object does not support item deletion"
+msgid "object doesn't support item assignment"
+msgstr ""
+
+#: py/obj.c
+msgid "object doesn't support item deletion"
 msgstr "l'objet ne supporte pas la suppression d'éléments"
 
 #: py/obj.c
@@ -3313,8 +3800,8 @@ msgid "object has no len"
 msgstr "l'objet n'a pas de 'len'"
 
 #: py/obj.c
-msgid "object is not subscriptable"
-msgstr "l'objet n'est pas sous-scriptable"
+msgid "object isn't subscriptable"
+msgstr ""
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3333,8 +3820,9 @@ msgid "object not iterable"
 msgstr "objet non itérable"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr "len() indéfinie pour un objet de type '%q'"
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "l'objet de type '%s' n'a pas de len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3344,13 +3832,17 @@ msgstr "un objet avec un protocole de tampon est nécessaire"
 msgid "odd-length string"
 msgstr "chaîne de longueur impaire"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "offset est trop large"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr "offset doit être >= 0"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr "offset doit être non-négatif, et au plus la taille du tampon"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3369,22 +3861,22 @@ msgstr "seul sample_rate = 16000 est pris en charge"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 
-#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vector/vectorise.c
+#: py/vm.c
+msgid "opcode"
+msgstr "opcode"
+
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "operands could not be broadcast together"
 msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr "opération implémentée que pour des tableaux 1D booléennes"
+msgstr "opération implémentée que pour les matrices 1D booléennes"
 
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "l'opération n'est pas implémentée pour un tableau applatit"
-
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr "l'opération n'est pas implémentée sur les ndarrays"
+msgstr "l'opération n'est pas implémentée pour les ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
@@ -3401,11 +3893,19 @@ msgstr ""
 "ord() attend un caractère mais une chaîne de caractère de longueur %d a été "
 "trouvée"
 
+#: extmod/ulab/code/utils/utils.c
+msgid "out array is too small"
+msgstr "matrice de sortie est trop petite"
+
+#: extmod/ulab/code/utils/utils.c
+msgid "out must be a float dense array"
+msgstr "la matrice sortante doit être de type float"
+
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
 msgstr "dépassement des bornes de source"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
 msgstr "dépassement des bornes de target"
 
@@ -3426,10 +3926,6 @@ msgstr "la palette doit être longue de 32 octets"
 msgid "palette_index should be an int"
 msgstr "palette_index devrait être un entier 'int'"
 
-#: py/compile.c
-msgid "parameter annotation must be an identifier"
-msgstr "l'annotation du paramètre doit être un identifiant"
-
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
@@ -3438,7 +3934,7 @@ msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "les paramètres doivent être des registres dans la séquence r0 à r3"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr "coordonnées de pixel hors limites"
 
@@ -3462,10 +3958,15 @@ msgstr "'pop' d'une entrée PulseIn vide"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
 msgstr "pop sur %q vide"
+
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+msgid "port must be >= 0"
+msgstr "port doit être >= 0"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3475,18 +3976,29 @@ msgstr "le 3e argument de pow() ne peut être 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() avec 3 arguments nécessite des entiers"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
+#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "bouton boot appuyé lors du démarrage.\n"
 
@@ -3498,6 +4010,22 @@ msgstr "bouton boot appuyé lors du démarrage.\n"
 msgid "pressing both buttons at start up.\n"
 msgstr "les deux boutons appuyés lors du démarrage.\n"
 
+#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+msgid "pressing the left button at start up\n"
+msgstr "appuyer le bouton de gauche au démarage\n"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "pull masks conflict with direction masks"
+msgstr "masque pull est en conflit avec les masques de direction"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "pull_threshold must be between 1 and 32"
+msgstr "pull_threshold doit être entre 1 et 32"
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "push_threshold must be between 1 and 32"
+msgstr "push_threshold doit être entre 1 et 32"
+
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "dépassement de file"
@@ -3506,7 +4034,7 @@ msgstr "dépassement de file"
 msgid "raw f-strings are not implemented"
 msgstr "les chaînes f brutes ne sont pas implémentées"
 
-#: extmod/ulab/code/fft/fft.c
+#: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
 msgstr "les parties réelles et imaginaires doivent être de longueur égale"
 
@@ -3541,7 +4069,7 @@ msgstr "rgb_pins[%d] duplique une autre affectation de broches"
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr "rgb_pins[%d] n'est pas sur le même port que l'horloge"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "roll argument must be an ndarray"
 msgstr "paramêtre roll doit être un ndarray"
 
@@ -3554,24 +4082,33 @@ msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
-"le tampon de sample_source doit être un bytearray ou un tableau de type "
-"'h','H', 'b' ou 'B'"
+"tampon sample_source doit être un bytearray ou une matrice de type 'h', 'H', "
+"'b' ou 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
-msgstr "taux d'échantillonage hors gamme"
+msgstr "taux d'échantillonage hors bornes"
 
 #: py/modmicropython.c
-msgid "schedule stack full"
-msgstr "pile de planification pleine"
+msgid "schedule queue full"
+msgstr "file de schédule pleine"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
 
+#: py/nativeglue.c
+msgid "set unsupported"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "forme doit être un tuple"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr "donnée trop petite"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3585,9 +4122,9 @@ msgstr "signe non autorisé avec la spéc. de format d'entier 'c'"
 msgid "single '}' encountered in format string"
 msgstr "'}' seule rencontrée dans une chaîne de format"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
-msgstr "la taille est définie pour les ndarrays uniquement"
+msgstr "la taille n'est définie que pour les ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
@@ -3597,9 +4134,13 @@ msgstr "la longueur de sleep ne doit pas être négative"
 msgid "slice step can't be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
 
-#: py/objslice.c py/sequence.c
+#: py/objslice.c
 msgid "slice step cannot be zero"
 msgstr "le pas 'step' de la tranche ne peut être zéro"
+
+#: py/nativeglue.c
+msgid "slice unsupported"
+msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -3609,23 +4150,23 @@ msgstr "dépassement de capacité d'un entier court"
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr "l'argument de «sort» doit être un ndarray"
+msgstr "le paramètre de «sort» doit être un ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr "le tableau sos doit être de forme (n_section, 6)"
+msgstr "la matrice sos doit être de forme (n_section, 6)"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
 msgstr "sos[:, 3] doivent tous être à un"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt nécessite des argument itératifs"
 
-#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "la palette source est trop grande"
 
@@ -3660,11 +4201,15 @@ msgstr "les indices d'une chaîne doivent être des entiers, pas %q"
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
 msgstr ""
-"chaîne de carac. non supportée ; utilisez des bytes ou un tableau de bytes"
+"chaîne de carac. non supportée; utilisez des bytes ou une matrice de bytes"
 
 #: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "struct : indexage impossible"
+msgid "struct: can't index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct : index hors limites"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -3688,7 +4233,11 @@ msgstr "erreur de syntaxe dans le descripteur d'uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr "le seuil doit être dans la gamme 0-65536"
+msgstr "le seuil doit être dans la portée 0-65536"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr "tile doit être plus que zéro"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -3696,6 +4245,7 @@ msgstr "time.struct_time() prend une séquence de longueur 9"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
 
@@ -3721,36 +4271,40 @@ msgstr "Délai d’expiration dépassé en attendant une carte v2"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr "'timestamp' hors bornes pour 'time_t' de la plateforme"
+msgstr "timestamp hors bornes pour 'time_t' de la plateforme"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr "tobytes ne peut être appelé que pour des tableaux dense"
+msgstr "tobytes ne peut être appelée que pour des matrices dense"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr "Trop de dimensions"
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "trop d'indices"
+
+#: py/asmthumb.c
+msgid "too many locals for native method"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
 msgstr "trop de valeur à dégrouper (%d attendues)"
 
-#: extmod/ulab/code/approx/approx.c
+#: extmod/ulab/code/numpy/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr "trapz n'est défini que pour des tableaux 1D de longueur égale"
+msgstr "trapz n'est défini que pour des matrices 1D de longueur égales"
 
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "trigger level must be 0 or 1"
-msgstr "niveau du déclencheur doit être 0 ou 1"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "index du tuple hors gamme"
+#: extmod/ulab/code/numpy/approx/approx.c
+msgid "trapz is defined for 1D iterables"
+msgstr ""
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3806,11 +4360,11 @@ msgstr "indentation inattendue"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
-msgstr "argument nommé inattendu"
+msgstr "paramètre nommé inattendu"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
-msgstr "argument nommé '%q' inattendu"
+msgstr "paramètre nommé '%q' inattendu"
 
 #: py/lexer.c
 msgid "unicode name escapes"
@@ -3833,7 +4387,7 @@ msgstr "code de formatage inconnu '%c' pour objet de type '%q'"
 msgid "unknown type"
 msgstr "type inconnu"
 
-#: py/emitnative.c
+#: py/compile.c
 msgid "unknown type '%q'"
 msgstr "type '%q' inconnu"
 
@@ -3853,12 +4407,12 @@ msgstr "type %q non pris on charge"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr "instruction Thumb '%s' non supportée avec %d arguments"
+msgstr "instruction Thumb '%s' non supportée avec %d paramètres"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr "instruction Xtensa '%s' non supportée avec %d arguments"
+msgstr "instruction Xtensa '%s' non supportée avec %d paramètres"
 
 #: py/objstr.c
 #, c-format
@@ -3886,31 +4440,32 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr "les vecteurs doivent avoir la même longueur"
-
-#: ports/esp32s2/common-hal/alarm/pin/__init__.c
-msgid "wakeup conflict"
-msgstr "conflit au réveil"
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr "chien de garde non initialisé"
+msgstr "chien de garde (watchdog) non initialisé"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog timeout doit être supérieur à 0"
 
+#: shared-bindings/bitops/__init__.c
+#, c-format
+msgid "width must be from 2 to 8 (inclusive), not %d"
+msgstr "width doit être entre 2 et 8 (inclusivement), non %d"
+
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr "width doit être plus grand que zero"
+msgstr "width doit être plus que zero"
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr "wifi n’est pas activé"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr "la fenêtre doit être <= intervalle"
+msgstr "la fenêtre (window) doit être <= intervalle (interval)"
 
-#: extmod/ulab/code/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical/numerical.c
 msgid "wrong axis index"
 msgstr "index d'axe incorrecte"
 
@@ -3918,7 +4473,8 @@ msgstr "index d'axe incorrecte"
 msgid "wrong axis specified"
 msgstr "axe incorrecte spécifiée"
 
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/compare/compare.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong input type"
 msgstr "type d'entrée incorrect"
 
@@ -3930,17 +4486,17 @@ msgstr "mauvais nombres d'arguments"
 msgid "wrong number of values to unpack"
 msgstr "mauvais nombre de valeurs à dégrouper"
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
-msgstr "type d'opérande incorrect"
-
-#: extmod/ulab/code/vector/vectorise.c
+#: extmod/ulab/code/numpy/vector/vector.c
 msgid "wrong output type"
 msgstr "type de sortie incorrect"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "valeur x hors limites"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr "Échec de xTaskCreate"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
@@ -3954,17 +4510,329 @@ msgstr "valeur y hors limites"
 msgid "zero step"
 msgstr "'step' nul"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr "zi doit être ndarray"
+msgstr "zi doit être un ndarray"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
 msgstr "zi doit être de type float"
 
-#: extmod/ulab/code/filter/filter.c
+#: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Tampon trop volumineux et impossible à allouer"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr "interp est défini pour les matrices 1D de longueur égale"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "trapz est définie pour matrices à une dimension"
+
+#~ msgid "wrong operand type"
+#~ msgstr "type d'opérande incorrect"
+
+#~ msgid "%q must be None or 1-255"
+#~ msgstr "%q doit être None ou compris entre 1 et 255"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "IP n'accepte que les chiffres entiers bruts"
+
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython est en mode sans échec car vous avez appuyé sur le bouton "
+#~ "de réinitialisation pendant le démarrage. Appuyez à nouveau pour quitter "
+#~ "le mode sans échec.\n"
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "N'exécute pas le code sauvegardé.\n"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "Exécution en mode sécurisé! "
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "Le tas CircuitPython a été corrompu car la pile était trop petite.\n"
+#~ "Veuillez augmenter la taille de la pile si vous savez comment, ou sinon :"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "Le module `microcontroller` a été utilisé pour démarrer en mode sans "
+#~ "échec. Appuyez sur reset pour quitter le mode sans échec.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "La puissance du microcontrôleur a baissé. Assurez-vous que votre "
+#~ "alimentation fournit\n"
+#~ "assez de puissance pour tout le circuit et appuyez sur reset (après avoir "
+#~ "éjecté CIRCUITPY).\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr ""
+#~ "Vous êtes en mode sans échec : quelque chose d'imprévu s'est passé.\n"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "Numéro de broche 'pin' déjà réservé par EXTI"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB occupé"
+
+#~ msgid "USB Error"
+#~ msgstr "Erreur USB"
+
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "indices %q doivent être des chiffres entier, et non %q"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "l'objet '%q' n'as pas d'attribut '%q'"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "l'objet '%q' n'est pas souscriptable"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' le chiffre entier %d n'est pas dans la portée %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' le chiffre entier 0x%x ne correspond pas au masque 0x%x"
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Impossible d'obtenir la taille (sizeof) du scalaire sans ambigüité"
+
+#~ msgid "Length must be an int"
+#~ msgstr "Length doit être un chiffre entier (int)"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Length ne doit pas être négatif"
+
+#~ msgid "incompatible .mpy file"
+#~ msgstr "Fichier .mpy incompatible"
+
+#~ msgid "invalid decorator"
+#~ msgstr "décorateur invalide"
+
+#~ msgid "name reused for argument"
+#~ msgstr "nom réutilisé comme paramètre"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "l'objet '%q' n'est pas un tuple ou une list"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "l'objet ne supporte pas l'assignation d'éléments"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "l'objet ne supporte pas la suppression d'éléments"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "l'objet n'est pas sous-scriptable"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "len() indéfinie pour un objet de type '%q'"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct : indexage impossible"
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "'/' ne peut être remonté quand l'USB est actif."
+
+#~ msgid "Timeout waiting for DRDY"
+#~ msgstr "Délais expiré en attandant DRDY"
+
+#~ msgid "Timeout waiting for VSYNC"
+#~ msgstr "Délais expiré en attandant VSYNC"
+
+#~ msgid "byte code not implemented"
+#~ msgstr "bytecode non implémenté"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr ""
+#~ "on ne peut effectuer une action de type 'pend throw' sur un générateur "
+#~ "fraîchement démarré"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "index invalide pour dupterm"
+
+#~ msgid "schedule stack full"
+#~ msgstr "pile de planification pleine"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Code brut corrompu"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "ne peut sauvegarder que du bytecode"
+
+#~ msgid "invalid cert"
+#~ msgstr "certificat invalide"
+
+#~ msgid "invalid key"
+#~ msgstr "clé invalide"
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr ""
+#~ "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "l'adresse %08x n'est pas alignée sur %d octets"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "la fonction ne prend pas d'arguments nommés"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "l'annotation du paramètre doit être un identifiant"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr ""
+#~ "Le nombre total de données à écrire est supérieur à outgoing_packet_length"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "le tampon doit être un objet bytes-like"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io doit être rtc io"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "niveau du déclencheur doit être 0 ou 1"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "conflit au réveil"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr ""
+#~ "Tentative d'allocation de segments lorsque la machine virtuelle "
+#~ "MicroPython n'est pas en cours d'exécution."
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "Échec du saut MicroPython NLR. Corruption de la mémoire probable."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "Erreur fatale MicroPython."
+
+#~ msgid "argument must be ndarray"
+#~ msgstr "l'argument doit être un ndarray"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "les dimensions de la matrice ne correspondent pas"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "norm est défini pour des tableaux 1D et 2D"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "les vecteurs doivent avoir la même longueur"
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Affirmation de défaillance du Nordic Soft Device."
+
+#~ msgid "Nordic soft device out of memory"
+#~ msgstr "Appareil logiciel Nordic hors de mémoire"
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Erreur de périphérique logiciel inconnue : %04x"
+
+#~ msgid "first argument must be an iterable"
+#~ msgstr "le premier argument doit être un itérable"
+
+#~ msgid "iterables are not of the same length"
+#~ msgstr "les itérables ne sont pas de la même longueur"
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "La broche CTS sélectionnée n'est pas valide"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "La broche RTS sélectionnée n'est pas valide"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Impossible d'initialiser le canal"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Impossible d'initialiser le minuteur"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Fréquence invalide fournie"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Broches invalides pour PWMOut"
+
+#~ msgid "No more channels available"
+#~ msgstr "Pas de canal supplémentaire disponible"
+
+#~ msgid "No more timers available"
+#~ msgstr "Plus de minuteurs disponibles"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Plus de minuteurs disponibles sur cette broche."
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Le minuteur est reservé pour un usage interne - déclarez la broche PWM "
+#~ "plus tôt dans le programme"
+
+#~ msgid "Group full"
+#~ msgstr "Groupe plein"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART n'est pas encore supporté"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits doivent être 7, 8 ou 9"
+
+#~ msgid "Only IN/OUT of up to 8 supported"
+#~ msgstr "Seulement des IN/OUT jusqu'à 8 est supporté"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Utilisation incorrecte de socket TLS"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Problème en activant SO_REUSEADDR"
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr ""
+#~ "Les broches d'adresse %d et les broches RVB %d indiquent une hauteur de "
+#~ "%d, pas %d"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Echec inconnu"
+
+#~ msgid "Only one alarm.touch alarm can be set."
+#~ msgstr "Seulement une alarme alarm.touch peut être réglée."
+
+#~ msgid "TouchAlarm not available in light sleep"
+#~ msgstr "TouchAlarm n'est pas disponible en mode someil léger"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "l'opération n'est pas implémentée pour un tableau applatit"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "index du tuple hors de portée"
 
 #~ msgid ""
 #~ "\n"
@@ -4053,9 +4921,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tuple ou liste requis en partie droite"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "les indices %q doivent être des entiers, pas %s"
-
 #~ msgid "'%s' object cannot assign attribute '%q'"
 #~ msgstr "L'objet '%s' ne peut pas attribuer '%q'"
 
@@ -4067,9 +4932,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "'%s' object does not support item deletion"
 #~ msgstr "l'objet '%s' ne supporte pas la suppression d'éléments"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "l'objet '%s' n'a pas d'attribut '%q'"
 
 #~ msgid "'%s' object is not an iterator"
 #~ msgstr "l'objet '%s' n'est pas un itérateur"
@@ -4098,14 +4960,8 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Mode sans-échec ! Auto-chargement désactivé.\n"
 
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
-
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() doit retourner None, pas '%s'"
-
-#~ msgid "can't convert %s to complex"
-#~ msgstr "ne peut convertir %s en nombre complexe"
 
 #~ msgid "can't convert %s to float"
 #~ msgstr "ne peut convertir %s en nombre à virgule flottante 'float'"
@@ -4122,20 +4978,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "can't convert inf to int"
 #~ msgstr "on ne peut convertir l'infini 'inf' en entier 'int'"
 
-#~ msgid "can't convert to complex"
-#~ msgstr "ne peut convertir en nombre complexe"
-
 #~ msgid "can't convert to float"
 #~ msgstr "ne peut convertir en nombre à virgule flottante 'float'"
 
-#~ msgid "can't convert to int"
-#~ msgstr "ne peut convertir en entier 'int'"
-
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "l'objet '%s' n'est pas un tuple ou une liste"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "l'objet de type '%s' n'a pas de len()"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "'pop' d'un ensemble set vide"
@@ -4152,9 +4999,6 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgid "string indices must be integers, not %s"
 #~ msgstr ""
 #~ "les indices de chaîne de caractères doivent être des entiers, pas %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct : index hors limites"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "code de format '%c' inconnu pour un objet de type '%s'"

@@ -43,7 +43,7 @@
 //| FONT: fontio.BuiltinFont
 //| """The built in font"""
 //|
-STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {
+STATIC const mp_rom_map_elem_t terminalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },
     { MP_ROM_QSTR(MP_QSTR_Terminal),   MP_OBJ_FROM_PTR(&terminalio_terminal_type) },
     { MP_ROM_QSTR(MP_QSTR_FONT), MP_ROM_PTR(&supervisor_terminal_font) },
@@ -54,5 +54,5 @@ STATIC MP_DEFINE_CONST_DICT(terminalio_module_globals, terminalio_module_globals
 
 const mp_obj_module_t terminalio_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&terminalio_module_globals,
+    .globals = (mp_obj_dict_t *)&terminalio_module_globals,
 };

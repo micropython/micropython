@@ -29,40 +29,36 @@
 
 /** Bluetooth Device Address */
 typedef struct {
-	uint8_t  val[6];
+    uint8_t val[6];
 } bt_addr_t;
 
 /** Bluetooth LE Device Address */
 typedef struct {
-	uint8_t      type;
-	bt_addr_t a;
+    uint8_t type;
+    bt_addr_t a;
 } bt_addr_le_t;
 
 #define BT_ADDR_ANY     ((bt_addr_t[]) { { { 0, 0, 0, 0, 0, 0 } } })
 #define BT_ADDR_NONE    ((bt_addr_t[]) { { \
-			 { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } } })
+                                             { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } } })
 #define BT_ADDR_LE_ANY  ((bt_addr_le_t[]) { { 0, { { 0, 0, 0, 0, 0, 0 } } } })
 #define BT_ADDR_LE_NONE ((bt_addr_le_t[]) { { 0, \
-			 { { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } } } })
+                                              { { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } } } })
 
-static inline int bt_addr_cmp(const bt_addr_t *a, const bt_addr_t *b)
-{
-	return memcmp(a, b, sizeof(*a));
+static inline int bt_addr_cmp(const bt_addr_t *a, const bt_addr_t *b) {
+    return memcmp(a, b, sizeof(*a));
 }
 
-static inline int bt_addr_le_cmp(const bt_addr_le_t *a, const bt_addr_le_t *b)
-{
-	return memcmp(a, b, sizeof(*a));
+static inline int bt_addr_le_cmp(const bt_addr_le_t *a, const bt_addr_le_t *b) {
+    return memcmp(a, b, sizeof(*a));
 }
 
-static inline void bt_addr_copy(bt_addr_t *dst, const bt_addr_t *src)
-{
-	memcpy(dst, src, sizeof(*dst));
+static inline void bt_addr_copy(bt_addr_t *dst, const bt_addr_t *src) {
+    memcpy(dst, src, sizeof(*dst));
 }
 
-static inline void bt_addr_le_copy(bt_addr_le_t *dst, const bt_addr_le_t *src)
-{
-	memcpy(dst, src, sizeof(*dst));
+static inline void bt_addr_le_copy(bt_addr_le_t *dst, const bt_addr_le_t *src) {
+    memcpy(dst, src, sizeof(*dst));
 }
 
 #define BT_ADDR_IS_RPA(a)     (((a)->val[5] & 0xc0) == 0x40)
@@ -76,22 +72,20 @@ static inline void bt_addr_le_copy(bt_addr_le_t *dst, const bt_addr_le_t *src)
 int bt_addr_le_create_nrpa(bt_addr_le_t *addr);
 int bt_addr_le_create_static(bt_addr_le_t *addr);
 
-static inline bool bt_addr_le_is_rpa(const bt_addr_le_t *addr)
-{
-	if (addr->type != BT_ADDR_LE_RANDOM) {
-		return false;
-	}
+static inline bool bt_addr_le_is_rpa(const bt_addr_le_t *addr) {
+    if (addr->type != BT_ADDR_LE_RANDOM) {
+        return false;
+    }
 
-	return BT_ADDR_IS_RPA(&addr->a);
+    return BT_ADDR_IS_RPA(&addr->a);
 }
 
-static inline bool bt_addr_le_is_identity(const bt_addr_le_t *addr)
-{
-	if (addr->type == BT_ADDR_LE_PUBLIC) {
-		return true;
-	}
+static inline bool bt_addr_le_is_identity(const bt_addr_le_t *addr) {
+    if (addr->type == BT_ADDR_LE_PUBLIC) {
+        return true;
+    }
 
-	return BT_ADDR_IS_STATIC(&addr->a);
+    return BT_ADDR_IS_STATIC(&addr->a);
 }
 
 /**

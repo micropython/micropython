@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+// Micropython setup
 
-//Essentially the same as the Saola board but without the neopixel
+// Essentially the same as the Saola board but without the neopixel
 
 #define MICROPY_HW_BOARD_NAME       "Targett Module Clip w/Wroom"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-//#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+// #define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 

@@ -38,8 +38,7 @@ static uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 static int pulse_fd = -1;
 
-static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg)
-{
+static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
     uint8_t pwm_num = (uint8_t)(int)arg;
     pulse_index++;
 
@@ -58,11 +57,11 @@ static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg)
     return true;
 }
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pwmio_pwmout_obj_t* carrier,
-                                            const mcu_pin_obj_t* pin,
-                                            uint32_t frequency,
-                                            uint16_t duty_cycle) {
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
+    const pwmio_pwmout_obj_t *carrier,
+    const mcu_pin_obj_t *pin,
+    uint32_t frequency,
+    uint16_t duty_cycle) {
     if (!carrier || pin || frequency) {
         mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
     }
@@ -110,12 +109,12 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     ioctl(pulse_fd, TCIOC_SETTIMEOUT, timeout);
 
     sethandler.handler = pulseout_timer_handler;
-    sethandler.arg     = (void *)(int)self->pwm_num;
+    sethandler.arg = (void *)(int)self->pwm_num;
 
     ioctl(pulse_fd, TCIOC_SETHANDLER, (unsigned long)&sethandler);
     ioctl(pulse_fd, TCIOC_START, 0);
 
-    while(pulse_index < len) {
+    while (pulse_index < len) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
         RUN_BACKGROUND_TASKS;

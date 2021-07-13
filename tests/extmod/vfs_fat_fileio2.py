@@ -20,22 +20,22 @@ class RAMFS:
         self.data = bytearray(blocks * self.SEC_SIZE)
 
     def readblocks(self, n, buf):
-        #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
+        # print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
         for i in range(len(buf)):
             buf[i] = self.data[n * self.SEC_SIZE + i]
         return 0
 
     def writeblocks(self, n, buf):
-        #print("writeblocks(%s, %x)" % (n, id(buf)))
+        # print("writeblocks(%s, %x)" % (n, id(buf)))
         for i in range(len(buf)):
             self.data[n * self.SEC_SIZE + i] = buf[i]
         return 0
 
     def ioctl(self, op, arg):
-        #print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # BP_IOCTL_SEC_COUNT
+        # print("ioctl(%d, %r)" % (op, arg))
+        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return len(self.data) // self.SEC_SIZE
-        if op == 5:  # BP_IOCTL_SEC_SIZE
+        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
 
 
@@ -47,28 +47,28 @@ except MemoryError:
 
 uos.VfsFat.mkfs(bdev)
 vfs = uos.VfsFat(bdev)
-uos.mount(vfs, '/ramdisk')
-uos.chdir('/ramdisk')
+uos.mount(vfs, "/ramdisk")
+uos.chdir("/ramdisk")
 
 try:
     vfs.mkdir("foo_dir")
 except OSError as e:
-    print(e.args[0] == uerrno.EEXIST)
+    print(e.errno == uerrno.EEXIST)
 
 try:
     vfs.remove("foo_dir")
 except OSError as e:
-    print(e.args[0] == uerrno.EISDIR)
+    print(e.errno == uerrno.EISDIR)
 
 try:
     vfs.remove("no_file.txt")
 except OSError as e:
-    print(e.args[0] == uerrno.ENOENT)
+    print(e.errno == uerrno.ENOENT)
 
 try:
     vfs.rename("foo_dir", "/null/file")
 except OSError as e:
-    print(e.args[0] == uerrno.ENOENT)
+    print(e.errno == uerrno.ENOENT)
 
 # file in dir
 with open("foo_dir/file-in-dir.txt", "w+t") as f:
@@ -84,7 +84,7 @@ with open("foo_dir/sub_file.txt", "w") as f:
 try:
     vfs.rmdir("foo_dir")
 except OSError as e:
-    print(e.args[0] == uerrno.EACCES)
+    print(e.errno == uerrno.EACCES)
 
 # trim full path
 vfs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
@@ -113,4 +113,5 @@ try:
     f = open("large_file.txt", "wb")
     f.write(bytearray(bsize * free))
 except OSError as e:
-    print("ENOSPC:", e.args[0] == 28) # uerrno.ENOSPC
+    print("ENOSPC:", e.errno == 28)  # uerrno.ENOSPC
+f.close()

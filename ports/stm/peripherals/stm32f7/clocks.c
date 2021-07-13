@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -61,15 +61,17 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitStruct.HSEState = BOARD_HSE_SOURCE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = HSE_VALUE/1000000;
+    RCC_OscInitStruct.PLL.PLLM = HSE_VALUE / 1000000;
     RCC_OscInitStruct.PLL.PLLN = CPY_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = CPY_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = CPY_CLK_PLLQ;
 
-    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         // Clock issues are too problematic to even attempt recovery.
         // If you end up here, check whether your LSE settings match your board.
-        while(1);
+        while (1) {
+            ;
+        }
     }
 
     /* Activate the OverDrive to reach the 216 MHz Frequency */

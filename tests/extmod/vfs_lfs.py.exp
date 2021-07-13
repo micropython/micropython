@@ -1,0 +1,74 @@
+test <class 'VfsLfs1'>
+(1024, 1024, 30, 26, 26, 0, 0, 0, 0, 255)
+(1024, 1024, 30, 25, 25, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 8)]
+[('test', 32768, 0, 8)]
+[(b'test', 32768, 0, 8)]
+[('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
+[]
+[('test', 32768, 0, 8)]
+(32768, 0, 0, 0, 0, 0) 8 <class 'int'> <class 'int'> <class 'int'>
+(16384, 0, 0, 0, 0, 0) -1 <class 'int'> <class 'int'> <class 'int'>
+littlefs
+data length: 4096
+write 0
+write 1
+write 2
+write 3
+(1024, 1024, 30, 6, 6, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 8), ('testbig2', 32768, 0, 16384), ('testdir', 16384, 0, 0)]
+[('testbig2', 32768, 0, 16384)]
+[('test', 32768, 0, 8), ('testbig2', 32768, 0, 16384), ('testdir', 16384, 0, 0)]
+[('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
+/
+/testdir
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+/
+/testdir
+/
+/testdir/subdir
+/
+/testdir2
+/testdir
+/
+/testdir
+/testdir/subdir
+/
+test <class 'VfsLfs2'>
+(1024, 1024, 30, 28, 28, 0, 0, 0, 0, 255)
+(1024, 1024, 30, 28, 28, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 8)]
+[('test', 32768, 0, 8)]
+[(b'test', 32768, 0, 8)]
+[('testdir', 16384, 0, 0), ('test', 32768, 0, 8)]
+[]
+[('test', 32768, 0, 8)]
+(32768, 0, 0, 0, 0, 0) 8 <class 'int'> <class 'int'> <class 'int'>
+(16384, 0, 0, 0, 0, 0) -1 <class 'int'> <class 'int'> <class 'int'>
+littlefs
+data length: 4096
+write 0
+write 1
+write 2
+write 3
+(1024, 1024, 30, 7, 7, 0, 0, 0, 0, 255)
+[('test', 32768, 0, 8), ('testbig2', 32768, 0, 16384), ('testdir', 16384, 0, 0)]
+[('testbig2', 32768, 0, 16384)]
+[('test', 32768, 0, 8), ('testbig2', 32768, 0, 16384), ('testdir', 16384, 0, 0)]
+[('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
+/
+/testdir
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+/
+/testdir
+/
+/testdir/subdir
+/
+/testdir2
+/testdir
+/
+/testdir
+/testdir/subdir
+/

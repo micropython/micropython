@@ -64,10 +64,10 @@ typedef struct {
     bool SH1107_addressing;
 } displayio_display_obj_t;
 
-void displayio_display_background(displayio_display_obj_t* self);
-void release_display(displayio_display_obj_t* self);
-void reset_display(displayio_display_obj_t* self);
+void displayio_display_background(displayio_display_obj_t *self);
+void release_display(displayio_display_obj_t *self);
+void reset_display(displayio_display_obj_t *self);
 
-void displayio_display_collect_ptrs(displayio_display_obj_t* self);
+void displayio_display_collect_ptrs(displayio_display_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

@@ -39,56 +39,67 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 #include "components/log/include/esp_log.h"
 
-static const char* TAG = "wifi";
+static const char *TAG = "wifi";
 
-static void event_handler(void* arg, esp_event_base_t event_base,
-                          int32_t event_id, void* event_data) {
-    wifi_radio_obj_t* radio = arg;
+static void event_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data) {
+    wifi_radio_obj_t *radio = arg;
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
             case WIFI_EVENT_SCAN_DONE:
-                ESP_EARLY_LOGW(TAG, "scan");
+                ESP_LOGW(TAG, "scan");
                 xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
                 break;
+            case WIFI_EVENT_AP_START:
+                ESP_LOGW(TAG, "ap start");
+                break;
+            case WIFI_EVENT_AP_STOP:
+                ESP_LOGW(TAG, "ap stop");
+                break;
+            case WIFI_EVENT_AP_STACONNECTED:
+                break;
+            case WIFI_EVENT_AP_STADISCONNECTED:
+                break;
             case WIFI_EVENT_STA_START:
-                ESP_EARLY_LOGW(TAG, "start");
+                ESP_LOGW(TAG, "sta start");
                 break;
             case WIFI_EVENT_STA_STOP:
-                ESP_EARLY_LOGW(TAG, "stop");
+                ESP_LOGW(TAG, "sta stop");
                 break;
             case WIFI_EVENT_STA_CONNECTED:
-                ESP_EARLY_LOGW(TAG, "connected");
+                ESP_LOGW(TAG, "connected");
                 break;
             case WIFI_EVENT_STA_DISCONNECTED: {
-                ESP_EARLY_LOGW(TAG, "disconnected");
-                wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
+                ESP_LOGW(TAG, "disconnected");
+                wifi_event_sta_disconnected_t *d = (wifi_event_sta_disconnected_t *)event_data;
                 uint8_t reason = d->reason;
-                ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
+                ESP_LOGW(TAG, "reason %d 0x%02x", reason, reason);
                 if (radio->retries_left > 0 &&
-                        (reason == WIFI_REASON_AUTH_EXPIRE ||
-                         reason == WIFI_REASON_NOT_AUTHED ||
-                         reason == WIFI_REASON_ASSOC_EXPIRE ||
-                         reason == WIFI_REASON_CONNECTION_FAIL ||
-                         reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
+                    reason != WIFI_REASON_AUTH_FAIL &&
+                    reason != WIFI_REASON_NO_AP_FOUND &&
+                    reason != WIFI_REASON_ASSOC_LEAVE) {
                     radio->retries_left--;
-                    ESP_EARLY_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
+                    ESP_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
                     esp_wifi_connect();
                     return;
                 }
 
                 radio->last_disconnect_reason = reason;
                 xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
+                break;
             }
 
             // Cases to handle later.
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
-            default:
+            default: {
+                ESP_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
                 break;
+            }
         }
     }
 
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ESP_EARLY_LOGW(TAG, "got ip");
+        ESP_LOGW(TAG, "got ip");
         radio->retries_left = radio->starting_retries;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
@@ -106,8 +117,10 @@ void common_hal_wifi_init(void) {
     }
     wifi_ever_inited = true;
 
-    wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
+    wifi_radio_obj_t *self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
+    self->ap_netif = esp_netif_create_default_wifi_ap();
+    self->started = false;
 
     // Even though we just called esp_netif_create_default_wifi_sta,
     //   station mode isn't actually ready for use until esp_wifi_set_mode()
@@ -118,15 +131,15 @@ void common_hal_wifi_init(void) {
 
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        ESP_EVENT_ANY_ID,
-                                                        &event_handler,
-                                                        self,
-                                                        &self->handler_instance_all_wifi));
+        ESP_EVENT_ANY_ID,
+        &event_handler,
+        self,
+        &self->handler_instance_all_wifi));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
-                                                        IP_EVENT_STA_GOT_IP,
-                                                        &event_handler,
-                                                        self,
-                                                        &self->handler_instance_got_ip));
+        IP_EVENT_STA_GOT_IP,
+        &event_handler,
+        self,
+        &self->handler_instance_got_ip));
 
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
     esp_err_t result = esp_wifi_init(&config);
@@ -135,6 +148,9 @@ void common_hal_wifi_init(void) {
     } else if (result != ESP_OK) {
         mp_raise_RuntimeError(translate("Failed to init wifi"));
     }
+    // set station mode to avoid the default SoftAP
+    esp_wifi_set_mode(WIFI_MODE_STA);
+    // start wifi
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
@@ -142,26 +158,28 @@ void wifi_reset(void) {
     if (!wifi_inited) {
         return;
     }
-    wifi_radio_obj_t* radio = &common_hal_wifi_radio_obj;
+    wifi_radio_obj_t *radio = &common_hal_wifi_radio_obj;
     common_hal_wifi_radio_set_enabled(radio, false);
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
-                                                          ESP_EVENT_ANY_ID,
-                                                          radio->handler_instance_all_wifi));
+        ESP_EVENT_ANY_ID,
+        radio->handler_instance_all_wifi));
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT,
-                                                          IP_EVENT_STA_GOT_IP,
-                                                          radio->handler_instance_got_ip));
+        IP_EVENT_STA_GOT_IP,
+        radio->handler_instance_got_ip));
     ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
     radio->netif = NULL;
+    esp_netif_destroy(radio->ap_netif);
+    radio->ap_netif = NULL;
 }
 
-void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {
-    if (!MP_OBJ_IS_TYPE(ip_address, &ipaddress_ipv4address_type)) {
+void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
+    if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
         mp_raise_ValueError(translate("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
     size_t len;
-    const char* bytes = mp_obj_str_get_data(packed, &len);
+    const char *bytes = mp_obj_str_get_data(packed, &len);
 
     IP_ADDR4(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
 }

@@ -28,13 +28,15 @@
 
 #include "mphalport.h"
 
+#if defined(CIRCUITPY_BOOT_BUTTON)
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#endif
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
-#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/tick.h"
 
@@ -57,16 +59,15 @@ safe_mode_t wait_for_safe_mode_reset(void) {
 
     const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN) {
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_UNKNOWN) {
         return NO_SAFE_MODE;
     }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
     // Wait for a while to allow for reset.
-    temp_status_color(SAFE_MODE);
-    #ifdef MICROPY_HW_LED_STATUS
-    digitalio_digitalinout_obj_t status_led;
-    common_hal_digitalio_digitalinout_construct(&status_led, MICROPY_HW_LED_STATUS);
-    common_hal_digitalio_digitalinout_switch_to_output(&status_led, true, DRIVE_MODE_PUSH_PULL);
+
+    #if CIRCUITPY_STATUS_LED
+    status_led_init();
     #endif
     #ifdef CIRCUITPY_BOOT_BUTTON
     digitalio_digitalinout_obj_t boot_button;
@@ -75,23 +76,34 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     #endif
     uint64_t start_ticks = supervisor_ticks_ms64();
     uint64_t diff = 0;
-    while (diff < 700) {
-        #ifdef MICROPY_HW_LED_STATUS
-        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
+    bool boot_in_safe_mode = false;
+    while (diff < 1000) {
+        #ifdef CIRCUITPY_STATUS_LED
+        // Blink on for 100, off for 100
+        bool led_on = (diff % 250) < 125;
+        if (led_on) {
+            new_status_color(SAFE_MODE);
+        } else {
+            new_status_color(BLACK);
+        }
         #endif
         #ifdef CIRCUITPY_BOOT_BUTTON
         if (!common_hal_digitalio_digitalinout_get_value(&boot_button)) {
-           return USER_SAFE_MODE;
+            boot_in_safe_mode = true;
+            break;
         }
         #endif
         diff = supervisor_ticks_ms64() - start_ticks;
     }
-    #ifdef MICROPY_HW_LED_STATUS
-    common_hal_digitalio_digitalinout_deinit(&status_led);
+    #if CIRCUITPY_STATUS_LED
+    new_status_color(BLACK);
+    status_led_deinit();
     #endif
-    clear_temp_status();
-    port_set_saved_word(SAFE_MODE_DATA_GUARD);
+    if (boot_in_safe_mode) {
+        return USER_SAFE_MODE;
+    }
+    // Restore the original state of the saved word if no reset occured during our wait period.
+    port_set_saved_word(reset_state);
     return NO_SAFE_MODE;
 }
 
@@ -114,86 +126,96 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
 
 
 
-#define FILE_AN_ISSUE translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n")
-
 void print_safe_mode_message(safe_mode_t reason) {
     if (reason == NO_SAFE_MODE) {
         return;
     }
-    serial_write("\n");
+
+    serial_write("\r\n");
+    serial_write_compressed(translate("You are in safe mode because:\n"));
+
+    const compressed_string_t *message = NULL;
+
+    // First check for safe mode reasons that do not necessarily reflect bugs.
 
     switch (reason) {
         case USER_SAFE_MODE:
             #ifdef BOARD_USER_SAFE_MODE_ACTION
-                // Output a user safe mode string if it's set.
-                serial_write_compressed(translate("You requested starting safe mode by "));
-                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write_compressed(translate("To exit, please reset the board without "));
-                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-            #else
-                break;
+            // Output a user safe mode string if it's set.
+            serial_write_compressed(translate("You requested starting safe mode by "));
+            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
+            serial_write_compressed(translate("To exit, please reset the board without "));
+            message = BOARD_USER_SAFE_MODE_ACTION;
             #endif
-            return;
+            break;
         case MANUAL_SAFE_MODE:
-            serial_write_compressed(translate("CircuitPython is in safe mode because you pressed the reset button during boot. Press again to exit safe mode.\n"));
-            return;
+            message = translate("You pressed the reset button during boot. Press again to exit safe mode.");
+            break;
         case PROGRAMMATIC_SAFE_MODE:
-            serial_write_compressed(translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.\n"));
-            return;
+            message = translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.");
+            break;
+        case BROWNOUT:
+            message = translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).");
+            break;
+        case USB_TOO_MANY_ENDPOINTS:
+            message = translate("USB devices need more endpoints than are available.");
+            break;
+        case USB_TOO_MANY_INTERFACE_NAMES:
+            message = translate("USB devices specify too many interface names.");
+            break;
+        case WATCHDOG_RESET:
+            message = translate("Watchdog timer expired.");
+            break;
         default:
             break;
     }
 
-    serial_write_compressed(translate("You are in safe mode: something unanticipated happened.\n"));
-    switch (reason) {
-        case BROWNOUT:
-            serial_write_compressed(translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"));
-            return;
-        case HEAP_OVERWRITTEN:
-            serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\nPlease increase the stack size if you know how, or if not:"));
-            serial_write_compressed(FILE_AN_ISSUE);
-            return;
-        case NO_HEAP:
-            serial_write_compressed(translate("CircuitPython was unable to allocate the heap.\n"));
-            serial_write_compressed(FILE_AN_ISSUE);
-            return;
-        default:
-            break;
+    if (message) {
+        serial_write_compressed(message);
+        serial_write("\r\n");
+        return;
     }
+
+    // Something worse happened.
 
     serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
+
     switch (reason) {
         case HARD_CRASH:
-            serial_write_compressed(translate("Crash into the HardFault_Handler."));
-            return;
+            message = translate("Crash into the HardFault_Handler.");
+            break;
         case MICROPY_NLR_JUMP_FAIL:
-            serial_write_compressed(translate("MicroPython NLR jump failed. Likely memory corruption."));
-            return;
+            message = translate("NLR jump failed. Likely memory corruption.");
+            break;
         case MICROPY_FATAL_ERROR:
-            serial_write_compressed(translate("MicroPython fatal error."));
+            message = translate("Fatal error.");
+            break;
+        case NO_HEAP:
+            message = translate("CircuitPython was unable to allocate the heap.");
+            break;
+        case HEAP_OVERWRITTEN:
+            message = translate("The CircuitPython heap was corrupted because the stack was too small.\nIncrease the stack size if you know how. If not:");
             break;
         case GC_ALLOC_OUTSIDE_VM:
-            serial_write_compressed(translate("Attempted heap allocation when MicroPython VM not running."));
+            message = translate("Attempted heap allocation when VM not running.");
             break;
-        #ifdef SOFTDEVICE_PRESENT
+            #ifdef SOFTDEVICE_PRESENT
         // defined in ports/nrf/bluetooth/bluetooth_common.mk
         // will print "Unknown reason" if somehow encountered on other ports
         case NORDIC_SOFT_DEVICE_ASSERT:
-            serial_write_compressed(translate("Nordic Soft Device failure assertion."));
+            message = translate("Nordic system firmware failure assertion.");
             break;
-        #endif
+            #endif
         case FLASH_WRITE_FAIL:
-            serial_write_compressed(translate("Failed to write internal flash."));
+            message = translate("Failed to write internal flash.");
             break;
         case MEM_MANAGE:
-            serial_write_compressed(translate("Invalid memory access."));
-            break;
-        case WATCHDOG_RESET:
-            serial_write_compressed(translate("Watchdog timer expired."));
+            message = translate("Invalid memory access.");
             break;
         default:
-            serial_write_compressed(translate("Unknown reason."));
+            message = translate("Unknown reason.");
             break;
     }
-    serial_write_compressed(FILE_AN_ISSUE);
+    serial_write_compressed(message);
+    serial_write_compressed(translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n"));
 }

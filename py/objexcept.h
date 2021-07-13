@@ -41,13 +41,13 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
 void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-const mp_obj_type_t mp_type_ ## exc_name = { \
-    { &mp_type_type }, \
-    .name = MP_QSTR_ ## exc_name, \
-    .print = mp_obj_exception_print, \
-    .make_new = mp_obj_exception_make_new, \
-    .attr = mp_obj_exception_attr, \
-    .parent = &mp_type_ ## base_name, \
-};
+    const mp_obj_type_t mp_type_##exc_name = { \
+        { &mp_type_type }, \
+        .name = MP_QSTR_##exc_name, \
+        .print = mp_obj_exception_print, \
+        .make_new = mp_obj_exception_make_new, \
+        .attr = mp_obj_exception_attr, \
+        .parent = &mp_type_##base_name, \
+    };
 
 #endif // MICROPY_INCLUDED_PY_OBJEXCEPT_H

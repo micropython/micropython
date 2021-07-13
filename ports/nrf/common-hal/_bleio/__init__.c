@@ -36,7 +36,7 @@
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
-#include "supervisor/shared/bluetooth.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/_bleio/bonding.h"
@@ -46,14 +46,20 @@ void check_nrf_error(uint32_t err_code) {
         return;
     }
     switch (err_code) {
+        case NRF_ERROR_NO_MEM:
+            mp_raise_msg(&mp_type_MemoryError, translate("Nordic system firmware out of memory"));
+            return;
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
+            return;
+        case NRF_ERROR_INVALID_PARAM:
+            mp_raise_ValueError(translate("Invalid BLE parameter"));
             return;
         case BLE_ERROR_INVALID_CONN_HANDLE:
             mp_raise_ConnectionError(translate("Not connected"));
             return;
         default:
-            mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
+            mp_raise_bleio_BluetoothError(translate("Unknown system firmware error: %04x"), err_code);
             break;
     }
 }
@@ -88,30 +94,23 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
-bool vm_used_ble;
-
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
+    // Set this explicitly to save data.
+    common_hal_bleio_adapter_obj.base.type = &bleio_adapter_type;
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
+
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
-    if (!vm_used_ble) {
-        // No user-code BLE operations were done, so we can maintain the supervisor state.
-        return;
-    }
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     bonding_reset();
     supervisor_start_bluetooth();
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter
-// It currently only has properties and no state
-bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
-    .base = {
-        .type = &bleio_adapter_type,
-    },
-};
+// It currently only has properties and no state. Inited by bleio_reset
+bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
@@ -120,7 +119,7 @@ void common_hal_bleio_check_connected(uint16_t conn_handle) {
 }
 
 // GATTS read of a Characteristic or Descriptor.
-size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len) {
+size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t *buf, size_t len) {
     // conn_handle is ignored unless this is a system attribute.
     // If we're not connected, that's OK, because we can still read and write the local value.
 
@@ -147,7 +146,7 @@ void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buff
 }
 
 typedef struct {
-    uint8_t* buf;
+    uint8_t *buf;
     size_t len;
     size_t final_len;
     uint16_t conn_handle;
@@ -156,13 +155,13 @@ typedef struct {
 } read_info_t;
 
 STATIC bool _on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
-    read_info_t* read = param;
+    read_info_t *read = param;
     switch (ble_evt->header.evt_id) {
 
         // More events may be handled later, so keep this as a switch.
 
         case BLE_GATTC_EVT_READ_RSP: {
-            ble_gattc_evt_t* evt = &ble_evt->evt.gattc_evt;
+            ble_gattc_evt_t *evt = &ble_evt->evt.gattc_evt;
             ble_gattc_evt_read_rsp_t *response = &evt->params.read_rsp;
             if (read && evt->conn_handle == read->conn_handle) {
                 read->status = evt->gatt_status;
@@ -184,7 +183,7 @@ STATIC bool _on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
-size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len) {
+size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_t *buf, size_t len) {
     common_hal_bleio_check_connected(conn_handle);
 
     read_info_t read_info;

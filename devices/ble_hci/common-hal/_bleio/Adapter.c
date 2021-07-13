@@ -51,7 +51,7 @@
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
-#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME) * (RESOLUTION)) / 1000000)
+#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME)*(RESOLUTION)) / 1000000)
 // 0.625 msecs (625 usecs)
 #define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 // Microseconds is the base unit. The macros above know that.
@@ -63,7 +63,7 @@
 
 // TODO make this settable from Python.
 #define DEFAULT_TX_POWER 0  // 0 dBm
-#define MAX_ANONYMOUS_ADV_TIMEOUT_SECS (60*15)
+#define MAX_ANONYMOUS_ADV_TIMEOUT_SECS (60 * 15)
 #define MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS (180)
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
@@ -118,7 +118,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         248,                    // max length, from Bluetooth spec
         false,                  // not fixed length
-        &generic_name_bufinfo
+        &generic_name_bufinfo,
+        NULL
         );
 
     uint16_t zero_16 = 0;
@@ -140,7 +141,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         2,                      // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_16_value
+        &zero_16_value,
+        NULL
         );
 
     // Generic Attribute Service setup.
@@ -176,7 +178,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         4,                     // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_32_value
+        &zero_32_value,
+        NULL
         );
 }
 
@@ -289,7 +292,7 @@ STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
 
     // Get version information.
     if (hci_read_local_version(&self->hci_version, &self->hci_revision, &self->lmp_version,
-                               &self->manufacturer, &self->lmp_subversion) != HCI_OK) {
+        &self->manufacturer, &self->lmp_subversion) != HCI_OK) {
         mp_raise_bleio_BluetoothError(translate("Could not read HCI version"));
     }
     // Get supported features.
@@ -414,11 +417,11 @@ bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_addre
     return hci_le_set_random_address(bufinfo.buf) == HCI_OK;
 }
 
-mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
+mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     return self->name;
 }
 
-void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name) {
+void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {
     self->name = mp_obj_new_str(name, strlen(name));
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(self->name, &bufinfo, MP_BUFFER_READ);
@@ -459,7 +462,7 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* na
 //     return true;
 // }
 
-mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
+mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t *prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     // TODO
     mp_raise_NotImplementedError(NULL);
     check_enabled(self);
@@ -645,7 +648,11 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 //     return true;
 // }
 
-uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
+uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
+    bool connectable, bool anonymous, uint32_t timeout, float interval,
+    const uint8_t *advertising_data, uint16_t advertising_data_len,
+    const uint8_t *scan_response_data, uint16_t scan_response_data_len,
+    mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     check_enabled(self);
 
     if (self->now_advertising) {
@@ -704,7 +711,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 
         uint8_t handle[1] = { 0 };
         uint16_t duration_10msec[1] = { timeout * 100 };
-        uint8_t max_ext_adv_evts[1] =  { 0 };
+        uint8_t max_ext_adv_evts[1] = { 0 };
         hci_check_error(
             hci_le_set_extended_advertising_enable(
                 BT_HCI_LE_ADV_ENABLE,
@@ -769,7 +776,11 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     return 0;
 }
 
-void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
+    bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval,
+    mp_buffer_info_t *advertising_data_bufinfo,
+    mp_buffer_info_t *scan_response_data_bufinfo,
+    mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     check_enabled(self);
 
     // interval value has already been validated.
@@ -789,16 +800,21 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     } else {
         if (timeout > MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS) {
             mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
-                                          MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS);
+                MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS);
         }
     }
 
-    const uint32_t result =_common_hal_bleio_adapter_start_advertising(
+    if (tx_power != 0) {
+        mp_raise_NotImplementedError(translate("Only tx_power=0 supported"));
+    }
+
+    const uint32_t result = _common_hal_bleio_adapter_start_advertising(
         self, connectable, anonymous, timeout, interval,
         advertising_data_bufinfo->buf,
         advertising_data_bufinfo->len,
         scan_response_data_bufinfo->buf,
-        scan_response_data_bufinfo->len);
+        scan_response_data_bufinfo->len,
+        tx_power, directed_to);
 
     if (result) {
         mp_raise_bleio_BluetoothError(translate("Already advertising"));
@@ -820,11 +836,11 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
         hci_check_error(result);
     }
 
-    //TODO startup CircuitPython advertising again.
+    // TODO startup CircuitPython advertising again.
 }
 
 // Note that something stopped advertising, such as a connection happening.
-//Don't ask the adapter to stop.
+// Don't ask the adapter to stop.
 void bleio_adapter_advertising_was_stopped(bleio_adapter_obj_t *self) {
     self->now_advertising = false;
     self->extended_advertising = false;
@@ -876,27 +892,27 @@ void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
     mp_raise_NotImplementedError(NULL);
     check_enabled(self);
 
-    //FIX bonding_erase_storage();
+    // FIX bonding_erase_storage();
 }
 
 uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute) {
     check_enabled(adapter);
 
     // The handle is the index of this attribute in the attributes list.
-    uint16_t handle = (uint16_t) adapter->attributes->len;
+    uint16_t handle = (uint16_t)adapter->attributes->len;
     mp_obj_list_append(adapter->attributes, attribute);
 
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_service_type)) {
+    if (mp_obj_is_type(attribute, &bleio_service_type)) {
         adapter->last_added_service_handle = handle;
     }
-    if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+    if (mp_obj_is_type(attribute, &bleio_characteristic_type)) {
         adapter->last_added_characteristic_handle = handle;
     }
 
     return handle;
 }
 
-mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle) {
+mp_obj_t *bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle) {
     check_enabled(adapter);
 
     if (handle == 0 || handle >= adapter->attributes->len) {
@@ -912,12 +928,12 @@ uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter) {
 }
 
 
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
-    gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void**)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
+void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
+    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
+    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
 }
 
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
+void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {
 
     if (!common_hal_bleio_adapter_get_enabled(adapter)) {
         return;
@@ -939,7 +955,7 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
 
 }
 
-void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
+void bleio_adapter_background(bleio_adapter_obj_t *adapter) {
     if (!common_hal_bleio_adapter_get_enabled(adapter)) {
         return;
     }

@@ -113,7 +113,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
 [submodule "extmod/ulab"]
 	path = extmod/ulab
-	url = https://github.com/v923z/micropython-ulab
+	url = https://github.com/adafruit/circuitpython-ulab
 [submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
 	path = frozen/Adafruit_CircuitPython_ESP32SPI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI
@@ -153,6 +153,38 @@
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
+	branch = circuitpython-v4.3
 [submodule "ports/esp32s2/certificates/nina-fw"]
 	path = ports/esp32s2/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
+[submodule "frozen/Adafruit_CircuitPython_ST7789"]
+	path = frozen/Adafruit_CircuitPython_ST7789
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ST7789
+[submodule "frozen/Adafruit_CircuitPython_Display_Shapes"]
+	path = frozen/Adafruit_CircuitPython_Display_Shapes
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Display_Shapes
+[submodule "frozen/Adafruit_CircuitPython_Display_Text"]
+	path = frozen/Adafruit_CircuitPython_Display_Text
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Display_Text
+[submodule "frozen/Adafruit_CircuitPython_ProgressBar"]
+	path = frozen/Adafruit_CircuitPython_ProgressBar
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ProgressBar
+[submodule "frozen/Adafruit_CircuitPython_LC709203F"]
+	path = frozen/Adafruit_CircuitPython_LC709203F
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LC709203F
+[submodule "frozen/Adafruit_CircuitPython_SimpleMath"]
+	path = frozen/Adafruit_CircuitPython_SimpleMath
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SimpleMath
+[submodule "ports/raspberrypi/sdk"]
+	path = ports/raspberrypi/sdk
+	url = https://github.com/adafruit/pico-sdk.git
+[submodule "data/nvm.toml"]
+	path = data/nvm.toml
+	url = https://github.com/adafruit/nvm.toml.git
+	branch = main
+[submodule "frozen/Adafruit_CircuitPython_MIDI"]
+	path = frozen/Adafruit_CircuitPython_MIDI
+	url = https://github.com/adafruit/Adafruit_CircuitPython_MIDI
+[submodule "frozen/Adafruit_CircuitPython_SimpleIO"]
+	path = frozen/Adafruit_CircuitPython_SimpleIO
+	url = https://github.com/adafruit/adafruit_circuitpython_simpleio

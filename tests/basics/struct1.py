@@ -121,3 +121,5 @@ except:
 
 # check padding bytes
 print(struct.pack("xb", 3))
+# Make sure pack doesn't reuse a larger value and error
+print(struct.pack("xH", 0x100))

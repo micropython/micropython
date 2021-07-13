@@ -29,4 +29,4 @@
 
 extern void dualbank_reset(void);
 
-#endif //MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DUALBANK___INIT___H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DUALBANK___INIT___H

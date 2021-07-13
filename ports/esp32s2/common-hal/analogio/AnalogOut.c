@@ -39,8 +39,8 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
-        const mcu_pin_obj_t *pin) {
+void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
+    const mcu_pin_obj_t *pin) {
     if (pin == &pin_GPIO17) {
         self->channel = DAC_CHANNEL_1;
     } else if (pin == &pin_GPIO18) {
@@ -52,7 +52,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return (self->channel == DAC_CHANNEL_MAX);
+    return self->channel == DAC_CHANNEL_MAX;
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
@@ -61,7 +61,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
-        uint16_t value) {
+    uint16_t value) {
     uint8_t dac_value = (value * 255) / 65535;
     dac_output_enable(self->channel);
     dac_output_voltage(self->channel, dac_value);

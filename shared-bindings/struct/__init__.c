@@ -72,7 +72,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);
-    byte *p = (byte*)vstr.buf;
+    byte *p = (byte *)vstr.buf;
     memset(p, 0, size);
     byte *end_p = &p[size];
     shared_modules_struct_pack_into(args[0], p, end_p, n_args - 1, &args[1]);
@@ -120,7 +120,7 @@ STATIC mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
     byte *end_p = &p[bufinfo.len];
 
     // true means check the size must be exactly right.
-    return MP_OBJ_FROM_PTR(shared_modules_struct_unpack_from(args[0] , p, end_p, true));
+    return MP_OBJ_FROM_PTR(shared_modules_struct_unpack_from(args[0], p, end_p, true));
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 
@@ -177,5 +177,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t struct_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };

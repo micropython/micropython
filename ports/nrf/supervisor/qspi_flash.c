@@ -37,10 +37,34 @@
 
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "supervisor/shared/external_flash/qspi_flash.h"
+#ifdef NRF_DEBUG_PRINT
+#include "supervisor/serial.h" // dbg_printf()
+#endif
+
+#ifdef QSPI_FLASH_POWERDOWN
+// Parameters for external QSPI Flash power-down
+// for W25Q128FV,
+//   tDP (nCS high to Power-down mode) = 3us
+//   tRES (nCS high to Standby mode)   = 3us
+//   sck_delay = max(tDP, tRES) / 62.5ns = 48  -> 50 (w/ margin)
+#define DUR_DPM_ENTER  1  // tDP  in (256*62.5ns) units
+#define DUR_DPM_EXIT   1  // tRES in (256*62.5ns) units
+#define SCK_DELAY      50 // max(tDP, tRES) in (62.5ns) units
+//   wait necessary just after DPM enter/exit (cut and try)
+#define WAIT_AFTER_DPM_ENTER 10 // usec
+#define WAIT_AFTER_DPM_EXIT  50 // usec
+
+static int sck_delay_saved = 0;
+#endif
+
+#ifdef NRF_DEBUG_PRINT
+extern void dbg_dumpQSPIreg(void);
+#else
+#define dbg_dumpQSPIreg(...)
+#endif
 
 // When USB is disconnected, disable QSPI in sleep mode to save energy
-void qspi_disable(void)
-{
+void qspi_disable(void) {
     // If VBUS is detected, no need to disable QSPI
     if (NRF_QSPI->ENABLE && !(NRF_POWER->USBREGSTATUS & POWER_USBREGSTATUS_VBUSDETECT_Msk)) {
         // Keep CS high when QSPI is diabled
@@ -54,8 +78,7 @@ void qspi_disable(void)
     }
 }
 
-void qspi_enable(void)
-{
+void qspi_enable(void) {
     if (NRF_QSPI->ENABLE) {
         return;
     }
@@ -87,7 +110,7 @@ bool spi_flash_command(uint8_t command) {
     return nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL) == NRFX_SUCCESS;
 }
 
-bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length) {
+bool spi_flash_read_command(uint8_t command, uint8_t *response, uint32_t length) {
     qspi_enable();
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = command,
@@ -101,7 +124,7 @@ bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length)
 
 }
 
-bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
+bool spi_flash_write_command(uint8_t command, uint8_t *data, uint32_t length) {
     qspi_enable();
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
         .opcode = command,
@@ -122,7 +145,7 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
     return nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, address) == NRFX_SUCCESS;
 }
 
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t length) {
     qspi_enable();
     // TODO: In theory, this also needs to handle unaligned data and
     // non-multiple-of-4 length.  (in practice, I don't think the fat layer
@@ -130,17 +153,17 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
     return nrfx_qspi_write(data, length, address) == NRFX_SUCCESS;
 }
 
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t length) {
     qspi_enable();
     int misaligned = ((intptr_t)data) & 3;
     // If the data is misaligned, we need to read 4 bytes
     // into an aligned buffer, and then copy 1, 2, or 3 bytes from the aligned
     // buffer to data.
-    if(misaligned) {
+    if (misaligned) {
         int sz = 4 - misaligned;
         __attribute__((aligned(4))) uint8_t buf[4];
 
-        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+        if (nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
             return false;
         }
         memcpy(data, buf, sz);
@@ -153,7 +176,7 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
     // signal an error if sz is not a multiple of 4.  Read (directly into data)
     // all but the last 1, 2, or 3 bytes depending on the (remaining) length.
     uint32_t sz = length & ~(uint32_t)3;
-    if(nrfx_qspi_read(data, sz, address) != NRFX_SUCCESS) {
+    if (nrfx_qspi_read(data, sz, address) != NRFX_SUCCESS) {
         return false;
     }
     data += sz;
@@ -162,9 +185,9 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
 
     // Now, if we have any bytes left over, we must do a final read of 4
     // bytes and copy 1, 2, or 3 bytes to data.
-    if(length) {
+    if (length) {
         __attribute__((aligned(4))) uint8_t buf[4];
-        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+        if (nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
             return false;
         }
         memcpy(data, buf, length);
@@ -190,7 +213,11 @@ void spi_flash_init(void) {
             .readoc = NRF_QSPI_READOC_FASTREAD,
             .writeoc = NRF_QSPI_WRITEOC_PP,
             .addrmode = NRF_QSPI_ADDRMODE_24BIT,
+            #ifdef QSPI_FLASH_POWERDOWN
+            .dpmconfig = true
+            #else
             .dpmconfig = false
+                #endif
         },
         .phy_if = {
             .sck_freq = NRF_QSPI_FREQ_32MDIV16, // Start at a slow 2MHz and speed up once we know what we're talking to.
@@ -201,23 +228,30 @@ void spi_flash_init(void) {
         .irq_priority = 7,
     };
 
-#if defined(EXTERNAL_FLASH_QSPI_DUAL)
+    #if defined(EXTERNAL_FLASH_QSPI_DUAL)
     qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ2O;
     qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP2O;
-#else
+    #else
     qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
     qspi_cfg.pins.io2_pin = MICROPY_QSPI_DATA2;
     qspi_cfg.pins.io3_pin = MICROPY_QSPI_DATA3;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
     qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
-#endif
+    #endif
 
     // No callback for blocking API
     nrfx_qspi_init(&qspi_cfg, NULL, NULL);
+
+    #ifdef QSPI_FLASH_POWERDOWN
+    // If pin-reset while flash is in power-down mode,
+    // the flash cannot accept any commands. Send CMD_WAKE to release it.
+    spi_flash_write_command(CMD_WAKE, NULL, 0);
+    NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
+    #endif
 }
 
-void spi_flash_init_device(const external_flash_device* device) {
+void spi_flash_init_device(const external_flash_device *device) {
     check_quad_enable(device);
 
     // Switch to single output line if the device doesn't support quad programs.
@@ -236,5 +270,63 @@ void spi_flash_init_device(const external_flash_device* device) {
         sckfreq += 1;
     }
     NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
-    NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
+    NRF_QSPI->IFCONFIG1 |= sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
+}
+
+void qspi_flash_enter_sleep(void) {
+    #ifdef QSPI_FLASH_POWERDOWN
+    uint32_t r;
+    NRF_QSPI->DPMDUR =
+        ((DUR_DPM_ENTER & 0xFFFF) << 16) | (DUR_DPM_EXIT & 0xFFFF);
+    // set sck_delay tempolarily
+    r = NRF_QSPI->IFCONFIG1;
+    sck_delay_saved = (r & QSPI_IFCONFIG1_SCKDELAY_Msk)
+        >> QSPI_IFCONFIG1_SCKDELAY_Pos;
+    NRF_QSPI->IFCONFIG1
+        = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
+            | (SCK_DELAY << QSPI_IFCONFIG1_SCKDELAY_Pos);
+
+    // enabling IFCONFIG0.DPMENABLE here won't work.
+    //  -> do it in spi_flash_init()
+    // NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_DPMENABLE_Msk;
+    // dbg_dumpQSPIreg();
+
+    // enter deep power-down mode (DPM)
+    NRF_QSPI->IFCONFIG1 |= QSPI_IFCONFIG1_DPMEN_Msk;
+    NRFX_DELAY_US(WAIT_AFTER_DPM_ENTER);
+    if (!(NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk)) {
+        #ifdef NRF_DEBUG_PRINT
+        dbg_printf("qspi flash: DPM failed\r\n");
+        #endif
+    }
+    #endif
+
+    qspi_disable();
+    // dbg_dumpQSPIreg();
+}
+
+void qspi_flash_exit_sleep(void) {
+    qspi_enable();
+
+    #ifdef QSPI_FLASH_POWERDOWN
+    if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
+        // exit deep power-down mode
+        NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_DPMEN_Msk;
+        NRFX_DELAY_US(WAIT_AFTER_DPM_EXIT);
+
+        if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
+            #ifdef NRF_DEBUG_PRINT
+            dbg_printf("qspi flash: exiting DPM failed\r\n");
+            #endif
+        }
+        // restore sck_delay
+        if (sck_delay_saved == 0) {
+            sck_delay_saved = 10; // default
+        }
+        NRF_QSPI->IFCONFIG1
+            = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
+                | (sck_delay_saved << QSPI_IFCONFIG1_SCKDELAY_Pos);
+    }
+    // dbg_dumpQSPIreg();
+    #endif
 }

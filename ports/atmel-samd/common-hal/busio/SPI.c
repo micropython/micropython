@@ -36,14 +36,13 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_spi_m_sync.h"
 #include "hal/include/hpl_spi_m_sync.h"
-#include "supervisor/shared/rgb_led_status.h"
 
 #include "samd/dma.h"
 #include "samd/sercom.h"
 
 bool never_reset_sercoms[SERCOM_INST_NUM];
 
-void never_reset_sercom(Sercom* sercom) {
+void never_reset_sercom(Sercom *sercom) {
     // Reset all SERCOMs except the ones being used by on-board devices.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
@@ -54,7 +53,7 @@ void never_reset_sercom(Sercom* sercom) {
     }
 }
 
-void allow_reset_sercom(Sercom* sercom) {
+void allow_reset_sercom(Sercom *sercom) {
     // Reset all SERCOMs except the ones being used by on-board devices.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
@@ -72,11 +71,6 @@ void reset_sercoms(void) {
         if (never_reset_sercoms[i]) {
             continue;
         }
-    #ifdef MICROPY_HW_APA102_SERCOM
-        if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
-            continue;
-        }
-    #endif
         // SWRST is same for all modes of SERCOMs.
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
@@ -84,9 +78,9 @@ void reset_sercoms(void) {
 
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso) {
-    Sercom* sercom = NULL;
+    const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
+    const mcu_pin_obj_t *miso) {
+    Sercom *sercom = NULL;
     uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
     bool mosi_none = mosi == NULL;
@@ -121,16 +115,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             if (sercom_index >= SERCOM_INST_NUM) {
                 continue;
             }
-            Sercom* potential_sercom = sercom_insts[sercom_index];
-            if (
-            #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
-                (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
-                 potential_sercom != status_apa102.spi_desc.dev.prvt &&
-                 !apa102_sck_in_use)
-            #else
-                potential_sercom->SPI.CTRLA.bit.ENABLE != 0
-            #endif
-            ) {
+            Sercom *potential_sercom = sercom_insts[sercom_index];
+            if (potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
                 continue;
             }
             clock_pinmux = PINMUX(clock->number, (i == 0) ? MUX_C : MUX_D);
@@ -172,7 +158,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             if (sercom != NULL) {
                 break;
             }
-    }
+        }
     }
     if (sercom == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));
@@ -181,10 +167,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // Set up SPI clocks on SERCOM.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
-    #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
-    // if we're re-using the dotstar sercom, make sure it is disabled or the init will fail out
-    hri_sercomspi_clear_CTRLA_ENABLE_bit(sercom);
-    #endif
     if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
         mp_raise_OSError(MP_EIO);
     }
@@ -259,10 +241,10 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     uint8_t baud_reg_value = samd_peripherals_spi_baudrate_to_baud_reg_value(baudrate);
 
-    void * hw = self->spi_desc.dev.prvt;
+    void *hw = self->spi_desc.dev.prvt;
     // If the settings are already what we want then don't reset them.
     if (hri_sercomspi_get_CTRLA_CPHA_bit(hw) == phase &&
         hri_sercomspi_get_CTRLA_CPOL_bit(hw) == polarity &&
@@ -290,10 +272,10 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
     bool grabbed_lock = false;
     CRITICAL_SECTION_ENTER()
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
     CRITICAL_SECTION_LEAVE();
     return grabbed_lock;
 }
@@ -307,7 +289,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
-        const uint8_t *data, size_t len) {
+    const uint8_t *data, size_t len) {
     if (len == 0) {
         return true;
     }
@@ -323,7 +305,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
-        uint8_t *data, size_t len, uint8_t write_value) {
+    uint8_t *data, size_t len, uint8_t write_value) {
     if (len == 0) {
         return true;
     }
@@ -350,7 +332,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         status = sercom_dma_transfer(self->spi_desc.dev.prvt, data_out, data_in, len);
     } else {
         struct spi_xfer xfer;
-        xfer.txbuf = (uint8_t*) data_out;
+        xfer.txbuf = (uint8_t *)data_out;
         xfer.rxbuf = data_in;
         xfer.size = len;
         status = spi_m_sync_transfer(&self->spi_desc, &xfer);
@@ -358,16 +340,16 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
-uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     return samd_peripherals_spi_baud_reg_value_to_baudrate(hri_sercomspi_read_BAUD_reg(self->spi_desc.dev.prvt));
 }
 
-uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
-    void * hw = self->spi_desc.dev.prvt;
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t *self) {
+    void *hw = self->spi_desc.dev.prvt;
     return hri_sercomspi_get_CTRLA_CPHA_bit(hw);
 }
 
-uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
-    void * hw = self->spi_desc.dev.prvt;
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t *self) {
+    void *hw = self->spi_desc.dev.prvt;
     return hri_sercomspi_get_CTRLA_CPOL_bit(hw);
 }

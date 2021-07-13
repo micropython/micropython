@@ -3,6 +3,7 @@
 try:
     import uio
     import micropython
+
     micropython.mem_total
 except (ImportError, AttributeError):
     print("SKIP")

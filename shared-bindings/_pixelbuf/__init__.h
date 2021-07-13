@@ -1,9 +1,9 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the CircuitPython project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2018 Rose Hooper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,4 @@
 #ifndef CP_SHARED_BINDINGS_PIXELBUF_INIT_H
 #define CP_SHARED_BINDINGS_PIXELBUF_INIT_H
 
-#include "common-hal/digitalio/DigitalInOut.h"
-
-const int32_t colorwheel(float pos);
-
-#endif //CP_SHARED_BINDINGS_PIXELBUF_INIT_H
+#endif // CP_SHARED_BINDINGS_PIXELBUF_INIT_H

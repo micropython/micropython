@@ -50,7 +50,7 @@ STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -86,7 +86,7 @@ STATIC const mp_obj_property_t canio_remote_transmission_request_id_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_remote_transmission_request_id_get_obj,
               (mp_obj_t)&canio_remote_transmission_request_id_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     extended: bool
@@ -110,7 +110,7 @@ STATIC const mp_obj_property_t canio_remote_transmission_request_extended_obj = 
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_remote_transmission_request_extended_get_obj,
               (mp_obj_t)&canio_remote_transmission_request_extended_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 //|     length: int
@@ -138,7 +138,7 @@ STATIC const mp_obj_property_t canio_remote_transmission_request_length_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_remote_transmission_request_length_get_obj,
               (mp_obj_t)&canio_remote_transmission_request_length_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
+              MP_ROM_NONE},
 };
 
 STATIC const mp_rom_map_elem_t canio_remote_transmission_request_locals_dict_table[] = {

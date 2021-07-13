@@ -39,7 +39,7 @@
  ****************************************************************************/
 
 struct cipher
-  {
+{
     int mode;
     int dir;
     uint8_t rk[8 * 26 + 16];
@@ -47,19 +47,19 @@ struct cipher
     int round;
     uint8_t k1[16];
     uint8_t k2[16];
-  };
+};
 
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
 
-struct cipher *cipher_init(uint8_t * key, uint8_t * iv);
+struct cipher *cipher_init(uint8_t *key, uint8_t *iv);
 void cipher_deinit(struct cipher *c);
 int cipher_calc_cmac(struct cipher *c, void *data, int size, void *cmac);
 void bytexor(unsigned char *dst, const unsigned char *a,
-             const unsigned char *b, int bytelen);
+    const unsigned char *b, int bytelen);
 int clefiakeyset(unsigned char *rk, const unsigned char *skey);
 void clefiaencrypt(unsigned char *ct, const unsigned char *pt,
-                   const unsigned char *rk, const int r);
+    const unsigned char *rk, const int r);
 
 #endif
