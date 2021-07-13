@@ -393,6 +393,14 @@ function ci_unix_standard_run_perfbench {
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 }
 
+function ci_unix_dev_build {
+    ci_unix_build_helper VARIANT=dev
+}
+
+function ci_unix_dev_run_tests {
+    ci_unix_run_tests_helper VARIANT=dev
+}
+
 function ci_unix_coverage_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
