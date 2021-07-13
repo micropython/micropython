@@ -4436,7 +4436,7 @@ msgstr "fel axel angiven"
 msgid "wrong input type"
 msgstr "fel indatatyp"
 
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
 

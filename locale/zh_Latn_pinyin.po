@@ -4433,7 +4433,7 @@ msgstr "zhǐ dìng de zhóu cuò wù"
 msgid "wrong input type"
 msgstr "shūrù lèixíng cuòwù"
 
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "cānshù shù cuòwù"
 
