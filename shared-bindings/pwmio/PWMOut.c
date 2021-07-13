@@ -231,7 +231,11 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
             "PWM frequency not writable when variable_frequency is False on "
             "construction."));
     }
-    common_hal_pwmio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
+    mp_int_t freq = mp_obj_get_int(frequency);
+    if (freq == 0) {
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
+    }
+    common_hal_pwmio_pwmout_set_frequency(self, freq);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
