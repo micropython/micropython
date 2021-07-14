@@ -46,16 +46,8 @@ static mp_obj_t microbit_repeat_iter_next(mp_obj_t iter_in) {
 const mp_obj_type_t microbit_repeat_iterator_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
     .getiter = mp_identity_getiter,
     .iternext = microbit_repeat_iter_next,
-    MP_OBJ_NULL
 };
 
 mp_obj_t microbit_repeat_iterator(mp_obj_t iterable) {

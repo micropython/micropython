@@ -425,7 +425,6 @@ const mp_obj_type_t mp_fat_vfs_type = {
     .make_new = fat_vfs_make_new,
     .protocol = &fat_vfs_proto,
     .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
-
 };
 
 #endif // MICROPY_VFS_FAT
