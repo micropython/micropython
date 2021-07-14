@@ -157,14 +157,14 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t 
     o->base.base.type = &mp_type_type;
     o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
     o->base.name = name;
-    o->base.print = namedtuple_print;
     o->base.make_new = namedtuple_make_new;
-    o->base.unary_op = mp_obj_tuple_unary_op;
-    o->base.binary_op = mp_obj_tuple_binary_op;
-    o->base.attr = namedtuple_attr;
-    o->base.subscr = mp_obj_tuple_subscr;
-    o->base.getiter = mp_obj_tuple_getiter;
-    o->base.parent = &mp_type_tuple;
+    MP_OBJ_TYPE_SET_SLOT(&o->base, print, namedtuple_print, 0);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, unary_op, mp_obj_tuple_unary_op, 1);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, binary_op, mp_obj_tuple_binary_op, 2);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, attr, namedtuple_attr, 3);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, subscr, mp_obj_tuple_subscr, 4);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, getiter, mp_obj_tuple_getiter, 5);
+    MP_OBJ_TYPE_SET_SLOT(&o->base, parent, &mp_type_tuple, 6);
     return MP_OBJ_FROM_PTR(o);
 }
 

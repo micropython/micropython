@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 
 // type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
+#define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), getiter) == mp_obj_tuple_getiter)
 
 /******************************************************************************/
 /* tuple                                                                      */
@@ -111,7 +111,7 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
     const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    if (another_type->getiter != mp_obj_tuple_getiter) {
+    if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(another_type, getiter) != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
         another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {

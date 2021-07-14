@@ -455,7 +455,7 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         // Set "_" special variable
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, o};
-        mp_type_module.attr(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
+        MP_OBJ_TYPE_GET_SLOT(&mp_type_module, attr)(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
         #endif
     }
     return mp_const_none;

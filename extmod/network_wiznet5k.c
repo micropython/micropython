@@ -744,7 +744,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi;
-    wiznet5k_obj.spi_transfer = ((mp_machine_spi_p_t *)spi->type->protocol)->transfer;
+    wiznet5k_obj.spi_transfer = ((mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(spi->type, protocol))->transfer;
     wiznet5k_obj.cs = cs;
     wiznet5k_obj.rst = rst;
     #if WIZNET5K_WITH_LWIP_STACK
