@@ -176,8 +176,8 @@ void supervisor_bluetooth_init(void) {
     }
     while (diff < 1000) {
         #ifdef CIRCUITPY_STATUS_LED
-        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        bool led_on = ble_mode != 0 || (diff % 150) <= 75;
+        // Blink on for 50 and off for 100
+        bool led_on = ble_mode != 0 || (diff % 150) <= 50;
         if (led_on) {
             new_status_color(0x0000ff);
         } else {
