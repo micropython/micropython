@@ -102,9 +102,7 @@ STATIC const mp_rom_map_elem_t pyb_wdt_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_wdt_locals_dict, pyb_wdt_locals_dict_table);
 
-const mp_obj_type_t pyb_wdt_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WDT,
-    .make_new = pyb_wdt_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_wdt_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_wdt_type, MP_QSTR_WDT, MP_TYPE_FLAG_NONE, pyb_wdt_make_new,
+    locals_dict, (mp_obj_dict_t *)&pyb_wdt_locals_dict
+    );

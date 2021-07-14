@@ -56,12 +56,11 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_it, MP_QSTR_iterator, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, it_iternext
+    );
 
 // args are those returned from mp_load_method_maybe (ie either an attribute or a method)
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf) {

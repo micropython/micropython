@@ -163,12 +163,11 @@ STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
-STATIC const mp_obj_type_t match_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_match,
-    .print = match_print,
-    .locals_dict = (void *)&match_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    match_type, MP_QSTR_match, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    print, match_print,
+    locals_dict, (void *)&match_locals_dict
+    );
 #endif
 
 STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -391,12 +390,11 @@ STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
-STATIC const mp_obj_type_t re_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ure,
-    .print = re_print,
-    .locals_dict = (void *)&re_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    re_type, MP_QSTR_ure, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    print, re_print,
+    locals_dict, (void *)&re_locals_dict
+    );
 #endif
 
 STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {

@@ -872,21 +872,17 @@ STATIC const mp_rom_map_elem_t pyb_sdcard_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_sdcard_locals_dict, pyb_sdcard_locals_dict_table);
 
 #if MICROPY_HW_ENABLE_SDCARD
-const mp_obj_type_t pyb_sdcard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = pyb_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_sdcard_type, MP_QSTR_SDCard, MP_TYPE_FLAG_NONE, pyb_sdcard_make_new,
+    locals_dict, (mp_obj_dict_t *)&pyb_sdcard_locals_dict
+    );
 #endif
 
 #if MICROPY_HW_ENABLE_MMCARD
-const mp_obj_type_t pyb_mmcard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MMCard,
-    .make_new = pyb_mmcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_mmcard_type, MP_QSTR_MMCard, MP_TYPE_FLAG_NONE, pyb_mmcard_make_new,
+    locals_dict, (mp_obj_dict_t *)&pyb_sdcard_locals_dict
+    );
 #endif
 
 void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {

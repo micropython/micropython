@@ -55,13 +55,13 @@ STATIC void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 }
 #endif
 
-STATIC const mp_obj_type_t mp_type_cell = {
-    { &mp_type_type },
-    .name = MP_QSTR_, // cell representation is just value in < >
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    // cell representation is just value in < >
+    mp_type_cell, MP_QSTR_, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    .print = cell_print,
+    , print, cell_print
     #endif
-};
+    );
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {
     mp_obj_cell_t *o = m_new_obj(mp_obj_cell_t);

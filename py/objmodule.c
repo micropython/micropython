@@ -125,12 +125,11 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_module = {
-    { &mp_type_type },
-    .name = MP_QSTR_module,
-    .print = module_print,
-    .attr = module_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_module, MP_QSTR_module, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    print, module_print,
+    attr, module_attr
+    );
 
 #include "py/bc.h"
 mp_obj_t mp_obj_new_module(qstr module_name) {

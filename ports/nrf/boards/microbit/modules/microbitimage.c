@@ -679,14 +679,12 @@ STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 }
 
 
-const mp_obj_type_t microbit_image_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MicroBitImage,
-    .print = microbit_image_print,
-    .make_new = microbit_image_make_new,
-    .binary_op = image_binary_op,
-    .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_image_type, MP_QSTR_MicroBitImage, MP_TYPE_FLAG_NONE, microbit_image_make_new,
+    print, microbit_image_print,
+    binary_op, image_binary_op,
+    locals_dict, (mp_obj_dict_t*)&microbit_image_locals_dict
+    );
 
 typedef struct _scrolling_string_t {
     mp_obj_base_t base;
@@ -823,18 +821,16 @@ STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
     return iter->img;
 }
 
-const mp_obj_type_t microbit_scrolling_string_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ScrollingString,
-    .getiter = get_microbit_scrolling_string_iter,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_scrolling_string_type, MP_QSTR_ScrollingString, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, get_microbit_scrolling_string_iter
+    );
 
-const mp_obj_type_t microbit_scrolling_string_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_scrolling_string_iter_next,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_scrolling_string_iterator_type, MP_QSTR_iterator, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, microbit_scrolling_string_iter_next
+    );
 
 /** Facade types to present a string as a sequence of images.
  * These are necessary to avoid allocation during iteration,
@@ -872,13 +868,12 @@ static mp_obj_t facade_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 static mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf);
 
-const mp_obj_type_t string_image_facade_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Facade,
-    .unary_op = facade_unary_op,
-    .subscr = string_image_facade_subscr,
-    .getiter = microbit_facade_iterator,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    string_image_facade_type, MP_QSTR_Facade, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    unary_op, facade_unary_op,
+    subscr, string_image_facade_subscr,
+    getiter, microbit_facade_iterator
+    );
 
 
 typedef struct _facade_iterator_t {
@@ -908,12 +903,11 @@ static mp_obj_t microbit_facade_iter_next(mp_obj_t iter_in) {
     return iter->image;
 }
 
-const mp_obj_type_t microbit_facade_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_facade_iter_next,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    microbit_facade_iterator_type, MP_QSTR_iterator, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, microbit_facade_iter_next
+    );
 
 mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;

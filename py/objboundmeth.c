@@ -95,17 +95,16 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
-STATIC const mp_obj_type_t mp_type_bound_meth = {
-    { &mp_type_type },
-    .name = MP_QSTR_bound_method,
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bound_meth, MP_QSTR_bound_method, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    .print = bound_meth_print,
+    print, bound_meth_print,
     #endif
-    .call = bound_meth_call,
+    call, bound_meth_call
     #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = bound_meth_attr,
+    , attr, bound_meth_attr
     #endif
-};
+    );
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self) {
     mp_obj_bound_meth_t *o = m_new_obj(mp_obj_bound_meth_t);

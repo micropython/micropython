@@ -617,13 +617,11 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_framebuf = {
-    { &mp_type_type },
-    .name = MP_QSTR_FrameBuffer,
-    .make_new = framebuf_make_new,
-    .buffer = framebuf_get_buffer,
-    .locals_dict = (mp_obj_dict_t *)&framebuf_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_framebuf, MP_QSTR_FrameBuffer, MP_TYPE_FLAG_NONE, framebuf_make_new,
+    buffer, framebuf_get_buffer,
+    locals_dict, (mp_obj_dict_t *)&framebuf_locals_dict
+    );
 #endif
 
 // this factory function is provided for backwards compatibility with old FrameBuffer1 class

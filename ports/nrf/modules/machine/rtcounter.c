@@ -262,12 +262,10 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
-const mp_obj_type_t machine_rtcounter_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTCounter,
-    .print = rtc_print,
-    .make_new = machine_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_rtc_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_rtcounter_type, MP_QSTR_RTCounter, MP_TYPE_FLAG_NONE, machine_rtc_make_new,
+    print, rtc_print,
+    locals_dict, (mp_obj_dict_t*)&machine_rtc_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_RTCOUNTER

@@ -633,13 +633,11 @@ STATIC const mp_rom_map_elem_t extint_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(extint_locals_dict, extint_locals_dict_table);
 
-const mp_obj_type_t extint_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ExtInt,
-    .print = extint_obj_print,
-    .make_new = extint_make_new,
-    .locals_dict = (mp_obj_dict_t *)&extint_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    extint_type, MP_QSTR_ExtInt, MP_TYPE_FLAG_NONE, extint_make_new,
+    print, extint_obj_print,
+    locals_dict, (mp_obj_dict_t *)&extint_locals_dict
+    );
 
 void extint_init0(void) {
     for (int i = 0; i < PYB_EXTI_NUM_VECTORS; i++) {

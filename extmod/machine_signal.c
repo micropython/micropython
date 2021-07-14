@@ -173,13 +173,11 @@ STATIC const mp_pin_p_t signal_pin_p = {
     .ioctl = signal_ioctl,
 };
 
-const mp_obj_type_t machine_signal_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Signal,
-    .make_new = signal_make_new,
-    .call = signal_call,
-    .protocol = &signal_pin_p,
-    .locals_dict = (void *)&signal_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_signal_type, MP_QSTR_Signal, MP_TYPE_FLAG_NONE, signal_make_new,
+    call, signal_call,
+    protocol, &signal_pin_p,
+    locals_dict, (void *)&signal_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE

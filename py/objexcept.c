@@ -284,13 +284,11 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_BaseException = {
-    { &mp_type_type },
-    .name = MP_QSTR_BaseException,
-    .print = mp_obj_exception_print,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_BaseException, MP_QSTR_BaseException, MP_TYPE_FLAG_NONE, mp_obj_exception_make_new,
+    print, mp_obj_exception_print,
+    attr, mp_obj_exception_attr
+    );
 
 // *FORMAT-OFF*
 

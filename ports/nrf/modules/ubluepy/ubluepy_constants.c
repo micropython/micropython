@@ -69,11 +69,10 @@ STATIC const mp_rom_map_elem_t ubluepy_constants_ad_types_locals_dict_table[] = 
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_ad_types_locals_dict, ubluepy_constants_ad_types_locals_dict_table);
 
-const mp_obj_type_t ubluepy_constants_ad_types_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ad_types,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_ad_types_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_constants_ad_types_type, MP_QSTR_ad_types, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, (mp_obj_dict_t*)&ubluepy_constants_ad_types_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
     // GAP events
@@ -90,10 +89,9 @@ STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_locals_dict, ubluepy_constants_locals_dict_table);
 
-const mp_obj_type_t ubluepy_constants_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_constants,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_constants_type, MP_QSTR_constants, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, (mp_obj_dict_t*)&ubluepy_constants_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY

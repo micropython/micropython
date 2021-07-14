@@ -632,12 +632,11 @@ STATIC const mp_stream_p_t textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t uos_mbfs_textio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIO,
-    .protocol = &textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&uos_mbfs_file_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    uos_mbfs_textio_type, MP_QSTR_TextIO, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    protocol, &textio_stream_p,
+    locals_dict, (mp_obj_dict_t*)&uos_mbfs_file_locals_dict
+    );
 
 
 STATIC const mp_stream_p_t fileio_stream_p = {
@@ -645,12 +644,11 @@ STATIC const mp_stream_p_t fileio_stream_p = {
     .write = microbit_file_write,
 };
 
-const mp_obj_type_t uos_mbfs_fileio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&uos_mbfs_file_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    uos_mbfs_fileio_type, MP_QSTR_FileIO, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    protocol, &fileio_stream_p,
+    locals_dict, (mp_obj_dict_t*)&uos_mbfs_file_locals_dict
+    );
 
 // From micro:bit fileobj.c
 mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {

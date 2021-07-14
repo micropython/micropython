@@ -118,13 +118,11 @@ STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
 
-const mp_obj_type_t machine_adc_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_ADC,
-    .print = adc_obj_print,
-    .make_new = adc_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&adc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_adc_type, MP_QSTR_ADC, MP_TYPE_FLAG_NONE, adc_obj_make_new,
+    print, adc_obj_print,
+    locals_dict, (mp_obj_dict_t *)&adc_locals_dict
+    );
 
 void machine_adc_init(void) {
     for (int i = 1; i < sizeof(adc_bases) / sizeof(ADC_Type *); ++i) {

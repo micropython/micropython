@@ -160,12 +160,10 @@ STATIC const mp_rom_map_elem_t ubluepy_uuid_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_table);
 
-const mp_obj_type_t ubluepy_uuid_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UUID,
-    .print = ubluepy_uuid_print,
-    .make_new = ubluepy_uuid_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_uuid_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_uuid_type, MP_QSTR_UUID, MP_TYPE_FLAG_NONE, ubluepy_uuid_make_new,
+    print, ubluepy_uuid_print,
+    locals_dict, (mp_obj_dict_t*)&ubluepy_uuid_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY

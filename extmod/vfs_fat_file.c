@@ -243,16 +243,14 @@ STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
     .ioctl = file_obj_ioctl,
 };
 
-const mp_obj_type_t mp_type_vfs_fat_fileio = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = file_obj_print,
-    .make_new = file_obj_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_fileio, MP_QSTR_FileIO, MP_TYPE_FLAG_NONE, file_obj_make_new,
+    print, file_obj_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &vfs_fat_fileio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict
+    );
 #endif
 
 STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
@@ -262,16 +260,14 @@ STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_vfs_fat_textio = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIOWrapper,
-    .print = file_obj_print,
-    .make_new = file_obj_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_textio, MP_QSTR_TextIOWrapper, MP_TYPE_FLAG_NONE, file_obj_make_new,
+    print, file_obj_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &vfs_fat_textio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict
+    );
 
 // Factory function for I/O stream classes
 STATIC mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {

@@ -343,13 +343,11 @@ STATIC const mp_stream_p_t webrepl_stream_p = {
     .ioctl = webrepl_ioctl,
 };
 
-STATIC const mp_obj_type_t webrepl_type = {
-    { &mp_type_type },
-    .name = MP_QSTR__webrepl,
-    .make_new = webrepl_make_new,
-    .protocol = &webrepl_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&webrepl_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    webrepl_type, MP_QSTR__webrepl, MP_TYPE_FLAG_NONE, webrepl_make_new,
+    protocol, &webrepl_stream_p,
+    locals_dict, (mp_obj_dict_t *)&webrepl_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t webrepl_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__webrepl) },

@@ -455,11 +455,9 @@ STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
-const mp_obj_type_t mod_network_nic_type_wiznet5k = {
-    { &mp_type_type },
-    .name = MP_QSTR_WIZNET5K,
-    .make_new = wiznet5k_make_new,
-    .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_wiznet5k, MP_QSTR_WIZNET5K, MP_TYPE_FLAG_NONE, wiznet5k_make_new,
+    locals_dict, (mp_obj_dict_t *)&wiznet5k_locals_dict
+    );
 
 #endif // MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP

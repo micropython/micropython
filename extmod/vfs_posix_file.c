@@ -264,16 +264,14 @@ STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
     .ioctl = vfs_posix_file_ioctl,
 };
 
-const mp_obj_type_t mp_type_vfs_posix_fileio = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = vfs_posix_file_print,
-    .make_new = vfs_posix_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix_fileio, MP_QSTR_FileIO, MP_TYPE_FLAG_NONE, vfs_posix_file_make_new,
+    print, vfs_posix_file_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &vfs_posix_fileio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict
+    );
 #endif
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
@@ -283,16 +281,14 @@ STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_vfs_posix_textio = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIOWrapper,
-    .print = vfs_posix_file_print,
-    .make_new = vfs_posix_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix_textio, MP_QSTR_TextIOWrapper, MP_TYPE_FLAG_NONE, vfs_posix_file_make_new,
+    print, vfs_posix_file_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &vfs_posix_textio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict
+    );
 
 const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};
 const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_textio}, STDOUT_FILENO};

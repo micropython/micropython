@@ -77,11 +77,9 @@ STATIC const mp_pin_p_t pinbase_pin_p = {
     .ioctl = pinbase_ioctl,
 };
 
-const mp_obj_type_t machine_pinbase_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinBase,
-    .make_new = pinbase_make_new,
-    .protocol = &pinbase_pin_p,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pinbase_type, MP_QSTR_PinBase, MP_TYPE_FLAG_NONE, pinbase_make_new,
+    protocol, &pinbase_pin_p
+    );
 
 #endif // MICROPY_PY_MACHINE

@@ -224,17 +224,15 @@ STATIC const mp_rom_map_elem_t tuple_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
-const mp_obj_type_t mp_type_tuple = {
-    { &mp_type_type },
-    .name = MP_QSTR_tuple,
-    .print = mp_obj_tuple_print,
-    .make_new = mp_obj_tuple_make_new,
-    .unary_op = mp_obj_tuple_unary_op,
-    .binary_op = mp_obj_tuple_binary_op,
-    .subscr = mp_obj_tuple_subscr,
-    .getiter = mp_obj_tuple_getiter,
-    .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_tuple, MP_QSTR_tuple, MP_TYPE_FLAG_NONE, mp_obj_tuple_make_new,
+    print, mp_obj_tuple_print,
+    unary_op, mp_obj_tuple_unary_op,
+    binary_op, mp_obj_tuple_binary_op,
+    subscr, mp_obj_tuple_subscr,
+    getiter, mp_obj_tuple_getiter,
+    locals_dict, (mp_obj_dict_t *)&tuple_locals_dict
+    );
 
 // the zero-length tuple
 const mp_obj_tuple_t mp_const_empty_tuple_obj = {{&mp_type_tuple}, 0};

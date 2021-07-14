@@ -584,13 +584,13 @@ STATIC const mp_rom_map_elem_t cc3k_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_locals_dict, cc3k_locals_dict_table);
 
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mod_network_nic_type_cc3k_base, MP_QSTR_CC3K, MP_TYPE_FLAG_NONE, cc3k_make_new,
+    locals_dict, (mp_obj_dict_t *)&cc3k_locals_dict
+    );
+
 const mod_network_nic_type_t mod_network_nic_type_cc3k = {
-    .base = {
-        { &mp_type_type },
-        .name = MP_QSTR_CC3K,
-        .make_new = cc3k_make_new,
-        .locals_dict = (mp_obj_dict_t *)&cc3k_locals_dict,
-    },
+    .base = mod_network_nic_type_cc3k_base,
     .gethostbyname = cc3k_gethostbyname,
     .socket = cc3k_socket_socket,
     .close = cc3k_socket_close,

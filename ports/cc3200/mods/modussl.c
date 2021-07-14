@@ -60,14 +60,13 @@ STATIC const mp_obj_type_t ssl_socket_type;
 
 // ssl sockets inherit from normal socket, so we take its
 // locals and stream methods
-STATIC const mp_obj_type_t ssl_socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ussl,
-    .getiter = NULL,
-    .iternext = NULL,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_t)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ssl_socket_type, MP_QSTR_ussl, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, NULL,
+    iternext, NULL,
+    protocol, &socket_stream_p,
+    locals_dict, (mp_obj_t)&socket_locals_dict
+    );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {

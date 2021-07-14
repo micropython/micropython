@@ -240,16 +240,13 @@ STATIC void ringbuf_get_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) 
 
 #endif // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
-const mp_obj_type_t mp_type_bluetooth_uuid = {
-    { &mp_type_type },
-    .name = MP_QSTR_UUID,
-    .make_new = bluetooth_uuid_make_new,
-    .unary_op = bluetooth_uuid_unary_op,
-    .binary_op = bluetooth_uuid_binary_op,
-    .locals_dict = NULL,
-    .print = bluetooth_uuid_print,
-    .buffer = bluetooth_uuid_get_buffer,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bluetooth_uuid, MP_QSTR_UUID, MP_TYPE_FLAG_NONE, bluetooth_uuid_make_new,
+    unary_op, bluetooth_uuid_unary_op,
+    binary_op, bluetooth_uuid_binary_op,
+    print, bluetooth_uuid_print,
+    buffer, bluetooth_uuid_get_buffer
+    );
 
 // ----------------------------------------------------------------------------
 // Bluetooth object: General
@@ -978,12 +975,10 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_bluetooth_ble = {
-    { &mp_type_type },
-    .name = MP_QSTR_BLE,
-    .make_new = bluetooth_ble_make_new,
-    .locals_dict = (void *)&bluetooth_ble_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bluetooth_ble, MP_QSTR_BLE, MP_TYPE_FLAG_NONE, bluetooth_ble_make_new,
+    locals_dict, (void *)&bluetooth_ble_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubluetooth) },

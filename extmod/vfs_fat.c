@@ -419,12 +419,10 @@ STATIC const mp_vfs_proto_t fat_vfs_proto = {
     .import_stat = fat_vfs_import_stat,
 };
 
-const mp_obj_type_t mp_fat_vfs_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_VfsFat,
-    .make_new = fat_vfs_make_new,
-    .protocol = &fat_vfs_proto,
-    .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_fat_vfs_type, MP_QSTR_VfsFat, MP_TYPE_FLAG_NONE, fat_vfs_make_new,
+    protocol, &fat_vfs_proto,
+    locals_dict, (mp_obj_dict_t *)&fat_vfs_locals_dict
+    );
 
 #endif // MICROPY_VFS_FAT

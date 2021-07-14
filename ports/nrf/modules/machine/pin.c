@@ -590,14 +590,12 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
-const mp_obj_type_t pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = pin_print,
-    .make_new = pin_make_new,
-    .call = pin_call,
-    .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_type, MP_QSTR_Pin, MP_TYPE_FLAG_NONE, pin_make_new,
+    print, pin_print,
+    call, pin_call,
+    locals_dict, (mp_obj_dict_t*)&pin_locals_dict
+    );
 
 /// \moduleref machine
 /// \class PinAF - Pin Alternate Functions
@@ -665,9 +663,8 @@ STATIC const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
 
-const mp_obj_type_t pin_af_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinAF,
-    .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_af_type, MP_QSTR_PinAF, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    print, pin_af_obj_print,
+    locals_dict, (mp_obj_dict_t*)&pin_af_locals_dict
+    );

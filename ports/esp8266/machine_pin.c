@@ -450,15 +450,13 @@ STATIC const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 
-const mp_obj_type_t pyb_pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = pyb_pin_print,
-    .make_new = mp_pin_make_new,
-    .call = pyb_pin_call,
-    .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_pin_type, MP_QSTR_Pin, MP_TYPE_FLAG_NONE, mp_pin_make_new,
+    print, pyb_pin_print,
+    call, pyb_pin_call,
+    protocol, &pin_pin_p,
+    locals_dict, (mp_obj_dict_t *)&pyb_pin_locals_dict
+    );
 
 /******************************************************************************/
 // Pin IRQ object
@@ -509,9 +507,8 @@ STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
 
-STATIC const mp_obj_type_t pin_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_IRQ,
-    .call = pin_irq_call,
-    .locals_dict = (mp_obj_dict_t *)&pin_irq_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    pin_irq_type, MP_QSTR_IRQ, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    call, pin_irq_call,
+    locals_dict, (mp_obj_dict_t *)&pin_irq_locals_dict
+    );

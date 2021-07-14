@@ -245,16 +245,14 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_stringio = {
-    { &mp_type_type },
-    .name = MP_QSTR_StringIO,
-    .print = stringio_print,
-    .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stringio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stringio, MP_QSTR_StringIO, MP_TYPE_FLAG_NONE, stringio_make_new,
+    print, stringio_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &stringio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&stringio_locals_dict
+    );
 
 #if MICROPY_PY_IO_BYTESIO
 STATIC const mp_stream_p_t bytesio_stream_p = {
@@ -263,16 +261,14 @@ STATIC const mp_stream_p_t bytesio_stream_p = {
     .ioctl = stringio_ioctl,
 };
 
-const mp_obj_type_t mp_type_bytesio = {
-    { &mp_type_type },
-    .name = MP_QSTR_BytesIO,
-    .print = stringio_print,
-    .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &bytesio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bytesio, MP_QSTR_BytesIO, MP_TYPE_FLAG_NONE, stringio_make_new,
+    print, stringio_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &bytesio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&stringio_locals_dict
+    );
 #endif
 
 #endif

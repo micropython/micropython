@@ -100,12 +100,10 @@ STATIC const mp_stream_p_t iobase_p = {
     .ioctl = iobase_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_iobase = {
-    { &mp_type_type },
-    .name = MP_QSTR_IOBase,
-    .make_new = iobase_make_new,
-    .protocol = &iobase_p,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_iobase, MP_QSTR_IOBase, MP_TYPE_FLAG_NONE, iobase_make_new,
+    protocol, &iobase_p
+    );
 
 #endif // MICROPY_PY_IO_IOBASE
 
@@ -195,13 +193,11 @@ STATIC const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t mp_type_bufwriter = {
-    { &mp_type_type },
-    .name = MP_QSTR_BufferedWriter,
-    .make_new = bufwriter_make_new,
-    .protocol = &bufwriter_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bufwriter, MP_QSTR_BufferedWriter, MP_TYPE_FLAG_NONE, bufwriter_make_new,
+    protocol, &bufwriter_stream_p,
+    locals_dict, (mp_obj_dict_t *)&bufwriter_locals_dict
+    );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {

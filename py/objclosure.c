@@ -78,15 +78,13 @@ STATIC void closure_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_
 }
 #endif
 
-const mp_obj_type_t mp_type_closure = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
-    .name = MP_QSTR_closure,
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_closure, MP_QSTR_closure, MP_TYPE_FLAG_BINDS_SELF, MP_TYPE_NULL_MAKE_NEW,
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    .print = closure_print,
+    print, closure_print,
     #endif
-    .call = closure_call,
-};
+    call, closure_call
+    );
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed) {
     mp_obj_closure_t *o = m_new_obj_var(mp_obj_closure_t, mp_obj_t, n_closed_over);

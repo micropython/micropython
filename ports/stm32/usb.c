@@ -918,16 +918,14 @@ STATIC const mp_stream_p_t pyb_usb_vcp_stream_p = {
     .ioctl = pyb_usb_vcp_ioctl,
 };
 
-const mp_obj_type_t pyb_usb_vcp_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_USB_VCP,
-    .print = pyb_usb_vcp_print,
-    .make_new = pyb_usb_vcp_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &pyb_usb_vcp_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_usb_vcp_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_usb_vcp_type, MP_QSTR_USB_VCP, MP_TYPE_FLAG_NONE, pyb_usb_vcp_make_new,
+    print, pyb_usb_vcp_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &pyb_usb_vcp_stream_p,
+    locals_dict, (mp_obj_dict_t *)&pyb_usb_vcp_locals_dict
+    );
 
 /******************************************************************************/
 // MicroPython bindings for USB HID
@@ -1059,13 +1057,11 @@ STATIC const mp_stream_p_t pyb_usb_hid_stream_p = {
     .ioctl = pyb_usb_hid_ioctl,
 };
 
-const mp_obj_type_t pyb_usb_hid_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_USB_HID,
-    .make_new = pyb_usb_hid_make_new,
-    .protocol = &pyb_usb_hid_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_usb_hid_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_usb_hid_type, MP_QSTR_USB_HID, MP_TYPE_FLAG_NONE, pyb_usb_hid_make_new,
+    protocol, &pyb_usb_hid_stream_p,
+    locals_dict, (mp_obj_dict_t *)&pyb_usb_hid_locals_dict
+    );
 
 #endif // MICROPY_HW_USB_HID
 

@@ -199,13 +199,11 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
     .transfer = machine_hard_spi_transfer,
 };
 
-const mp_obj_type_t machine_hard_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_hard_spi_print,
-    .make_new = machine_hard_spi_make_new,
-    .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_hard_spi_type, MP_QSTR_SPI, MP_TYPE_FLAG_NONE, machine_hard_spi_make_new,
+    print, machine_hard_spi_print,
+    protocol, &machine_hard_spi_p,
+    locals_dict, (mp_obj_dict_t *)&mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SPI

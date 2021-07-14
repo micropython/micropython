@@ -129,13 +129,11 @@ STATIC const mp_rom_map_elem_t zephyr_disk_access_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(zephyr_disk_access_locals_dict, zephyr_disk_access_locals_dict_table);
 
-const mp_obj_type_t zephyr_disk_access_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DiskAccess,
-    .print = zephyr_disk_access_print,
-    .make_new = zephyr_disk_access_make_new,
-    .locals_dict = (mp_obj_dict_t *)&zephyr_disk_access_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    zephyr_disk_access_type, MP_QSTR_DiskAccess, MP_TYPE_FLAG_NONE, zephyr_disk_access_make_new,
+    print, zephyr_disk_access_print,
+    locals_dict, (mp_obj_dict_t *)&zephyr_disk_access_locals_dict
+    );
 #endif // CONFIG_DISK_ACCESS
 
 #ifdef CONFIG_FLASH_MAP
@@ -251,11 +249,9 @@ STATIC const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
 
-const mp_obj_type_t zephyr_flash_area_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FlashArea,
-    .print = zephyr_flash_area_print,
-    .make_new = zephyr_flash_area_make_new,
-    .locals_dict = (mp_obj_dict_t *)&zephyr_flash_area_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    zephyr_flash_area_type, MP_QSTR_FlashArea, MP_TYPE_FLAG_NONE, zephyr_flash_area_make_new,
+    print, zephyr_flash_area_print,
+    locals_dict, (mp_obj_dict_t *)&zephyr_flash_area_locals_dict
+    );
 #endif // CONFIG_FLASH_MAP

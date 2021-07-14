@@ -350,11 +350,9 @@ STATIC const mp_machine_spi_p_t pyb_spi_p = {
     .transfer = spi_transfer_machine,
 };
 
-const mp_obj_type_t pyb_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = pyb_spi_print,
-    .make_new = pyb_spi_make_new,
-    .protocol = &pyb_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_spi_type, MP_QSTR_SPI, MP_TYPE_FLAG_NONE, pyb_spi_make_new,
+    print, pyb_spi_print,
+    protocol, &pyb_spi_p,
+    locals_dict, (mp_obj_dict_t *)&pyb_spi_locals_dict
+    );

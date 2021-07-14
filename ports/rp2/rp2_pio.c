@@ -371,13 +371,11 @@ STATIC const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_pio_locals_dict, rp2_pio_locals_dict_table);
 
-const mp_obj_type_t rp2_pio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PIO,
-    .print = rp2_pio_print,
-    .make_new = rp2_pio_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2_pio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_pio_type, MP_QSTR_PIO, MP_TYPE_FLAG_NONE, rp2_pio_make_new,
+    print, rp2_pio_print,
+    locals_dict, (mp_obj_dict_t *)&rp2_pio_locals_dict
+    );
 
 STATIC mp_uint_t rp2_pio_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -803,13 +801,11 @@ STATIC const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_state_machine_locals_dict, rp2_state_machine_locals_dict_table);
 
-const mp_obj_type_t rp2_state_machine_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_StateMachine,
-    .print = rp2_state_machine_print,
-    .make_new = rp2_state_machine_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2_state_machine_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_state_machine_type, MP_QSTR_StateMachine, MP_TYPE_FLAG_NONE, rp2_state_machine_make_new,
+    print, rp2_state_machine_print,
+    locals_dict, (mp_obj_dict_t *)&rp2_state_machine_locals_dict
+    );
 
 STATIC mp_uint_t rp2_state_machine_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);

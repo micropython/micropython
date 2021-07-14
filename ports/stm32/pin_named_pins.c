@@ -31,17 +31,15 @@
 #include "py/mphal.h"
 #include "pin.h"
 
-const mp_obj_type_t pin_cpu_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_cpu,
-    .locals_dict = (mp_obj_dict_t *)&pin_cpu_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_cpu_pins_obj_type, MP_QSTR_cpu, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, (mp_obj_dict_t *)&pin_cpu_pins_locals_dict
+    );
 
-const mp_obj_type_t pin_board_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_board,
-    .locals_dict = (mp_obj_dict_t *)&pin_board_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type, MP_QSTR_board, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, (mp_obj_dict_t *)&pin_board_pins_locals_dict
+    );
 
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     const mp_map_t *named_map = &named_pins->map;

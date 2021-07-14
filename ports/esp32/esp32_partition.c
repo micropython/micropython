@@ -285,10 +285,8 @@ STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_partition_locals_dict, esp32_partition_locals_dict_table);
 
-const mp_obj_type_t esp32_partition_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Partition,
-    .print = esp32_partition_print,
-    .make_new = esp32_partition_make_new,
-    .locals_dict = (mp_obj_dict_t *)&esp32_partition_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    esp32_partition_type, MP_QSTR_Partition, MP_TYPE_FLAG_NONE, esp32_partition_make_new,
+    print, esp32_partition_print,
+    locals_dict, (mp_obj_dict_t *)&esp32_partition_locals_dict
+    );

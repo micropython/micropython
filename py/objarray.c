@@ -577,51 +577,43 @@ STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
 #endif
 
 #if MICROPY_PY_ARRAY
-const mp_obj_type_t mp_type_array = {
-    { &mp_type_type },
-    .name = MP_QSTR_array,
-    .print = array_print,
-    .make_new = array_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer = array_get_buffer,
-    .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_array, MP_QSTR_array, MP_TYPE_FLAG_NONE, array_make_new,
+    print, array_print,
+    getiter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
+    subscr, array_subscr,
+    buffer, array_get_buffer,
+    locals_dict, (mp_obj_dict_t *)&array_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-const mp_obj_type_t mp_type_bytearray = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_bytearray,
-    .print = array_print,
-    .make_new = bytearray_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer = array_get_buffer,
-    .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bytearray, MP_QSTR_bytearray, MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, bytearray_make_new,
+    print, array_print,
+    getiter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
+    subscr, array_subscr,
+    buffer, array_get_buffer,
+    locals_dict, (mp_obj_dict_t *)&array_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
-const mp_obj_type_t mp_type_memoryview = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_memoryview,
-    .make_new = memoryview_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_memoryview, MP_QSTR_memoryview, MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, memoryview_make_new,
+    getiter, array_iterator_new,
+    unary_op, array_unary_op,
+    binary_op, array_binary_op,
     #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
+    attr, memoryview_attr,
     #endif
-    .subscr = array_subscr,
-    .buffer = array_get_buffer,
-};
+    subscr, array_subscr,
+    buffer, array_get_buffer
+    );
 #endif
 
 /* unused
@@ -668,12 +660,11 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_array_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = array_it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_array_it, MP_QSTR_iterator, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, array_it_iternext
+    );
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_array_t) <= sizeof(mp_obj_iter_buf_t));

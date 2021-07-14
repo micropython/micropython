@@ -1059,12 +1059,10 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
 }
 
-STATIC const mp_obj_type_t mp_type_checked_fun = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
-    .name = MP_QSTR_function,
-    .call = checked_fun_call,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_checked_fun, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF, MP_TYPE_NULL_MAKE_NEW,
+    call, checked_fun_call
+    );
 
 STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
     mp_obj_checked_fun_t *o = m_new_obj(mp_obj_checked_fun_t);
