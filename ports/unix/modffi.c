@@ -421,13 +421,14 @@ STATIC const mp_rom_map_elem_t ffimod_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ffimod_locals_dict, ffimod_locals_dict_table);
 
-STATIC const mp_obj_type_t ffimod_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffimod,
-    .print = ffimod_print,
-    .make_new = ffimod_make_new,
-    .locals_dict = (mp_obj_dict_t *)&ffimod_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffimod_type,
+    MP_QSTR_ffimod,
+    MP_TYPE_FLAG_NONE,
+    ffimod_make_new,
+    print, ffimod_print,
+    locals_dict, (mp_obj_dict_t *)&ffimod_locals_dict
+    );
 
 // FFI function
 
@@ -530,12 +531,14 @@ error:
     mp_raise_TypeError(MP_ERROR_TEXT("don't know how to pass object to native function"));
 }
 
-STATIC const mp_obj_type_t ffifunc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffifunc,
-    .print = ffifunc_print,
-    .call = ffifunc_call,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffifunc_type,
+    MP_QSTR_ffifunc,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, ffifunc_print,
+    call, ffifunc_call
+    );
 
 // FFI callback for Python function
 
@@ -556,12 +559,14 @@ STATIC const mp_rom_map_elem_t fficallback_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(fficallback_locals_dict, fficallback_locals_dict_table);
 
-STATIC const mp_obj_type_t fficallback_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_fficallback,
-    .print = fficallback_print,
-    .locals_dict = (mp_obj_dict_t *)&fficallback_locals_dict
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    fficallback_type,
+    MP_QSTR_fficallback,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, fficallback_print,
+    locals_dict, (mp_obj_dict_t *)&fficallback_locals_dict
+    );
 
 // FFI variable
 
@@ -592,21 +597,25 @@ STATIC const mp_rom_map_elem_t ffivar_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ffivar_locals_dict, ffivar_locals_dict_table);
 
-STATIC const mp_obj_type_t ffivar_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ffivar,
-    .print = ffivar_print,
-    .locals_dict = (mp_obj_dict_t *)&ffivar_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ffivar_type,
+    MP_QSTR_ffivar,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, ffivar_print,
+    locals_dict, (mp_obj_dict_t *)&ffivar_locals_dict
+    );
 
 // Generic opaque storage object (unused)
 
 /*
-STATIC const mp_obj_type_t opaque_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_opaqueval,
-//    .print = opaque_print,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    opaque_type,
+    MP_QSTR_opaqueval,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    //    .print = opaque_print,
+    );
 */
 
 STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {

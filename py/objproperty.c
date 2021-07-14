@@ -90,12 +90,13 @@ STATIC const mp_rom_map_elem_t property_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(property_locals_dict, property_locals_dict_table);
 
-const mp_obj_type_t mp_type_property = {
-    { &mp_type_type },
-    .name = MP_QSTR_property,
-    .make_new = property_make_new,
-    .locals_dict = (mp_obj_dict_t *)&property_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_property,
+    MP_QSTR_property,
+    MP_TYPE_FLAG_NONE,
+    property_make_new,
+    locals_dict, (mp_obj_dict_t *)&property_locals_dict
+    );
 
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_property));

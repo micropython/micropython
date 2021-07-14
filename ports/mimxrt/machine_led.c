@@ -80,12 +80,13 @@ STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
-const mp_obj_type_t machine_led_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_LED,
-    .print = led_obj_print,
-    .make_new = led_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&led_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_led_type,
+    MP_QSTR_LED,
+    MP_TYPE_FLAG_NONE,
+    led_obj_make_new,
+    print, led_obj_print,
+    locals_dict, (mp_obj_dict_t *)&led_locals_dict
+    );
 
 #endif

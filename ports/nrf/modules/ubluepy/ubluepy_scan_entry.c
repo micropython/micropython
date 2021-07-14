@@ -136,11 +136,13 @@ STATIC const mp_rom_map_elem_t ubluepy_scan_entry_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_scan_entry_locals_dict, ubluepy_scan_entry_locals_dict_table);
 
-const mp_obj_type_t ubluepy_scan_entry_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ScanEntry,
-    .print = ubluepy_scan_entry_print,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_scan_entry_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_scan_entry_type,
+    MP_QSTR_ScanEntry,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, ubluepy_scan_entry_print,
+    locals_dict, (mp_obj_dict_t*)&ubluepy_scan_entry_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL

@@ -45,12 +45,14 @@ STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
     return self->iternext(self_in);
 }
 
-const mp_obj_type_t mp_type_polymorph_iter = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = polymorph_it_iternext,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_polymorph_iter,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, polymorph_it_iternext
+    );
 
 #if MICROPY_ENABLE_FINALISER
 // mp_type_polymorph_iter_with_finaliser is a variant of the universal iterator
@@ -76,12 +78,13 @@ STATIC const mp_rom_map_elem_t mp_obj_polymorph_iter_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(mp_obj_polymorph_iter_locals_dict, mp_obj_polymorph_iter_locals_dict_table);
 
-const mp_obj_type_t mp_type_polymorph_iter_with_finaliser = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = polymorph_it_iternext,
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_polymorph_iter_locals_dict,
-};
-
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_polymorph_iter_with_finaliser,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    getiter, mp_identity_getiter,
+    iternext, polymorph_it_iternext,
+    locals_dict, (mp_obj_dict_t *)&mp_obj_polymorph_iter_locals_dict
+    );
 #endif

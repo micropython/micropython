@@ -175,13 +175,14 @@ STATIC const mp_machine_spi_p_t machine_hspi_p = {
     .transfer = machine_hspi_transfer,
 };
 
-const mp_obj_type_t machine_hspi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_HSPI,
-    .print = machine_hspi_print,
-    .make_new = machine_hspi_make_new,
-    .protocol = &machine_hspi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_hspi_type,
+    MP_QSTR_HSPI,
+    MP_TYPE_FLAG_NONE,
+    machine_hspi_make_new,
+    print, machine_hspi_print,
+    protocol, &machine_hspi_p,
+    locals_dict, (mp_obj_dict_t *)&mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SPI

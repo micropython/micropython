@@ -86,18 +86,19 @@ STATIC void mp_obj_closure_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
-const mp_obj_type_t mp_type_closure = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
-    .name = MP_QSTR_closure,
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_closure,
+    MP_QSTR_closure,
+    MP_TYPE_FLAG_BINDS_SELF,
+    MP_TYPE_NULL_MAKE_NEW,
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    .print = closure_print,
+    print, closure_print,
     #endif
-    .call = closure_call,
     #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_closure_attr,
+    attr, mp_obj_closure_attr,
     #endif
-};
+    call, closure_call
+    );
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed) {
     mp_obj_closure_t *o = mp_obj_malloc_var(mp_obj_closure_t, mp_obj_t, n_closed_over, &mp_type_closure);

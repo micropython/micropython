@@ -105,12 +105,13 @@ STATIC const mp_rom_map_elem_t sensor_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
 
-STATIC const mp_obj_type_t sensor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Sensor,
-    .make_new = sensor_make_new,
-    .locals_dict = (void *)&sensor_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    sensor_type,
+    MP_QSTR_Sensor,
+    MP_TYPE_FLAG_NONE,
+    sensor_make_new,
+    locals_dict, (void *)&sensor_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zsensor) },

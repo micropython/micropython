@@ -319,17 +319,19 @@ STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
-STATIC const mp_obj_type_t btree_type = {
-    { &mp_type_type },
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    btree_type,
+    MP_QSTR_btree,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
-    .name = MP_QSTR_btree,
-    .print = btree_print,
-    .getiter = btree_getiter,
-    .iternext = btree_iternext,
-    .binary_op = btree_binary_op,
-    .subscr = btree_subscr,
-    .locals_dict = (void *)&btree_locals_dict,
-};
+    print, btree_print,
+    getiter, btree_getiter,
+    iternext, btree_iternext,
+    binary_op, btree_binary_op,
+    subscr, btree_subscr,
+    locals_dict, (void *)&btree_locals_dict
+    );
 #endif
 
 STATIC const FILEVTABLE btree_stream_fvtable = {

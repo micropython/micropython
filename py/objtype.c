@@ -1098,15 +1098,16 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_type,
-    .print = type_print,
-    .make_new = type_make_new,
-    .call = type_call,
-    .unary_op = mp_generic_unary_op,
-    .attr = type_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_type,
+    MP_QSTR_type,
+    MP_TYPE_FLAG_NONE,
+    type_make_new,
+    print, type_print,
+    call, type_call,
+    unary_op, mp_generic_unary_op,
+    attr, type_attr
+    );
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     // Verify input objects have expected type
@@ -1314,13 +1315,14 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_class_lookup(&lookup, &mp_type_object);
 }
 
-const mp_obj_type_t mp_type_super = {
-    { &mp_type_type },
-    .name = MP_QSTR_super,
-    .print = super_print,
-    .make_new = super_make_new,
-    .attr = super_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_super,
+    MP_QSTR_super,
+    MP_TYPE_FLAG_NONE,
+    super_make_new,
+    print, super_print,
+    attr, super_attr
+    );
 
 void mp_load_super_method(qstr attr, mp_obj_t *dest) {
     mp_obj_super_t super = {{&mp_type_super}, dest[1], dest[2]};
@@ -1436,14 +1438,16 @@ STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_staticmethod = {
-    { &mp_type_type },
-    .name = MP_QSTR_staticmethod,
-    .make_new = static_class_method_make_new,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_staticmethod,
+    MP_QSTR_staticmethod,
+    MP_TYPE_FLAG_NONE,
+    static_class_method_make_new
+    );
 
-const mp_obj_type_t mp_type_classmethod = {
-    { &mp_type_type },
-    .name = MP_QSTR_classmethod,
-    .make_new = static_class_method_make_new,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_classmethod,
+    MP_QSTR_classmethod,
+    MP_TYPE_FLAG_NONE,
+    static_class_method_make_new
+    );

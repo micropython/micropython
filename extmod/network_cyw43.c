@@ -496,12 +496,13 @@ STATIC const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(network_cyw43_locals_dict, network_cyw43_locals_dict_table);
 
-const mp_obj_type_t mp_network_cyw43_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CYW43,
-    .print = network_cyw43_print,
-    .make_new = network_cyw43_make_new,
-    .locals_dict = (mp_obj_dict_t *)&network_cyw43_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_network_cyw43_type,
+    MP_QSTR_CYW43,
+    MP_TYPE_FLAG_NONE,
+    network_cyw43_make_new,
+    print, network_cyw43_print,
+    locals_dict, (mp_obj_dict_t *)&network_cyw43_locals_dict
+    );
 
 #endif // MICROPY_PY_NETWORK_CYW43

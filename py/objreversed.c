@@ -68,12 +68,13 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
     return mp_obj_subscr(self->seq, MP_OBJ_NEW_SMALL_INT(self->cur_index), MP_OBJ_SENTINEL);
 }
 
-const mp_obj_type_t mp_type_reversed = {
-    { &mp_type_type },
-    .name = MP_QSTR_reversed,
-    .make_new = reversed_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = reversed_iternext,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_reversed,
+    MP_QSTR_reversed,
+    MP_TYPE_FLAG_NONE,
+    reversed_make_new,
+    getiter, mp_identity_getiter,
+    iternext, reversed_iternext
+    );
 
 #endif // MICROPY_PY_BUILTINS_REVERSED

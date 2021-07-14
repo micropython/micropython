@@ -931,14 +931,15 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
-const mp_obj_type_t pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = pin_print,
-    .make_new = pin_make_new,
-    .call = pin_call,
-    .locals_dict = (mp_obj_t)&pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    pin_make_new,
+    print, pin_print,
+    call, pin_call,
+    locals_dict, (mp_obj_t)&pin_locals_dict
+    );
 
 STATIC const mp_irq_methods_t pin_irq_methods = {
     .init = pin_irq,
@@ -952,10 +953,12 @@ STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, 
     mp_printf(print, "<Pin.%q>", self->name);
 }
 
-const mp_obj_type_t pin_board_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_board,
-    .print = pin_named_pins_obj_print,
-    .locals_dict = (mp_obj_t)&pin_board_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, pin_named_pins_obj_print,
+    locals_dict, (mp_obj_t)&pin_board_pins_locals_dict
+    );
 

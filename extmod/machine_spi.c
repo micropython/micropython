@@ -251,13 +251,14 @@ const mp_machine_spi_p_t mp_machine_soft_spi_p = {
     .transfer = mp_machine_soft_spi_transfer,
 };
 
-const mp_obj_type_t mp_machine_soft_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SoftSPI,
-    .print = mp_machine_soft_spi_print,
-    .make_new = mp_machine_soft_spi_make_new,
-    .protocol = &mp_machine_soft_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_machine_soft_spi_type,
+    MP_QSTR_SoftSPI,
+    MP_TYPE_FLAG_NONE,
+    mp_machine_soft_spi_make_new,
+    print, mp_machine_soft_spi_print,
+    protocol, &mp_machine_soft_spi_p,
+    locals_dict, (mp_obj_dict_t *)&mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SOFTSPI

@@ -759,13 +759,14 @@ const mp_stream_p_t socket_stream_p = {
     .is_text = false,
 };
 
-STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .make_new = socket_make_new,
-    .protocol = &socket_stream_p,
-    .locals_dict = (mp_obj_t)&socket_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    socket_type,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    socket_make_new,
+    protocol, &socket_stream_p,
+    locals_dict, (mp_obj_t)&socket_locals_dict
+    );
 
 /******************************************************************************/
 // usocket module

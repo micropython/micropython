@@ -111,11 +111,12 @@ STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
 #endif
 
-const mp_obj_type_t mp_type_object = {
-    { &mp_type_type },
-    .name = MP_QSTR_object,
-    .make_new = object_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_object,
+    MP_QSTR_object,
+    MP_TYPE_FLAG_NONE,
+    object_make_new
     #if MICROPY_CPYTHON_COMPAT
-    .locals_dict = (mp_obj_dict_t *)&object_locals_dict,
+    , locals_dict, (mp_obj_dict_t *)&object_locals_dict
     #endif
-};
+    );

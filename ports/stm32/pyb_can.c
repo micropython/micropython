@@ -1072,14 +1072,15 @@ STATIC const mp_stream_p_t can_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t pyb_can_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CAN,
-    .print = pyb_can_print,
-    .make_new = pyb_can_make_new,
-    .protocol = &can_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&pyb_can_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_can_type,
+    MP_QSTR_CAN,
+    MP_TYPE_FLAG_NONE,
+    pyb_can_make_new,
+    print, pyb_can_print,
+    protocol, &can_stream_p,
+    locals_dict, (mp_obj_dict_t *)&pyb_can_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]);
 
