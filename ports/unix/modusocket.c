@@ -516,16 +516,17 @@ STATIC const mp_stream_p_t usocket_stream_p = {
     .ioctl = socket_ioctl,
 };
 
-const mp_obj_type_t mp_type_socket = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .print = socket_print,
-    .make_new = socket_make_new,
-    .getiter = NULL,
-    .iternext = NULL,
-    .protocol = &usocket_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&usocket_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_socket,
+    MP_QSTR_socket,
+    MP_TYPE_FLAG_NONE,
+    socket_make_new,
+    print, socket_print,
+    getiter, NULL,
+    iternext, NULL,
+    protocol, &usocket_stream_p,
+    locals_dict, (mp_obj_dict_t *)&usocket_locals_dict
+    );
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
 STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {

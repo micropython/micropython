@@ -106,11 +106,14 @@ STATIC const mp_stream_p_t fileio_stream_p = {
     .ioctl = stest_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_fileio = {
-    { &mp_type_type },
-    .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_fileio,
+    MP_QSTR_stest_fileio,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    protocol, &fileio_stream_p,
+    locals_dict, (mp_obj_dict_t *)&rawfile_locals_dict
+    );
 
 // stream read returns non-blocking error
 STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
@@ -133,11 +136,14 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
     .is_text = true,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_textio2 = {
-    { &mp_type_type },
-    .protocol = &textio_stream_p2,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_textio2,
+    MP_QSTR_stest_textio2,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    protocol, &textio_stream_p2,
+    locals_dict, (mp_obj_dict_t *)&rawfile_locals_dict2
+    );
 
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};

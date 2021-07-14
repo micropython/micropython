@@ -314,16 +314,18 @@ STATIC const mp_stream_p_t ussl_socket_stream_p = {
     .ioctl = ussl_socket_ioctl,
 };
 
-STATIC const mp_obj_type_t ussl_socket_type = {
-    { &mp_type_type },
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    ussl_socket_type,
+    MP_QSTR_ussl,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
     // Save on qstr's, reuse same as for module
-    .name = MP_QSTR_ussl,
-    .print = ussl_socket_print,
-    .getiter = NULL,
-    .iternext = NULL,
-    .protocol = &ussl_socket_stream_p,
-    .locals_dict = (void *)&ussl_socket_locals_dict,
-};
+    print, ussl_socket_print,
+    getiter, NULL,
+    iternext, NULL,
+    protocol, &ussl_socket_stream_p,
+    locals_dict, (void *)&ussl_socket_locals_dict
+    );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args

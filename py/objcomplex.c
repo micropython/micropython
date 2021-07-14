@@ -151,16 +151,13 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_complex = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_complex,
-    .print = complex_print,
-    .make_new = complex_make_new,
-    .unary_op = complex_unary_op,
-    .binary_op = complex_binary_op,
-    .attr = complex_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_complex, MP_QSTR_complex, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, complex_make_new,
+    print, complex_print,
+    unary_op, complex_unary_op,
+    binary_op, complex_binary_op,
+    attr, complex_attr
+    );
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
     mp_obj_complex_t *o = mp_obj_malloc(mp_obj_complex_t, &mp_type_complex);

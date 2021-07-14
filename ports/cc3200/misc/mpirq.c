@@ -190,11 +190,13 @@ STATIC const mp_rom_map_elem_t mp_irq_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_irq_locals_dict, mp_irq_locals_dict_table);
 
-const mp_obj_type_t mp_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_irq,
-    .call = mp_irq_call,
-    .locals_dict = (mp_obj_t)&mp_irq_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_irq_type,
+    MP_QSTR_irq,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    call, mp_irq_call,
+    locals_dict, (mp_obj_t)&mp_irq_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_irq_obj_list);

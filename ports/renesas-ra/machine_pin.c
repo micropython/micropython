@@ -349,15 +349,16 @@ STATIC const mp_pin_p_t machine_pin_pin_p = {
     .ioctl = machine_pin_ioctl,
 };
 
-const mp_obj_type_t machine_pin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    .print = machine_pin_print,
-    .make_new = mp_pin_make_new,
-    .call = machine_pin_call,
-    .protocol = &machine_pin_pin_p,
-    .locals_dict = (mp_obj_t)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    mp_pin_make_new,
+    locals_dict, &machine_pin_locals_dict,
+    print, machine_pin_print,
+    call, machine_pin_call,
+    protocol, &machine_pin_pin_p
+    );
 
 // Returns the pin mode. This value returned by this macro should be one of:
 // GPIO_MODE_INPUT, GPIO_MODE_OUTPUT_PP, GPIO_MODE_OUTPUT_OD,
@@ -388,17 +389,21 @@ uint32_t pin_get_af(const machine_pin_obj_t *pin) {
     return (uint32_t)ra_gpio_get_af(pin->pin);
 }
 
-const mp_obj_type_t pin_cpu_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_cpu,
-    .locals_dict = (mp_obj_dict_t *)&pin_cpu_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, &pin_cpu_pins_locals_dict
+    );
 
-const mp_obj_type_t pin_board_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_board,
-    .locals_dict = (mp_obj_dict_t *)&pin_board_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, &pin_board_pins_locals_dict
+    );
 
 const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     const mp_map_t *named_map = &named_pins->map;

@@ -134,14 +134,15 @@ STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
 
-const mp_obj_type_t pyb_switch_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Switch,
-    .print = pyb_switch_print,
-    .make_new = pyb_switch_make_new,
-    .call = pyb_switch_call,
-    .locals_dict = (mp_obj_dict_t *)&pyb_switch_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_switch_type,
+    MP_QSTR_Switch,
+    MP_TYPE_FLAG_NONE,
+    pyb_switch_make_new,
+    print, pyb_switch_print,
+    call, pyb_switch_call,
+    locals_dict, (mp_obj_dict_t *)&pyb_switch_locals_dict
+    );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_switch_callback);
 

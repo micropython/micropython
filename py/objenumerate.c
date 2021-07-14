@@ -67,13 +67,14 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_enumerate = {
-    { &mp_type_type },
-    .name = MP_QSTR_enumerate,
-    .make_new = enumerate_make_new,
-    .iternext = enumerate_iternext,
-    .getiter = mp_identity_getiter,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_enumerate,
+    MP_QSTR_enumerate,
+    MP_TYPE_FLAG_NONE,
+    enumerate_make_new,
+    iternext, enumerate_iternext,
+    getiter, mp_identity_getiter
+    );
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_enumerate));

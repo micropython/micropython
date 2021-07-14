@@ -634,16 +634,17 @@ STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-STATIC const mp_obj_type_t uctypes_struct_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_struct,
-    .print = uctypes_struct_print,
-    .make_new = uctypes_struct_make_new,
-    .attr = uctypes_struct_attr,
-    .subscr = uctypes_struct_subscr,
-    .unary_op = uctypes_struct_unary_op,
-    .buffer = uctypes_get_buffer,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uctypes_struct_type,
+    MP_QSTR_struct,
+    MP_TYPE_FLAG_NONE,
+    uctypes_struct_make_new,
+    print, uctypes_struct_print,
+    attr, uctypes_struct_attr,
+    subscr, uctypes_struct_subscr,
+    unary_op, uctypes_struct_unary_op,
+    buffer, uctypes_get_buffer
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },

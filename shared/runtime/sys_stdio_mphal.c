@@ -123,15 +123,17 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
     .is_text = true,
 };
 
-STATIC const mp_obj_type_t stdio_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_obj_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    stdio_obj_type,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, stdio_obj_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &stdio_obj_stream_p,
+    locals_dict, (mp_obj_dict_t *)&stdio_locals_dict
+    );
 
 const sys_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
 const sys_stdio_obj_t mp_sys_stdout_obj = {{&stdio_obj_type}, .fd = STDIO_FD_OUT};
@@ -157,15 +159,17 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
     .is_text = false,
 };
 
-STATIC const mp_obj_type_t stdio_buffer_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = stdio_obj_print,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    stdio_buffer_obj_type,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    print, stdio_obj_print,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &stdio_buffer_obj_stream_p,
+    locals_dict, (mp_obj_dict_t *)&stdio_locals_dict
+    );
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
 #endif

@@ -339,12 +339,13 @@ STATIC mp_obj_t machine_hard_pwm_freq(mp_obj_t self_in, mp_arg_val_t *args) {
     return mp_const_none;
 }
 
-const mp_obj_type_t machine_hard_pwm_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PWM,
-    .print = machine_pwm_print,
-    .make_new = machine_pwm_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_pwm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_hard_pwm_type,
+    MP_QSTR_PWM,
+    MP_TYPE_FLAG_NONE,
+    machine_pwm_make_new,
+    print, machine_pwm_print,
+    locals_dict, (mp_obj_dict_t*)&machine_pwm_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_HW_PWM

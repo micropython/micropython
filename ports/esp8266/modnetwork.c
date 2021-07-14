@@ -510,11 +510,13 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
-const mp_obj_type_t wlan_if_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_dict_t *)&wlan_if_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wlan_if_type,
+    MP_QSTR_WLAN,
+    MP_TYPE_FLAG_NONE,
+    MP_TYPE_NULL_MAKE_NEW,
+    locals_dict, (mp_obj_dict_t *)&wlan_if_locals_dict
+    );
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {

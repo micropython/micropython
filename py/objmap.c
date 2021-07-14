@@ -63,10 +63,11 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     return mp_call_function_n_kw(self->fun, self->n_iters, 0, nextses);
 }
 
-const mp_obj_type_t mp_type_map = {
-    { &mp_type_type },
-    .name = MP_QSTR_map,
-    .make_new = map_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = map_iternext,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_map,
+    MP_QSTR_map,
+    MP_TYPE_FLAG_NONE,
+    map_make_new,
+    getiter, mp_identity_getiter,
+    iternext, map_iternext
+    );

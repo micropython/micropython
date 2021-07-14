@@ -2143,31 +2143,33 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
-const mp_obj_type_t mp_type_str = {
-    { &mp_type_type },
-    .name = MP_QSTR_str,
-    .print = str_print,
-    .make_new = mp_obj_str_make_new,
-    .binary_op = mp_obj_str_binary_op,
-    .subscr = bytes_subscr,
-    .getiter = mp_obj_new_str_iterator,
-    .buffer = mp_obj_str_get_buffer,
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_str_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_str,
+    MP_QSTR_str,
+    MP_TYPE_FLAG_NONE,
+    mp_obj_str_make_new,
+    print, str_print,
+    binary_op, mp_obj_str_binary_op,
+    subscr, bytes_subscr,
+    getiter, mp_obj_new_str_iterator,
+    buffer, mp_obj_str_get_buffer,
+    locals_dict, (mp_obj_dict_t *)&mp_obj_str_locals_dict
+    );
 #endif // !MICROPY_PY_BUILTINS_STR_UNICODE
 
-// Reuses most of methods from str
-const mp_obj_type_t mp_type_bytes = {
-    { &mp_type_type },
-    .name = MP_QSTR_bytes,
-    .print = str_print,
-    .make_new = bytes_make_new,
-    .binary_op = mp_obj_str_binary_op,
-    .subscr = bytes_subscr,
-    .getiter = mp_obj_new_bytes_iterator,
-    .buffer = mp_obj_str_get_buffer,
-    .locals_dict = (mp_obj_dict_t *)&mp_obj_bytes_locals_dict,
-};
+// Reuses most methods from str
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bytes,
+    MP_QSTR_bytes,
+    MP_TYPE_FLAG_NONE,
+    bytes_make_new,
+    print, str_print,
+    binary_op, mp_obj_str_binary_op,
+    subscr, bytes_subscr,
+    getiter, mp_obj_new_bytes_iterator,
+    buffer, mp_obj_str_get_buffer,
+    locals_dict, (mp_obj_dict_t *)&mp_obj_bytes_locals_dict
+    );
 
 // The zero-length bytes object, with data that includes a null-terminating byte
 const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const byte *)""};

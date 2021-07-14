@@ -171,10 +171,11 @@ STATIC const mp_rom_map_elem_t network_server_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(network_server_locals_dict, network_server_locals_dict_table);
 
-STATIC const mp_obj_type_t network_server_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Server,
-    .make_new = network_server_make_new,
-    .locals_dict = (mp_obj_t)&network_server_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    network_server_type,
+    MP_QSTR_Server,
+    MP_TYPE_FLAG_NONE,
+    network_server_make_new,
+    locals_dict, (mp_obj_t)&network_server_locals_dict
+    );
 #endif
