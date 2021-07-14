@@ -683,13 +683,7 @@ const mp_obj_type_t microbit_image_type = {
     .name = MP_QSTR_MicroBitImage,
     .print = microbit_image_print,
     .make_new = microbit_image_make_new,
-    .call = NULL,
-    .unary_op = NULL,
     .binary_op = image_binary_op,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = NULL,
-    .iternext = NULL,
     .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
 };
 
@@ -829,33 +823,14 @@ STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
 const mp_obj_type_t microbit_scrolling_string_type = {
     { &mp_type_type },
     .name = MP_QSTR_ScrollingString,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
     .getiter = get_microbit_scrolling_string_iter,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    .locals_dict = NULL,
 };
 
 const mp_obj_type_t microbit_scrolling_string_iterator_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
     .getiter = mp_identity_getiter,
     .iternext = microbit_scrolling_string_iter_next,
-    .buffer_p = {NULL},
-    .locals_dict = NULL,
 };
 
 /** Facade types to present a string as a sequence of images.
@@ -897,17 +872,9 @@ static mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t
 const mp_obj_type_t string_image_facade_type = {
     { &mp_type_type },
     .name = MP_QSTR_Facade,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
     .unary_op = facade_unary_op,
-    .binary_op = NULL,
-    .attr = NULL,
     .subscr = string_image_facade_subscr,
     .getiter = microbit_facade_iterator,
-    .iternext = NULL,
-    .buffer_p = {NULL},
-    NULL
 };
 
 
@@ -940,17 +907,8 @@ static mp_obj_t microbit_facade_iter_next(mp_obj_t iter_in) {
 const mp_obj_type_t microbit_facade_iterator_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
     .getiter = mp_identity_getiter,
     .iternext = microbit_facade_iter_next,
-    .buffer_p = {NULL},
-    NULL
 };
 
 mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {
