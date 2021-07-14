@@ -1565,21 +1565,24 @@ NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
 
 #endif
 
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
+}
+
 NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     if (arg == MP_OBJ_NULL) {
         mp_raise_type(&mp_type_StopIteration);
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_StopIteration, arg));
+        mp_raise_type_arg(&mp_type_StopIteration, arg);
     }
 }
 
 NORETURN void mp_raise_OSError(int errno_) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
+    mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
-        MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
+    mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));
 }
 #endif
