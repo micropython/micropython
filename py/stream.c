@@ -86,15 +86,16 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
-    const mp_stream_p_t *stream_p = type->protocol;
-    if (stream_p == NULL
-        || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
-        || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
-        || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
-        // CPython: io.UnsupportedOperation, OSError subclass
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
+    if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
+        const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(type, protocol);
+        if (!((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
+            && !((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
+            && !((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
+            return stream_p;
+        }
     }
-    return stream_p;
+    // CPython: io.UnsupportedOperation, OSError subclass
+    mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
 }
 
 STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
@@ -507,7 +508,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
 
 ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
     mp_obj_base_t *o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t out_sz = stream_p->write(MP_OBJ_FROM_PTR(stream), buf, len, &errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -518,7 +519,7 @@ ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
 
 ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
     mp_obj_base_t *o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t out_sz = stream_p->read(MP_OBJ_FROM_PTR(stream), buf, len, &errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -529,7 +530,7 @@ ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
 
 off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
     const mp_obj_base_t *o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
     seek_s.whence = whence;
@@ -542,7 +543,7 @@ off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
 
 int mp_stream_posix_fsync(void *stream) {
     mp_obj_base_t *o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
     mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_FLUSH, 0, &errno);
     if (res == MP_STREAM_ERROR) {
         return -1;

@@ -43,7 +43,7 @@
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     spi_p->init(s, n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -51,7 +51,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     if (spi_p->deinit != NULL) {
         spi_p->deinit(s);
     }
@@ -61,7 +61,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
 STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)MP_OBJ_TYPE_GET_SLOT(s->type, protocol);
     spi_p->transfer(s, len, src, dest);
 }
 

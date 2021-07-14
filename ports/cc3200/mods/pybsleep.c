@@ -126,7 +126,7 @@ volatile arm_cm4_core_regs_t vault_arm_registers;
 STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
 STATIC pybsleep_wake_reason_t pybsleep_wake_reason = PYB_SLP_WAKED_PWRON;
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
-    pyb_sleep_type, MP_QSTR_sleep, MP_TYPE_FLAG_NONE MP_TYPE_NULL_MAKE_NEW,
+    pyb_sleep_type, MP_QSTR_sleep, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW
     );
 
 /******************************************************************************

@@ -649,6 +649,8 @@ typedef struct _mp_obj_full_type_t {
     struct _mp_obj_dict_t *locals_dict;
 } mp_obj_full_type_t;
 
+#define MP_TYPE_NULL_MAKE_NEW (NULL)
+
 #define _MP_DEFINE_CONST_OBJ_TYPE_0(_typename, _name, _flags, _make_new) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new }
 #define _MP_DEFINE_CONST_OBJ_TYPE_1(_typename, _name, _flags, _make_new, f1, v1) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1 }
 #define _MP_DEFINE_CONST_OBJ_TYPE_2(_typename, _name, _flags, _make_new, f1, v1, f2, v2) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2 }
@@ -662,6 +664,16 @@ typedef struct _mp_obj_full_type_t {
 #define _MP_DEFINE_CONST_OBJ_TYPE_10(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10 }
 #define _MP_DEFINE_CONST_OBJ_TYPE_11(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11 }
 #define _MP_DEFINE_CONST_OBJ_TYPE_12(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11, .f12 = v12 }
+
+// Always safe, checks if the type can and does have this slot.
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->f)
+// Requires you know that this type can have this slot.
+#define MP_OBJ_TYPE_GET_SLOT(t, f) ((t)->f)
+// Always safe, returns NULL if the type cannot have this slot.
+#define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) ((t)->f)
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->f = v)
+#define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, f))
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(void **)((char *)(t) + (offset)) != NULL)
 
 // Workaround for https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-160#macro-arguments-are-unpacked
 #define _MP_DEFINE_CONST_OBJ_TYPE_EXPAND(x) x
@@ -791,7 +803,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 #endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
-#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
+#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, binary_op) == mp_obj_str_binary_op))
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 

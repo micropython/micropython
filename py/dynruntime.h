@@ -139,7 +139,7 @@ static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const
 
     if (MP_OBJ_FROM_PTR(self_type) == native_type) {
         return self_in;
-    } else if (self_type->parent != native_type) {
+    } else if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(self_type, parent) != native_type) {
         // The self_in object is not a direct descendant of native_type, so fail the cast.
         // This is a very simple version of mp_obj_is_subclass_fast that could be improved.
         return MP_OBJ_NULL;

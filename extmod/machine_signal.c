@@ -51,7 +51,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     if (n_args > 0 && mp_obj_is_obj(args[0])) {
         mp_obj_base_t *pin_base = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
-        pin_p = (mp_pin_p_t *)pin_base->type->protocol;
+        pin_p = (mp_pin_p_t *)MP_OBJ_TYPE_GET_SLOT_OR_NULL(pin_base->type, protocol);
     }
 
     if (pin_p == NULL) {

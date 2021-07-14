@@ -505,10 +505,10 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
-        } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer != NULL) {
+        } else if (MP_OBJ_TYPE_HAS_SLOT(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type, buffer)) {
             mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
             mp_buffer_info_t bufinfo;
-            int ret = o->type->buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+            int ret = MP_OBJ_TYPE_GET_SLOT(o->type, buffer)(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
             if (ret != 0) {
                 goto error;
             }
