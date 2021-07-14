@@ -779,9 +779,11 @@ bool mp_obj_is_callable(mp_obj_t o_in);
 mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
+// returns true if o is bool, small int or long int
 static inline bool mp_obj_is_integer(mp_const_obj_t o) {
     return mp_obj_is_int(o) || mp_obj_is_bool(o);
-}                                                                                                        // returns true if o is bool, small int or long int
+}
+
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
