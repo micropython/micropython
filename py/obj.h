@@ -739,7 +739,6 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
-mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 #define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
@@ -825,6 +824,10 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
+static inline mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+}
 
 // str
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
