@@ -34,9 +34,25 @@
 
 STATIC bool not_first_reset = false;
 STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
+STATIC bool varfreq_timers[LEDC_TIMER_MAX];
 STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX];
 STATIC bool never_reset_tim[LEDC_TIMER_MAX];
 STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
+
+STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
+    uint32_t duty_bits = 0;
+    uint32_t interval = LEDC_APB_CLK_HZ / frequency;
+    for (size_t i = 0; i < 32; i++) {
+        if (!(interval >> i)) {
+            duty_bits = i - 1;
+            break;
+        }
+    }
+    if (duty_bits >= LEDC_TIMER_14_BIT) {
+        duty_bits = LEDC_TIMER_13_BIT;
+    }
+    return duty_bits;
+}
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
@@ -53,6 +69,7 @@ void pwmout_reset(void) {
         }
         if (!never_reset_tim[i]) {
             reserved_timer_freq[i] = 0;
+            varfreq_timers[i] = false;
         }
     }
     not_first_reset = true;
@@ -70,25 +87,17 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
 
     // Calculate duty cycle
-    uint32_t duty_bits = 0;
-    uint32_t interval = LEDC_APB_CLK_HZ / frequency;
-    for (size_t i = 0; i < 32; i++) {
-        if (!(interval >> i)) {
-            duty_bits = i - 1;
-            break;
-        }
-    }
-    if (duty_bits < 1) {
-        mp_raise_ValueError(translate("Invalid frequency"));
-    } else if (duty_bits >= LEDC_TIMER_14_BIT) {
-        duty_bits = LEDC_TIMER_13_BIT;
+    uint32_t duty_bits = calculate_duty_cycle(frequency);
+    if (duty_bits == 0) {
+        return PWMOUT_INVALID_FREQUENCY;
     }
 
     // Find a viable timer
     size_t timer_index = INDEX_EMPTY;
     size_t channel_index = INDEX_EMPTY;
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
-        if ((reserved_timer_freq[i] == frequency) && !variable_frequency) {
+        // accept matching freq timers unless this instance is varfreq or a prior one was
+        if ((reserved_timer_freq[i] == frequency) && !variable_frequency && !varfreq_timers[i]) {
             // prioritize matched frequencies so we don't needlessly take slots
             timer_index = i;
             break;
@@ -139,6 +148,9 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     reserved_timer_freq[timer_index] = frequency;
     reserved_channels[channel_index] = timer_index;
 
+    if (variable_frequency) {
+        varfreq_timers[timer_index] = true;
+    }
     self->variable_frequency = variable_frequency;
     self->pin_number = pin->number;
     self->deinited = false;
@@ -175,6 +187,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (reserved_channels[self->chan_handle.channel] != INDEX_EMPTY) {
         ledc_stop(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, 0);
     }
+    reserved_channels[self->chan_handle.channel] = INDEX_EMPTY;
     // Search if any other channel is using the timer
     bool taken = false;
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
@@ -184,13 +197,12 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     }
     // Variable frequency means there's only one channel on the timer
     if (!taken || self->variable_frequency) {
-        if (reserved_timer_freq[self->tim_handle.timer_num] != 0) {
-            ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
-        }
+        ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
+        // if timer isn't varfreq this will be off aleady
+        varfreq_timers[self->tim_handle.timer_num] = false;
     }
     reset_pin_number(self->pin_number);
-    reserved_channels[self->chan_handle.channel] = INDEX_EMPTY;
     self->deinited = true;
 }
 
@@ -204,6 +216,12 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
+    // Calculate duty cycle
+    uint32_t duty_bits = calculate_duty_cycle(frequency);
+    if (duty_bits == 0) {
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
+    }
+    self->duty_resolution = duty_bits;
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);
 }
 
