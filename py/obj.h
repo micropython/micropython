@@ -660,6 +660,16 @@ typedef mp_obj_type_t mp_obj_full_type_t;
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_11(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11 }
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS_12(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11, .f12 = v12 }
 
+// Always safe, checks if the type can and does have this slot.
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->f)
+// Requires you know that this type can have this slot.
+#define MP_OBJ_TYPE_GET_SLOT(t, f) ((t)->f)
+// Always safe, returns NULL if the type cannot have this slot.
+#define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) ((t)->f)
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->f = v)
+#define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, f))
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(void **)((char *)(t) + (offset)) != NULL)
+
 // Workaround for https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-160#macro-arguments-are-unpacked
 #define MP_DEFINE_CONST_OBJ_TYPE_EXPAND(x) x
 
@@ -822,7 +832,7 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 #endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_exact_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_exact_type(o, &mp_type_str))
-#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
+#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, binary_op) == mp_obj_str_binary_op))
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 

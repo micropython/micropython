@@ -116,8 +116,8 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     }
     #endif
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (type->print != NULL) {
-        type->print((mp_print_t *)print, o_in, kind);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, print)) {
+        MP_OBJ_TYPE_GET_SLOT(type, print)((mp_print_t *)print, o_in, kind);
     } else {
         mp_printf(print, "<%q>", type->name);
     }
@@ -170,8 +170,8 @@ bool mp_obj_is_true(mp_obj_t arg) {
         }
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        if (type->unary_op != NULL) {
-            mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {
+            mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, unary_op)(MP_UNARY_OP_BOOL, arg);
             if (result != MP_OBJ_NULL) {
                 return result == mp_const_true;
             }
@@ -189,7 +189,7 @@ bool mp_obj_is_true(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    const mp_call_fun_t call = mp_obj_get_type(o_in)->call;
+    const mp_call_fun_t call = MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o_in), call);
     if (call != mp_obj_instance_call) {
         return call != NULL;
     }
@@ -256,19 +256,19 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         const mp_obj_type_t *type = mp_obj_get_type(o1);
         // If a full equality test is not needed and the other object is a different
         // type then we don't need to bother trying the comparison.
-        if (type->binary_op != NULL &&
+        if (MP_OBJ_TYPE_HAS_SLOT(type, binary_op) &&
             ((type->flags & MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) || mp_obj_get_type(o2) == type)) {
             // CPython is asymmetric: it will try __eq__ if there's no __ne__ but not the
             // other way around.  If the class doesn't need a full test we can skip __ne__.
             if (op == MP_BINARY_OP_NOT_EQUAL && (type->flags & MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)) {
-                mp_obj_t r = type->binary_op(MP_BINARY_OP_NOT_EQUAL, o1, o2);
+                mp_obj_t r = MP_OBJ_TYPE_GET_SLOT(type, binary_op)(MP_BINARY_OP_NOT_EQUAL, o1, o2);
                 if (r != MP_OBJ_NULL) {
                     return r;
                 }
             }
 
             // Try calling __eq__.
-            mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = MP_OBJ_TYPE_GET_SLOT(type, binary_op)(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 if (op == MP_BINARY_OP_EQUAL) {
                     return r;
@@ -524,8 +524,8 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(o_in);
-        if (type->unary_op != NULL) {
-            return type->unary_op(MP_UNARY_OP_LEN, o_in);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {
+            return MP_OBJ_TYPE_GET_SLOT(type, unary_op)(MP_UNARY_OP_LEN, o_in);
         } else {
             return MP_OBJ_NULL;
         }
@@ -534,8 +534,8 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->subscr != NULL) {
-        mp_obj_t ret = type->subscr(base, index, value);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
+        mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(base, index, value);
         if (ret != MP_OBJ_NULL) {
             return ret;
         }
@@ -579,10 +579,10 @@ mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (type->buffer == NULL) {
+    if (!MP_OBJ_TYPE_HAS_SLOT(type, buffer)) {
         return false;
     }
-    int ret = type->buffer(obj, bufinfo, flags);
+    int ret = MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags);
     if (ret != 0) {
         return false;
     }

@@ -132,8 +132,9 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // If the mounted object has the VFS protocol, call its import_stat helper
-    const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
-    if (proto != NULL) {
+    const mp_obj_type_t *type = mp_obj_get_type(vfs->obj);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
+        const mp_vfs_proto_t *proto = MP_OBJ_TYPE_GET_SLOT(type, protocol);
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
 
