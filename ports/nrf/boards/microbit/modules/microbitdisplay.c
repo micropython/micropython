@@ -545,15 +545,6 @@ STATIC MP_DEFINE_CONST_DICT(microbit_display_locals_dict, microbit_display_local
 const mp_obj_type_t microbit_display_type = {
     { &mp_type_type },
     .name = MP_QSTR_MicroBitDisplay,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = NULL,
-    .iternext = NULL,
     .locals_dict = (mp_obj_dict_t*)&microbit_display_locals_dict,
 };
 
