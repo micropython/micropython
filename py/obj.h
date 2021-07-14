@@ -513,6 +513,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
 // If MP_TYPE_FLAG_BINDS_SELF is set then the type as a method binds self as the first arg.
 // If MP_TYPE_FLAG_BUILTIN_FUN is set then the type is a built-in function type.
+#define MP_TYPE_FLAG_NONE (0x0000)
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
 #define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0004)
@@ -630,6 +631,40 @@ struct _mp_obj_type_t {
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
 };
+
+#define MP_TYPE_NULL_MAKE_NEW (NULL)
+
+// Implementation of MP_DEFINE_CONST_OBJ_TYPE for each number of arguments.
+// Do not use these directly, instead use MP_DEFINE_CONST_OBJ_TYPE.
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_0(_struct_type, _typename, _name, _flags, _make_new) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_1(_struct_type, _typename, _name, _flags, _make_new, f1, v1) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_2(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_3(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_4(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_5(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_6(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_7(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_8(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_9(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_10(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_11(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11 }
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS_12(_struct_type, _typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const _struct_type _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1, .f2 = v2, .f3 = v3, .f4 = v4, .f5 = v5, .f6 = v6, .f7 = v7, .f8 = v8, .f9 = v9, .f10 = v10, .f11 = v11, .f12 = v12 }
+
+// Workaround for https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-160#macro-arguments-are-unpacked
+#define MP_DEFINE_CONST_OBJ_TYPE_EXPAND(x) x
+
+// This macro evaluates to MP_DEFINE_CONST_OBJ_TYPE_IMPL_##N, where N is the value
+// of the 30th argument (30 is 13*2 + 4).
+#define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
+
+// This macro is used to define a object type in ROM.
+// Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
+// It uses the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
+// macro to use based on the number of arguments. It works by shifting the
+// numeric values 12, 11, ... 0 by the number of arguments, such that the
+// 30th argument ends up being the number to use. The _INV values are
+// placeholders because the slot arguments come in pairs.
+#define MP_DEFINE_CONST_OBJ_TYPE(...) MP_DEFINE_CONST_OBJ_TYPE_EXPAND(MP_DEFINE_CONST_OBJ_TYPE_NARGS(__VA_ARGS__, _INV, 12, _INV, 11, _INV, 10, _INV, 9, _INV, 8, _INV, 7, _INV, 6, _INV, 5, _INV, 4, _INV, 3, _INV, 2, _INV, 1, _INV, 0)(mp_obj_type_t, __VA_ARGS__))
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
