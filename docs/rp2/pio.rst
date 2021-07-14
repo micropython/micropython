@@ -22,6 +22,26 @@ transmit larger amounts of data to the PIO state machine and allows it to
 carry on execution without the main program keeping a track of it at each
 instant of time.
 
+The state machines have 9 instructions which can perform the following tasks:-
+
+* IN : shifts the bits from a source (scratch register or set of pins) to the
+* input shift register.
+
+* OUT : shifts the bits from the output shift register to a destination
+
+* PUSH : sends data to RX FIFO
+
+* PULL : recieves data from TX FIFO
+
+* MOV : moves data from a souce to a destination
+
+* IRQ : sets or clears the input flag
+
+* WAIT : pauses until a particular action happens
+
+* JMP : moves to some target locations in differnt parts of code.
+
+
 
 
 
