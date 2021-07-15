@@ -642,7 +642,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
     .unary_op = uctypes_struct_unary_op,
-    .buffer_p = { .get_buffer = uctypes_get_buffer },
+    .buffer = uctypes_get_buffer,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {

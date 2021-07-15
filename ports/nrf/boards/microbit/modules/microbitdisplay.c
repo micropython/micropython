@@ -554,7 +554,6 @@ const mp_obj_type_t microbit_display_type = {
     .subscr = NULL,
     .getiter = NULL,
     .iternext = NULL,
-    .buffer_p = {NULL},
     .locals_dict = (mp_obj_dict_t*)&microbit_display_locals_dict,
 };
 

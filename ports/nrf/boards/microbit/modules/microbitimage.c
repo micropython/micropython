@@ -690,7 +690,6 @@ const mp_obj_type_t microbit_image_type = {
     .subscr = NULL,
     .getiter = NULL,
     .iternext = NULL,
-    .buffer_p = {NULL},
     .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
 };
 

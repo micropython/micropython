@@ -580,7 +580,7 @@ const mp_obj_type_t mp_type_array = {
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer_p = array_get_buffer,
     .locals_dict = (mp_obj_dict_t *)&mp_obj_array_locals_dict,
 };
 #endif
@@ -596,7 +596,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer = array_get_buffer,
     .locals_dict = (mp_obj_dict_t *)&mp_obj_bytearray_locals_dict,
 };
 #endif
@@ -617,7 +617,7 @@ const mp_obj_type_t mp_type_memoryview = {
     .locals_dict = (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
     #endif
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer = array_get_buffer,
 };
 #endif
 

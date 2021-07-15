@@ -913,14 +913,14 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR_, // don't actually look for a method
-        .meth_offset = offsetof(mp_obj_type_t, buffer_p.get_buffer),
+        .meth_offset = offsetof(mp_obj_type_t, buffer),
         .dest = member,
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        return type->buffer_p.get_buffer(self->subobj[0], bufinfo, flags);
+        return type->buffer(self->subobj[0], bufinfo, flags);
     } else {
         return 1; // object does not support buffer protocol
     }
@@ -1160,7 +1160,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->subscr = instance_subscr;
     o->getiter = mp_obj_instance_getiter;
     // o->iternext = ; not implemented
-    o->buffer_p.get_buffer = instance_get_buffer;
+    o->buffer = instance_get_buffer;
 
     if (bases_len > 0) {
         // Inherit protocol from a base class. This allows to define an

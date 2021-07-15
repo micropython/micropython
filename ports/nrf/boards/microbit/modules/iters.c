@@ -55,7 +55,6 @@ const mp_obj_type_t microbit_repeat_iterator_type = {
     .subscr = NULL,
     .getiter = mp_identity_getiter,
     .iternext = microbit_repeat_iter_next,
-    .buffer_p = {NULL},
     MP_OBJ_NULL
 };
 
