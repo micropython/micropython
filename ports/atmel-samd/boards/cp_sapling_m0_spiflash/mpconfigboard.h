@@ -3,10 +3,6 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA15)
 
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define SPI_FLASH_MOSI_PIN          &pin_PA18
 #define SPI_FLASH_MISO_PIN          &pin_PA17
 #define SPI_FLASH_SCK_PIN           &pin_PA19

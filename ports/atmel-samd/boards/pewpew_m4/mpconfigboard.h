@@ -3,12 +3,6 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-// These are pins not to reset.
-#define MICROPY_PORT_A (0)
-#define MICROPY_PORT_B (0)
-#define MICROPY_PORT_C (0)
-#define MICROPY_PORT_D (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA01)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA00)
 

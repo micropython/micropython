@@ -306,10 +306,12 @@ void init_rxtx_leds(void) {
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_RX)
     common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
     common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_never_reset(&rx_led);
     #endif
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_TX)
     common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
     common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_never_reset(&tx_led);
     #endif
 }
 

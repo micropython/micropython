@@ -4,13 +4,7 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PA12)
 #define MICROPY_HW_APA102_SCK    (&pin_PA13)
 
-
 #define CIRCUITPY_MCU_FAMILY samd51
-
-#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 | PORT_PA12 | PORT_PA13)
-#define MICROPY_PORT_B        (PORT_PB10 | PORT_PB11)
-#define MICROPY_PORT_C        (0)
-#define MICROPY_PORT_D        (0)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB09)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB08)

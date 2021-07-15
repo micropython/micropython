@@ -1,10 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "Fluff M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 

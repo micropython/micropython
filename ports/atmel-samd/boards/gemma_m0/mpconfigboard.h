@@ -6,10 +6,6 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
-#define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01 | PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA05)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA04)
 

@@ -32,6 +32,7 @@
 #include "mpconfigboard.h"
 
 void board_init(void) {
+    never_reset_pin_number(PIN_PB20);
     REG_PORT_DIRSET1 = PORT_PB20; // PB20 as output
     REG_PORT_OUTCLR1 = PORT_PB20; // PB20 cleared
     PORT->Group[1].PINCFG[20].reg |= PORT_PINCFG_PMUXEN;  // Mux enabled on PB20

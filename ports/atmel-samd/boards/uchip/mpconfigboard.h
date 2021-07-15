@@ -3,9 +3,7 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA07)
 
-#define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01 | PORT_PA14 | PORT_PA15 | PORT_PA28 | PORT_PA27 | PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
+#define BOARD_HAS_CRYSTAL     (1)
 
 // No microcontroller.nvm
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
@@ -17,6 +15,7 @@
 #define IGNORE_PIN_PA27     1
 #define IGNORE_PIN_PA28     1
 
+#define IGNORE_PIN_PB00     1
 #define IGNORE_PIN_PB01     1
 #define IGNORE_PIN_PB02     1
 #define IGNORE_PIN_PB03     1
@@ -38,7 +37,6 @@
 #define IGNORE_PIN_PB23     1
 #define IGNORE_PIN_PB30     1
 #define IGNORE_PIN_PB31     1
-#define IGNORE_PIN_PB00     1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)

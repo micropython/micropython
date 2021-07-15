@@ -4,10 +4,6 @@
 #define MICROPY_HW_NEOPIXEL (&pin_PA18)
 #define CIRCUITPY_STATUS_LED_POWER (&pin_PA15)
 
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define IGNORE_PIN_PA00     1
 #define IGNORE_PIN_PA01     1
 #define IGNORE_PIN_PA12     1
