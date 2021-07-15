@@ -248,7 +248,7 @@ const mp_obj_type_t mp_type_bluetooth_uuid = {
     .binary_op = bluetooth_uuid_binary_op,
     .locals_dict = NULL,
     .print = bluetooth_uuid_print,
-    .buffer_p = { .get_buffer = bluetooth_uuid_get_buffer },
+    .buffer = bluetooth_uuid_get_buffer,
 };
 
 // ----------------------------------------------------------------------------

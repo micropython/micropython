@@ -2001,7 +2001,7 @@ const mp_obj_type_t mp_type_str = {
     .binary_op = mp_obj_str_binary_op,
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+    .buffer = mp_obj_str_get_buffer,
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
 };
 #endif
@@ -2015,7 +2015,7 @@ const mp_obj_type_t mp_type_bytes = {
     .binary_op = mp_obj_str_binary_op,
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+    .buffer = mp_obj_str_get_buffer,
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
 };
 

@@ -621,7 +621,7 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
     { &mp_type_type },
     .name = MP_QSTR_FrameBuffer,
     .make_new = framebuf_make_new,
-    .buffer_p = { .get_buffer = framebuf_get_buffer },
+    .buffer = framebuf_get_buffer,
     .locals_dict = (mp_obj_dict_t *)&framebuf_locals_dict,
 };
 #endif

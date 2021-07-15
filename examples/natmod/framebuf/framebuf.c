@@ -21,7 +21,7 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_type_framebuf.base.type = (void*)&mp_type_type;
     mp_type_framebuf.name = MP_QSTR_FrameBuffer;
     mp_type_framebuf.make_new = framebuf_make_new;
-    mp_type_framebuf.buffer_p.get_buffer = framebuf_get_buffer;
+    mp_type_framebuf.buffer = framebuf_get_buffer;
     framebuf_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill), MP_OBJ_FROM_PTR(&framebuf_fill_obj) };
     framebuf_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill_rect), MP_OBJ_FROM_PTR(&framebuf_fill_rect_obj) };
     framebuf_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_pixel), MP_OBJ_FROM_PTR(&framebuf_pixel_obj) };

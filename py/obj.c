@@ -578,10 +578,10 @@ mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (type->buffer_p.get_buffer == NULL) {
+    if (type->buffer == NULL) {
         return false;
     }
-    int ret = type->buffer_p.get_buffer(obj, bufinfo, flags);
+    int ret = type->buffer(obj, bufinfo, flags);
     if (ret != 0) {
         return false;
     }

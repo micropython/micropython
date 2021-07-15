@@ -547,9 +547,7 @@ typedef struct _mp_buffer_info_t {
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
-typedef struct _mp_buffer_p_t {
-    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
-} mp_buffer_p_t;
+typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
@@ -608,7 +606,7 @@ struct _mp_obj_type_t {
     mp_fun_1_t iternext;
 
     // Implements the buffer protocol if supported by this type.
-    mp_buffer_p_t buffer_p;
+    mp_buffer_fun_t buffer;
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
