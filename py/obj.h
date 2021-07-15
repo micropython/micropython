@@ -565,11 +565,12 @@ struct _mp_obj_type_t {
     // The name of this type, a qstr.
     uint16_t name;
 
-    // Corresponds to __repr__ and __str__ special methods.
-    mp_print_fun_t print;
-
     // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
     mp_make_new_fun_t make_new;
+
+    #if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_FULL
+    // Corresponds to __repr__ and __str__ special methods.
+    mp_print_fun_t print;
 
     // Corresponds to __call__ special method, ie T(...).
     mp_call_fun_t call;
@@ -623,6 +624,28 @@ struct _mp_obj_type_t {
 
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
+
+    #elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+
+    // Ideally these would be only 4 bits, but the extra overhead of
+    // accessing them adds more code, and we also need to be able to
+    // take the address of them for mp_obj_class_lookup.
+    uint8_t slot_index_print;
+    uint8_t slot_index_call;
+    uint8_t slot_index_unary_op;
+    uint8_t slot_index_binary_op;
+    uint8_t slot_index_attr;
+    uint8_t slot_index_subscr;
+    uint8_t slot_index_getiter;
+    uint8_t slot_index_iternext;
+    uint8_t slot_index_buffer;
+    uint8_t slot_index_protocol;
+    uint8_t slot_index_parent;
+    uint8_t slot_index_locals_dict;
+
+    const void *slots[];
+
+    #endif
 };
 
 // Non-variable sized version of mp_obj_type_t to be used as a member
@@ -634,6 +657,8 @@ typedef struct _mp_obj_full_type_t {
     uint16_t flags;
     uint16_t name;
     mp_make_new_fun_t make_new;
+
+    #if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_FULL
 
     mp_print_fun_t print;
     mp_call_fun_t call;
@@ -647,9 +672,29 @@ typedef struct _mp_obj_full_type_t {
     const void *protocol;
     const void *parent;
     struct _mp_obj_dict_t *locals_dict;
+
+    #elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+
+    uint8_t slot_index_print;
+    uint8_t slot_index_call;
+    uint8_t slot_index_unary_op;
+    uint8_t slot_index_binary_op;
+    uint8_t slot_index_attr;
+    uint8_t slot_index_subscr;
+    uint8_t slot_index_getiter;
+    uint8_t slot_index_iternext;
+    uint8_t slot_index_buffer;
+    uint8_t slot_index_protocol;
+    uint8_t slot_index_parent;
+    uint8_t slot_index_locals_dict;
+    const void *slots[12];
+
+    #endif
 } mp_obj_full_type_t;
 
 #define MP_TYPE_NULL_MAKE_NEW (NULL)
+
+#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_FULL
 
 #define _MP_DEFINE_CONST_OBJ_TYPE_0(_typename, _name, _flags, _make_new) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new }
 #define _MP_DEFINE_CONST_OBJ_TYPE_1(_typename, _name, _flags, _make_new, f1, v1) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1 }
@@ -674,6 +719,44 @@ typedef struct _mp_obj_full_type_t {
 #define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->f = v)
 #define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, f))
 #define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(void **)((char *)(t) + (offset)) != NULL)
+
+#elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+
+#define _MP_OBJ_TYPE_SLOT_TYPE_print (mp_print_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_call (mp_call_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_unary_op (mp_unary_op_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_binary_op (mp_binary_op_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_attr (mp_attr_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_subscr (mp_subscr_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_getiter (mp_getiter_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_iternext (mp_fun_1_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_buffer (mp_buffer_fun_t)
+#define _MP_OBJ_TYPE_SLOT_TYPE_protocol (const void *)
+#define _MP_OBJ_TYPE_SLOT_TYPE_parent (const void *)
+#define _MP_OBJ_TYPE_SLOT_TYPE_locals_dict (struct _mp_obj_dict_t *)
+
+#define _MP_DEFINE_CONST_OBJ_TYPE_0(_typename, _name, _flags, _make_new) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slots = {} }
+#define _MP_DEFINE_CONST_OBJ_TYPE_1(_typename, _name, _flags, _make_new, f1, v1) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slots = {v1, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_2(_typename, _name, _flags, _make_new, f1, v1, f2, v2) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slots = {v1, v2, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_3(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slots = {v1, v2, v3, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_4(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slots = {v1, v2, v3, v4, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_5(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slots = {v1, v2, v3, v4, v5, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_6(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slots = {v1, v2, v3, v4, v5, v6, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_7(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slots = {v1, v2, v3, v4, v5, v6, v7, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_8(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slots = {v1, v2, v3, v4, v5, v6, v7, v8, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_9(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slots = {v1, v2, v3, v4, v5, v6, v7, v8, v9, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_10(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slots = {v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_11(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slots = {v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, } }
+#define _MP_DEFINE_CONST_OBJ_TYPE_12(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .slot_index_##f1 = 1, .slot_index_##f2 = 2, .slot_index_##f3 = 3, .slot_index_##f4 = 4, .slot_index_##f5 = 5, .slot_index_##f6 = 6, .slot_index_##f7 = 7, .slot_index_##f8 = 8, .slot_index_##f9 = 9, .slot_index_##f10 = 10, .slot_index_##f11 = 11, .slot_index_##f12 = 12, .slots = {v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, } }
+
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->slot_index_##f)
+#define MP_OBJ_TYPE_GET_SLOT(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(t)->slots[(t)->slot_index_##f - 1])
+#define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(MP_OBJ_TYPE_HAS_SLOT(t, f) ? MP_OBJ_TYPE_GET_SLOT(t, f) : NULL))
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = n, (t)->slots[(t)->slot_index_##f - 1] = (void *)v)
+#define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, slot_index_##f))
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0)
+
+#endif
 
 // Workaround for https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-160#macro-arguments-are-unpacked
 #define _MP_DEFINE_CONST_OBJ_TYPE_EXPAND(x) x

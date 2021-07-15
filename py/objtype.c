@@ -1145,7 +1145,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // extra.
     mp_obj_type_t *o = (mp_obj_type_t *)m_new0(mp_obj_full_type_t, 1);
     o->base.type = &mp_type_type;
-    o->flags = base_flags;
+    o->flags = base_flags
     o->name = name;
     o->make_new = mp_obj_instance_make_new;
     MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 1);
