@@ -86,7 +86,8 @@ extensions.append('autoapi.extension')
 autoapi_type = 'python'
 # Uncomment this if debugging autoapi
 autoapi_keep_files = True
-autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs') if os.path.exists(os.path.join("circuitpython-stubs", x, "__init__.pyi"))]
+print("autoapi_dirs", autoapi_dirs)
 autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'
@@ -203,7 +204,9 @@ exclude_patterns = ["**/build*",
                     "shared-module",
                     "supervisor",
                     "tests",
-                    "tools"]
+                    "test-stubs",
+                    "tools",
+                    "circuitpython-stubs/README.rst"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
