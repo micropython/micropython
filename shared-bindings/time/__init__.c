@@ -250,7 +250,11 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 
     mp_int_t secs = mp_obj_get_int(arg);
 
+    #if MICROPY_EPOCH_IS_1970
     if (secs < 0 || (mp_uint_t)secs < TIMEUTILS_SECONDS_1970_TO_2000) {
+    #else
+    if (secs < 0) {
+        #endif
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
     }
 
