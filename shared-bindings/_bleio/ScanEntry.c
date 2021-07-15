@@ -45,28 +45,32 @@
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
 //|
-//|     def matches(self, prefixes: ScanEntry, *, all: bool = True) -> bool:
-//|         """Returns True if the ScanEntry matches all prefixes when ``all`` is True. This is stricter
+//|     def matches(self, prefixes: ScanEntry, *, match_all: bool = True) -> bool:
+//|         """Returns True if the ScanEntry matches all prefixes when ``match_all`` is True. This is stricter
 //|         than the scan filtering which accepts any advertisements that match any of the prefixes
-//|         where all is False."""
+//|         where ``match_all`` is False.
+//|
+//|         ``all`` also works for ``match_all`` but will be removed in CircuitPython 8."""
 //|         ...
 //|
 STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_prefixes, ARG_all };
+    enum { ARG_prefixes, ARG_all, ARG_match_all };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_prefixes, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_all, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
+        { MP_QSTR_match_all, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    bool match_all = args[ARG_all].u_bool && args[ARG_match_all].u_bool;
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_prefixes].u_obj, &bufinfo, MP_BUFFER_READ);
-    return mp_obj_new_bool(common_hal_bleio_scanentry_matches(self, bufinfo.buf, bufinfo.len, args[ARG_all].u_bool));
+    return mp_obj_new_bool(common_hal_bleio_scanentry_matches(self, bufinfo.buf, bufinfo.len, match_all));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 2, bleio_scanentry_matches);
 
