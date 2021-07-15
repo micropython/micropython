@@ -552,6 +552,20 @@ typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
+#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SPLIT
+// These fields are split out from mp_obj_type_t.
+struct _mp_obj_type_ext_t {
+    mp_call_fun_t call;
+    mp_unary_op_fun_t unary_op;
+    mp_subscr_fun_t subscr;
+    mp_getiter_fun_t getiter;
+    mp_fun_1_t iternext;
+    mp_buffer_fun_t buffer;
+    const void *protocol;
+    mp_binary_op_fun_t binary_op;
+};
+#endif
+
 // In split/slots representations, this is a variable sized struct.
 // In order to use this as a member, or allocate dynamically, use the
 // mp_obj_full_type_t below (which must be kept in sync).
@@ -645,6 +659,15 @@ struct _mp_obj_type_t {
 
     const void *slots[];
 
+    #elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SPLIT
+
+    mp_print_fun_t print;
+    mp_attr_fun_t attr;
+    const void *parent;
+    struct _mp_obj_dict_t *locals_dict;
+
+    struct _mp_obj_type_ext_t ext[];
+
     #endif
 };
 
@@ -688,6 +711,14 @@ typedef struct _mp_obj_full_type_t {
     uint8_t slot_index_parent;
     uint8_t slot_index_locals_dict;
     const void *slots[12];
+
+    #elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SPLIT
+
+    mp_print_fun_t print;
+    mp_attr_fun_t attr;
+    const void *parent;
+    struct _mp_obj_dict_t *locals_dict;
+    struct _mp_obj_type_ext_t ext[1];
 
     #endif
 } mp_obj_full_type_t;
@@ -755,6 +786,57 @@ typedef struct _mp_obj_full_type_t {
 #define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = n, (t)->slots[(t)->slot_index_##f - 1] = (void *)v)
 #define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, slot_index_##f))
 #define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0)
+
+#elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SPLIT
+
+#define MP_OBJ_TYPE_FLAG_EXTENDED (0x0080)
+
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_print (0)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_call (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_unary_op (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_binary_op (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_attr (0)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_subscr (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_getiter (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_iternext (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_buffer (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_protocol (1)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_parent (0)
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_locals_dict (0)
+
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_print print
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_call ext[0].call
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_unary_op ext[0].unary_op
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_binary_op ext[0].binary_op
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_attr attr
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_subscr ext[0].subscr
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_getiter ext[0].getiter
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_iternext ext[0].iternext
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_buffer ext[0].buffer
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_protocol ext[0].protocol
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_parent parent
+#define _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_locals_dict locals_dict
+
+#define _MP_DEFINE_CONST_OBJ_TYPE_0(_typename, _name, _flags, _make_new) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new }
+#define _MP_DEFINE_CONST_OBJ_TYPE_1(_typename, _name, _flags, _make_new, f1, v1) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1)*MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_2(_typename, _name, _flags, _make_new, f1, v1, f2, v2) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_3(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_4(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_5(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_6(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_7(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_8(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f8) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f8 = v8 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_9(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f8 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f9) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f8 = v8, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f9 = v9 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_10(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f8 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f9 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f10) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f8 = v8, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f9 = v9, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f10 = v10 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_11(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f8 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f9 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f10 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f11) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f8 = v8, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f9 = v9, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f10 = v10, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f11 = v11 }
+#define _MP_DEFINE_CONST_OBJ_TYPE_12(_typename, _name, _flags, _make_new, f1, v1, f2, v2, f3, v3, f4, v4, f5, v5, f6, v6, f7, v7, f8, v8, f9, v9, f10, v10, f11, v11, f12, v12) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags | (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f1 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f2 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f3 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f4 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f5 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f6 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f7 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f8 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f9 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f10 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f11 | _MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f12) * MP_OBJ_TYPE_FLAG_EXTENDED, .make_new = _make_new, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f1 = v1, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f2 = v2, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f3 = v3, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f4 = v4, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f5 = v5, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f6 = v6, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f7 = v7, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f8 = v8, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f9 = v9, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f10 = v10, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f11 = v11, ._MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f12 = v12 }
+
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) (_MP_DEFINE_CONST_OBJ_TYPE_SLOT_IS_EXT_##f ? (((t)->flags & MP_OBJ_TYPE_FLAG_EXTENDED) ? (t)->_MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f : 0) : (t)->_MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f)
+#define MP_OBJ_TYPE_GET_SLOT(t, f) ((t)->_MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f)
+#define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) ((MP_OBJ_TYPE_HAS_SLOT(t, f) ? MP_OBJ_TYPE_GET_SLOT(t, f) : NULL))
+#define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->_MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f = v)
+#define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, _MP_DEFINE_CONST_OBJ_TYPE_SLOT_PATH_##f))
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(void **)((char *)(t) + (offset)) != NULL)
 
 #endif
 
