@@ -35,6 +35,8 @@ The state machines have 9 instructions which can perform the following tasks:-
 
 * MOV : moves data from a souce to a destination
 
+
+
 * IRQ : sets or clears the input flag
 
 * WAIT : pauses until a particular action happens
@@ -42,6 +44,16 @@ The state machines have 9 instructions which can perform the following tasks:-
 * JMP : moves to some target locations in differnt parts of code.
 
 
+We can take the pio_1hz example for a sinple understanding. We are creating an
+object of class StateMachine which will display the output on pin 25. The
+'blink_1hz' program uses the PIO to blink an LED and raise the IRQ at 1 HZ.
+Turn the LED on with the help of the set instruction. Set value 31 on register
+X. Then wait for 30 cycles with the help of nop() instruction. Then with the
+help of jmp, go to the code part which has label as 'delay high' for the
+instruction offset. The next part of the code teaches us to turn the LED off
+by turning the LED off with the help of set instruction. Here the label is
+'delay_low' for the instruction offset part of the jmp instruction. 
 
+We then print the millisecond timestamp by setting the IRQ handler.
 
 
