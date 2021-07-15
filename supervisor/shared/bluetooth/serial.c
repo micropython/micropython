@@ -60,6 +60,9 @@ STATIC bleio_packet_buffer_obj_t _tx_packet_buffer;
 STATIC uint32_t _incoming[64];
 STATIC bleio_characteristic_buffer_obj_t _rx_buffer;
 
+// Internal enabling so we can disable while printing BLE debugging.
+STATIC bool _enabled;
+
 void supervisor_start_bluetooth_serial(void) {
     supervisor_ble_serial_service_uuid.base.type = &bleio_uuid_type;
     common_hal_bleio_uuid_construct(&supervisor_ble_serial_service_uuid, 0x0001, nordic_uart_base_uuid);
@@ -71,6 +74,7 @@ void supervisor_start_bluetooth_serial(void) {
     characteristic_list.items = characteristic_list_items;
     mp_seq_clear(characteristic_list.items, 0, characteristic_list.alloc, sizeof(*characteristic_list.items));
 
+    supervisor_ble_serial_service.base.type = &bleio_service_type;
     _common_hal_bleio_service_construct(&supervisor_ble_serial_service, &supervisor_ble_serial_service_uuid, false /* is secondary */, &characteristic_list);
 
     // RX
@@ -117,6 +121,18 @@ void supervisor_start_bluetooth_serial(void) {
         0.1f,
         (uint8_t *)_incoming, sizeof(_incoming) * sizeof(uint32_t),
         &rx_static_handler_entry);
+
+    _enabled = true;
+}
+
+void supervisor_stop_bluetooth_serial(void) {
+    if (common_hal_bleio_packet_buffer_deinited(&_tx_packet_buffer)) {
+        return;
+    }
+    if (!_enabled) {
+        return;
+    }
+    common_hal_bleio_packet_buffer_flush(&_tx_packet_buffer);
 }
 
 bool ble_serial_connected(void) {
@@ -124,11 +140,16 @@ bool ble_serial_connected(void) {
 }
 
 bool ble_serial_available(void) {
-    return !common_hal_bleio_characteristic_buffer_deinited(&_rx_buffer) && common_hal_bleio_characteristic_buffer_rx_characters_available(&_rx_buffer);
+    return _enabled &&
+           !common_hal_bleio_characteristic_buffer_deinited(&_rx_buffer) &&
+           common_hal_bleio_characteristic_buffer_rx_characters_available(&_rx_buffer);
 }
 
 char ble_serial_read_char(void) {
     if (common_hal_bleio_characteristic_buffer_deinited(&_rx_buffer)) {
+        return -1;
+    }
+    if (!_enabled) {
         return -1;
     }
     uint8_t c;
@@ -138,6 +159,9 @@ char ble_serial_read_char(void) {
 
 void ble_serial_write(const char *text, size_t len) {
     if (common_hal_bleio_packet_buffer_deinited(&_tx_packet_buffer)) {
+        return;
+    }
+    if (!_enabled) {
         return;
     }
     size_t sent = 0;
@@ -150,4 +174,12 @@ void ble_serial_write(const char *text, size_t len) {
         }
         sent += written;
     }
+}
+
+void ble_serial_enable(void) {
+    _enabled = true;
+}
+
+void ble_serial_disable(void) {
+    _enabled = false;
 }

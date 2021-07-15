@@ -72,7 +72,9 @@ endif
 
 ifeq ($(CIRCUITPY_USB),0)
   ifeq ($(wildcard supervisor/serial.c),)
-    SRC_SUPERVISOR += supervisor/stub/serial.c
+    SRC_SUPERVISOR += supervisor/shared/serial.c \
+                      supervisor/shared/workflow.c \
+
   else
     SRC_SUPERVISOR += supervisor/serial.c
   endif

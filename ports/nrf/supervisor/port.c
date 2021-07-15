@@ -75,10 +75,6 @@ static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
 
-#ifdef NRF_DEBUG_PRINT
-extern void _debug_uart_init(void);
-#endif
-
 uint32_t reset_reason_saved = 0;
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
 
@@ -258,10 +254,6 @@ void reset_port(void) {
     #endif
 
     reset_all_pins();
-
-    #ifdef NRF_DEBUG_PRINT
-    _debug_uart_init();
-    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -389,7 +381,11 @@ void port_idle_until_interrupt(void) {
         // function (whether or not SD is enabled)
         int nested = __get_PRIMASK();
         __disable_irq();
-        if (!tud_task_event_ready()) {
+        bool ok = true;
+        #if CIRCUITPY_USB
+        ok = !tud_task_event_ready();
+        #endif
+        if (ok) {
             __DSB();
             __WFI();
         }

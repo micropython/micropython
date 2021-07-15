@@ -32,5 +32,6 @@
 void supervisor_bluetooth_background(void);
 void supervisor_bluetooth_init(void);
 void supervisor_start_bluetooth(void);
+void supervisor_stop_bluetooth(void);
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H

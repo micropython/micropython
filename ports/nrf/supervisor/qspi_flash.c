@@ -37,9 +37,6 @@
 
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "supervisor/shared/external_flash/qspi_flash.h"
-#ifdef NRF_DEBUG_PRINT
-#include "supervisor/serial.h" // dbg_printf()
-#endif
 
 #ifdef QSPI_FLASH_POWERDOWN
 // Parameters for external QSPI Flash power-down
@@ -55,12 +52,6 @@
 #define WAIT_AFTER_DPM_EXIT  50 // usec
 
 static int sck_delay_saved = 0;
-#endif
-
-#ifdef NRF_DEBUG_PRINT
-extern void dbg_dumpQSPIreg(void);
-#else
-#define dbg_dumpQSPIreg(...)
 #endif
 
 // When USB is disconnected, disable QSPI in sleep mode to save energy
@@ -289,20 +280,18 @@ void qspi_flash_enter_sleep(void) {
     // enabling IFCONFIG0.DPMENABLE here won't work.
     //  -> do it in spi_flash_init()
     // NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_DPMENABLE_Msk;
-    // dbg_dumpQSPIreg();
 
     // enter deep power-down mode (DPM)
     NRF_QSPI->IFCONFIG1 |= QSPI_IFCONFIG1_DPMEN_Msk;
     NRFX_DELAY_US(WAIT_AFTER_DPM_ENTER);
     if (!(NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk)) {
         #ifdef NRF_DEBUG_PRINT
-        dbg_printf("qspi flash: DPM failed\r\n");
+        mp_printf(&mp_plat_print, "qspi flash: DPM failed\r\n");
         #endif
     }
     #endif
 
     qspi_disable();
-    // dbg_dumpQSPIreg();
 }
 
 void qspi_flash_exit_sleep(void) {
@@ -316,7 +305,7 @@ void qspi_flash_exit_sleep(void) {
 
         if (NRF_QSPI->STATUS & QSPI_STATUS_DPM_Msk) {
             #ifdef NRF_DEBUG_PRINT
-            dbg_printf("qspi flash: exiting DPM failed\r\n");
+            mp_printf(&mp_plat_print, "qspi flash: exiting DPM failed\r\n");
             #endif
         }
         // restore sck_delay
@@ -327,6 +316,5 @@ void qspi_flash_exit_sleep(void) {
             = (NRF_QSPI->IFCONFIG1 & ~QSPI_IFCONFIG1_SCKDELAY_Msk)
                 | (sck_delay_saved << QSPI_IFCONFIG1_SCKDELAY_Pos);
     }
-    // dbg_dumpQSPIreg();
     #endif
 }

@@ -96,7 +96,6 @@ endif
 
 ifeq ($(NRF_DEBUG_PRINT), 1)
   CFLAGS += -DNRF_DEBUG_PRINT=1
-  SRC_SUPERVISOR += supervisor/debug_uart.c
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -248,7 +247,7 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(S
 SRC_QSTR_PREPROCESSOR +=
 
 
-all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.combined.hex
 
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
@@ -265,6 +264,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $^ $@
 #	$(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
+
+$(BUILD)/firmware.combined.hex: $(BUILD)/firmware.hex $(SOFTDEV_HEX)
+	$(STEPECHO) "Create $@"
+	$(Q)hexmerge.py -o $@ $^
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"

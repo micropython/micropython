@@ -173,7 +173,6 @@ SRC_C += \
 	fatfs_port.c \
 	supervisor/stub/filesystem.c \
 	supervisor/stub/safe_mode.c \
-	supervisor/stub/serial.c \
 	supervisor/stub/stack.c \
 	supervisor/shared/translate.c \
 	$(SRC_MOD) \

@@ -348,6 +348,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             #endif
         }
 
+        // Print done before resetting everything so that we get the message over
+        // BLE before it is reset and we have a delay before reconnect.
+        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
+            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+        } else {
+            serial_write_compressed(translate("\nCode done running.\n"));
+        }
+
         // Finished executing python code. Cleanup includes a board reset.
         cleanup_after_vm(heap);
 
@@ -361,15 +369,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
         if (reload_requested) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
-        }
-        else if (result.return_code == 0) {
+        } else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
                 skip_wait = true;
             }
-        }
-        else {
+        } else {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
             // Deep sleep cannot be skipped
             // TODO: settings in deep sleep should persist, using a new sleep memory API
@@ -382,12 +388,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             skip_repl = reload_requested;
             skip_wait = true;
-        }
-
-        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
-        } else {
-            serial_write_compressed(translate("\nCode done running.\n"));
         }
     }
 

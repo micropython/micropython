@@ -32,3 +32,6 @@ mypy
 
 # For uploading artifacts
 awscli
+
+# for combining the Nordic SoftDevice with CircuitPython
+intelhex

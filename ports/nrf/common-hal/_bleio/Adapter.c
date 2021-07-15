@@ -965,11 +965,22 @@ void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
-        // Disconnect all connections with Python state cleanly. Keep any supervisor-only connections.
-        if (connection->connection_obj != mp_const_none &&
-            connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
+        // Disconnect all connections cleanly.
+        if (connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
             common_hal_bleio_connection_disconnect(connection);
         }
         connection->connection_obj = mp_const_none;
+    }
+
+    // Wait up to 125 ms (128 ticks) for disconnect to complete. This should be
+    // greater than most connection intervals.
+    bool any_connected = false;
+    uint64_t start_ticks = supervisor_ticks_ms64();
+    while (any_connected && supervisor_ticks_ms64() - start_ticks < 128) {
+        any_connected = false;
+        for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+            bleio_connection_internal_t *connection = &bleio_connections[i];
+            any_connected |= connection->conn_handle != BLE_CONN_HANDLE_INVALID;
+        }
     }
 }

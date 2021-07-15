@@ -30,11 +30,6 @@
 #include "common-hal/alarm/SleepMemory.h"
 #include "nrf_power.h"
 
-#ifdef NRF_DEBUG_PRINT
-extern void dbg_dump_RAMreg(void);
-#include "supervisor/serial.h" // dbg_printf()
-#endif
-
 __attribute__((section(".uninitialized"))) static uint8_t _sleepmem[SLEEP_MEMORY_LENGTH];
 __attribute__((section(".uninitialized"))) uint8_t sleepmem_wakeup_event;
 __attribute__((section(".uninitialized"))) uint8_t sleepmem_wakeup_pin;
@@ -81,9 +76,6 @@ static void initialize_sleep_memory(void) {
     sleepmem_wakeup_pin = 0;
 
     set_memory_retention();
-    #ifdef NRF_DEBUG_PRINT
-    // dbg_dump_RAMreg();
-    #endif
 
     _sleepmem_magicnum = SLEEP_MEMORY_DATA_GUARD;
 }
@@ -92,7 +84,7 @@ void alarm_sleep_memory_reset(void) {
     if (!is_sleep_memory_valid()) {
         initialize_sleep_memory();
         #ifdef NRF_DEBUG_PRINT
-        dbg_printf("sleep memory initialized\r\n");
+        mp_printf(&mp_plat_print, "sleep memory initialized\r\n");
         #endif
     }
 }

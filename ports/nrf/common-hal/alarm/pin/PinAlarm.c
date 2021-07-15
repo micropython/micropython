@@ -41,14 +41,11 @@
 #include "nrf_soc.h"
 #include <string.h>
 
-#include "supervisor/serial.h"  // dbg_print
-
 #define WPIN_UNUSED 0xFF
 volatile char _pinhandler_gpiote_count;
 static bool pins_configured = false;
 
 extern uint32_t reset_reason_saved;
-extern void dbg_dump_GPIOregs(void);
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
@@ -205,7 +202,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
 
         pin_number = alarm->pin->number;
-        // dbg_printf("alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
+        // mp_printf(&mp_plat_print, "alarm_pin_pinalarm_set_alarms(pin#=%d, val=%d, pull=%d)\r\n", pin_number, alarm->value, alarm->pull);
         if (alarm->value) {
             high_alarms |= 1ull << pin_number;
             high_count++;
@@ -227,7 +224,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             pins_configured = false;
         }
     } else {
-        // dbg_printf("alarm_pin_pinalarm_set_alarms() no valid pins\r\n");
+        // mp_printf(&mp_plat_print, "alarm_pin_pinalarm_set_alarms() no valid pins\r\n");
     }
 }
 
@@ -235,8 +232,5 @@ void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
     if (!pins_configured) {
         configure_pins_for_sleep();
         pins_configured = true;
-        #ifdef NRF_DEBUG_PRINT
-        // dbg_dump_GPIOregs();
-        #endif
     }
 }
