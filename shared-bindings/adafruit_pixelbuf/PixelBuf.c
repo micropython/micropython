@@ -110,7 +110,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     // Validation complete, allocate and populate object.
     pixelbuf_pixelbuf_obj_t *self = m_new_obj(pixelbuf_pixelbuf_obj_t);
     self->base.type = &pixelbuf_pixelbuf_type;
-    common_hal__adafruit_pixelbuf_pixelbuf_construct(self, args[ARG_size].u_int,
+    common_hal_adafruit_pixelbuf_pixelbuf_construct(self, args[ARG_size].u_int,
         &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
         header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
 
@@ -158,7 +158,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|     """The number of bytes per pixel in the buffer (read-only)"""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(common_hal__adafruit_pixelbuf_pixelbuf_get_bpp(self_in));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_get_bpp);
 
@@ -177,7 +177,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
 //|     before they are adjusted for brightness."""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
-    return mp_obj_new_float(common_hal__adafruit_pixelbuf_pixelbuf_get_brightness(self_in));
+    return mp_obj_new_float(common_hal_adafruit_pixelbuf_pixelbuf_get_brightness(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_brightness_obj, pixelbuf_pixelbuf_obj_get_brightness);
 
@@ -189,7 +189,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
     } else if (brightness < 0) {
         brightness = 0;
     }
-    common_hal__adafruit_pixelbuf_pixelbuf_set_brightness(self_in, brightness);
+    common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(self_in, brightness);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_brightness_obj, pixelbuf_pixelbuf_obj_set_brightness);
@@ -205,13 +205,13 @@ const mp_obj_property_t pixelbuf_pixelbuf_brightness_obj = {
 //|     """Whether to automatically write the pixels after each update."""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
-    return mp_obj_new_bool(common_hal__adafruit_pixelbuf_pixelbuf_get_auto_write(self_in));
+    return mp_obj_new_bool(common_hal_adafruit_pixelbuf_pixelbuf_get_auto_write(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_auto_write_obj, pixelbuf_pixelbuf_obj_get_auto_write);
 
 
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_auto_write(mp_obj_t self_in, mp_obj_t value) {
-    common_hal__adafruit_pixelbuf_pixelbuf_set_auto_write(self_in, mp_obj_is_true(value));
+    common_hal_adafruit_pixelbuf_pixelbuf_set_auto_write(self_in, mp_obj_is_true(value));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_auto_write_obj, pixelbuf_pixelbuf_obj_set_auto_write);
@@ -227,7 +227,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
 //|     """byteorder string for the buffer (read-only)"""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
-    return common_hal__adafruit_pixelbuf_pixelbuf_get_byteorder_string(self_in);
+    return common_hal_adafruit_pixelbuf_pixelbuf_get_byteorder_string(self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf_obj_get_byteorder);
 
@@ -243,7 +243,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_BOOL:
             return mp_const_true;
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(common_hal__adafruit_pixelbuf_pixelbuf_get_len(self_in));
+            return MP_OBJ_NEW_SMALL_INT(common_hal_adafruit_pixelbuf_pixelbuf_get_len(self_in));
         default:
             return MP_OBJ_NULL;      // op not supported
     }
@@ -256,7 +256,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
-    common_hal__adafruit_pixelbuf_pixelbuf_show(self_in);
+    common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
@@ -267,7 +267,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_s
 //|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
-    common_hal__adafruit_pixelbuf_pixelbuf_fill(self_in, value);
+    common_hal_adafruit_pixelbuf_pixelbuf_fill(self_in, value);
 
     return mp_const_none;
 }
@@ -307,7 +307,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
-        size_t length = common_hal__adafruit_pixelbuf_pixelbuf_get_len(self_in);
+        size_t length = common_hal_adafruit_pixelbuf_pixelbuf_get_len(self_in);
         mp_seq_get_fast_slice_indexes(length, index_in, &slice);
         static mp_obj_tuple_t flat_item_tuple = {
             .base = {&mp_type_tuple},
@@ -334,7 +334,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         if (value == MP_OBJ_SENTINEL) { // Get
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
             for (uint i = 0; i < slice_len; i++) {
-                t->items[i] = common_hal__adafruit_pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
+                t->items[i] = common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
             }
             return MP_OBJ_FROM_PTR(t);
         } else { // Set
@@ -342,10 +342,10 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
             size_t num_items = mp_obj_get_int(mp_obj_len(value));
 
-            if (num_items != slice_len && num_items != (slice_len * common_hal__adafruit_pixelbuf_pixelbuf_get_bpp(self_in))) {
+            if (num_items != slice_len && num_items != (slice_len * common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in))) {
                 mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
-            common_hal__adafruit_pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
+            common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
                 num_items != slice_len ? &flat_item_tuple : mp_const_none);
             return mp_const_none;
             #else
@@ -354,13 +354,13 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         }
     #endif
     } else { // Single index rather than slice.
-        size_t length = common_hal__adafruit_pixelbuf_pixelbuf_get_len(self_in);
+        size_t length = common_hal_adafruit_pixelbuf_pixelbuf_get_len(self_in);
         size_t index = mp_get_index(mp_obj_get_type(self_in), length, index_in, false);
 
         if (value == MP_OBJ_SENTINEL) { // Get
-            return common_hal__adafruit_pixelbuf_pixelbuf_get_pixel(self_in, index);
+            return common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(self_in, index);
         } else { // Store
-            common_hal__adafruit_pixelbuf_pixelbuf_set_pixel(self_in, index, value);
+            common_hal_adafruit_pixelbuf_pixelbuf_set_pixel(self_in, index, value);
             return mp_const_none;
         }
     }
