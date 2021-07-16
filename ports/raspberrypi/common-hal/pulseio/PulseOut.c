@@ -91,7 +91,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     self->pin = carrier->pin->number;
     self->slice = carrier->slice;
     self->carrier = pwmout_obj;
-    min_pulse = (1000000 / carrier->actual_frequency) / 2;
+    min_pulse = (1000000 / carrier->actual_frequency);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
