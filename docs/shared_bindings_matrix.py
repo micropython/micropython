@@ -63,6 +63,7 @@ additional_modules = {
     "terminalio": "CIRCUITPY_DISPLAYIO",
     # "socket": "CIRCUITPY_NETWORK",
     "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
+    "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF"
 }
 
 def get_circuitpython_root_dir():
