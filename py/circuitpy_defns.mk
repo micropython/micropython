@@ -227,7 +227,7 @@ ifeq ($(CIRCUITPY_DUALBANK),1)
 SRC_PATTERNS += dualbank/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
-SRC_PATTERNS += _pixelbuf/%
+SRC_PATTERNS += adafruit_pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_RAINBOWIO),1)
 SRC_PATTERNS += rainbowio/%
@@ -469,8 +469,8 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
 	_eve/__init__.c \
-	_pixelbuf/PixelBuf.c \
-	_pixelbuf/__init__.c \
+	adafruit_pixelbuf/PixelBuf.c \
+	adafruit_pixelbuf/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \

@@ -29,7 +29,7 @@
 #include "py/objstr.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "shared-bindings/_pixelbuf/PixelBuf.h"
+#include "shared-bindings/adafruit_pixelbuf/PixelBuf.h"
 #include <string.h>
 #include <math.h>
 
@@ -40,7 +40,7 @@ static pixelbuf_pixelbuf_obj_t *native_pixelbuf(mp_obj_t pixelbuf_obj) {
     return MP_OBJ_TO_PTR(native_pixelbuf);
 }
 
-void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
+void common_hal_adafruit_pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
     pixelbuf_byteorder_details_t *byteorder, mp_float_t brightness, bool auto_write,
     uint8_t *header, size_t header_len, uint8_t *trailer, size_t trailer_len) {
 
@@ -71,43 +71,43 @@ void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size
     // Call set_brightness so that it can allocate a second buffer if needed.
     self->brightness = 1.0;
     self->scaled_brightness = 0x100;
-    common_hal__pixelbuf_pixelbuf_set_brightness(MP_OBJ_FROM_PTR(self), brightness);
+    common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(MP_OBJ_FROM_PTR(self), brightness);
 
     // Turn on auto_write. We don't want to do it with the above brightness call.
     self->auto_write = auto_write;
 }
 
-size_t common_hal__pixelbuf_pixelbuf_get_len(mp_obj_t self_in) {
+size_t common_hal_adafruit_pixelbuf_pixelbuf_get_len(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->pixel_count;
 }
 
-uint8_t common_hal__pixelbuf_pixelbuf_get_bpp(mp_obj_t self_in) {
+uint8_t common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->byteorder.bpp;
 }
 
-mp_obj_t common_hal__pixelbuf_pixelbuf_get_byteorder_string(mp_obj_t self_in) {
+mp_obj_t common_hal_adafruit_pixelbuf_pixelbuf_get_byteorder_string(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->byteorder.order_string;
 }
 
-bool common_hal__pixelbuf_pixelbuf_get_auto_write(mp_obj_t self_in) {
+bool common_hal_adafruit_pixelbuf_pixelbuf_get_auto_write(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->auto_write;
 }
 
-void common_hal__pixelbuf_pixelbuf_set_auto_write(mp_obj_t self_in, bool auto_write) {
+void common_hal_adafruit_pixelbuf_pixelbuf_set_auto_write(mp_obj_t self_in, bool auto_write) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     self->auto_write = auto_write;
 }
 
-mp_float_t common_hal__pixelbuf_pixelbuf_get_brightness(mp_obj_t self_in) {
+mp_float_t common_hal_adafruit_pixelbuf_pixelbuf_get_brightness(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return self->brightness;
 }
 
-void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t brightness) {
+void common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t brightness) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     // Skip out if the brightness is already set. The default of self->brightness is 1.0. So, this
     // also prevents the pre_brightness_buffer allocation when brightness is set to 1.0 again.
@@ -135,7 +135,7 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
         }
 
         if (self->auto_write) {
-            common_hal__pixelbuf_pixelbuf_show(self_in);
+            common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
         }
     }
 }
@@ -244,7 +244,7 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t *values,
+void common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t *values,
     mp_obj_tuple_t *flatten_to) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_iter_buf_t iter_buf;
@@ -268,21 +268,21 @@ void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp
         }
     }
     if (self->auto_write) {
-        common_hal__pixelbuf_pixelbuf_show(self_in);
+        common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
     }
 }
 
 
 
-void common_hal__pixelbuf_pixelbuf_set_pixel(mp_obj_t self_in, size_t index, mp_obj_t value) {
+void common_hal_adafruit_pixelbuf_pixelbuf_set_pixel(mp_obj_t self_in, size_t index, mp_obj_t value) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     _pixelbuf_set_pixel(self, index, value);
     if (self->auto_write) {
-        common_hal__pixelbuf_pixelbuf_show(self_in);
+        common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
     }
 }
 
-mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index) {
+mp_obj_t common_hal_adafruit_pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_t elems[self->byteorder.bpp];
     uint8_t *pixel_buffer = self->post_brightness_buffer;
@@ -307,7 +307,7 @@ mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index)
     return mp_obj_new_tuple(self->byteorder.bpp, elems);
 }
 
-void common_hal__pixelbuf_pixelbuf_show(mp_obj_t self_in) {
+void common_hal_adafruit_pixelbuf_pixelbuf_show(mp_obj_t self_in) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     mp_obj_t dest[2 + 1];
     mp_load_method(self_in, MP_QSTR__transmit, dest);
@@ -317,7 +317,7 @@ void common_hal__pixelbuf_pixelbuf_show(mp_obj_t self_in) {
     mp_call_method_n_kw(1, 0, dest);
 }
 
-void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
+void common_hal_adafruit_pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
 
     uint8_t r;
@@ -330,6 +330,6 @@ void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t fill_color) {
         _pixelbuf_set_pixel_color(self, i, r, g, b, w);
     }
     if (self->auto_write) {
-        common_hal__pixelbuf_pixelbuf_show(self_in);
+        common_hal_adafruit_pixelbuf_pixelbuf_show(self_in);
     }
 }

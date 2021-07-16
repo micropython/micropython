@@ -29,20 +29,22 @@
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
-#include "shared-bindings/_pixelbuf/__init__.h"
-#include "shared-bindings/_pixelbuf/PixelBuf.h"
+#include "shared-bindings/adafruit_pixelbuf/__init__.h"
+#include "shared-bindings/adafruit_pixelbuf/PixelBuf.h"
 
 
 //| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar
 //|
-//| The `_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
+//| The `adafruit_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
+//| Also available as ``_pixelbuf``. This usage has been deprecated.
+//|
 //| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
-// TODO: Pull in docs from pypixelbuf.
+// TODO: Pull in docs from adafruit_pixelbuf.
 
 STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pixelbuf) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_pixelbuf) },
     { MP_ROM_QSTR(MP_QSTR_PixelBuf), MP_ROM_PTR(&pixelbuf_pixelbuf_type) },
 };
 

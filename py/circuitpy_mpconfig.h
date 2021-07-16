@@ -618,7 +618,8 @@ extern const struct _mp_obj_module_t pew_module;
 
 #if CIRCUITPY_PIXELBUF
 extern const struct _mp_obj_module_t pixelbuf_module;
-#define PIXELBUF_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
+#define PIXELBUF_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_pixelbuf),(mp_obj_t)&pixelbuf_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
 #else
 #define PIXELBUF_MODULE
 #endif
