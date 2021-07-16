@@ -39,6 +39,9 @@ typedef struct {
     uint16_t *buffer;
     uint16_t maxlen;
     bool idle_state;
+    bool last_level;
+    uint32_t level_count;
+    volatile uint16_t buf_index;
     volatile uint16_t start;
     volatile uint16_t len;
     rp2pio_statemachine_obj_t state_machine;
