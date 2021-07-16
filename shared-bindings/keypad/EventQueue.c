@@ -137,9 +137,10 @@ const mp_obj_property_t keypad_eventqueue_overflowed_obj = {
 };
 
 STATIC const mp_rom_map_elem_t keypad_eventqueue_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_clear),       MP_ROM_PTR(&keypad_eventqueue_clear_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear),      MP_ROM_PTR(&keypad_eventqueue_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_get),        MP_ROM_PTR(&keypad_eventqueue_get_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_into),  MP_ROM_PTR(&keypad_eventqueue_get_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_into),   MP_ROM_PTR(&keypad_eventqueue_get_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_overflowed), MP_ROM_PTR(&keypad_eventqueue_overflowed_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_eventqueue_locals_dict, keypad_eventqueue_locals_dict_table);
@@ -147,7 +148,7 @@ STATIC MP_DEFINE_CONST_DICT(keypad_eventqueue_locals_dict, keypad_eventqueue_loc
 const mp_obj_type_t keypad_eventqueue_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Keys,
+    .name = MP_QSTR_EventQueue,
     MP_TYPE_EXTENDED_FIELDS(
         .unary_op = keypad_eventqueue_unary_op,
         ),
