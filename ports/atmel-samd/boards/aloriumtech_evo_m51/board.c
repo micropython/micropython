@@ -30,6 +30,7 @@
 
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
+#include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
     never_reset_pin_number(PIN_PB20);

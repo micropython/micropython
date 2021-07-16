@@ -3,8 +3,8 @@
 
 // Rev B - Black
 #define MICROPY_HW_LED_STATUS   (&pin_PA10)
-// #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
-// #define MICROPY_HW_APA102_SCK    (&pin_PA01)
+#define MICROPY_HW_APA102_MOSI   (&pin_PA00)
+#define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
 #define SPI_FLASH_MOSI_PIN          &pin_PA16
 #define SPI_FLASH_MISO_PIN          &pin_PA19

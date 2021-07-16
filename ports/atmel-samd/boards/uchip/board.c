@@ -25,7 +25,10 @@
  */
 
 #include "supervisor/board.h"
+
+#include "common-hal/microcontroller/Pin.h"
 #include "mpconfigboard.h"
+
 #include "hal/include/hal_gpio.h"
 
 void board_init(void) {
@@ -36,7 +39,7 @@ void board_init(void) {
     // USB_DETECT
     never_reset_pin_number(PIN_PA28);
     // USB_HOST_EN
-    never_reset_pin_number(PORT_PA27);
+    never_reset_pin_number(PIN_PA27);
 }
 
 bool board_requests_safe_mode(void) {
