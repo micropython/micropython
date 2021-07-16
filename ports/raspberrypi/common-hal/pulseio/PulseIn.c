@@ -129,36 +129,36 @@ void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
     rxfifo = pio_sm_get_blocking(self->state_machine.pio, self->state_machine.state_machine);
     // translate from fifo to buffer
     if ((rxfifo == 0 && self->last_level == false) || (rxfifo == 0xffffffff && self->last_level == true)) {
-	    self->level_count = self->level_count + 32;
+        self->level_count = self->level_count + 32;
     } else {
-    for (uint i = 0; i < 32; i++) {
-        bool level = (rxfifo & (1 << i)) >> i;
-        if (level == self->last_level) {
-            self->level_count++;
-        } else {
-            result = self->level_count;
-            self->last_level = level;
-            self->level_count = 0;
-            // Pulses that are longer than MAX_PULSE will return MAX_PULSE
-            if (result > MAX_PULSE) {
-                result = MAX_PULSE;
-            }
-            // return  pulses that are not too short
-            if (result > MIN_PULSE) {
-                self->buffer[self->buf_index] = (uint16_t)result;
-                if (self->len < self->maxlen) {
-                    self->len++;
+        for (uint i = 0; i < 32; i++) {
+            bool level = (rxfifo & (1 << i)) >> i;
+            if (level == self->last_level) {
+                self->level_count++;
+            } else {
+                result = self->level_count;
+                self->last_level = level;
+                self->level_count = 0;
+                // Pulses that are longer than MAX_PULSE will return MAX_PULSE
+                if (result > MAX_PULSE) {
+                    result = MAX_PULSE;
                 }
-                if (self->buf_index < self->maxlen) {
-                    self->buf_index++;
-                } else {
-                    self->start = 0;
-                    self->buf_index = 0;
+                // return  pulses that are not too short
+                if (result > MIN_PULSE) {
+                    self->buffer[self->buf_index] = (uint16_t)result;
+                    if (self->len < self->maxlen) {
+                        self->len++;
+                    }
+                    if (self->buf_index < self->maxlen) {
+                        self->buf_index++;
+                    } else {
+                        self->start = 0;
+                        self->buf_index = 0;
+                    }
                 }
             }
         }
     }
-   }
 
 // check for a pulse thats too long (MAX_PULSE us) or maxlen reached,  and reset
     if ((self->level_count > MAX_PULSE) || (self->buf_index >= self->maxlen)) {
