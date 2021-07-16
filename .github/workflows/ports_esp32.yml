@@ -1,0 +1,36 @@
+name: esp32 port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/esp32/**'
+
+jobs:
+  build_idf402:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Initialize lv_bindings submodule
+      run: git submodule update --init --recursive lib/lv_bindings
+    - name: Install packages
+      run: source tools/ci.sh && ci_esp32_idf402_setup
+    - name: Build
+      run: source tools/ci.sh && ci_esp32_build
+
+  build_idf43:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Initialize lv_bindings submodule
+      run: git submodule update --init --recursive lib/lv_bindings
+    - name: Install packages
+      run: source tools/ci.sh && ci_esp32_idf43_setup
+    - name: Build
+      run: source tools/ci.sh && ci_esp32_build
