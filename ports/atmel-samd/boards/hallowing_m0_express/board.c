@@ -72,6 +72,7 @@ void board_init(void) {
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     busio_spi_obj_t *spi = common_hal_board_create_spi();
+    common_hal_busio_spi_never_reset(spi);
     common_hal_displayio_fourwire_construct(bus,
         spi,
         &pin_PA28, // Command or data

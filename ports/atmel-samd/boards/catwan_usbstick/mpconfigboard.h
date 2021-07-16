@@ -3,10 +3,6 @@
 
 #define MICROPY_HW_LED_RX   &pin_PA14
 
-#define MICROPY_PORT_A        (PORT_PA14)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define DEFAULT_SPI_BUS_SCK (&pin_PA19)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA18)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA22)

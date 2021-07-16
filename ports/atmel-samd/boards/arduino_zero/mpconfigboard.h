@@ -6,10 +6,6 @@
 #define MICROPY_HW_LED_TX   &pin_PA27
 #define MICROPY_HW_LED_RX   &pin_PB03
 
-#define MICROPY_PORT_A        (PORT_PA27)
-#define MICROPY_PORT_B        (PORT_PB03)
-#define MICROPY_PORT_C        (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 

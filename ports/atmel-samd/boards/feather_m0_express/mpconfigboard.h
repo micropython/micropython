@@ -10,11 +10,6 @@
 #define SPI_FLASH_SCK_PIN           &pin_PA09
 #define SPI_FLASH_CS_PIN            &pin_PA13
 
-// These are pins not to reset.
-#define MICROPY_PORT_A        (PORT_PA06)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define BOARD_HAS_CRYSTAL 1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)

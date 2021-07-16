@@ -5,14 +5,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA15)
 
-// These are pins not to reset.
-// QSPI Data pins
-#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11)
-// QSPI CS, QSPI SCK and NeoPixel pin
-#define MICROPY_PORT_B (PORT_PB03 | PORT_PB10 | PORT_PB11)
-#define MICROPY_PORT_C (0)
-#define MICROPY_PORT_D (0)
-
 #define EXTERNAL_FLASH_QSPI_DUAL
 
 #define BOARD_HAS_CRYSTAL 1

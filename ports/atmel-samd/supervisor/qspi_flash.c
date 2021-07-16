@@ -242,11 +242,18 @@ void spi_flash_init(void) {
     QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE;
 
     // The QSPI is only connected to one set of pins in the SAMD51 so we can hard code it.
-    uint32_t pins[6] = {PIN_PA08, PIN_PA09, PIN_PA10, PIN_PA11, PIN_PB10, PIN_PB11};
-    for (uint8_t i = 0; i < 6; i++) {
+    #ifdef EXTERNAL_FLASH_QSPI_SINGLE
+    uint32_t pins[] = {PIN_PA08, PIN_PB10, PIN_PB11};
+    #elif defined(EXTERNAL_FLASH_QSPI_DUAL)
+    uint32_t pins[] = {PIN_PA08, PIN_PA09, PIN_PB10, PIN_PB11};
+    #else
+    uint32_t pins[] = {PIN_PA08, PIN_PA09, PIN_PA10, PIN_PA11, PIN_PB10, PIN_PB11};
+    #endif
+    for (uint8_t i = 0; i < MP_ARRAY_SIZE(pins); i++) {
         gpio_set_pin_direction(pins[i], GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(pins[i], GPIO_PULL_OFF);
         gpio_set_pin_function(pins[i], GPIO_PIN_FUNCTION_H);
+        never_reset_pin_number(pins[i]);
     }
 }
 

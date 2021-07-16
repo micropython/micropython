@@ -5,11 +5,6 @@
 #define MICROPY_HW_LED_STATUS   (&pin_PA27)
 #define MICROPY_HW_NEOPIXEL     (&pin_PA15)
 
-#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-#define MICROPY_PORT_D        (0)
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (128 * 1024)
 

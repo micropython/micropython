@@ -7,10 +7,6 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
-#define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define IGNORE_PIN_PA03     1
 #define IGNORE_PIN_PA04     1
 #define IGNORE_PIN_PA11     1
