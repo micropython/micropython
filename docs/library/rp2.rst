@@ -93,12 +93,12 @@ wait(polarity, src, index)
      see sec 3.4.3 of RPi docs for details
 
 in(src, data)
-    src : pin, X, Y, ISR, OSR(all 0-31)
+    src : pin, x, y, isr, osr(all 0-31)
     data : bit count(0-31)
     see sec 3.4.4 of RPi docs for details
 
 out(dist,data)
-    dist : pin, X, Y, PINDIRS, AC, ISR, OSR(all 0-31)
+    dist : pin, x, y, pindirs, ac, isr, osr(all 0-31)
     data : bit count(0-31)
     see sec 3.4.5 of RPi docs for details
 
@@ -114,12 +114,12 @@ pull(value = 0, value = 2)
     see sec 3.4.7 of RPi docs for details
 
 mov(dist, src)
-    dist : pin, X, Y, ISR, OSR, PC (all 0-31)
-    src : pin, X, Y, ISR, OSR (all 0-31)
+    dist : pin, x, y, isr, osr, pc (all 0-31)
+    src : pin, x, y, isr, osr (all 0-31)
     see sec 3.4.8 of RPi docs for details
 
 set(dest, data)
-    dest : X, Y, PINS, PINDIRS
+    dest : x, y, pins, pindirs
     data : value (0-31)
     see sec 3.4.10 of RPi docs for details
 
