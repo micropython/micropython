@@ -113,8 +113,8 @@ pull(value = 0, value = 2)
     no-block = 0
     see sec 3.4.7 of RPi docs for details
 
-mov(dist, src)
-    dist : pin, x, y, isr, osr, pc (all 0-31)
+mov(dest, src)
+    dest : pin, x, y, isr, osr, pc (all 0-31)
     src : pin, x, y, isr, osr (all 0-31)
     see sec 3.4.8 of RPi docs for details
 
