@@ -1,7 +1,8 @@
 # Micropython + lvgl
 
-![Build lv_micropython unix port](https://github.com/lvgl/lv_micropython/workflows/Build%20lv_micropython%20unix%20port/badge.svg)
-![Build lv_micropython stm32 port](https://github.com/lvgl/lv_micropython/workflows/Build%20lv_micropython%20stm32%20port/badge.svg)
+[![Build lv_micropython unix port](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml)
+[![Build lv_micropython stm32 port](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml)
+[![esp32 port](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml)
 
 **For information abound Micropython lvgl bindings please refrer to [lv_binding_micropython/README.md](https://github.com/lvgl/lv_binding_micropython/blob/master/README.md)**
 
