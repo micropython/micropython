@@ -97,8 +97,8 @@ in(src, data)
     data : bit count(0-31)
     see sec 3.4.4 of RPi docs for details
 
-out(dist,data)
-    dist : pin, x, y, pindirs, ac, isr, osr(all 0-31)
+out(dest,data)
+    dest : pin, x, y, pindirs, ac, isr, osr(all 0-31)
     data : bit count(0-31)
     see sec 3.4.5 of RPi docs for details
 
