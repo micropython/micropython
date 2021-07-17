@@ -109,7 +109,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 //|
 STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
-    if (run_mode_obj == &mcu_runmode_normal_obj) {
+    if (run_mode_obj == &mcu_runmode_uf2_obj) {
+        run_mode = RUNMODE_UF2;
+    } else if (run_mode_obj == &mcu_runmode_normal_obj) {
         run_mode = RUNMODE_NORMAL;
     } else if (run_mode_obj == &mcu_runmode_safe_mode_obj) {
         run_mode = RUNMODE_SAFE_MODE;
@@ -118,9 +120,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     } else {
         mp_raise_ValueError(translate("Invalid run mode."));
     }
-
     common_hal_mcu_on_next_reset(run_mode);
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
