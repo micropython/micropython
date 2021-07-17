@@ -45,8 +45,8 @@ We also have the feature of a pseudo-instruction provided by pioasm:-
 
 * NOP : assembles to mov y and y; used for providing extra-delay
 
-To understand the use of these instrcutions we can take the pio_1hz example for a sinple understanding. Below is the code
-of pio_1hz.py for reference. 
+To understand the use of these instrcutions we can take the pio_1hz example for
+a sinple understanding. Below is the code of pio_1hz.py for reference. 
 
 .. code-block:: python3
 
