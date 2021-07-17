@@ -515,6 +515,8 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
+    make ${MAKEOPTS} -C ports/unix VARIANT=dev submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=dev
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage
 }
