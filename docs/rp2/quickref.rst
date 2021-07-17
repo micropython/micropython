@@ -158,7 +158,7 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
     # construct a SoftSPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100_000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -188,9 +188,9 @@ SPI above::
 
     from machine import Pin, SPI
 
-    spi = SPI(1, 10000000)  # Default assignment: sck=Pin(10), mosi=Pin(11), miso=Pin(8) 
-    spi = SPI(1, 10000000, sck=Pin(14), mosi=Pin(15), miso=Pin(12))
-    spi = SPI(0, baudrate=80000000, polarity=0, phase=0, bits=8, sck=Pin(6), mosi=Pin(7), miso=Pin(4))
+    spi = SPI(1, 10_000_000)  # Default assignment: sck=Pin(10), mosi=Pin(11), miso=Pin(8) 
+    spi = SPI(1, 10_000_000, sck=Pin(14), mosi=Pin(15), miso=Pin(12))
+    spi = SPI(0, baudrate=80_000_000, polarity=0, phase=0, bits=8, sck=Pin(6), mosi=Pin(7), miso=Pin(4))
 
 Software I2C bus
 ----------------
@@ -200,7 +200,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
     from machine import Pin, SoftI2C
 
-    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100_000)
 
     i2c.scan()              # scan for devices
 
@@ -219,7 +219,7 @@ has the same methods as software I2C above::
     from machine import Pin, I2C
 
     i2c = I2C(0)   # default assignment: scl=Pin(9), sda=Pin(8)
-    i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400000)
+    i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400_000)
 
 Real time clock (RTC)
 ---------------------
