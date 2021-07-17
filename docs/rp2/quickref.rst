@@ -3,7 +3,7 @@
 Quick reference for the RP2
 ===========================
 
-.. image:: img/rpipico.jpg
+.. image:: img/pico_pinout.jpg
     :alt: Raspberry Pi Pico
     :width: 640px
 
@@ -98,13 +98,8 @@ UART (serial bus)
 -----------------
 
 There are two UARTs, UART0 and UART1. UART0 can be mapped to GPIO 1/2, 12/13
-and 16/17, and UART1 to GPIO 6/7 and 8/9. Since for using the UART GPIO
-numbers have to be used, these should be mentioned and can be seen in the pin
-diagram below:
+and 16/17, and UART1 to GPIO 6/7 and 8/9.
 
-.. image:: img/UARTpinout.png
-    :alt: Pin Diagram Raspberry Pi Pico
-    :width: 640px
 
 See :ref:`machine.UART <machine.UART>`. ::
 
