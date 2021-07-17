@@ -35,16 +35,17 @@ The state machines have 9 instructions which can perform the following tasks:-
 
 * MOV : moves data from a souce to a destination
 
-
-
 * IRQ : sets or clears the input flag
 
 * WAIT : pauses until a particular action happens
 
 * JMP : moves to some target locations in differnt parts of code.
 
+We also have the feature of a pseudo-instruction provided by pioasm:-
 
-We can take the pio_1hz example for a sinple understanding. Below is the code
+* NOP : assembles to mov y and y; used for providing extra-delay
+
+To understand the use of these instrcutions we can take the pio_1hz example for a sinple understanding. Below is the code
 of pio_1hz.py for reference. 
 
 .. code-block:: python3
