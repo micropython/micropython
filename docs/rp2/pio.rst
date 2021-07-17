@@ -44,15 +44,55 @@ The state machines have 9 instructions which can perform the following tasks:-
 * JMP : moves to some target locations in differnt parts of code.
 
 
-We can take the pio_1hz example for a sinple understanding. We are creating an
-object of class StateMachine which will display the output on pin 25. The
-'blink_1hz' program uses the PIO to blink an LED and raise the IRQ at 1 HZ.
-Turn the LED on with the help of the set instruction. Set value 31 on register
-X. Then wait for 30 cycles with the help of nop() instruction. Then with the
-help of jmp, go to the code part which has label as 'delay high' for the
-instruction offset. The next part of the code teaches us to turn the LED off
-by turning the LED off with the help of set instruction. Here the label is
-'delay_low' for the instruction offset part of the jmp instruction. 
+We can take the pio_1hz example for a sinple understanding. Below is the code
+of pio_1hz.py for reference. 
+
+.. code-block:: python3
+
+    # Example using PIO to blink an LED and raise an IRQ at 1Hz.
+
+    import time
+    from machine import Pin
+    import rp2
+
+
+    @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
+    def blink_1hz():
+      # fmt: off
+      # Cycles: 1 + 1 + 6 + 32 * (30 + 1) = 1000
+      irq(rel(0))
+      set(pins, 1)
+      set(x, 31)                  [5]
+      label("delay_high")
+      nop()                       [29]
+      jmp(x_dec, "delay_high")
+
+      # Cycles: 1 + 7 + 32 * (30 + 1) = 1000
+      set(pins, 0)
+      set(x, 31)                  [6]
+      label("delay_low")
+      nop()                       [29]
+      jmp(x_dec, "delay_low")
+      # fmt: on
+
+
+    # Create the StateMachine with the blink_1hz program, outputting on Pin(25).
+    sm = rp2.StateMachine(0, blink_1hz, freq=2000, set_base=Pin(25))
+
+    # Set the IRQ handler to print the millisecond timestamp.
+    sm.irq(lambda p: print(time.ticks_ms()))
+
+    # Start the StateMachine.
+    sm.active(1)
+
+We are creating an object of class StateMachine which will display the output
+on pin 25. The 'blink_1hz' program uses the PIO to blink an LED and raise the
+IRQ at 1 HZ. Turn the LED on with the help of the set instruction. Set value
+31 on register X. Then wait for 30 cycles with the help of nop() instruction.
+Then with the help of jmp, go to the code part which has label as 'delay high'
+for the instruction offset. The next part of the code teaches us to turn the
+LED off by turning the LED off with the help of set instruction. Here the
+label is 'delay_low' for the instruction offset part of the jmp instruction. 
 
 We then print the millisecond timestamp by setting the IRQ handler.
 
