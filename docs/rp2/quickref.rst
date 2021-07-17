@@ -27,7 +27,7 @@ a troubleshooting subsection.
 General board control
 ---------------------
 
-The MicroPython REPL is on the USB serial port. Tab-completion is useful to
+The MicroPython REPL is accessed via the USB serial port. Tab-completion is useful to
 find out what methods an object has. Paste mode (ctrl-E) is useful to paste a
 large slab of Python code into the REPL.
 
@@ -60,7 +60,7 @@ Timers
 
 RP2040's system timer peripheral provides a global microsecond timebase and
 generates interrupts for the same. The software timer is available currently,
-and there are unlimited number of them available (limited by memory). There is
+and there are unlimited number of them available (memory permitting). There is
 no need to specify the timer id (id=-1 is supported at the moment) as it will
 be set automatically. 
 
