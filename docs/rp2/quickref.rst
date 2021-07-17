@@ -143,10 +143,11 @@ ADC (analog to digital conversion)
 ----------------------------------
 
 RP2040 has five ADC channels in total, four of which are 12-bit SAR based
-ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1 and ADC2 can
-be connected with GP26, GP27, GP28. The standard ADC range is 0-3.3V. The fifth channel 
-is connected to the in-built temperature sensor and can be used for measuring the
-temperature by reading the analog values.
+ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1, ADC2 and
+ADC3 can be connected with GP26, GP27, GP28, GP29 respectively (On Pico board,
+GP29 is connected to VSYS). The standard ADC range is 0-3.3V. The fifth
+channel  is connected to the in-built temperature sensor and can be used for
+measuring the temperature by reading the analog values.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
