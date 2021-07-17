@@ -103,9 +103,6 @@ and 16/17, and UART1 to GPIO 6/7 and 8/9.
 
 See :ref:`machine.UART <machine.UART>`. ::
 
-    from machine import UART
-
-    uart1 = UART(1, baudrate=9600, tx=33, rx=32)
     from machine import UART, Pin
     uart1 = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
     uart1.write('hello')  # write 5 bytes
