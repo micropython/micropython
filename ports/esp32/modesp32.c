@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     // Check that all pins are allowed
     if (args[ARG_pins].u_obj != mp_const_none) {
-        mp_uint_t len = 0;
+        size_t len = 0;
         mp_obj_t *elem;
         mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
         ext1_pins = 0;
