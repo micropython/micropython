@@ -91,6 +91,6 @@ bool bleio_scanentry_data_matches(const uint8_t *data, size_t len, const uint8_t
     return !any;
 }
 
-bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, const uint8_t *prefixes, size_t prefixes_len, bool all) {
-    return bleio_scanentry_data_matches(self->data->data, self->data->len, prefixes, prefixes_len, !all);
+bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, const uint8_t *prefixes, size_t prefixes_len, bool match_all) {
+    return bleio_scanentry_data_matches(self->data->data, self->data->len, prefixes, prefixes_len, !match_all);
 }
