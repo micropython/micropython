@@ -107,9 +107,14 @@ out(dest,data)
     data : bit count(0-31)
     see sec 3.4.5 of RPi docs for details
 
-push(value = 0, value = 2)
-    block = 0 : no block
-    block = 1 : block
+push()
+    These instruction takes the following forms:
+    push()
+    push(block)
+    push(noblock)
+    push(iffull)
+    push(iffull, block)
+    push(iffull, noblock)
     see sec 3.4.6 of RPi docs for details
 
 pull(value = 0, value = 2)
