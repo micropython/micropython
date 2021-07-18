@@ -34,6 +34,9 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
 )
+if(IDF_TARGET STREQUAL "esp32c3")
+    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
+endif()
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -133,6 +136,9 @@ endif()
 
 if(IDF_TARGET STREQUAL "esp32")
     list(APPEND IDF_COMPONENTS esp32)
+elseif(IDF_TARGET STREQUAL "esp32c3")
+    list(APPEND IDF_COMPONENTS esp32c3)
+    list(APPEND IDF_COMPONENTS riscv)
 elseif(IDF_TARGET STREQUAL "esp32s2")
     list(APPEND IDF_COMPONENTS esp32s2)
     list(APPEND IDF_COMPONENTS tinyusb)

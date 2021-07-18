@@ -70,6 +70,13 @@
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
 
+// Set the margin for detecting stack overflow, depending on the CPU architecture.
+#if CONFIG_IDF_TARGET_ESP32C3
+#define MP_TASK_STACK_LIMIT_MARGIN (2048)
+#else
+#define MP_TASK_STACK_LIMIT_MARGIN (1024)
+#endif
+
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -127,7 +134,7 @@ void mp_task(void *pvParameter) {
 soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
-    mp_stack_set_limit(MP_TASK_STACK_SIZE - 1024);
+    mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
     gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);

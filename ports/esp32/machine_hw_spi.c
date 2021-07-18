@@ -53,6 +53,10 @@
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
+#if CONFIG_IDF_TARGET_ESP32C3
+#define HSPI_HOST SPI2_HOST
+#endif
+
 typedef struct _machine_hw_spi_default_pins_t {
     int8_t sck;
     int8_t mosi;

@@ -11,13 +11,18 @@
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
 #define MICROPY_NLR_SETJMP                  (1)
+#if CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_GCREGS_SETJMP               (1)
+#endif
 
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#if !CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_EMIT_XTENSAWIN              (1)
+#endif
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)

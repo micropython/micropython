@@ -34,7 +34,6 @@
 #include "freertos/task.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-#include "driver/touch_pad.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
@@ -70,6 +69,10 @@ typedef enum {
 
 STATIC bool is_soft_reset = 0;
 
+#if CONFIG_IDF_TARGET_ESP32C3
+int esp_clk_cpu_freq(void);
+#endif
+
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
@@ -82,6 +85,8 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         }
         #if CONFIG_IDF_TARGET_ESP32
         esp_pm_config_esp32_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32C3
+        esp_pm_config_esp32c3_t pm;
         #elif CONFIG_IDF_TARGET_ESP32S2
         esp_pm_config_esp32s2_t pm;
         #endif
@@ -117,6 +122,8 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
+    #if !CONFIG_IDF_TARGET_ESP32C3
+
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
     }
@@ -132,6 +139,8 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
+
+    #endif
 
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
