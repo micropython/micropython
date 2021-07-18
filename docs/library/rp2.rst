@@ -74,7 +74,7 @@ For running PIO programs, see :class:`rp2.StateMachine`.
 PIO Assembly Language instructions
 -----------------------------------
 
-Each state machine has a set of instructions- which allow for a wide range of
+Each state machine has a set of instructions, which allow for a wide range of
 behaviourial or location changes to the data. They are written in assembly
 language which is later used in a MicroPython program to perform specific
 tasks. These instructions are -
@@ -126,13 +126,6 @@ set(dest, data)
 irq(mod, index = None)
     These are the following forms of this instruction(index is an integer value 
     from 0-7)
-        * irq(index)
-    * irq(rel(index))
-    * irq(block, index)
-    * irq(block, rel(index))
-    * irq(clear, rel(index))
-    * irq(block | clear, index)
-    * irq(block | clear, rel(index))
     
     These can be summarised as two forms:
     * form 1: irq(index)
