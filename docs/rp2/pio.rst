@@ -24,26 +24,26 @@ instant of time.
 
 The state machines have 9 instructions which can perform the following tasks:-
 
-* IN : shifts the bits from a source (scratch register or set of pins) to the
+* in : shifts the bits from a source (scratch register or set of pins) to the
 * input shift register.
 
-* OUT : shifts the bits from the output shift register to a destination
+* out : shifts the bits from the output shift register to a destination
 
-* PUSH : sends data to RX FIFO
+* push : sends data to RX FIFO
 
-* PULL : recieves data from TX FIFO
+* pull : recieves data from TX FIFO
 
-* MOV : moves data from a souce to a destination
+* mov : moves data from a souce to a destination
 
-* IRQ : sets or clears the input flag
+* irq : sets or clears the input flag
 
-* WAIT : pauses until a particular action happens
+* wait : pauses until a particular action happens
 
-* JMP : moves to some target locations in differnt parts of code.
+* jmp : moves to some target locations in differnt parts of code.
 
 We also have the feature of a pseudo-instruction provided by pioasm:-
 
-* NOP : assembles to mov y and y; used for providing extra-delay
+* nop : assembles to mov y and y; used for providing extra-delay
 
 To understand the use of these instrcutions we can take the pio_1hz example for
 a sinple understanding. Below is the code of pio_1hz.py for reference. 
