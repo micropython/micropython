@@ -79,10 +79,15 @@ behaviourial or location changes to the data. They are written in assembly
 language which is later used in a MicroPython program to perform specific
 tasks. These instructions are -
 
-jmp(cond, lebel=None)
-    condition : 0-7
-    <delay_value> : 0-31
-    target : instruction offset of label within the program
+jmp(cond, label=None)
+   This can take two forms: 
+   jmp(label)
+       label : label to jump to unconditionlly
+
+    jmp(cond,label)
+        cond: not_x, x_dec, not_y, y_dec, x_not_y, pin, not_osre
+        label: label to jump to if condition is true   
+    
     see sec 3.4.2 of RPi docs for details
 
 wait(polarity, src, index)
