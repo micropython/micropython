@@ -108,7 +108,7 @@ out(dest,data)
     see sec 3.4.5 of RPi docs for details
 
 push()
-    These instruction takes the following forms:
+    This instruction takes the following forms:
     push()
     push(block)
     push(noblock)
@@ -117,10 +117,14 @@ push()
     push(iffull, noblock)
     see sec 3.4.6 of RPi docs for details
 
-pull(value = 0, value = 2)
-    pull(if empty) : 1 (default = 0)
-    block : 1 (default = 1)  
-    no-block = 0
+pull()
+    This instruction can take the following forms:
+    pull()
+    pull(block)
+    pull(noblock)
+    pull(ifempty)
+    pull(ifempty, block)
+    pull(ifempty, noblock) 
     see sec 3.4.7 of RPi docs for details
 
 mov(dest, src)
