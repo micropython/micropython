@@ -145,7 +145,8 @@ irq(mod, index = None)
     internal to the state machines).          
    see sec 3.4.9 of RPi docs for details
 
-
+nop(self)
+    see sec 3.3.7 of RPi docs for details
 
 
 Classes
