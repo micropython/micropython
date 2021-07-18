@@ -45,6 +45,33 @@ We also have the feature of a pseudo-instruction provided by pioasm:-
 
 * nop : assembles to mov y and y; used for providing extra-delay
 
+In addition to the 9 instructions and 1 pseudo-instruction, we also have some
+meta-instructions which are as follows:
+
+* wrap : allows us to loop automatically without a jmp instrcution; used to
+         jmp straight to .wrap_target
+
+* wrap_target : target label used with .wrap instruction to jump to a
+                 particular point of code
+
+* word : used to store a 16-bit raw value instruction 
+
+* label : instruction offset of label used with jmp instruction  
+
+The pioasm functions have a common pattern:
+
+<instruction> (side<side_set_value>)([delay_value>])
+
+where: 
+
+<instruction> : is 1 of the 9 assembly instructions
+
+<side_Set_value> : value applied to side_set pins where we can set one or more
+                   pins at the time another instruction runs
+
+<delay_value> :  value in clock-cycles to be delayed after the completion of
+                 an instruction
+                                   
 To understand the use of these instrcutions we can take the pio_1hz example for
 a sinple understanding. Below is the code of pio_1hz.py for reference. 
 
