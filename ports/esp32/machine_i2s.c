@@ -38,6 +38,8 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
+#if MICROPY_PY_MACHINE_I2S
+
 #include "driver/i2s.h"
 #include "soc/i2s_reg.h"
 #include "freertos/FreeRTOS.h"
@@ -807,3 +809,5 @@ const mp_obj_type_t machine_i2s_type = {
     .make_new = machine_i2s_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_i2s_locals_dict,
 };
+
+#endif // MICROPY_PY_MACHINE_I2S

@@ -138,7 +138,9 @@ soft_reset:
 
     // initialise peripherals
     machine_pins_init();
+    #if MICROPY_PY_MACHINE_I2S
     machine_i2s_init0();
+    #endif
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
