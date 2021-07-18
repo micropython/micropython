@@ -39,7 +39,6 @@
 #define NO_PIN 0xff
 #define MAX_PULSE 65535
 #define MIN_PULSE 10
-volatile uint32_t result = 0;
 
 uint16_t pulsein_program[] = {
     0x4001, //  1: in     pins, 1
@@ -82,7 +81,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
     self->last_level = self->idle_state;
     self->level_count = 0;
-    result = 0;
     self->buf_index = 0;
 
     pio_sm_set_in_pins(self->state_machine.pio,self->state_machine.state_machine,pin->number);
@@ -119,7 +117,6 @@ void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
     self->last_level = self->idle_state;
     self->level_count = 0;
-    result = 0;
     self->buf_index = 0;
 }
 void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
@@ -136,7 +133,7 @@ void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
             if (level == self->last_level) {
                 self->level_count++;
             } else {
-                result = self->level_count;
+                uint32_t result = self->level_count;
                 self->last_level = level;
                 self->level_count = 0;
                 // Pulses that are longer than MAX_PULSE will return MAX_PULSE
