@@ -86,12 +86,19 @@ function ci_esp32_setup_helper {
     git clone https://github.com/espressif/esp-idf.git
     git -C esp-idf checkout $1
     git -C esp-idf submodule update --init \
-        components/bt/controller/lib \
         components/bt/host/nimble/nimble \
         components/esp_wifi \
         components/esptool_py/esptool \
         components/lwip/lwip \
         components/mbedtls/mbedtls
+    if [ -d esp-idf/components/bt/controller/esp32 ]; then
+        git -C esp-idf submodule update --init \
+            components/bt/controller/lib_esp32 \
+            components/bt/controller/lib_esp32c3_family
+    else
+        git -C esp-idf submodule update --init \
+            components/bt/controller/lib
+    fi
     ./esp-idf/install.sh
 }
 
@@ -100,7 +107,7 @@ function ci_esp32_idf402_setup {
 }
 
 function ci_esp32_idf43_setup {
-    ci_esp32_setup_helper v4.3-beta2
+    ci_esp32_setup_helper v4.3
 }
 
 function ci_esp32_build {
@@ -110,6 +117,9 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C ports/esp32
     make ${MAKEOPTS} -C ports/esp32 clean
     make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest.py
+    if [ -d $IDF_PATH/components/esp32c3 ]; then
+        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
+    fi
     if [ -d $IDF_PATH/components/esp32s2 ]; then
         make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
     fi
