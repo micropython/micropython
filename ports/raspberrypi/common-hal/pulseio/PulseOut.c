@@ -34,6 +34,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
+#include "src/rp2040/hardware_structs/include/hardware/structs/pwm.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 #include "src/common/pico_time/include/pico/time.h"
 
@@ -130,7 +131,12 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
         // signal.
         RUN_BACKGROUND_TASKS;
     }
-    // Short delay to give pin time to settle before disabling PWM
-    common_hal_mcu_delay_us(min_pulse);
+    // Ensure pin is left low
+    pwm_hw->slice[self->slice].ctr = 0;
+    pwm_hw->slice[self->slice].cc = 0;
+    pwm_hw->slice[self->slice].top = 0;
+    pwm_hw->slice[self->slice].div = 1u << PWM_CH0_DIV_INT_LSB;
+    pwm_hw->slice[self->slice].csr = PWM_CH0_CSR_EN_BITS;
+    pwm_hw->slice[self->slice].csr = 0;
     pwm_set_enabled(self->slice,false);
 }
