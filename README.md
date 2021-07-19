@@ -16,12 +16,12 @@ Original micropython README: https://github.com/micropython/micropython/blob/mas
 Originally, `lv_micropython` was created as an example of how to use [lv_binding_micropython](https://github.com/lvgl/lv_binding_micropython) on a Micropython fork.
 As such, we try to keep changes here as minimal as possible and we try to keep it in sync with Micropython upstream releases. We also try to add changes to `lv_binding_micropython` instead of to `lv_micropython`, when possible. (for example we keep all drivers in `lv_binding_micropython`, the ESP32 CMake functionality etc.)
 
-Eventually it turned out that many people prefer using `lv_micropython` directly and only a few use it as a reference to support LVGL on their own Micropython fork.  
+Eventually it turned out that many people prefer using `lv_micropython` directly and only a few use it as a reference to support LVGL on their own Micropython fork.
 If you are only starting with Micropython+LVGL, it's recommended that you use `lv_micropython`, while porting a Micropython fork to LVGL is for advanced users.
 
 ## Build Instructions
 
-1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8`  
+1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8`
 Python 3 is required, but you can install some other version of python3 instead of 3.8, if needed.
 2. `git clone --recurse-submodules https://github.com/lvgl/lv_micropython.git`
 3. `cd lv_micropython`
@@ -44,7 +44,7 @@ make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" BOARD=G
 ```
 
 Explanation about the paramters:
-- `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.  
+- `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.
   - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
   - `LV_COLOR_16_SWAP=1` is needed if you plan to use the [Pure Micropython Display Driver](https://blog.lvgl.io/2019-08-05/micropython-pure-display-driver).
 - `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
@@ -75,12 +75,12 @@ SDL.init()
 
 # Register SDL display driver.
 
-disp_buf1 = lv.disp_buf_t()
+draw_buf = lv.disp_draw_buf_t()
 buf1_1 = bytearray(480*10)
-disp_buf1.init(buf1_1, None, len(buf1_1)//4)
+draw_buf.init(buf1_1, None, len(buf1_1)//4)
 disp_drv = lv.disp_drv_t()
 disp_drv.init()
-disp_drv.buffer = disp_buf1
+disp_drv.draw_buf = draw_buf
 disp_drv.flush_cb = SDL.monitor_flush
 disp_drv.hor_res = 480
 disp_drv.ver_res = 320
@@ -89,10 +89,10 @@ disp_drv.register()
 # Regsiter SDL mouse driver
 
 indev_drv = lv.indev_drv_t()
-indev_drv.init() 
-indev_drv.type = lv.INDEV_TYPE.POINTER;
-indev_drv.read_cb = SDL.mouse_read;
-indev_drv.register();
+indev_drv.init()
+indev_drv.type = lv.INDEV_TYPE.POINTER
+indev_drv.read_cb = SDL.mouse_read
+indev_drv.register()
 ```
 
 Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
@@ -128,7 +128,7 @@ Now you can create the GUI itself:
 
 scr = lv.obj()
 btn = lv.btn(scr)
-btn.align(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)
+btn.align_to(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)
 label = lv.label(btn)
 label.set_text("Hello World!")
 
@@ -140,7 +140,7 @@ lv.scr_load(scr)
 
 ## More information
 
-More info about LVGL: 
+More info about LVGL:
 - Website https://lvgl.io
 - GitHub: https://github.com/lvgl/lvgl
 
