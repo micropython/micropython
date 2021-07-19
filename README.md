@@ -99,7 +99,6 @@ Here is an alternative example, for registering ILI9341 drivers on Micropython E
 
 ```python
 import lvgl as lv
-import lvesp32
 
 # Import ILI9341 driver and initialized it
 
