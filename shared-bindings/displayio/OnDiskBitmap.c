@@ -53,38 +53,47 @@
 //|       splash = displayio.Group()
 //|       board.DISPLAY.show(splash)
 //|
-//|       with open("/sample.bmp", "rb") as f:
-//|           odb = displayio.OnDiskBitmap(f)
-//|           face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)
-//|           splash.append(face)
-//|           # Wait for the image to load.
-//|           board.DISPLAY.refresh(target_frames_per_second=60)
+//|       odb = displayio.OnDiskBitmap('/sample.bmp')
+//|       face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)
+//|       splash.append(face)
+//|       # Wait for the image to load.
+//|       board.DISPLAY.refresh(target_frames_per_second=60)
 //|
-//|           # Fade up the backlight
-//|           for i in range(100):
-//|               board.DISPLAY.brightness = 0.01 * i
-//|               time.sleep(0.05)
+//|       # Fade up the backlight
+//|       for i in range(100):
+//|           board.DISPLAY.brightness = 0.01 * i
+//|           time.sleep(0.05)
 //|
-//|           # Wait forever
-//|           while True:
-//|               pass"""
+//|       # Wait forever
+//|       while True:
+//|           pass"""
 //|
-//|     def __init__(self, file: typing.BinaryIO) -> None:
+//|     def __init__(self, file: Union[str,typing.BinaryIO]) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
-//|         :param file file: The open bitmap file"""
+//|         :param file file: The name of the bitmap file.  For backwards compatibility, a file opened in binary mode may also be passed.
+//|
+//|         Older versions of CircuitPython required a file opened in binary
+//|         mode. CircuitPython 7.0 modified OnDiskBitmap so that it takes a
+//|         filename instead, and opens the file internally.  A future version
+//|         of CircuitPython will remove the ability to pass in an opened file.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_obj_t arg = pos_args[0];
 
-    if (!mp_obj_is_type(pos_args[0], &mp_type_fileio)) {
+    if (mp_obj_is_str(arg)) {
+        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    }
+    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
     displayio_ondiskbitmap_t *self = m_new_obj(displayio_ondiskbitmap_t);
     self->base.type = &displayio_ondiskbitmap_type;
-    common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(pos_args[0]));
+    common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(arg));
 
     return MP_OBJ_FROM_PTR(self);
 }
