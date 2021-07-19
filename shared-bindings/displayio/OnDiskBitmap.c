@@ -68,7 +68,7 @@
 //|       while True:
 //|           pass"""
 //|
-//|     def __init__(self, file: union[str,typing.BinaryIO]) -> None:
+//|     def __init__(self, file: Union[str,typing.BinaryIO]) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
 //|         :param file file: The name of the bitmap file.  For backwards compatibility, a file opened in binary mode may also be passed.
