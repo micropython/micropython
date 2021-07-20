@@ -6,6 +6,7 @@
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1064_flexspi_nor_config.h"
+#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_hyper_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
 

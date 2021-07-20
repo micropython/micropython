@@ -178,12 +178,14 @@ SECTIONS
     . = ALIGN(4);
     __DATA_RAM = .;
     __data_start__ = .;      /* create a global symbol at data start */
+    __data_section_table = .;
     *(m_usb_dma_init_data)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
     KEEP(*(.jcr*))
     . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
+    __data_section_table_end = .;
   } > m_dtcm
 
   __RAM_FUNCTIONS_ROM = __DATA_ROM + (__data_end__ - __data_start__);
@@ -224,12 +226,14 @@ SECTIONS
     . = ALIGN(4);
     __START_BSS = .;
     __bss_start__ = .;
+    __bss_section_table = .;
     *(m_usb_dma_noninit_data)
     *(.bss)
     *(.bss*)
     *(COMMON)
     . = ALIGN(4);
     __bss_end__ = .;
+    __bss_section_table_end = .;
     __END_BSS = .;
   } > m_dtcm
 
@@ -253,6 +257,7 @@ SECTIONS
   /* Initializes stack on the end of block */
   __StackTop   = ORIGIN(m_dtcm) + LENGTH(m_dtcm);
   __StackLimit = __StackTop - STACK_SIZE;
+  _vStackTop = __StackTop;
   PROVIDE(__stack = __StackTop);
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
