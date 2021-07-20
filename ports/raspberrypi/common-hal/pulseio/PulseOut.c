@@ -47,6 +47,15 @@ volatile uint16_t current_duty_cycle;
 static uint32_t min_pulse = 0;
 static alarm_id_t cur_alarm;
 
+void turn_off(uint8_t slice) {
+    pwm_hw->slice[slice].ctr = 0;
+    pwm_hw->slice[slice].cc = 0;
+    pwm_hw->slice[slice].top = 0;
+    pwm_hw->slice[slice].div = 1u << PWM_CH0_DIV_INT_LSB;
+    pwm_hw->slice[slice].csr = PWM_CH0_CSR_EN_BITS;
+    pwm_hw->slice[slice].csr = 0;
+}
+
 void pulse_finish(pwmio_pwmout_obj_t *carrier) {
     pulse_index++;
     // Turn pwm pin off by setting duty cyle to 1.
@@ -88,6 +97,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     pwmout_obj = (pwmio_pwmout_obj_t *)carrier;
     current_duty_cycle = common_hal_pwmio_pwmout_get_duty_cycle(pwmout_obj);
     pwm_set_enabled(carrier->slice,false);
+    turn_off(carrier->slice);
     common_hal_pwmio_pwmout_set_duty_cycle(pwmout_obj,1);
     self->pin = carrier->pin->number;
     self->slice = carrier->slice;
@@ -132,11 +142,6 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
         RUN_BACKGROUND_TASKS;
     }
     // Ensure pin is left low
-    pwm_hw->slice[self->slice].ctr = 0;
-    pwm_hw->slice[self->slice].cc = 0;
-    pwm_hw->slice[self->slice].top = 0;
-    pwm_hw->slice[self->slice].div = 1u << PWM_CH0_DIV_INT_LSB;
-    pwm_hw->slice[self->slice].csr = PWM_CH0_CSR_EN_BITS;
-    pwm_hw->slice[self->slice].csr = 0;
+    turn_off(self->slice);
     pwm_set_enabled(self->slice,false);
 }
