@@ -133,7 +133,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 
-SRC_C = \
+SRC_C += \
 	main.c \
 	led.c \
 	pin.c \
@@ -156,7 +156,6 @@ SRC_C = \
 	modmimxrt.c \
 	moduos.c \
 	mphalport.c \
-	hal/flexspi_nor_flash.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \

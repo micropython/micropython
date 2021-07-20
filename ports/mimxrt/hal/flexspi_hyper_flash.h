@@ -23,18 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
-#define MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
+#ifndef MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_HYPER_FLASH_H
+#define MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_HYPER_FLASH_H
 
-#include "fsl_flexspi.h"
 #include "mpconfigboard.h"
+#include "fsl_flexspi.h"
 #include BOARD_FLASH_CONFIG_HEADER_H
 
 // Defined in boards flash_config.c
 extern flexspi_nor_config_t qspiflash_config;
 
-status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
-status_t flexspi_nor_init(void);
+status_t flexspi_nor_hyperflash_cfi(FLEXSPI_Type *base);
+void flexspi_hyper_flash_init(void);
 void flexspi_nor_update_lut(void);
 status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t address, const uint32_t *src, uint32_t size);
@@ -61,4 +61,12 @@ static inline uint32_t flexspi_get_frequency(void)
     return fre;
 }
 
-#endif // MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READDATA    0
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEDATA   1
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READSTATUS  2
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEENABLE 4
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASESECTOR 6
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_PAGEPROGRAM 10
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASECHIP   12
+
+#endif // MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_HYPER_FLASH_H
