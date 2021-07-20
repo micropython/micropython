@@ -76,6 +76,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/hardware_base/include/ \
        -isystem sdk/src/rp2_common/hardware_claim/include/ \
        -isystem sdk/src/rp2_common/hardware_clocks/include/ \
+       -isystem sdk/src/rp2_common/hardware_divider/include/ \
        -isystem sdk/src/rp2_common/hardware_dma/include/ \
        -isystem sdk/src/rp2_common/hardware_flash/include/ \
        -isystem sdk/src/rp2_common/hardware_gpio/include/ \
