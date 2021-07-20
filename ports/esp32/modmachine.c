@@ -232,7 +232,9 @@ STATIC mp_obj_t machine_unique_id(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_idle(void) {
+    MP_THREAD_GIL_EXIT();
     taskYIELD();
+    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
