@@ -127,7 +127,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         .vloc = BLE_GATTS_VLOC_STACK,
     };
 
-    ble_uuid_t char_uuid;
+    ble_uuid_t char_uuid = {};
     bleio_uuid_convert_to_nrf_ble_uuid(characteristic->uuid, &char_uuid);
 
     ble_gatts_attr_md_t char_attr_md = {
@@ -143,7 +143,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         char_md.p_cccd_md = &cccd_md;
     }
 
-    ble_gatts_attr_md_t user_desc_md;
+    ble_gatts_attr_md_t user_desc_md = {};
     if (user_description != NULL && strlen(user_description) > 0) {
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&user_desc_md.read_perm);
         // If the description is on the Python heap, then have the SD copy it. If not, assume it's

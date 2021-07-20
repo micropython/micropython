@@ -137,6 +137,9 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
 #define BLE_DISCOVERY_DATA_GUARD_MASK 0xff0000ff
 
 void supervisor_bluetooth_init(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    return;
+    #endif
     uint32_t reset_state = port_get_saved_word();
     uint32_t ble_mode = 0;
     if ((reset_state & BLE_DISCOVERY_DATA_GUARD_MASK) == BLE_DISCOVERY_DATA_GUARD) {
@@ -174,10 +177,19 @@ void supervisor_bluetooth_init(void) {
         boot_in_discovery_mode = true;
         reset_state = 0x0;
     }
+    #if !CIRCUITPY_USB
+    // Boot into discovery if USB isn't available and we aren't bonded already.
+    // Checking here allows us to have the status LED solidly on even if no button was
+    // pressed.
+    bool bonded = common_hal_bleio_adapter_is_bonded_to_central(&common_hal_bleio_adapter_obj);
+    if (!bonded) {
+        boot_in_discovery_mode = true;
+    }
+    #endif
     while (diff < 1000) {
         #ifdef CIRCUITPY_STATUS_LED
         // Blink on for 50 and off for 100
-        bool led_on = ble_mode != 0 || (diff % 150) <= 50;
+        bool led_on = boot_in_discovery_mode || (diff % 150) <= 50;
         if (led_on) {
             new_status_color(0x0000ff);
         } else {
