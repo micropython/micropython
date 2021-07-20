@@ -41,7 +41,7 @@ typedef struct _mp_bluetooth_nimble_root_pointers_t {
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
     // L2CAP channels.
-    struct _mp_bluetooth_nimble_l2cap_channel_t *l2cap_chan;
+    struct _mp_bluetooth_nimble_l2cap_channel_t *l2cap_chan_head;
     bool l2cap_listening;
     #endif
 } mp_bluetooth_nimble_root_pointers_t;

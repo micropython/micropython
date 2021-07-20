@@ -1408,6 +1408,7 @@ int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
 #define L2CAP_BUF_SIZE_MTUS_PER_CHANNEL (3)
 
 typedef struct _mp_bluetooth_nimble_l2cap_channel_t {
+    struct _mp_bluetooth_nimble_l2cap_channel_t *next;
     struct ble_l2cap_chan *chan;
     struct os_mbuf_pool sdu_mbuf_pool;
     struct os_mempool sdu_mempool;
@@ -1417,16 +1418,25 @@ typedef struct _mp_bluetooth_nimble_l2cap_channel_t {
     os_membuf_t sdu_mem[];
 } mp_bluetooth_nimble_l2cap_channel_t;
 
-STATIC void destroy_l2cap_channel();
+STATIC void destroy_l2cap_channel(mp_bluetooth_nimble_l2cap_channel_t *chan);
 STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg);
 STATIC mp_bluetooth_nimble_l2cap_channel_t *get_l2cap_channel_for_conn_cid(uint16_t conn_handle, uint16_t cid);
 STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_t **out);
 
-STATIC void destroy_l2cap_channel() {
+STATIC void destroy_l2cap_channel(mp_bluetooth_nimble_l2cap_channel_t *chan) {
     // Only free the l2cap channel if we're the one that initiated the connection.
     // Listeners continue listening on the same channel.
     if (!MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_listening) {
-        MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan = NULL;
+        if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head == chan) {
+            MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head = chan->next;
+        } else {
+            for (mp_bluetooth_nimble_l2cap_channel_t *c = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head; c != NULL; c = c->next) {
+                if (c->next == chan) {
+                    c->next = chan->next;
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -1445,7 +1455,7 @@ STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg) {
                 mp_bluetooth_on_l2cap_connect(event->connect.conn_handle, info.scid, info.psm, info.our_coc_mtu, info.peer_coc_mtu);
             } else {
                 mp_bluetooth_on_l2cap_disconnect(event->connect.conn_handle, info.scid, info.psm, event->connect.status);
-                destroy_l2cap_channel();
+                destroy_l2cap_channel(chan);
             }
             break;
         }
@@ -1453,7 +1463,7 @@ STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg) {
             DEBUG_printf("l2cap_channel_event: disconnect: conn_handle=%d\n", event->disconnect.conn_handle);
             ble_l2cap_get_chan_info(event->disconnect.chan, &info);
             mp_bluetooth_on_l2cap_disconnect(event->disconnect.conn_handle, info.scid, info.psm, 0);
-            destroy_l2cap_channel();
+            destroy_l2cap_channel(chan);
             break;
         }
         case BLE_L2CAP_EVENT_COC_ACCEPT: {
@@ -1548,28 +1558,19 @@ STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg) {
 }
 
 STATIC mp_bluetooth_nimble_l2cap_channel_t *get_l2cap_channel_for_conn_cid(uint16_t conn_handle, uint16_t cid) {
-    // TODO: Support more than one concurrent L2CAP channel. At the moment we
-    // just verify that the cid refers to the current channel.
-    mp_bluetooth_nimble_l2cap_channel_t *chan = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan;
-
-    if (!chan) {
-        return NULL;
+    for (mp_bluetooth_nimble_l2cap_channel_t *chan = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head; chan != NULL; chan = chan->next) {
+        struct ble_l2cap_chan_info info;
+        ble_l2cap_get_chan_info(chan->chan, &info);
+        if (ble_l2cap_get_conn_handle(chan->chan) == conn_handle && info.scid == cid) {
+            return chan;
+        }
     }
-
-    struct ble_l2cap_chan_info info;
-    ble_l2cap_get_chan_info(chan->chan, &info);
-
-    if (info.scid != cid || ble_l2cap_get_conn_handle(chan->chan) != conn_handle) {
-        return NULL;
-    }
-
-    return chan;
+    return NULL;
 }
 
 STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_t **out) {
-    if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan) {
-        // Only one L2CAP channel allowed.
-        // Additionally, if we're listening, then no connections may be initiated.
+    if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_listening) {
+        // If we're listening then no connections may be initiated.
         DEBUG_printf("create_l2cap_channel: channel already in use\n");
         return MP_EALREADY;
     }
@@ -1580,7 +1581,6 @@ STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_
     const size_t buf_blocks = MP_CEIL_DIVIDE(mtu, L2CAP_BUF_BLOCK_SIZE) * L2CAP_BUF_SIZE_MTUS_PER_CHANNEL;
 
     mp_bluetooth_nimble_l2cap_channel_t *chan = m_new_obj_var(mp_bluetooth_nimble_l2cap_channel_t, uint8_t, OS_MEMPOOL_SIZE(buf_blocks, L2CAP_BUF_BLOCK_SIZE) * sizeof(os_membuf_t));
-    MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan = chan;
 
     // Will be set in BLE_L2CAP_EVENT_COC_CONNECTED or BLE_L2CAP_EVENT_COC_ACCEPT.
     chan->chan = NULL;
@@ -1600,6 +1600,9 @@ STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_
         DEBUG_printf("mp_bluetooth_l2cap_connect: os_mbuf_pool_init failed %d\n", err);
         return MP_ENOMEM;
     }
+
+    chan->next = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head;
+    MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan_head = chan;
 
     *out = chan;
     return 0;
