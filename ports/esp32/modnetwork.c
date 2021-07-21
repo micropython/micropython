@@ -128,15 +128,15 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
 
-// Set to "true" if the STA interface completed a scan for APs.
-static bool wifi_sta_scan_done = false;
-
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
 static bool wifi_sta_connect_requested = false;
 
 // Set to "true" if the STA interface is connected to wifi and has IP address.
 static bool wifi_sta_connected = false;
+
+// Set to "true" to run a blocking wifi scan, false for non-blocking
+static bool wifi_sta_scan_blocking = true;
 
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
@@ -149,6 +149,21 @@ static bool mdns_initialised = false;
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
 
+STATIC mp_obj_t esp_get_scan_results(void);
+
+// This function is scheduled when a SCAN_DONE event is emitted after a non-blocking scan.
+// It allows for retrieving AP records in a list in the context of the scheduler so the
+// list can be passed to a user-supplied callback in esp_scan.
+STATIC mp_obj_t esp_wifi_scan_cb(mp_obj_t arg) {
+    ESP_LOGI("wifi", "Scan callback ran");
+    mp_obj_t handler = MP_STATE_PORT(esp_wifi_scan_cb_handler);
+    mp_obj_t scan_results = esp_get_scan_results(); 
+    mp_call_function_2_protected(handler, MP_OBJ_FROM_PTR(&wlan_sta_obj), scan_results);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_wifi_scan_cb_obj, esp_wifi_scan_cb);
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -159,7 +174,9 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
             break;
         case SYSTEM_EVENT_SCAN_DONE:
             ESP_LOGI("wifi", "SCAN_DONE");
-            wifi_sta_scan_done = true;
+            if (!wifi_sta_scan_blocking) {
+                mp_sched_schedule(MP_OBJ_FROM_PTR(&esp_wifi_scan_cb_obj), mp_const_none);
+            }
             break;
         case SYSTEM_EVENT_STA_CONNECTED:
             ESP_LOGI("network", "CONNECTED");
@@ -300,6 +317,7 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing Event Loop");
         ESP_EXCEPTIONS(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
+        memset(&MP_STATE_PORT(esp_wifi_scan_cb_handler), 0, sizeof(MP_STATE_PORT(esp_wifi_scan_cb_handler)));
         initialized = 1;
     }
     return mp_const_none;
@@ -465,17 +483,12 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
-STATIC mp_obj_t esp_get_scan_results(mp_obj_t self_in) {
-    if (!wifi_sta_scan_done) {
-        ESP_LOGI("wifi", "Scan not complete");
-        return mp_const_none;
-    }
+STATIC mp_obj_t esp_get_scan_results() {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     uint16_t count = 0;
     ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
     if (count == 0) {
         ESP_LOGI("wifi", "No AP records found");
-        wifi_sta_scan_done = false;
         return list;
     }
     wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
@@ -493,19 +506,20 @@ STATIC mp_obj_t esp_get_scan_results(mp_obj_t self_in) {
         mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
     }
     free(wifi_ap_records);
-    wifi_sta_scan_done = false;
     return list;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_get_scan_results_obj, esp_get_scan_results);
-
 STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t *self_in = MP_OBJ_TO_PTR(args[0]);
-    bool blocking = true;
+    wifi_sta_scan_blocking = true;
 
     // If 1 arg or 2nd arg is True, blocking scan
     if (n_args > 1) {
-        blocking = mp_obj_is_true(args[1]);
+        if (!mp_obj_is_callable(args[1])) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid callback, must be callable"));
+        }
+        MP_STATE_PORT(esp_wifi_scan_cb_handler) = args[1];
+        wifi_sta_scan_blocking = false;
+        ESP_LOGI("wifi", "Non-blocking scan");
     }
 
     // check that STA mode is active
@@ -518,21 +532,17 @@ STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
     wifi_scan_config_t config = { 0 };
     // XXX how do we scan hidden APs (and if we can scan them, are they really hidden?)
 
-    if (blocking) {
-        MP_THREAD_GIL_EXIT();
-        esp_err_t status = esp_wifi_scan_start(&config, 1);
-        MP_THREAD_GIL_ENTER();
-
-        if (status == 0) {
-            return esp_get_scan_results(self_in);
-        }
+    MP_THREAD_GIL_EXIT();
+    esp_err_t status = esp_wifi_scan_start(&config, wifi_sta_scan_blocking);
+    MP_THREAD_GIL_ENTER();
+    ESP_EXCEPTIONS(status);
+    
+    if (wifi_sta_scan_blocking) {
+        ESP_LOGI("wifi", "blocking scan calling get_results");
+        return esp_get_scan_results();
     } else {
-        ESP_LOGI("wifi", "Attempting non-blocking scan");
-        ESP_EXCEPTIONS(esp_wifi_scan_start(&config, 0));
+        return mp_const_none;
     }
-
-    wifi_sta_scan_done = false;
-    return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_scan_obj, 1, 2, esp_scan);
@@ -802,7 +812,6 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_scan_results), MP_ROM_PTR(&esp_get_scan_results_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
