@@ -39,7 +39,7 @@
 #include "src/common/pico_time/include/pico/time.h"
 
 static uint8_t refcount = 0;
-volatile  alarm_id_t cur_alarm = 0;
+volatile alarm_id_t cur_alarm = 0;
 
 void turn_off(uint8_t slice) {
     pwm_hw->slice[slice].ctr = 0;
