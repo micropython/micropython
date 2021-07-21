@@ -842,7 +842,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_exchange_mtu_obj, bluetooth
 STATIC mp_obj_t bluetooth_ble_l2cap_listen(mp_obj_t self_in, mp_obj_t psm_in, mp_obj_t mtu_in) {
     (void)self_in;
     mp_int_t psm = mp_obj_get_int(psm_in);
-    mp_int_t mtu = mp_obj_get_int(mtu_in);
+    mp_int_t mtu = MAX(32, MIN(UINT16_MAX, mp_obj_get_int(mtu_in)));
     return bluetooth_handle_errno(mp_bluetooth_l2cap_listen(psm, mtu));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_l2cap_listen_obj, bluetooth_ble_l2cap_listen);
@@ -850,7 +850,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_l2cap_listen_obj, bluetooth_ble_l
 STATIC mp_obj_t bluetooth_ble_l2cap_connect(size_t n_args, const mp_obj_t *args) {
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t psm = mp_obj_get_int(args[2]);
-    mp_int_t mtu = mp_obj_get_int(args[3]);
+    mp_int_t mtu = MAX(32, MIN(UINT16_MAX, mp_obj_get_int(args[3])));
     return bluetooth_handle_errno(mp_bluetooth_l2cap_connect(conn_handle, psm, mtu));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_l2cap_connect_obj, 4, 4, bluetooth_ble_l2cap_connect);
