@@ -1065,6 +1065,9 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_MTU_EXCHANGED) {
             // conn_handle, mtu
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, NULL);
+        } else if (event == MP_BLUETOOTH_IRQ_SUBSCRIPTION_UPDATE) {
+            // conn_handle, chr_value_handlle, cur_notify, cur_indicate
+            ringbuf_extract(&o->ringbuf, data_tuple, 4, 0, NULL, 0, NULL, NULL);
         #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT) {
             // addr_type, addr, adv_type, rssi, adv_data
@@ -1175,6 +1178,11 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
 void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status) {
     mp_int_t args[] = {conn_handle, conn_interval, conn_latency, supervision_timeout, status};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_CONNECTION_UPDATE, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
+}
+
+void mp_bluetooth_gatts_on_subscription_update(uint16_t conn_handle, uint16_t chr_value_handle, uint16_t cur_notify, uint16_t cur_indicate) {
+    mp_int_t args[] = {conn_handle, chr_value_handle, cur_notify, cur_indicate};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_SUBSCRIPTION_UPDATE, args, 4, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
@@ -1445,6 +1453,18 @@ void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
     if (enqueue_irq(o, 2 + 2, MP_BLUETOOTH_IRQ_MTU_EXCHANGED)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value);
+    }
+    schedule_ringbuf(atomic_state);
+}
+
+void mp_bluetooth_gatts_on_subscription_update(uint16_t conn_handle, uint16_t chr_value_handle, uint16_t cur_notify, uint16_t cur_indicate) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2 + 2 + 2, MP_BLUETOOTH_IRQ_SUBSCRIPTION_UPDATE)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, chr_value_handle);
+        ringbuf_put16(&o->ringbuf, cur_notify);
+        ringbuf_put16(&o->ringbuf, cur_indicate);
     }
     schedule_ringbuf(atomic_state);
 }

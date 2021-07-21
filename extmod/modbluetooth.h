@@ -161,6 +161,7 @@
 #define MP_BLUETOOTH_IRQ_GET_SECRET                     (29)
 #define MP_BLUETOOTH_IRQ_SET_SECRET                     (30)
 #define MP_BLUETOOTH_IRQ_PASSKEY_ACTION                 (31)
+#define MP_BLUETOOTH_IRQ_SUBSCRIPTION_UPDATE            (32)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -413,6 +414,9 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
 
 // Call this when any connection parameters have been changed.
 void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status);
+
+// Call this when any connection subscribes or unsubscribes to a characteristic
+void mp_bluetooth_gatts_on_subscription_update(uint16_t conn_handle, uint16_t chr_value_handle, uint16_t cur_notify, uint16_t cur_indicate);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 // Call this when any connection encryption has been changed (e.g. during pairing).

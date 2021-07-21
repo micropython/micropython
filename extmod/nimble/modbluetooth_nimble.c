@@ -437,6 +437,12 @@ STATIC int commmon_gap_event_cb(struct ble_gap_event *event, void *arg) {
             return 0;
         }
 
+        case BLE_GAP_EVENT_SUBSCRIBE: {
+            DEBUG_printf("commmon_gap_event_cb: subscribe: characteristic handle=%d, reason=%d cur_notify=%d cur_indicate=%d \n", event->attr_handle, event->subscribe.reason, event->subscribe.cur_notify, event->subscribe.cur_indicate);
+            mp_bluetooth_gatts_on_subscription_update(event->subscribe.conn_handle, event->subscribe.attr_handle, event->subscribe.cur_notify, event->subscribe.cur_indicate);
+            return 0;
+        }
+
         default:
             DEBUG_printf("commmon_gap_event_cb: unknown type %d\n", event->type);
             return 0;
