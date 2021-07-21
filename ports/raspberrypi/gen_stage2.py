@@ -1,3 +1,4 @@
+import math
 import sys
 import cascadetoml
 import pathlib
@@ -46,6 +47,18 @@ def main(input_template: pathlib.Path, output_path: pathlib.Path, skus: str = ty
 
     max_clock_speed_mhz = min((x.get("max_clock_speed_mhz", 1000) for x in flashes["nvm"]))
 
+    default_power_of_two = None
+    for nvm in flashes["nvm"]:
+        capacity = nvm.get("capacity", 0)
+        if not 21 <= capacity < 30:
+            power_of_two = int(math.log2(nvm["total_size"]))
+            if not default_power_of_two:
+                default_power_of_two = power_of_two
+            else:
+                default_power_of_two = min(power_of_two, default_power_of_two)
+    if not default_power_of_two:
+        default_power_of_two = 21
+
     # Check that we have a consistent way to set quad enable.
     if continuous_status_write is None and split_status_write is None:
         print("quad not ok", continuous_status_write, split_status_write)
@@ -71,6 +84,7 @@ def main(input_template: pathlib.Path, output_path: pathlib.Path, skus: str = ty
         "clock_divider": clock_divider,
         "read_command": read_command,
         "wait_cycles": wait_cycles,
+        "default_power_of_two": default_power_of_two,
     }
 
     template = Template(input_template.read_text())

@@ -260,6 +260,12 @@ $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
+$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
+	$(STEPECHO) "GEN $<"
+	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
+
+$(BUILD)/supervisor/internal_flash.o: $(HEADER_BUILD)/flash_info.h
+
 $(BUILD)/boot2.elf: $(BUILD)/stage2.c
 	$(STEPECHO) "BOOT $<"
 	$(Q)$(CC) $(CFLAGS) $(BOOT2_S_CFLAGS) -Os -ggdb3 -I. -fPIC --specs=nosys.specs -nostartfiles -Wl,-T,boot_stage2.ld  -Wl,-Map=$@.map -o $@ $<
