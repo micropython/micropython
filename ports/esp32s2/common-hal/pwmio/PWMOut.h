@@ -34,7 +34,7 @@ typedef struct {
     mp_obj_base_t base;
     ledc_timer_config_t tim_handle;
     ledc_channel_config_t chan_handle;
-    uint16_t pin_number;
+    const mcu_pin_obj_t *pin;
     uint8_t duty_resolution;
     bool variable_frequency : 1;
     bool deinited : 1;

@@ -34,7 +34,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    pwmio_pwmout_obj_t *pwmout;
+    pwmio_pwmout_obj_t pwmout;
 } pulseio_pulseout_obj_t;
 
 void pulseout_reset(void);

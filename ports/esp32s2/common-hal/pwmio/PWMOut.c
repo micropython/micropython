@@ -152,7 +152,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         varfreq_timers[timer_index] = true;
     }
     self->variable_frequency = variable_frequency;
-    self->pin_number = pin->number;
+    self->pin = pin;
     self->deinited = false;
     self->duty_resolution = duty_bits;
     claim_pin(pin);
@@ -167,7 +167,7 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_tim[self->tim_handle.timer_num] = true;
     never_reset_chan[self->chan_handle.channel] = true;
 
-    never_reset_pin_number(self->pin_number);
+    never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
@@ -202,7 +202,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         // if timer isn't varfreq this will be off aleady
         varfreq_timers[self->tim_handle.timer_num] = false;
     }
-    reset_pin_number(self->pin_number);
+    common_hal_reset_pin(self->pin);
     self->deinited = true;
 }
 
@@ -231,4 +231,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

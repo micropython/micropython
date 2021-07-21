@@ -157,3 +157,7 @@ void pwmout_start(uint8_t pwm_num) {
 void pwmout_stop(uint8_t pwm_num) {
     ioctl(pwmout_dev[pwm_num].fd, PWMIOC_STOP, 0);
 }
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
+}

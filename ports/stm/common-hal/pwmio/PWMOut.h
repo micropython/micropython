@@ -44,6 +44,7 @@ typedef struct {
     uint16_t duty_cycle;
     uint32_t frequency;
     uint32_t period;
+    const mcu_pin_obj_t *pin;
 } pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);

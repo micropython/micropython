@@ -39,7 +39,7 @@ typedef struct {
     mp_obj_base_t base;
     uint8_t pin;
     uint8_t slice;
-    pwmio_pwmout_obj_t *carrier;
+    pwmio_pwmout_obj_t carrier;
     uint16_t *pulse_buffer;
     uint16_t pulse_length;
     uint16_t current_duty_cycle;

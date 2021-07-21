@@ -103,13 +103,15 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
-    const pwmio_pwmout_obj_t *carrier,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
-    if (!carrier || pin || frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
-    }
+
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
+        &self->pwmout, pin, duty_cycle, frequency, false);
+
+    // This will raise an exception and not return if needed.
+    common_hal_pwmio_pwmout_raise_error(result);
 
     if (refcount == 0) {
         // Find a spare timer.
@@ -155,7 +157,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     }
     refcount++;
 
-    self->pin = carrier->pin->number;
+    self->pin = pin->number;
 
     PortGroup *const port_base = &PORT->Group[GPIO_PORT(self->pin)];
     self->pincfg = &port_base->PINCFG[self->pin % 32];
@@ -173,7 +175,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
-    return self->pin == NO_PIN;
+    return common_hal_pwmio_pwmout_deinited(&self->pwmout);
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
@@ -191,6 +193,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
         pulseout_tc_index = 0xff;
     }
     self->pin = NO_PIN;
+    common_hal_pwmio_pwmout_deinit(&self->pwmout);
     #ifdef SAMD21
     rtc_end_pulse();
     #endif
