@@ -148,6 +148,10 @@ msgstr "%qは長さ2のタプルでなければなりません"
 msgid "%q must be between %d and %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must of type %q"
 msgstr ""
@@ -394,6 +398,7 @@ msgstr ""
 msgid "All event channels in use"
 msgstr "全てのイベントチャネルが使用中"
 
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr ""
@@ -982,7 +987,7 @@ msgstr "Addressが必要"
 msgid "Expected an alarm"
 msgstr ""
 
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr ""
@@ -1306,7 +1311,7 @@ msgstr "不正なbits per value"
 msgid "Invalid buffer size"
 msgstr "不正なバッファサイズ"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
 msgstr "不正なバイトオーダー文字列"
 
@@ -1512,7 +1517,7 @@ msgstr ""
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c
+#: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "%q のサブクラスでなければなりません"
 
@@ -2363,7 +2368,7 @@ msgstr "不明なセキュリティエラー: 0x%04x"
 msgid "Unknown system firmware error: %04x"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "右辺の要素数が一致しません (expected %d, got %d)"
@@ -2646,7 +2651,7 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "buttonsはdigitalio.DigitalInOutでなければなりません"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "byteorderが文字列ではありません"
 
@@ -2696,7 +2701,7 @@ msgid "can't cancel self"
 msgstr ""
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "%qを%qに変換できません"
 

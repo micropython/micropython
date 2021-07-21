@@ -154,6 +154,10 @@ msgstr "%q debe ser una tupla de longitud 2"
 msgid "%q must be between %d and %d"
 msgstr "%q debe estar entre %d y %d"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must of type %q"
 msgstr "%q debe ser de tipo %q"
@@ -400,6 +404,7 @@ msgstr "Todos los canales esta en uso"
 msgid "All event channels in use"
 msgstr "Todos los canales de eventos estan siendo usados"
 
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Todas las máquinas de estado en uso"
@@ -996,7 +1001,7 @@ msgstr "Se esperaba una dirección"
 msgid "Expected an alarm"
 msgstr "Un objecto alarm era esperado"
 
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Se esperaba un tuple de %d, se obtuvo %d"
@@ -1328,7 +1333,7 @@ msgstr "Inválido bits por valor"
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
 msgstr "Cadena de byteorder inválida"
 
@@ -1538,7 +1543,7 @@ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr ""
 "first_set_pin no encontrado. La instrucción %d configura el/los pin(es)"
 
-#: shared-bindings/displayio/Group.c
+#: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Debe de ser una subclase de %q."
 
@@ -2414,7 +2419,7 @@ msgstr "Error de seguridad desconocido: 0x%04x"
 msgid "Unknown system firmware error: %04x"
 msgstr "Error desconocido en el firmware sistema: %04x"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)."
@@ -2710,7 +2715,7 @@ msgstr "búfer muy pequeño para los bytes solicitados"
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "los botones necesitan ser digitalio.DigitalInOut"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "byteorder no es una cadena"
 
@@ -2760,7 +2765,7 @@ msgid "can't cancel self"
 msgstr "no se puede cancelar a si mismo"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "no puede convertir %q a %q"
 
