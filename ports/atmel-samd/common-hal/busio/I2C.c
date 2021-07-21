@@ -71,6 +71,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
+
+    // Ensure the object starts in its deinit state.
+    self->sda_pin = NO_PIN;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));
