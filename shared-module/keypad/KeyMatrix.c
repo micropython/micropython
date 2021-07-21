@@ -153,8 +153,9 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
     for (size_t row = 0; row < common_hal_keypad_keymatrix_get_row_count(self); row++) {
         // Switch this row to an output and set level appropriately
         // Set low if columns_to_anodes is true, else set high.
+        digitalio_digitalinout_obj_t *row_dio = self->row_digitalinouts->items[row];
         common_hal_digitalio_digitalinout_switch_to_output(
-            self->row_digitalinouts->items[row], !self->columns_to_anodes, DRIVE_MODE_PUSH_PULL);
+            row_dio, !self->columns_to_anodes, DRIVE_MODE_PUSH_PULL);
 
         for (size_t column = 0; column < common_hal_keypad_keymatrix_get_column_count(self); column++) {
             mp_uint_t key_number = row_column_to_key_number(self, row, column);
@@ -175,8 +176,12 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
             }
         }
 
+        // Done with this row. Set its pin to its resting pull value briefly to shorten the time it takes
+        // to switch values. Just switching to an input with a (relatively weak) pullup/pulldown
+        // causes a slight delay in the output changing, which can cause false readings.
+        common_hal_digitalio_digitalinout_set_value(row_dio, self->columns_to_anodes);
         // Switch the row back to an input, pulled appropriately
         common_hal_digitalio_digitalinout_switch_to_input(
-            self->row_digitalinouts->items[row], self->columns_to_anodes ? PULL_UP : PULL_DOWN);
+            row_dio, self->columns_to_anodes ? PULL_UP : PULL_DOWN);
     }
 }
