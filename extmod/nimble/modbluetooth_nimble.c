@@ -1392,6 +1392,9 @@ int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 
+void mp_bluetooth_nimble_sent_hci_packet(void) {
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 // Fortunately NimBLE uses mbuf chains correctly with L2CAP COC (rather than

@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "nimble/ble.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
 #include "extmod/nimble/hal/hal_uart.h"
 #include "extmod/nimble/nimble/nimble_npl_os.h"
 #include "extmod/mpbthci.h"
@@ -74,6 +75,11 @@ void hal_uart_start_tx(uint32_t port) {
     #endif
 
     mp_bluetooth_hci_uart_write(mp_bluetooth_hci_cmd_buf, len);
+
+    if (len > 0) {
+        // Allow modbluetooth bindings to hook "sent packet" (e.g. to unstall l2cap channels).
+        mp_bluetooth_nimble_sent_hci_packet();
+    }
 }
 
 int hal_uart_close(uint32_t port) {
