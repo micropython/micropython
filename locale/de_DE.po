@@ -151,6 +151,10 @@ msgstr "%q muss ein Tupel der Länge 2 sein"
 msgid "%q must be between %d and %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must of type %q"
 msgstr ""
@@ -398,6 +402,7 @@ msgstr ""
 msgid "All event channels in use"
 msgstr "Alle event Kanäle werden benutzt"
 
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Alle state machines in verwendung"
@@ -988,7 +993,7 @@ msgstr "Erwartet eine Adresse"
 msgid "Expected an alarm"
 msgstr "Alarm erwartet"
 
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
@@ -1315,7 +1320,7 @@ msgstr "Ungültige Bits pro Wert"
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
 msgstr "Ungültige Byteorder String"
 
@@ -1522,7 +1527,7 @@ msgstr "Fehlender first_out_pin. Instruktion %d schreibt Pin(s)"
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Fehlender first_set_pin. Instruktion %d setzt Pin(s)"
 
-#: shared-bindings/displayio/Group.c
+#: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Muss eine %q Unterklasse sein."
 
@@ -2383,7 +2388,7 @@ msgstr "Unbekannter Sicherheitsfehler: 0x%04x"
 msgid "Unknown system firmware error: %04x"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
@@ -2679,7 +2684,7 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "Tasten müssen digitalio.DigitalInOut sein"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr "Byteorder ist kein String"
 
@@ -2731,7 +2736,7 @@ msgid "can't cancel self"
 msgstr ""
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kann %q nicht zu %q konvertieren"
 
