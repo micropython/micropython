@@ -157,5 +157,3 @@ shared-bindings/vectorio/__init__.rst shared-bindings/vectorio/
 shared-bindings/watchdog/WatchDogMode.rst shared-bindings/watchdog/#watchdog.WatchDogMode
 shared-bindings/watchdog/WatchDogTimer.rst shared-bindings/watchdog/#watchdog.WatchDogTimer
 shared-bindings/watchdog/__init__.rst shared-bindings/watchdog/
-shared-bindings/wiznet/WIZNET5K.rst shared-bindings/wiznet/#wiznet.WIZNET5K
-shared-bindings/wiznet/__init__.rst shared-bindings/wiznet/

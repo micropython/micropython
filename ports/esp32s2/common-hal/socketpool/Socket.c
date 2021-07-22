@@ -144,7 +144,7 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
     }
 }
 
-bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
+void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
@@ -184,7 +184,7 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     if (result >= 0) {
         self->connected = true;
-        return true;
+        return;
     } else {
         mp_raise_OSError(errno);
     }

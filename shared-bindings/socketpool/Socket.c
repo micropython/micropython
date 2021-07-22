@@ -140,10 +140,7 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         mp_raise_ValueError(translate("port must be >= 0"));
     }
 
-    bool ok = common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
-    if (!ok) {
-        mp_raise_OSError(0);
-    }
+    common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
 
     return mp_const_none;
 }
@@ -289,9 +286,6 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     }
 
     mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, (uint32_t)port, bufinfo.buf, bufinfo.len);
-    if (!ret) {
-        mp_raise_OSError(0);
-    }
 
     return mp_obj_new_int_from_uint(ret);
 }

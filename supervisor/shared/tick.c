@@ -52,10 +52,6 @@
 #include "shared-module/keypad/__init__.h"
 #endif
 
-#if CIRCUITPY_NETWORK
-#include "shared-module/network/__init__.h"
-#endif
-
 #include "shared-bindings/microcontroller/__init__.h"
 
 #if CIRCUITPY_WATCHDOG
@@ -80,9 +76,6 @@ void supervisor_background_tasks(void *unused) {
     displayio_background();
     #endif
 
-    #if CIRCUITPY_NETWORK
-    network_module_background();
-    #endif
     filesystem_background();
 
     port_background_task();

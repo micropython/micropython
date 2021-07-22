@@ -578,23 +578,6 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 #define NEOPIXEL_WRITE_MODULE
 #endif
 
-#if CIRCUITPY_NETWORK
-extern const struct _mp_obj_module_t network_module;
-extern const struct _mp_obj_module_t socket_module;
-#define NETWORK_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },
-#define SOCKET_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
-#define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
-#if MICROPY_PY_WIZNET5K
-extern const struct _mp_obj_module_t wiznet_module;
-    #define WIZNET_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
-#endif
-#else
-#define NETWORK_MODULE
-#define SOCKET_MODULE
-#define WIZNET_MODULE
-#define NETWORK_ROOT_POINTERS
-#endif
-
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
@@ -918,9 +901,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     MICROCONTROLLER_MODULE \
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
-    NETWORK_MODULE \
-    SOCKET_MODULE \
-    WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -986,14 +966,10 @@ struct _supervisor_allocation_node;
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
-        NETWORK_ROOT_POINTERS \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
-
-// TODO: Used in wiznet5k driver, but may not be needed in the long run.
-#define MICROPY_THREAD_YIELD()
 
 #define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
 #define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
