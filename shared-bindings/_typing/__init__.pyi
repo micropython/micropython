@@ -10,10 +10,10 @@ import audiocore
 import audiomixer
 import audiomp3
 import rgbmatrix
-import ulab
+import ulab.numpy
 
 ReadableBuffer = Union[
-    bytes, bytearray, memoryview, array.array, ulab.ndarray, rgbmatrix.RGBMatrix
+    bytes, bytearray, memoryview, array.array, ulab.numpy.ndarray, rgbmatrix.RGBMatrix
 ]
 """Classes that implement the readable buffer protocol
 
@@ -21,19 +21,19 @@ ReadableBuffer = Union[
   - `bytearray`
   - `memoryview`
   - `array.array`
-  - `ulab.ndarray`
+  - `ulab.numpy.ndarray`
   - `rgbmatrix.RGBMatrix`
 """
 
 WriteableBuffer = Union[
-    bytearray, memoryview, array.array, ulab.ndarray, rgbmatrix.RGBMatrix
+    bytearray, memoryview, array.array, ulab.numpy.ndarray, rgbmatrix.RGBMatrix
 ]
 """Classes that implement the writeable buffer protocol
 
   - `bytearray`
   - `memoryview`
   - `array.array`
-  - `ulab.ndarray`
+  - `ulab.numpy.ndarray`
   - `rgbmatrix.RGBMatrix`
 """
 
