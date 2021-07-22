@@ -75,7 +75,9 @@ set(MICROPY_SOURCE_PORT
 )
 
 # Include LVGL bindings rules
-include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+if(NOT CMAKE_BUILD_EARLY_EXPANSION)
+    include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+endif()
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
