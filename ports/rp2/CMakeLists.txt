@@ -159,6 +159,32 @@ set(PICO_SDK_COMPONENTS
     tinyusb_device
 )
 
+if(MICROPY_PY_BLUETOOTH)
+    list(APPEND MICROPY_SOURCE_PORT mpbthciport.c)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_BLUETOOTH=1
+        MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
+        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
+    )
+endif()
+
+if(MICROPY_BLUETOOTH_NIMBLE)
+    list(APPEND MICROPY_SOURCE_PORT mpnimbleport.c)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BLUETOOTH_NIMBLE=1
+        MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=0
+    )
+    target_compile_options(${MICROPY_TARGET} PRIVATE
+    # TODO: This flag is currently needed to make nimble build.
+    -Wno-unused-but-set-variable
+    )
+    include(${MICROPY_DIR}/extmod/nimble/nimble.cmake)
+    target_link_libraries(${MICROPY_TARGET} micropy_extmod_nimble)
+    get_target_property(NIMBLE_INCLUDE micropy_extmod_nimble INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
+endif()
+
 # Define mpy-cross flags and frozen manifest
 set(MICROPY_CROSS_FLAGS -march=armv7m)
 if (NOT MICROPY_FROZEN_MANIFEST)

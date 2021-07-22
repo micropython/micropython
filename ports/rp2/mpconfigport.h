@@ -171,6 +171,20 @@ extern const struct _mp_obj_module_t mp_module_rp2;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 
+#if MICROPY_PY_BLUETOOTH
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH
+#endif
+
+#if MICROPY_BLUETOOTH_NIMBLE
+struct _mp_bluetooth_nimble_root_pointers_t;
+struct _mp_bluetooth_nimble_malloc_t;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
@@ -190,6 +204,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
     MICROPY_BOARD_ROOT_POINTERS \
+    MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
+        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

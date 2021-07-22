@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
+#include "extmod/modbluetooth.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -39,6 +40,7 @@
 #include "uart.h"
 #include "modmachine.h"
 #include "modrp2.h"
+#include "mpbthciport.h"
 #include "genhdr/mpversion.h"
 
 #include "pico/stdlib.h"
@@ -107,6 +109,10 @@ int main(int argc, char **argv) {
         machine_pin_init();
         rp2_pio_init();
 
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_hci_init();
+        #endif
+
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
 
@@ -137,6 +143,9 @@ int main(int argc, char **argv) {
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         rp2_pio_deinit();
+        #if MICROPY_PY_BLUETOOTH
+        mp_bluetooth_deinit();
+        #endif
         machine_pin_deinit();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
