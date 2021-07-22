@@ -1,4 +1,4 @@
-import os, re, serial, struct, time
+import io, os, re, serial, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
@@ -222,6 +222,8 @@ class RemoteFile(uio.IOBase):
         c.wr_s8(whence)
         n = c.rd_s32()
         c.end()
+        if n < 0:
+            raise OSError(n)
         return n
 
 
@@ -463,7 +465,10 @@ class PyboardCommand:
         n = self.rd_s32()
         whence = self.rd_s8()
         # self.log_cmd(f"seek {fd} {n}")
-        n = self.data_files[fd][0].seek(n, whence)
+        try:
+            n = self.data_files[fd][0].seek(n, whence)
+        except io.UnsupportedOperation:
+            n = -1
         self.wr_s32(n)
 
     def do_write(self):
