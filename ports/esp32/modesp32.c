@@ -34,6 +34,8 @@
 #include "driver/gpio.h"
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
+#include "esp_event.h"
+#include "esp_log.h"
 #include "multi_heap.h"
 
 #include "py/nlr.h"
@@ -180,6 +182,57 @@ STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
 
+static void event_handler(void *arg, esp_event_base_t event_base,
+    int32_t event_id, void *event_data) {
+    ESP_LOGI("Event", "event_base=%s, event_id=%d", event_base, event_id);
+    mp_sched_schedule(arg, mp_obj_new_int(event_id));
+}
+
+STATIC mp_obj_t esp32_register_event_handler(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_event_base, ARG_handler};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_event_base, MP_ARG_INT, {.u_int = EVENT_BASE_ANY} },
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t handler = args[ARG_handler].u_obj;
+
+    if (mp_obj_is_fun(handler)) {
+        esp_event_handler_instance_t *instance = NULL;
+        uint8_t event_base_id = args[ARG_event_base].u_int;
+        esp_event_base_t event_base;
+
+        switch (event_base_id) {
+            case EVENT_BASE_ANY:
+                event_base = ESP_EVENT_ANY_BASE;
+                break;
+            case EVENT_BASE_WIFI:
+                event_base = WIFI_EVENT;
+                break;
+            case EVENT_BASE_ETH:
+                event_base = ETH_EVENT;
+                break;
+            case EVENT_BASE_IP:
+                event_base = IP_EVENT;
+                break;
+            default:
+                event_base = ESP_EVENT_ANY_BASE;
+        }
+
+        esp_event_handler_instance_register(
+            event_base,
+            ESP_EVENT_ANY_ID,
+            &event_handler, handler, instance);
+
+        return mp_const_none;
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("handler must be a function."));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_register_event_handler_obj, 0, esp32_register_event_handler);
+
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -201,6 +254,12 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_FALSE },
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_TRUE },
+
+    { MP_ROM_QSTR(MP_QSTR_register_event_handler), MP_ROM_PTR(&esp32_register_event_handler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_EVENT_BASE_ANY), MP_ROM_INT(EVENT_BASE_ANY) },
+    { MP_ROM_QSTR(MP_QSTR_EVENT_BASE_WIFI), MP_ROM_INT(EVENT_BASE_WIFI) },
+    { MP_ROM_QSTR(MP_QSTR_EVENT_BASE_ETH), MP_ROM_INT(EVENT_BASE_ETH) },
+    { MP_ROM_QSTR(MP_QSTR_EVENT_BASE_IP), MP_ROM_INT(EVENT_BASE_IP) },
 
     { MP_ROM_QSTR(MP_QSTR_HEAP_DATA), MP_ROM_INT(MALLOC_CAP_8BIT) },
     { MP_ROM_QSTR(MP_QSTR_HEAP_EXEC), MP_ROM_INT(MALLOC_CAP_EXEC) },

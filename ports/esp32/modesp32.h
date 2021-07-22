@@ -31,4 +31,6 @@ extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
 
+enum { EVENT_BASE_ANY, EVENT_BASE_WIFI, EVENT_BASE_ETH, EVENT_BASE_IP };
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
