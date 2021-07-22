@@ -26,4 +26,4 @@
 
 #include "traceback.h"
 
-supervisor_allocation* prev_traceback_allocation;
+supervisor_allocation *prev_traceback_allocation;

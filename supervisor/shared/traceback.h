@@ -29,6 +29,6 @@
 
 #include "supervisor/memory.h"
 
-extern supervisor_allocation* prev_traceback_allocation;
+extern supervisor_allocation *prev_traceback_allocation;
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRACEBACK_H

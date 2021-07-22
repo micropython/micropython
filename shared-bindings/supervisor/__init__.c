@@ -267,16 +267,16 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 //|     ...
 //|
 STATIC mp_obj_t supervisor_get_previous_traceback(void) {
-    //TODO is this a safe and proper way of making a heap-allocated string object that points at long-lived (and likely long and unique) data outside the heap?
+    // TODO is this a safe and proper way of making a heap-allocated string object that points at long-lived (and likely long and unique) data outside the heap?
     if (prev_traceback_allocation) {
-        size_t len = strlen((const char*)prev_traceback_allocation->ptr);
+        size_t len = strlen((const char *)prev_traceback_allocation->ptr);
         if (len > 0) {
             mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
             o->base.type = &mp_type_str;
             o->len = len;
-            //TODO is it a good assumption that callers probably aren't going to compare this string, so skip computing the hash?
+            // TODO is it a good assumption that callers probably aren't going to compare this string, so skip computing the hash?
             o->hash = 0;
-            o->data = (const byte*)prev_traceback_allocation->ptr;
+            o->data = (const byte *)prev_traceback_allocation->ptr;
             return MP_OBJ_FROM_PTR(o);
         }
     }

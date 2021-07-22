@@ -33,9 +33,9 @@
 typedef struct {
     mp_obj_base_t base;
 
-    const mcu_pin_obj_t* MOSI;
-    const mcu_pin_obj_t* MISO;
-    const mcu_pin_obj_t* clock;
+    const mcu_pin_obj_t *MOSI;
+    const mcu_pin_obj_t *MISO;
+    const mcu_pin_obj_t *clock;
 
     spi_host_device_t host_id;
 
