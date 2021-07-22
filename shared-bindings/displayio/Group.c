@@ -38,20 +38,18 @@
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
 //|
-//|     def __init__(self, *, max_size: int = 4, scale: int = 1, x: int = 0, y: int = 0) -> None:
+//|     def __init__(self, *, scale: int = 1, x: int = 0, y: int = 0) -> None:
 //|         """Create a Group of a given size and scale. Scale is in one dimension. For example, scale=2
 //|         leads to a layer's pixel being 2x2 pixels when in the group.
 //|
-//|         :param int max_size: Ignored. Will be removed in 7.x.
 //|         :param int scale: Scale of layer pixels in one dimension.
 //|         :param int x: Initial x position within the parent.
 //|         :param int y: Initial y position within the parent."""
 //|         ...
 //|
 STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_max_size, ARG_scale, ARG_x, ARG_y };
+    enum { ARG_scale, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_max_size, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 4} },
         { MP_QSTR_scale, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
         { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
