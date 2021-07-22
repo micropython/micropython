@@ -3532,6 +3532,10 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr ""
 
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "mode must be complete, or reduced"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr ""
@@ -3772,6 +3776,14 @@ msgstr ""
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
 #: extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
+msgstr ""
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "operation is defined for 2D arrays only"
+msgstr ""
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "operation is defined for ndarrays only"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
