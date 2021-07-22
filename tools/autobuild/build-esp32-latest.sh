@@ -39,7 +39,11 @@ fi
 
 source $idf_path/export.sh
 
-# build the versions
-do_build esp32 GENERIC FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
-do_build esp32spiram GENERIC_SPIRAM FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
-do_build tinypico UM_TINYPICO
+# build the boards, based on the IDF version
+if idf.py --version | grep -q v4.2; then
+    do_build esp32 GENERIC FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
+    do_build esp32spiram GENERIC_SPIRAM FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
+    do_build tinypico UM_TINYPICO
+else
+    do_build esp32c3 GENERIC_C3
+fi
