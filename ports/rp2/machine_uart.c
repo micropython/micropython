@@ -404,6 +404,13 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
     uint8_t *dest = buf_in;
 
+    // Try getting data to the ring buffer if it is empty.
+    if (ringbuf_avail(&self->read_buffer) == 0) {
+        self->read_lock = true;
+        uart_drain_rx_fifo(self);
+        self->read_lock = false;
+    }
+
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
