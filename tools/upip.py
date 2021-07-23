@@ -134,13 +134,16 @@ def url_open(url):
             host, port = host.split(":")
             port = int(port)
         ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
-        ai = [_ai for _ai in ai if _ai[0] == usocket.AF_INET]
-        if len(ai) < 1:
-            fatal("No IPV4 address for host: '%s'" % host)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
     # print("Address infos:", ai)
-    ai = ai[0]
+
+    for a in ai:
+        if a[0] == usocket.AF_INET:
+            ai = a
+            break
+    else:
+        fatal("No IPV4 address for host: '%s'" % host)
 
     s = usocket.socket(ai[0], ai[1], ai[2])
     try:
