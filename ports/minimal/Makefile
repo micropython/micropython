@@ -41,6 +41,14 @@ CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
+CXXFLAGS += $(CXXFLAGS_MOD)
+
+# Flags for user C modules
+CFLAGS += $(CFLAGS_MOD)
+LDFLAGS += $(LDFLAGS_MOD)
+
 LIBS =
 
 SRC_C = \
@@ -56,7 +64,14 @@ ifeq ($(CROSS), 1)
 SRC_C += shared/libc/string0.c
 endif
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+SRC_C += $(SRC_MOD)
+
+SRC_CXX += $(SRC_MOD_CXX)
+
+SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
+
+OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
 ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.dfu
