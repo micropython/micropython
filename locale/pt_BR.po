@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-07-22 18:33+0000\n"
+"PO-Revision-Date: 2021-07-23 12:45+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2878,7 +2878,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
-msgstr ""
+msgstr "não é possível atribuir uma nova forma"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
@@ -3637,7 +3637,7 @@ msgstr "memoryview: o comprimento não é um múltiplo do tamanho dos itens"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
-msgstr ""
+msgstr "o modo deve ser completo ou reduzido"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -3884,11 +3884,11 @@ msgstr "os operandos não puderam ser transmitidos juntos"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for 2D arrays only"
-msgstr ""
+msgstr "a operação é definida apenas para as matrizes 2D"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr ""
+msgstr "a operação é definida apenas para ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
