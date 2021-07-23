@@ -1206,8 +1206,8 @@ msgstr "Indata-/utdatafel"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
-msgstr "Instruktion %d hoppar på pinne"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -4499,6 +4499,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "Instruktion %d hoppar på pinne"
 
 #~ msgid "%q must store bytes"
 #~ msgstr "%q måste lagra bytes"

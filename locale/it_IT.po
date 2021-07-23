@@ -1211,7 +1211,7 @@ msgstr "Errore input/output"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
