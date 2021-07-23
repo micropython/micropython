@@ -407,6 +407,13 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
+            if (uart_is_readable(self->uart)) {
+                // Force a few incoming bytes to the buffer
+                self->read_lock = true;
+                uart_drain_rx_fifo(self);
+                self->read_lock = false;
+                break;
+            }
             if (time_us_64() > t) {  // timed out
                 if (i <= 0) {
                     *errcode = MP_EAGAIN;
@@ -416,10 +423,6 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
                 }
             }
             MICROPY_EVENT_POLL_HOOK
-            // Force a few incoming bytes to the buffer
-            self->read_lock = true;
-            uart_drain_rx_fifo(self);
-            self->read_lock = false;
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         t = time_us_64() + timeout_char_us;
