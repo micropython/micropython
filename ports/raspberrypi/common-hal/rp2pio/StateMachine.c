@@ -158,6 +158,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count,
     uint32_t initial_pin_state, uint32_t initial_pin_direction,
+    const mcu_pin_obj_t *jmp_pin,
     uint32_t pins_we_use, bool tx_fifo, bool rx_fifo,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
@@ -278,6 +279,9 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         sm_config_set_sideset(&c, sideset_pin_count, false /* optional */, false /* pin direction */);
         sm_config_set_sideset_pins(&c, first_sideset_pin->number);
     }
+    if (jmp_pin != NULL) {
+        sm_config_set_jmp_pin(&c, jmp_pin->number);
+    }
     sm_config_set_wrap(&c, program_offset, program_offset + program_len - 1);
     sm_config_set_in_shift(&c, in_shift_right, auto_push, push_threshold);
     sm_config_set_out_shift(&c, out_shift_right, auto_pull, pull_threshold);
@@ -329,6 +333,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
+    const mcu_pin_obj_t *jmp_pin,
     uint32_t wait_gpio_mask,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
@@ -341,6 +346,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     pins_we_use |= _check_pins_free(first_in_pin, in_pin_count, exclusive_pin_use);
     pins_we_use |= _check_pins_free(first_set_pin, set_pin_count, exclusive_pin_use);
     pins_we_use |= _check_pins_free(first_sideset_pin, sideset_pin_count, exclusive_pin_use);
+    pins_we_use |= _check_pins_free(jmp_pin, 1, exclusive_pin_use);
 
     // Look through the program to see what we reference and make sure it was provided.
     bool tx_fifo = false;
@@ -363,8 +369,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         }
         if (instruction == pio_instr_bits_jmp) {
             uint16_t condition = (full_instruction & 0x00e0) >> 5;
-            if (condition == 0x6) { // GPIO
-                mp_raise_NotImplementedError_varg(translate("Instruction %d jumps on pin"), i);
+            if ((condition == 0x6) && (jmp_pin == NULL)) {
+                mp_raise_ValueError_varg(translate("Missing jmp_pin. Instruction %d jumps on pin"), i);
             }
         }
         if (instruction == pio_instr_bits_wait) {
@@ -486,6 +492,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         first_set_pin, set_pin_count,
         first_sideset_pin, sideset_pin_count,
         initial_pin_state, initial_pin_direction,
+        jmp_pin,
         pins_we_use, tx_fifo, rx_fifo,
         auto_pull, pull_threshold, out_shift_right,
         wait_for_txstall,
