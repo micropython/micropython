@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
+ * Copyright (c) 2020 Christian Walther
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_TRACEBACK_H
+#define MICROPY_INCLUDED_SUPERVISOR_TRACEBACK_H
 
-#include "driver/spi_master.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/memory.h"
 
-typedef struct {
-    mp_obj_base_t base;
+extern supervisor_allocation *prev_traceback_allocation;
 
-    const mcu_pin_obj_t *MOSI;
-    const mcu_pin_obj_t *MISO;
-    const mcu_pin_obj_t *clock;
-
-    spi_host_device_t host_id;
-
-    uint8_t bits;
-    uint8_t phase;
-    uint8_t polarity;
-    uint32_t baudrate;
-
-    bool has_lock;
-} busio_spi_obj_t;
-
-void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#endif  // MICROPY_INCLUDED_SUPERVISOR_TRACEBACK_H

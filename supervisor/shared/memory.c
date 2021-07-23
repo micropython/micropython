@@ -38,6 +38,8 @@ enum {
         2
         // next_code_allocation
         + 1
+        // prev_traceback_allocation
+        + 1
 
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1

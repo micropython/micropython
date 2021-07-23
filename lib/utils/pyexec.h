@@ -35,7 +35,7 @@ typedef enum {
 
 typedef struct {
     int return_code;
-    const mp_obj_type_t *exception_type;
+    mp_obj_t exception;
     int exception_line;
 } pyexec_result_t;
 
