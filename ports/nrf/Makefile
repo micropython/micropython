@@ -182,32 +182,6 @@ SRC_C += \
 endif
 endif # CIRCUITPY_USB
 
-ifeq ($(CIRCUITPY_NETWORK),1)
-CFLAGS += -DMICROPY_PY_NETWORK=1
-
-SRC_MOD += lib/netutils/netutils.c
-
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-WIZNET5K_DIR=drivers/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR)
-CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-        ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
-        ethernet/wizchip_conf.c \
-        ethernet/socket.c \
-        internet/dns/dns.c \
-        internet/dhcp/dhcp.c \
-        )
-
-endif # MICROPY_PY_WIZNET5K
-endif # CIRCUITPY_NETWORK
-
-ifeq ($(CIRCUITPY_NETWORK),1)
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-SRC_SHARED_MODULE += wiznet/__init__.c wiznet/wiznet5k.c
-endif
-endif
-
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))

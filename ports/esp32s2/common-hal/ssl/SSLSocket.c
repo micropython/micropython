@@ -53,7 +53,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     self->tls = NULL;
 }
 
-bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
+void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     esp_tls_cfg_t *tls_config = NULL;
     tls_config = &self->ssl_context->ssl_config;
@@ -84,8 +84,6 @@ bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
     }
-
-    return self->sock->connected;
 }
 
 bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self) {

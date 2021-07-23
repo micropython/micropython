@@ -95,10 +95,6 @@
 #include "shared-module/memorymonitor/__init__.h"
 #endif
 
-#if CIRCUITPY_NETWORK
-#include "shared-module/network/__init__.h"
-#endif
-
 #if CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
 #endif
@@ -169,17 +165,9 @@ STATIC void start_mp(supervisor_allocation* heap) {
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif
-
-    #if CIRCUITPY_NETWORK
-    network_module_init();
-    #endif
 }
 
 STATIC void stop_mp(void) {
-    #if CIRCUITPY_NETWORK
-    network_module_deinit();
-    #endif
-
     #if MICROPY_VFS
     mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
 

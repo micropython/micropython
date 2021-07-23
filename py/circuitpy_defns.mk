@@ -214,9 +214,6 @@ endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
 SRC_PATTERNS += neopixel_write/%
 endif
-ifeq ($(CIRCUITPY_NETWORK),1)
-SRC_PATTERNS += network/% socket/%
-endif
 ifeq ($(CIRCUITPY_NVM),1)
 SRC_PATTERNS += nvm/%
 endif

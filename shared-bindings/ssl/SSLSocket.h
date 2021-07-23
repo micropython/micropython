@@ -34,7 +34,7 @@ extern const mp_obj_type_t ssl_sslsocket_type;
 ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, uint8_t *ip, uint32_t *port);
 bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
+void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
 bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self);
 bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
 bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
