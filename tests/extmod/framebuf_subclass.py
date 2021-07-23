@@ -1,8 +1,13 @@
 # test subclassing framebuf.FrameBuffer
 
 try:
-    import framebuf
+    import framebuf, usys
 except ImportError:
+    print("SKIP")
+    raise SystemExit
+
+# This test and its .exp file is based on a little-endian architecture.
+if usys.byteorder != "little":
     print("SKIP")
     raise SystemExit
 

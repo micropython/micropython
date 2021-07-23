@@ -70,7 +70,7 @@ INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/ble
 INC += -I./modules/board
-INC += -I../../lib/mp-readline
+INC += -I../../shared/readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 INC += -I../../lib/nrfx/
@@ -160,8 +160,16 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
         libm/roundf.c \
 	)
 
@@ -186,8 +194,17 @@ SRC_LIB += $(addprefix lib/,\
         libm/sf_modf.c \
         libm/sf_ldexp.c \
         libm/asinfacosf.c \
+        libm/acoshf.c \
+        libm/asinhf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/atanhf.c \
+        libm/log1pf.c \
+        libm/sf_erf.c \
+        libm/erf_lgamma.c \
+        libm/wf_lgamma.c \
+        libm/wf_tgamma.c \
+        libm/roundf.c \
         )
 
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
@@ -199,12 +216,12 @@ include drivers/secureboot/secureboot.mk
 
 endif
 
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB += $(addprefix shared/,\
 	libc/string0.c \
-	mp-readline/readline.c \
-	utils/pyexec.c \
-	utils/sys_stdio_mphal.c \
-	utils/interrupt_char.c \
+	readline/readline.c \
+	runtime/pyexec.c \
+	runtime/sys_stdio_mphal.c \
+	runtime/interrupt_char.c \
 	timeutils/timeutils.c \
 	)
 
@@ -481,7 +498,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD) 
+SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR

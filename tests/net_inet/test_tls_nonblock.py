@@ -16,7 +16,7 @@ def test_one(site, opts):
         s.connect(addr)
         raise OSError(-1, "connect blocks")
     except OSError as e:
-        if e.args[0] != errno.EINPROGRESS:
+        if e.errno != errno.EINPROGRESS:
             raise
 
     if sys.implementation.name != "micropython":
@@ -31,7 +31,7 @@ def test_one(site, opts):
             else:
                 s = ssl.wrap_socket(s, do_handshake_on_connect=False)
         except OSError as e:
-            if e.args[0] != errno.EINPROGRESS:
+            if e.errno != errno.EINPROGRESS:
                 raise
         print("wrapped")
 
@@ -69,7 +69,7 @@ def test_one(site, opts):
             try:
                 b = s.read(128)
             except OSError as err:
-                if err.args[0] == 2:  # 2=ssl.SSL_ERROR_WANT_READ:
+                if err.errno == 2:  # 2=ssl.SSL_ERROR_WANT_READ:
                     continue
                 raise
             if b is None:

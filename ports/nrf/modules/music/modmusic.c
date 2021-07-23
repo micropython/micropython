@@ -140,7 +140,7 @@ STATIC void wait_async_music_idle(void) {
     // wait for the async music state to become idle
     while (music_data->async_state != ASYNC_MUSIC_STATE_IDLE) {
         // allow CTRL-C to stop the music
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
             music_data->async_state = ASYNC_MUSIC_STATE_IDLE;
             pwm_set_duty_cycle(music_data->async_pin->pin, 0); // TODO: remove pin setting.
             break;

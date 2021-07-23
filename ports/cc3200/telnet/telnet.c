@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "telnet.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -446,7 +446,7 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
         if (*_str <= 127) {
             if (telnet_data.state == E_TELNET_STE_LOGGED_IN && *_str == mp_interrupt_char) {
                 // raise a keyboard exception
-                mp_keyboard_interrupt();
+                mp_sched_keyboard_interrupt();
                 (*len)--;
                 _str++;
             }

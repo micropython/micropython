@@ -240,6 +240,22 @@ TCP stream connections
 
     This is a coroutine.
 
+.. method:: Stream.readinto(buf)
+
+    Read up to n bytes into *buf* with n being equal to the length of *buf*.
+
+    Return the number of bytes read into *buf*.
+
+    This is a coroutine, and a MicroPython extension.
+
+.. method:: Stream.readexactly(n)
+
+    Read exactly *n* bytes and return them as a bytes object.
+
+    Raises an ``EOFError`` exception if the stream ends before reading *n* bytes.
+
+    This is a coroutine.
+
 .. method:: Stream.readline()
 
     Read a line and return it.

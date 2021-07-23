@@ -165,3 +165,14 @@ The following libraries are specific to the ESP8266 and ESP32.
 
   esp.rst
   esp32.rst
+
+
+Libraries specific to the RP2040
+--------------------------------
+
+The following libraries are specific to the RP2040, as used in the Raspberry Pi Pico.
+
+.. toctree::
+  :maxdepth: 2
+
+  rp2.rst

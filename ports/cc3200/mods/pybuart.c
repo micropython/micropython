@@ -33,7 +33,7 @@
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -250,7 +250,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
             if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
                 // raise an exception when interrupts are finished
-                mp_keyboard_interrupt();
+                mp_sched_keyboard_interrupt();
             } else { // there's always a read buffer available
                 uint16_t next_head = (self->read_buf_head + 1) % PYBUART_RX_BUFFER_LEN;
                 if (next_head != self->read_buf_tail) {

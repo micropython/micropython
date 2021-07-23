@@ -9,8 +9,9 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "gccollect.h"
-#include "lib/utils/pyexec.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 #include "lexermemzip.h"
 
 #include "Arduino.h"
@@ -347,6 +348,12 @@ soft_reset:
 
 //    first_soft_reset = false;
     goto soft_reset;
+}
+
+void gc_collect(void) {
+    gc_collect_start();
+    gc_helper_collect_regs_and_stack();
+    gc_collect_end();
 }
 
 // stub out __libc_init_array. It's called by mk20dx128.c and is used to call

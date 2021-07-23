@@ -22,4 +22,4 @@ def test(a):
 test(array("f"))
 test(array("d"))
 
-print("{:.4f}".format(array("f", b"\xcc\xcc\xcc=")[0]))
+print("{:.4f}".format(array("f", bytes(array("I", [0x3DCCCCCC])))[0]))

@@ -27,12 +27,33 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_PIN_H
 #define MICROPY_INCLUDED_MIMXRT_PIN_H
 
-#include "fsl_gpio.h"
+#include <stdint.h>
 #include "py/obj.h"
+#include "shared/runtime/mpirq.h"
+#include "fsl_gpio.h"
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+#define IS_GPIO_MODE(MODE) (((MODE) == PIN_MODE_IN) || \
+    ((MODE) == PIN_MODE_OUT) || \
+    ((MODE) == PIN_MODE_OPEN_DRAIN) || \
+    ((MODE) == PIN_MODE_ALT))
+
+#define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == PIN_DRIVE_OFF) || \
+    ((DRIVE) == PIN_DRIVE_POWER_0) || \
+    ((DRIVE) == PIN_DRIVE_POWER_1) || \
+    ((DRIVE) == PIN_DRIVE_POWER_2) || \
+    ((DRIVE) == PIN_DRIVE_POWER_3) || \
+    ((DRIVE) == PIN_DRIVE_POWER_4) || \
+    ((DRIVE) == PIN_DRIVE_POWER_5) || \
+    ((DRIVE) == PIN_DRIVE_POWER_6))
+
+// ------------------------------------------------------------------------------------------------------------------ //
 
 enum {
     PIN_MODE_IN = 0,
     PIN_MODE_OUT,
+    PIN_MODE_OPEN_DRAIN,
     PIN_MODE_ALT,
 };
 
@@ -47,13 +68,43 @@ enum {
     PIN_AF_MODE_ALT8,
 };
 
+enum {
+    PIN_PULL_DOWN_100K = 0,
+    PIN_PULL_UP_47K,
+    PIN_PULL_UP_100K,
+    PIN_PULL_UP_22K,
+    PIN_PULL_DISABLED,
+    PIN_PULL_HOLD,
+};
+
+enum {
+    PIN_DRIVE_OFF = 0b000,
+    PIN_DRIVE_POWER_0, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    PIN_DRIVE_POWER_1, // R0/2
+    PIN_DRIVE_POWER_2, // R0/3
+    PIN_DRIVE_POWER_3, // R0/4
+    PIN_DRIVE_POWER_4, // R0/5
+    PIN_DRIVE_POWER_5, // R0/6
+    PIN_DRIVE_POWER_6, // R0/7
+};
+
+
+
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
 typedef struct {
     mp_obj_base_t base;
     qstr name;  // port name
-    uint32_t af_mode;  // alternate function
+    uint8_t af_mode;  // alternate function
     void *instance;  // pointer to peripheral instance for alternate function
     uint32_t pad_config;  // pad configuration for alternate function
-} pin_af_obj_t;
+} machine_pin_af_obj_t;
+
+typedef struct {
+    ADC_Type *instance;
+    uint8_t channel;
+} machine_pin_adc_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
@@ -62,39 +113,47 @@ typedef struct {
     uint32_t pin;  // pin number
     uint32_t muxRegister;
     uint32_t configRegister;
-    uint32_t mode;  // current pin mode
-    uint32_t af_mode;  // current alternate function mode
-    size_t af_list_len;  // length of available alternate functions list
-    const pin_af_obj_t *af_list;  // pointer tolist with alternate functions
-} pin_obj_t;
+    uint8_t af_list_len;  // length of available alternate functions list
+    uint8_t adc_list_len; // length of available ADC options list
+    const machine_pin_af_obj_t *af_list;  // pointer to list with alternate functions
+    const machine_pin_adc_obj_t *adc_list; // pointer to list with ADC options
+} machine_pin_obj_t;
 
-extern const mp_obj_type_t pin_type;
-extern const mp_obj_type_t pin_af_type;
+typedef struct _machine_pin_irq_obj_t {
+    mp_irq_obj_t base;
+    uint32_t flags;
+    uint32_t trigger;
+} machine_pin_irq_obj_t;
 
-#define PIN_AF(_name, _af_mode, _instance, _pad_config) \
-    { \
-        .base = { &pin_af_type }, \
-        .name = MP_QSTR_##_name, \
-        .af_mode = (uint32_t)(_af_mode), \
-        .instance = (void *)(_instance), \
-        .pad_config = (uint32_t)(_pad_config), \
-    } \
+// ------------------------------------------------------------------------------------------------------------------ //
 
-#define PIN(_name, _gpio, _pin, _af_list) \
-    { \
-        .base = { &pin_type }, \
-        .name = MP_QSTR_##_name, \
-        .gpio = (_gpio), \
-        .pin = (uint32_t)(_pin), \
-        .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
-        .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
-        .mode = PIN_MODE_IN, \
-        .af_mode = PIN_AF_MODE_ALT5, \
-        .af_list_len = (size_t)(sizeof((_af_list)) / sizeof(pin_af_obj_t)), \
-        .af_list = (_af_list), \
-    } \
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_pin_af_type;
+
+// ------------------------------------------------------------------------------------------------------------------ //
 
 // Include board specific pins
-#include "pins.h"
+#include "genhdr/pins.h"  // pins.h must included at this location
+
+extern const machine_pin_obj_t *machine_pin_board_pins[];
+extern const uint32_t num_board_pins;
+
+extern const mp_obj_type_t machine_pin_board_pins_obj_type;
+extern const mp_obj_type_t machine_pin_cpu_pins_obj_type;
+
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+void pin_init(void);
+uint32_t pin_get_mode(const machine_pin_obj_t *pin);
+uint32_t pin_get_af(const machine_pin_obj_t *pin);
+const machine_pin_obj_t *pin_find(mp_obj_t user_obj);
+const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn);
+const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
+const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
+void machine_pin_set_mode(const machine_pin_obj_t *pin, uint8_t mode);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H

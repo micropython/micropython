@@ -35,7 +35,6 @@
 
 #include "py/mpstate.h"
 #include "py/persistentcode.h"
-#include "py/mphal.h"
 #include "py/asmthumb.h"
 
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
@@ -60,20 +59,6 @@
 
 static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
     return mp_asm_base_get_cur_to_write_bytes(&as->base, n);
-}
-
-void asm_thumb_end_pass(asm_thumb_t *as) {
-    (void)as;
-    // could check labels are resolved...
-
-    #if __ICACHE_PRESENT == 1
-    if (as->base.pass == MP_ASM_PASS_EMIT) {
-        // flush D-cache, so the code emitted is stored in memory
-        MP_HAL_CLEAN_DCACHE(as->base.code_base, as->base.code_size);
-        // invalidate I-cache
-        SCB_InvalidateICache();
-    }
-    #endif
 }
 
 /*

@@ -34,15 +34,12 @@
 
 // LAN only for ESP32 (not ESP32S2) and only for ESP-IDF v4.1 and higher
 #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
-#define CONFIG_ETH_USE_ESP32_EMAC   1
-#include "esp_eth_mac.h"
-
-// esp_netif.h is not available before ESP-IDF v4.1
-#include "esp_netif.h"
 
 #include "esp_eth.h"
+#include "esp_eth_mac.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "esp_netif.h"
 
 #include "modnetwork.h"
 
@@ -119,6 +116,10 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
     }
 
+    self->mdc_pin = machine_pin_get_id(args[ARG_mdc].u_obj);
+    self->mdio_pin = machine_pin_get_id(args[ARG_mdio].u_obj);
+    self->phy_power_pin = args[ARG_power].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[ARG_power].u_obj);
+
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
     }
@@ -133,10 +134,6 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         args[ARG_phy_type].u_int != PHY_DP83848) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
     }
-
-    self->mdc_pin = machine_pin_get_id(args[ARG_mdc].u_obj);
-    self->mdio_pin = machine_pin_get_id(args[ARG_mdio].u_obj);
-    self->phy_power_pin = args[ARG_power].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[ARG_power].u_obj);
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     mac_config.smi_mdc_gpio_num = self->mdc_pin;
@@ -167,26 +164,26 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             break;
             #endif
         default:
-            mp_raise_ValueError(MP_ERROR_TEXT("Unknown PHY"));
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown phy"));
     }
 
     if (esp_netif_init() != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_init() failed."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_init failed"));
     }
 
     esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
     self->eth_netif = esp_netif_new(&cfg);
 
     if (esp_eth_set_default_handlers(self->eth_netif) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_set_default_handlers() failed (invalid parameter)."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_set_default_handlers failed (invalid parameter)"));
     }
 
     if (esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register() failed."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
     }
 
     if (esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register() failed."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_event_handler_register failed"));
     }
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, self->phy);
@@ -197,16 +194,16 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         self->initialized = true;
     } else {
         if (esp_err == ESP_ERR_INVALID_ARG) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because of some invalid argument."));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with invalid argument"));
         } else if (esp_err == ESP_ERR_NO_MEM) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because there’s no memory for driver."));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed with no memory for driver"));
         } else {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed because of some unknown error."));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_driver_install failed"));
         }
     }
 
     if (esp_netif_attach(self->eth_netif, esp_eth_new_netif_glue(self->eth_handle)) != ESP_OK) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach() failed."));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_netif_attach failed"));
     }
 
     eth_status = ETH_INITIALIZED;
@@ -222,12 +219,12 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
         if (mp_obj_is_true(args[1])) {
             self->active = (esp_eth_start(self->eth_handle) == ESP_OK);
             if (!self->active) {
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed."));
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
             }
         } else {
             self->active = !(esp_eth_stop(self->eth_handle) == ESP_OK);
             if (self->active) {
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed."));
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed"));
             }
         }
     }

@@ -33,10 +33,16 @@
 #include "hardware/i2c.h"
 
 #define DEFAULT_I2C_FREQ (400000)
-#define DEFAULT_I2C0_SCL (9)
-#define DEFAULT_I2C0_SDA (8)
-#define DEFAULT_I2C1_SCL (7)
-#define DEFAULT_I2C1_SDA (6)
+
+#ifndef MICROPY_HW_I2C0_SCL
+#define MICROPY_HW_I2C0_SCL (9)
+#define MICROPY_HW_I2C0_SDA (8)
+#endif
+
+#ifndef MICROPY_HW_I2C1_SCL
+#define MICROPY_HW_I2C1_SCL (7)
+#define MICROPY_HW_I2C1_SDA (6)
+#endif
 
 // SDA/SCL on even/odd pins, I2C0/I2C1 on even/odd pairs of pins.
 #define IS_VALID_SCL(i2c, pin) (((pin) & 1) == 1 && (((pin) & 2) >> 1) == (i2c))
@@ -52,8 +58,8 @@ typedef struct _machine_i2c_obj_t {
 } machine_i2c_obj_t;
 
 STATIC machine_i2c_obj_t machine_i2c_obj[] = {
-    {{&machine_hw_i2c_type}, i2c0, 0, DEFAULT_I2C0_SCL, DEFAULT_I2C0_SDA, 0},
-    {{&machine_hw_i2c_type}, i2c1, 1, DEFAULT_I2C1_SCL, DEFAULT_I2C1_SDA, 0},
+    {{&machine_hw_i2c_type}, i2c0, 0, MICROPY_HW_I2C0_SCL, MICROPY_HW_I2C0_SDA, 0},
+    {{&machine_hw_i2c_type}, i2c1, 1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 0},
 };
 
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

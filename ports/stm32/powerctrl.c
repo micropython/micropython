@@ -66,9 +66,11 @@
 #define HAVE_PLL48 0
 #endif
 
+#if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 // Location in RAM of bootloader state (just after the top of the stack)
 extern uint32_t _estack[];
 #define BL_STATE ((uint32_t *)&_estack)
+#endif
 
 static inline void powerctrl_disable_hsi_if_unused(void) {
     #if !MICROPY_HW_CLK_USE_HSI && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
@@ -78,32 +80,47 @@ static inline void powerctrl_disable_hsi_if_unused(void) {
 }
 
 NORETURN void powerctrl_mcu_reset(void) {
+    #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
     BL_STATE[1] = 1; // invalidate bootloader address
     #if __DCACHE_PRESENT == 1
     SCB_CleanDCache();
     #endif
-    NVIC_SystemReset();
-}
-
-NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
-    BL_STATE[0] = r0;
-    BL_STATE[1] = bl_addr;
-    #if __DCACHE_PRESENT == 1
-    SCB_CleanDCache();
     #endif
     NVIC_SystemReset();
 }
 
-static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
+NORETURN static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // get stack pointer
         "ldr r2, [r1, #4]\n"    // get address of destination
         "bx r2\n"               // branch to bootloader
         );
+    MP_UNREACHABLE;
+}
+
+NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
+    #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+
+    // Enter the bootloader via a reset, so everything is reset (including WDT).
+    // Upon reset powerctrl_check_enter_bootloader() will jump to the bootloader.
+    BL_STATE[0] = r0;
+    BL_STATE[1] = bl_addr;
+    #if __DCACHE_PRESENT == 1
+    SCB_CleanDCache();
+    #endif
+    NVIC_SystemReset();
+
+    #else
+
+    // Enter the bootloader via a direct jump.
+    branch_to_bootloader(r0, bl_addr);
+
+    #endif
 }
 
 void powerctrl_check_enter_bootloader(void) {
+    #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
     uint32_t bl_addr = BL_STATE[1];
     BL_STATE[1] = 1; // invalidate bootloader address
     if ((bl_addr & 0xfff) == 0 && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
@@ -115,6 +132,7 @@ void powerctrl_check_enter_bootloader(void) {
         uint32_t r0 = BL_STATE[0];
         branch_to_bootloader(r0, bl_addr);
     }
+    #endif
 }
 
 #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB)

@@ -51,7 +51,7 @@ MPR121 capacitive touch sensor has address 90.
 To get started, try::
 
     >>> import pyb
-    >>> i2c = pyb.I2C(1, pyb.I2C.MASTER)
+    >>> i2c = pyb.I2C(1, pyb.I2C.CONTROLLER)
     >>> i2c.mem_write(4, 90, 0x5e)
     >>> touch = i2c.mem_read(1, 90, 0)[0]
 
@@ -68,7 +68,7 @@ directory or ``lib/`` directory) and then try::
 
     >>> import pyb
     >>> import mpr121
-    >>> m = mpr121.MPR121(pyb.I2C(1, pyb.I2C.MASTER))
+    >>> m = mpr121.MPR121(pyb.I2C(1, pyb.I2C.CONTROLLER))
     >>> for i in range(100):
     ...   print(m.touch_status())
     ...   pyb.delay(100)
@@ -80,7 +80,7 @@ Try touching each one in turn.
 Note that if you put the LCD skin in the Y-position, then you need to
 initialise the I2C bus using::
 
-    >>> m = mpr121.MPR121(pyb.I2C(2, pyb.I2C.MASTER))
+    >>> m = mpr121.MPR121(pyb.I2C(2, pyb.I2C.CONTROLLER))
 
 There is also a demo which uses the LCD and the touch sensors together,
 and can be found `here <http://micropython.org/resources/examples/lcddemo.py>`__.

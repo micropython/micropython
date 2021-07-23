@@ -63,6 +63,7 @@ typedef struct _usbd_cdc_itf_t {
     uint16_t tx_buf_ptr_out_next; // next position of above once transmission finished
     uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
+    uint8_t cdc_idx; // between 0 and MICROPY_HW_USB_CDC_NUM-1
     volatile uint8_t connect_state; // indicates if we are connected
     uint8_t attached_to_repl; // indicates if interface is connected to REPL
     uint8_t flow; // USBD_CDC_FLOWCONTROL_* setting flags
@@ -82,5 +83,6 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len);
 
 int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc);
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout);
+void usbd_cdc_rx_event_callback(usbd_cdc_itf_t *cdc);
 
 #endif // MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H

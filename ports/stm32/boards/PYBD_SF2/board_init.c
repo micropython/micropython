@@ -64,7 +64,15 @@ void board_sleep(int value) {
 void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     // Check if OTP region has a valid MAC address, and use it if it does
     if (OTP->series == 0x00d1 && OTP->mac[0] == 'H' && OTP->mac[1] == 'J' && OTP->mac[2] == '0') {
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Warray-bounds"
+        #pragma GCC diagnostic ignored "-Wstringop-overread"
+        #endif
         memcpy(buf, OTP->mac, 6);
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic pop
+        #endif
         buf[5] += idx;
         return;
     }

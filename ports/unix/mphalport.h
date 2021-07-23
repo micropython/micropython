@@ -52,7 +52,7 @@ static inline int mp_hal_readline(vstr_t *vstr, const char *p) {
 #elif MICROPY_PY_BUILTINS_INPUT && MICROPY_USE_READLINE == 1
 
 #include "py/misc.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 // For built-in input() we need to wrap the standard readline() to enable raw mode
 #define mp_hal_readline mp_hal_readline
 static inline int mp_hal_readline(vstr_t *vstr, const char *p) {

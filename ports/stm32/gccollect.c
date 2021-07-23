@@ -30,8 +30,9 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/gchelper.h"
 #include "gccollect.h"
+#include "softtimer.h"
 #include "systick.h"
 
 void gc_collect(void) {
@@ -50,6 +51,9 @@ void gc_collect(void) {
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
     #endif
+
+    // trace soft timer nodes
+    soft_timer_gc_mark_all();
 
     // end the GC
     gc_collect_end();

@@ -40,7 +40,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "esp_eth.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
@@ -142,12 +142,16 @@ static uint8_t wifi_sta_disconn_reason = 0;
 static bool mdns_initialised = false;
 #endif
 
+static uint8_t conf_wifi_sta_reconnects = 0;
+static uint8_t wifi_sta_reconnects;
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
     switch (event->event_id) {
         case SYSTEM_EVENT_STA_START:
             ESP_LOGI("wifi", "STA_START");
+            wifi_sta_reconnects = 0;
             break;
         case SYSTEM_EVENT_STA_CONNECTED:
             ESP_LOGI("network", "CONNECTED");
@@ -199,14 +203,22 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
             wifi_sta_connected = false;
             if (wifi_sta_connect_requested) {
                 wifi_mode_t mode;
-                if (esp_wifi_get_mode(&mode) == ESP_OK) {
-                    if (mode & WIFI_MODE_STA) {
-                        // STA is active so attempt to reconnect.
-                        esp_err_t e = esp_wifi_connect();
-                        if (e != ESP_OK) {
-                            ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
-                        }
+                if (esp_wifi_get_mode(&mode) != ESP_OK) {
+                    break;
+                }
+                if (!(mode & WIFI_MODE_STA)) {
+                    break;
+                }
+                if (conf_wifi_sta_reconnects) {
+                    ESP_LOGI("wifi", "reconnect counter=%d, max=%d",
+                        wifi_sta_reconnects, conf_wifi_sta_reconnects);
+                    if (++wifi_sta_reconnects >= conf_wifi_sta_reconnects) {
+                        break;
                     }
+                }
+                esp_err_t e = esp_wifi_connect();
+                if (e != ESP_OK) {
+                    ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
                 }
             }
             break;
@@ -361,6 +373,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         ESP_EXCEPTIONS(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
+    wifi_sta_reconnects = 0;
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
     ESP_EXCEPTIONS(esp_wifi_connect());
@@ -395,7 +408,9 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
             if (wifi_sta_connected) {
                 // Happy path, connected with IP
                 return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
-            } else if (wifi_sta_connect_requested) {
+            } else if (wifi_sta_connect_requested
+                       && (conf_wifi_sta_reconnects == 0
+                           || wifi_sta_reconnects < conf_wifi_sta_reconnects)) {
                 // No connection or error, but is requested = Still connecting
                 return MP_OBJ_NEW_SMALL_INT(STAT_CONNECTING);
             } else if (wifi_sta_disconn_reason == 0) {
@@ -633,6 +648,14 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.max_connection = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case QS(MP_QSTR_reconnects): {
+                        int reconnects = mp_obj_get_int(kwargs->table[i].value);
+                        req_if = WIFI_IF_STA;
+                        // parameter reconnects == -1 means to retry forever.
+                        // here means conf_wifi_sta_reconnects == 0 to retry forever.
+                        conf_wifi_sta_reconnects = (reconnects == -1) ? 0 : reconnects + 1;
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -704,6 +727,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.max_connection);
             break;
         }
+        case QS(MP_QSTR_reconnects):
+            req_if = WIFI_IF_STA;
+            int rec = conf_wifi_sta_reconnects - 1;
+            val = MP_OBJ_NEW_SMALL_INT(rec);
+            break;
         default:
             goto unknown;
     }
@@ -751,7 +779,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
 
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 2) && (CONFIG_IDF_TARGET_ESP32)
+    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
@@ -777,7 +805,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
 
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 2) && (CONFIG_IDF_TARGET_ESP32)
+    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_IP101), MP_ROM_INT(PHY_IP101) },
     { MP_ROM_QSTR(MP_QSTR_PHY_RTL8201), MP_ROM_INT(PHY_RTL8201) },

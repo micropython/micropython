@@ -50,9 +50,18 @@ To check out a copy of the IDF use git clone:
 $ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v4.0.2` with `v4.1.1` or any other supported version.
+You can replace `v4.0.2` with `v4.1.1` or `v4.2` or any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
+
+If you already have a copy of the IDF then checkout a version compatible with
+MicroPython and update the submodules using:
+
+```bash
+$ cd esp-idf
+$ git checkout v4.2
+$ git submodule update --init --recursive
+```
 
 After you've cloned and checked out the IDF to the correct version, run the
 `install.sh` script:

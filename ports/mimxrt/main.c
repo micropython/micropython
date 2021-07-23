@@ -30,10 +30,13 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
+#include "ticks.h"
 #include "tusb.h"
 #include "led.h"
+#include "modmachine.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -41,6 +44,7 @@ void board_init(void);
 
 int main(void) {
     board_init();
+    ticks_init();
     tusb_init();
     led_init();
 
@@ -55,6 +59,25 @@ int main(void) {
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
+        // Initialise sub-systems.
+        readline_init0();
+
+        // Execute _boot.py to set up the filesystem.
+        pyexec_frozen_module("_boot.py");
+
+        // Execute user scripts.
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+        }
+
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
                 if (pyexec_raw_repl() != 0) {
@@ -67,7 +90,9 @@ int main(void) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        machine_pin_irq_deinit();
         gc_sweep_all();
         mp_deinit();
     }
@@ -81,19 +106,6 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
-
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-
 void nlr_jump_fail(void *val) {
     for (;;) {
     }
@@ -106,3 +118,42 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     }
 }
 #endif
+
+const char mimxrt_help_text[] =
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online help please visit https://micropython.org/help/.\n"
+    "\n"
+    "For access to the hardware use the 'machine' module. \n"
+    "\n"
+    "Quick overview of some objects:\n"
+    "  machine.Pin(pin) -- get a pin, eg machine.Pin(0)\n"
+    "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
+    "    methods: init(..), value([v]), high(), low())\n"
+    "\n"
+    "    Pins are numbered board specific, either 0-n, or 'D0'-'Dn', or 'A0' - 'An',\n"
+    "    according to the boards's pinout sheet.\n"
+    "    Pin IO modes are: Pin.IN, Pin.OUT, Pin.OPEN_DRAIN\n"
+    "    Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
+    "  machine.ADC(pin) -- make an analog object from a pin\n"
+    "    methods: read_u16()\n"
+    "  machine.UART(id, baudrate=115200) -- create an UART object (id=1 - 8)\n"
+    "    methods: init(), write(buf), any()\n"
+    "             buf=read(n), readinto(buf), buf=readline()\n"
+    "    The RX and TX pins are fixed and board-specific.\n"
+    "  machine.SoftI2C() -- create an Soft I2C object\n"
+    "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
+    "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
+    "  machine.SoftSPI(baudrate=1000000) -- create an SPI object ()\n"
+    "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
+    "  machine.Timer(id, freq, callback) -- create a hardware timer object (id=0,1,2)\n"
+    "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
+    "\n"
+    "Useful control commands:\n"
+    "  CTRL-C -- interrupt a running program\n"
+    "  CTRL-D -- on a blank line, do a soft reset of the board\n"
+    "  CTRL-E -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
+    "For a list of available modules, type help('modules')\n"
+;

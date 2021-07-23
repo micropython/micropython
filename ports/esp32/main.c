@@ -42,6 +42,8 @@
 #include "esp32/spiram.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/spiram.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/spiram.h"
 #endif
 
 #include "py/stackctrl.h"
@@ -52,8 +54,8 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/pyexec.h"
 #include "uart.h"
 #include "usb.h"
 #include "modmachine.h"
@@ -67,6 +69,13 @@
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
+
+// Set the margin for detecting stack overflow, depending on the CPU architecture.
+#if CONFIG_IDF_TARGET_ESP32C3
+#define MP_TASK_STACK_LIMIT_MARGIN (2048)
+#else
+#define MP_TASK_STACK_LIMIT_MARGIN (1024)
+#endif
 
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
@@ -104,6 +113,18 @@ void mp_task(void *pvParameter) {
             mp_task_heap = malloc(mp_task_heap_size);
             break;
     }
+    #elif CONFIG_ESP32S2_SPIRAM_SUPPORT || CONFIG_ESP32S3_SPIRAM_SUPPORT
+    // Try to use the entire external SPIRAM directly for the heap
+    size_t mp_task_heap_size;
+    size_t esp_spiram_size = esp_spiram_get_size();
+    void *mp_task_heap = (void *)0x3ff80000 - esp_spiram_size;
+    if (esp_spiram_size > 0) {
+        mp_task_heap_size = esp_spiram_size;
+    } else {
+        // No SPIRAM, fallback to normal allocation
+        mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+        mp_task_heap = malloc(mp_task_heap_size);
+    }
     #else
     // Allocate the uPy heap using malloc and get the largest available region
     size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
@@ -113,7 +134,7 @@ void mp_task(void *pvParameter) {
 soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
-    mp_stack_set_limit(MP_TASK_STACK_SIZE - 1024);
+    mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
     gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
@@ -124,6 +145,9 @@ soft_reset:
 
     // initialise peripherals
     machine_pins_init();
+    #if MICROPY_PY_MACHINE_I2S
+    machine_i2s_init0();
+    #endif
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");

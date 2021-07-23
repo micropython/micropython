@@ -26,8 +26,12 @@
  */
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mphal.h"
+#include "shared/timeutils/timeutils.h"
+#include "ticks.h"
 #include "tusb.h"
+#include "fsl_snvs_lp.h"
 
 #include CPU_HEADER_H
 
@@ -37,7 +41,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
     (void)wanted_char;
     tud_cdc_read_char(); // discard interrupt char
-    mp_keyboard_interrupt();
+    mp_sched_keyboard_interrupt();
 }
 
 void mp_hal_set_interrupt_char(int c) {
@@ -46,20 +50,12 @@ void mp_hal_set_interrupt_char(int c) {
 
 #endif
 
-void mp_hal_delay_ms(mp_uint_t ms) {
-    ms += 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (tud_cdc_connected() && tud_cdc_available()) {
+        ret |= MP_STREAM_POLL_RD;
     }
-}
-
-void mp_hal_delay_us(mp_uint_t us) {
-    uint32_t ms = us / 1000 + 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        __WFI();
-    }
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
@@ -99,4 +95,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     //     while (!(USARTx->USART.INTFLAG.bit.DRE)) { }
     //     USARTx->USART.DATA.bit.DATA = *str++;
     // }
+}
+
+uint64_t mp_hal_time_ns(void) {
+    snvs_lp_srtc_datetime_t t;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &t);
+    uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second);
+    return s * 1000000000ULL;
 }

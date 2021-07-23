@@ -81,6 +81,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 
 #define mp_type_type                        (*mp_fun_table.type_type)
 #define mp_type_str                         (*mp_fun_table.type_str)
+#define mp_type_tuple                       (*((mp_obj_base_t *)mp_const_empty_tuple)->type)
 #define mp_type_list                        (*mp_fun_table.type_list)
 #define mp_type_EOFError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_EOFError)))
 #define mp_type_IndexError                  (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_IndexError)))
@@ -121,6 +122,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 
 #define mp_obj_len(o)                       (mp_obj_len_dyn(o))
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
+#define mp_obj_get_array(o, len, items)     (mp_obj_get_array_dyn((o), (len), (items)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
@@ -213,6 +215,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_obj_new_exception_arg1(e_type, arg)  (mp_obj_new_exception_arg1_dyn((e_type), (arg)))
 
 #define nlr_raise(o)                            (mp_raise_dyn(o))
+#define mp_raise_type_arg(type, arg)            (mp_raise_dyn(mp_obj_new_exception_arg1_dyn((type), (arg))))
 #define mp_raise_msg(type, msg)                 (mp_fun_table.raise_msg((type), (msg)))
 #define mp_raise_OSError(er)                    (mp_raise_OSError_dyn(er))
 #define mp_raise_NotImplementedError(msg)       (mp_raise_msg(&mp_type_NotImplementedError, (msg)))
@@ -250,5 +253,24 @@ static inline void mp_raise_OSError_dyn(int er) {
 #define mp_obj_new_float(f)         (mp_obj_new_float_from_d((f)))
 #define mp_obj_get_float(o)         (mp_obj_get_float_to_d((o)))
 #endif
+
+/******************************************************************************/
+// Inline function definitions.
+
+// *items may point inside a GC block
+static inline void mp_obj_get_array_dyn(mp_obj_t o, size_t *len, mp_obj_t **items) {
+    const mp_obj_type_t *type = mp_obj_get_type(o);
+    if (type == &mp_type_tuple) {
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(o);
+        *len = t->len;
+        *items = &t->items[0];
+    } else if (type == &mp_type_list) {
+        mp_obj_list_t *l = MP_OBJ_TO_PTR(o);
+        *len = l->len;
+        *items = l->items;
+    } else {
+        mp_raise_TypeError("expected tuple/list");
+    }
+}
 
 #endif // MICROPY_INCLUDED_PY_DYNRUNTIME_H

@@ -30,15 +30,7 @@ except TypeError:
 
 # unsupported subscription
 try:
-    1[0]
-except TypeError:
-    print('TypeError')
-try:
     1[0] = 1
-except TypeError:
-    print('TypeError')
-try:
-    ''['']
 except TypeError:
     print('TypeError')
 try:
@@ -47,12 +39,6 @@ except TypeError:
     print('TypeError')
 try:
     del 1[0]
-except TypeError:
-    print('TypeError')
-
-# not callable
-try:
-    1()
 except TypeError:
     print('TypeError')
 

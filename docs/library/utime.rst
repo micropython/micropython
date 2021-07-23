@@ -74,9 +74,18 @@ Functions
 
    Delay for given number of milliseconds, should be positive or 0.
 
+   This function will delay for at least the given number of milliseconds, but
+   may take longer than that if other processing must take place, for example
+   interrupt handlers or other threads.  Passing in 0 for *ms* will still allow
+   this other processing to occur.  Use `sleep_us()` for more precise delays.
+
 .. function:: sleep_us(us)
 
    Delay for given number of microseconds, should be positive or 0.
+
+   This function attempts to provide an accurate delay of at least *us*
+   microseconds, but it may take longer if the system has other higher priority
+   processing to perform.
 
 .. function:: ticks_ms()
 
@@ -173,7 +182,7 @@ Functions
    long sleep), then once you finally look again, it may seem to you that only 1 hour
    has passed. To avoid this mistake, just look at the clock regularly. Your application
    should do the same. "Too long sleep" metaphor also maps directly to application
-   behavior: don't let your application run any single task for too long. Run tasks
+   behaviour: don't let your application run any single task for too long. Run tasks
    in steps, and do time-keeping inbetween.
 
    `ticks_diff()` is designed to accommodate various usage patterns, among them:

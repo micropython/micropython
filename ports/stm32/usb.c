@@ -39,6 +39,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "shared/runtime/mpirq.h"
 #include "bufhelper.h"
 #include "storage.h"
 #include "sdcard.h"
@@ -69,6 +70,9 @@
 #elif defined(STM32H7)
 #define MAX_ENDPOINT(dev_id) (8)
 #endif
+
+// Constants for USB_VCP.irq trigger.
+#define USBD_CDC_IRQ_RX (1)
 
 STATIC void pyb_usb_vcp_init0(void);
 
@@ -219,6 +223,7 @@ const mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 
 void pyb_usb_init0(void) {
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        usb_device.usbd_cdc_itf[i].cdc_idx = i;
         usb_device.usbd_cdc_itf[i].attached_to_repl = false;
     }
     #if MICROPY_HW_USB_HID
@@ -644,14 +649,42 @@ const pyb_usb_vcp_obj_t pyb_usb_vcp_obj[MICROPY_HW_USB_CDC_NUM] = {
     #endif
 };
 
+STATIC bool pyb_usb_vcp_irq_scheduled[MICROPY_HW_USB_CDC_NUM];
+
 STATIC void pyb_usb_vcp_init0(void) {
+    for (size_t i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        MP_STATE_PORT(pyb_usb_vcp_irq)[i] = mp_const_none;
+        pyb_usb_vcp_irq_scheduled[i] = false;
+    }
+
     // Activate USB_VCP(0) on dupterm slot 1 for the REPL
     MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]);
     usb_vcp_attach_to_repl(&pyb_usb_vcp_obj[0], true);
 }
 
+STATIC mp_obj_t pyb_usb_vcp_irq_run(mp_obj_t self_in) {
+    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint8_t idx = self->cdc_itf->cdc_idx;
+    mp_obj_t callback = MP_STATE_PORT(pyb_usb_vcp_irq)[idx];
+    pyb_usb_vcp_irq_scheduled[idx] = false;
+    if (callback != mp_const_none && usbd_cdc_rx_num(self->cdc_itf)) {
+        mp_call_function_1(callback, self_in);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_irq_run_obj, pyb_usb_vcp_irq_run);
+
+void usbd_cdc_rx_event_callback(usbd_cdc_itf_t *cdc) {
+    uint8_t idx = cdc->cdc_idx;
+    mp_obj_t self = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[idx]);
+    mp_obj_t callback = MP_STATE_PORT(pyb_usb_vcp_irq)[idx];
+    if (callback != mp_const_none && !pyb_usb_vcp_irq_scheduled[idx]) {
+        pyb_usb_vcp_irq_scheduled[idx] = mp_sched_schedule(MP_OBJ_FROM_PTR(&pyb_usb_vcp_irq_run_obj), self);
+    }
+}
+
 STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    int id = ((pyb_usb_vcp_obj_t *)MP_OBJ_TO_PTR(self_in))->cdc_itf - &usb_device.usbd_cdc_itf[0];
+    int id = ((pyb_usb_vcp_obj_t *)MP_OBJ_TO_PTR(self_in))->cdc_itf->cdc_idx;
     mp_printf(print, "USB_VCP(%u)", id);
 }
 
@@ -796,6 +829,46 @@ STATIC mp_obj_t pyb_usb_vcp_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);
 
+// irq(handler=None, trigger=IRQ_RX, hard=False)
+STATIC mp_obj_t pyb_usb_vcp_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = USBD_CDC_IRQ_RX} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
+    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (n_args > 1 || kw_args->used != 0) {
+        // Check the handler.
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger.
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        if (trigger == 0) {
+            handler = mp_const_none;
+        } else if (trigger != USBD_CDC_IRQ_RX) {
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported trigger"));
+        }
+
+        // Check hard/soft.
+        if (args[MP_IRQ_ARG_INIT_hard].u_bool) {
+            mp_raise_ValueError(MP_ERROR_TEXT("hard unsupported"));
+        }
+
+        // Reconfigure the IRQ.
+        MP_STATE_PORT(pyb_usb_vcp_irq)[self->cdc_itf->cdc_idx] = handler;
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_irq_obj, 1, pyb_usb_vcp_irq);
+
 mp_obj_t pyb_usb_vcp___exit__(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
@@ -814,6 +887,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_usb_vcp_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pyb_usb_vcp___exit___obj) },
@@ -821,6 +895,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_CTS) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(USBD_CDC_IRQ_RX) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);

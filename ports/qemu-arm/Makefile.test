@@ -1,8 +1,13 @@
-LIB_SRC_C = lib/upytesthelper/upytesthelper.c
+LIB_SRC_C = shared/upytesthelper/upytesthelper.c
 
 FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 
 include Makefile
+
+ifeq ($(BOARD),sabrelite)
+# These don't work on Cortex-A9.
+TESTS_EXCLUDE = inlineasm/asmdiv.py inlineasm/asmspecialregs.py
+endif
 
 CFLAGS += -DTEST
 
@@ -11,7 +16,7 @@ CFLAGS += -DTEST
 $(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
 $(BUILD)/genhdr/tests.h:
 	(cd $(TOP)/tests; ./run-tests.py --target=qemu-arm --write-exp)
-	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
+	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py $(addprefix --exclude ,$(TESTS_EXCLUDE))) > $@
 
 $(BUILD)/lib/tinytest/tinytest.o: CFLAGS += -DNO_FORKING
 

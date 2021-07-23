@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 
-// Possible DMA configurations for SPI busses:
+// Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
 // SPI2_TX: DMA1_Stream4.CHANNEL_0
@@ -640,14 +640,14 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
             #endif
             uint baudrate = spi_get_source_freq(spi) >> log_prescaler;
             if (legacy) {
-                mp_printf(print, ", SPI.MASTER");
+                mp_printf(print, ", SPI.CONTROLLER");
             }
             mp_printf(print, ", baudrate=%u", baudrate);
             if (legacy) {
                 mp_printf(print, ", prescaler=%u", 1 << log_prescaler);
             }
         } else {
-            mp_printf(print, ", SPI.SLAVE");
+            mp_printf(print, ", SPI.PERIPHERAL");
         }
         mp_printf(print, ", polarity=%u, phase=%u, bits=%u", spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
         if (spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE) {
