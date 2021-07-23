@@ -367,6 +367,12 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
                 out_loaded = true;
             }
         }
+        if (instruction == pio_instr_bits_jmp) {
+            uint16_t condition = (full_instruction & 0x00e0) >> 5;
+            if ((condition == 0x6) && (jmp_pin == NULL)) {
+                mp_raise_ValueError_varg(translate("Missing jmp_pin. Instruction %d jumps on pin"), i);
+            }
+        }
         if (instruction == pio_instr_bits_wait) {
             uint16_t wait_source = (full_instruction & 0x0060) >> 5;
             uint16_t wait_index = full_instruction & 0x001f;
