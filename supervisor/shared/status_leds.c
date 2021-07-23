@@ -39,8 +39,13 @@ static digitalio_digitalinout_obj_t _status_power;
 
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
-    #include "shared-bindings/digitalio/DigitalInOut.h"
-    #include "shared-bindings/neopixel_write/__init__.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/neopixel_write/__init__.h"
+
+#ifndef MICROPY_HW_NEOPIXEL_COUNT
+#define MICROPY_HW_NEOPIXEL_COUNT (1)
+#endif
+
 static uint8_t status_neopixel_color[3 * MICROPY_HW_NEOPIXEL_COUNT];
 static digitalio_digitalinout_obj_t status_neopixel;
 
