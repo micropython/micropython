@@ -485,9 +485,13 @@ writes from a client to a given characteristic, use
     Reads the local value for this handle (which has either been written by
     :meth:`gatts_write <BLE.gatts_write>` or by a remote client).
 
-.. method:: BLE.gatts_write(value_handle, data, /)
+.. method:: BLE.gatts_write(value_handle, data, send_update=False, /)
 
     Writes the local value for this handle, which can be read by a client.
+
+    If *send_update* is ``True``, then any subscribed clients will be notified
+    (or indicated, depending on what they're subscribed to and which operations
+    the characteristic supports) about this write.
 
 .. method:: BLE.gatts_notify(conn_handle, value_handle, data=None, /)
 
@@ -499,16 +503,19 @@ writes from a client to a given characteristic, use
     Otherwise, if *data* is ``None``, then the current local value (as
     set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
 
+    **Note:** The notification will be sent regardless of the subscription
+    status of the client to this characteristic.
+
 .. method:: BLE.gatts_indicate(conn_handle, value_handle, /)
 
-    Sends an indication request to a connected client.
-
-    **Note:** This does not currently support sending a custom value, it will
-    always send the current local value (as set with :meth:`gatts_write
-    <BLE.gatts_write>`).
+    Sends an indication request containing the characteristic's current value to
+    a connected client.
 
     On acknowledgment (or failure, e.g. timeout), the
     ``_IRQ_GATTS_INDICATE_DONE`` event will be raised.
+
+    **Note:** The indication will be sent regardless of the subscription
+    status of the client to this characteristic.
 
 .. method:: BLE.gatts_set_buffer(value_handle, len, append=False, /)
 
