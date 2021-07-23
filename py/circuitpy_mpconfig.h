@@ -957,15 +957,15 @@ extern const struct _mp_obj_module_t msgpack_module;
 struct _supervisor_allocation_node;
 
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    vstr_t *repl_line; \
-    mp_obj_t rtc_time_source; \
-    GAMEPAD_ROOT_POINTERS \
-    KEYPAD_ROOT_POINTERS \
-    mp_obj_t pew_singleton; \
-    BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
+    KEYPAD_ROOT_POINTERS \
+    GAMEPAD_ROOT_POINTERS \
+    BOARD_UART_ROOT_POINTER \
     MEMORYMONITOR_ROOT_POINTERS \
+    vstr_t *repl_line; \
+    mp_obj_t pew_singleton; \
+    mp_obj_t rtc_time_source; \
+    const char *readline_hist[8]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
