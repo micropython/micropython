@@ -67,6 +67,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         NULL, 0,
         NULL, 0,
         1, 0,
+        NULL, // jump pin
         1 << self->pin, false, true,
             false, 8, false, // TX, unused
             false,

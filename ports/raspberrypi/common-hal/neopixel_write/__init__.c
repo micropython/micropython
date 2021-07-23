@@ -71,6 +71,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         NULL, 1, // set
         digitalinout->pin, 1, // sideset
         0, pins_we_use, // initial pin state
+        NULL, // jump pin
         pins_we_use, true, false,
         true, 8, false, // TX, auto pull every 8 bits. shift left to output msb first
         true, // Wait for txstall. If we don't, then we'll deinit too quickly.
