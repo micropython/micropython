@@ -1209,8 +1209,8 @@ msgstr "Shūrù/shūchū cuòwù"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
-msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -4496,6 +4496,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
 
 #~ msgid "%q must store bytes"
 #~ msgstr "%q bì xū cún chǔ zì jié"

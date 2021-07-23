@@ -1226,8 +1226,8 @@ msgstr "Erreur d'entrée/sortie"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
-msgstr "Instruction %d saute sur la broche"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -4541,6 +4541,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "Instruction %d saute sur la broche"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Tampon trop volumineux et impossible à allouer"

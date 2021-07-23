@@ -1220,8 +1220,8 @@ msgstr "error Input/output"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
-msgstr "La instruction %d salta en pin"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -4530,6 +4530,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "La instruction %d salta en pin"
 
 #~ msgid "%q must store bytes"
 #~ msgstr "%q debe almacenar bytes"
