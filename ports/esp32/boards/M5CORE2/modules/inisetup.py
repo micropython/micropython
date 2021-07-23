@@ -46,6 +46,10 @@ def setup():
 #import webrepl
 #webrepl.start()
 
+# Init LVGL
+import lvgl as lv
+lv.init()
+
 # Power Management
 from m5core2_power import Power
 power = Power()
@@ -57,8 +61,6 @@ lcd = ili9341(mosi=23, miso=38, clk=18, dc=15, cs=5, invert=True, rot=0x10, widt
 # Touch sensor
 from ft6x36 import ft6x36
 touch = ft6x36(width=320, height=280)  
-
-import lvgl as lv
 """
         )
 
@@ -72,6 +74,8 @@ name = "m5core2"
     with open("main.py", "w") as f:
         f.write(
             """\
+import lvgl as lv
+
 scr = lv.obj()
 btn = lv.btn(scr)
 btn.align(lv.ALIGN.CENTER, 0, 0)
