@@ -14,6 +14,18 @@
 
 {% endif %}
 
+{% if support_matrix_reverse[obj.name] is defined %}
+.. raw:: html
+
+    <p>
+    <details>
+    <summary>Module Availability</summary>
+    Available on: {{ support_matrix_reverse[obj.name] }}
+    </details>
+    </p>
+
+{% endif %}
+
 {% block subpackages %}
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
 {% if visible_subpackages %}
