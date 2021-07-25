@@ -42,7 +42,9 @@ The state machines have 9 instructions which can perform the following tasks:-
 
 * WAIT : pauses until a particular action happens
 
-* JMP : moves to some target locations in differnt parts of code.
+* JMP : moves to some target locations in differnt parts of code
+
+* SET : writes data at destination
 
 Apart from the PIO assembly instructions we have the following :-
 
