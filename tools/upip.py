@@ -18,6 +18,7 @@ gc.collect()
 
 debug = False
 index_urls = ["https://micropython.org/pi", "https://pypi.org/pypi"]
+preferred_address_family = 0
 install_path = None
 cleanup_files = []
 gzdict_sz = 16 + 15
@@ -123,6 +124,7 @@ warn_ussl = True
 
 def url_open(url):
     global warn_ussl
+    global preferred_address_family
 
     if debug:
         print(url)
@@ -133,17 +135,12 @@ def url_open(url):
         if ":" in host:
             host, port = host.split(":")
             port = int(port)
-        ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
+        ai = usocket.getaddrinfo(host, port, preferred_address_family, usocket.SOCK_STREAM)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
     # print("Address infos:", ai)
 
-    for a in ai:
-        if a[0] == usocket.AF_INET:
-            ai = a
-            break
-    else:
-        fatal("No IPV4 address for host: '%s'" % host)
+    ai = ai[0]
 
     s = usocket.socket(ai[0], ai[1], ai[2])
     try:
@@ -301,6 +298,7 @@ def main():
     global debug
     global index_urls
     global install_path
+    global preferred_address_family
     install_path = None
 
     if len(sys.argv) < 2 or sys.argv[1] == "-h" or sys.argv[1] == "--help":
@@ -338,6 +336,8 @@ def main():
             i += 1
         elif opt == "--debug":
             debug = True
+        elif opt == "--afinet":
+            preferred_address_family = usocket.AF_INET
         else:
             fatal("Unknown/unsupported option: " + opt)
 
