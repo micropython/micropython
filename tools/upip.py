@@ -139,7 +139,6 @@ def url_open(url):
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
     # print("Address infos:", ai)
-
     ai = ai[0]
 
     s = usocket.socket(ai[0], ai[1], ai[2])
