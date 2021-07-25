@@ -22,6 +22,9 @@ transmit larger amounts of data to the PIO state machine and allows it to
 carry on execution without the main program keeping a track of it at each
 instant of time.
 
+All pioasm instructions follow a common pattern:
+<instruction> (side <side_set_value>) ([<delay_value>])
+
 The state machines have 9 instructions which can perform the following tasks:-
 
 * IN : shifts the bits from a source (scratch register or set of pins) to the
@@ -41,6 +44,26 @@ The state machines have 9 instructions which can perform the following tasks:-
 
 * JMP : moves to some target locations in differnt parts of code.
 
+Apart from the PIO assembly instructions we have the following :-
+
+<side_set_value> : value applied to the side set pins at the start of the
+                   instruction which helps configure the side pin of the 
+                   program.
+
+<delay_value> : the number of clock cycles to delay after execution of 
+                any instruction.
+ 
+We also have directives which are listed as :-
+
+* .wrap_target : specifies where the program execution will get continued from 
+
+* .wrap : specifies the instruction where the control flow of the program will 
+          get wrapped from.
+
+* .word<value> : stores a raw 16-bit value which acts as an instruction to the 
+                 program.
+
+* label : instruction offset of label used with jmp instruction.
 
 We can take the pio_1hz example for a sinple understanding. Below is the code
 of pio_1hz.py for reference. 
