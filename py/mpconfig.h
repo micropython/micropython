@@ -1377,10 +1377,15 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDIO_BUFFER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to provide sys.tracebacklimit mutable attribute
+#ifndef MICROPY_PY_SYS_TRACEBACKLIMIT
+#define MICROPY_PY_SYS_TRACEBACKLIMIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Whether the sys module supports attribute delegation
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PY_SYS_ATTR_DELEGATION
-#define MICROPY_PY_SYS_ATTR_DELEGATION (0)
+#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
 // Whether to provide "uerrno" module

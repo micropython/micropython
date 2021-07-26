@@ -144,6 +144,14 @@ Constants
 
    Standard output `stream`.
 
+.. data:: tracebacklimit
+
+   A mutable attribute holding an integer value which is the maximum number of traceback
+   entries to store in an exception.  Set to 0 to disable adding tracebacks.  Defaults
+   to 1000.
+
+   Note: this is not available on all ports.
+
 .. data:: version
 
    Python language version that this implementation conforms to, as a string.

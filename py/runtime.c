@@ -141,6 +141,10 @@ void mp_init(void) {
     MP_STATE_THREAD(current_code_state) = NULL;
     #endif
 
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]) = MP_OBJ_NEW_SMALL_INT(1000);
+    #endif
+
     #if MICROPY_PY_BLUETOOTH
     MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif

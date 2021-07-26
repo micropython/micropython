@@ -185,6 +185,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
 
 #if MICROPY_PY_SYS_ATTR_DELEGATION
 STATIC const uint16_t sys_mutable_keys[] = {
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    MP_QSTR_tracebacklimit,
+    #endif
     MP_QSTRnull,
 };
 
