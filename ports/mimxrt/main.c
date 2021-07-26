@@ -39,6 +39,7 @@
 #include "modmachine.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
+extern void machine_pwm_deinit();
 
 void board_init(void);
 
@@ -93,6 +94,7 @@ int main(void) {
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         machine_pin_irq_deinit();
+        machine_pwm_deinit();
         gc_sweep_all();
         mp_deinit();
     }

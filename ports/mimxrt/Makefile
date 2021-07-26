@@ -132,6 +132,8 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
+	$(MCU_DIR)/drivers/fsl_pwm.c \
+	$(MCU_DIR)/drivers/fsl_qtmr.c \
 
 SRC_C += \
 	main.c \
@@ -150,6 +152,8 @@ SRC_C += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_pwm.c \
+	hal/pwm_backport.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -276,6 +280,7 @@ SRC_QSTR += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_pwm.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
@@ -327,6 +332,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
+		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
