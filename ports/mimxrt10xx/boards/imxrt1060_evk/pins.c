@@ -34,6 +34,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_GPIO_AD_B1_00) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_USER_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_09) },
 
     // Camera Sensor Interface
     { MP_OBJ_NEW_QSTR(MP_QSTR_CSI_VSYNC), MP_ROM_PTR(&pin_GPIO_AD_B1_06) },

@@ -32,6 +32,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_GPIO_AD_B1_14) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_USER_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_05) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_05) },
 
     // SD Card
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CLK), MP_ROM_PTR(&pin_GPIO_SD_B0_03) },
