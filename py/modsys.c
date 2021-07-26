@@ -27,6 +27,7 @@
 
 #include "py/builtin.h"
 #include "py/objlist.h"
+#include "py/objmodule.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/objint.h"
@@ -182,6 +183,18 @@ STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
 #endif // MICROPY_PY_SYS_SETTRACE
 
+#if MICROPY_PY_SYS_ATTR_DELEGATION
+STATIC const uint16_t sys_mutable_keys[] = {
+    MP_QSTRnull,
+};
+
+STATIC void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(sys_mutable_keys) == MP_SYS_MUTABLE_NUM + 1);
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(MP_STATE_VM(sys_mutable)) == MP_SYS_MUTABLE_NUM);
+    mp_module_generic_attr(attr, dest, sys_mutable_keys, MP_STATE_VM(sys_mutable));
+}
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -243,6 +256,11 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
     #if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
+    #endif
+
+    #if MICROPY_PY_SYS_ATTR_DELEGATION
+    // Delegation of attr lookup.
+    MP_MODULE_ATTR_DELEGATION_ENTRY(&mp_module_sys_attr),
     #endif
 };
 

@@ -40,6 +40,10 @@
 // memory system, runtime and virtual machine.  The state is a global
 // variable, but in the future it is hoped that the state can become local.
 
+enum {
+    MP_SYS_MUTABLE_NUM,
+};
+
 // This structure contains dynamic configuration for the compiler.
 #if MICROPY_DYNAMIC_COMPILER
 typedef struct mp_dynamic_compiler_t {
@@ -158,6 +162,11 @@ typedef struct _mp_state_vm_t {
     // must be initialised after the call to mp_init.
     mp_obj_list_t mp_sys_path_obj;
     mp_obj_list_t mp_sys_argv_obj;
+
+    #if MICROPY_PY_SYS_ATTR_DELEGATION
+    // Contains mutable sys attributes.
+    mp_obj_t sys_mutable[MP_SYS_MUTABLE_NUM];
+    #endif
     #endif
 
     // dictionary for overridden builtins
