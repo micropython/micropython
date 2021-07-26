@@ -140,8 +140,7 @@ Behavior
 -  Autoreload is disabled while the REPL is active.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
-   ``boot.txt``
+-  Boot is one of these: ``boot.py``, ``boot.txt``
 
 API
 ~~~
