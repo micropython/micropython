@@ -488,7 +488,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 
     uart_obj->uartx = UARTx;
 
-    // init UARTx
+    // Set the initialisation parameters for the UART.
     UART_HandleTypeDef huart;
     memset(&huart, 0, sizeof(huart));
     huart.Instance = UARTx;
@@ -499,6 +499,26 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     huart.Init.Mode = UART_MODE_TX_RX;
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
+    #if !defined(STM32F4)
+    huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+    #endif
+
+    #if defined(STM32H7) || defined(STM32WB)
+    // Compute the smallest prescaler that will allow the given baudrate.
+    uint32_t presc = UART_PRESCALER_DIV1;
+    if (uart_obj->uart_id == PYB_LPUART_1) {
+        uint32_t source_clk = uart_get_source_freq(uart_obj);
+        for (; presc < UART_PRESCALER_DIV256; ++presc) {
+            uint32_t brr = UART_DIV_LPUART(source_clk, baudrate, presc);
+            if (brr <= LPUART_BRR_MASK) {
+                break;
+            }
+        }
+    }
+    huart.Init.ClockPrescaler = presc;
+    #endif
+
+    // Initialise the UART hardware.
     HAL_UART_Init(&huart);
 
     // Disable all individual UART IRQs, but enable the global handler

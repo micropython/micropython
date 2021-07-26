@@ -88,6 +88,7 @@ void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
 
 void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached);
+uint32_t uart_get_source_freq(pyb_uart_obj_t *self);
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self);
 void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate);
 
