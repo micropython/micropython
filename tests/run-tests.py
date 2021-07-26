@@ -433,6 +433,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
+        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":

@@ -132,6 +132,12 @@ Constants
    If you need to check whether your program runs on MicroPython (vs other
    Python implementation), use `sys.implementation` instead.
 
+.. data:: ps1
+          ps2
+
+   Mutable attributes holding strings, which are used for the REPL prompt.  The defaults
+   give the standard Python prompt of ``>>>`` and ``...``.
+
 .. data:: stderr
 
    Standard error `stream`.

@@ -135,6 +135,11 @@ void mp_init(void) {
     MP_STATE_VM(sys_exitfunc) = mp_const_none;
     #endif
 
+    #if MICROPY_PY_SYS_PS1_PS2
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS1]) = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS2]) = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
+    #endif
+
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
     MP_STATE_THREAD(prof_callback_is_executing) = false;

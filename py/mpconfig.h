@@ -1356,6 +1356,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
+// Whether to provide sys.{ps1,ps2} mutable attributes, to control REPL prompts
+#ifndef MICROPY_PY_SYS_PS1_PS2
+#define MICROPY_PY_SYS_PS1_PS2 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide "sys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)
@@ -1385,7 +1390,7 @@ typedef double mp_float_t;
 // Whether the sys module supports attribute delegation
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PY_SYS_ATTR_DELEGATION
-#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_TRACEBACKLIMIT)
+#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
 // Whether to provide "uerrno" module
