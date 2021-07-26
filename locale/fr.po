@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-05-21 17:47+0000\n"
-"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
+"PO-Revision-Date: 2021-07-27 14:33+0000\n"
+"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: main.c
 msgid ""
@@ -58,7 +58,7 @@ msgstr " est de type %q\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " pas trouvé\n"
 
 #: main.c
 msgid " output:\n"
@@ -100,7 +100,7 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: py/argcheck.c
 msgid "%q length must be %q"
-msgstr ""
+msgstr "La longueur de %q doit être de %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -116,7 +116,7 @@ msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 0-255"
-msgstr ""
+msgstr "%q doit être compris entre 0 et 255"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q must be 1-255"
@@ -144,7 +144,7 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q doit être une chaîne de caractères"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
@@ -156,11 +156,11 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q doit être une puissance de 2"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
-msgstr ""
+msgstr "%q doit être de type %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -262,7 +262,7 @@ msgstr "l'objet %s ne supporte pas l'assignation d'éléments"
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "L’objet '%s' ne prend pas en charge la suppression d’éléments"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -672,7 +672,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "Impossible de changer de périphérique USB maintenant"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
