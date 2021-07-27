@@ -293,6 +293,9 @@ endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
 SRC_PATTERNS += touchio/%
 endif
+ifeq ($(CIRCUITPY_TRACEBACK),1)
+SRC_PATTERNS += traceback/%
+endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
 endif
@@ -544,6 +547,7 @@ SRC_SHARED_MODULE_ALL = \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \
+	traceback/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	vectorio/Circle.c \

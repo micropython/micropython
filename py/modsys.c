@@ -120,25 +120,6 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
-STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    void *stream_obj = &mp_sys_stdout_obj;
-    if (n_args > 1) {
-        mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE);
-        stream_obj = MP_OBJ_TO_PTR(args[1]);
-    }
-
-    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
-    mp_obj_print_exception(&print, args[0]);
-    #else
-    (void)n_args;
-    mp_obj_print_exception(&mp_plat_print, args[0]);
-    #endif
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
-
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC mp_obj_t mp_sys_exc_info(void) {
     mp_obj_t cur_exc = MP_OBJ_FROM_PTR(MP_STATE_VM(cur_exception));
