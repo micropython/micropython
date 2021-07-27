@@ -35,6 +35,7 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 #include "src/rp2040/hardware_structs/include/hardware/structs/pwm.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 #include "src/common/pico_time/include/pico/time.h"
 
@@ -42,13 +43,16 @@ volatile alarm_id_t cur_alarm = 0;
 
 void pulse_finish(pulseio_pulseout_obj_t *self) {
     self->pulse_index++;
-    // Turn pwm pin off by setting duty cyle to 0.
-    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, 0);
+    // Turn pwm pin off by switching the GPIO mux to SIO (the cpu manual
+    // control).
     if (self->pulse_index >= self->pulse_length) {
+        gpio_set_function(self->pin, GPIO_FUNC_SIO);
         return;
     }
     if (self->pulse_index % 2 == 0) {
-        common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, self->current_duty_cycle);
+        gpio_set_function(self->pin, GPIO_FUNC_PWM);
+    } else {
+        gpio_set_function(self->pin, GPIO_FUNC_SIO);
     }
     uint64_t delay = self->pulse_buffer[self->pulse_index];
     if (delay < self->min_pulse) {
@@ -77,12 +81,14 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
 
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(
         &self->carrier, pin, 0, frequency, false);
-
     // This will raise an exception and not return if needed.
     common_hal_pwmio_pwmout_raise_error(result);
 
-    self->current_duty_cycle = duty_cycle;
-    self->pin = self->carrier.pin->number;
+    // Disable gpio output before we set the duty cycle.
+    gpio_set_function(pin->number, GPIO_FUNC_SIO);
+    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, duty_cycle);
+
+    self->pin = pin->number;
     self->slice = self->carrier.slice;
     self->min_pulse = (1000000 / self->carrier.actual_frequency);
 }
@@ -104,7 +110,8 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     self->pulse_index = 0;
     self->pulse_length = length;
 
-    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, self->current_duty_cycle);
+    // Turn on the signal by connecting the PWM to the outside pin.
+    gpio_set_function(self->pin, GPIO_FUNC_PWM);
     uint64_t delay = self->pulse_buffer[0];
     if (delay < self->min_pulse) {
         delay = self->min_pulse;

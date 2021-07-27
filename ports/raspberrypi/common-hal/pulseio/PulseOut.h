@@ -42,7 +42,6 @@ typedef struct {
     pwmio_pwmout_obj_t carrier;
     uint16_t *pulse_buffer;
     uint16_t pulse_length;
-    uint16_t current_duty_cycle;
     uint32_t min_pulse;
     volatile uint16_t pulse_index;
 } pulseio_pulseout_obj_t;
