@@ -184,9 +184,7 @@ endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
-ifeq ($(CIRCUITPY_GAMEPAD),1)
-SRC_PATTERNS += gamepad/%
-endif
+
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
@@ -523,8 +521,6 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/Keys.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
-	gamepad/GamePad.c \
-	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
 	memorymonitor/__init__.c \
