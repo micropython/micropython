@@ -52,7 +52,7 @@ modules_support_matrix_reverse = defaultdict(list)
 for board, modules in modules_support_matrix.items():
     for module in modules:
         modules_support_matrix_reverse[module].append(board)
-modules_support_matrix_reverse = dict((module, ", ".join(boards)) for module, boards in modules_support_matrix_reverse.items())
+modules_support_matrix_reverse = dict((module, sorted(boards)) for module, boards in modules_support_matrix_reverse.items())
 
 html_context = {
     'support_matrix': modules_support_matrix,

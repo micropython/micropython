@@ -19,8 +19,12 @@
 
     <p>
     <details>
-    <summary>Module Availability</summary>
-    Available on: {{ support_matrix_reverse[obj.name] }}
+    <summary>Available on these boards</summary>
+    <ul>
+    {% for board in support_matrix_reverse[obj.name] %}
+    <li> {{ board }}
+    {% endfor %}
+    </ul>
     </details>
     </p>
 
