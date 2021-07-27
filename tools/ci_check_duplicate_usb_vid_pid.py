@@ -72,13 +72,7 @@ def configboard_files():
 
     :returns: A ``pathlib.Path.glob()`` generator object
     """
-    working_dir = pathlib.Path().resolve()
-    if not working_dir.name.startswith("circuitpython") and not working_dir.name.startswith(
-        "micropython"
-    ):
-        raise RuntimeError(
-            "Please run USB VID/PID duplicate verification at the " "top-level directory."
-        )
+    working_dir = pathlib.Path(__file__).resolve().parent.parent
     return working_dir.glob("ports/**/boards/**/mpconfigboard.mk")
 
 
