@@ -468,13 +468,6 @@ extern const struct _mp_obj_module_t frequencyio_module;
 #define FREQUENCYIO_MODULE
 #endif
 
-#if CIRCUITPY_GAMEPAD
-extern const struct _mp_obj_module_t gamepad_module;
-#define GAMEPAD_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
-#else
-#define GAMEPAD_MODULE
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
 extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPADSHIFT_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepadshift),(mp_obj_t)&gamepadshift_module },
@@ -482,7 +475,7 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPADSHIFT_MODULE
 #endif
 
-#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+#if CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
@@ -539,7 +532,7 @@ extern const struct _mp_obj_module_t keypad_module;
 #define KEYPAD_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+#if CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
@@ -888,7 +881,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     _EVE_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
-    GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \

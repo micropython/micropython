@@ -40,10 +40,6 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
@@ -102,9 +98,6 @@ void supervisor_tick(void) {
 
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
-        #if CIRCUITPY_GAMEPAD
-        gamepad_tick();
-        #endif
         #if CIRCUITPY_GAMEPADSHIFT
         gamepadshift_tick();
         #endif

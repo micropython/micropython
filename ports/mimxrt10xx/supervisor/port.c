@@ -47,9 +47,6 @@
 
 #include "tusb.h"
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
@@ -300,9 +297,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_GAMEPAD
-    gamepad_reset();
-    #endif
     #if CIRCUITPY_GAMEPADSHIFT
     gamepadshift_reset();
     #endif

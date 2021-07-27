@@ -80,7 +80,7 @@ as a natural "TODO" list. An example minimal build list is shown below:
     # Requires DigitalIO:
     CIRCUITPY_BITBANGIO = 0
     # Requires DigitalIO
-    CIRCUITPY_GAMEPAD = 0
+    CIRCUITPY_GAMEPADSHIFT = 0
     # Requires neopixel_write or SPI (dotstar)
     CIRCUITPY_PIXELBUF = 0
     # Requires OS
