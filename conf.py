@@ -24,6 +24,7 @@ import subprocess
 import sys
 import urllib.parse
 import time
+from collections import defaultdict
 
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
@@ -47,9 +48,15 @@ subprocess.check_output(["make", "stubs"])
 
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
+modules_support_matrix_reverse = defaultdict(list)
+for board, modules in modules_support_matrix.items():
+    for module in modules:
+        modules_support_matrix_reverse[module].append(board)
+modules_support_matrix_reverse = dict((module, sorted(boards)) for module, boards in modules_support_matrix_reverse.items())
 
 html_context = {
-    'support_matrix': modules_support_matrix
+    'support_matrix': modules_support_matrix,
+    'support_matrix_reverse': modules_support_matrix_reverse
 }
 
 # -- General configuration ------------------------------------------------
@@ -94,6 +101,8 @@ autoapi_template_dir = 'docs/autoapi/templates'
 autoapi_python_class_content = "both"
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "shared-bindings"
+def autoapi_prepare_jinja_env(jinja_env):
+    jinja_env.globals['support_matrix_reverse'] = modules_support_matrix_reverse
 
 redirects_file = 'docs/redirects.txt'
 
