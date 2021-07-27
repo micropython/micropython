@@ -39,7 +39,6 @@
 #include "nrf/power.h"
 #include "nrf/timers.h"
 
-#include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/analogio/AnalogIn.h"
@@ -207,10 +206,6 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    gamepad_reset();
-    #endif
-
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();

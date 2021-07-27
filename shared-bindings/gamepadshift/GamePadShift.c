@@ -46,8 +46,7 @@
 //|         is called, at which point the button state is cleared, and the new
 //|         button presses start to be recorded.
 //|
-//|         Only one gamepad (`gamepad.GamePad` or `gamepadshift.GamePadShift`)
-//|         may be used at a time."""
+//|         Only one `gamepadshift.GamePadShift` may be used at a time."""
 //|         ...
 //|
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
