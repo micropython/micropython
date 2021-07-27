@@ -70,10 +70,12 @@ def configboard_files():
     """A pathlib glob search for all ports/*/boards/*/mpconfigboard.mk file
     paths.
 
-    :returns: A ``pathlib.Path.glob()`` genarator object
+    :returns: A ``pathlib.Path.glob()`` generator object
     """
     working_dir = pathlib.Path().resolve()
-    if not working_dir.name.startswith("circuitpython"):
+    if not working_dir.name.startswith("circuitpython") and not working_dir.name.startswith(
+        "micropython"
+    ):
         raise RuntimeError(
             "Please run USB VID/PID duplicate verification at the " "top-level directory."
         )
