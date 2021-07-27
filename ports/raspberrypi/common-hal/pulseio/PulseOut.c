@@ -38,27 +38,12 @@
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 #include "src/common/pico_time/include/pico/time.h"
 
-static uint8_t refcount = 0;
 volatile alarm_id_t cur_alarm = 0;
-
-void turn_off(uint8_t slice) {
-    // Set the current counter value near the top so that the output is low. The
-    // - 2 gives us a little wiggle room for enabling and disabling the slice.
-    // The top + 1 ensure we don't end up lower than the cc (and therefore high.)
-    uint32_t top = MAX(pwm_hw->slice[slice].cc + 1, pwm_hw->slice[slice].top - 2);
-    // Disable interrupts so this happens as fast as possible.
-    common_hal_mcu_disable_interrupts();
-    pwm_hw->slice[slice].ctr = top;
-    // Enable for at least one cycle so that the new counter value takes effect.
-    pwm_hw->slice[slice].csr = PWM_CH0_CSR_EN_BITS;
-    pwm_hw->slice[slice].csr = 0;
-    common_hal_mcu_enable_interrupts();
-}
 
 void pulse_finish(pulseio_pulseout_obj_t *self) {
     self->pulse_index++;
-    // Turn pwm pin off by setting duty cyle to 1.
-    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, 1);
+    // Turn pwm pin off by setting duty cyle to 0.
+    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, 0);
     if (self->pulse_index >= self->pulse_length) {
         return;
     }
@@ -91,15 +76,12 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     uint16_t duty_cycle) {
 
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(
-        &self->carrier, pin, duty_cycle, frequency, false);
+        &self->carrier, pin, 0, frequency, false);
 
     // This will raise an exception and not return if needed.
     common_hal_pwmio_pwmout_raise_error(result);
 
     self->current_duty_cycle = duty_cycle;
-    pwm_set_enabled(self->carrier.slice, false);
-    turn_off(self->carrier.slice);
-    common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, 1);
     self->pin = self->carrier.pin->number;
     self->slice = self->carrier.slice;
     self->min_pulse = (1000000 / self->carrier.actual_frequency);
@@ -123,7 +105,6 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     self->pulse_length = length;
 
     common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, self->current_duty_cycle);
-    pwm_set_enabled(self->slice, true);
     uint64_t delay = self->pulse_buffer[0];
     if (delay < self->min_pulse) {
         delay = self->min_pulse;
@@ -140,7 +121,4 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
         // signal.
         RUN_BACKGROUND_TASKS;
     }
-    // Ensure pin is left low
-    turn_off(self->slice);
-    pwm_set_enabled(self->slice,false);
 }
