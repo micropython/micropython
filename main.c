@@ -631,7 +631,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
     bool skip_boot_output = false;
 
     if (ok_to_run) {

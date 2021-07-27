@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-07-23 12:45+0000\n"
+"PO-Revision-Date: 2021-07-24 15:35+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1222,7 +1222,7 @@ msgstr "Erro de entrada/saída"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
+msgstr "Falta o jmp_pin. A instrução %d salta no pino"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
