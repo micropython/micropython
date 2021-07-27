@@ -533,7 +533,7 @@ extern const struct _mp_obj_module_t keypad_module;
 #endif
 
 #if CIRCUITPY_GAMEPADSHIFT
-// Scan gamepad every 32ms
+// Scan gamepadshift every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
 #else
