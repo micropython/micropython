@@ -1925,25 +1925,6 @@ msgstr "Además de cualquier módulo en el sistema de archivos\n"
 msgid "Polygon needs at least 3 points"
 msgstr "El polígono necesita al menos 3 puntos"
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-"Port no acepta un carrier de PWM. Pase en cambio un pin, una frecuencia o un "
-"ciclo de actividad"
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-"Port no acepta los pines o la frecuencia. Construya y pase en su lugar un "
-"Carrier de PWMOut"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "El prefijo del buffer debe estar en el heap"
@@ -4530,6 +4511,20 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Port no acepta un carrier de PWM. Pase en cambio un pin, una frecuencia o "
+#~ "un ciclo de actividad"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Port no acepta los pines o la frecuencia. Construya y pase en su lugar un "
+#~ "Carrier de PWMOut"
 
 #~ msgid "Instruction %d jumps on pin"
 #~ msgstr "La instruction %d salta en pin"

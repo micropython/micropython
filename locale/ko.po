@@ -1880,21 +1880,6 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""

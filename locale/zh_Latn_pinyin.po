@@ -1909,22 +1909,6 @@ msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Duōbiānxíng zhìshǎo xūyào 3 diǎn"
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr "Duānkǒu bù jiēshòu PWM zàibō. Tōngguò yǐn jiǎo, pínlǜ hé zhàn kōng bǐ"
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-"Duānkǒu bù jiēshòu yǐn jiǎo huò pínlǜ. Gòuzào bìng chuándì PWMOut zàibō"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
@@ -4496,6 +4480,18 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Duānkǒu bù jiēshòu PWM zàibō. Tōngguò yǐn jiǎo, pínlǜ hé zhàn kōng bǐ"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Duānkǒu bù jiēshòu yǐn jiǎo huò pínlǜ. Gòuzào bìng chuándì PWMOut zàibō"
 
 #~ msgid "Instruction %d jumps on pin"
 #~ msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
