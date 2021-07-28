@@ -89,8 +89,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
     for (uint i = 0; i < tim_num; i++) {
         const mcu_tim_pin_obj_t *l_tim = &mcu_tim_pin_list[i];
-        uint8_t l_tim_index = l_tim->tim_index - 1;
-        uint8_t l_tim_channel = l_tim->channel_index - 1;
+        uint8_t l_tim_index = l_tim->tim_index;
+        uint8_t l_tim_channel = l_tim->channel_index;
 
         // if pin is same
         if (l_tim->pin == pin) {
@@ -127,14 +127,14 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     // handle valid/invalid timer instance
     if (self->tim != NULL) {
         // create instance
-        TIMx = mcu_tim_banks[self->tim->tim_index - 1];
+        TIMx = mcu_tim_banks[self->tim->tim_index];
         // reserve timer/channel
         if (variable_frequency) {
-            reserved_tim[self->tim->tim_index - 1] = 0x0F;
+            reserved_tim[self->tim->tim_index] = 0x0F;
         } else {
-            reserved_tim[self->tim->tim_index - 1] |= 1 << (self->tim->channel_index - 1);
+            reserved_tim[self->tim->tim_index] |= 1 << self->tim->channel_index;
         }
-        tim_frequencies[self->tim->tim_index - 1] = frequency;
+        tim_frequencies[self->tim->tim_index] = frequency;
         stm_peripherals_timer_reserve(TIMx);
     } else { // no match found
         if (tim_chan_taken || tim_taken_internal) {
@@ -148,6 +148,13 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         }
     }
 
+    uint32_t prescaler = 0; // prescaler is 15 bit
+    uint32_t period = 0; // period is 16 bit
+    uint32_t source_freq = stm_peripherals_timer_get_source_freq(TIMx);
+    if (!timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq)) {
+        return PWMOUT_INVALID_FREQUENCY;
+    }
+
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -155,18 +162,12 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = self->tim->altfn_index;
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
+    self->pin = pin;
 
-    tim_clock_enable(1 << (self->tim->tim_index - 1));
+    tim_clock_enable(1 << (self->tim->tim_index));
 
     // translate channel into handle value
-    self->channel = 4 * (self->tim->channel_index - 1);
-
-    uint32_t prescaler = 0; // prescaler is 15 bit
-    uint32_t period = 0; // period is 16 bit
-    uint32_t source_freq = stm_peripherals_timer_get_source_freq(TIMx);
-    if (!timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq)) {
-        return PWMOUT_INVALID_FREQUENCY;
-    }
+    self->channel = 4 * self->tim->channel_index;
 
     // Timer init
     self->handle.Instance = TIMx;
@@ -207,7 +208,7 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     for (size_t i = 0; i < TIM_BANK_ARRAY_LEN; i++) {
         if (mcu_tim_banks[i] == self->handle.Instance) {
             never_reset_tim[i] = true;
-            never_reset_pin_number(self->tim->pin->port, self->tim->pin->number);
+            common_hal_never_reset_pin(self->pin);
             break;
         }
     }
@@ -232,16 +233,16 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     }
     // var freq shuts down entire timer, others just their channel
     if (self->variable_frequency) {
-        reserved_tim[self->tim->tim_index - 1] = 0x00;
+        reserved_tim[self->tim->tim_index] = 0x00;
     } else {
-        reserved_tim[self->tim->tim_index - 1] &= ~(1 << self->tim->channel_index);
+        reserved_tim[self->tim->tim_index] &= ~(1 << self->tim->channel_index);
         HAL_TIM_PWM_Stop(&self->handle, self->channel);
     }
-    reset_pin_number(self->tim->pin->port,self->tim->pin->number);
+    common_hal_reset_pin(self->pin);
 
     // if reserved timer has no active channels, we can disable it
-    if (!reserved_tim[self->tim->tim_index - 1]) {
-        tim_frequencies[self->tim->tim_index - 1] = 0x00;
+    if (reserved_tim[self->tim->tim_index] == 0) {
+        tim_frequencies[self->tim->tim_index] = 0x00;
         stm_peripherals_timer_free(self->handle.Instance);
     }
 
@@ -290,7 +291,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
         mp_raise_ValueError(translate("Could not restart PWM"));
     }
 
-    tim_frequencies[self->tim->tim_index - 1] = frequency;
+    tim_frequencies[self->tim->tim_index] = frequency;
     self->frequency = frequency;
     self->period = period;
 }
@@ -301,4 +302,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

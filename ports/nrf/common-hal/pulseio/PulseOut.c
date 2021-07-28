@@ -48,14 +48,14 @@ static volatile uint16_t pulse_array_index = 0;
 static uint16_t pulse_array_length;
 
 static void turn_on(pulseio_pulseout_obj_t *pulseout) {
-    pulseout->pwmout->pwm->PSEL.OUT[0] = pulseout->pwmout->pin_number;
+    pulseout->pwmout.pwm->PSEL.OUT[0] = pulseout->pwmout.pin->number;
 }
 
 static void turn_off(pulseio_pulseout_obj_t *pulseout) {
     // Disconnect pin from PWM.
-    pulseout->pwmout->pwm->PSEL.OUT[0] = 0xffffffff;
+    pulseout->pwmout.pwm->PSEL.OUT[0] = 0xffffffff;
     // Make sure pin is low.
-    nrf_gpio_pin_clear(pulseout->pwmout->pin_number);
+    nrf_gpio_pin_clear(pulseout->pwmout.pin->number);
 }
 
 static void start_timer(void) {
@@ -100,13 +100,15 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
-    const pwmio_pwmout_obj_t *carrier,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
-    if (!carrier || pin || frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
-    }
+
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
+        &self->pwmout, pin, duty_cycle, frequency, false);
+
+    // This will raise an exception and not return if needed.
+    common_hal_pwmio_pwmout_raise_error(result);
 
     if (refcount == 0) {
         timer = nrf_peripherals_allocate_timer_or_throw();
@@ -122,14 +124,12 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
         .p_context = self,
     };
 
-    self->pwmout = carrier;
-
     nrfx_timer_init(timer, &timer_config, &pulseout_event_handler);
     turn_off(self);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
-    return self->pwmout == NULL;
+    return common_hal_pwmio_pwmout_deinited(&self->pwmout);
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
@@ -137,7 +137,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
         return;
     }
     turn_on(self);
-    self->pwmout = NULL;
+    common_hal_pwmio_pwmout_deinit(&self->pwmout);
 
     refcount--;
     if (refcount == 0) {
