@@ -39,8 +39,7 @@ static const uint8_t keyboard_report_descriptor[] = {
     0x05, 0x01,            // 0,1 Usage Page (Generic Desktop Ctrls)
     0x09, 0x06,            // 2,3 Usage (Keyboard)
     0xA1, 0x01,            // 4,5 Collection (Application)
-    0x85, 0xFF,            //   6,7 Report ID  [SET AT RUNTIME]
-#define KEYBOARD_REPORT_ID_INDEX (7)
+    0x85, 0x01,            //   6,7 Report ID (1)
     0x05, 0x07,            //   Usage Page (Kbrd/Keypad)
     0x19, 0xE0,            //   Usage Minimum (0xE0)
     0x29, 0xE7,            //   Usage Maximum (0xE7)
@@ -78,10 +77,10 @@ const usb_hid_device_obj_t usb_hid_device_keyboard_obj = {
     .report_descriptor_length = sizeof(keyboard_report_descriptor),
     .usage_page = 0x01,
     .usage = 0x06,
-    .in_report_length = 8,
-    .out_report_length = 1,
-    .report_id_index = KEYBOARD_REPORT_ID_INDEX,
-
+    .num_report_ids = 1,
+    .report_ids = { 0x01, },
+    .in_report_lengths = { 8, 0, 0, 0, },
+    .out_report_lengths = { 1, },
 };
 
 static const uint8_t mouse_report_descriptor[] = {
@@ -90,8 +89,7 @@ static const uint8_t mouse_report_descriptor[] = {
     0xA1, 0x01,        // 4,5 Collection (Application)
     0x09, 0x01,        //   6,7 Usage (Pointer)
     0xA1, 0x00,        //   8,9 Collection (Physical)
-    0x85, 0xFF,        //     10, 11 Report ID  [SET AT RUNTIME]
-#define MOUSE_REPORT_ID_INDEX (11)
+    0x85, 0x02,        //     10, 11 Report ID (2)
     0x05, 0x09,        //     Usage Page (Button)
     0x19, 0x01,        //     Usage Minimum (0x01)
     0x29, 0x05,        //     Usage Maximum (0x05)
@@ -129,17 +127,17 @@ const usb_hid_device_obj_t usb_hid_device_mouse_obj = {
     .report_descriptor_length = sizeof(mouse_report_descriptor),
     .usage_page = 0x01,
     .usage = 0x02,
-    .in_report_length = 4,
-    .out_report_length = 0,
-    .report_id_index = MOUSE_REPORT_ID_INDEX,
+    .num_report_ids = 1,
+    .report_ids = { 0x02, },
+    .in_report_lengths = { 4, 0, 0, 0, },
+    .out_report_lengths = { 0, },
 };
 
 static const uint8_t consumer_control_report_descriptor[] = {
     0x05, 0x0C,        // 0,1 Usage Page (Consumer)
     0x09, 0x01,        // 2,3 Usage (Consumer Control)
     0xA1, 0x01,        // 4,5 Collection (Application)
-    0x85, 0xFF,        //   6,7 Report ID  [SET AT RUNTIME]
-#define CONSUMER_CONTROL_REPORT_ID_INDEX (7)
+    0x85, 0x03,        //   6,7 Report ID (3)
     0x75, 0x10,        //   Report Size (16)
     0x95, 0x01,        //   Report Count (1)
     0x15, 0x01,        //   Logical Minimum (1)
@@ -158,15 +156,29 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
     .report_descriptor_length = sizeof(consumer_control_report_descriptor),
     .usage_page = 0x0C,
     .usage = 0x01,
-    .in_report_length = 2,
-    .out_report_length = 0,
-    .report_id_index = CONSUMER_CONTROL_REPORT_ID_INDEX,
+    .num_report_ids = 1,
+    .report_ids = { 0x03 },
+    .in_report_lengths = { 2, 0, 0, 0 },
+    .out_report_lengths = { 0 },
 };
 
 
-void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
-    // report buffer pointers are NULL at start, and are created when USB is initialized.
+bool common_hal_usb_hid_device_valid_report_id(usb_hid_device_obj_t *self, uint8_t report_id) {
+    for (size_t i = 0; i < self->num_report_ids; i++) {
+        if (report_id == self->report_ids[i]) {
+            return true;
+        }
+    }
+    return false;
+}
 
+void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, size_t num_report_ids, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths) {
+    if (num_report_ids > MAX_REPORT_IDS_PER_DESCRIPTOR) {
+        mp_raise_ValueError_varg(translate("More than %d report ids not supported"),
+            MAX_REPORT_IDS_PER_DESCRIPTOR);
+    }
+
+    // report buffer pointers are NULL at start, and are created when USB is initialized.
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(report_descriptor, &bufinfo, MP_BUFFER_READ);
     self->report_descriptor_length = bufinfo.len;
@@ -179,9 +191,10 @@ void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t re
 
     self->usage_page = usage_page;
     self->usage = usage;
-    self->in_report_length = in_report_length;
-    self->out_report_length = out_report_length;
-    self->report_id_index = report_id_index;
+    self->num_report_ids = num_report_ids;
+    memcpy(self->report_ids, report_ids, num_report_ids);
+    memcpy(self->in_report_lengths, in_report_lengths, num_report_ids);
+    memcpy(self->out_report_lengths, out_report_lengths, num_report_ids);
 }
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
@@ -192,7 +205,7 @@ uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
     return self->usage;
 }
 
-void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *report, uint8_t len) {
+void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *report, uint8_t len, uint8_t report_id) {
     if (len != self->in_report_length) {
         mp_raise_ValueError_varg(translate("Buffer incorrect size. Should be %d bytes."), self->in_report_length);
     }
@@ -207,25 +220,24 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
         mp_raise_msg(&mp_type_OSError,  translate("USB busy"));
     }
 
-    memcpy(self->in_report_buffer, report, len);
-
-    if (!tud_hid_report(self->report_id, self->in_report_buffer, len)) {
+    if (!tud_hid_report(report_id, report, len)) {
         mp_raise_msg(&mp_type_OSError, translate("USB error"));
     }
 }
 
 
 void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
-    if (self->in_report_length > 0) {
-        self->in_report_buffer = gc_alloc(self->in_report_length, false, true /*long-lived*/);
-    }
-    if (self->out_report_length > 0) {
-        self->out_report_buffer = gc_alloc(self->out_report_length, false, true /*long-lived*/);
+    for (size_t i = 0; i < self->num_report_ids; count++) {
+        if (self->out_report_length > 0) {
+            self->out_report_buffers[i] = self->out_report_lengths[i] > 0
+                ? gc_alloc(self->out_report_length, false, true /*long-lived*/)
+                : NULL;
+        }
     }
 }
 
 
-// Callbacks invoked when receive Get_Report request through control endpoint
+// Callbacks invoked when we received Get_Report request through control endpoint
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {
     (void)itf;
     // only support Input Report
@@ -234,24 +246,33 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
     }
 
     // fill buffer with current report
-    memcpy(buffer, usb_hid_get_device_with_report_id(report_id)->in_report_buffer, reqlen);
-    return reqlen;
-}
 
-// Callbacks invoked when receive Set_Report request through control endpoint
-void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
-    (void)itf;
-    if (report_type == HID_REPORT_TYPE_INVALID) {
-        report_id = buffer[0];
-        buffer++;
-        bufsize--;
-    } else if (report_type != HID_REPORT_TYPE_OUTPUT) {
-        return;
+    usb_hid_device_obj_t *hid_device;
+    size_t id_idx;
+    // Find device with this report id, and get the report id index.
+    if (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
+        memcpy(buffer, hid_device->in_report_buffers[id_idx], reqlen);
+        return reqlen;
     }
 
-    usb_hid_device_obj_t *hid_device = usb_hid_get_device_with_report_id(report_id);
+// Callbacks invoked when we received Set_Report request through control endpoint
+    void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
+        (void)itf;
+        if (report_type == HID_REPORT_TYPE_INVALID) {
+            report_id = buffer[0];
+            buffer++;
+            bufsize--;
+        } else if (report_type != HID_REPORT_TYPE_OUTPUT) {
+            return;
+        }
 
-    if (hid_device && hid_device->out_report_length >= bufsize) {
-        memcpy(hid_device->out_report_buffer, buffer, bufsize);
+        usb_hid_device_obj_t *hid_device;
+        size_t id_idx;
+        // Find device with this report id, and get the report id index.
+        if (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
+            // If a report of the correct size has been read, save it in the proper OUT report buffer.
+            if (hid_device && hid_device->out_report_lengths[id_idx] >= bufsize) {
+                memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
+            }
+        }
     }
-}
