@@ -85,6 +85,8 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     common_hal_pwmio_pwmout_raise_error(result);
 
     // Disable gpio output before we set the duty cycle.
+    gpio_put(pin->number, false);
+    gpio_set_dir(pin->number, GPIO_OUT);
     gpio_set_function(pin->number, GPIO_FUNC_SIO);
     common_hal_pwmio_pwmout_set_duty_cycle(&self->carrier, duty_cycle);
 
@@ -101,6 +103,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     if (common_hal_pulseio_pulseout_deinited(self)) {
         return;
     }
+    gpio_set_dir(self->pin, GPIO_IN);
     common_hal_pwmio_pwmout_deinit(&self->carrier);
     self->pin = NO_PIN;
 }
