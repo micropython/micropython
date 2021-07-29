@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Blues Wireless Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,34 @@
  * THE SOFTWARE.
  */
 
-#pragma once
-
-#include "py/obj.h"
-#include "shared-bindings/canio/__init__.h"
-#include "shared-bindings/canio/CAN.h"
+#include "peripherals/gpio.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/canio/__init__.h"
-#include "shared-module/canio/Message.h"
 
-#include STM32_HAL_H
+void stm32_peripherals_gpio_init(void) {
+    // Enable all GPIO for now
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
 
-#define FILTER_BANK_COUNT (28)
+    // Never reset pins
+    never_reset_pin_number(2,13); // PC13 anti tamp
+    never_reset_pin_number(2,14); // PC14 OSC32_IN
+    never_reset_pin_number(2,15); // PC15 OSC32_OUT
+    never_reset_pin_number(0,13); // PA13 SWDIO
+    never_reset_pin_number(0,14); // PA14 SWCLK
+    // never_reset_pin_number(0,15); //PA15 JTDI
+    // never_reset_pin_number(1,3); //PB3 JTDO
+    // never_reset_pin_number(1,4); //PB4 JTRST
 
-typedef struct canio_can_obj {
-    mp_obj_base_t base;
-    CAN_HandleTypeDef handle;
-    CAN_TypeDef *filter_hw;
-    int baudrate;
-    const mcu_pin_obj_t *rx_pin;
-    const mcu_pin_obj_t *tx_pin;
-    bool loopback : 1;
-    bool silent : 1;
-    bool auto_restart : 1;
-    bool fifo0_in_use : 1;
-    bool fifo1_in_use : 1;
-    uint8_t periph_index : 2;
-    uint8_t cancel_mailbox;
-    uint8_t start_filter_bank;
-    uint8_t end_filter_bank;
-    long filter_in_use; // bitmask for the 28 filter banks
-} canio_can_obj_t;
+    // Port H is not included in GPIO port array
+    // never_reset_pin_number(5,0); //PH0 JTDO
+    // never_reset_pin_number(5,1); //PH1 JTRST
+}
+
+void stm32l4_peripherals_status_led(uint8_t led, uint8_t state) {
+
+}

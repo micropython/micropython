@@ -39,4 +39,13 @@ void usb_cdc_set_defaults(void);
 size_t usb_cdc_descriptor_length(void);
 size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console);
 
+#if CIRCUITPY_USB_VENDOR
+bool usb_vendor_enabled(void);
+size_t usb_vendor_descriptor_length(void);
+size_t usb_vendor_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
+
+size_t vendor_ms_os_20_descriptor_length(void);
+uint8_t const* vendor_ms_os_20_descriptor(void);
+#endif
+
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

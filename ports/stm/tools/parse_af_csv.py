@@ -25,7 +25,7 @@
 import csv
 import sys
 
-# Use: parse_af_csf.py Filename.csv -pins-only
+# Use: parse_af_csv.py Filename.csv -pins-only
 # Designed for use with .csv files from Micropython, or in identical format
 # created via Datasheet peripheral tables with a Sheets program.
 #
@@ -70,6 +70,7 @@ with open(sys.argv[1]) as csv_file:
             ["SPI", "SCK"],
             ["SPI", "MOSI"],
             ["SPI", "MISO"],
+            ["SPI", "NSS"],
             ["UART", "TX"],
             ["UART", "RX"],
         ]
@@ -86,22 +87,22 @@ with open(sys.argv[1]) as csv_file:
         # Each line is a list of strings
         for row in csv_reader:
             altfn = 0
-            pin = row[1]
-            if len(pin) < 4:
+            pin = row[0]
+            if len(pin) < 4:        # add additional leading 0 to pin number after port
                 pin = pin[:2] + "0" + pin[2:]
             for col in row:
                 array_index = 0
                 # Evaluate the string for every possible todo entry
                 for item in todo:
-                    evaluate_periph(col, outlist[array_index], item[0], item[1], altfn - 2, pin)
+                    evaluate_periph(col, outlist[array_index], item[0], item[1], altfn - 1, pin)
                     # UART special case, run again for USART variant
                     if item[0] == "UART":
                         evaluate_periph(
-                            col, outlist[array_index], "USART", item[1], altfn - 2, pin
+                            col, outlist[array_index], "USART", item[1], altfn - 1, pin
                         )
                     array_index += 1
                 # TIM special case
-                evaluate_tim(col, outlist[-1], altfn - 2, pin)
+                evaluate_tim(col, outlist[-1], altfn - 1, pin)
                 altfn += 1
             line_count += 1
 
@@ -139,10 +140,10 @@ with open(sys.argv[1]) as csv_file:
 
         for row in csv_reader:
             altfn = 0
-            pin = row[1]
+            pin = row[0]
             if len(pin) < 4:
                 pin = pin[:2] + "0" + pin[2:]
-            outlist.append([pin, str(ord(row[1][1:2]) - 65), row[1][2:4]])
+            outlist.append([pin, str(ord(pin[1:2]) - 65), pin[2:4]])
             line_count += 1
 
         for line in outlist:
@@ -159,4 +160,4 @@ with open(sys.argv[1]) as csv_file:
         for line in outlist:
             print("extern const mcu_pin_obj_t pin_" + line[0] + ";")
 
-    print(f"Processed {line_count} lines.")
+    print("Processed %d lines." % line_count)

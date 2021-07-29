@@ -123,6 +123,9 @@ void EXTI4_IRQHandler(void) {
     stm_exti_callback[4](4);
 }
 
+#ifdef STM32L4
+#define PR PR1
+#endif
 void EXTI9_5_IRQHandler(void) {
     uint32_t pending = EXTI->PR;
     for (uint i = 5; i <= 9; i++) {
@@ -140,5 +143,9 @@ void EXTI15_10_IRQHandler(void) {
         }
     }
 }
+#ifdef STM32L4
+#undef PR
+#endif
+
 
 #endif

@@ -43,6 +43,11 @@ STATIC void init_usb_vbus_sense(void) {
     // Deactivate VBUS Sensing B
     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
 
+    #if (BOARD_NO_USB_OTG_ID_SENSE)
+    USB_OTG_FS->GUSBCFG &= ~USB_OTG_GUSBCFG_FHMOD;
+    USB_OTG_FS->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
+    #endif
+
     // B-peripheral session valid override enable
     USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
     USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
@@ -63,6 +68,12 @@ STATIC void init_usb_vbus_sense(void) {
 }
 
 void init_usb_hardware(void) {
+
+  /* Enable USB power on Pwrctrl CR2 register */
+#ifdef PWR_CR2_USV
+    HAL_PWREx_EnableVddUSB();
+#endif
+
     // TODO: if future chips overload this with options, move to peripherals management.
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -80,7 +91,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     #if CPY_STM32H7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif CPY_STM32F4 || CPY_STM32F7
+    #elif CPY_STM32F4 || CPY_STM32F7 || CPY_STM32L4
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -100,19 +111,21 @@ void init_usb_hardware(void) {
     #endif
 
     /* This for ID line debug */
+    #if !(BOARD_NO_USB_OTG_ID_SENSE)
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     #if CPY_STM32H7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif CPY_STM32F4 || CPY_STM32F7
+    #elif CPY_STM32F4 || CPY_STM32F7 || CPY_STM32L4
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 10);
     claim_pin(0, 10);
-
+    #endif
+    
     #ifdef STM32F412Zx
     /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
     GPIO_InitStruct.Pin = GPIO_PIN_8;
@@ -131,7 +144,8 @@ void init_usb_hardware(void) {
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
     #endif
 
-    init_usb_vbus_sense();
+
+  init_usb_vbus_sense();
 }
 
 void OTG_FS_IRQHandler(void) {
