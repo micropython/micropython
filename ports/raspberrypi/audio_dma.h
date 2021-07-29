@@ -48,7 +48,9 @@ typedef struct {
     uint8_t output_resolution; // in bits
     uint8_t sample_resolution; // in bits
     uint8_t *first_buffer;
+    size_t first_buffer_length;
     uint8_t *second_buffer;
+    size_t second_buffer_length;
     background_callback_t callback;
 } audio_dma_t;
 

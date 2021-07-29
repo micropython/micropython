@@ -51,11 +51,16 @@ void audio_dma_reset(void) {
 
 void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer_length,
     uint8_t **output_buffer, uint32_t *output_buffer_length) {
+
+    size_t output_buffer_max_length;
     if (dma->first_buffer_free) {
         *output_buffer = dma->first_buffer;
+        output_buffer_max_length = dma->first_buffer_length;
     } else {
         *output_buffer = dma->second_buffer;
+        output_buffer_max_length = dma->second_buffer_length;
     }
+
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     if (dma->signed_to_unsigned ||
@@ -65,6 +70,12 @@ void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer
         *output_buffer_length = buffer_length / dma->sample_spacing;
         uint32_t out_i = 0;
         if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
+            // reading bytes, writing 16-bit samples
+            *output_buffer_length = *output_buffer_length * 2;
+            if (*output_buffer_length > output_buffer_max_length) {
+                mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+            }
+
             size_t shift = dma->output_resolution - dma->sample_resolution;
 
             for (uint32_t i = 0; i < buffer_length; i += dma->sample_spacing) {
@@ -107,6 +118,10 @@ void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer
                 }
                 out_i += 1;
             }
+        } else {
+            // (dma->sample_resolution > 8 && dma->output_resolution <= 8)
+            // Not currently used, but might be in the future.
+            mp_raise_RuntimeError(translate("Audio conversion not implemented"));
         }
     } else {
         *output_buffer = buffer;
@@ -149,7 +164,6 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
     // If we don't have an output buffer, save the pointer to first_buffer for use in the single
     // buffer special case.
     if (dma->first_buffer == NULL) {
-        mp_printf(&mp_plat_print,"no first buffer\n");
         dma->first_buffer = output_buffer;
     }
 
@@ -210,8 +224,11 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     uint32_t max_buffer_length;
     audiosample_get_buffer_structure(sample, single_channel_output, &single_buffer, &samples_signed,
         &max_buffer_length, &dma->sample_spacing);
-
+    mp_printf(&mp_plat_print, "single_buffer: %d, samples_signed: %d, max_buffer_length: %d, dma->sample_spacing: %d\n",
+        single_buffer, samples_signed, max_buffer_length, dma->sample_spacing);              ////
     // Check to see if we have to scale the resolution up.
+    mp_printf(&mp_plat_print, "dma->sample_resolution: %d, dma->output_resolution: %d, output_signed: %d, single_channel_output: %d\n",
+        dma->sample_resolution, dma->output_resolution, output_signed, single_channel_output);
     if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
         max_buffer_length *= 2;
     }
@@ -222,6 +239,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     }
 
     dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
+    dma->first_buffer_length = max_buffer_length;
     if (dma->first_buffer == NULL) {
         return AUDIO_DMA_MEMORY_ERROR;
     }
@@ -229,6 +247,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     dma->first_buffer_free = true;
     if (!single_buffer) {
         dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
+        dma->second_buffer_length = max_buffer_length;
         if (dma->second_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
