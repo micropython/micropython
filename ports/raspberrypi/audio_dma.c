@@ -135,12 +135,21 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
         audio_dma_stop(dma);
         return;
     }
+    bool busy0 = dma_channel_is_busy(dma->channel[0]);
+    bool busy1 = dma_channel_is_busy(dma->channel[1]);
+    if (busy0 == busy1) {
+        mp_printf(&mp_plat_print, "busy: %d %d\n", busy0, busy1);
+    }
 
+    if (buffer_length < 256) {
+        mp_printf(&mp_plat_print, "%d length: %d\n", dma->first_channel_free, buffer_length);
+    }
     audio_dma_convert_signed(dma, buffer, buffer_length, &output_buffer, &output_buffer_length);
 
     // If we don't have an output buffer, save the pointer to first_buffer for use in the single
     // buffer special case.
     if (dma->first_buffer == NULL) {
+        mp_printf(&mp_plat_print,"no first buffer\n");
         dma->first_buffer = output_buffer;
     }
 
@@ -210,21 +219,23 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
         dma->sample_spacing > 1 ||
         (dma->sample_resolution != dma->output_resolution)) {
         max_buffer_length /= dma->sample_spacing;
-        dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
-        if (dma->first_buffer == NULL) {
+    }
+
+    dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
+    if (dma->first_buffer == NULL) {
+        return AUDIO_DMA_MEMORY_ERROR;
+    }
+
+    dma->first_buffer_free = true;
+    if (!single_buffer) {
+        dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
+        if (dma->second_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
-
-        dma->first_buffer_free = true;
-        if (!single_buffer) {
-            dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
-            if (dma->second_buffer == NULL) {
-                return AUDIO_DMA_MEMORY_ERROR;
-            }
-        }
-        dma->signed_to_unsigned = !output_signed && samples_signed;
-        dma->unsigned_to_signed = output_signed && !samples_signed;
     }
+
+    dma->signed_to_unsigned = !output_signed && samples_signed;
+    dma->unsigned_to_signed = output_signed && !samples_signed;
 
     if (output_resolution > 8) {
         dma->output_size = 2;
