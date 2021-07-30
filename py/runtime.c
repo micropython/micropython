@@ -130,10 +130,6 @@ void mp_init(void) {
         sizeof(MP_STATE_VM(fs_user_mount)) - MICROPY_FATFS_NUM_PERSISTENT);
     #endif
 
-    #if MICROPY_PY_SYS_ATEXIT
-    MP_STATE_VM(sys_exitfunc) = mp_const_none;
-    #endif
-
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
     MP_STATE_THREAD(prof_callback_is_executing) = false;
