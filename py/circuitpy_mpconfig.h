@@ -255,6 +255,13 @@ extern const struct _mp_obj_module_t analogio_module;
 #define ANALOGIO_MODULE
 #endif
 
+#if CIRCUITPY_ATEXIT
+extern const struct _mp_obj_module_t atexit_module;
+#define ATEXIT_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_atexit), (mp_obj_t)&atexit_module },
+#else
+#define ATEXIT_MODULE
+#endif
+
 #if CIRCUITPY_AUDIOBUSIO
 #define AUDIOBUSIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
 extern const struct _mp_obj_module_t audiobusio_module;
@@ -853,6 +860,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     AESIO_MODULE \
     ALARM_MODULE \
     ANALOGIO_MODULE \
+    ATEXIT_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
     AUDIOIO_MODULE \

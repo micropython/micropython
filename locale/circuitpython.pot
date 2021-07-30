@@ -185,7 +185,7 @@ msgstr ""
 msgid "'%q' object is not an iterator"
 msgstr ""
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr ""
 
@@ -1187,11 +1187,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1504,6 +1499,11 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -2510,7 +2510,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr ""
 
@@ -3592,10 +3592,6 @@ msgstr ""
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
 msgstr ""
 
 #: py/compile.c

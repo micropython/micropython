@@ -1,0 +1,87 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 microDev
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "py/runtime.h"
+#include "shared-module/atexit/__init__.h"
+
+typedef struct _atexit_callback_t {
+    size_t n_pos, n_kw;
+    mp_obj_t func, *args;
+} atexit_callback_t;
+
+size_t callback_len = 0;
+atexit_callback_t *callback = NULL;
+
+void atexit_reset(void) {
+    callback_len = 0;
+    m_free(callback);
+    callback = NULL;
+}
+
+void shared_module_atexit_register(mp_obj_t *func, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    if (!mp_obj_is_callable(func)) {
+        mp_raise_TypeError_varg(translate("'%q' object is not callable"), mp_obj_get_type_qstr(func));
+    }
+    size_t n_kw_args = (kw_args) ? kw_args->used : 0;
+    atexit_callback_t cb = {
+        .n_pos = 0,
+        .n_kw = 0,
+        .func = func,
+        .args = ((n_args + n_kw_args) == 0) ? NULL : m_malloc((n_args + (2 * n_kw_args)) * sizeof(mp_obj_t), false)
+    };
+    for (; cb.n_pos < n_args; cb.n_pos++) {
+        cb.args[cb.n_pos] = pos_args[cb.n_pos];
+    }
+    for (size_t i = cb.n_pos; cb.n_kw < n_kw_args; i++, cb.n_kw++) {
+        cb.args[i] = kw_args[cb.n_kw].table->key;
+        cb.args[i += 1] = kw_args[cb.n_kw].table->value;
+    }
+    if (!callback) {
+        callback = (atexit_callback_t *)m_realloc(callback, sizeof(cb));
+    }
+    callback[callback_len++] = cb;
+}
+
+void shared_module_atexit_unregister(const mp_obj_t *func) {
+    for (size_t i = 0; i < callback_len; i++) {
+        if (callback[i].func == func) {
+            callback[i].n_pos = 0;
+            callback[i].n_kw = 0;
+            callback[i].func = mp_const_none;
+            callback[i].args = NULL;
+        }
+    }
+}
+
+void shared_module_atexit_execute(void) {
+    if (callback) {
+        for (size_t i = 0; i < callback_len; i++) {
+            if (callback[i].func != mp_const_none) {
+                mp_call_function_n_kw(callback[i].func, callback[i].n_pos, callback[i].n_kw, callback[i].args);
+            }
+        }
+    }
+}

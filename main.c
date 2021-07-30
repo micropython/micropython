@@ -70,6 +70,10 @@
 #include "shared-bindings/alarm/__init__.h"
 #endif
 
+#if CIRCUITPY_ATEXIT
+#include "shared-module/atexit/__init__.h"
+#endif
+
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
@@ -253,6 +257,11 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
 
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
+
+    #if CIRCUITPY_ATEXIT
+    atexit_reset();
+    #endif
+
     // Turn off the display and flush the filesystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
