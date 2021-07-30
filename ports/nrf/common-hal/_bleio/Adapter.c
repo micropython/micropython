@@ -952,8 +952,11 @@ bool common_hal_bleio_adapter_is_bonded_to_central(bleio_adapter_obj_t *self) {
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
-    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
+    // We divide by size_t so that we can scan each 32-bit aligned value to see
+    // if it is a pointer. This allows us to change the structs without worrying
+    // about collecting new pointers.
+    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / (sizeof(size_t)));
+    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / (sizeof(size_t)));
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {

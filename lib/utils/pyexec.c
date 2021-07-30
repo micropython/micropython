@@ -165,7 +165,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     }
     if (result != NULL) {
         result->return_code = ret;
+        #if CIRCUITPY_ALARM
+        // Don't set the exception object if we exited for deep sleep.
+        if (ret != 0 && ret != PYEXEC_DEEP_SLEEP) {
+        #else
         if (ret != 0) {
+            #endif
             mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
             result->exception = return_value;
             result->exception_line = -1;
