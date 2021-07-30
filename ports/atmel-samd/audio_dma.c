@@ -131,7 +131,7 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
     uint8_t *buffer;
     uint32_t buffer_length;
     audioio_get_buffer_result_t get_buffer_result =
-        audiosample_get_buffer(dma->sample, dma->single_channel, dma->audio_channel,
+        audiosample_get_buffer(dma->sample, dma->single_channel_output, dma->audio_channel,
             &buffer, &buffer_length);
 
     DmacDescriptor *descriptor = dma->second_descriptor;
@@ -155,7 +155,7 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
     descriptor->SRCADDR.reg = ((uint32_t)output_buffer) + output_buffer_length;
     if (get_buffer_result == GET_BUFFER_DONE) {
         if (dma->loop) {
-            audiosample_reset_buffer(dma->sample, dma->single_channel, dma->audio_channel);
+            audiosample_reset_buffer(dma->sample, dma->single_channel_output, dma->audio_channel);
         } else {
             descriptor->DESCADDR.reg = 0;
         }
@@ -183,7 +183,7 @@ static void setup_audio_descriptor(DmacDescriptor *descriptor, uint8_t beat_size
 audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     mp_obj_t sample,
     bool loop,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t audio_channel,
     bool output_signed,
     uint32_t output_register_address,
@@ -195,7 +195,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
 
     dma->sample = sample;
     dma->loop = loop;
-    dma->single_channel = single_channel;
+    dma->single_channel_output = single_channel_output;
     dma->audio_channel = audio_channel;
     dma->dma_channel = dma_channel;
     dma->signed_to_unsigned = false;
@@ -203,12 +203,12 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     dma->second_descriptor = NULL;
     dma->spacing = 1;
     dma->first_descriptor_free = true;
-    audiosample_reset_buffer(sample, single_channel, audio_channel);
+    audiosample_reset_buffer(sample, single_channel_output, audio_channel);
 
     bool single_buffer;
     bool samples_signed;
     uint32_t max_buffer_length;
-    audiosample_get_buffer_structure(sample, single_channel, &single_buffer, &samples_signed,
+    audiosample_get_buffer_structure(sample, single_channel_output, &single_buffer, &samples_signed,
         &max_buffer_length, &dma->spacing);
     uint8_t output_spacing = dma->spacing;
     if (output_signed != samples_signed) {
@@ -254,12 +254,12 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     } else {
         dma->beat_size = 1;
         dma->bytes_per_sample = 1;
-        if (single_channel) {
+        if (single_channel_output) {
             output_register_address += 1;
         }
     }
     // Transfer both channels at once.
-    if (!single_channel && audiosample_channel_count(sample) == 2) {
+    if (!single_channel_output && audiosample_channel_count(sample) == 2) {
         dma->beat_size *= 2;
     }
 

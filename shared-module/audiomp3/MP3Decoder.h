@@ -58,14 +58,14 @@ typedef struct {
 
 // These are not available from Python because it may be called in an interrupt.
 void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel);
 audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *self,
-    bool single_channel,
+    bool single_channel_output,
     uint8_t channel,
     uint8_t **buffer,
     uint32_t *buffer_length);                                                     // length in bytes
-void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool single_channel,
+void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool single_channel_output,
     bool *single_buffer, bool *samples_signed,
     uint32_t *max_buffer_length, uint8_t *spacing);
 

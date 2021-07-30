@@ -56,7 +56,7 @@
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
 //|         :param Bitmap bitmap: The bitmap storing one or more tiles.
-//|         :param ColorConverter or Palette pixel_shader: The pixel shader that produces colors from values
+//|         :param ColorConverter,Palette pixel_shader: The pixel shader that produces colors from values
 //|         :param int width: Width of the grid in tiles.
 //|         :param int height: Height of the grid in tiles.
 //|         :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
@@ -394,8 +394,11 @@ STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_l
 
 const mp_obj_type_t displayio_tilegrid_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TileGrid,
     .make_new = displayio_tilegrid_make_new,
-    .subscr = tilegrid_subscr,
     .locals_dict = (mp_obj_dict_t *)&displayio_tilegrid_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .subscr = tilegrid_subscr,
+        ),
 };

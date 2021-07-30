@@ -31,7 +31,6 @@
 #include "supervisor/usb.h"
 
 #include "py/runtime.h"
-#include "shared-module/network/__init__.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/port.h"
 

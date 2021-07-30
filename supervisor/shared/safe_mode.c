@@ -28,7 +28,7 @@
 
 #include "mphalport.h"
 
-#if defined(MICROPY_HW_LED_STATUS) || defined(CIRCUITPY_BOOT_BUTTON)
+#if defined(CIRCUITPY_BOOT_BUTTON)
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #endif
 #include "shared-bindings/microcontroller/Processor.h"
@@ -55,12 +55,15 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         port_set_saved_word(SAFE_MODE_DATA_GUARD);
         current_safe_mode = safe_mode;
         return safe_mode;
+    } else {
+        current_safe_mode = 0;
     }
 
     const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
     if (reset_reason != RESET_REASON_POWER_ON &&
         reset_reason != RESET_REASON_RESET_PIN &&
-        reset_reason != RESET_REASON_UNKNOWN) {
+        reset_reason != RESET_REASON_UNKNOWN &&
+        reset_reason != RESET_REASON_SOFTWARE) {
         return NO_SAFE_MODE;
     }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
@@ -79,8 +82,8 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     bool boot_in_safe_mode = false;
     while (diff < 1000) {
         #ifdef CIRCUITPY_STATUS_LED
-        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-        bool led_on = diff > 100 && diff / 100 != 2 && diff / 100 != 4;
+        // Blink on for 100, off for 100
+        bool led_on = (diff % 250) < 125;
         if (led_on) {
             new_status_color(SAFE_MODE);
         } else {
@@ -102,7 +105,8 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     if (boot_in_safe_mode) {
         return USER_SAFE_MODE;
     }
-    port_set_saved_word(SAFE_MODE_DATA_GUARD);
+    // Restore the original state of the saved word if no reset occured during our wait period.
+    port_set_saved_word(reset_state);
     return NO_SAFE_MODE;
 }
 

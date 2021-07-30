@@ -92,6 +92,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
 
+    // Ensure the object starts in its deinit state.
+    self->clock_pin = NO_PIN;
+
     // Special case for SAMR21 boards. (feather_radiofruit_zigbee)
     #if defined(PIN_PC19F_SERCOM4_PAD0)
     if (miso == &pin_PC19) {

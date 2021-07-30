@@ -49,14 +49,6 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
     return common_hal_mcu_pin_number(result);
 }
 
-STATIC void validate_pins(qstr what, uint8_t *pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
-    mcu_pin_obj_t *pins[max_pins];
-    validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
-    for (mp_int_t i = 0; i < *count_out; i++) {
-        pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
-    }
-}
-
 STATIC void claim_and_never_reset_pin(mp_obj_t pin) {
     common_hal_mcu_pin_claim(pin);
     common_hal_never_reset_pin(pin);
@@ -447,9 +439,12 @@ STATIC mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_
 
 const mp_obj_type_t rgbmatrix_RGBMatrix_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_RGBMatrix,
-    .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
-    .make_new = rgbmatrix_rgbmatrix_make_new,
-    .protocol = &rgbmatrix_rgbmatrix_proto,
     .locals_dict = (mp_obj_dict_t *)&rgbmatrix_rgbmatrix_locals_dict,
+    .make_new = rgbmatrix_rgbmatrix_make_new,
+    MP_TYPE_EXTENDED_FIELDS(
+        .buffer_p = { .get_buffer = rgbmatrix_rgbmatrix_get_buffer, },
+        .protocol = &rgbmatrix_rgbmatrix_proto,
+        ),
 };

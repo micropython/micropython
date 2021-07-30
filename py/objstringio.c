@@ -246,13 +246,16 @@ STATIC const mp_stream_p_t stringio_stream_p = {
 
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_StringIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stringio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &stringio_stream_p,
+        ),
 };
 
 #if MICROPY_PY_IO_BYTESIO
@@ -265,13 +268,16 @@ STATIC const mp_stream_p_t bytesio_stream_p = {
 
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_BytesIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &bytesio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &bytesio_stream_p,
+        ),
 };
 #endif
 

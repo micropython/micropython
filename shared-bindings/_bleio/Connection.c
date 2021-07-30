@@ -205,7 +205,7 @@ STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, bleio_connection_get_connection_interval);
 
-//|     attribute: int
+//|     max_packet_length: int
 //|     """The maximum number of data bytes that can be sent in a single transmission,
 //|     not including overhead bytes.
 //|
@@ -266,7 +266,10 @@ STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_local
 
 const mp_obj_type_t bleio_connection_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Connection,
     .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
-    .unary_op = mp_generic_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        ),
 };

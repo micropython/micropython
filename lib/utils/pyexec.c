@@ -165,9 +165,14 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     }
     if (result != NULL) {
         result->return_code = ret;
+        #if CIRCUITPY_ALARM
+        // Don't set the exception object if we exited for deep sleep.
+        if (ret != 0 && ret != PYEXEC_DEEP_SLEEP) {
+        #else
         if (ret != 0) {
+            #endif
             mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
-            result->exception_type = mp_obj_get_type(return_value);
+            result->exception = return_value;
             result->exception_line = -1;
 
             if (mp_obj_is_exception_instance(return_value)) {
@@ -622,8 +627,8 @@ friendly_repl_reset:
 
         // If the GC is locked at this point there is no way out except a reset,
         // so force the GC to be unlocked to help the user debug what went wrong.
-        if (MP_STATE_MEM(gc_lock_depth) != 0) {
-            MP_STATE_MEM(gc_lock_depth) = 0;
+        if (MP_STATE_THREAD(gc_lock_depth) != 0) {
+            MP_STATE_THREAD(gc_lock_depth) = 0;
         }
 
         vstr_reset(&line);

@@ -33,6 +33,7 @@ dist/
 build/
 bin/
 circuitpython-stubs/
+test-stubs/
 build-*/
 
 # Test failure outputs

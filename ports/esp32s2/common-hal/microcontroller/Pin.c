@@ -31,7 +31,7 @@
 #include "py/mphal.h"
 
 #include "components/driver/include/driver/gpio.h"
-#include "components/soc/include/hal/gpio_hal.h"
+#include "components/hal/include/hal/gpio_hal.h"
 
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
@@ -94,6 +94,13 @@ void reset_all_pins(void) {
     }
     in_use[0] = 0;
     in_use[1] = 0;
+}
+
+void claim_pin_number(gpio_num_t pin_number) {
+    if (pin_number == NO_PIN) {
+        return;
+    }
+    in_use[pin_number / 32] |= (1 << (pin_number % 32));
 }
 
 void claim_pin(const mcu_pin_obj_t *pin) {

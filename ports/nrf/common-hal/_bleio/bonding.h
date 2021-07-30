@@ -81,5 +81,8 @@ void bonding_reset(void);
 void bonding_clear_keys(bonding_keys_t *bonding_keys);
 bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv);
 bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_keys);
+const ble_gap_enc_key_t *bonding_load_peer_encryption_key(bool is_central, const ble_gap_addr_t *peer);
+size_t bonding_load_identities(bool is_central, const ble_gap_id_key_t **keys, size_t max_length);
+size_t bonding_peripheral_bond_count(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H

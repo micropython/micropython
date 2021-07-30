@@ -157,13 +157,15 @@ static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
-    .call = gen_wrap_call,
-    .unary_op = mp_generic_unary_op,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
     #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = gen_wrap_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 
@@ -412,10 +414,13 @@ STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_t
 
 const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .unary_op = mp_generic_unary_op,
-    .getiter = mp_identity_getiter,
-    .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        .getiter = mp_identity_getiter,
+        .iternext = gen_instance_iternext,
+        ),
 };

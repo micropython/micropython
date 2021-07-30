@@ -32,7 +32,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_P0_06) },
     { MP_ROM_QSTR(MP_QSTR_D11), MP_ROM_PTR(&pin_P0_08) },
     { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_P1_09) },
-    { MP_ROM_QSTR(MP_QSTR_D13),MP_ROM_PTR(&pin_P0_14) },
+    { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_P0_14) },
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_P0_15) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_P0_16) },
@@ -44,6 +44,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_P0_11) },
 
     { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P1_13) },
+    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_P1_13) },
     { MP_ROM_QSTR(MP_QSTR_RED_LED), MP_ROM_PTR(&pin_P1_13) },
 
     { MP_ROM_QSTR(MP_QSTR_BLUE_LED), MP_ROM_PTR(&pin_P1_15) },

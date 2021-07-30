@@ -34,8 +34,6 @@
 
 #include "supervisor/shared/translate.h"
 
-// type check is done on getiter method to allow tuple, namedtuple, attrtuple
-#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
 
 /******************************************************************************/
 /* tuple                                                                      */
@@ -110,7 +108,7 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
     const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    if (another_type->getiter != mp_obj_tuple_getiter) {
+    if (mp_type_get_getiter_slot(another_type) != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
         another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
@@ -186,7 +184,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
-        if (self->base.type->subscr != &mp_obj_tuple_subscr) {
+        if (mp_type_get_subscr_slot(self->base.type) != &mp_obj_tuple_subscr) {
             self = mp_obj_cast_to_native_base(self_in, &mp_type_tuple);
         }
 
@@ -231,14 +229,17 @@ STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
 const mp_obj_type_t mp_type_tuple = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_tuple,
     .print = mp_obj_tuple_print,
     .make_new = mp_obj_tuple_make_new,
-    .unary_op = mp_obj_tuple_unary_op,
-    .binary_op = mp_obj_tuple_binary_op,
-    .subscr = mp_obj_tuple_subscr,
-    .getiter = mp_obj_tuple_getiter,
     .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        ),
 };
 
 // the zero-length tuple

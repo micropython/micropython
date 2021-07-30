@@ -72,7 +72,9 @@ typedef struct _asm_arm_t {
     uint stack_adjust;
 } asm_arm_t;
 
-void asm_arm_end_pass(asm_arm_t *as);
+static inline void asm_arm_end_pass(asm_arm_t *as) {
+    (void)as;
+}
 
 void asm_arm_entry(asm_arm_t *as, int num_locals);
 void asm_arm_exit(asm_arm_t *as);

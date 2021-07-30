@@ -50,6 +50,7 @@ typedef const void *mp_const_obj_t;
 // This mp_obj_type_t struct is a concrete MicroPython object which holds info
 // about a type.  See below for actual definition of the struct.
 typedef struct _mp_obj_type_t mp_obj_type_t;
+typedef struct _mp_obj_full_type_t mp_obj_full_type_t;
 
 // Anything that wants to be a concrete MicroPython object must have mp_obj_base_t
 // as its first member (small ints, qstr objs and inline floats are not concrete).
@@ -515,6 +516,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 #define MP_TYPE_FLAG_BINDS_SELF (0x0020)
 #define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
+#define MP_TYPE_FLAG_EXTENDED (0x0080) // contains the 'ext' fields
 
 typedef enum {
     PRINT_STR = 0,
@@ -534,6 +536,8 @@ typedef struct _mp_obj_iter_buf_t {
 // It's rounded up in case mp_obj_base_t is smaller than mp_obj_t (eg for OBJ_REPR_D).
 #define MP_OBJ_ITER_BUF_NSLOTS ((sizeof(mp_obj_iter_buf_t) + sizeof(mp_obj_t) - 1) / sizeof(mp_obj_t))
 
+struct _mp_buffer_info_t;
+
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
 typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -542,6 +546,7 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+typedef mp_int_t (*mp_getbuffer_fun_t)(mp_obj_t obj, struct _mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -553,27 +558,12 @@ typedef struct _mp_buffer_info_t {
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
 typedef struct _mp_buffer_p_t {
-    mp_int_t (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+    mp_getbuffer_fun_t get_buffer;
 } mp_buffer_p_t;
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
-struct _mp_obj_type_t {
-    // A type is an object so must start with this entry, which points to mp_type_type.
-    mp_obj_base_t base;
-
-    // Flags associated with this type.
-    uint16_t flags;
-
-    // The name of this type, a qstr.
-    uint16_t name;
-
-    // Corresponds to __repr__ and __str__ special methods.
-    mp_print_fun_t print;
-
-    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
-    mp_make_new_fun_t make_new;
-
+struct _mp_obj_type_ext {
     // Corresponds to __call__ special method, ie T(...).
     mp_call_fun_t call;
 
@@ -581,19 +571,6 @@ struct _mp_obj_type_t {
     // Can return MP_OBJ_NULL if the operation is not supported.
     mp_unary_op_fun_t unary_op;
     mp_binary_op_fun_t binary_op;
-
-    // Implements load, store and delete attribute.
-    //
-    // dest[0] = MP_OBJ_NULL means load
-    //  return: for fail, do nothing
-    //          for attr, dest[0] = value
-    //          for method, dest[0] = method, dest[1] = self
-    //
-    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
-    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
-    //  return: for fail, do nothing
-    //          for success set dest[0] = MP_OBJ_NULL
-    mp_attr_fun_t attr;
 
     // Implements load, store and delete subscripting:
     //  - value = MP_OBJ_SENTINEL means load
@@ -616,6 +593,38 @@ struct _mp_obj_type_t {
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
+};
+
+struct _mp_obj_type_t {
+    // A type is an object so must start with this entry, which points to mp_type_type.
+    mp_obj_base_t base;
+
+    // Flags associated with this type.
+    uint16_t flags;
+    // The name of this type, a qstr.
+    uint16_t name;
+
+    // A dict mapping qstrs to objects local methods/constants/etc.
+    struct _mp_obj_dict_t *locals_dict;
+
+    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
+    mp_make_new_fun_t make_new;
+
+    // Corresponds to __repr__ and __str__ special methods.
+    mp_print_fun_t print;
+
+    // Implements load, store and delete attribute.
+    //
+    // dest[0] = MP_OBJ_NULL means load
+    //  return: for fail, do nothing
+    //          for attr, dest[0] = value
+    //          for method, dest[0] = method, dest[1] = self
+    //
+    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
+    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
+    //  return: for fail, do nothing
+    //          for success set dest[0] = MP_OBJ_NULL
+    mp_attr_fun_t attr;
 
     // A pointer to the parents of this type:
     //  - 0 parents: pointer is NULL (object is implicitly the single parent)
@@ -623,9 +632,53 @@ struct _mp_obj_type_t {
     //  - 2 or more parents: pointer to a tuple object containing the parent types
     const void *parent;
 
-    // A dict mapping qstrs to objects local methods/constants/etc.
-    struct _mp_obj_dict_t *locals_dict;
+#define MP_TYPE_EXTENDED_FIELDS(...) .ext = {{ __VA_ARGS__ }}
+    struct _mp_obj_type_ext ext[];
 };
+
+// _mp_obj_full_type_t must match _mp_obj_type_t exactly, except that the `ext` field
+// is a 1-element array rather than a flexible array member.
+struct _mp_obj_full_type_t {
+    mp_obj_base_t base;
+    uint16_t flags;
+    uint16_t name;
+    struct _mp_obj_dict_t *locals_dict;
+    mp_make_new_fun_t make_new;
+    mp_print_fun_t print;
+    mp_attr_fun_t attr;
+    const void *parent;
+    struct _mp_obj_type_ext ext[1];
+};
+
+
+// If the type object in question is known to have the extended fields, you can
+// refer to type->MP_TYPE_CALL.  Otherwise, you have to use mp_type_get_call_slot(type)
+// The same goes for other fields within the extended region.
+#define MP_TYPE_CALL ext[0].call
+#define MP_TYPE_UNARY_OP ext[0].unary_op
+#define MP_TYPE_BINARY_OP ext[0].binary_op
+#define MP_TYPE_SUBSCR ext[0].subscr
+#define MP_TYPE_GETITER ext[0].getiter
+#define MP_TYPE_ITERNEXT ext[0].iternext
+#define MP_TYPE_GET_BUFFER ext[0].buffer_p.get_buffer
+#define MP_TYPE_PROTOCOL ext[0].protocol
+extern mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *);
+extern mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *);
+extern mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *);
+extern mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *);
+extern mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *);
+extern mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *);
+extern mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *);
+extern const void *mp_type_get_protocol_slot(const mp_obj_type_t *);
+
+// These fields ended up not being placed in the extended area, but accessors
+// were created for them anyway.
+extern mp_attr_fun_t mp_type_get_attr_slot(const mp_obj_type_t *);
+extern const void *mp_type_get_parent_slot(const mp_obj_type_t *);
+
+// Return the size of a type object, which can be one of two lengths depending whether it has
+// the extended fields or not.
+extern size_t mp_type_size(const mp_obj_type_t *);
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
@@ -752,7 +805,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // check for more specific object types.
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
-#define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (&(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name) == &((t)->name))) // this does not work for checking int, str or fun; use below macros for that
 #if MICROPY_OBJ_IMMEDIATE_OBJS
 // bool's are immediates, not real objects, so test for the 2 possible values.
 #define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
@@ -761,9 +814,11 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 #endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
-#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
+#define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && mp_type_get_binary_op_slot(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type) == mp_obj_str_binary_op))
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
+// type check is done on getiter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (mp_type_get_getiter_slot(mp_obj_get_type(o)) == mp_obj_tuple_getiter)
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
@@ -792,8 +847,13 @@ extern uint64_t float_to_uint64(float f);
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+#define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
+#define mp_obj_new_exception_msg_varg(exc_type, ...) mp_obj_new_exception(exc_type)
+#else
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+#endif
 #ifdef va_start
 mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 #endif
@@ -817,6 +877,7 @@ mp_obj_t mp_obj_new_module(qstr module_name);
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
 const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
+const mp_obj_full_type_t *mp_obj_get_full_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 #define mp_obj_get_type_qstr(o_in) (mp_obj_get_type((o_in))->name)
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects

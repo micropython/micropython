@@ -8,10 +8,6 @@
 #define SPI_FLASH_SCK_PIN           &pin_PA19
 #define SPI_FLASH_CS_PIN            &pin_PA17
 
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define CALIBRATE_CRYSTALLESS 1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA08)

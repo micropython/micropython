@@ -137,6 +137,14 @@ bool common_hal_storage_disable_usb_drive(void) {
 bool common_hal_storage_enable_usb_drive(void) {
     return usb_drive_set_enabled(true);
 }
+#else
+bool common_hal_storage_disable_usb_drive(void) {
+    return false;
+}
+
+bool common_hal_storage_enable_usb_drive(void) {
+    return false;
+}
 #endif // CIRCUITPY_USB_MSC
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {

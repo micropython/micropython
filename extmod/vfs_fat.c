@@ -264,7 +264,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
-/// Change current directory.
+// Change current directory.
 STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path;
@@ -280,7 +280,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 
-/// Get the current directory.
+// Get the current directory.
 STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
@@ -292,8 +292,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 
-/// \function stat(path)
-/// Get the status of a file or directory.
+// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
@@ -475,10 +474,13 @@ STATIC const mp_vfs_proto_t fat_vfs_proto = {
 
 const mp_obj_type_t mp_fat_vfs_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
-    .protocol = &fat_vfs_proto,
     .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &fat_vfs_proto,
+        ),
 
 };
 

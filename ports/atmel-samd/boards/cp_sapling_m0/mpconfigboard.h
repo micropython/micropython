@@ -3,10 +3,6 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA15)
 
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1
 #define IGNORE_PIN_PA04     1

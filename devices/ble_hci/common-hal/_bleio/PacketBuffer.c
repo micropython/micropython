@@ -148,7 +148,8 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     return ret;
 }
 
-mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
+mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self,
+    const uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
     if (self->outgoing[0] == NULL) {
         mp_raise_bleio_BluetoothError(translate("Writes not supported on Characteristic"));
     }

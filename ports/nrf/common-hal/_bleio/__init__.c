@@ -36,7 +36,7 @@
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
-#include "supervisor/shared/bluetooth.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/_bleio/bonding.h"
@@ -94,30 +94,24 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
-bool vm_used_ble;
-
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
+    // Set this explicitly to save data.
+    common_hal_bleio_adapter_obj.base.type = &bleio_adapter_type;
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
+
+    supervisor_stop_bluetooth();
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
-    if (!vm_used_ble) {
-        // No user-code BLE operations were done, so we can maintain the supervisor state.
-        return;
-    }
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     bonding_reset();
     supervisor_start_bluetooth();
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter
-// It currently only has properties and no state
-bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
-    .base = {
-        .type = &bleio_adapter_type,
-    },
-};
+// It currently only has properties and no state. Inited by bleio_reset
+bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {

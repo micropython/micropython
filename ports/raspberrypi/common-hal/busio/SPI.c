@@ -212,15 +212,6 @@ static bool _transfer(busio_spi_obj_t *self,
         while (dma_channel_is_busy(chan_rx) || dma_channel_is_busy(chan_tx)) {
             // TODO: We should idle here until we get a DMA interrupt or something else.
             RUN_BACKGROUND_TASKS;
-            if (mp_hal_is_interrupted()) {
-                if (dma_channel_is_busy(chan_rx)) {
-                    dma_channel_abort(chan_rx);
-                }
-                if (dma_channel_is_busy(chan_tx)) {
-                    dma_channel_abort(chan_tx);
-                }
-                break;
-            }
         }
     }
 
@@ -233,7 +224,7 @@ static bool _transfer(busio_spi_obj_t *self,
         dma_channel_unclaim(chan_tx);
     }
 
-    if (!use_dma && !mp_hal_is_interrupted()) {
+    if (!use_dma) {
         // Use software for small transfers, or if couldn't claim two DMA channels
         // Never have more transfers in flight than will fit into the RX FIFO,
         // else FIFO will overflow if this code is heavily interrupted.
@@ -241,7 +232,7 @@ static bool _transfer(busio_spi_obj_t *self,
         size_t rx_remaining = len;
         size_t tx_remaining = len;
 
-        while (!mp_hal_is_interrupted() && (rx_remaining || tx_remaining)) {
+        while (rx_remaining || tx_remaining) {
             if (tx_remaining && spi_is_writable(self->peripheral) && rx_remaining - tx_remaining < fifo_depth) {
                 spi_get_hw(self->peripheral)->dr = (uint32_t)*data_out;
                 // Increment only if the buffer is the transfer length. It's 1 otherwise.

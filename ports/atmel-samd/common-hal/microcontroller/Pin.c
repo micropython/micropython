@@ -63,13 +63,13 @@ void reset_all_pins(void) {
         pin_mask[i] &= ~never_reset_pins[i];
     }
 
-    gpio_set_port_direction(GPIO_PORTA, pin_mask[0] & ~MICROPY_PORT_A, GPIO_DIRECTION_OFF);
-    gpio_set_port_direction(GPIO_PORTB, pin_mask[1] & ~MICROPY_PORT_B, GPIO_DIRECTION_OFF);
+    gpio_set_port_direction(GPIO_PORTA, pin_mask[0], GPIO_DIRECTION_OFF);
+    gpio_set_port_direction(GPIO_PORTB, pin_mask[1], GPIO_DIRECTION_OFF);
     #if PORT_BITS > 64
-    gpio_set_port_direction(GPIO_PORTC, pin_mask[2] & ~MICROPY_PORT_C, GPIO_DIRECTION_OFF);
+    gpio_set_port_direction(GPIO_PORTC, pin_mask[2], GPIO_DIRECTION_OFF);
     #endif
     #if PORT_BITS > 96
-    gpio_set_port_direction(GPIO_PORTD, pin_mask[3] & ~MICROPY_PORT_D, GPIO_DIRECTION_OFF);
+    gpio_set_port_direction(GPIO_PORTD, pin_mask[3], GPIO_DIRECTION_OFF);
     #endif
 
     // Configure SWD. SWDIO will be automatically switched on PA31 when a signal is input on

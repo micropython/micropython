@@ -139,10 +139,7 @@ STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         mp_raise_ValueError(translate("port must be >= 0"));
     }
 
-    bool ok = common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
-    if (!ok) {
-        mp_raise_OSError(0);
-    }
+    common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
 
     return mp_const_none;
 }
@@ -320,7 +317,10 @@ STATIC MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict
 
 const mp_obj_type_t ssl_sslsocket_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_SSLSocket,
     .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
-    .unary_op = ssl_sslsocket_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = ssl_sslsocket_unary_op,
+        )
 };

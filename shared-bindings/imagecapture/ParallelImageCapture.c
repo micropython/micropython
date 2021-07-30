@@ -39,15 +39,14 @@
 //|     def __init__(
 //|         self,
 //|         *,
-//|         data0: microcontroller.Pin,
-//|         data_count: int=8,
+//|         data_pins: List[microcontroller.Pin],
 //|         clock: microcontroller.Pin,
 //|         vsync: Optional[microcontroller.Pin],
 //|         href: Optional[microcontroller.Pin],
-//|     ):
+//|     ) -> None:
 //|         """Create a parallel image capture object
-//|         :param microcontroller.Pin data0: The first data pin.  Additional data pins are assumed to follow this pin directly in the microcontroller's standard pin ordering.
-//|         :param int data_count: The number of data pins.
+//|
+//|         :param List[microcontroller.Pin] data_pins: The data pins.
 //|         :param microcontroller.Pin clock: The pixel clock input.
 //|         :param microcontroller.Pin vsync: The vertical sync input, which has a negative-going pulse at the beginning of each frame.
 //|         :param microcontroller.Pin href: The horizontal reference input, which is high whenever the camera is transmitting valid pixel information.
@@ -55,11 +54,10 @@
 //|         ...
 //|
 STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data0, ARG_data_count, ARG_clock, ARG_vsync, ARG_href,
+    enum { ARG_data_pins, ARG_clock, ARG_vsync, ARG_href,
            NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
-        { MP_QSTR_data_count, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 8 } },
+        { MP_QSTR_data_pins, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = MP_ROM_NONE } },
         { MP_QSTR_clock, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_vsync, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_href, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
@@ -68,7 +66,10 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
+    uint8_t pins[32];
+    uint8_t pin_count;
+    validate_pins(MP_QSTR_data, pins, MP_ARRAY_SIZE(pins), args[ARG_data_pins].u_obj, &pin_count);
+
     mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
     mcu_pin_obj_t *vsync = validate_obj_is_free_pin_or_none(args[ARG_vsync].u_obj);
     mcu_pin_obj_t *href = validate_obj_is_free_pin_or_none(args[ARG_href].u_obj);
@@ -76,7 +77,7 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     imagecapture_parallelimagecapture_obj_t *self = m_new_obj(imagecapture_parallelimagecapture_obj_t);
     self->base.type = &imagecapture_parallelimagecapture_type;
 
-    common_hal_imagecapture_parallelimagecapture_construct(self, data0, clock, vsync, href, args[ARG_data_count].u_int);
+    common_hal_imagecapture_parallelimagecapture_construct(self, pins, pin_count, clock, vsync, href);
 
     return self;
 }

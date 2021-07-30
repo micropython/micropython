@@ -238,7 +238,10 @@ STATIC MP_DEFINE_CONST_DICT(ps2io_ps2_locals_dict, ps2io_ps2_locals_dict_table);
 const mp_obj_type_t ps2io_ps2_type = {
     { &mp_type_type },
     .name = MP_QSTR_Ps2,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .make_new = ps2io_ps2_make_new,
-    .unary_op = ps2_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = ps2_unary_op,
+        ),
     .locals_dict = (mp_obj_dict_t *)&ps2io_ps2_locals_dict,
 };

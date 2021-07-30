@@ -40,6 +40,8 @@
 #include "shared-bindings/_bleio/PacketBuffer.h"
 #include "supervisor/shared/tick.h"
 
+#include "supervisor/shared/bluetooth/serial.h"
+
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
     if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
         // This shouldn't happen but can if our buffer size was much smaller than
@@ -76,7 +78,7 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
             ble_gattc_write_params_t write_params = {
                 .write_op = self->write_type,
                 .handle = self->characteristic->handle,
-                .p_value = self->outgoing[self->pending_index],
+                .p_value = (const uint8_t *)self->outgoing[self->pending_index],
                 .len = self->pending_size,
             };
 
@@ -89,7 +91,7 @@ STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
                 .type = self->write_type,
                 .offset = 0,
                 .p_len = &hvx_len,
-                .p_data = self->outgoing[self->pending_index],
+                .p_data = (const uint8_t *)self->outgoing[self->pending_index],
             };
             err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
         }
@@ -173,6 +175,25 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
+        case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
+            if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+                break;
+            }
+            uint16_t conn_handle = ble_evt->evt.gatts_evt.conn_handle;
+            // Check to see if the bond restored the HVX state.
+            uint16_t cccd;
+            ble_gatts_value_t value;
+            value.len = sizeof(uint16_t);
+            value.offset = 0;
+            value.p_value = (uint8_t *)&cccd;
+            sd_ble_gatts_value_get(conn_handle, self->characteristic->cccd_handle, &value);
+            if (cccd & BLE_GATT_HVX_NOTIFICATION) {
+                self->conn_handle = conn_handle;
+            }
+            break;
+        }
+        case BLE_GAP_EVT_CONNECTED:
+            break;
         case BLE_GAP_EVT_DISCONNECTED:
             if (self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
                 self->conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -188,12 +209,16 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
     return true;
 }
 
-void common_hal_bleio_packet_buffer_construct(
+
+void _common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
-    size_t buffer_size, size_t max_packet_size) {
+    uint32_t *incoming_buffer, size_t incoming_buffer_size,
+    uint32_t *outgoing_buffer1, uint32_t *outgoing_buffer2, size_t max_packet_size,
+    void *static_handler_entry) {
 
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
+    self->max_packet_size = max_packet_size;
     bleio_characteristic_properties_t incoming = self->characteristic->props & (CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_WRITE);
     bleio_characteristic_properties_t outgoing = self->characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE);
 
@@ -207,28 +232,25 @@ void common_hal_bleio_packet_buffer_construct(
         self->conn_handle = BLE_CONN_HANDLE_INVALID;
     }
 
-    // Cap the packet size to our implementation limits.
-    self->max_packet_size = MIN(max_packet_size, BLE_GATTS_VAR_ATTR_LEN_MAX - 3);
-
     if (incoming) {
-        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + self->max_packet_size), false)) {
-            mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
-        }
+        self->ringbuf.buf = (uint8_t *)incoming_buffer;
+        self->ringbuf.size = incoming_buffer_size;
+        self->ringbuf.iget = 0;
+        self->ringbuf.iput = 0;
     }
 
-    if (outgoing) {
-        self->packet_queued = false;
-        self->pending_index = 0;
-        self->pending_size = 0;
-        self->outgoing[0] = m_malloc(self->max_packet_size, false);
-        self->outgoing[1] = m_malloc(self->max_packet_size, false);
-    } else {
-        self->outgoing[0] = NULL;
-        self->outgoing[1] = NULL;
-    }
+    self->packet_queued = false;
+    self->pending_index = 0;
+    self->pending_size = 0;
+    self->outgoing[0] = outgoing_buffer1;
+    self->outgoing[1] = outgoing_buffer2;
 
     if (self->client) {
-        ble_drv_add_event_handler(packet_buffer_on_ble_client_evt, self);
+        if (static_handler_entry != NULL) {
+            ble_drv_add_event_handler_entry((ble_drv_evt_handler_entry_t *)static_handler_entry, packet_buffer_on_ble_client_evt, self);
+        } else {
+            ble_drv_add_event_handler(packet_buffer_on_ble_client_evt, self);
+        }
         if (incoming) {
             // Prefer notify if both are available.
             if (incoming & CHAR_PROP_NOTIFY) {
@@ -245,7 +267,11 @@ void common_hal_bleio_packet_buffer_construct(
             }
         }
     } else {
-        ble_drv_add_event_handler(packet_buffer_on_ble_server_evt, self);
+        if (static_handler_entry != NULL) {
+            ble_drv_add_event_handler_entry((ble_drv_evt_handler_entry_t *)static_handler_entry, packet_buffer_on_ble_server_evt, self);
+        } else {
+            ble_drv_add_event_handler(packet_buffer_on_ble_server_evt, self);
+        }
         if (outgoing) {
             self->write_type = BLE_GATT_HVX_INDICATION;
             if (outgoing & CHAR_PROP_NOTIFY) {
@@ -253,12 +279,44 @@ void common_hal_bleio_packet_buffer_construct(
             }
         }
     }
+
+}
+
+void common_hal_bleio_packet_buffer_construct(
+    bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
+    size_t buffer_size, size_t max_packet_size) {
+
+    // Cap the packet size to our implementation limits.
+    max_packet_size = MIN(max_packet_size, BLE_GATTS_VAR_ATTR_LEN_MAX - 3);
+
+    bleio_characteristic_properties_t incoming = characteristic->props & (CHAR_PROP_WRITE_NO_RESPONSE | CHAR_PROP_WRITE);
+    bleio_characteristic_properties_t outgoing = characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE);
+    if (characteristic->service->is_remote) {
+        // Swap if we're the client.
+        bleio_characteristic_properties_t temp = incoming;
+        incoming = outgoing;
+        outgoing = temp;
+    }
+    size_t incoming_buffer_size = 0;
+    uint32_t *incoming_buffer = NULL;
+    if (incoming) {
+        incoming_buffer_size = buffer_size * (sizeof(uint16_t) + max_packet_size);
+        incoming_buffer = m_malloc(incoming_buffer_size, false);
+    }
+
+    uint32_t *outgoing1 = NULL;
+    uint32_t *outgoing2 = NULL;
+    if (outgoing) {
+        outgoing1 = m_malloc(max_packet_size, false);
+        outgoing2 = m_malloc(max_packet_size, false);
+    }
+    _common_hal_bleio_packet_buffer_construct(self, characteristic,
+        incoming_buffer, incoming_buffer_size,
+        outgoing1, outgoing2, max_packet_size,
+        NULL);
 }
 
 mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
-    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_ConnectionError(translate("Not connected"));
-    }
     if (ringbuf_num_filled(&self->ringbuf) < 2) {
         return 0;
     }
@@ -291,7 +349,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     return ret;
 }
 
-mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
+mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, const uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
     if (self->outgoing[0] == NULL) {
         mp_raise_bleio_BluetoothError(translate("Writes not supported on Characteristic"));
     }
@@ -330,14 +388,14 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, u
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
 
-    uint8_t *pending = self->outgoing[self->pending_index];
+    uint32_t *pending = self->outgoing[self->pending_index];
 
     if (self->pending_size == 0) {
         memcpy(pending, header, header_len);
         self->pending_size += header_len;
         num_bytes_written += header_len;
     }
-    memcpy(pending + self->pending_size, data, len);
+    memcpy(((uint8_t *)pending) + self->pending_size, data, len);
     self->pending_size += len;
     num_bytes_written += len;
 
@@ -423,6 +481,15 @@ mp_int_t common_hal_bleio_packet_buffer_get_outgoing_packet_length(bleio_packet_
         }
     }
     return MIN(self->characteristic->max_length, self->max_packet_size);
+}
+
+void common_hal_bleio_packet_buffer_flush(bleio_packet_buffer_obj_t *self) {
+    while ((self->pending_size != 0 ||
+            self->packet_queued) &&
+           self->conn_handle != BLE_CONN_HANDLE_INVALID &&
+           !mp_hal_is_interrupted()) {
+        RUN_BACKGROUND_TASKS;
+    }
 }
 
 bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {

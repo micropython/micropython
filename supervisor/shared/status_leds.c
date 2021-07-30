@@ -39,9 +39,14 @@ static digitalio_digitalinout_obj_t _status_power;
 
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
-    #include "shared-bindings/digitalio/DigitalInOut.h"
-    #include "shared-bindings/neopixel_write/__init__.h"
-static uint8_t status_neopixel_color[3];
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/neopixel_write/__init__.h"
+
+#ifndef MICROPY_HW_NEOPIXEL_COUNT
+#define MICROPY_HW_NEOPIXEL_COUNT (1)
+#endif
+
+static uint8_t status_neopixel_color[3 * MICROPY_HW_NEOPIXEL_COUNT];
 static digitalio_digitalinout_obj_t status_neopixel;
 
 #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
@@ -240,10 +245,12 @@ void new_status_color(uint32_t rgb) {
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
-    status_neopixel_color[0] = (rgb_adjusted >> 8) & 0xff;
-    status_neopixel_color[1] = (rgb_adjusted >> 16) & 0xff;
-    status_neopixel_color[2] = rgb_adjusted & 0xff;
-    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
+    for (size_t i = 0; i < MICROPY_HW_NEOPIXEL_COUNT; i++) {
+        status_neopixel_color[3 * i + 0] = (rgb_adjusted >> 8) & 0xff;
+        status_neopixel_color[3 * i + 1] = (rgb_adjusted >> 16) & 0xff;
+        status_neopixel_color[3 * i + 2] = rgb_adjusted & 0xff;
+    }
+    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3 * MICROPY_HW_NEOPIXEL_COUNT);
 
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     status_apa102_color[5] = rgb_adjusted & 0xff;
@@ -306,10 +313,12 @@ void init_rxtx_leds(void) {
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_RX)
     common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
     common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_never_reset(&rx_led);
     #endif
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_TX)
     common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
     common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_never_reset(&tx_led);
     #endif
 }
 

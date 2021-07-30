@@ -71,7 +71,7 @@ void board_init(void) {
         &pin_GPIO39, // TFT_DC Command or data
         &pin_GPIO40, // TFT_CS Chip select
         &pin_GPIO41, // TFT_RESET Reset
-        60000000, // Baudrate
+        5000000, // Baudrate
         0, // Polarity
         0); // Phase
 

@@ -48,6 +48,10 @@ msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
+msgid " not found.\n"
+msgstr ""
+
+#: main.c
 msgid " output:\n"
 msgstr ""
 
@@ -83,8 +87,20 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q length must be %q"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
@@ -95,7 +111,11 @@ msgstr ""
 msgid "%q must be 1-255"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
+msgid "%q must be >= %d"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
 
@@ -111,8 +131,24 @@ msgstr ""
 msgid "%q must be None or between 1 and len(report_descriptor)-1"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be a string"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+msgid "%q must be between %d and %d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must of type %q"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -357,6 +393,7 @@ msgstr ""
 msgid "All event channels in use"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr ""
@@ -560,10 +597,6 @@ msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
-msgid "Buffer too large and unable to allocate"
 msgstr ""
 
 #: shared-bindings/_bleio/PacketBuffer.c
@@ -841,6 +874,10 @@ msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data not supported with directed advertising"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr ""
 
@@ -941,7 +978,7 @@ msgstr ""
 msgid "Expected an alarm"
 msgstr ""
 
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr ""
@@ -1150,7 +1187,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Instruction %d jumps on pin"
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1238,6 +1275,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
@@ -1262,7 +1300,7 @@ msgstr ""
 msgid "Invalid buffer size"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
 msgstr ""
 
@@ -1280,6 +1318,11 @@ msgstr ""
 msgid "Invalid data_count %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
+#, c-format
+msgid "Invalid data_pins[%d]"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
 msgstr ""
@@ -1292,7 +1335,7 @@ msgstr ""
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/esp32s2/common-hal/busio/I2C.c
 msgid "Invalid frequency"
 msgstr ""
 
@@ -1463,7 +1506,7 @@ msgstr ""
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c
+#: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr ""
 
@@ -1629,7 +1672,6 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1672,6 +1714,10 @@ msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Only connectable advertisements can be directed"
+msgstr ""
+
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1693,6 +1739,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
@@ -1813,6 +1860,7 @@ msgid ""
 "constructor"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr ""
@@ -1987,6 +2035,10 @@ msgstr ""
 msgid "SPI Re-initialization error"
 msgstr ""
 
+#: ports/esp32s2/common-hal/busio/SPI.c
+msgid "SPI configuration failed"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
@@ -2025,6 +2077,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 #: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2169,6 +2222,7 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
 msgstr ""
@@ -2299,7 +2353,7 @@ msgstr ""
 msgid "Unknown system firmware error: %04x"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
@@ -2454,15 +2508,15 @@ msgstr ""
 msgid "arg must be user-type"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c
+#: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
 msgstr ""
 
@@ -2479,8 +2533,7 @@ msgstr ""
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
-#: extmod/ulab/code/numpy/transform/transform.c
+#: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
 msgid "arguments must be ndarrays"
 msgstr ""
 
@@ -2493,11 +2546,11 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr ""
 
@@ -2505,15 +2558,15 @@ msgstr ""
 msgid "attributes not supported yet"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "axis is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
+#: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
 msgstr ""
 
@@ -2535,6 +2588,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
+msgstr ""
+
+#: extmod/modurandom.c
+msgid "bits must be 32 or less"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
@@ -2578,7 +2635,7 @@ msgstr ""
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
 msgstr ""
 
@@ -2628,7 +2685,7 @@ msgid "can't cancel self"
 msgstr ""
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-#: shared-module/_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2731,6 +2788,10 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot assign new shape"
+msgstr ""
+
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
 msgstr ""
@@ -2827,19 +2888,19 @@ msgstr ""
 msgid "conversion to object"
 msgstr ""
 
-#: extmod/ulab/code/numpy/filter/filter.c
+#: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr ""
 
-#: extmod/ulab/code/numpy/filter/filter.c
+#: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/numpy/filter/filter.c
+#: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must not be empty"
 msgstr ""
 
-#: extmod/ulab/code/numpy/poly/poly.c
+#: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
@@ -2847,7 +2908,7 @@ msgstr ""
 msgid "couldn't determine SD card version"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
 msgstr ""
 
@@ -2897,15 +2958,15 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "differentiation order out of range"
 msgstr ""
 
-#: extmod/ulab/code/numpy/transform/transform.c
+#: extmod/ulab/code/numpy/transform.c
 msgid "dimensions do not match"
 msgstr ""
 
@@ -3032,7 +3093,7 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr ""
 
-#: extmod/ulab/code/numpy/vector/vector.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "first argument must be a callable"
 msgstr ""
 
@@ -3044,7 +3105,7 @@ msgstr ""
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/numpy/vector/vector.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -3060,7 +3121,7 @@ msgstr ""
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr ""
 
@@ -3148,6 +3209,10 @@ msgstr ""
 msgid "graphic must be 2048 bytes long"
 msgstr ""
 
+#: extmod/moduhashlib.c
+msgid "hash is final"
+msgstr ""
+
 #: extmod/moduheapq.c
 msgid "heap must be a list"
 msgstr ""
@@ -3184,7 +3249,7 @@ msgstr ""
 msgid "index is out of bounds"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c extmod/ulab/code/ulab_tools.c
+#: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
@@ -3226,7 +3291,7 @@ msgstr ""
 msgid "input arrays are not compatible"
 msgstr ""
 
-#: extmod/ulab/code/numpy/poly/poly.c
+#: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
 msgstr ""
 
@@ -3259,15 +3324,15 @@ msgstr ""
 msgid "input must be square matrix"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numpy/poly/poly.c
+#: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr ""
 
-#: extmod/ulab/code/numpy/poly/poly.c
+#: extmod/ulab/code/numpy/poly.c
 msgid "inputs are not iterable"
 msgstr ""
 
@@ -3279,7 +3344,7 @@ msgstr ""
 msgid "integer required"
 msgstr ""
 
-#: extmod/ulab/code/numpy/approx/approx.c
+#: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
 
@@ -3454,7 +3519,7 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "median argument must be an ndarray"
 msgstr ""
 
@@ -3471,11 +3536,15 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr ""
 
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "mode must be complete, or reduced"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "module not found"
 msgstr ""
 
-#: extmod/ulab/code/numpy/poly/poly.c
+#: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
 msgstr ""
 
@@ -3708,16 +3777,24 @@ msgstr ""
 msgid "opcode"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare/compare.c
-#: extmod/ulab/code/numpy/vector/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
+msgstr ""
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "operation is defined for 2D arrays only"
+msgstr ""
+
+#: extmod/ulab/code/numpy/linalg/linalg.c
+msgid "operation is defined for ndarrays only"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr ""
 
@@ -3909,7 +3986,7 @@ msgstr ""
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "roll argument must be an ndarray"
 msgstr ""
 
@@ -3988,7 +4065,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr ""
 
@@ -4135,11 +4212,11 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr ""
 
-#: extmod/ulab/code/numpy/approx/approx.c
+#: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: extmod/ulab/code/numpy/approx/approx.c
+#: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
 
@@ -4302,7 +4379,7 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical/numerical.c
+#: extmod/ulab/code/numpy/numerical.c
 msgid "wrong axis index"
 msgstr ""
 
@@ -4310,12 +4387,11 @@ msgstr ""
 msgid "wrong axis specified"
 msgstr ""
 
-#: extmod/ulab/code/numpy/compare/compare.c
-#: extmod/ulab/code/numpy/vector/vector.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "wrong input type"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr ""
 
@@ -4323,7 +4399,7 @@ msgstr ""
 msgid "wrong number of values to unpack"
 msgstr ""
 
-#: extmod/ulab/code/numpy/vector/vector.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "wrong output type"
 msgstr ""
 

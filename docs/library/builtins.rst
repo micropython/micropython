@@ -182,10 +182,6 @@ Exceptions
 
 .. exception:: OSError
 
-    |see_cpython| :py:class:`cpython:OSError`. CircuitPython doesn't implement the ``errno``
-    attribute, instead use the standard way to access exception arguments:
-    ``exc.args[0]``.
-
 .. exception:: RuntimeError
 
 .. exception:: ReloadException

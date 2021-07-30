@@ -118,7 +118,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         248,                    // max length, from Bluetooth spec
         false,                  // not fixed length
-        &generic_name_bufinfo
+        &generic_name_bufinfo,
+        NULL
         );
 
     uint16_t zero_16 = 0;
@@ -140,7 +141,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         2,                      // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_16_value
+        &zero_16_value,
+        NULL
         );
 
     // Generic Attribute Service setup.
@@ -176,7 +178,8 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         SECURITY_MODE_NO_ACCESS,
         4,                     // max length, from Bluetooth spec
         true,                  // fixed length
-        &zero_32_value
+        &zero_32_value,
+        NULL
         );
 }
 
@@ -645,7 +648,11 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 //     return true;
 // }
 
-uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len, mp_int_t tx_power) {
+uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
+    bool connectable, bool anonymous, uint32_t timeout, float interval,
+    const uint8_t *advertising_data, uint16_t advertising_data_len,
+    const uint8_t *scan_response_data, uint16_t scan_response_data_len,
+    mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     check_enabled(self);
 
     if (self->now_advertising) {
@@ -769,7 +776,11 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     return 0;
 }
 
-void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo, mp_int_t tx_power) {
+void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
+    bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval,
+    mp_buffer_info_t *advertising_data_bufinfo,
+    mp_buffer_info_t *scan_response_data_bufinfo,
+    mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     check_enabled(self);
 
     // interval value has already been validated.
@@ -803,7 +814,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         advertising_data_bufinfo->len,
         scan_response_data_bufinfo->buf,
         scan_response_data_bufinfo->len,
-        tx_power);
+        tx_power, directed_to);
 
     if (result) {
         mp_raise_bleio_BluetoothError(translate("Already advertising"));

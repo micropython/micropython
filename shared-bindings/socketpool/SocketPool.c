@@ -123,7 +123,7 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     }
 
     if (ip_str == mp_const_none) {
-        mp_raise_OSError(0);
+        mp_raise_OSError(-2);  // socket.EAI_NONAME from CPython
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));

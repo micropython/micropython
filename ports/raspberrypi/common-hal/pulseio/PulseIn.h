@@ -36,11 +36,14 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t pin;
-    uint16_t *buffer;
-    uint16_t maxlen;
     bool idle_state;
-    volatile uint16_t start;
+    uint16_t maxlen;
+    uint16_t *buffer;
+    volatile bool last_level;
+    volatile uint32_t level_count;
     volatile uint16_t len;
+    volatile uint16_t start;
+    volatile uint16_t buf_index;
     rp2pio_statemachine_obj_t state_machine;
 } pulseio_pulsein_obj_t;
 

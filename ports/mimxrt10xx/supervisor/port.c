@@ -37,8 +37,6 @@
 #include "fsl_device_registers.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/SPI.h"
@@ -47,9 +45,6 @@
 
 #include "tusb.h"
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
@@ -289,9 +284,6 @@ void reset_port(void) {
 
 //    eic_reset();
 
-    #if CIRCUITPY_PULSEIO
-    pulseout_reset();
-    #endif
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
@@ -300,9 +292,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_GAMEPAD
-    gamepad_reset();
-    #endif
     #if CIRCUITPY_GAMEPADSHIFT
     gamepadshift_reset();
     #endif

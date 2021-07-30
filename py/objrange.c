@@ -54,9 +54,12 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 
 STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = range_it_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = range_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
@@ -214,16 +217,19 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_range,
     .print = range_print,
     .make_new = range_make_new,
-    .unary_op = range_unary_op,
-    #if MICROPY_PY_BUILTINS_RANGE_BINOP
-    .binary_op = range_binary_op,
-    #endif
-    .subscr = range_subscr,
-    .getiter = range_getiter,
     #if MICROPY_PY_BUILTINS_RANGE_ATTRS
     .attr = range_attr,
     #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = range_unary_op,
+        #if MICROPY_PY_BUILTINS_RANGE_BINOP
+        .binary_op = range_binary_op,
+        #endif
+        .subscr = range_subscr,
+        .getiter = range_getiter,
+        ),
 };

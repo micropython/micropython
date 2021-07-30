@@ -9,14 +9,6 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PB03)
 #define MICROPY_HW_APA102_SCK    (&pin_PB02)
 
-// These are pins not to reset.
-// QSPI Data pins
-#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11)
-// DotStar pins, QSPI CS, and QSPI SCK
-#define MICROPY_PORT_B (PORT_PB02 | PORT_PB03 | PORT_PB10 | PORT_PB11)
-#define MICROPY_PORT_C (0)
-#define MICROPY_PORT_D (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA13)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA12)
 

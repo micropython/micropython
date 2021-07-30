@@ -14,6 +14,22 @@
 
 {% endif %}
 
+{% if support_matrix_reverse[obj.name] is defined %}
+.. raw:: html
+
+    <p>
+    <details>
+    <summary>Available on these boards</summary>
+    <ul>
+    {% for board in support_matrix_reverse[obj.name] %}
+    <li> {{ board }}
+    {% endfor %}
+    </ul>
+    </details>
+    </p>
+
+{% endif %}
+
 {% block subpackages %}
 {% set visible_subpackages = obj.subpackages|selectattr("display")|list %}
 {% if visible_subpackages %}

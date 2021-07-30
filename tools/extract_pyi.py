@@ -39,6 +39,7 @@ IMPORTS_IGNORE = frozenset(
 IMPORTS_TYPING = frozenset(
     {
         "Any",
+        "Dict",
         "Optional",
         "Union",
         "Tuple",

@@ -73,12 +73,16 @@ void common_hal_mcu_enable_interrupts(void) {
 static bool next_reset_to_bootloader = false;
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if (runmode == RUNMODE_BOOTLOADER) {
-        next_reset_to_bootloader = true;
-    } else {
-    }
-    if (runmode == RUNMODE_SAFE_MODE) {
-        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+    switch (runmode) {
+        case RUNMODE_UF2:
+        case RUNMODE_BOOTLOADER:
+            next_reset_to_bootloader = true;
+            break;
+        case RUNMODE_SAFE_MODE:
+            safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
+            break;
+        default:
+            break;
     }
 }
 

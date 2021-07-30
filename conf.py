@@ -24,6 +24,7 @@ import subprocess
 import sys
 import urllib.parse
 import time
+from collections import defaultdict
 
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
@@ -47,9 +48,15 @@ subprocess.check_output(["make", "stubs"])
 
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
+modules_support_matrix_reverse = defaultdict(list)
+for board, modules in modules_support_matrix.items():
+    for module in modules:
+        modules_support_matrix_reverse[module].append(board)
+modules_support_matrix_reverse = dict((module, sorted(boards)) for module, boards in modules_support_matrix_reverse.items())
 
 html_context = {
-    'support_matrix': modules_support_matrix
+    'support_matrix': modules_support_matrix,
+    'support_matrix_reverse': modules_support_matrix_reverse
 }
 
 # -- General configuration ------------------------------------------------
@@ -86,13 +93,16 @@ extensions.append('autoapi.extension')
 autoapi_type = 'python'
 # Uncomment this if debugging autoapi
 autoapi_keep_files = True
-autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs') if os.path.exists(os.path.join("circuitpython-stubs", x, "__init__.pyi"))]
+print("autoapi_dirs", autoapi_dirs)
 autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'
 autoapi_python_class_content = "both"
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "shared-bindings"
+def autoapi_prepare_jinja_env(jinja_env):
+    jinja_env.globals['support_matrix_reverse'] = modules_support_matrix_reverse
 
 redirects_file = 'docs/redirects.txt'
 
@@ -203,7 +213,9 @@ exclude_patterns = ["**/build*",
                     "shared-module",
                     "supervisor",
                     "tests",
-                    "tools"]
+                    "test-stubs",
+                    "tools",
+                    "circuitpython-stubs/README.rst"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -414,7 +426,6 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
-                       "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
 
 # Adapted from sphinxcontrib-redirects

@@ -38,8 +38,9 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-#include "supervisor/shared/bluetooth.h"
-#include "supervisor/bluetooth.h"
+#if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+#include "supervisor/shared/bluetooth/serial.h"
+#endif
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
@@ -56,6 +57,14 @@ void ble_drv_reset() {
 }
 
 void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        // If event handler and its corresponding param are already on the list, don't add again.
+        if ((it->func == func) && (it->param == param)) {
+            return;
+        }
+        it = it->next;
+    }
     entry->next = MP_STATE_VM(ble_drv_evt_handler_entries);
     entry->param = param;
     entry->func = func;
@@ -85,6 +94,8 @@ void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
         if ((it->func == func) && (it->param == param)) {
             // Splice out the matching handler.
             *prev = it->next;
+            // Clear next of the removed node so it's clearly not in a list.
+            it->next = NULL;
             return;
         }
         prev = &(it->next);
@@ -125,6 +136,9 @@ void SD_EVT_IRQHandler(void) {
         }
     }
 
+    #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+    ble_serial_disable();
+    #endif
     while (1) {
         uint16_t evt_len = sizeof(m_ble_evt_buf);
         const uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
@@ -138,21 +152,26 @@ void SD_EVT_IRQHandler(void) {
 
         ble_evt_t *event = (ble_evt_t *)m_ble_evt_buf;
         #if CIRCUITPY_VERBOSE_BLE
-        mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
-        #endif
-
-        if (supervisor_bluetooth_hook(event)) {
-            continue;
+        size_t eid = event->header.evt_id;
+        if (eid != 0x1d) {
+            if (BLE_GAP_EVT_BASE <= eid && eid <= BLE_GAP_EVT_LAST) {
+                mp_printf(&mp_plat_print, "BLE GAP event: %d\n", eid - BLE_GAP_EVT_BASE);
+            } else {
+                mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
+            }
         }
+        #endif
 
         ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
         bool done = false;
         while (it != NULL) {
             #if CIRCUITPY_VERBOSE_BLE
-            // mp_printf(&mp_plat_print, "  calling handler: 0x%08lx, param: 0x%08lx\n", it->func-1, it->param);
+            // mp_printf(&mp_plat_print, "  calling handler: 0x%08lx, param: 0x%08lx\n", it->func - 1, it->param);
             #endif
+            // Capture next before calling the function in case it removes itself from the list.
+            ble_drv_evt_handler_entry_t *next = it->next;
             done = it->func(event, it->param) || done;
-            it = it->next;
+            it = next;
         }
         #if CIRCUITPY_VERBOSE_BLE
         if (event->header.evt_id == BLE_GATTS_EVT_WRITE) {
@@ -161,4 +180,7 @@ void SD_EVT_IRQHandler(void) {
         }
         #endif
     }
+    #if CIRCUITPY_SERIAL_BLE && CIRCUITPY_VERBOSE_BLE
+    ble_serial_enable();
+    #endif
 }

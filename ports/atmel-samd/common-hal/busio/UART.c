@@ -71,6 +71,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
 
+    // Set state so the object is deinited to start.
+    self->rx_pin = NO_PIN;
+    self->tx_pin = NO_PIN;
+
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
@@ -83,6 +87,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool have_rx = rx != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
+    }
+
+    if (have_rx && receiver_buffer_size > 0 && (receiver_buffer_size & (receiver_buffer_size - 1)) != 0) {
+        mp_raise_ValueError_varg(translate("%q must be power of 2"), MP_QSTR_receiver_buffer_size);
     }
 
     self->baudrate = baudrate;

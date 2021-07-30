@@ -84,7 +84,8 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
 
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
-    mp_buffer_info_t *initial_value_bufinfo) {
+    mp_buffer_info_t *initial_value_bufinfo,
+    const char *user_description) {
 
     if (self->handle != common_hal_bleio_adapter_obj.last_added_service_handle) {
         mp_raise_bleio_BluetoothError(

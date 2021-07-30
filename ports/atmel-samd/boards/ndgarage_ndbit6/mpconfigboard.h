@@ -8,10 +8,6 @@
 #define SPI_FLASH_SCK_PIN           &pin_PA17
 #define SPI_FLASH_CS_PIN            &pin_PA15
 
-#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE 256
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000 CIRCUITPY_INTERNAL_NVM_SIZE)

@@ -3,10 +3,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA03)
 
-#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA01)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA00)
 

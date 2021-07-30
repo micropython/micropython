@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
+# SPDX-FileCopyrightText: Copyright (c) 2014-2021 Damien P. George
 # SPDX-FileCopyrightText: Copyright (c) 2017 Paul Sokolovsky
 # SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
@@ -66,7 +66,7 @@ def stdout_write_bytes(b):
     stdout.flush()
 
 
-class PyboardError(BaseException):
+class PyboardError(Exception):
     pass
 
 
@@ -142,7 +142,7 @@ class ProcessToSerial:
         import subprocess
 
         self.subp = subprocess.Popen(
-            cmd.split(),
+            cmd,
             bufsize=0,
             shell=True,
             preexec_fn=os.setsid,
@@ -233,7 +233,10 @@ class ProcessPtyToTerminal:
 
 
 class Pyboard:
-    def __init__(self, device, baudrate=115200, user="micro", password="python", wait=0):
+    def __init__(
+        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+    ):
+        self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
             self.serial = ProcessToSerial(device[len("exec:") :])
@@ -245,10 +248,15 @@ class Pyboard:
         else:
             import serial
 
+            # Set options, and exclusive if pyserial supports it
+            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            if serial.__version__ >= "3.3":
+                serial_kwargs["exclusive"] = exclusive
+
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    self.serial = serial.Serial(device, **serial_kwargs)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
@@ -295,7 +303,7 @@ class Pyboard:
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self):
+    def enter_raw_repl(self, soft_reset=True):
         self.serial.write(b"\r\x03\x03")  # ctrl-C twice: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -305,25 +313,33 @@ class Pyboard:
             n = self.serial.inWaiting()
 
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
-        if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
-            print(data)
-            raise PyboardError("could not enter raw repl")
 
-        self.serial.write(b"\x04")  # ctrl-D: soft reset
-        data = self.read_until(1, b"soft reboot\r\n")
-        if not data.endswith(b"soft reboot\r\n"):
-            print(data)
-            raise PyboardError("could not enter raw repl")
-        # By splitting this into 2 reads, it allows boot.py to print stuff,
-        # which will show up after the soft reboot and before the raw REPL.
+        if soft_reset:
+            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
+                print(data)
+                raise PyboardError("could not enter raw repl")
+
+            self.serial.write(b"\x04")  # ctrl-D: soft reset
+
+            # Waiting for "soft reboot" independently to "raw REPL" (done below)
+            # allows boot.py to print, which will show up after "soft reboot"
+            # and before "raw REPL".
+            data = self.read_until(1, b"soft reboot\r\n")
+            if not data.endswith(b"soft reboot\r\n"):
+                print(data)
+                raise PyboardError("could not enter raw repl")
+
         data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise PyboardError("could not enter raw repl")
 
+        self.in_raw_repl = True
+
     def exit_raw_repl(self):
         self.serial.write(b"\r\x02")  # ctrl-B: enter friendly REPL
+        self.in_raw_repl = False
 
     def follow(self, timeout, data_consumer=None):
         # wait for normal output
@@ -631,6 +647,11 @@ def main():
         action="store_true",
         help="Do not follow the output after running the scripts.",
     )
+    group.add_argument(
+        "--no-exclusive",
+        action="store_true",
+        help="Do not try to open the serial device for exclusive access.",
+    )
     cmd_parser.add_argument(
         "-f",
         "--filesystem",
@@ -643,7 +664,9 @@ def main():
 
     # open the connection to the pyboard
     try:
-        pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
+        pyb = Pyboard(
+            args.device, args.baudrate, args.user, args.password, args.wait, not args.no_exclusive
+        )
     except PyboardError as er:
         print(er)
         sys.exit(1)
@@ -683,7 +706,7 @@ def main():
         # do filesystem commands, if given
         if args.filesystem:
             filesystem_command(pyb, args.files)
-            args.files.clear()
+            del args.files[:]
 
         # run the command, if given
         if args.command is not None:

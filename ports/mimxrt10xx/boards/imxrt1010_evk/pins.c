@@ -35,6 +35,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO_02) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_USER_LED), MP_ROM_PTR(&pin_GPIO_11) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_11) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_USER_SW), MP_ROM_PTR(&pin_GPIO_SD_05) },
 
     // Audio Interface

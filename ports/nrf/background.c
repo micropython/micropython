@@ -41,11 +41,6 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
-#if CIRCUITPY_BLEIO
-#include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/bonding.h"
-#endif
-
 void port_start_background_task(void) {
 }
 void port_finish_background_task(void) {

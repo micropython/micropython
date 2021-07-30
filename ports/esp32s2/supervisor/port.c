@@ -59,11 +59,15 @@
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
-#include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
-#include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
+#include "components/soc/esp32s2/include/soc/cache_memory.h"
+#include "components/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
 #if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/__init__.h"
+#endif
+
+#if CIRCUITPY_IMAGECAPTURE
+#include "cam.h"
 #endif
 
 #define HEAP_SIZE (48 * 1024)
@@ -155,6 +159,10 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    #if CIRCUITPY_IMAGECAPTURE
+    cam_deinit();
+    #endif
+
     reset_all_pins();
 
     // A larger delay so the idle task can run and do any IDF cleanup needed.

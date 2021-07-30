@@ -126,6 +126,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         bit_clock, 2, 0, 0x1f, // sideset pins
+        NULL, // jump pin
         0, // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // shift out left to start with MSB
@@ -145,7 +146,13 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
         return;
     }
 
+    if (common_hal_audiobusio_i2sout_get_playing(self)) {
+        common_hal_audiobusio_i2sout_stop(self);
+    }
+
     common_hal_rp2pio_statemachine_deinit(&self->state_machine);
+
+    audio_dma_deinit(&self->dma);
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
@@ -153,6 +160,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     if (common_hal_audiobusio_i2sout_get_playing(self)) {
         common_hal_audiobusio_i2sout_stop(self);
     }
+
     uint8_t bits_per_sample = audiosample_bits_per_sample(sample);
     // Make sure we transmit a minimum of 16 bits.
     // TODO: Maybe we need an intermediate object to upsample instead. This is

@@ -139,6 +139,20 @@ STATIC bonding_block_t *find_existing_block(bool is_central, bonding_block_type_
     }
 }
 
+size_t bonding_peripheral_bond_count(void) {
+    bonding_block_t *block = NULL;
+    size_t count = 0;
+    while (1) {
+        block = next_block(block);
+        if (block == NULL) {
+            return count;
+        }
+        if (block->type != BLOCK_UNUSED && block->type != BLOCK_INVALID && !block->is_central) {
+            count++;
+        }
+    }
+}
+
 // Get an empty block large enough to store data_length data.
 STATIC bonding_block_t *find_unused_block(uint16_t data_length) {
     bonding_block_t *unused_block = find_existing_block(true, BLOCK_UNUSED, EDIV_INVALID);
@@ -225,7 +239,7 @@ STATIC void write_keys_block(bleio_connection_internal_t *connection) {
         ? connection->bonding_keys.peer_enc.master_id.ediv
         : connection->bonding_keys.own_enc.master_id.ediv;
 
-    // Is there an existing keys block that matches?
+    // Is there an existing keys block that matches the ediv?
     bonding_block_t *existing_block = find_existing_block(connection->is_central, BLOCK_KEYS, ediv);
     if (existing_block) {
         if (existing_block->data_length == sizeof(bonding_keys_t) &&
@@ -235,6 +249,21 @@ STATIC void write_keys_block(bleio_connection_internal_t *connection) {
         }
         // Data doesn't match. Invalidate block and store a new one.
         invalidate_block(existing_block);
+    }
+    // Invalidate any existing blocks that match the peer address.
+    existing_block = next_block(NULL);
+    while (existing_block != NULL) {
+        if (existing_block->type == BLOCK_KEYS && connection->is_central == existing_block->is_central &&
+            existing_block->data_length == sizeof(bonding_keys_t)) {
+            const ble_gap_addr_t *existing_peer = &((const bonding_keys_t *)existing_block->data)->peer_id.id_addr_info;
+            const ble_gap_addr_t *connecting_peer = &connection->bonding_keys.peer_id.id_addr_info;
+            if (memcmp(existing_peer->addr, connecting_peer->addr, 6) == 0 &&
+                memcmp(existing_block->data, &connection->bonding_keys, sizeof(bonding_keys_t)) != 0) {
+                // Mismatched block found. Invalidate it.
+                invalidate_block(existing_block);
+            }
+        }
+        existing_block = next_block(existing_block);
     }
 
     bonding_block_t block_header = {
@@ -307,4 +336,41 @@ bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_k
 
     memcpy(bonding_keys, block->data, block->data_length);
     return true;
+}
+
+size_t bonding_load_identities(bool is_central, const ble_gap_id_key_t **keys, size_t max_length) {
+    bonding_block_t *block = NULL;
+    size_t len = 0;
+    while (len < max_length) {
+        block = next_block(block);
+        if (block == NULL) {
+            return len;
+        }
+        if (block->type != BLOCK_UNUSED &&
+            block->type != BLOCK_INVALID &&
+            block->is_central == is_central) {
+            if (sizeof(bonding_keys_t) != block->data_length) {
+                // bonding_keys_t is a fixed length, so lengths should match.
+                return len;
+            }
+            const bonding_keys_t *key_set = (const bonding_keys_t *)block->data;
+            keys[len] = &key_set->peer_id;
+            len++;
+        }
+    }
+    return len;
+}
+
+const ble_gap_enc_key_t *bonding_load_peer_encryption_key(bool is_central, const ble_gap_addr_t *peer) {
+    bonding_block_t *block = next_block(NULL);
+    while (block != NULL) {
+        if (block->type == BLOCK_KEYS && block->is_central == is_central) {
+            const bonding_keys_t *key_set = (const bonding_keys_t *)block->data;
+            if (memcmp(key_set->peer_id.id_addr_info.addr, peer->addr, 6) == 0) {
+                return &key_set->peer_enc;
+            }
+        }
+        block = next_block(block);
+    }
+    return NULL;
 }

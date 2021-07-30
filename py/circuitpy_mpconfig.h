@@ -64,6 +64,7 @@
 #define MICROPY_ENABLE_FINALISER         (1)
 #define MICROPY_ENABLE_GC                (1)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
+#define MICROPY_EPOCH_IS_1970            (1)
 #define MICROPY_ERROR_REPORTING          (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH  (0)
 #define MICROPY_FLOAT_IMPL               (MICROPY_FLOAT_IMPL_FLOAT)
@@ -205,7 +206,6 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
-#define MICROPY_EPOCH_IS_1970                 (0)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -440,6 +440,13 @@ extern const struct _mp_obj_module_t espidf_module;
 #define ESPIDF_MODULE
 #endif
 
+#if CIRCUITPY__EVE
+extern const struct _mp_obj_module_t _eve_module;
+#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
+#else
+#define _EVE_MODULE
+#endif
+
 #if CIRCUITPY_FRAMEBUFFERIO
 extern const struct _mp_obj_module_t framebufferio_module;
 #define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
@@ -461,13 +468,6 @@ extern const struct _mp_obj_module_t frequencyio_module;
 #define FREQUENCYIO_MODULE
 #endif
 
-#if CIRCUITPY_GAMEPAD
-extern const struct _mp_obj_module_t gamepad_module;
-#define GAMEPAD_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
-#else
-#define GAMEPAD_MODULE
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
 extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPADSHIFT_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepadshift),(mp_obj_t)&gamepadshift_module },
@@ -475,7 +475,7 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPADSHIFT_MODULE
 #endif
 
-#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+#if CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
@@ -523,18 +523,28 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #define JSON_MODULE
 #endif
 
+#if CIRCUITPY_KEYPAD
+extern const struct _mp_obj_module_t keypad_module;
+#define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
+#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
+#else
+#define KEYPAD_MODULE
+#define KEYPAD_ROOT_POINTERS
+#endif
+
+#if CIRCUITPY_GAMEPADSHIFT
+// Scan gamepadshift every 32ms
+#define CIRCUITPY_GAMEPAD_TICKS 0x1f
+#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
+#else
+#define GAMEPAD_ROOT_POINTERS
+#endif
+
 #if CIRCUITPY_MATH
 extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
 #else
 #define MATH_MODULE
-#endif
-
-#if CIRCUITPY__EVE
-extern const struct _mp_obj_module_t _eve_module;
-#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
-#else
-#define _EVE_MODULE
 #endif
 
 #if CIRCUITPY_MEMORYMONITOR
@@ -561,23 +571,6 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 #define NEOPIXEL_WRITE_MODULE
 #endif
 
-#if CIRCUITPY_NETWORK
-extern const struct _mp_obj_module_t network_module;
-extern const struct _mp_obj_module_t socket_module;
-#define NETWORK_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },
-#define SOCKET_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
-#define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
-#if MICROPY_PY_WIZNET5K
-extern const struct _mp_obj_module_t wiznet_module;
-    #define WIZNET_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
-#endif
-#else
-#define NETWORK_MODULE
-#define SOCKET_MODULE
-#define WIZNET_MODULE
-#define NETWORK_ROOT_POINTERS
-#endif
-
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
@@ -601,7 +594,8 @@ extern const struct _mp_obj_module_t pew_module;
 
 #if CIRCUITPY_PIXELBUF
 extern const struct _mp_obj_module_t pixelbuf_module;
-#define PIXELBUF_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
+#define PIXELBUF_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_pixelbuf),(mp_obj_t)&pixelbuf_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
 #else
 #define PIXELBUF_MODULE
 #endif
@@ -625,6 +619,13 @@ extern const struct _mp_obj_module_t pwmio_module;
 #define PWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pwmio), (mp_obj_t)&pwmio_module },
 #else
 #define PWMIO_MODULE
+#endif
+
+#if CIRCUITPY_RAINBOWIO
+extern const struct _mp_obj_module_t rainbowio_module;
+#define RAINBOWIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rainbowio), (mp_obj_t)&rainbowio_module },
+#else
+#define RAINBOWIO_MODULE
 #endif
 
 #if CIRCUITPY_RANDOM
@@ -877,29 +878,27 @@ extern const struct _mp_obj_module_t msgpack_module;
     VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
+    _EVE_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
-    GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
     IMAGECAPTURE_MODULE \
     JSON_MODULE \
+    KEYPAD_MODULE \
     MATH_MODULE \
-    _EVE_MODULE \
     MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
-    NETWORK_MODULE \
-    SOCKET_MODULE \
-    WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
     PULSEIO_MODULE \
     PWMIO_MODULE \
+    RAINBOWIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     RGBMATRIX_MODULE \
@@ -950,22 +949,19 @@ extern const struct _mp_obj_module_t msgpack_module;
 struct _supervisor_allocation_node;
 
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    vstr_t *repl_line; \
-    mp_obj_t rtc_time_source; \
-    GAMEPAD_ROOT_POINTERS \
-    mp_obj_t pew_singleton; \
-    BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
+    KEYPAD_ROOT_POINTERS \
+    GAMEPAD_ROOT_POINTERS \
+    BOARD_UART_ROOT_POINTER \
     MEMORYMONITOR_ROOT_POINTERS \
-        NETWORK_ROOT_POINTERS \
+    vstr_t *repl_line; \
+    mp_obj_t pew_singleton; \
+    mp_obj_t rtc_time_source; \
+    const char *readline_hist[8]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
-
-// TODO: Used in wiznet5k driver, but may not be needed in the long run.
-#define MICROPY_THREAD_YIELD()
 
 #define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
 #define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;

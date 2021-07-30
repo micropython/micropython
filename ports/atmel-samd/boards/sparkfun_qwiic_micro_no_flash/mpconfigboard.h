@@ -1,10 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "SparkFun Qwiic Micro"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_PORT_A    (0)
-#define MICROPY_PORT_B    (0)
-#define MICROPY_PORT_C    (0)
-
 #define CALIBRATE_CRYSTALLESS 1
 #define BOARD_HAS_CRYSTAL 0
 

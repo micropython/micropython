@@ -36,15 +36,9 @@
 #include "bindings/rp2pio/StateMachine.h"
 #include "common-hal/pulseio/PulseIn.h"
 
-pulseio_pulsein_obj_t *save_self;
-
 #define NO_PIN 0xff
 #define MAX_PULSE 65535
 #define MIN_PULSE 10
-volatile bool last_level;
-volatile uint32_t level_count = 0;
-volatile uint32_t result = 0;
-volatile uint16_t buf_index = 0;
 
 uint16_t pulsein_program[] = {
     0x4001, //  1: in     pins, 1
@@ -62,7 +56,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     self->idle_state = idle_state;
     self->start = 0;
     self->len = 0;
-    save_self = self;
 
     bool ok = rp2pio_statemachine_construct(&self->state_machine,
         pulsein_program, sizeof(pulsein_program) / sizeof(pulsein_program[0]),
@@ -74,21 +67,25 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         NULL, 0,
         NULL, 0,
         1, 0,
+        NULL, // jump pin
         1 << self->pin, false, true,
             false, 8, false, // TX, unused
             false,
             true, 32, true, // RX auto-push every 32 bits
             false); // claim pins
 
+    if (!ok) {
+        mp_raise_RuntimeError(translate("All state machines in use"));
+    }
+
     pio_sm_set_enabled(self->state_machine.pio,self->state_machine.state_machine, false);
     pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
-    last_level = self->idle_state;
-    level_count = 0;
-    result = 0;
-    buf_index = 0;
+    self->last_level = self->idle_state;
+    self->level_count = 0;
+    self->buf_index = 0;
 
     pio_sm_set_in_pins(self->state_machine.pio,self->state_machine.state_machine,pin->number);
-    common_hal_rp2pio_statemachine_set_interrupt_handler(&(self->state_machine),&common_hal_pulseio_pulsein_interrupt,NULL,PIO_IRQ0_INTE_SM0_RXNEMPTY_BITS);
+    common_hal_rp2pio_statemachine_set_interrupt_handler(&(self->state_machine),&common_hal_pulseio_pulsein_interrupt,self,PIO_IRQ0_INTE_SM0_RXNEMPTY_BITS);
 
     // exec a set pindirs to 0 for input
     pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0xe080);
@@ -119,48 +116,50 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     pio_sm_restart(self->state_machine.pio, self->state_machine.state_machine);
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
-    last_level = self->idle_state;
-    level_count = 0;
-    result = 0;
-    buf_index = 0;
+    self->last_level = self->idle_state;
+    self->level_count = 0;
+    self->buf_index = 0;
 }
-void common_hal_pulseio_pulsein_interrupt() {
+void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
 
-    pulseio_pulsein_obj_t *self = save_self;
     uint32_t rxfifo = 0;
 
     rxfifo = pio_sm_get_blocking(self->state_machine.pio, self->state_machine.state_machine);
     // translate from fifo to buffer
-    for (uint i = 0; i < 32; i++) {
-        bool level = (rxfifo & (1 << i)) >> i;
-        if (level == last_level) {
-            level_count++;
-        } else {
-            result = level_count;
-            last_level = level;
-            level_count = 0;
-            // Pulses that are longer than MAX_PULSE will return MAX_PULSE
-            if (result > MAX_PULSE) {
-                result = MAX_PULSE;
-            }
-            // return  pulses that are not too short
-            if (result > MIN_PULSE) {
-                self->buffer[buf_index] = (uint16_t)result;
-                if (self->len < self->maxlen) {
-                    self->len++;
+    if ((rxfifo == 0 && self->last_level == false) || (rxfifo == 0xffffffff && self->last_level == true)) {
+        self->level_count = self->level_count + 32;
+    } else {
+        for (uint i = 0; i < 32; i++) {
+            bool level = (rxfifo & (1 << i)) >> i;
+            if (level == self->last_level) {
+                self->level_count++;
+            } else {
+                uint32_t result = self->level_count;
+                self->last_level = level;
+                self->level_count = 0;
+                // Pulses that are longer than MAX_PULSE will return MAX_PULSE
+                if (result > MAX_PULSE) {
+                    result = MAX_PULSE;
                 }
-                if (buf_index < self->maxlen) {
-                    buf_index++;
-                } else {
-                    self->start = 0;
-                    buf_index = 0;
+                // return  pulses that are not too short
+                if (result > MIN_PULSE) {
+                    self->buffer[self->buf_index] = (uint16_t)result;
+                    if (self->len < self->maxlen) {
+                        self->len++;
+                    }
+                    if (self->buf_index < self->maxlen) {
+                        self->buf_index++;
+                    } else {
+                        self->start = 0;
+                        self->buf_index = 0;
+                    }
                 }
             }
         }
     }
 
 // check for a pulse thats too long (MAX_PULSE us) or maxlen reached,  and reset
-    if ((level_count > MAX_PULSE) || (buf_index >= self->maxlen)) {
+    if ((self->level_count > MAX_PULSE) || (self->buf_index >= self->maxlen)) {
         pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
         pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
         pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
@@ -193,7 +192,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
     self->start = 0;
     self->len = 0;
-    buf_index = 0;
+    self->buf_index = 0;
 }
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
@@ -206,8 +205,8 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     // if we are empty reset buffer pointer and counters
     if (self->len == 0) {
         self->start = 0;
-        buf_index = 0;
-        level_count = 0;
+        self->buf_index = 0;
+        self->level_count = 0;
     }
     return value;
 }

@@ -32,6 +32,7 @@
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "genhdr/flash_info.h"
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -68,7 +69,7 @@ void supervisor_flash_init(void) {
     uint8_t cmd[] = {0x9f, 0, 0, 0};
     uint8_t data[4];
     flash_do_cmd(cmd, data, 4);
-    uint8_t power_of_two = 21;
+    uint8_t power_of_two = FLASH_DEFAULT_POWER_OF_TWO;
     // Flash must be at least 2MB (1 << 21) because we use the first 1MB for the
     // CircuitPython core. We validate the range because Adesto Tech flash chips
     // don't return the correct value. So, we default to 2MB which will work for

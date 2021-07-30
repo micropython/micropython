@@ -50,7 +50,7 @@ __asm(
     "stp x27, x28, [x0,  #96]\n"
     "str x29,      [x0, #112]\n"
     #if defined(__APPLE__) && defined(__MACH__)
-    "b _nlr_push_tail         \n" // do the rest in C
+    "b _nlr_push_tail        \n" // do the rest in C
     #else
     "b nlr_push_tail         \n" // do the rest in C
     #endif

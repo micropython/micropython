@@ -12,7 +12,7 @@ LONGINT_IMPL = NONE
 
 # To keep the build small
 CIRCUITPY_AUDIOBUSIO = 0
-CIRCUITPY_GAMEPAD = 0
+CIRCUITPY_KEYPAD = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH

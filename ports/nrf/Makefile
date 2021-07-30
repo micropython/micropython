@@ -96,7 +96,6 @@ endif
 
 ifeq ($(NRF_DEBUG_PRINT), 1)
   CFLAGS += -DNRF_DEBUG_PRINT=1
-  SRC_SUPERVISOR += supervisor/debug_uart.c
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
@@ -183,32 +182,6 @@ SRC_C += \
 endif
 endif # CIRCUITPY_USB
 
-ifeq ($(CIRCUITPY_NETWORK),1)
-CFLAGS += -DMICROPY_PY_NETWORK=1
-
-SRC_MOD += lib/netutils/netutils.c
-
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-WIZNET5K_DIR=drivers/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR)
-CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-        ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
-        ethernet/wizchip_conf.c \
-        ethernet/socket.c \
-        internet/dns/dns.c \
-        internet/dhcp/dhcp.c \
-        )
-
-endif # MICROPY_PY_WIZNET5K
-endif # CIRCUITPY_NETWORK
-
-ifeq ($(CIRCUITPY_NETWORK),1)
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-SRC_SHARED_MODULE += wiznet/__init__.c wiznet/wiznet5k.c
-endif
-endif
-
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
@@ -248,7 +221,7 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(S
 SRC_QSTR_PREPROCESSOR +=
 
 
-all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.combined.hex
 
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
@@ -265,6 +238,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $^ $@
 #	$(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
+
+$(BUILD)/firmware.combined.hex: $(BUILD)/firmware.hex $(SOFTDEV_HEX)
+	$(STEPECHO) "Create $@"
+	$(Q)hexmerge.py -o $@ $^
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"

@@ -172,7 +172,10 @@ STATIC MP_DEFINE_CONST_DICT(canio_listener_locals_dict, canio_listener_locals_di
 const mp_obj_type_t canio_listener_type = {
     { &mp_type_type },
     .name = MP_QSTR_Listener,
-    .getiter = mp_identity_getiter,
-    .iternext = canio_iternext,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&canio_listener_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = canio_iternext,
+        ),
 };

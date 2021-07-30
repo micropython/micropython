@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
@@ -163,6 +164,8 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->variable_frequency = variable_frequency;
     self->duty_cycle = duty;
 
+    claim_pin(pin);
+
     if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
         return PWMOUT_INVALID_FREQUENCY;
     }
@@ -233,6 +236,14 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
     }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
     pwm_set_chan_level(self->slice, self->channel, compare_count);
+    // Wait for wrap so that we know our new cc value has been applied. Clear
+    // the internal interrupt and then wait for it to be set. Worst case, we
+    // wait a full cycle.
+    pwm_hw->intr = 1 << self->channel;
+    while ((pwm_hw->en & (1 << self->channel)) != 0 &&
+           (pwm_hw->intr & (1 << self->channel)) == 0 &&
+           !mp_hal_is_interrupted()) {
+    }
 }
 
 uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
@@ -289,4 +300,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

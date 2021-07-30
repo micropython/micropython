@@ -140,10 +140,7 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         mp_raise_ValueError(translate("port must be >= 0"));
     }
 
-    bool ok = common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
-    if (!ok) {
-        mp_raise_OSError(0);
-    }
+    common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
 
     return mp_const_none;
 }
@@ -289,9 +286,6 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     }
 
     mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, (uint32_t)port, bufinfo.buf, bufinfo.len);
-    if (!ret) {
-        mp_raise_OSError(0);
-    }
 
     return mp_obj_new_int_from_uint(ret);
 }
@@ -409,7 +403,10 @@ STATIC MP_DEFINE_CONST_DICT(socketpool_socket_locals_dict, socketpool_socket_loc
 
 const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Socket,
     .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
-    .unary_op = socketpool_socket_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = socketpool_socket_unary_op,
+        )
 };

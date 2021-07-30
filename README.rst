@@ -14,25 +14,30 @@ CircuitPython
 computers called microcontrollers. Microcontrollers are the brains of many electronics including a
 wide variety of development boards used to build hobby projects and prototypes. CircuitPython in
 electronics is one of the best ways to learn to code because it connects code to reality. Simply
-install CircuitPython on a supported board via drag and drop and then edit a ``code.py`` file on
-the CIRCUITPY drive. The code will automatically reload. No software installs are needed besides a
-text editor (we recommend `Mu <https://codewith.mu/>`_ for beginners.)
+install CircuitPython on a supported USB board usually via drag and drop and then edit a ``code.py``
+file on the CIRCUITPY drive. The code will automatically reload. No software installs are needed
+besides a text editor (we recommend `Mu <https://codewith.mu/>`_ for beginners.)
 
-CircuitPython features unified Python core APIs and a growing list of 150+ device libraries and
+Starting with CircuitPython 7.0.0, some boards may only be connectable over Bluetooth Low Energy
+(BLE). Those boards provide serial and file access over BLE instead of USB using open protocols.
+(Some boards may use both USB and BLE.) BLE access can be done from a variety of apps including
+`code.circuitpythonn.org <https://code.circuitpython.org>`_.
+
+CircuitPython features unified Python core APIs and a growing list of 300+ device libraries and
 drivers that work with it. These libraries also work on single board computers with regular
 Python via the `Adafruit Blinka Library <https://github.com/adafruit/Adafruit_Blinka>`_.
 
 CircuitPython is based on `MicroPython <https://micropython.org>`_. See
-`below <#differences-from-micropython>`_ for differences. CircuitPython development is sponsored by
-`Adafruit <https://adafruit.com>`_ and is available on their educational development boards. Please
-support both MicroPython and Adafruit.
+`below <#differences-from-micropython>`_ for differences. Most, but not all, CircuitPython
+development is sponsored by `Adafruit <https://adafruit.com>`_ and is available on their educational
+development boards. Please support both MicroPython and Adafruit.
 
 Get CircuitPython
 ------------------
 
 Official binaries for all supported boards are available through
 `circuitpython.org/downloads <https://circuitpython.org/downloads>`_. The site includes stable, unstable and
-continuous builds. Full release notes and assets are available through
+continuous builds. Full release notes are available through
 `GitHub releases <https://github.com/adafruit/circuitpython/releases>`_ as well.
 
 Documentation
@@ -85,7 +90,9 @@ If you'd like to use the term "CircuitPython" and Blinka for your product here i
 * Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
   `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
   product can always download the latest version of CircuitPython from the standard place.
-* Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
+* Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in
+  AND/OR provides file and serial access over Bluetooth Low Energy. Boards that do not support USB
+  should be clearly marked as BLE-only CircuitPython.
 
 If you choose not to meet these requirements, then we ask you call your version of CircuitPython
 something else (for example, SuperDuperPython) and not use the Blinka logo. You can say it is
@@ -98,10 +105,11 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 
 CircuitPython:
 
--  Supports native USB on all boards, allowing file editing without special tools.
+-  Supports native USB on most boards and BLE otherwise, allowing file editing without special tools.
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
--  Does not support concurrency within Python (including interrupts and threading). Some concurrency
+-  Concurrenncy within Python is not well supported. Interrupts and threading are disabled.
+   async/await keywords are available on some boards for cooperative multitasking. Some concurrency
    is achieved with native modules for tasks that require it such as audio file playback.
 
 Behavior
@@ -110,37 +118,36 @@ Behavior
 -  The order that files are run and the state that is shared between
    them. CircuitPython's goal is to clarify the role of each file and
    make each file independent from each other.
--  ``boot.py`` (or ``settings.py``) runs only once on start up before
-   USB is initialized. This lays the ground work for configuring USB at
-   startup rather than it being fixed. Since serial is not available,
-   output is written to ``boot_out.txt``.
--  ``code.py`` (or ``main.py``) is run after every reload until it
-   finishes or is interrupted. After it is done running, the vm and
-   hardware is reinitialized. **This means you cannot read state from**
-   ``code.py`` **in the REPL anymore, as the REPL is a fresh vm.** CircuitPython's goal for this
-   change includes reducing confusion about pins and memory being used.
--  After the main code is finished the REPL can be entered by pressing any key.
--  Autoreload state will be maintained across reload.
--  Adds a safe mode that does not run user code after a hard crash or
-   brown out. The hope is that this will make it easier to fix code that
-   causes nasty crashes by making it available through mass storage
-   after the crash. A reset (the button) is needed after it's fixed to
-   get back into normal mode.
--  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
+
+   -  ``boot.py`` (or ``settings.py``) runs only once on start up before
+      USB is initialized. This lays the ground work for configuring USB at
+      startup rather than it being fixed. Since serial is not available,
+      output is written to ``boot_out.txt``.
+   -  ``code.py`` (or ``main.py``) is run after every reload until it
+      finishes or is interrupted. After it is done running, the vm and
+      hardware is reinitialized. **This means you cannot read state from**
+      ``code.py`` **in the REPL anymore, as the REPL is a fresh vm.** CircuitPython's goal for this
+      change includes reducing confusion about pins and memory being used.
+   -  After the main code is finished the REPL can be entered by pressing any key.
+   -  Autoreload state will be maintained across reload.
+
+-  Adds a safe mode that does not run user code after a hard crash or brown out. This makes it
+   possible to fix code that causes nasty crashes by making it available through mass storage after
+   the crash. A reset (the button) is needed after it's fixed to get back into normal mode.
+-  RGB status LED indicating CircuitPython state.
 -  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
    ``supervisor.disable_autoreload()``)
 -  Autoreload is disabled while the REPL is active.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
-   ``boot.txt``
+-  Boot is one of these: ``boot.py``, ``boot.txt``
 
 API
 ~~~
 
 -  Unified hardware APIs. Documented on
    `ReadTheDocs <https://circuitpython.readthedocs.io/en/latest/shared-bindings/index.html>`_.
--  API docs are rST within the C files in ``shared-bindings``.
+-  API docs are Python stubs within the C files in ``shared-bindings``.
 -  No ``machine`` API.
 
 Modules

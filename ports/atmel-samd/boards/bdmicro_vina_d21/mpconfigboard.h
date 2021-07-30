@@ -1,11 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "BDMICRO VINA-D21"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-// These are pins not to reset.
-#define MICROPY_PORT_A (0)
-#define MICROPY_PORT_B (0)
-#define MICROPY_PORT_C (0)
-
 #define SPI_FLASH_CS_PIN &pin_PA13
 #define SPI_FLASH_MISO_PIN &pin_PB03
 #define SPI_FLASH_MOSI_PIN &pin_PB22

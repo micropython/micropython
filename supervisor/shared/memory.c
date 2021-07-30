@@ -38,6 +38,8 @@ enum {
         2
         // next_code_allocation
         + 1
+        // prev_traceback_allocation
+        + 1
 
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
@@ -238,6 +240,7 @@ size_t get_allocation_length(supervisor_allocation *allocation) {
     return ALLOCATION_NODE(allocation)->length & ~FLAGS;
 }
 
+
 void supervisor_move_memory(void) {
     // This whole function is not needed when there are no movable allocations, let it be optimized
     // out.
@@ -246,7 +249,9 @@ void supervisor_move_memory(void) {
     }
     // This must be called exactly after freeing the heap, so that the embedded allocations, if any,
     // are now in the free region.
-    assert(MP_STATE_VM(first_embedded_allocation) == NULL || (low_head < MP_STATE_VM(first_embedded_allocation) && MP_STATE_VM(first_embedded_allocation) < high_head));
+    assert(MP_STATE_VM(first_embedded_allocation) == NULL || (
+        (low_head == NULL || low_head < MP_STATE_VM(first_embedded_allocation)) &&
+        (high_head == NULL || MP_STATE_VM(first_embedded_allocation) < high_head)));
 
     // Save the old pointers for allocation_from_ptr().
     supervisor_allocation old_allocations_array[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];

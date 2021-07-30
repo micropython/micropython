@@ -461,14 +461,17 @@ STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
 
 const mp_obj_type_t mp_type_list = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_list,
     .print = list_print,
     .make_new = list_make_new,
-    .unary_op = list_unary_op,
-    .binary_op = list_binary_op,
-    .subscr = list_subscr,
-    .getiter = list_getiter,
     .locals_dict = (mp_obj_dict_t *)&list_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = list_unary_op,
+        .binary_op = list_binary_op,
+        .subscr = list_subscr,
+        .getiter = list_getiter,
+        ),
 };
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n) {

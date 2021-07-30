@@ -20,4 +20,5 @@ LD_FILE = boards/STM32F401xe_boot.ld
 # For debugging - also comment BOOTLOADER_OFFSET and BOARD_VTOR_DEFER
 # LD_FILE = boards/STM32F401xe_fs.ld
 
+CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_ULAB = 0

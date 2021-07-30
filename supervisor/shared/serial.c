@@ -36,17 +36,15 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/usb_cdc/__init__.h"
 
-#include "tusb.h"
-
-#ifdef NRF_DEBUG_PRINT
-// XXX  these functions are in nrf/supervisor/debug_uart.c
-extern void _debug_uart_init(void);
-extern void _debug_print_substr(const char *text, uint32_t length);
+#if CIRCUITPY_SERIAL_BLE
+#include "supervisor/shared/bluetooth/serial.h"
 #endif
 
+#include "tusb.h"
+
 /*
- * Note: DEBUG_UART currently only works on STM32,
- * enabling on another platform will cause a crash.
+ * Note: DEBUG_UART currently only works on STM32 and nRF.
+ * Enabling on another platform will cause a crash.
  */
 
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
@@ -71,17 +69,10 @@ void serial_early_init(void) {
         buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
     #endif
-
-    #ifdef NRF_DEBUG_PRINT
-    _debug_uart_init();
-    #endif
 }
 
 void serial_init(void) {
     // USB serial is set up separately.
-    #ifdef NRF_DEBUG_PRINT
-    _debug_uart_init();
-    #endif
 }
 
 bool serial_connected(void) {
@@ -93,11 +84,24 @@ bool serial_connected(void) {
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
-    #elif CIRCUITPY_USB_CDC
-    return usb_cdc_console_enabled() && tud_cdc_connected();
-    #else
-    return tud_cdc_connected();
     #endif
+
+    #if CIRCUITPY_SERIAL_BLE
+    if (ble_serial_connected()) {
+        return true;
+    }
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    if (usb_cdc_console_enabled() && tud_cdc_connected()) {
+        return true;
+    }
+    #elif CIRCUITPY_USB
+    if (tud_cdc_connected()) {
+        return true;
+    }
+    #endif
+    return false;
 }
 
 char serial_read(void) {
@@ -110,19 +114,29 @@ char serial_read(void) {
     #endif
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
-    if (tud_cdc_connected() && tud_cdc_available() > 0) {
-        return (char)tud_cdc_read_char();
+    if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
+        int uart_errcode;
+        char text;
+        common_hal_busio_uart_read(&debug_uart, (uint8_t *)&text, 1, &uart_errcode);
+        return text;
     }
-    int uart_errcode;
-    char text;
-    common_hal_busio_uart_read(&debug_uart, (uint8_t *)&text, 1, &uart_errcode);
-    return text;
-    #elif CIRCUITPY_USB_CDC
+    #endif
+
+    #if CIRCUITPY_SERIAL_BLE
+    if (ble_serial_available() > 0) {
+        return ble_serial_read_char();
+    }
+    #endif
+
+    #if CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return -1;
     }
     #endif
+    #if CIRCUITPY_USB
     return (char)tud_cdc_read_char();
+    #endif
+    return -1;
 }
 
 bool serial_bytes_available(void) {
@@ -133,14 +147,30 @@ bool serial_bytes_available(void) {
     #endif
 
     #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
-    return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
-    #elif CIRCUITPY_USB_CDC
-    if (!usb_cdc_console_enabled()) {
-        return 0;
+    if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
+        return true;
     }
     #endif
-    return tud_cdc_available() > 0;
+
+    #if CIRCUITPY_SERIAL_BLE
+    if (ble_serial_available()) {
+        return true;
+    }
+    #endif
+
+    #if CIRCUITPY_USB_CDC
+    if (usb_cdc_console_enabled() && tud_cdc_available() > 0) {
+        return true;
+    }
+    #endif
+    #if CIRCUITPY_USB
+    if (tud_cdc_available() > 0) {
+        return true;
+    }
+    #endif
+    return false;
 }
+
 void serial_write_substring(const char *text, uint32_t length) {
     if (length == 0) {
         return;
@@ -156,12 +186,23 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
+    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    int uart_errcode;
+
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
+    #endif
+
+    #if CIRCUITPY_SERIAL_BLE
+    ble_serial_write(text, length);
+    #endif
+
     #if CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
         return;
     }
     #endif
 
+    #if CIRCUITPY_USB
     uint32_t count = 0;
     while (count < length && tud_cdc_connected()) {
         count += tud_cdc_write(text + count, length - count);
@@ -171,17 +212,7 @@ void serial_write_substring(const char *text, uint32_t length) {
         }
         usb_background();
     }
-
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
-    int uart_errcode;
-
-    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
     #endif
-
-    #ifdef NRF_DEBUG_PRINT
-    _debug_print_substr(text, length);
-    #endif
-
 }
 
 void serial_write(const char *text) {

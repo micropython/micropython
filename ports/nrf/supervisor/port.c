@@ -39,7 +39,6 @@
 #include "nrf/power.h"
 #include "nrf/timers.h"
 
-#include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/analogio/AnalogIn.h"
@@ -74,10 +73,6 @@ extern void qspi_disable(void);
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
-
-#ifdef NRF_DEBUG_PRINT
-extern void _debug_uart_init(void);
-#endif
 
 uint32_t reset_reason_saved = 0;
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
@@ -211,10 +206,6 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    gamepad_reset();
-    #endif
-
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
@@ -258,10 +249,6 @@ void reset_port(void) {
     #endif
 
     reset_all_pins();
-
-    #ifdef NRF_DEBUG_PRINT
-    _debug_uart_init();
-    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -389,7 +376,11 @@ void port_idle_until_interrupt(void) {
         // function (whether or not SD is enabled)
         int nested = __get_PRIMASK();
         __disable_irq();
-        if (!tud_task_event_ready()) {
+        bool ok = true;
+        #if CIRCUITPY_USB
+        ok = !tud_task_event_ready();
+        #endif
+        if (ok) {
             __DSB();
             __WFI();
         }

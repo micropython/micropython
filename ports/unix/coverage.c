@@ -108,8 +108,11 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
     { &mp_type_type },
-    .protocol = &fileio_stream_p,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &fileio_stream_p,
+        ),
 };
 
 // stream read returns non-blocking error
@@ -136,8 +139,11 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     { &mp_type_type },
-    .protocol = &textio_stream_p2,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &textio_stream_p2,
+        ),
 };
 
 // str/bytes objects without a valid hash
@@ -269,6 +275,13 @@ STATIC mp_obj_t extra_coverage(void) {
         const char *str;
         size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
+
+        len = mp_repl_autocomplete("i", 1,  &mp_plat_print, &str);
+        mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
+        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str);
+        len = mp_repl_autocomplete("import ut", 9,  &mp_plat_print, &str);
+        mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
+        mp_repl_autocomplete("import utime", 12,  &mp_plat_print, &str);
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
         mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str);
@@ -485,7 +498,7 @@ STATIC mp_obj_t extra_coverage(void) {
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_handle_pending(true);
@@ -495,13 +508,13 @@ STATIC mp_obj_t extra_coverage(void) {
         }
 
         // setting the keyboard interrupt (twice) and cancelling it during mp_handle_pending
-        mp_keyboard_interrupt();
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         mp_handle_pending(false);
 
         // setting keyboard interrupt and a pending event (intr should be handled first)
         mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_builtin_print_obj), MP_OBJ_NEW_SMALL_INT(10));
-        mp_keyboard_interrupt();
+        mp_sched_keyboard_interrupt();
         if (nlr_push(&nlr) == 0) {
             mp_handle_pending(true);
             nlr_pop();

@@ -76,6 +76,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/hardware_base/include/ \
        -isystem sdk/src/rp2_common/hardware_claim/include/ \
        -isystem sdk/src/rp2_common/hardware_clocks/include/ \
+       -isystem sdk/src/rp2_common/hardware_divider/include/ \
        -isystem sdk/src/rp2_common/hardware_dma/include/ \
        -isystem sdk/src/rp2_common/hardware_flash/include/ \
        -isystem sdk/src/rp2_common/hardware_gpio/include/ \
@@ -258,6 +259,12 @@ $(BUILD)/boot2.bin: $(BUILD)/boot2.elf
 $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
+
+$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
+	$(STEPECHO) "GEN $<"
+	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
+
+$(BUILD)/supervisor/internal_flash.o: $(HEADER_BUILD)/flash_info.h
 
 $(BUILD)/boot2.elf: $(BUILD)/stage2.c
 	$(STEPECHO) "BOOT $<"

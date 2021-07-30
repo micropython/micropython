@@ -30,6 +30,7 @@ HEX_UF2 = ("hex", "uf2")
 SPK = ("spk",)
 DFU = ("dfu",)
 BIN_DFU = ("bin", "dfu")
+COMBINED_HEX = ("combined.hex",)
 
 # Default extensions
 extension_by_port = {
@@ -61,6 +62,7 @@ extension_by_board = {
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
     "electronut_labs_blip": HEX,
+    "microbit_v2": COMBINED_HEX,
     # stm32
     "meowbit_v121": UF2,
 }

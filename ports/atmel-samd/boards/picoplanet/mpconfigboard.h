@@ -1,10 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "PicoPlanet"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
-
 #define IGNORE_PIN_PA00     1
 #define IGNORE_PIN_PA01     1
 #define IGNORE_PIN_PA10     1

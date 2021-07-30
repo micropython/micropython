@@ -168,9 +168,11 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
 
 const mp_obj_type_t nvm_bytearray_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ByteArray,
-    .subscr = nvm_bytearray_subscr,
-    .unary_op = nvm_bytearray_unary_op,
-    .print = NULL,
     .locals_dict = (mp_obj_t)&nvm_bytearray_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .subscr = nvm_bytearray_subscr,
+        .unary_op = nvm_bytearray_unary_op,
+        ),
 };

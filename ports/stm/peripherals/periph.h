@@ -59,9 +59,9 @@ typedef struct {
 
 #define TIM(index, alt, channel, tim_pin)       \
     { \
-        .tim_index = index, \
+        .tim_index = index - 1, \
         .altfn_index = alt, \
-        .channel_index = channel, \
+        .channel_index = channel - 1, \
         .pin = tim_pin, \
     }
 

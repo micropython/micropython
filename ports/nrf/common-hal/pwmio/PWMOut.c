@@ -74,7 +74,7 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
         }
     }
 
-    never_reset_pin_number(self->pin_number);
+    common_hal_never_reset_pin(self->pin);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
@@ -232,14 +232,14 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
 
     self->channel = channel;
-    self->pin_number = pin->number;
+    self->pin = pin;
     claim_pin(pin);
 
     self->frequency = frequency;
     self->variable_frequency = variable_frequency;
 
     // Note this is standard, not strong drive.
-    nrf_gpio_cfg_output(self->pin_number);
+    nrf_gpio_cfg_output(self->pin->number);
 
     // disable before mapping pin channel
     nrf_pwm_disable(self->pwm);
@@ -267,15 +267,15 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         return;
     }
 
-    nrf_gpio_cfg_default(self->pin_number);
+    nrf_gpio_cfg_default(self->pin->number);
 
     NRF_PWM_Type *pwm = self->pwm;
     self->pwm = NULL;
 
     pwmout_free_channel(pwm, self->channel);
 
-    reset_pin_number(self->pin_number);
-    self->pin_number = NO_PIN;
+    common_hal_reset_pin(self->pin);
+    self->pin = NULL;
 }
 
 void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty_cycle) {
@@ -312,4 +312,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

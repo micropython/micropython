@@ -31,12 +31,13 @@
 #ifndef MICROPY_UNSAFE_PROTO
 const void *mp_proto_get(uint16_t name, mp_const_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (!type->protocol) {
+    const void *protocol = mp_type_get_protocol_slot(type);
+    if (!protocol) {
         return NULL;
     }
-    uint16_t proto_name = *(const uint16_t *)type->protocol;
+    uint16_t proto_name = *(const uint16_t *)protocol;
     if (proto_name == name) {
-        return type->protocol;
+        return protocol;
     }
     return NULL;
 }

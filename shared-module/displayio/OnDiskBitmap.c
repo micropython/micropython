@@ -108,7 +108,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             if (palette_bytes_read != palette_size) {
                 mp_raise_ValueError(translate("Unable to read color palette data"));
             }
-            for (uint16_t i = 0; i < palette_size; i++) {
+            for (uint16_t i = 0; i < number_of_colors; i++) {
                 common_hal_displayio_palette_set_color(palette, i, palette_data[i]);
             }
             m_free(palette_data);

@@ -3,6 +3,9 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
+#define MICROPY_HW_NEOPIXEL         (&pin_PB23)
+#define MICROPY_HW_NEOPIXEL_COUNT   (10)
+
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)
 
@@ -14,11 +17,6 @@
 #define SPI_FLASH_MISO_PIN          &pin_PA16
 #define SPI_FLASH_SCK_PIN           &pin_PA21
 #define SPI_FLASH_CS_PIN            &pin_PB22
-
-// These are pins not to reset.
-#define MICROPY_PORT_A        (0)
-#define MICROPY_PORT_B        (0)
-#define MICROPY_PORT_C        (0)
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 

@@ -35,6 +35,7 @@
 
 typedef struct {
     mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
     struct dac_sync_descriptor descriptor;
     uint8_t channel;
     bool deinited;
