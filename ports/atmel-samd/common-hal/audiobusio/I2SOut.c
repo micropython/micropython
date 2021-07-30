@@ -44,7 +44,7 @@
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
-#include "hpl/gclk/hpl_gclk_base.h"
+#include "hpl//hpl_gclk_base.h"
 #include "peripheral_clk_config.h"
 
 #ifdef SAMD21
@@ -379,7 +379,7 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t *self) {
     }
     #endif
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
-    disable_gclk(self->gclk);
+    disable_clock_generator(self->gclk);
 
     #ifdef SAM_D5X_E5X
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_0 + self->clock_unit);

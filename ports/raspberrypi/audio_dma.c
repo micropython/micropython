@@ -150,15 +150,7 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
         audio_dma_stop(dma);
         return;
     }
-    bool busy0 = dma_channel_is_busy(dma->channel[0]);
-    bool busy1 = dma_channel_is_busy(dma->channel[1]);
-    if (busy0 == busy1) {
-        mp_printf(&mp_plat_print, "busy: %d %d\n", busy0, busy1);
-    }
 
-    if (buffer_length < 256) {
-        mp_printf(&mp_plat_print, "%d length: %d\n", dma->first_channel_free, buffer_length);
-    }
     audio_dma_convert_signed(dma, buffer, buffer_length, &output_buffer, &output_buffer_length);
 
     // If we don't have an output buffer, save the pointer to first_buffer for use in the single
@@ -169,13 +161,21 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
 
     dma_channel_set_trans_count(dma_channel, output_buffer_length / dma->output_size, false /* trigger */);
     dma_channel_set_read_addr(dma_channel, output_buffer, false /* trigger */);
+
     if (get_buffer_result == GET_BUFFER_DONE) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel_output, dma->audio_channel);
         } else {
-            // Set channel trigger to ourselves so we don't keep going.
-            dma_channel_hw_t *c = &dma_hw->ch[dma_channel];
-            c->al1_ctrl = (c->al1_ctrl & ~DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS) | (dma_channel << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
+            if (output_buffer_length == 0 &&
+                !dma_channel_is_busy(dma->channel[0]) &&
+                !dma_channel_is_busy(dma->channel[1])) {
+                // No data has been read, and both DMA channels have now finished, so it's safe to stop.
+                audio_dma_stop(dma);
+            } else {
+                // Set channel trigger to ourselves so we don't keep going.
+                dma_channel_hw_t *c = &dma_hw->ch[dma_channel];
+                c->al1_ctrl = (c->al1_ctrl & ~DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS) | (dma_channel << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
+            }
         }
     }
 }
@@ -217,6 +217,8 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     dma->first_channel_free = true;
     dma->output_resolution = output_resolution;
     dma->sample_resolution = audiosample_bits_per_sample(sample);
+    dma->output_register_address = output_register_address;
+
     audiosample_reset_buffer(sample, single_channel_output, audio_channel);
 
     bool single_buffer;
@@ -224,11 +226,8 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     uint32_t max_buffer_length;
     audiosample_get_buffer_structure(sample, single_channel_output, &single_buffer, &samples_signed,
         &max_buffer_length, &dma->sample_spacing);
-    mp_printf(&mp_plat_print, "single_buffer: %d, samples_signed: %d, max_buffer_length: %d, dma->sample_spacing: %d\n",
-        single_buffer, samples_signed, max_buffer_length, dma->sample_spacing);              ////
+
     // Check to see if we have to scale the resolution up.
-    mp_printf(&mp_plat_print, "dma->sample_resolution: %d, dma->output_resolution: %d, output_signed: %d, single_channel_output: %d\n",
-        dma->sample_resolution, dma->output_resolution, output_signed, single_channel_output);
     if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
         max_buffer_length *= 2;
     }
@@ -343,6 +342,14 @@ void audio_dma_stop(audio_dma_t *dma) {
         if (dma_channel_is_busy(channel)) {
             dma_channel_abort(channel);
         }
+
+        // Write a zero as the last sample. This stops any PWM output.
+        if (dma->output_resolution <= 8) {
+            *((uint8_t *)dma->output_register_address) = 0;
+        } else {
+            *((uint16_t *)dma->output_register_address) = 0;
+        }
+
         dma_channel_set_read_addr(channel, NULL, false /* trigger */);
         dma_channel_set_write_addr(channel, NULL, false /* trigger */);
         dma_channel_set_trans_count(channel, 0, false /* trigger */);

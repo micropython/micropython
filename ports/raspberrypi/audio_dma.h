@@ -51,6 +51,7 @@ typedef struct {
     size_t first_buffer_length;
     uint8_t *second_buffer;
     size_t second_buffer_length;
+    uint32_t output_register_address;
     background_callback_t callback;
 } audio_dma_t;
 

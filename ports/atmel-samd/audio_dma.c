@@ -157,7 +157,13 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel_output, dma->audio_channel);
         } else {
-            descriptor->DESCADDR.reg = 0;
+            if ((output_buffer_length == 0) && dma_transfer_status(SHARED_RX_CHANNEL) & 0x3) {
+                // Nothing further to read and previous buffer is finished.
+                audio_dma_stop(dma);
+            } else {
+                // Break descriptor chain.
+                descriptor->DESCADDR.reg = 0;
+            }
         }
     }
     descriptor->BTCTRL.bit.VALID = true;
