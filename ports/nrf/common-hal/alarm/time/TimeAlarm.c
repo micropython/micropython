@@ -70,10 +70,6 @@ int64_t alarm_time_timealarm_get_wakeup_timediff_ms(void) {
     return wakeup_time_saved - common_hal_time_monotonic_ms();
 }
 
-void alarm_time_timealarm_clear_wakeup_time(void) {
-    wakeup_time_saved = 0;
-}
-
 void alarm_time_timealarm_reset(void) {
     port_disable_interrupt_after_ticks_ch(1);
     wakeup_time_saved = 0;
