@@ -21,7 +21,7 @@
 
 //| class VectorShape:
 //|     def __init__(self, shape: Union[Polygon, Rectangle, Circle], pixel_shader: Union[displayio.ColorConverter, displayio.Palette], x: int=0, y: int=0) -> None:
-//|         """Binds a vector shape to a location and pixel color
+//|         """Binds a vector shape to a location and pixel shader. The shader can be a displayio.Palette(1); it will be asked to color pixel value 0.
 //|
 //|            :param shape: The shape to draw.
 //|            :param pixel_shader: The pixel shader that produces colors from values
