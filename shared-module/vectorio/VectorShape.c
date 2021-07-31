@@ -233,7 +233,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 }
 
                 // We double-check this to fast-path the case when a pixel is not covered by the shape & not call the color converter unnecessarily.
-                if (output_pixel.opaque) {
+                if (!output_pixel.opaque) {
                     VECTORIO_SHAPE_PIXEL_DEBUG(" (encountered transparent pixel from colorconverter; input area is not fully covered)\n");
                     full_coverage = false;
                 }
