@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2016, 2017 Nick Moore @mnemote
  * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
+ * Copyright (c) 2021 "Matthew Arcidy" <marcidy@gmail.com>
  *
  * Based on esp8266/modnetwork.c which is Copyright (c) 2015 Paul Sokolovsky
  * And the ESP IDF example code which is Public Domain / CC0
@@ -134,6 +135,9 @@ static bool wifi_sta_connect_requested = false;
 // Set to "true" if the STA interface is connected to wifi and has IP address.
 static bool wifi_sta_connected = false;
 
+// Set to "true" to run a blocking wifi scan, false for non-blocking
+static bool wifi_sta_scan_blocking = true;
+
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
 
@@ -145,6 +149,21 @@ static bool mdns_initialised = false;
 static uint8_t conf_wifi_sta_reconnects = 0;
 static uint8_t wifi_sta_reconnects;
 
+STATIC mp_obj_t esp_get_scan_results(void);
+
+// This function is scheduled when a SCAN_DONE event is emitted after a non-blocking scan.
+// It allows for retrieving AP records in a list in the context of the scheduler so the
+// list can be passed to a user-supplied callback in esp_scan.
+STATIC mp_obj_t esp_wifi_scan_cb(mp_obj_t arg) {
+    ESP_LOGI("wifi", "Scan callback ran");
+    mp_obj_t handler = MP_STATE_PORT(esp_wifi_scan_cb_handler);
+    mp_obj_t scan_results = esp_get_scan_results(); 
+    mp_call_function_2_protected(handler, MP_OBJ_FROM_PTR(&wlan_sta_obj), scan_results);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_wifi_scan_cb_obj, esp_wifi_scan_cb);
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -152,6 +171,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         case SYSTEM_EVENT_STA_START:
             ESP_LOGI("wifi", "STA_START");
             wifi_sta_reconnects = 0;
+            break;
+        case SYSTEM_EVENT_SCAN_DONE:
+            ESP_LOGI("wifi", "SCAN_DONE");
+            if (!wifi_sta_scan_blocking) {
+                mp_sched_schedule(MP_OBJ_FROM_PTR(&esp_wifi_scan_cb_obj), mp_const_none);
+            }
             break;
         case SYSTEM_EVENT_STA_CONNECTED:
             ESP_LOGI("network", "CONNECTED");
@@ -292,6 +317,7 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing Event Loop");
         ESP_EXCEPTIONS(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
+        memset(&MP_STATE_PORT(esp_wifi_scan_cb_handler), 0, sizeof(MP_STATE_PORT(esp_wifi_scan_cb_handler)));
         initialized = 1;
     }
     return mp_const_none;
@@ -454,9 +480,48 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
+STATIC mp_obj_t esp_get_scan_results() {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    uint16_t count = 0;
+    ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
+    if (count == 0) {
+        ESP_LOGI("wifi", "No AP records found");
+        return list;
+    }
+    wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
+    ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
+    for (uint16_t i = 0; i < count; i++) {
+        mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+        uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
+        int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
+        t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
+        t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
+        t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
+        t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
+        t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
+        t->items[5] = mp_const_false; // XXX hidden?
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
+    }
+    free(wifi_ap_records);
+    return list;
+}
+
+STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
+    wifi_sta_scan_blocking = true;
+
+    // If 1 arg or 2nd arg is True, blocking scan
+    if (n_args > 1) {
+        if (!mp_obj_is_callable(args[1])) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid callback, must be callable"));
+        }
+        MP_STATE_PORT(esp_wifi_scan_cb_handler) = args[1];
+        wifi_sta_scan_blocking = false;
+        ESP_LOGI("wifi", "Non-blocking scan");
+    }
+
     // check that STA mode is active
     wifi_mode_t mode;
     ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
@@ -464,35 +529,23 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
-    mp_obj_t list = mp_obj_new_list(0, NULL);
     wifi_scan_config_t config = { 0 };
     // XXX how do we scan hidden APs (and if we can scan them, are they really hidden?)
+
     MP_THREAD_GIL_EXIT();
-    esp_err_t status = esp_wifi_scan_start(&config, 1);
+    esp_err_t status = esp_wifi_scan_start(&config, wifi_sta_scan_blocking);
     MP_THREAD_GIL_ENTER();
-    if (status == 0) {
-        uint16_t count = 0;
-        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
-        wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
-        for (uint16_t i = 0; i < count; i++) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
-            int ssid_len = x ? x - wifi_ap_records[i].ssid : sizeof(wifi_ap_records[i].ssid);
-            t->items[0] = mp_obj_new_bytes(wifi_ap_records[i].ssid, ssid_len);
-            t->items[1] = mp_obj_new_bytes(wifi_ap_records[i].bssid, sizeof(wifi_ap_records[i].bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].primary);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(wifi_ap_records[i].authmode);
-            t->items[5] = mp_const_false; // XXX hidden?
-            mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
-        }
-        free(wifi_ap_records);
+    ESP_EXCEPTIONS(status);
+    
+    if (wifi_sta_scan_blocking) {
+        ESP_LOGI("wifi", "blocking scan calling get_results");
+        return esp_get_scan_results();
+    } else {
+        return mp_const_none;
     }
-    return list;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_scan_obj, 1, 2, esp_scan);
 
 STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
