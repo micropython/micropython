@@ -132,6 +132,12 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN            (1)
+#define MICROPY_FATFS_RPATH                 (2)
+#define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
 #define mp_type_textio mp_type_vfs_lfs2_textio

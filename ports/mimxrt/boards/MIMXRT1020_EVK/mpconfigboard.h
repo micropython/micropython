@@ -64,3 +64,15 @@
     { IOMUXC_GPIO_AD_B1_08_LPI2C2_SCL }, { IOMUXC_GPIO_AD_B1_09_LPI2C2_SDA }, \
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPI2C4_SCL }, { IOMUXC_GPIO_SD_B1_03_LPI2C4_SDA },
+
+#define USDHC_DUMMY_PIN NULL , 0
+#define MICROPY_USDHC1 \
+    { \
+        .cmd = {GPIO_SD_B0_02_USDHC1_CMD}, \
+        .clk = { GPIO_SD_B0_03_USDHC1_CLK }, \
+        .cd_b = { GPIO_SD_B0_06_USDHC1_CD_B },\
+        .data0 = { GPIO_SD_B0_04_USDHC1_DATA0 },\
+        .data1 = { GPIO_SD_B0_05_USDHC1_DATA1 },\
+        .data2 = { GPIO_SD_B0_00_USDHC1_DATA2 },\
+        .data3 = { GPIO_SD_B0_01_USDHC1_DATA3 },\
+    }
