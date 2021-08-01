@@ -31,6 +31,9 @@
 //| This module defines functions to register and unregister cleanup functions.
 //| Functions thus registered are automatically executed upon normal vm termination.
 //|
+//| These functions are run in the reverse order in which they were registered;
+//| if you register ``A``, ``B``, and ``C``, they will be run in the order ``C``, ``B``, ``A``.
+//|
 //| """
 //| ...
 //|
@@ -39,13 +42,14 @@
 //|
 //|     """Register func as a function to be executed at termination.
 //|
-//|        Any optional arguments that are to be passed to func must be passed as arguments to register().
+//|        Any optional arguments that are to be passed to func must be passed as arguments to `register()`.
 //|        It is possible to register the same function and arguments more than once.
 //|
 //|        At normal program termination (for instance, if `sys.exit()` is called or the vm execution completes),
-//|        all functions registered are called in order of there registration.
+//|        all functions registered are called in last in, first out order.
 //|
-//|        If an exception is raised during execution of the exit handlers, a traceback is printed and the execution stops.
+//|        If an exception is raised during execution of the exit handler,
+//|        a traceback is printed (unless `SystemExit` is raised) and the execution stops.
 //|
 //|        This function returns func, which makes it possible to use it as a decorator.
 //|

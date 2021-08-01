@@ -217,6 +217,9 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
+    #if CIRCUITPY_ATEXIT
+    shared_module_atexit_execute();
+    #endif
     return true;
 }
 
@@ -766,6 +769,9 @@ STATIC int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
+    #if CIRCUITPY_ATEXIT
+    shared_module_atexit_execute();
+    #endif
     cleanup_after_vm(heap, MP_OBJ_SENTINEL);
     #if CIRCUITPY_STATUS_LED
     status_led_init();
@@ -879,6 +885,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_ALARM
     common_hal_alarm_gc_collect();
+    #endif
+
+    #if CIRCUITPY_ATEXIT
+    atexit_gc_collect();
     #endif
 
     #if CIRCUITPY_DISPLAYIO

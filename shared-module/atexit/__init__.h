@@ -30,6 +30,7 @@
 #include "py/obj.h"
 
 extern void atexit_reset(void);
+extern void atexit_gc_collect(void);
 
 extern void shared_module_atexit_register(mp_obj_t *func,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);

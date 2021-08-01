@@ -44,10 +44,6 @@
 #include "lib/utils/pyexec.h"
 #include "genhdr/mpversion.h"
 
-#if CIRCUITPY_ATEXIT
-#include "shared-module/atexit/__init__.h"
-#endif
-
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 int pyexec_system_exit = 0;
 
@@ -131,10 +127,6 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         start = mp_hal_ticks_ms();
         #endif
         mp_call_function_0(module_fun);
-        // execute exit handlers (if any).
-        #if CIRCUITPY_ATEXIT
-        shared_module_atexit_execute();
-        #endif
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
