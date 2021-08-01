@@ -16,7 +16,7 @@ STATIC const mp_rom_map_elem_t vectorio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Circle), MP_ROM_PTR(&vectorio_circle_type) },
     { MP_ROM_QSTR(MP_QSTR_Polygon), MP_ROM_PTR(&vectorio_polygon_type) },
     { MP_ROM_QSTR(MP_QSTR_Rectangle), MP_ROM_PTR(&vectorio_rectangle_type) },
-    { MP_ROM_QSTR(MP_QSTR_VectorShape), MP_ROM_PTR(&vectorio_vector_shape_type) },
+//    { MP_ROM_QSTR(MP_QSTR_VectorShape), MP_ROM_PTR(&vectorio_vector_shape_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(vectorio_module_globals, vectorio_module_globals_table);

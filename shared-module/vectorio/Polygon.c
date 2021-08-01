@@ -1,4 +1,3 @@
-
 #include "shared-module/vectorio/__init__.h"
 #include "shared-bindings/vectorio/Polygon.h"
 #include "shared-module/displayio/area.h"
@@ -108,17 +107,17 @@ void common_hal_vectorio_polygon_get_area(void *polygon, displayio_area_t *area)
         int x = self->points_list[i];
         ++i;
         int y = self->points_list[i];
-        if (x <= area->x1) {
-            area->x1 = x - 1;
+        if (x < area->x1) {
+            area->x1 = x;
         }
-        if (y <= area->y1) {
-            area->y1 = y - 1;
+        if (y < area->y1) {
+            area->y1 = y;
         }
-        if (x >= area->x2) {
-            area->x2 = x + 1;
+        if (x > area->x2) {
+            area->x2 = x;
         }
-        if (y >= area->y2) {
-            area->y2 = y + 1;
+        if (y > area->y2) {
+            area->y2 = y;
         }
     }
 }
@@ -166,4 +165,9 @@ uint32_t common_hal_vectorio_polygon_get_pixel(void *obj, int16_t x, int16_t y) 
         y1 = y2;
     }
     return winding_number == 0 ? 0 : 1;
+}
+
+mp_obj_t common_hal_vectorio_polygon_get_draw_protocol(void *polygon) {
+    vectorio_polygon_t *self = polygon;
+    return self->draw_protocol_instance;
 }

@@ -12,4 +12,6 @@ uint32_t common_hal_vectorio_rectangle_get_pixel(void *rectangle, int16_t x, int
 
 void common_hal_vectorio_rectangle_get_area(void *rectangle, displayio_area_t *out_area);
 
+mp_obj_t common_hal_vectorio_rectangle_get_draw_protocol(void *rectangle);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_RECTANGLE_H
