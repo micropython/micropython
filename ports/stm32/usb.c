@@ -412,7 +412,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_port, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
+        { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_USB_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         #if MICROPY_HW_USB_MSC
         { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
@@ -489,61 +489,61 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     uint8_t mode;
     if (strcmp(mode_str, "CDC+MSC") == 0 || strcmp(mode_str, "VCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_MSC;
+            pid = MICROPY_HW_USB_PID_CDC_MSC;
         }
         mode = USBD_MODE_CDC_MSC;
     } else if (strcmp(mode_str, "VCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC_MSC_HID;
         }
         mode = USBD_MODE_CDC_MSC_HID;
     #if MICROPY_HW_USB_CDC_NUM >= 2
     } else if (strcmp(mode_str, "VCP+VCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2;
+            pid = MICROPY_HW_USB_PID_CDC2;
         }
         mode = USBD_MODE_CDC2;
     } else if (strcmp(mode_str, "VCP+VCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2_MSC;
+            pid = MICROPY_HW_USB_PID_CDC2_MSC;
         }
         mode = USBD_MODE_CDC2_MSC;
     } else if (strcmp(mode_str, "2xVCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC2_MSC_HID;
         }
         mode = USBD_MODE_CDC2_MSC_HID;
     #endif
     #if MICROPY_HW_USB_CDC_NUM >= 3
     } else if (strcmp(mode_str, "3xVCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3;
+            pid = MICROPY_HW_USB_PID_CDC3;
         }
         mode = USBD_MODE_CDC3;
     } else if (strcmp(mode_str, "3xVCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3_MSC;
+            pid = MICROPY_HW_USB_PID_CDC3_MSC;
         }
         mode = USBD_MODE_CDC3_MSC;
     } else if (strcmp(mode_str, "3xVCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC3_MSC_HID;
         }
         mode = USBD_MODE_CDC3_MSC_HID;
     #endif
     } else if (strcmp(mode_str, "CDC+HID") == 0 || strcmp(mode_str, "VCP+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_HID;
+            pid = MICROPY_HW_USB_PID_CDC_HID;
         }
         mode = USBD_MODE_CDC_HID;
     } else if (strcmp(mode_str, "CDC") == 0 || strcmp(mode_str, "VCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC;
+            pid = MICROPY_HW_USB_PID_CDC;
         }
         mode = USBD_MODE_CDC;
     } else if (strcmp(mode_str, "MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_MSC;
+            pid = MICROPY_HW_USB_PID_MSC;
         }
         mode = USBD_MODE_MSC;
     } else {

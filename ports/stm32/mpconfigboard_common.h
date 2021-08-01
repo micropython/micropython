@@ -178,6 +178,33 @@
 #endif
 
 /*****************************************************************************/
+// USB configuration
+
+// The USBD_xxx VID/PID macros have been renamed to MICROPY_HW_USB_xxx.
+#ifdef USBD_VID
+#error "Old USBD_VID configuration option used"
+#endif
+
+// Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
+// is defined by a board then all needed PID options must also be defined.  The
+// VID and PID can also be set dynamically in pyb.usb_mode().
+// Windows needs a different PID to distinguish different device configurations.
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID              (0xf055)
+#define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
+#define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
+#define MICROPY_HW_USB_PID_CDC          (0x9802)
+#define MICROPY_HW_USB_PID_MSC          (0x9803)
+#define MICROPY_HW_USB_PID_CDC2_MSC     (0x9804)
+#define MICROPY_HW_USB_PID_CDC2         (0x9805)
+#define MICROPY_HW_USB_PID_CDC3         (0x9806)
+#define MICROPY_HW_USB_PID_CDC3_MSC     (0x9807)
+#define MICROPY_HW_USB_PID_CDC_MSC_HID  (0x9808)
+#define MICROPY_HW_USB_PID_CDC2_MSC_HID (0x9809)
+#define MICROPY_HW_USB_PID_CDC3_MSC_HID (0x980a)
+#endif
+
+/*****************************************************************************/
 // General configuration
 
 // Heap start / end definitions
