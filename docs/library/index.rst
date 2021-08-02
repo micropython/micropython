@@ -176,3 +176,13 @@ The following libraries are specific to the RP2040, as used in the Raspberry Pi 
   :maxdepth: 2
 
   rp2.rst
+
+Libraries specific to Zephyr
+----------------------------
+
+The following libraries are specific to the Zephyr port.
+
+.. toctree::
+  :maxdepth: 2
+
+  zephyr.rst
