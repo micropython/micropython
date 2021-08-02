@@ -1907,25 +1907,6 @@ msgstr "Plus eventuella moduler i filsystemet\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygonen behöver minst 3 punkter"
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-"Port accepterar inte PWM carrier. Ange pinne frekvens och arbetscykel "
-"istället"
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-"Porten accepterar inte pinne eller frekvens. Skapa och skicka en PWMOut "
-"Carrier istället"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefixbufferten måste finnas på heap"
@@ -4499,6 +4480,20 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Port accepterar inte PWM carrier. Ange pinne frekvens och arbetscykel "
+#~ "istället"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Porten accepterar inte pinne eller frekvens. Skapa och skicka en PWMOut "
+#~ "Carrier istället"
 
 #~ msgid "Instruction %d jumps on pin"
 #~ msgstr "Instruktion %d hoppar på pinne"

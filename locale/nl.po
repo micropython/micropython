@@ -1901,25 +1901,6 @@ msgstr "En iedere module in het bestandssysteem\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygon heeft op zijn minst 3 punten nodig"
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-"Poort ondersteund geen PWM drager. Geef een pin, frequentie en inschakeltijd "
-"op"
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-"Poort accepteert geen pin of frequentie. Stel een PWMOut Carrier samen en "
-"geef die op"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefix buffer moet op de heap zijn"
@@ -4486,6 +4467,20 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Poort ondersteund geen PWM drager. Geef een pin, frequentie en "
+#~ "inschakeltijd op"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Poort accepteert geen pin of frequentie. Stel een PWMOut Carrier samen en "
+#~ "geef die op"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Buffer is te groot en niet in staat te alloceren"
