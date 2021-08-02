@@ -692,6 +692,7 @@ extern const mp_obj_type_t mp_type_bytearray;
 extern const mp_obj_type_t mp_type_memoryview;
 extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
+extern const mp_obj_type_t mp_type_traceback;
 extern const mp_obj_type_t mp_type_tuple;
 extern const mp_obj_type_t mp_type_list;
 extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict implementation detail)
@@ -791,6 +792,7 @@ extern const struct _mp_obj_bool_t mp_const_true_obj;
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_dict_t mp_const_empty_dict_obj;
+extern const struct _mp_obj_traceback_t mp_const_empty_traceback_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;

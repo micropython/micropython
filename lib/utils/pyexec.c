@@ -242,7 +242,7 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
         mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
         if (c == CHAR_CTRL_C) {
             #if MICROPY_KBD_EXCEPTION
-            MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+            MP_STATE_VM(mp_kbd_exception).traceback->data = NULL;
             nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
             #else
             mp_raise_type(&mp_type_KeyboardInterrupt);

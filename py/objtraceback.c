@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_OBJEXCEPT_H
-#define MICROPY_INCLUDED_PY_OBJEXCEPT_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include "py/runtime.h"
 #include "py/objtraceback.h"
 
-typedef struct _mp_obj_exception_t {
-    mp_obj_base_t base;
-    mp_obj_tuple_t *args;
-    mp_obj_traceback_t *traceback;
-} mp_obj_exception_t;
+const mp_obj_traceback_t mp_const_empty_traceback_obj = {{&mp_type_traceback}, 0, 0, NULL};
 
-void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
-void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+STATIC void mp_obj_traceback_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+    (void)kind;
+    mp_obj_traceback_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_printf(print, "<traceback object at 0x%p>", o);
+}
 
-#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-    const mp_obj_type_t mp_type_##exc_name = { \
-        { &mp_type_type }, \
-        .name = MP_QSTR_##exc_name, \
-        .print = mp_obj_exception_print, \
-        .make_new = mp_obj_exception_make_new, \
-        .attr = mp_obj_exception_attr, \
-        .parent = &mp_type_##base_name, \
-    };
-
-#endif // MICROPY_INCLUDED_PY_OBJEXCEPT_H
+const mp_obj_type_t mp_type_traceback = {
+    { &mp_type_type },
+    .name = MP_QSTR_traceback,
+    .print = mp_obj_traceback_print,
+};
