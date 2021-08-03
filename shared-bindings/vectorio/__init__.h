@@ -30,7 +30,7 @@ typedef struct _vectorio_draw_protocol_impl_t {
 // Draw protocol
 typedef struct _vectorio_draw_protocol_t {
     MP_PROTOCOL_HEAD // MP_QSTR_protocol_draw
-    
+
     // Instance of the draw protocol
     draw_get_protocol_self_fun draw_get_protocol_self;
 
