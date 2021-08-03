@@ -87,7 +87,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_get_x(mp_obj_t wrapper_shape) {
     // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
-    
+
     return MP_OBJ_NEW_SMALL_INT(common_hal_vectorio_vector_shape_get_x(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_vector_shape_get_x_obj, vectorio_vector_shape_obj_get_x);
