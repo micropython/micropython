@@ -12,7 +12,7 @@
 
 //| class Circle:
 //|
-//|     def __init__(self, pixel_shader: Union[ColorConverter, Palette] radius: int, x: int, y: int) -> None:
+//|     def __init__(self, pixel_shader: Union[ColorConverter, Palette], radius: int, x: int, y: int) -> None:
 //|         """Circle is positioned on screen by its center point.
 //|
 //|            :param pixel_shader: The pixel shader that produces colors from values
