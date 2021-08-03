@@ -290,7 +290,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_
 //|     ...
 //|
 STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    mp_raise_NotImplementedError(NULL);
+    #else
     supervisor_bluetooth_disable_workflow();
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disable_ble_workflow);
