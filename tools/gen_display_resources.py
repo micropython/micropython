@@ -228,7 +228,7 @@ terminalio_terminal_obj_t supervisor_terminal = {
     .font = &supervisor_terminal_font,
     .cursor_x = 0,
     .cursor_y = 0,
-    .tilegrid = &supervisor_terminal_text_grid
+    .tilegrid = NULL
 };
 """
 )
