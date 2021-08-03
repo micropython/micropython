@@ -12,7 +12,7 @@ void common_hal_vectorio_rectangle_construct(vectorio_rectangle_t *self, uint32_
 
 uint32_t common_hal_vectorio_rectangle_get_pixel(void *obj, int16_t x, int16_t y) {
     vectorio_rectangle_t *self = obj;
-    if (x >= 0 && y >= 0 && x < self->width && y < self->height ) {
+    if (x >= 0 && y >= 0 && x < self->width && y < self->height) {
         return 1;
     }
     return 0;

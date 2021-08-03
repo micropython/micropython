@@ -60,7 +60,7 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
         self->absolute_transform->transpose_xy,
         &shape_area, &shape_area, out_area
         );
-    
+
     displayio_area_shift(
         out_area,
         self->absolute_transform->x,
@@ -100,7 +100,7 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
         VECTORIO_SHAPE_DEBUG(" stale:{(%3d,%3d), (%3d,%3d)} -> expanded:{(%3d,%3d), (%3d,%3d)}\n",
             self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2,
             self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
-        
+
         // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish.
         displayio_area_copy(&current_area, &self->current_area);
     }
@@ -369,11 +369,11 @@ displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_
         new_tail = &self->current_area;
         VECTORIO_SHAPE_DEBUG(" redrawing current: {(%3d,%3d), (%3d,%3d)}", self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2);
     }
-#ifdef VECTORIO_SHAPE_DEBUG
+    #ifdef VECTORIO_SHAPE_DEBUG
     if (new_tail != tail) {
         VECTORIO_SHAPE_DEBUG("\n");
     }
-#endif
+    #endif
     return new_tail;
 }
 
