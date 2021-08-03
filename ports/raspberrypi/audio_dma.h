@@ -45,6 +45,7 @@ typedef struct {
     bool output_signed;
     bool first_channel_free;
     bool first_buffer_free;
+    bool playing_in_progress;
     uint8_t output_resolution; // in bits
     uint8_t sample_resolution; // in bits
     uint8_t *first_buffer;

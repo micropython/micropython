@@ -44,7 +44,7 @@
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
-#include "hpl//hpl_gclk_base.h"
+#include "hpl/gclk/hpl_gclk_base.h"
 #include "peripheral_clk_config.h"
 
 #ifdef SAMD21

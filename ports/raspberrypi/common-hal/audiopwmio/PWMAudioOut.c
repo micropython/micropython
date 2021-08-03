@@ -38,7 +38,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 #include "src/rp2040/hardware_structs/include/hardware/structs/dma.h"

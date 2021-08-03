@@ -37,10 +37,8 @@
 
 #if CIRCUITPY_AUDIOPWMIO || CIRCUITPY_AUDIOBUSIO
 
-#define AUDIO_DMA_CHANNEL_COUNT NUM_DMA_CHANNELS
-
 void audio_dma_reset(void) {
-    for (size_t channel = 0; channel < AUDIO_DMA_CHANNEL_COUNT; channel++) {
+    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
         if (MP_STATE_PORT(playing_audio)[channel] == NULL) {
             continue;
         }
@@ -171,6 +169,7 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
                 !dma_channel_is_busy(dma->channel[1])) {
                 // No data has been read, and both DMA channels have now finished, so it's safe to stop.
                 audio_dma_stop(dma);
+                dma->playing_in_progress = false;
             } else {
                 // Set channel trigger to ourselves so we don't keep going.
                 dma_channel_hw_t *c = &dma_hw->ch[dma_channel];
@@ -318,6 +317,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
         irq_set_mask_enabled(1 << DMA_IRQ_0, true);
     }
 
+    dma->playing_in_progress = true;
     dma_channel_start(dma->channel[0]);
 
     return AUDIO_DMA_OK;
@@ -325,7 +325,14 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
 
 void audio_dma_stop(audio_dma_t *dma) {
     // Disable our interrupts.
-    dma_hw->inte0 &= ~((1 << dma->channel[0]) | (1 << dma->channel[1]));
+    uint32_t channel_mask = 0;
+    if (dma->channel[0] < NUM_DMA_CHANNELS) {
+        channel_mask |= 1 << dma->channel[0];
+    }
+    if (dma->channel[1] < NUM_DMA_CHANNELS) {
+        channel_mask |= 1 << dma->channel[1];
+    }
+    dma_hw->inte0 &= ~channel_mask;
     irq_set_mask_enabled(1 << DMA_IRQ_0, false);
 
     // Run any remaining audio tasks because we remove ourselves from
@@ -334,6 +341,10 @@ void audio_dma_stop(audio_dma_t *dma) {
 
     for (size_t i = 0; i < 2; i++) {
         size_t channel = dma->channel[i];
+        if (channel == NUM_DMA_CHANNELS) {
+            // Channel not in use.
+            continue;
+        }
 
         dma_channel_config c = dma_channel_get_default_config(dma->channel[i]);
         channel_config_set_enable(&c, false);
@@ -357,6 +368,7 @@ void audio_dma_stop(audio_dma_t *dma) {
         MP_STATE_PORT(playing_audio)[channel] = NULL;
         dma->channel[i] = NUM_DMA_CHANNELS;
     }
+    dma->playing_in_progress = false;
 
     // Hold onto our buffers.
 }
@@ -381,7 +393,7 @@ void audio_dma_resume(audio_dma_t *dma) {
 }
 
 bool audio_dma_get_paused(audio_dma_t *dma) {
-    if (dma->channel[0] >= AUDIO_DMA_CHANNEL_COUNT) {
+    if (dma->channel[0] >= NUM_DMA_CHANNELS) {
         return false;
     }
     uint32_t control = dma_hw->ch[dma->channel[0]].ctrl_trig;
@@ -408,12 +420,7 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
     if (dma->channel[0] == NUM_DMA_CHANNELS) {
         return false;
     }
-    if (!dma_channel_is_busy(dma->channel[0]) &&
-        !dma_channel_is_busy(dma->channel[1])) {
-        return false;
-    }
-
-    return true;
+    return dma->playing_in_progress;
 }
 
 // WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
