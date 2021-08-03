@@ -233,7 +233,9 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
-    wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
+    struct scan_config config = {0};
+    config.show_hidden = 1;
+    wifi_station_scan(&config, (scan_done_cb_t)esp_scan_cb);
     while (esp_scan_list != NULL) {
         // our esp_scan_cb is called via ets_loop_iter so it's safe to set the
         // esp_scan_list variable to NULL without disabling interrupts
