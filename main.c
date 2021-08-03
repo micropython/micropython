@@ -633,11 +633,13 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
     bool skip_boot_output = false;
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    FIL file_pointer;
+    #endif
 
     if (ok_to_run) {
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        FIL file_pointer;
         boot_output_file = &file_pointer;
 
         // Get the base filesystem.
