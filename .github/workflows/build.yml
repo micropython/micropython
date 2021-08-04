@@ -341,6 +341,7 @@ jobs:
         - "qtpy_m0_haxpress"
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
+        - "raytac_mdbt50q-rx"
         - "robohatmm1_m4"
         - "sam32"
         - "same54_xplained"

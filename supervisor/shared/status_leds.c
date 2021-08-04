@@ -101,6 +101,11 @@ uint16_t status_rgb_color[3] = {
 digitalio_digitalinout_obj_t single_color_led;
 
 uint8_t rgb_status_brightness = 0xff;
+
+#ifndef MICROPY_HW_LED_STATUS_INVERTED
+#define MICROPY_HW_LED_STATUS_INVERTED (0)
+#endif
+
 #endif
 
 #if CIRCUITPY_DIGITALIO && (defined(MICROPY_HW_LED_RX) || defined(MICROPY_HW_LED_TX))
@@ -189,7 +194,8 @@ void status_led_init() {
 
     #elif defined(MICROPY_HW_LED_STATUS)
     common_hal_digitalio_digitalinout_construct(&single_color_led, MICROPY_HW_LED_STATUS);
-    common_hal_digitalio_digitalinout_switch_to_output(&single_color_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output(
+        &single_color_led, MICROPY_HW_LED_STATUS_INVERTED == 0, DRIVE_MODE_PUSH_PULL);
     #endif
 
     #if CIRCUITPY_DIGITALIO && CIRCUITPY_STATUS_LED
@@ -282,7 +288,8 @@ void new_status_color(uint32_t rgb) {
     common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
     common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #elif CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_STATUS)
-    common_hal_digitalio_digitalinout_set_value(&single_color_led, rgb_adjusted > 0);
+    common_hal_digitalio_digitalinout_set_value(
+        &single_color_led, (rgb_adjusted > 0) ^ MICROPY_HW_LED_STATUS_INVERTED);
     #endif
 }
 
