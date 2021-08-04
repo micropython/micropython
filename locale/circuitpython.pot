@@ -3421,6 +3421,10 @@ msgstr ""
 msgid "invalid syntax for number"
 msgstr ""
 
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
+
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr ""
@@ -4091,10 +4095,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
-
-#: shared-bindings/traceback/__init__.c
-msgid "stack is not ok"
 msgstr ""
 
 #: py/objstr.c

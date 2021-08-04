@@ -27,8 +27,6 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/stack.h"
-
 //| """Traceback Module
 //|
 //| This module provides a standard interface to print stack traces of programs.
@@ -97,11 +95,12 @@ STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_arg
     }
 
     if (args[ARG_tb].u_obj != mp_const_none && print_tb) {
-        if (!stack_ok()) {
-            mp_raise_RuntimeError(translate("stack is not ok"));
+        if (!mp_obj_is_type(args[ARG_tb].u_obj, &mp_type_traceback)) {
+            mp_raise_TypeError(translate("invalid traceback"));
         }
-        size_t n, *values;
-        mp_obj_exception_get_traceback(exc, &n, &values);
+        mp_obj_traceback_t *tb = MP_OBJ_TO_PTR(args[ARG_tb].u_obj);
+        size_t n = (tb->data) ? tb->len : 0;
+        size_t *values = (tb->data) ? tb->data : NULL;
         if (n > 0) {
             assert(n % 3 == 0);
             // Decompress the format strings
