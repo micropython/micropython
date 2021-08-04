@@ -16,7 +16,7 @@ cpp-coveralls
 Sphinx<4
 sphinx-rtd-theme
 myst-parser
-sphinx-autoapi<=1.8.1
+sphinx-autoapi
 sphinxcontrib-svg2pdfconverter
 readthedocs-sphinx-search
 
