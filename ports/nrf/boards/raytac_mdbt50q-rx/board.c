@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,15 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "MDBT50Q-DB-40"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
+#include "supervisor/board.h"
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_13)
-#define MICROPY_HW_LED_STATUS_INVERTED (1)
+void board_init(void) {
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
