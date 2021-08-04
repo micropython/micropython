@@ -37,8 +37,8 @@ typedef struct {
     mp_obj_base_t base;
     uint16_t width;
     uint16_t height;
-    size_t *data;
-    uint16_t stride; // size_t's
+    uint32_t *data;
+    uint16_t stride; // uint32_t's
     uint8_t bits_per_value;
     uint8_t x_shift;
     size_t x_mask;

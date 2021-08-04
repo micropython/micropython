@@ -109,13 +109,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 //|
 STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
-    if (run_mode_obj == &mcu_runmode_uf2_obj) {
+    if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_uf2_obj)) {
         run_mode = RUNMODE_UF2;
-    } else if (run_mode_obj == &mcu_runmode_normal_obj) {
+    } else if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_normal_obj)) {
         run_mode = RUNMODE_NORMAL;
-    } else if (run_mode_obj == &mcu_runmode_safe_mode_obj) {
+    } else if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_safe_mode_obj)) {
         run_mode = RUNMODE_SAFE_MODE;
-    } else if (run_mode_obj == &mcu_runmode_bootloader_obj) {
+    } else if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_bootloader_obj)) {
         run_mode = RUNMODE_BOOTLOADER;
     } else {
         mp_raise_ValueError(translate("Invalid run mode."));
@@ -169,7 +169,7 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_on_next_reset), MP_ROM_PTR(&mcu_on_next_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mcu_reset_obj) },
-    #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+    #if CIRCUITPY_NVM && CIRCUITPY_INTERNAL_NVM_SIZE > 0
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_NONE },

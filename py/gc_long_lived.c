@@ -33,14 +33,14 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
     #ifndef MICROPY_ENABLE_GC
     return fun_bc;
     #endif
-    if (fun_bc == NULL || fun_bc == mp_const_none || max_depth == 0) {
+    if (fun_bc == NULL || MP_OBJ_FROM_PTR(fun_bc) == mp_const_none || max_depth == 0) {
         return fun_bc;
     }
     fun_bc->bytecode = gc_make_long_lived((byte *)fun_bc->bytecode);
     fun_bc->globals = make_dict_long_lived(fun_bc->globals, max_depth - 1);
     for (uint32_t i = 0; i < gc_nbytes(fun_bc->const_table) / sizeof(mp_obj_t); i++) {
         // Skip things that aren't allocated on the heap (and hence have zero bytes.)
-        if (gc_nbytes((byte *)fun_bc->const_table[i]) == 0) {
+        if (gc_nbytes(MP_OBJ_TO_PTR(fun_bc->const_table[i])) == 0) {
             continue;
         }
         // Try to detect raw code.
@@ -59,11 +59,11 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
     // Functions (mp_obj_fun_bc_t) have four pointers (base, globals, bytecode and const_table)
     // before the variable length extra_args so remove them from the length.
     for (size_t i = 0; i < words - 4; i++) {
-        if (fun_bc->extra_args[i] == NULL) {
+        if (MP_OBJ_TO_PTR(fun_bc->extra_args[i]) == NULL) {
             continue;
         }
         if (mp_obj_is_type(fun_bc->extra_args[i], &mp_type_dict)) {
-            fun_bc->extra_args[i] = make_dict_long_lived(fun_bc->extra_args[i], max_depth - 1);
+            fun_bc->extra_args[i] = MP_OBJ_FROM_PTR(make_dict_long_lived(MP_OBJ_TO_PTR(fun_bc->extra_args[i]), max_depth - 1));
         } else {
             fun_bc->extra_args[i] = make_obj_long_lived(fun_bc->extra_args[i], max_depth - 1);
         }
@@ -79,9 +79,9 @@ mp_obj_property_t *make_property_long_lived(mp_obj_property_t *prop, uint8_t max
     if (max_depth == 0) {
         return prop;
     }
-    prop->proxy[0] = make_obj_long_lived((mp_obj_fun_bc_t *)prop->proxy[0], max_depth - 1);
-    prop->proxy[1] = make_obj_long_lived((mp_obj_fun_bc_t *)prop->proxy[1], max_depth - 1);
-    prop->proxy[2] = make_obj_long_lived((mp_obj_fun_bc_t *)prop->proxy[2], max_depth - 1);
+    prop->proxy[0] = make_obj_long_lived(prop->proxy[0], max_depth - 1);
+    prop->proxy[1] = make_obj_long_lived(prop->proxy[1], max_depth - 1);
+    prop->proxy[2] = make_obj_long_lived(prop->proxy[2], max_depth - 1);
     return gc_make_long_lived(prop);
 }
 
@@ -123,7 +123,7 @@ mp_obj_t make_obj_long_lived(mp_obj_t obj, uint8_t max_depth) {
     #ifndef MICROPY_ENABLE_GC
     return obj;
     #endif
-    if (obj == NULL) {
+    if (MP_OBJ_TO_PTR(obj) == NULL) {
         return obj;
     }
     // If not in the GC pool, do nothing. This can happen (at least) when
@@ -144,6 +144,6 @@ mp_obj_t make_obj_long_lived(mp_obj_t obj, uint8_t max_depth) {
         // Types are already long lived during creation.
         return obj;
     } else {
-        return gc_make_long_lived(obj);
+        return MP_OBJ_FROM_PTR(gc_make_long_lived(MP_OBJ_TO_PTR(obj)));
     }
 }

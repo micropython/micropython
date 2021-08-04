@@ -36,7 +36,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, mcu_pin_obj_t *clock_pin, mcu_pin_obj_t *data_pin, mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
     digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
     clock->base.type = &digitalio_digitalinout_type;

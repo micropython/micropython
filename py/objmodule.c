@@ -102,7 +102,7 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
-            mp_obj_t long_lived = gc_make_long_lived(dest[1]);
+            mp_obj_t long_lived = MP_OBJ_FROM_PTR(gc_make_long_lived(MP_OBJ_TO_PTR(dest[1])));
             // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
             mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), long_lived);
         }
@@ -129,7 +129,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     // create new module object
     mp_obj_module_t *o = m_new_ll_obj(mp_obj_module_t);
     o->base.type = &mp_type_module;
-    o->globals = MP_OBJ_TO_PTR(gc_make_long_lived(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE)));
+    o->globals = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE)));
 
     // store __name__ entry in the module
     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));

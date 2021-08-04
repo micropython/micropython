@@ -192,7 +192,7 @@ displayio_bitmap_t supervisor_terminal_font_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {},
     .height = {},
-    .data = (size_t*) font_bitmap_data,
+    .data = (uint32_t*) font_bitmap_data,
     .stride = {},
     .bits_per_value = 1,
     .x_shift = 5,

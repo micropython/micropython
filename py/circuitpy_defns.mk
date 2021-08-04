@@ -206,6 +206,9 @@ endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
 endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
+endif
 ifeq ($(CIRCUITPY_IPADDRESS),1)
 SRC_PATTERNS += ipaddress/%
 endif
@@ -332,6 +335,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_VIDEOCORE),1)
+SRC_PATTERNS += videocore/%
+endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
@@ -340,9 +346,6 @@ SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
-endif
-ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
-SRC_PATTERNS += imagecapture/%
 endif
 ifeq ($(CIRCUITPY_MSGPACK),1)
 SRC_PATTERNS += msgpack/%

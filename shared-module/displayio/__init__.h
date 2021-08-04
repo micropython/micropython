@@ -44,6 +44,9 @@
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
+#if CIRCUITPY_VIDEOCORE
+#include "bindings/videocore/Framebuffer.h"
+#endif
 
 typedef struct {
     union {
@@ -58,6 +61,9 @@ typedef struct {
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         sharpdisplay_framebuffer_obj_t sharpdisplay;
+        #endif
+        #if CIRCUITPY_VIDEOCORE
+        videocore_framebuffer_obj_t videocore;
         #endif
     };
     union {

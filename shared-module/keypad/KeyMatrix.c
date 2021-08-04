@@ -41,7 +41,7 @@ static mp_uint_t row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_
     return row * self->column_digitalinouts->len + column;
 }
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, const mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events) {
 
     mp_obj_t row_dios[num_row_pins];
     for (size_t row = 0; row < num_row_pins; row++) {

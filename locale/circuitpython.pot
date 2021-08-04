@@ -1221,6 +1221,10 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr ""
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr ""
@@ -2140,10 +2144,6 @@ msgstr ""
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
-msgstr ""
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c

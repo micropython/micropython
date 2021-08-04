@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_THUMB
+#if defined(MICROPY_NLR_THUMB) && MICROPY_NLR_THUMB
 
 #undef nlr_push
 

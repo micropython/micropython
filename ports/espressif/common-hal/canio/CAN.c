@@ -105,7 +105,7 @@ STATIC twai_timing_config_t get_t_config(int baudrate) {
     }
 }
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
 #define DIV_ROUND(a, b) (((a) + (b) / 2) / (b))
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
     if (reserved_can) {

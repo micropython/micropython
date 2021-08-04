@@ -67,7 +67,7 @@ mp_obj_t board_i2c(void) {
 #else
 mp_obj_t board_i2c(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_I2C);
-    return NULL;
+    return MP_ROM_NONE;
 }
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
@@ -92,7 +92,7 @@ mp_obj_t board_spi(void) {
 #else
 mp_obj_t board_spi(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_SPI);
-    return NULL;
+    return MP_ROM_NONE;
 }
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
@@ -121,7 +121,7 @@ mp_obj_t board_uart(void) {
 #else
 mp_obj_t board_uart(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_UART);
-    return NULL;
+    return MP_ROM_NONE;
 }
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
