@@ -181,6 +181,84 @@ int mp_bluetooth_hci_uart_readchar(void) {
     }
 }
 
+#if MICROPY_HW_STM32WB_TRANSPARENT_MODE
+#include "py/stream.h"
+
+STATIC int rfcore_transparent_msg_cb(void *env, const uint8_t *buf, size_t len) {
+    mp_hal_stdout_tx_strn((const char*)buf, len);
+    return 0;
+}
+
+#define STATE_IDLE 0
+#define STATE_NEED_LEN 1
+#define STATE_IN_PAYLOAD 2
+
+#define HCI_KIND_BT_CMD (0x01) // <kind=1><?><?><len>
+#define HCI_KIND_BT_ACL (0x02) // <kind=2><?><?><len LSB><len MSB>
+#define HCI_KIND_BT_EVENT (0x04) // <kind=4><op><len><data...>
+#define HCI_KIND_VENDOR_RESPONSE (0x11)
+#define HCI_KIND_VENDOR_EVENT (0x12)
+
+STATIC mp_obj_t rfcore_transparent(void) {
+    rfcore_ble_init();
+
+    mp_hal_set_interrupt_char(-1);
+
+    uint8_t buf[1024];
+    size_t rx = 0;
+    size_t len = 0;
+    int state = 0;
+    int cmd_type = 0;
+
+    while (true) {
+        if (state == STATE_IN_PAYLOAD && len == 0) {
+            rfcore_ble_hci_cmd(rx, buf);
+            // mp_hal_stdout_tx_strn((const char*)buf, rx);
+            rx = 0;
+            len = 0;
+            state = STATE_IDLE;
+        }
+
+        if (mp_hal_stdio_poll(MP_STREAM_POLL_RD) & MP_STREAM_POLL_RD) {
+            uint8_t c = mp_hal_stdin_rx_chr();
+
+            if (state == STATE_IDLE && (c == HCI_KIND_BT_CMD || c == HCI_KIND_BT_ACL || c == HCI_KIND_BT_EVENT || c == HCI_KIND_VENDOR_RESPONSE || c == HCI_KIND_VENDOR_EVENT)) {
+                cmd_type = c;
+                state = STATE_NEED_LEN;
+                buf[rx++] = c;
+                len = 0;
+            } else if (state == STATE_NEED_LEN) {
+                buf[rx++] = c;
+                if (cmd_type == HCI_KIND_BT_ACL && rx == 4) {
+                    len = c;
+                }
+                if (cmd_type == HCI_KIND_BT_ACL && rx == 5) {
+                    len += ((size_t)c) << 8;
+                    state = STATE_IN_PAYLOAD;
+                }
+                if (cmd_type == HCI_KIND_BT_EVENT && rx == 3) {
+                    len = c;
+                    state = STATE_IN_PAYLOAD;
+                }
+                if (cmd_type == HCI_KIND_BT_CMD && rx == 4) {
+                    len = c;
+                    state = STATE_IN_PAYLOAD;
+                }
+            } else if (state == STATE_IN_PAYLOAD) {
+                buf[rx++] = c;
+                --len;
+            }
+        }
+
+        rfcore_ble_check_msg(rfcore_transparent_msg_cb, NULL);
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(rfcore_transparent_obj, rfcore_transparent);
+#endif // MICROPY_HW_STM32WB_TRANSPARENT_MODE
+
+
 #else
 
 /******************************************************************************/

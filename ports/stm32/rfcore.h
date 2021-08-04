@@ -41,5 +41,7 @@ void rfcore_end_flash_erase(void);
 MP_DECLARE_CONST_FUN_OBJ_0(rfcore_status_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(rfcore_fw_version_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(rfcore_sys_hci_obj);
-
+#if MICROPY_HW_STM32WB_TRANSPARENT_MODE
+MP_DECLARE_CONST_FUN_OBJ_0(rfcore_transparent_obj);
+#endif
 #endif // MICROPY_INCLUDED_STM32_RFCORE_H
