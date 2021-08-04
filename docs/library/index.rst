@@ -65,6 +65,7 @@ library.
    json.rst
    math.rst
    os.rst
+   random.rst
    re.rst
    select.rst
    socket.rst
