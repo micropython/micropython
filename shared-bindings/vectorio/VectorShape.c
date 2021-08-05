@@ -80,9 +80,10 @@ vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl = {
 };
 
 
-//|     x: int
-//|     """X position of the center point of the shape in the parent."""
-//|
+// Stub checker does not approve of these shared properties.
+//     x: int
+//     """X position of the center point of the shape in the parent."""
+//
 STATIC mp_obj_t vectorio_vector_shape_obj_get_x(mp_obj_t wrapper_shape) {
     // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
@@ -111,9 +112,9 @@ const mp_obj_property_t vectorio_vector_shape_x_obj = {
 };
 
 
-//|     y: int
-//|     """Y position of the center point of the shape in the parent."""
-//|
+//     y: int
+//     """Y position of the center point of the shape in the parent."""
+//
 STATIC mp_obj_t vectorio_vector_shape_obj_get_y(mp_obj_t wrapper_shape) {
     // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
@@ -142,9 +143,9 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
-//|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
-//|     """The pixel shader of the shape."""
-//|
+//     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
+//     """The pixel shader of the shape."""
+//
 STATIC mp_obj_t vectorio_vector_shape_obj_get_pixel_shader(mp_obj_t wrapper_shape) {
     // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
     const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
