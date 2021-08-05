@@ -83,13 +83,23 @@ uint8_t circuitpython_scan_response_data[] = {
     #endif
 };
 
-bool boot_in_discovery_mode = false;
-bool advertising = false;
+
+#if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+STATIC bool boot_in_discovery_mode = false;
+STATIC bool advertising = false;
+STATIC bool ble_started = false;
+
+#define WORKFLOW_UNSET 0
+#define WORKFLOW_ENABLED 1
+#define WORKFLOW_DISABLED 2
+
+STATIC uint8_t workflow_state = WORKFLOW_UNSET;
+STATIC bool was_connected = false;
 
 STATIC void supervisor_bluetooth_start_advertising(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    return;
-    #else
+    if (workflow_state != WORKFLOW_ENABLED) {
+        return;
+    }
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -130,16 +140,15 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         NULL);
     // This may fail if we are already advertising.
     advertising = status == NRF_SUCCESS;
-    #endif
 }
+
+#endif  // CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
 
 #define BLE_DISCOVERY_DATA_GUARD 0xbb0000bb
 #define BLE_DISCOVERY_DATA_GUARD_MASK 0xff0000ff
 
 void supervisor_bluetooth_init(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    return;
-    #endif
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
     uint32_t reset_state = port_get_saved_word();
     uint32_t ble_mode = 0;
     if ((reset_state & BLE_DISCOVERY_DATA_GUARD_MASK) == BLE_DISCOVERY_DATA_GUARD) {
@@ -209,10 +218,14 @@ void supervisor_bluetooth_init(void) {
     status_led_deinit();
     #endif
     port_set_saved_word(reset_state);
+    #endif
 }
 
-STATIC bool was_connected;
 void supervisor_bluetooth_background(void) {
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    if (!ble_started) {
+        return;
+    }
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (was_connected && !is_connected) {
         #if CIRCUITPY_BLE_FILE_SERVICE
@@ -228,12 +241,15 @@ void supervisor_bluetooth_background(void) {
     #if CIRCUITPY_BLE_FILE_SERVICE
     supervisor_bluetooth_file_transfer_background();
     #endif
+    #endif
 }
 
 void supervisor_start_bluetooth(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    return;
-    #endif
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+
+    if (workflow_state != WORKFLOW_ENABLED) {
+        return;
+    }
 
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
 
@@ -245,16 +261,41 @@ void supervisor_start_bluetooth(void) {
     supervisor_start_bluetooth_serial();
     #endif
 
-    // Kick off advertisments
+    // Mark as started so that the background call does something.
+    ble_started = true;
+
+    // Kick off advertisements
     supervisor_bluetooth_background();
+
+    #endif
 }
 
 void supervisor_stop_bluetooth(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
-    return;
-    #endif
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+
+    if (!ble_started && workflow_state != WORKFLOW_ENABLED) {
+        return;
+    }
 
     #if CIRCUITPY_SERIAL_BLE
     supervisor_stop_bluetooth_serial();
+    #endif
+
+    #endif
+}
+
+void supervisor_bluetooth_enable_workflow(void) {
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    if (workflow_state == WORKFLOW_DISABLED) {
+        return;
+    }
+
+    workflow_state = WORKFLOW_ENABLED;
+    #endif
+}
+
+void supervisor_bluetooth_disable_workflow(void) {
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    workflow_state = WORKFLOW_DISABLED;
     #endif
 }

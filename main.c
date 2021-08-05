@@ -832,6 +832,7 @@ int __attribute__((used)) main(void) {
     serial_init();
 
     #if CIRCUITPY_BLEIO
+    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 
