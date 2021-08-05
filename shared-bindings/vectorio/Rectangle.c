@@ -10,7 +10,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Rectangle:
-//|     def __init__(self, pixel_shader: Union[ColorConverter, Palette], width: int, height: int, x: int, y: int) -> None:
+//|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], width: int, height: int, x: int, y: int) -> None:
 //|         """Represents a rectangle by defining its bounds
 //|
 //|            :param pixel_shader: The pixel shader that produces colors from values

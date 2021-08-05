@@ -17,7 +17,7 @@
 
 
 //| class Polygon:
-//|     def __init__(self, pixel_shader: Union[ColorConverter, Palette], points: List[Tuple[int, int]], x: int, y: int) -> None:
+//|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], points: List[Tuple[int, int]], x: int, y: int) -> None:
 //|         """Represents a closed shape by ordered vertices
 //|
 //|            :param pixel_shader: The pixel shader that produces colors from values

@@ -143,7 +143,7 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
-//     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
+//     pixel_shader: Union[ColorConverter, Palette]
 //     """The pixel shader of the shape."""
 //
 STATIC mp_obj_t vectorio_vector_shape_obj_get_pixel_shader(mp_obj_t wrapper_shape) {
