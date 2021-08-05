@@ -63,7 +63,7 @@ STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, m
     enum { ARG_buffer, ARG_pixel_policy };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_int = 0} },
-        { MP_QSTR_pixel_policy, MP_ARG_OBJ, {.u_int = 0} },
+        { MP_QSTR_pixel_policy, MP_ARG_OBJ, {.u_obj = MP_ROM_PTR((mp_obj_t *)&qrio_pixel_policy_EVERY_BYTE_obj)} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
