@@ -19,17 +19,17 @@ I2S objects can be created and initialized using::
     # ESP32
     sck_pin = Pin(14)   # Serial clock output
     ws_pin = Pin(13)    # Word clock output
-    sdout_pin = Pin(12) # Serial data output
+    sd_pin = Pin(12)    # Serial data output
     
     or
     
     # PyBoards
     sck_pin = Pin("Y6")   # Serial clock output
     ws_pin = Pin("Y5")    # Word clock output
-    sdout_pin = Pin("Y8") # Serial data output
+    sd_pin = Pin("Y8")    # Serial data output
     
     audio_out = I2S(2, 
-                    sck=sck_pin, ws=ws_pin, sdin=sdin_pin,    
+                    sck=sck_pin, ws=ws_pin, sd=sd_pin,
                     mode=I2S.TX, 
                     bits=16,                       
                     format=I2S.MONO,
@@ -37,7 +37,7 @@ I2S objects can be created and initialized using::
                     ibuf=20000)
                    
     audio_in = I2S(2, 
-                   sck=sck_pin, ws=ws_pin, sdin=sdin_pin,    
+                   sck=sck_pin, ws=ws_pin, sd=sd_pin,
                    mode=I2S.RX, 
                    bits=32,                       
                    format=I2S.STEREO,
