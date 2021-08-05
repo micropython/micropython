@@ -189,7 +189,9 @@
     || defined(USBD_CONFIGURATION_HS_STRING) \
     || defined(USBD_INTERFACE_HS_STRING) \
     || defined(USBD_CONFIGURATION_FS_STRING) \
-    || defined(USBD_INTERFACE_FS_STRING)
+    || defined(USBD_INTERFACE_FS_STRING) \
+    || defined(USBD_CDC_RX_DATA_SIZE) \
+    || defined(USBD_CDC_TX_DATA_SIZE)
 #error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
 #endif
 
@@ -242,6 +244,18 @@
 
 #ifndef MICROPY_HW_USB_INTERFACE_FS_STRING
 #define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
+#endif
+
+// Amount of incoming buffer space for each CDC instance.
+// This must be 2 or greater, and a power of 2.
+#ifndef MICROPY_HW_USB_CDC_RX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (1024)
+#endif
+
+// Amount of outgoing buffer space for each CDC instance.
+// This must be a power of 2 and no greater than 16384.
+#ifndef MICROPY_HW_USB_CDC_TX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (1024)
 #endif
 
 /*****************************************************************************/
