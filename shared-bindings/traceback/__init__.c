@@ -27,6 +27,8 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 
+#include "shared-module/traceback/__init__.h"
+
 //| """Traceback Module
 //|
 //| This module provides a standard interface to print stack traces of programs.
@@ -50,7 +52,7 @@
 //|                       Otherwise, print the last ``abs(limit)`` entries. If limit is omitted or None, all entries are printed.
 //|     :param io.FileIO file: If file is omitted or `None`, the output goes to `sys.stderr`; otherwise it should be an open
 //|                            file or file-like object to receive the output.
-//|     :param bool chain: If `True` then chained exceptions will be printed.
+//|     :param bool chain: If `True` then chained exceptions will be printed (note: not yet implemented).
 //|
 //|     """
 //|     ...
@@ -69,10 +71,10 @@ STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t exc = args[ARG_value].u_obj;
-    if (!mp_obj_is_exception_instance(exc)) {
+    if (!mp_obj_is_exception_instance(args[ARG_value].u_obj)) {
         mp_raise_TypeError(translate("invalid exception"));
     }
+    mp_obj_exception_t exc = *(mp_obj_exception_t *)MP_OBJ_TO_PTR(args[ARG_value].u_obj);
 
     mp_print_t print = mp_plat_print;
     if (args[ARG_file].u_obj != mp_const_none) {
@@ -91,67 +93,19 @@ STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_arg
         if (!mp_obj_get_int_maybe(args[ARG_limit].u_obj, &limit)) {
             mp_raise_TypeError(translate("limit should be an int"));
         }
-        print_tb = !(limit == 0);
+        print_tb = (limit != 0);
     }
 
     if (args[ARG_tb].u_obj != mp_const_none && print_tb) {
         if (!mp_obj_is_type(args[ARG_tb].u_obj, &mp_type_traceback)) {
             mp_raise_TypeError(translate("invalid traceback"));
         }
-        mp_obj_traceback_t *tb = MP_OBJ_TO_PTR(args[ARG_tb].u_obj);
-        size_t n = (tb->data) ? tb->len : 0;
-        size_t *values = (tb->data) ? tb->data : NULL;
-        if (n > 0) {
-            assert(n % 3 == 0);
-            // Decompress the format strings
-            const compressed_string_t *traceback = MP_ERROR_TEXT("Traceback (most recent call last):\n");
-            char decompressed[decompress_length(traceback)];
-            decompress(traceback, decompressed);
-            #if MICROPY_ENABLE_SOURCE_LINE
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
-            #else
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\"");
-            #endif
-            char decompressed_frame[decompress_length(frame)];
-            decompress(frame, decompressed_frame);
-            const compressed_string_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
-            char decompressed_block[decompress_length(block_fmt)];
-            decompress(block_fmt, decompressed_block);
-
-            // Set traceback formatting
-            // Default: Print full traceback
-            int i = n - 3, j;
-            if (limit > 0) {
-                // Print upto limit traceback
-                // from caller's frame
-                limit = n - (limit * 3);
-            } else if (limit < 0) {
-                // Print upto limit traceback
-                // from last
-                i = 0, limit = 3 + (limit * 3);
-            }
-
-            // Print the traceback
-            mp_print_str(&print, decompressed);
-            for (; i >= limit; i -= 3) {
-                j = (i < 0) ? -i : i;
-                #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(&print, decompressed_frame, values[j], (int)values[j + 1]);
-                #else
-                mp_printf(&print, decompressed_frame, values[j]);
-                #endif
-                // The block name can be NULL if it's unknown
-                qstr block = values[j + 2];
-                if (block == MP_QSTRnull) {
-                    mp_print_str(&print, "\n");
-                } else {
-                    mp_printf(&print, decompressed_block, block);
-                }
-            }
-        }
+        exc.traceback = MP_OBJ_TO_PTR(args[ARG_tb].u_obj);
+    } else {
+        exc.traceback = NULL;
     }
-    mp_obj_print_helper(&print, exc, PRINT_EXC);
-    mp_print_str(&print, "\n");
+
+    shared_module_traceback_print_exception(&exc, &print, limit);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 3, traceback_print_exception);
