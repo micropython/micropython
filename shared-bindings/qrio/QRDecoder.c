@@ -35,8 +35,12 @@
 //| class QRDecoder:
 //|
 //|     def __init__(self, width: int, height: int) -> None:
-//|         """Construct a QRDecoder object"""
+//|         """Construct a QRDecoder object
 //|
+//|         :param int width: The pixel width of the image to decode
+//|         :param int height: The pixel height of the image to decode
+//|         """
+//|         ...
 
 STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_height };
@@ -55,7 +59,7 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 //|     def decode(self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE) -> List[QRInfo]:
-//|         """Decode zero or more QR codes from the given image"""
+//|         """Decode zero or more QR codes from the given image.  The size of the buffer must be at least ``length``×``width`` bytes for `EVERY_BYTE`, and 2×``length``×``width`` bytes for `EVEN_BYTES` or `ODD_BYTES`."""
 //|
 STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
