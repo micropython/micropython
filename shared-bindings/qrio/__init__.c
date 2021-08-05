@@ -60,7 +60,7 @@ MAKE_PRINTER(qrio, qrio_pixel_policy);
 
 MAKE_ENUM_TYPE(qrio, PixelPolicy, qrio_pixel_policy);
 
-//| class qrinfo:
+//| class QRInfo:
 //|     """Information about a decoded QR code"""
 //|
 //|     payload: bytes
@@ -75,7 +75,7 @@ const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj = {
             .type = &mp_type_type
         },
         .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_qrinfo,
+        .name = MP_QSTR_QRInfo,
         .print = namedtuple_print,
         .parent = &mp_type_tuple,
         .make_new = namedtuple_make_new,
@@ -96,7 +96,7 @@ const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj = {
 
 STATIC const mp_rom_map_elem_t qrio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_qrio) },
-    { MP_ROM_QSTR(MP_QSTR_qrinfo), MP_ROM_PTR(&qrio_qrinfo_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_QRInfo), MP_ROM_PTR(&qrio_qrinfo_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_QRDecoder), MP_ROM_PTR(&qrio_qrdecoder_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_PixelPolicy), MP_ROM_PTR(&qrio_pixel_policy_type) },
 };
