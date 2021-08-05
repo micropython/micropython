@@ -280,7 +280,7 @@ jobs:
         - "gravitech_cucumber_m"
         - "gravitech_cucumber_ms"
         - "gravitech_cucumber_r"
-        - "gravitech_cucumber_rs"        
+        - "gravitech_cucumber_rs"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "hiibot_bluefi"
