@@ -1,1 +1,1 @@
-flash_size = 8M;
+flash_size = 64M;
