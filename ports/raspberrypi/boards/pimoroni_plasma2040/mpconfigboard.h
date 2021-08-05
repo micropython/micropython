@@ -1,12 +1,25 @@
 #define MICROPY_HW_BOARD_NAME "Pimoroni Plasma 2040"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
+#define MICROPY_HW_SW_A (&pin_GPIO12)
+#define MICROPY_HW_SW_B (&pin_GPIO13)
+
+#define MICROPY_HW_CLK (&pin_GPIO14)
+#define MICROPY_HW_DATA (&pin_GPIO15)
+
 #define CIRCUITPY_RGB_STATUS_INVERTED_PWM
 #define CIRCUITPY_RGB_STATUS_R (&pin_GPIO16)
 #define CIRCUITPY_RGB_STATUS_G (&pin_GPIO17)
 #define CIRCUITPY_RGB_STATUS_B (&pin_GPIO18)
 
+#define MICROPY_HW_I2C_INT (&pin_GPIO19)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO21)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO20)
+
 #define MICROPY_HW_USER_SW (&pin_GPIO23)
+
+#define MICROPY_HW_CURRENT_SENSE (&pin_GPIO29)
 
 // These pins are unconnected
 #define IGNORE_PIN_GPIO0    1
