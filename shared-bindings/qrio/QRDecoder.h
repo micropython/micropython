@@ -34,4 +34,4 @@ extern const mp_obj_type_t qrio_qrdecoder_type_obj;
 
 void common_hal_qrio_qrdecoder_construct(qrio_qrdecoder_obj_t *self);
 
-mp_obj_t common_hal_qrio_qrdecoder_recognize(qrio_qrdecoder_obj_t *self, int width, int height, mp_buffer_info_t *buf);
+mp_obj_t common_hal_qrio_qrdecoder_decode(qrio_qrdecoder_obj_t *self, int width, int height, mp_buffer_info_t *buf);
