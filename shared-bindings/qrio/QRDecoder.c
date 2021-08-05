@@ -54,8 +54,8 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
     return self;
 }
 
-//|     def decode(self, buffer: ReadableBuffer) -> List[QRInfo]:
-//|         """Decode zero or more QR codes from the given image in L8 format"""
+//|     def decode(self, buffer: ReadableBuffer, pixel_policy: PixelPolicy = PixelPolicy.EVERY_BYTE) -> List[QRInfo]:
+//|         """Decode zero or more QR codes from the given image"""
 //|
 STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     qrio_qrdecoder_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

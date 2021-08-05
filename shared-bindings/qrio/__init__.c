@@ -35,14 +35,14 @@
 //|
 
 //| class PixelPolicy:
-//|     EVERY_BYTE: object
+//|     EVERY_BYTE: PixelPolicy
 //|     """The input buffer to `QRDecoder.decode` consists of greyscale values in every byte"""
 //|
-//|     EVEN_BYTES: object
-//|     """The input buffer to `QRDecoder.decode` consists of greyscale values in positions 0, 2, ..., and ignored bytes in positions 1, 3, ..."""
-
-//|     ODD_BYTES: object
-//|     """The input buffer to `QRDecoder.decode` consists of greyscale values in positions 1, 3, ..., and ignored bytes in positions 0, 2, ..."""
+//|     EVEN_BYTES: PixelPolicy
+//|     """The input buffer to `QRDecoder.decode` consists of greyscale values in positions 0, 2, …, and ignored bytes in positions 1, 3, ….  This can decode directly from YUV images where the even bytes hold the Y (luminance) data."""
+//|
+//|     ODD_BYTES: PixelPolicy
+//|     """The input buffer to `QRDecoder.decode` consists of greyscale values in positions 1, 3, …, and ignored bytes in positions 0, 2, ….  This can decode directly from YUV images where the odd bytes hold the Y (luminance) data"""
 //|
 
 MAKE_ENUM_VALUE(qrio_pixel_policy_type, qrio_pixel_policy, EVERY_BYTE, QRIO_EVERY_BYTE);
