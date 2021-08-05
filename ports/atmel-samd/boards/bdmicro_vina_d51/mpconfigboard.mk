@@ -1,5 +1,5 @@
 # More than one revision of this board is available.
-# This board specifies PCB Revision 10
+# This board specifies the most up to date PCB Revision
 
 USB_VID = 0x31e2
 USB_PID = 0x2021
@@ -10,5 +10,5 @@ CHIP_VARIANT = SAMD51N20A
 CHIP_FAMILY = samd51
 
 QSPI_FLASH_FILESYSTEM = 1
-EXTERNAL_FLASH_DEVICES = "MX25L51245G","GD25S512MD"
+EXTERNAL_FLASH_DEVICES = "MX25L12833F","MX25L51245G","GD25S512MD"
 LONGINT_IMPL = MPZ
