@@ -180,9 +180,17 @@
 /*****************************************************************************/
 // USB configuration
 
-// The USBD_xxx VID/PID macros have been renamed to MICROPY_HW_USB_xxx.
-#ifdef USBD_VID
-#error "Old USBD_VID configuration option used"
+// The USBD_xxx macros have been renamed to MICROPY_HW_USB_xxx.
+#if defined(USBD_VID) \
+    || defined(USBD_LANGID_STRING) \
+    || defined(USBD_MANUFACTURER_STRING) \
+    || defined(USBD_PRODUCT_HS_STRING) \
+    || defined(USBD_PRODUCT_FS_STRING) \
+    || defined(USBD_CONFIGURATION_HS_STRING) \
+    || defined(USBD_INTERFACE_HS_STRING) \
+    || defined(USBD_CONFIGURATION_FS_STRING) \
+    || defined(USBD_INTERFACE_FS_STRING)
+#error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
 #endif
 
 // Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
@@ -202,6 +210,38 @@
 #define MICROPY_HW_USB_PID_CDC_MSC_HID  (0x9808)
 #define MICROPY_HW_USB_PID_CDC2_MSC_HID (0x9809)
 #define MICROPY_HW_USB_PID_CDC3_MSC_HID (0x980a)
+#endif
+
+#ifndef MICROPY_HW_USB_LANGID_STRING
+#define MICROPY_HW_USB_LANGID_STRING            0x409
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING      "MicroPython"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_HS_STRING
+#define MICROPY_HW_USB_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_HS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_HS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_HS_STRING
+#define MICROPY_HW_USB_INTERFACE_HS_STRING      "Pyboard Interface"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_FS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_FS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_FS_STRING
+#define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
 #endif
 
 /*****************************************************************************/
