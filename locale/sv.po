@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-07-24 15:35+0000\n"
+"PO-Revision-Date: 2021-08-07 04:00+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: main.c
 msgid ""
@@ -3131,7 +3131,7 @@ msgstr "filen måste vara en fil som öppnats i byte-läge"
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "Filskrivning är inte tillgängligt"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3422,7 +3422,7 @@ msgstr "ogiltig element_size %d, måste vara, 1, 2 eller 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "Ogiltig exception"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3463,7 +3463,7 @@ msgstr "ogiltig syntax för tal"
 
 #: py/objexcept.c shared-bindings/traceback/__init__.c
 msgid "invalid traceback"
-msgstr ""
+msgstr "Ogilitig källspårning"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3514,7 +3514,7 @@ msgstr "lhs och rhs måste vara kompatibla"
 
 #: shared-bindings/traceback/__init__.c
 msgid "limit should be an int"
-msgstr ""
+msgstr "limit måste vara en int"
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
