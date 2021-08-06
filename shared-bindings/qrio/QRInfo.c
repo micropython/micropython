@@ -25,29 +25,40 @@
  */
 
 #include "shared-bindings/qrio/__init__.h"
-#include "shared-bindings/qrio/QRDecoder.h"
 #include "shared-bindings/qrio/QRInfo.h"
-#include "shared-bindings/qrio/PixelPolicy.h"
 #include "py/obj.h"
 #include "py/enum.h"
 
-//| """`qrio` module.
+//| class QRInfo:
+//|     """Information about a decoded QR code"""
 //|
-//| Provides the `QRDecoder` object."""
+//|     payload: bytes
+//|     """The content of the QR code"""
 //|
+//|     data_type: Union[str, int]
+//|     """The encoding of the payload as a string (if a standard encoding) or int (if not standard)"""
 
-STATIC const mp_rom_map_elem_t qrio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_qrio) },
-    { MP_ROM_QSTR(MP_QSTR_QRInfo), MP_ROM_PTR(&qrio_qrinfo_type_obj) },
-    { MP_ROM_QSTR(MP_QSTR_QRDecoder), MP_ROM_PTR(&qrio_qrdecoder_type_obj) },
-    { MP_ROM_QSTR(MP_QSTR_PixelPolicy), MP_ROM_PTR(&qrio_pixel_policy_type) },
+const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .flags = MP_TYPE_FLAG_EXTENDED,
+        .name = MP_QSTR_QRInfo,
+        .print = namedtuple_print,
+        .parent = &mp_type_tuple,
+        .make_new = namedtuple_make_new,
+        .attr = namedtuple_attr,
+        MP_TYPE_EXTENDED_FIELDS(
+            .unary_op = mp_obj_tuple_unary_op,
+            .binary_op = mp_obj_tuple_binary_op,
+            .subscr = mp_obj_tuple_subscr,
+            .getiter = mp_obj_tuple_getiter,
+            ),
+    },
+    .n_fields = 2,
+    .fields = {
+        MP_QSTR_payload,
+        MP_QSTR_data_type,
+    },
 };
-
-STATIC MP_DEFINE_CONST_DICT(qrio_module_globals, qrio_module_globals_table);
-
-const mp_obj_module_t qrio_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&qrio_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_qrio, qrio_module, CIRCUITPY_QRIO);

@@ -25,17 +25,3 @@
  */
 
 #pragma once
-
-#include "py/enum.h"
-#include "py/obj.h"
-#include "py/objnamedtuple.h"
-
-extern const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj;
-
-extern const mp_obj_type_t qrio_pixel_policy_type;
-
-typedef enum {
-    QRIO_EVERY_BYTE, QRIO_EVEN_BYTES, QRIO_ODD_BYTES
-} qrio_pixel_policy_t;
-
-extern const cp_enum_obj_t qrio_pixel_policy_EVERY_BYTE_obj;

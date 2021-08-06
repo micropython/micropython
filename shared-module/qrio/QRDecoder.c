@@ -29,6 +29,7 @@
 #include "py/gc.h"
 #include "py/objnamedtuple.h"
 #include "shared-bindings/qrio/__init__.h"
+#include "shared-bindings/qrio/QRInfo.h"
 #include "shared-module/qrio/QRDecoder.h"
 
 void shared_module_qrio_qrdecoder_construct(qrdecoder_qrdecoder_obj_t *self, int width, int height) {
