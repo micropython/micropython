@@ -7,6 +7,11 @@ print(complex(1.2j))
 print(complex("1"))
 print(complex("1.2"))
 print(complex("1.2j"))
+print(complex("1+2j"))
+print(complex("-1-2j"))
+print(complex("+1-2j"))
+print(complex(" -1-2j "))
+print(complex(" +1-2j "))
 print(complex(1, 2))
 print(complex(1j, 2j))
 
@@ -71,6 +76,13 @@ print(float("nan") * 1j)
 print(float("-nan") * 1j)
 print(float("inf") * (1 + 1j))
 print(float("-inf") * (1 + 1j))
+
+# malformed complex strings
+for test in ("1+2", "1j+2", "1+2j+3", "1+2+3j", "1 + 2j"):
+    try:
+        complex(test)
+    except ValueError:
+        print("ValueError", test)
 
 # can't assign to attributes
 try:
