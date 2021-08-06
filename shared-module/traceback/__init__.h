@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_OBJEXCEPT_H
-#define MICROPY_INCLUDED_PY_OBJEXCEPT_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_TRACEBACK___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_TRACEBACK___INIT___H
+
+#include "py/objexcept.h"
 #include "py/objtraceback.h"
 
-typedef struct _mp_obj_exception_t {
-    mp_obj_base_t base;
-    mp_obj_tuple_t *args;
-    mp_obj_traceback_t *traceback;
-} mp_obj_exception_t;
+extern void shared_module_traceback_print_exception(mp_obj_exception_t *exc,
+    mp_print_t *print, mp_int_t limit);
 
-void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
-void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-
-#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-    const mp_obj_type_t mp_type_##exc_name = { \
-        { &mp_type_type }, \
-        .name = MP_QSTR_##exc_name, \
-        .print = mp_obj_exception_print, \
-        .make_new = mp_obj_exception_make_new, \
-        .attr = mp_obj_exception_attr, \
-        .parent = &mp_type_##base_name, \
-    };
-
-#endif // MICROPY_INCLUDED_PY_OBJEXCEPT_H
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_TRACEBACK___INIT___H

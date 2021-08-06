@@ -38,7 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */

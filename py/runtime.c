@@ -79,17 +79,14 @@ void mp_init(void) {
     #if MICROPY_KBD_EXCEPTION
     // initialise the exception object for raising KeyboardInterrupt
     MP_STATE_VM(mp_kbd_exception).base.type = &mp_type_KeyboardInterrupt;
-    MP_STATE_VM(mp_kbd_exception).traceback_alloc = 0;
-    MP_STATE_VM(mp_kbd_exception).traceback_len = 0;
-    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
     MP_STATE_VM(mp_kbd_exception).args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+    MP_STATE_VM(mp_kbd_exception).traceback = &MP_STATE_VM(mp_kbd_traceback);
+    *MP_STATE_VM(mp_kbd_exception).traceback = mp_const_empty_traceback_obj;
     #endif
 
     MP_STATE_VM(mp_reload_exception).base.type = &mp_type_ReloadException;
-    MP_STATE_VM(mp_reload_exception).traceback_alloc = 0;
-    MP_STATE_VM(mp_reload_exception).traceback_len = 0;
-    MP_STATE_VM(mp_reload_exception).traceback_data = NULL;
     MP_STATE_VM(mp_reload_exception).args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+    MP_STATE_VM(mp_reload_exception).traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
 
     // call port specific initialization if any
     #ifdef MICROPY_PORT_INIT_FUNC
