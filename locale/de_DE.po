@@ -41,11 +41,11 @@ msgstr ""
 "Bitte melden Sie ein Problem mit dem Inhalt Ihres CIRCUITPY-Laufwerks unter\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr "  Datei \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  Datei \"%q\", Zeile %d"
 
@@ -331,7 +331,7 @@ msgstr "'yield' außerhalb einer Funktion"
 msgid "*x must be assignment target"
 msgstr "*x muss Zuordnungsziel sein"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ", in %q\n"
 
@@ -1207,11 +1207,6 @@ msgstr "Eingabe-/Ausgabefehler"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1526,6 +1521,11 @@ msgstr "Fehlender first_out_pin. Instruktion %d schreibt Pin(s)"
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Fehlender first_set_pin. Instruktion %d setzt Pin(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -2247,7 +2247,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Zurückverfolgung (jüngste Aufforderung zuletzt):\n"
 
@@ -2558,7 +2558,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "Anzahl/Typen der Argumente passen nicht"
 
@@ -3134,6 +3134,10 @@ msgstr "f-string: einzelne '}' nicht erlaubt"
 msgid "file must be a file opened in byte mode"
 msgstr "Die Datei muss eine im Byte-Modus geöffnete Datei sein"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "Das Dateisystem muss eine Mount-Methode bereitstellen"
@@ -3423,6 +3427,10 @@ msgstr ""
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "ungültiges Format"
@@ -3459,6 +3467,10 @@ msgstr "ungültige Syntax für integer mit Basis %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ungültige Syntax für number"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3507,6 +3519,10 @@ msgstr "Der Pegel muss zwischen 0 und 1 liegen"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "lhs und rhs sollten kompatibel sein"
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
+msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3661,10 +3677,6 @@ msgstr ""
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "Keine aktive Ausnahme zu verusachen (raise)"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "kein verfügbares Netzwerkadapter (NIC)"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -4498,6 +4510,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "no available NIC"
+#~ msgstr "kein verfügbares Netzwerkadapter (NIC)"
 
 #~ msgid "Instruction %d jumps on pin"
 #~ msgstr "Instruktion %d springt auf Pin"

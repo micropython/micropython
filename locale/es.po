@@ -44,11 +44,11 @@ msgstr ""
 "Presente un problema con el contenido de su unidad CIRCUITPY en\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr "  Archivo \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  Archivo \"%q\", línea %d"
 
@@ -333,7 +333,7 @@ msgstr "'yield' fuera de una función"
 msgid "*x must be assignment target"
 msgstr "*x debe ser objetivo de la tarea"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ", en %q\n"
 
@@ -1220,11 +1220,6 @@ msgstr "error Input/output"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr "La instruccion %d mueve mas bits que la cuenta del pin"
 
@@ -1542,6 +1537,11 @@ msgstr "first_in_pin no encontrado. La instrucción %d escribe pin(es)"
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr ""
 "first_set_pin no encontrado. La instrucción %d configura el/los pin(es)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -2274,7 +2274,7 @@ msgstr "La cantidad total de datos es mas grande que %q"
 msgid "Touch alarms not available"
 msgstr "Alarmas táctiles no disponibles"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (ultima llamada reciente):\n"
 
@@ -2585,7 +2585,7 @@ msgid "argument name reused"
 msgstr "nombre de argumento reutilizado"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "argumento número/tipos no coinciden"
 
@@ -3156,6 +3156,10 @@ msgstr "cadena-f: solo '}' no está permitido"
 msgid "file must be a file opened in byte mode"
 msgstr "el archivo deberia ser una archivo abierto en modo byte"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "sistema de archivos debe proporcionar método de montaje"
@@ -3443,6 +3447,10 @@ msgstr "el tamaño del elemento no es valido%d por bits_per_pixel %d\n"
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr "el element_size %d,no es valido, debe ser 1,2 ó 4"
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "formato inválido"
@@ -3479,6 +3487,10 @@ msgstr "sintaxis inválida para entero con base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "sintaxis inválida para número"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3526,6 +3538,10 @@ msgstr "el nivel debe ser entre 0 y 1"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "lhs y rhs deben ser compatibles"
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
+msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3679,10 +3695,6 @@ msgstr "no hay tarjeta SD"
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "exception no activa para reraise"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "NIC no disponible"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -4511,6 +4523,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "no available NIC"
+#~ msgstr "NIC no disponible"
 
 #~ msgid ""
 #~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "

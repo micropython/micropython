@@ -42,11 +42,11 @@ msgstr ""
 "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr "  Filen \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  Fil \"%q\", rad %d"
 
@@ -330,7 +330,7 @@ msgstr "'yield' utanför funktion"
 msgid "*x must be assignment target"
 msgstr "*x måste vara mål för tilldelning"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ", i %q\n"
 
@@ -1206,11 +1206,6 @@ msgstr "Indata-/utdatafel"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr "Instruktion %d skiftar fler bitar än antalet pinnar"
 
@@ -1525,6 +1520,11 @@ msgstr "Saknad first_out_pin. Instruktion %d skriver till pinnar"
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Saknad first_set_pin. Instruktion %d sätter pinnar"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -2252,7 +2252,7 @@ msgstr "Totala data att skriva är större än %q"
 msgid "Touch alarms not available"
 msgstr "Touchalarm är inte tillgängligt"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (senaste anrop):\n"
 
@@ -2560,7 +2560,7 @@ msgid "argument name reused"
 msgstr "argumentnamn återanvänt"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "argument antal/typ matchar inte"
 
@@ -3129,6 +3129,10 @@ msgstr "f-string: singel '}' är inte tillåten"
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "filsystemet måste tillhandahålla mount-metod"
@@ -3416,6 +3420,10 @@ msgstr "ogiltig elementstorlek %d för bits_per_pixel %d\n"
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr "ogiltig element_size %d, måste vara, 1, 2 eller 4"
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "ogiltigt format"
@@ -3452,6 +3460,10 @@ msgstr "ogiltig syntax för heltal med bas %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3499,6 +3511,10 @@ msgstr "level ska ligga mellan 0 och 1"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "lhs och rhs måste vara kompatibla"
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
+msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3651,10 +3667,6 @@ msgstr "inget SD-kort"
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "ingen aktiv exception för reraise"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "ingen tillgänglig NIC"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -4480,6 +4492,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "no available NIC"
+#~ msgstr "ingen tillgänglig NIC"
 
 #~ msgid ""
 #~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
