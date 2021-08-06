@@ -1,7 +1,7 @@
 USB_VID = 0x239A
 USB_PID = 0x806A
 USB_PRODUCT = "stm32f411ce blackpill"
-USB_MANUFACTURER = "Unknown"
+USB_MANUFACTURER = "WeAct"
 
 # SPI_FLASH_FILESYSTEM = 1
 # EXTERNAL_FLASH_DEVICES = xxxxxx #See supervisor/shared/external_flash/devices.h for options
