@@ -61,14 +61,20 @@ def include(manifest, **kwargs):
         for m in manifest:
             include(m)
     else:
+        options = IncludeOptions(**kwargs)
         manifest = convert_path(manifest)
-        with open(manifest) as f:
-            # Make paths relative to this manifest file while processing it.
-            # Applies to includes and input files.
-            prev_cwd = os.getcwd()
-            os.chdir(os.path.dirname(manifest))
-            exec(f.read(), globals(), {"options": IncludeOptions(**kwargs)})
-            os.chdir(prev_cwd)
+        try:
+            with open(manifest) as f:
+                # Make paths relative to this manifest file while processing it.
+                # Applies to includes and input files.
+                prev_cwd = os.getcwd()
+                os.chdir(os.path.dirname(manifest))
+                exec(f.read(), globals(), {"options": options})
+                os.chdir(prev_cwd)
+        except FileNotFoundError as er:
+            # If manifest doesn't exist and is Not optional, raise error.
+            if not options.optional:
+                raise (er)
 
 
 def freeze(path, script=None, opt=0):
