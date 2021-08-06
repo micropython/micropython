@@ -44,10 +44,16 @@ void PWM_UpdatePwmDutycycle_u16(
     uint16_t pulseCnt = 0, pwmHighPulse = 0;
     uint16_t center;
 
+    // check and confine bounds for Center_u16
+    if ((Center_u16 + dutyCycle / 2) >= PWM_FULL_SCALE) {
+        Center_u16 = PWM_FULL_SCALE - dutyCycle / 2;
+    } else if (Center_u16 < (dutyCycle / 2)) {
+        Center_u16 = dutyCycle / 2;
+    }
     pulseCnt = base->SM[subModule].VAL1;
     // Calculate pulse width and center position
-    pwmHighPulse = ((pulseCnt + 1) * dutyCycle) / 65538U;
-    center = ((pulseCnt + 1) * Center_u16) / 65538U;
+    pwmHighPulse = ((pulseCnt + 1) * dutyCycle) / PWM_FULL_SCALE;
+    center = ((pulseCnt + 1) * Center_u16) / PWM_FULL_SCALE;
 
     // Setup the PWM dutycycle of channel A or B
     if (pwmSignal == kPWM_PwmA) {
@@ -70,7 +76,7 @@ void PWM_SetupPwm_u16(PWM_Type *base, pwm_submodule_t subModule, pwm_signal_para
     pwmClock = (srcClock_Hz / (1U << ((base->SM[subModule].CTRL & PWM_CTRL_PRSC_MASK) >> PWM_CTRL_PRSC_SHIFT)));
     pulseCnt = (pwmClock / pwmFreq_Hz);
     base->SM[subModule].INIT = 0;
-    base->SM[subModule].VAL0 = (pulseCnt / 2);
+    // base->SM[subModule].VAL0 = (pulseCnt / 2);
     base->SM[subModule].VAL1 = pulseCnt;
 
     // Set up the Registers VAL2..VAL5 controlling the duty cycle of channel A/B
@@ -109,7 +115,7 @@ void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
     pwmClock = (srcClock_Hz / (1U << ((base->SM[subModule].CTRL & PWM_CTRL_PRSC_MASK) >> PWM_CTRL_PRSC_SHIFT)));
     pulseCnt = pwmClock / pwmFreq_Hz;
     base->SM[subModule].INIT = 0;
-    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / 65538UL;
+    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / PWM_FULL_SCALE;
     base->SM[subModule].VAL1 = pulseCnt;
 
     base->SM[subModule].OCTRL = (base->SM[subModule].OCTRL & ~PWM_OCTRL_POLX_MASK) | PWM_OCTRL_POLX(!invert);
@@ -144,7 +150,7 @@ status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uin
     uint16_t dutyCycleU16, bool outputPolarity, uint32_t srcClock_Hz) {
     uint32_t periodCount, highCount, lowCount, reg;
 
-    if (dutyCycleU16 > 65538) {
+    if (dutyCycleU16 >= PWM_FULL_SCALE) {
         // Invalid dutycycle
         return kStatus_Fail;
     }
@@ -154,7 +160,7 @@ status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uin
 
     // Counter values to generate a PWM signal
     periodCount = (srcClock_Hz / pwmFreqHz);
-    highCount   = (periodCount * dutyCycleU16) / 65538;
+    highCount   = (periodCount * dutyCycleU16) / PWM_FULL_SCALE;
     lowCount    = periodCount - highCount;
 
     // Setup the compare registers for PWM output

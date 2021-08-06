@@ -33,8 +33,8 @@
 typedef struct _pwm_signal_param_u16
 {
     pwm_channels_t pwmChannel; // PWM channel being configured; PWM A or PWM B
-    uint16_t dutyCycle_u16   ; // PWM pulse width, value should be between 0 to 65538
-    uint16_t Center_u16;       // Center of the pulse, value should be between 0 to 65538
+    uint16_t dutyCycle_u16   ; // PWM pulse width, value should be between 0 to 65536
+    uint16_t Center_u16;       // Center of the pulse, value should be between 0 to 65536
     pwm_level_select_t level;  // PWM output active level select */
     uint16_t deadtimeValue;    // The deadtime value; only used if channel pair is operating in complementary mode
 } pwm_signal_param_u16_t;
@@ -43,6 +43,8 @@ typedef enum _pwm_fault_channels {
     kPWM_faultchannel_0 = 0U,
     kPWM_faultchannel_1
 } pwm_fault_channels_t;
+
+#define PWM_FULL_SCALE  (65536UL)
 
 void PWM_UpdatePwmDutycycle_u16(PWM_Type *base, pwm_submodule_t subModule,
     pwm_channels_t pwmSignal, uint16_t dutyCycle, uint16_t center);

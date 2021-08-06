@@ -69,6 +69,7 @@ typedef struct _machine_pwm_obj_t {
 static char channel_char[] = {'B', 'A', 'X' };
 static char *ERRMSG_FREQ = "PWM frequency too low";
 static char *ERRMSG_INIT = "PWM set-up failed";
+static char *ERRMSG_VALUE = "value larger than period";
 
 STATIC void configure_duty_cycle(machine_pwm_obj_t *self);
 
@@ -92,9 +93,9 @@ STATIC void machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 // Utililty functions for decoding and convertings
 //
 STATIC uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
-    uint64_t duty = (uint64_t)duty_ns * freq * 65538ULL / 1000000000ULL;
-    if (duty > 65535) {
-        mp_raise_ValueError(MP_ERROR_TEXT("duty larger than period"));
+    uint64_t duty = (uint64_t)duty_ns * freq * PWM_FULL_SCALE / 1000000000ULL;
+    if (duty >= PWM_FULL_SCALE) {
+        mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
     }
     return (uint32_t)duty;
 }
@@ -180,7 +181,7 @@ STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_
 //
 STATIC int calc_prescaler(uint32_t clock, uint32_t freq) {
     int prescale = 0;
-    double temp = clock / (65538.0 * freq);
+    double temp = clock / ((float)PWM_FULL_SCALE * freq);
     for (int i = 1; i < 256; i *= 2, prescale++) {
         if (i > temp) {
             return prescale;
@@ -329,9 +330,9 @@ STATIC void machine_pwm_init_helper(machine_pwm_obj_t *self,
            ARG_invert, ARG_sync, ARG_start, ARG_xor, ARG_deadtime };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 1000} },
-        { MP_QSTR_duty_u16, MP_ARG_INT, {.u_int = 0x10000} },
-        { MP_QSTR_duty_ns, MP_ARG_INT, {.u_int = 0x10000} },
-        { MP_QSTR_center, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x10000} },
+        { MP_QSTR_duty_u16, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_duty_ns, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_center, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_align, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PWM_MIDDLE}},
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
         { MP_QSTR_sync, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = false}},
@@ -348,24 +349,30 @@ STATIC void machine_pwm_init_helper(machine_pwm_obj_t *self,
 
     // Set duty cycle?
     uint32_t duty = args[ARG_duty_u16].u_int;
-    if (duty != 0x10000) {
+    if (duty != 0) {
+        if (duty >= PWM_FULL_SCALE) {
+            mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
+        }
         self->duty = duty;
     }
     // Set duty_ns value?
     duty = args[ARG_duty_ns].u_int;
-    if (duty != 0x10000) {
+    if (duty != 0) {
         self->duty = duty_ns_to_duty_u16(self->freq, duty);
     }
     // Set center value?
     uint32_t center = args[ARG_center].u_int;
-    if (center != 0x10000) {
-        self->center = args[ARG_center].u_int;
+    if (center != 0) {
+        if (center >= PWM_FULL_SCALE) {
+            mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
+        }
+        self->center = center;
     } else {  // Use alignment setting shortcut
         uint8_t align = args[ARG_align].u_int & 3; // limit to 0..3
         if (align == PWM_BEGIN) {
             self->center = self->duty / 2;
         } else if (align == PWM_END) {
-            self->center = 65537 - self->duty / 2;
+            self->center = PWM_FULL_SCALE - self->duty / 2;
         } else {
             self->center = 32768; // Default value: mid.
         }
@@ -557,8 +564,14 @@ STATIC mp_obj_t machine_pwm_duty_u16(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(self->duty);
     } else {
         // Set duty cycle.
-        self->duty = mp_obj_get_int(args[1]);
-        configure_duty_cycle(self);
+        uint32_t duty = mp_obj_get_int(args[1]);
+        if (duty != 0) {
+            if (duty >= PWM_FULL_SCALE) {
+                mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
+            }
+            self->duty = duty;
+            configure_duty_cycle(self);
+        }
         return mp_const_none;
     }
 }
@@ -569,7 +582,7 @@ STATIC mp_obj_t machine_pwm_duty_ns(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // Get duty cycle.
-        return MP_OBJ_NEW_SMALL_INT(1000000000ULL / self->freq * self->duty / 65536);
+        return MP_OBJ_NEW_SMALL_INT(1000000000ULL / self->freq * self->duty / PWM_FULL_SCALE);
     } else {
         // Set duty cycle.
         self->duty = duty_ns_to_duty_u16(self->freq, mp_obj_get_int(args[1]));
@@ -586,8 +599,12 @@ STATIC mp_obj_t machine_pwm_center(size_t n_args, const mp_obj_t *args) {
         // Get Center value.
         return MP_OBJ_NEW_SMALL_INT(self->center);
     } else {
-        // Set duty cycle.
-        self->center = mp_obj_get_int(args[1]);
+        // Set center value.
+        uint32_t center = mp_obj_get_int(args[1]);
+        if (center >= PWM_FULL_SCALE) {
+            mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
+        }
+        self->center = center;
         configure_duty_cycle(self);
         return mp_const_none;
     }
