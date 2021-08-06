@@ -80,7 +80,7 @@ void m_free_mbedtls(void *ptr_in) {
 }
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
-    uint32_t val;
+    uint32_t val = 0;
     int n = 0;
     *olen = len;
     while (len--) {
