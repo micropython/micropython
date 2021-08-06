@@ -83,6 +83,27 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 // a string, parse it
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
+
+                // If a sign is detected beyond 0, assume the form "[op]real[op]imag".
+                for (size_t i = 1; i < l; i++) {
+                    if (s[i] == '+' || s[i] == '-') {
+                        // Real part is everything before the (non-leading) sign.
+                        // Only allow real value for CPython compatibility.
+                        mp_obj_t real = mp_parse_num_decimal(s, i, false, true, NULL);
+
+                        // Imaginary part is everything else, including (non-leading) sign.
+                        mp_obj_t imag = mp_parse_num_decimal(s + i, l - i, true, false, NULL);
+
+                        // CPython requires imag to be complex.
+                        if (!mp_obj_is_type(imag, &mp_type_complex)) {
+                            break;
+                        }
+
+                        return mp_type_complex.binary_op(MP_BINARY_OP_ADD, real, imag);
+                    }
+                }
+
+                // Otherwise assume the form [sign]real or [sign]imag.
                 return mp_parse_num_decimal(s, l, true, true, NULL);
             } else if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 // a complex, just return it
