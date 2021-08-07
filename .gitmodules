@@ -188,3 +188,6 @@
 [submodule "frozen/Adafruit_CircuitPython_SimpleIO"]
 	path = frozen/Adafruit_CircuitPython_SimpleIO
 	url = https://github.com/adafruit/adafruit_circuitpython_simpleio
+[submodule "lib/quirc"]
+	path = lib/quirc
+	url = https://github.com/adafruit/quirc.git

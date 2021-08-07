@@ -340,7 +340,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 # There may be duplicates between SRC_COMMON_HAL_EXPANDED and SRC_SHARED_MODULE_EXPANDED,
-# because a few modules have files both in common-hal/ and shared-modules/.
+# because a few modules have files both in common-hal/ and shared-module/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
 

@@ -224,6 +224,9 @@ endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
 endif
+ifeq ($(CIRCUITPY_QRIO),1)
+SRC_PATTERNS += qrio/%
+endif
 ifeq ($(CIRCUITPY_RAINBOWIO),1)
 SRC_PATTERNS += rainbowio/%
 endif
@@ -445,6 +448,8 @@ $(filter $(SRC_PATTERNS), \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
+	qrio/PixelPolicy.c \
+	qrio/QRInfo.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -532,6 +537,8 @@ SRC_SHARED_MODULE_ALL = \
 	network/__init__.c \
 	msgpack/__init__.c \
 	os/__init__.c \
+	qrio/__init__.c \
+	qrio/QRDecoder.c \
 	rainbowio/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
@@ -667,6 +674,11 @@ SRC_CIRCUITPY_COMMON = \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c
+
+ifeq ($(CIRCUITPY_QRIO),1)
+SRC_CIRCUITPY_COMMON += lib/quirc/lib/decode.c lib/quirc/lib/identify.c lib/quirc/lib/quirc.c lib/quirc/lib/version_db.c
+$(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
+endif
 
 ifdef LD_TEMPLATE_FILE
 # Generate a linker script (.ld file) from a template, for those builds that use it.
