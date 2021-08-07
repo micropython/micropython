@@ -43,22 +43,34 @@ void serial_write_compressed(const compressed_string_t *compressed) {
     serial_write(decompressed);
 }
 
+STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
+    int len = minlen;
+    int i = 0;
+    *pos = words;
+    while (wlencount[i] <= n) {
+        n -= wlencount[i];
+        *pos += len * wlencount[i];
+        i++;
+        len++;
+    }
+    *pos += len * n;
+    *end = *pos + len;
+}
+
 STATIC int put_utf8(char *buf, int u) {
     if (u <= 0x7f) {
         *buf = u;
         return 1;
     } else if (word_start <= u && u <= word_end) {
         uint n = (u - word_start);
-        size_t pos = 0;
-        if (n > 0) {
-            pos = wends[n - 1] + (n * 2);
-        }
+        const mchar_t *pos, *end;
+        get_word(n, &pos, &end);
         int ret = 0;
         // note that at present, entries in the words table are
         // guaranteed not to represent words themselves, so this adds
         // at most 1 level of recursive call
-        for (; pos < wends[n] + (n + 1) * 2; pos++) {
-            int len = put_utf8(buf, words[pos]);
+        for (; pos < end; pos++) {
+            int len = put_utf8(buf, *pos);
             buf += len;
             ret += len;
         }

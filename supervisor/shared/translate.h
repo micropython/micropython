@@ -50,11 +50,14 @@
 //   are computed with a heuristic based on frequent substrings of 2 to
 //   9 code points.  These are called "words" but are not, grammatically
 //   speaking, words.  They're just spans of code points that frequently
-//   occur together.
+//   occur together.  They are ordered shortest to longest.
 //
 // - dictionary entries are non-overlapping, and the _ending_ index of each
-//   entry is stored in an array.  Since the index given is the ending
-//   index, the array is called "wends".
+//   entry is stored in an array.  A count of words of each length, from
+//   minlen to maxlen, is given in the array called wlencount.  From
+//   this small array, the start and end of the N'th word can be
+//   calculated by an efficient, small loop.  (A bit of time is traded
+//   to reduce the size of this table indicating lengths)
 //
 // The "data" / "tail" construct is so that the struct's last member is a
 // "flexible array".  However, the _only_ member is not permitted to be
