@@ -2097,7 +2097,6 @@ msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "shuì mián jì yì bù kě yòng"
 
