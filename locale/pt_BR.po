@@ -42,11 +42,11 @@ msgstr ""
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr "  Arquivo \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  Arquivo \"%q\", linha %d"
 
@@ -335,7 +335,7 @@ msgstr "função externa 'yield'"
 msgid "*x must be assignment target"
 msgstr "*x deve ser o destino da atribuição"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ", em %q\n"
 
@@ -1221,11 +1221,6 @@ msgstr "Erro de entrada/saída"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Falta o jmp_pin. A instrução %d salta no pino"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr "A instrução %d muda com mais bits do que a quantidade dos pinos"
 
@@ -1539,6 +1534,11 @@ msgstr "Faltando first_out_pin. A instrução %d escreve nos pinos(s)"
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Faltando first_set_pin. A instrução %d define os pinos(s)"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr "Falta o jmp_pin. A instrução %d salta no pino"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -2117,7 +2117,6 @@ msgid "Size not supported"
 msgstr "O tamanho não é suportado"
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sleep memory não está disponível"
 
@@ -2277,7 +2276,7 @@ msgstr "O total dos dados que serão escritos é maior do que %q"
 msgid "Touch alarms not available"
 msgstr "Alarmes de toque não estão disponíveis"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (a última chamada mais recente):\n"
 
@@ -2590,7 +2589,7 @@ msgid "argument name reused"
 msgstr "nome do argumento reutilizado"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "o argumento num/tipos não combinam"
 
@@ -3163,6 +3162,10 @@ msgstr "f-string: um único '}' não é permitido"
 msgid "file must be a file opened in byte mode"
 msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "sistema de arquivos deve fornecer método de montagem"
@@ -3451,6 +3454,10 @@ msgstr "tamanho do elemento %d é inválido para bits_per_pixel %d\n"
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr "element_size %d é inválido, deve ser, 1, 2, ou 4"
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "formato inválido"
@@ -3487,6 +3494,10 @@ msgstr "sintaxe inválida para o número inteiro com base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "sintaxe inválida para o número"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3534,6 +3545,10 @@ msgstr "o nível deve estar entre 0 e 1"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "o lhs e rhs devem ser compatíveis"
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
+msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3688,10 +3703,6 @@ msgstr "nenhum cartão SD"
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "nenhuma exceção ativa para reraise"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "não há uma Placa de Rede disponível"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -4521,6 +4532,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "no available NIC"
+#~ msgstr "não há uma Placa de Rede disponível"
 
 #~ msgid ""
 #~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "

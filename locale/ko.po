@@ -36,11 +36,11 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr " 파일 \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  파일 \"%q\", 라인 %d"
 
@@ -323,7 +323,7 @@ msgstr "'yield' 는 함수 외부에 존재합니다"
 msgid "*x must be assignment target"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ", 에서 %q\n"
 
@@ -1190,11 +1190,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1507,6 +1502,11 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -2066,7 +2066,6 @@ msgid "Size not supported"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
 
@@ -2215,7 +2214,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr ""
 
@@ -2514,7 +2513,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr ""
 
@@ -3078,6 +3077,10 @@ msgstr ""
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -3365,6 +3368,10 @@ msgstr ""
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "형식가 유효하지 않습니다"
@@ -3401,6 +3408,10 @@ msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3444,6 +3455,10 @@ msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
+msgstr ""
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
 msgstr ""
 
 #: py/emitnative.c
@@ -3596,10 +3611,6 @@ msgstr ""
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
 msgstr ""
 
 #: py/compile.c
