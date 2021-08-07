@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 #include "py/obj.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "fsl_gpio.h"
 
 // ------------------------------------------------------------------------------------------------------------------ //

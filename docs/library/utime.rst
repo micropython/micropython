@@ -74,9 +74,18 @@ Functions
 
    Delay for given number of milliseconds, should be positive or 0.
 
+   This function will delay for at least the given number of milliseconds, but
+   may take longer than that if other processing must take place, for example
+   interrupt handlers or other threads.  Passing in 0 for *ms* will still allow
+   this other processing to occur.  Use `sleep_us()` for more precise delays.
+
 .. function:: sleep_us(us)
 
    Delay for given number of microseconds, should be positive or 0.
+
+   This function attempts to provide an accurate delay of at least *us*
+   microseconds, but it may take longer if the system has other higher priority
+   processing to perform.
 
 .. function:: ticks_ms()
 

@@ -11,6 +11,6 @@ for bus in (-1, 0, 1):
 
 i2c = I2C(1)
 
-i2c.init(I2C.MASTER, baudrate=400000)
+i2c.init(I2C.CONTROLLER, baudrate=400000)
 print(i2c.scan())
 i2c.deinit()

@@ -34,7 +34,6 @@
 #include "freertos/task.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-#include "driver/touch_pad.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
@@ -49,7 +48,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
@@ -70,6 +69,10 @@ typedef enum {
 
 STATIC bool is_soft_reset = 0;
 
+#if CONFIG_IDF_TARGET_ESP32C3
+int esp_clk_cpu_freq(void);
+#endif
+
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
@@ -82,6 +85,8 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         }
         #if CONFIG_IDF_TARGET_ESP32
         esp_pm_config_esp32_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32C3
+        esp_pm_config_esp32c3_t pm;
         #elif CONFIG_IDF_TARGET_ESP32S2
         esp_pm_config_esp32s2_t pm;
         #endif
@@ -117,6 +122,8 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
+    #if !CONFIG_IDF_TARGET_ESP32C3
+
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
     }
@@ -132,6 +139,8 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
+
+    #endif
 
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
@@ -223,7 +232,9 @@ STATIC mp_obj_t machine_unique_id(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_idle(void) {
+    MP_THREAD_GIL_EXIT();
     taskYIELD();
+    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
@@ -277,10 +288,14 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
+    #if MICROPY_PY_MACHINE_DAC
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_hw_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C), MP_ROM_PTR(&mp_machine_soft_i2c_type) },
+    #if MICROPY_PY_MACHINE_I2S
     { MP_ROM_QSTR(MP_QSTR_I2S), MP_ROM_PTR(&machine_i2s_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hw_spi_type) },

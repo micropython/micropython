@@ -35,8 +35,10 @@
 #include "py/mpthread.h"
 #include "gccollect.h"
 #include "soc/cpu.h"
-#include "xtensa/hal.h"
 
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+
+#include "xtensa/hal.h"
 
 static void gc_collect_inner(int level) {
     if (level < XCHAL_NUM_AREGS / 8) {
@@ -64,3 +66,18 @@ void gc_collect(void) {
     gc_collect_inner(0);
     gc_collect_end();
 }
+
+#elif CONFIG_IDF_TARGET_ESP32C3
+
+#include "shared/runtime/gchelper.h"
+
+void gc_collect(void) {
+    gc_collect_start();
+    gc_helper_collect_regs_and_stack();
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
+    gc_collect_end();
+}
+
+#endif

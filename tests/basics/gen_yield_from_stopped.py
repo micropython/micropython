@@ -16,3 +16,15 @@ try:
     next(run())
 except StopIteration:
     print("StopIteration")
+
+
+# Where "f" is a native generator
+def run():
+    print((yield from f))
+
+
+f = zip()
+try:
+    next(run())
+except StopIteration:
+    print("StopIteration")

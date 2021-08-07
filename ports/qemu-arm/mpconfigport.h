@@ -74,7 +74,7 @@ extern const struct _mp_obj_module_t mp_module_uos;
 #include <alloca.h>
 
 #ifdef TEST
-#include "lib/upytesthelper/upytesthelper.h"
+#include "shared/upytesthelper/upytesthelper.h"
 #undef MP_PLAT_PRINT_STRN
 #define MP_PLAT_PRINT_STRN(str, len) upytest_output(str, len)
 #endif

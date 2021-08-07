@@ -1063,7 +1063,7 @@ typedef double mp_float_t;
 #endif
 
 // Whether to provide the built-in input() function. The implementation of this
-// uses mp-readline, so can only be enabled if the port uses this readline.
+// uses shared/readline, so can only be enabled if the port uses this readline.
 #ifndef MICROPY_PY_BUILTINS_INPUT
 #define MICROPY_PY_BUILTINS_INPUT (0)
 #endif
@@ -1316,6 +1316,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_USELECT (0)
 #endif
 
+// Whether to enable the select() function in the "uselect" module (baremetal
+// implementation). This is present for compatibility but can be disabled to
+// save space.
+#ifndef MICROPY_PY_USELECT_SELECT
+#define MICROPY_PY_USELECT_SELECT (1)
+#endif
+
 // Whether to provide "utime" module functions implementation
 // in terms of mp_hal_* functions.
 #ifndef MICROPY_PY_UTIME_MP_HAL
@@ -1371,6 +1378,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
+#endif
+
+// Whether to support the "separators" argument to dump, dumps
+#ifndef MICROPY_PY_UJSON_SEPARATORS
+#define MICROPY_PY_UJSON_SEPARATORS (1)
 #endif
 
 #ifndef MICROPY_PY_URE

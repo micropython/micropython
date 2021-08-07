@@ -11,13 +11,18 @@
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
 #define MICROPY_NLR_SETJMP                  (1)
+#if CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_GCREGS_SETJMP               (1)
+#endif
 
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#if !CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_EMIT_XTENSAWIN              (1)
+#endif
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)
@@ -77,6 +82,8 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT       (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
+#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS  (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE       (1)
 #define MICROPY_PY_BUILTINS_EXECFILE        (1)
@@ -153,6 +160,12 @@
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#ifndef MICROPY_PY_MACHINE_DAC
+#define MICROPY_PY_MACHINE_DAC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2S
+#define MICROPY_PY_MACHINE_I2S              (1)
+#endif
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif

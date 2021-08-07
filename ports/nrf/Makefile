@@ -70,7 +70,7 @@ INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/ble
 INC += -I./modules/board
-INC += -I../../lib/mp-readline
+INC += -I../../shared/readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 INC += -I../../lib/nrfx/
@@ -216,12 +216,12 @@ include drivers/secureboot/secureboot.mk
 
 endif
 
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB += $(addprefix shared/,\
 	libc/string0.c \
-	mp-readline/readline.c \
-	utils/pyexec.c \
-	utils/sys_stdio_mphal.c \
-	utils/interrupt_char.c \
+	readline/readline.c \
+	runtime/pyexec.c \
+	runtime/sys_stdio_mphal.c \
+	runtime/interrupt_char.c \
 	timeutils/timeutils.c \
 	)
 
