@@ -14,7 +14,7 @@
 #include "shared-bindings/vectorio/Rectangle.h"
 
 // Lifecycle actions.
-//#define VECTORIO_SHAPE_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_DEBUG(...) (void)0
 #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
@@ -23,7 +23,7 @@
 
 
 // Really verbose.
-//#define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
 #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define U32_TO_BINARY_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
