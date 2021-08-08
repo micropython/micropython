@@ -40,11 +40,11 @@ msgstr ""
 "CIRCUITPYドライブの内容を添えて問題を以下で報告してください：\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\""
 msgstr "  ファイル \"%q\""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "  File \"%q\", line %d"
 msgstr "  ファイル \"%q\", 行 %d"
 
@@ -327,7 +327,7 @@ msgstr "関数外でのyield"
 msgid "*x must be assignment target"
 msgstr "*xは代入先でなければなりません"
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid ", in %q\n"
 msgstr ""
 
@@ -1198,11 +1198,6 @@ msgstr "入力/出力エラー"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1515,6 +1510,11 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -2077,7 +2077,6 @@ msgid "Size not supported"
 msgstr "サイズは対応していません"
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
 
@@ -2226,7 +2225,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c shared-bindings/traceback/__init__.c
 msgid "Traceback (most recent call last):\n"
 msgstr "トレースバック（最新の呼び出しが末尾）:\n"
 
@@ -2525,7 +2524,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr ""
 
@@ -3093,6 +3092,10 @@ msgstr "f-string: 1つだけの'}'は許されません"
 msgid "file must be a file opened in byte mode"
 msgstr "fileはバイトモードで開かれたファイルでなければなりません"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "filesystemはmountメソッドを提供しなければなりません"
@@ -3381,6 +3384,10 @@ msgstr ""
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr ""
@@ -3417,6 +3424,10 @@ msgstr ""
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "数字として不正な構文"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3461,6 +3472,10 @@ msgstr "levelは0から1の間でなければなりません"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "左辺と右辺が互換でなければなりません"
+
+#: shared-bindings/traceback/__init__.c
+msgid "limit should be an int"
+msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3613,10 +3628,6 @@ msgstr "SDカードがありません"
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr ""
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "利用可能なNICがありません"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -4442,6 +4453,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "no available NIC"
+#~ msgstr "利用可能なNICがありません"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "バッファが大きすぎて確保できません"
