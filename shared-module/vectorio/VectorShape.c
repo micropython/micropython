@@ -97,11 +97,19 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
         x = self->absolute_transform->x + self->absolute_transform->dx * self->y;
         y = self->absolute_transform->y + self->absolute_transform->dy * self->x;
         area_transpose(out_area);
-        displayio_area_canon(out_area);
     } else {
+        if (self->absolute_transform->dx < 1) {
+            out_area->x1 = out_area->x1 * -1 + 1;
+            out_area->x2 = out_area->x2 * -1 + 1;
+        }
+        if (self->absolute_transform->dy < 1) {
+            out_area->y1 = out_area->y1 * -1 + 1;
+            out_area->y2 = out_area->y2 * -1 + 1;
+        }
         x = self->absolute_transform->x + self->absolute_transform->dx * self->x;
         y = self->absolute_transform->y + self->absolute_transform->dy * self->y;
     }
+    displayio_area_canon(out_area);
     displayio_area_shift(out_area, x, y);
 
     VECTORIO_SHAPE_DEBUG(" out:{(%5d,%5d), (%5d,%5d)}\n", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
@@ -313,10 +321,10 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
                 if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_x = shape_area.x2 - 1 - (pixel_to_get_x - shape_area.x1);
+                    pixel_to_get_x = (shape_area.x2 - shape_area.x1) - (pixel_to_get_x + shape_area.x1) + shape_area.x1 - 1;
                 }
                 if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_y = shape_area.y2 - 1 - (pixel_to_get_y - shape_area.y1);
+                    pixel_to_get_y = (shape_area.y2 - shape_area.y1) - (pixel_to_get_y + shape_area.y1) + +shape_area.y1 - 1;
                 }
             }
 
