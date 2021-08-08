@@ -14,8 +14,8 @@
 #include "shared-bindings/vectorio/Rectangle.h"
 
 // Lifecycle actions.
-// #define VECTORIO_SHAPE_DEBUG(...) (void)0
-#define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#define VECTORIO_SHAPE_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Used in both logging and ifdefs, for extra variables
@@ -23,8 +23,8 @@
 
 
 // Really verbose.
-// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
-#define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define U32_TO_BINARY_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define U32_TO_BINARY(u32)  \
@@ -244,15 +244,8 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     displayio_input_pixel_t input_pixel;
     displayio_output_pixel_t output_pixel;
 
-    uint16_t width_px_indices;
-    uint16_t height_px_indices;
-    if (self->absolute_transform->transpose_xy) {
-        width_px_indices = displayio_area_height(&self->current_area) - 1;
-        height_px_indices = displayio_area_width(&self->current_area) - 1;
-    } else {
-        width_px_indices = displayio_area_width(&self->current_area) - 1;
-        height_px_indices = displayio_area_height(&self->current_area) - 1;
-    }
+    displayio_area_t shape_area;
+    self->ishape.get_area(self->ishape.shape, &shape_area);
 
     uint16_t mask_start_px = line_dirty_offset_px;
     for (input_pixel.y = overlap.y1; input_pixel.y < overlap.y2; ++input_pixel.y) {
@@ -275,22 +268,24 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             if (self->absolute_transform->transpose_xy) {
                 pixel_to_get_x = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->x;
                 pixel_to_get_y = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->y;
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
                 if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_y = height_px_indices - pixel_to_get_y;
+                    pixel_to_get_y = shape_area.y2 - 1 - (pixel_to_get_y - shape_area.y1);
                 }
                 if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_x = width_px_indices - pixel_to_get_x;
+                    pixel_to_get_x = shape_area.x2 - 1 - (pixel_to_get_x - shape_area.x1);
                 }
             } else {
                 pixel_to_get_x = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->x;
                 pixel_to_get_y = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->y;
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
                 if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_x = width_px_indices - pixel_to_get_x;
+                    pixel_to_get_x = shape_area.x2 - 1 - (pixel_to_get_x - shape_area.x1);
                 }
                 if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_y = height_px_indices - pixel_to_get_y;
+                    pixel_to_get_y = shape_area.y2 - 1 - (pixel_to_get_y - shape_area.y1);
                 }
             }
 
