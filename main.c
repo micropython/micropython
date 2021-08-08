@@ -691,6 +691,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
+            // Write the board ID (board directory and ID on circuitpython.org)
+            mp_hal_stdout_tx_str("\r\n" "Board ID:");
+            mp_hal_stdout_tx_str(CIRCUITPY_BOARD_ID);
             mp_hal_stdout_tx_str("\r\n");
         }
         #endif
