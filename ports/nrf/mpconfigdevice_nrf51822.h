@@ -44,6 +44,14 @@
 
 // Board overridable feature configuration.
 
+#ifndef MICROPY_ENABLE_SOURCE_LINE
+#if defined(BLUETOOTH_SD)
+#define MICROPY_ENABLE_SOURCE_LINE         (0)
+#else
+#define MICROPY_ENABLE_SOURCE_LINE         (1)
+#endif
+#endif
+
 #ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
 #if defined(BLUETOOTH_SD)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN      (0)
