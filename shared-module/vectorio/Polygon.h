@@ -9,8 +9,8 @@
 typedef struct {
     mp_obj_base_t base;
     // An int array[ x, y, ... ]
-    int *points_list;
-    size_t len;
+    int16_t *points_list;
+    uint16_t len;
     vectorio_event_t on_dirty;
     mp_obj_t draw_protocol_instance;
 } vectorio_polygon_t;

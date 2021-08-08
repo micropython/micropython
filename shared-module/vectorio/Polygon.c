@@ -10,7 +10,7 @@
 
 
 #define VECTORIO_POLYGON_DEBUG(...) (void)0
-// #define VECTORIO_POLYGON_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+// #define VECTORIO_POLYGON_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Converts a list of points tuples to a flat list of ints for speedier internal use.
@@ -30,12 +30,12 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
             VECTORIO_POLYGON_DEBUG("free(%d), ", sizeof(self->points_list));
             gc_free(self->points_list);
         }
-        self->points_list = gc_alloc(2 * len * sizeof(int), false, false);
-        VECTORIO_POLYGON_DEBUG("alloc(%p, %d)", self->points_list, 2 * len * sizeof(int));
+        self->points_list = gc_alloc(2 * len * sizeof(uint16_t), false, false);
+        VECTORIO_POLYGON_DEBUG("alloc(%p, %d)", self->points_list, 2 * len * sizeof(uint16_t));
     }
     self->len = 2 * len;
 
-    for (size_t i = 0; i < len; ++i) {
+    for (uint16_t i = 0; i < len; ++i) {
         size_t tuple_len = 0;
         mp_obj_t *tuple_items;
         mp_obj_tuple_get(items[i], &tuple_len, &tuple_items);
@@ -43,14 +43,19 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         if (tuple_len != 2) {
             mp_raise_ValueError_varg(translate("%q must be a tuple of length 2"), MP_QSTR_point);
         }
-        if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &self->points_list[2 * i    ])
-            || !mp_obj_get_int_maybe(tuple_items[ 1 ], &self->points_list[2 * i + 1])
+        mp_int_t x;
+        mp_int_t y;
+        if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
+            || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)
+            || x < SHRT_MIN || x > SHRT_MAX || y < SHRT_MIN || y > SHRT_MAX
             ) {
-            self->len = 0;
             gc_free(self->points_list);
             self->points_list = NULL;
             mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
+            self->len = 0;
         }
+        self->points_list[2 * i    ] = (int16_t)x;
+        self->points_list[2 * i + 1] = (int16_t)y;
     }
 }
 
@@ -68,16 +73,23 @@ void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t po
 
 mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self) {
     VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_get_points {len: %d, points_list: %p}\n", self, self->len, self->points_list);
-    mp_obj_t list = mp_obj_new_list(self->len / 2, NULL);
+    mp_obj_list_t *list = MP_OBJ_TO_PTR(mp_obj_new_list(0, NULL));
 
-    for (size_t i = 0; i < self->len; i += 2) {
-        mp_obj_t tuple[] = { mp_obj_new_int(self->points_list[i]), mp_obj_new_int(self->points_list[i + 1]) };
+    VECTORIO_POLYGON_DEBUG("  >points\n");
+    for (uint16_t i = 0; i < self->len; i += 2) {
+        VECTORIO_POLYGON_DEBUG("    (%4d, %4d)\n", self->points_list[i], self->points_list[i + 1]);
+
+        mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+        pair->items[0] = mp_obj_new_int((mp_int_t) self->points_list[i    ]);
+        pair->items[1] = mp_obj_new_int((mp_int_t) self->points_list[i + 1]);
+
         mp_obj_list_append(
             list,
-            mp_obj_new_tuple(2, tuple)
+            pair
             );
     }
-    return list;
+    VECTORIO_POLYGON_DEBUG("  <points\n");
+    return MP_OBJ_FROM_PTR(list);
 }
 void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t points_list) {
     VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_set_points: ", self);
@@ -98,25 +110,30 @@ void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio
 
 void common_hal_vectorio_polygon_get_area(void *polygon, displayio_area_t *area) {
     vectorio_polygon_t *self = polygon;
+    VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_get_area\n");
 
     area->x1 = SHRT_MAX;
     area->y1 = SHRT_MAX;
     area->x2 = SHRT_MIN;
     area->y2 = SHRT_MIN;
-    for (size_t i = 0; i < self->len; ++i) {
-        int x = self->points_list[i];
+    for (uint16_t i = 0; i < self->len; ++i) {
+        int16_t x = self->points_list[i];
         ++i;
-        int y = self->points_list[i];
+        int16_t y = self->points_list[i];
         if (x < area->x1) {
+            VECTORIO_POLYGON_DEBUG("          x1: %d\n", x);
             area->x1 = x;
         }
         if (y < area->y1) {
+            VECTORIO_POLYGON_DEBUG("          y1: %d\n", y);
             area->y1 = y;
         }
         if (x > area->x2) {
+            VECTORIO_POLYGON_DEBUG("          x2: %d\n", x);
             area->x2 = x;
         }
         if (y > area->y2) {
+            VECTORIO_POLYGON_DEBUG("          y2: %d\n", y);
             area->y2 = y;
         }
     }
@@ -126,7 +143,7 @@ void common_hal_vectorio_polygon_get_area(void *polygon, displayio_area_t *area)
 // <0 if the point is to the left of the line vector
 //  0 if the point is on the line
 // >0 if the point is to the right of the line vector
-__attribute__((always_inline)) static inline int line_side(mp_int_t x1, mp_int_t y1, mp_int_t x2, mp_int_t y2, int16_t px, int16_t py) {
+__attribute__((always_inline)) static inline int line_side(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t px, int16_t py) {
     return (px - x1) * (y2 - y1)
            - (py - y1) * (x2 - x1);
 }
@@ -140,14 +157,14 @@ uint32_t common_hal_vectorio_polygon_get_pixel(void *obj, int16_t x, int16_t y) 
         return 0;
     }
 
-    int winding_number = 0;
-    int x1 = self->points_list[0];
-    int y1 = self->points_list[1];
-    for (size_t i = 2; i <= self->len + 1; ++i) {
+    int16_t winding_number = 0;
+    int16_t x1 = self->points_list[0];
+    int16_t y1 = self->points_list[1];
+    for (uint16_t i = 2; i <= self->len + 1; ++i) {
         VECTORIO_POLYGON_DEBUG("  {(%3d, %3d),", x1, y1);
-        int x2 = self->points_list[i % self->len];
+        int16_t x2 = self->points_list[i % self->len];
         ++i;
-        int y2 = self->points_list[i % self->len];
+        int16_t y2 = self->points_list[i % self->len];
         VECTORIO_POLYGON_DEBUG(" (%3d, %3d)}\n", x2, y2);
         if (y1 <= y) {
             if (y2 > y && line_side(x1, y1, x2, y2, x, y) < 0) {
