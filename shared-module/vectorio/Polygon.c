@@ -80,8 +80,8 @@ mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self) {
         VECTORIO_POLYGON_DEBUG("    (%4d, %4d)\n", self->points_list[i], self->points_list[i + 1]);
 
         mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-        pair->items[0] = mp_obj_new_int((mp_int_t) self->points_list[i    ]);
-        pair->items[1] = mp_obj_new_int((mp_int_t) self->points_list[i + 1]);
+        pair->items[0] = mp_obj_new_int((mp_int_t)self->points_list[i    ]);
+        pair->items[1] = mp_obj_new_int((mp_int_t)self->points_list[i + 1]);
 
         mp_obj_list_append(
             list,
