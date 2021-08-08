@@ -35,18 +35,12 @@ void shared_module_traceback_print_exception(mp_obj_exception_t *exc, mp_print_t
             assert(n % 3 == 0);
             // Decompress the format strings
             const compressed_string_t *traceback = MP_ERROR_TEXT("Traceback (most recent call last):\n");
-            char decompressed[decompress_length(traceback)];
-            decompress(traceback, decompressed);
             #if MICROPY_ENABLE_SOURCE_LINE
             const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
             #else
             const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\"");
             #endif
-            char decompressed_frame[decompress_length(frame)];
-            decompress(frame, decompressed_frame);
             const compressed_string_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
-            char decompressed_block[decompress_length(block_fmt)];
-            decompress(block_fmt, decompressed_block);
 
             // Set traceback formatting
             // Default: Print full traceback
@@ -69,20 +63,20 @@ void shared_module_traceback_print_exception(mp_obj_exception_t *exc, mp_print_t
             }
 
             // Print the traceback
-            mp_print_str(print, decompressed);
+            mp_cprintf(print, traceback);
             for (; i >= limit; i -= 3) {
                 j = (i < 0) ? -i : i;
                 #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(print, decompressed_frame, values[j], (int)values[j + 1]);
+                mp_cprintf(print, frame, values[j], (int)values[j + 1]);
                 #else
-                mp_printf(print, decompressed_frame, values[j]);
+                mp_printf(print, frame, values[j]);
                 #endif
                 // The block name can be NULL if it's unknown
                 qstr block = values[j + 2];
                 if (block == MP_QSTRnull) {
                     mp_print_str(print, "\n");
                 } else {
-                    mp_printf(print, decompressed_block, block);
+                    mp_printf(print, block_fmt, block);
                 }
             }
         }

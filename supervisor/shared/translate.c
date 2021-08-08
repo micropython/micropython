@@ -35,12 +35,11 @@
 #endif
 
 #include "py/misc.h"
+#include "py/mpprint.h"
 #include "supervisor/serial.h"
 
 void serial_write_compressed(const compressed_string_t *compressed) {
-    char decompressed[decompress_length(compressed)];
-    decompress(compressed, decompressed);
-    serial_write(decompressed);
+    mp_printf(MP_PYTHON_PRINTER, "%S", compressed);
 }
 
 STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
