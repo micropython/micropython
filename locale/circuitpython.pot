@@ -3453,10 +3453,6 @@ msgstr ""
 msgid "lhs and rhs should be compatible"
 msgstr ""
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr ""
