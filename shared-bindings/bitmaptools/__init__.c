@@ -336,9 +336,8 @@ STATIC mp_obj_t bitmaptools_obj_paint_fill(size_t n_args, const mp_obj_t *pos_ar
         mp_raise_ValueError(translate("value out of range of target"));
     }
 
-    uint32_t background_value, color_depth;
+    uint32_t background_value;
     background_value = args[ARG_background_value].u_int;
-    color_depth = (1 << destination->bits_per_value);
     if (color_depth <= background_value) {
         mp_raise_ValueError(translate("background value out of range of target"));
     }

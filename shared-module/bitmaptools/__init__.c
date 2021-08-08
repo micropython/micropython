@@ -256,7 +256,29 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
     uint32_t value, uint32_t background_value) {
 
-    mp_printf(&mp_plat_print, "paint_fill");
+    /*def _boundaryFill4(self, px, py, fc, bc): # px & py = x, y coord to start fill, fc = fill color, bc = background color
+        fillArea = [[px, py]]
+
+        while len(fillArea) > 0:
+            x, y = fillArea.pop()
+
+            if self._bitmap[x, y] != bc:
+                continue
+            self._bitmap[x, y] = fc
+            fillArea.append((x + 1, y))
+            fillArea.append((x - 1, y))
+            fillArea.append((x, y + 1))
+            fillArea.append((x, y - 1))*/
+    mp_obj_list_t *fill_area;
+
+    //mp_obj_list_t *point;
+    //mp_obj_list_append(point, x);
+    //mp_obj_list_append(point, y);
+
+    mp_obj_list_append(MP_OBJ_FROM_PTR(*fill_area), MP_OBJ_NEW_QSTR(qstr_from_str("hello")));
+
+    //mp_printf(&mp_plat_print, fill_area[0]);
+    //mp_obj_print(mp_obj_list_pop(fill_area, 0), PRINT_STR);
 }
 
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
