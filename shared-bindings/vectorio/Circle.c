@@ -86,6 +86,7 @@ STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_radius), MP_ROM_PTR(&vectorio_circle_radius_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&vectorio_vector_shape_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(vectorio_circle_locals_dict, vectorio_circle_locals_dict_table);

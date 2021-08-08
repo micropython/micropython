@@ -2,6 +2,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H
 
 #include "py/objproperty.h"
+#include "py/objtuple.h"
 
 #include "shared-bindings/vectorio/__init__.h"
 #include "shared-module/vectorio/VectorShape.h"
@@ -22,6 +23,9 @@ void common_hal_vectorio_vector_shape_set_dirty(void *self);
 mp_int_t common_hal_vectorio_vector_shape_get_x(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_int_t x);
 
+mp_obj_tuple_t *common_hal_vectorio_vector_shape_get_location(vectorio_vector_shape_t *self);
+void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self, mp_obj_t xy);
+
 mp_int_t common_hal_vectorio_vector_shape_get_y(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y);
 
@@ -34,6 +38,7 @@ void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displ
 extern vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl;
 extern const mp_obj_property_t vectorio_vector_shape_x_obj;
 extern const mp_obj_property_t vectorio_vector_shape_y_obj;
+extern const mp_obj_property_t vectorio_vector_shape_location_obj;
 extern const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H

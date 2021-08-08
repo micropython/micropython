@@ -14,8 +14,8 @@
 #include "shared-bindings/vectorio/Rectangle.h"
 
 // Lifecycle actions.
-#define VECTORIO_SHAPE_DEBUG(...) (void)0
-// #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+//#define VECTORIO_SHAPE_DEBUG(...) (void)0
+#define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Used in both logging and ifdefs, for extra variables
@@ -23,8 +23,8 @@
 
 
 // Really verbose.
-#define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
-// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+//#define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
+#define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define U32_TO_BINARY_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define U32_TO_BINARY(u32)  \
@@ -192,6 +192,37 @@ void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_in
     common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
+mp_obj_tuple_t *common_hal_vectorio_vector_shape_get_location(vectorio_vector_shape_t *self) {
+    VECTORIO_SHAPE_DEBUG("%p get_location\n", self);
+    mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    pair->items[0] = mp_obj_new_int((mp_int_t)self->x);
+    pair->items[1] = mp_obj_new_int((mp_int_t)self->y);
+    return pair;
+}
+
+
+void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self, mp_obj_t xy) {
+    VECTORIO_SHAPE_DEBUG("%p set_location\n", self);
+    size_t tuple_len = 0;
+    mp_obj_t *tuple_items;
+    mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
+    if (tuple_len != 2) {
+        mp_raise_TypeError_varg(translate("(x,y) integers required"));
+    }
+
+    mp_int_t x;
+    mp_int_t y;
+    if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
+        || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)
+        || x < SHRT_MIN || x > SHRT_MAX || y < SHRT_MIN || y > SHRT_MAX
+        ) {
+        mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
+    }
+    self->x = (int16_t)x;
+    self->y = (int16_t)y;
+    common_hal_vectorio_vector_shape_set_dirty(self);
+}
+
 
 mp_obj_t common_hal_vectorio_vector_shape_get_pixel_shader(vectorio_vector_shape_t *self) {
     VECTORIO_SHAPE_DEBUG("%p get_pixel_shader\n", self);
@@ -271,10 +302,10 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
                 if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_y = shape_area.y2 - 1 - (pixel_to_get_y - shape_area.y1);
+                    pixel_to_get_y = shape_area.y2 - 1 - pixel_to_get_y;
                 }
                 if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_x = shape_area.x2 - 1 - (pixel_to_get_x - shape_area.x1);
+                    pixel_to_get_x = shape_area.x2 - 1 - pixel_to_get_x;
                 }
             } else {
                 pixel_to_get_x = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->x;

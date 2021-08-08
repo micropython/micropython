@@ -143,6 +143,36 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
+//     location: Tuple[int, int]
+//     """location of the center point of the shape in the parent."""
+//
+STATIC mp_obj_t vectorio_vector_shape_obj_get_location(mp_obj_t wrapper_shape) {
+    // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
+    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
+
+    return MP_OBJ_TO_PTR(common_hal_vectorio_vector_shape_get_location(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(vectorio_vector_shape_get_location_obj, vectorio_vector_shape_obj_get_location);
+
+STATIC mp_obj_t vectorio_vector_shape_obj_set_location(mp_obj_t wrapper_shape, mp_obj_t location_obj) {
+    // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
+    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
+
+    common_hal_vectorio_vector_shape_set_location(self, location_obj);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_location_obj, vectorio_vector_shape_obj_set_location);
+
+const mp_obj_property_t vectorio_vector_shape_location_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_location_obj,
+              (mp_obj_t)&vectorio_vector_shape_set_location_obj,
+              MP_ROM_NONE},
+};
+
+
 //     pixel_shader: Union[ColorConverter, Palette]
 //     """The pixel shader of the shape."""
 //
