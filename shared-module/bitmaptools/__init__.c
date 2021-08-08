@@ -256,7 +256,7 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
     uint32_t value, uint32_t background_value) {
 
-
+    mp_printf(&mp_plat_print, "paint_fill");
 }
 
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
