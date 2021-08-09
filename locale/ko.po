@@ -36,11 +36,11 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr " 파일 \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  파일 \"%q\", 라인 %d"
 
@@ -327,7 +327,7 @@ msgstr ""
 msgid "*x must be assignment target"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", 에서 %q\n"
 
@@ -2218,7 +2218,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr ""
 
@@ -3461,10 +3461,6 @@ msgstr ""
 msgid "lhs and rhs should be compatible"
 msgstr ""
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr ""
@@ -3911,6 +3907,10 @@ msgstr ""
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h

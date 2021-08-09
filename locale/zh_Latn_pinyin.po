@@ -43,11 +43,11 @@ msgstr ""
 "Qǐng tōngguò https://github.com/adafruit/circuitpython/issues\n"
 "tíjiāo yǒuguān nín de CIRCUITPY qūdòngqì nèiróng de wèntí \n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Wénjiàn \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Wénjiàn \"%q\", dì %d xíng"
 
@@ -336,7 +336,7 @@ msgstr ""
 msgid "*x must be assignment target"
 msgstr "*x bìxū shì rènwù mùbiāo"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", zài %q\n"
 
@@ -2256,7 +2256,7 @@ msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 msgid "Touch alarms not available"
 msgstr "bù kě yòng chù mō bào jǐng qì"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (Zuìjìn yīcì dǎ diànhuà):\n"
 
@@ -3516,10 +3516,6 @@ msgstr "Level bìxū jiè yú 0 hé 1 zhī jiān"
 msgid "lhs and rhs should be compatible"
 msgstr "lhs hé rhs yīnggāi jiānróng"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "bendì '%q' bāohán lèixíng '%q' dàn yuán shì '%q'"
@@ -3966,6 +3962,10 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h

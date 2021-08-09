@@ -44,11 +44,11 @@ msgstr ""
 "l'adresse\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Fichier \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Fichier \"%q\", ligne %d"
 
@@ -337,7 +337,7 @@ msgstr ""
 msgid "*x must be assignment target"
 msgstr "*x doit être la cible de l'assignement"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", dans %q\n"
 
@@ -2277,7 +2277,7 @@ msgstr "Quantité de données à écrire est plus que %q"
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (appels les plus récents en dernier) :\n"
 
@@ -3552,10 +3552,6 @@ msgstr "le niveau doit être compris entre 0 et 1"
 msgid "lhs and rhs should be compatible"
 msgstr "Les parties gauches et droites doivent être compatibles"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "la variable locale '%q' a le type '%q' mais la source est '%q'"
@@ -4007,6 +4003,10 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
