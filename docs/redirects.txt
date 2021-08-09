@@ -152,7 +152,6 @@ shared-bindings/ustack/__init__.rst shared-bindings/ustack/
 shared-bindings/vectorio/Circle.rst shared-bindings/vectorio/#vectorio.Circle
 shared-bindings/vectorio/Polygon.rst shared-bindings/vectorio/#vectorio.Polygon
 shared-bindings/vectorio/Rectangle.rst shared-bindings/vectorio/#vectorio.Rectangle
-shared-bindings/vectorio/VectorShape.rst shared-bindings/vectorio/#vectorio.VectorShape
 shared-bindings/vectorio/__init__.rst shared-bindings/vectorio/
 shared-bindings/watchdog/WatchDogMode.rst shared-bindings/watchdog/#watchdog.WatchDogMode
 shared-bindings/watchdog/WatchDogTimer.rst shared-bindings/watchdog/#watchdog.WatchDogTimer

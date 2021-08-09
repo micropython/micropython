@@ -35,11 +35,11 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
-#: py/obj.c shared-module/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr ""
 
-#: py/obj.c shared-module/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr ""
 
@@ -318,11 +318,15 @@ msgstr ""
 msgid "'yield' outside function"
 msgstr ""
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr ""
 
-#: py/obj.c shared-module/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ""
 
@@ -2211,7 +2215,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-module/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr ""
 
@@ -3453,10 +3457,6 @@ msgstr ""
 msgid "lhs and rhs should be compatible"
 msgstr ""
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr ""
@@ -4314,7 +4314,7 @@ msgid "unreadable attribute"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr ""
 

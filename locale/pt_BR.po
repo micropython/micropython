@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-07-24 15:35+0000\n"
+"PO-Revision-Date: 2021-08-08 05:33+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: main.c
 msgid ""
@@ -3164,7 +3164,7 @@ msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "a gravação de arquivos não está disponível"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3456,7 +3456,7 @@ msgstr "element_size %d é inválido, deve ser, 1, 2, ou 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "exceção inválida"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3497,7 +3497,7 @@ msgstr "sintaxe inválida para o número"
 
 #: py/objexcept.c shared-bindings/traceback/__init__.c
 msgid "invalid traceback"
-msgstr ""
+msgstr "rastreamento inválido"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3548,7 +3548,7 @@ msgstr "o lhs e rhs devem ser compatíveis"
 
 #: shared-bindings/traceback/__init__.c
 msgid "limit should be an int"
-msgstr ""
+msgstr "o limite deve ser um inteiro"
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
