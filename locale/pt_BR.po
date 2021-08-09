@@ -42,11 +42,11 @@ msgstr ""
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Arquivo \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Arquivo \"%q\", linha %d"
 
@@ -331,11 +331,15 @@ msgstr "'yield a partir' de dentro da função async"
 msgid "'yield' outside function"
 msgstr "função externa 'yield'"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x deve ser o destino da atribuição"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", em %q\n"
 
@@ -2276,7 +2280,7 @@ msgstr "O total dos dados que serão escritos é maior do que %q"
 msgid "Touch alarms not available"
 msgstr "Alarmes de toque não estão disponíveis"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (a última chamada mais recente):\n"
 
@@ -3546,10 +3550,6 @@ msgstr "o nível deve estar entre 0 e 1"
 msgid "lhs and rhs should be compatible"
 msgstr "o lhs e rhs devem ser compatíveis"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr "o limite deve ser um inteiro"
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "o local '%q' tem o tipo '%q', porém a origem é '%q'"
@@ -4003,6 +4003,10 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4412,7 +4416,7 @@ msgid "unreadable attribute"
 msgstr "atributo ilegível"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo %q não suportado"
 
@@ -4532,6 +4536,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "limit should be an int"
+#~ msgstr "o limite deve ser um inteiro"
 
 #~ msgid "no available NIC"
 #~ msgstr "não há uma Placa de Rede disponível"

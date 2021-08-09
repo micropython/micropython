@@ -42,11 +42,11 @@ msgstr ""
 "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Filen \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Fil \"%q\", rad %d"
 
@@ -326,11 +326,15 @@ msgstr "'yield from' i async-funktion"
 msgid "'yield' outside function"
 msgstr "'yield' utanför funktion"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x måste vara mål för tilldelning"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", i %q\n"
 
@@ -2251,7 +2255,7 @@ msgstr "Totala data att skriva är större än %q"
 msgid "Touch alarms not available"
 msgstr "Touchalarm är inte tillgängligt"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (senaste anrop):\n"
 
@@ -3511,10 +3515,6 @@ msgstr "level ska ligga mellan 0 och 1"
 msgid "lhs and rhs should be compatible"
 msgstr "lhs och rhs måste vara kompatibla"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr "limit måste vara en int"
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "lokala '%q' har typ '%q' men källan är '%q'"
@@ -3962,6 +3962,10 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4371,7 +4375,7 @@ msgid "unreadable attribute"
 msgstr "attribut kan inte läsas"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "typ %q stöds inte"
 
@@ -4491,6 +4495,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "limit should be an int"
+#~ msgstr "limit måste vara en int"
 
 #~ msgid "no available NIC"
 #~ msgstr "ingen tillgänglig NIC"
