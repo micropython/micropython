@@ -19,6 +19,8 @@
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UTIMEQ           (0)
 
+#define MICROPY_PY_MACHINE_BITSTREAM (0)
+
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
