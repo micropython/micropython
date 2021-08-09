@@ -6,7 +6,7 @@
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
-#define MICROPY_HW_ENABLE_SDCARD    (0)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 
@@ -29,6 +29,14 @@ void NUCLEO_H743ZI2_board_early_init(void);
 
 // 4 wait states
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
+
+// The board has an external 32kHz crystal attached
+#define MICROPY_HW_RTC_USE_LSE      (1)
+
+// There is no external HS crystal.
+// JP1 STLNK_RST will disable the incoming 8MHz clock
+// since it is derived from the STLINK's MCO output
+#define MICROPY_HW_CLK_USE_BYPASS   (1)
 
 // UART config
 #define MICROPY_HW_UART2_TX         (pin_D5)
@@ -86,6 +94,11 @@ void NUCLEO_H743ZI2_board_early_init(void);
 #define MICROPY_HW_CAN1_TX    (pin_D1)
 #define MICROPY_HW_CAN1_RX    (pin_D0)
 
+// SD card detect switch
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_G2)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
+
 // Ethernet via RMII
 #define MICROPY_HW_ETH_MDC          (pin_C1)
 #define MICROPY_HW_ETH_MDIO         (pin_A2)
@@ -96,3 +109,11 @@ void NUCLEO_H743ZI2_board_early_init(void);
 #define MICROPY_HW_ETH_RMII_TX_EN   (pin_G11)
 #define MICROPY_HW_ETH_RMII_TXD0    (pin_G13)
 #define MICROPY_HW_ETH_RMII_TXD1    (pin_B13)
+
+// only when mboot is used
+// Define the user button for entering mboot
+#if defined(USE_MBOOT)
+#define MBOOT_BOOTPIN_PIN (pin_C13)
+#define MBOOT_BOOTPIN_PULL (MP_HAL_PIN_PULL_DOWN)
+#define MBOOT_BOOTPIN_ACTIVE (1)
+#endif
