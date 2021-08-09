@@ -57,7 +57,7 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
         }
         exc.traceback = MP_OBJ_TO_PTR(tb_obj);
     } else {
-        exc.traceback = NULL;
+        exc.traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
     }
 
     shared_module_traceback_print_exception(&exc, print, limit);
