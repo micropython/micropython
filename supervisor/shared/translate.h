@@ -69,7 +69,7 @@
 // flexible array}, but is also future-proofed against strings with
 // UTF-8 length above 256, with a savings of about 1.375 bytes per
 // string.
-typedef struct {
+typedef struct compressed_string {
     uint8_t data;
     const uint8_t tail[];
 } compressed_string_t;
