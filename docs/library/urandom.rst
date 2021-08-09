@@ -20,30 +20,30 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.seed(n)
   
-    initialises random number generator module with n.
+    Initialises random number generator module with n.
 
   .. method:: urandom.randint(a,b)
     
-    returns a random interger in the range [a,b].
+    Returns a random interger in the range [a,b].
     
   .. method:: urandom.randrange(stop)
   
-    returns a random number from the range [0,stop)
+    Returns a random number from the range [0,stop)
 
   .. method:: urandom.randrange(start,stop)
     
-    returns a random number from range [start,stop]
+    Returns a random number from range [start,stop]
 
   .. method:: urandom.randrange(start,stop,step)
   
-    returns a random numner from range [start,stop] after skipping *step*
+    Returns a random numner from range [start,stop] after skipping *step*
     numbers                    
 
   .. method:: urandom.random()
   
-    returns the next floating point number in the range [0.0,1.0]
+    Returns the next floating point number in the range [0.0,1.0]
 
   .. method:: urandom.uniform(a,b)
   
-    returns a random floating point number N such that a<=N<=b for a<=b and
+    Returns a random floating point number N such that a<=N<=b for a<=b and
     b<=N<=a for b<a    
