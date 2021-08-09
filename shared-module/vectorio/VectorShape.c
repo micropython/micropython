@@ -14,8 +14,8 @@
 #include "shared-bindings/vectorio/Rectangle.h"
 
 // Lifecycle actions.
-// #define VECTORIO_SHAPE_DEBUG(...) (void)0
-#define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#define VECTORIO_SHAPE_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Used in both logging and ifdefs, for extra variables
@@ -23,8 +23,8 @@
 
 
 // Really verbose.
-// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
-#define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
+// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define U32_TO_BINARY_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define U32_TO_BINARY(u32)  \
@@ -96,8 +96,19 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
     if (self->absolute_transform->transpose_xy) {
         x = self->absolute_transform->x + self->absolute_transform->dx * self->y;
         y = self->absolute_transform->y + self->absolute_transform->dy * self->x;
+        if (self->absolute_transform->dx < 1) {
+            out_area->y1 = out_area->y1 * -1 + 1;
+            out_area->y2 = out_area->y2 * -1 + 1;
+        }
+        if (self->absolute_transform->dy < 1) {
+            out_area->x1 = out_area->x1 * -1 + 1;
+            out_area->x2 = out_area->x2 * -1 + 1;
+        }
         area_transpose(out_area);
     } else {
+        x = self->absolute_transform->x + self->absolute_transform->dx * self->x;
+        y = self->absolute_transform->y + self->absolute_transform->dy * self->y;
+
         if (self->absolute_transform->dx < 1) {
             out_area->x1 = out_area->x1 * -1 + 1;
             out_area->x2 = out_area->x2 * -1 + 1;
@@ -106,8 +117,6 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
             out_area->y1 = out_area->y1 * -1 + 1;
             out_area->y2 = out_area->y2 * -1 + 1;
         }
-        x = self->absolute_transform->x + self->absolute_transform->dx * self->x;
-        y = self->absolute_transform->y + self->absolute_transform->dy * self->y;
     }
     displayio_area_canon(out_area);
     displayio_area_shift(out_area, x, y);
@@ -307,25 +316,35 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             if (self->absolute_transform->transpose_xy) {
                 pixel_to_get_x = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->x;
                 pixel_to_get_y = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->y;
-                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
-                if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_y = shape_area.y2 - 1 - pixel_to_get_y;
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+                if (self->absolute_transform->dx < 1) {
+                    pixel_to_get_y *= -1;
                 }
-                if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_x = shape_area.x2 - 1 - pixel_to_get_x;
+                if (self->absolute_transform->dy < 1) {
+                    pixel_to_get_x *= -1;
                 }
+                VECTORIO_SHAPE_PIXEL_DEBUG(" b(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
             } else {
                 pixel_to_get_x = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->x;
                 pixel_to_get_y = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->y;
-                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
 
-                if (self->absolute_transform->mirror_x) {
-                    pixel_to_get_x = (shape_area.x2 - shape_area.x1) - (pixel_to_get_x + shape_area.x1) + shape_area.x1 - 1;
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+                if (self->absolute_transform->dx < 1) {
+                    pixel_to_get_x *= -1;
                 }
-                if (self->absolute_transform->mirror_y) {
-                    pixel_to_get_y = (shape_area.y2 - shape_area.y1) - (pixel_to_get_y + shape_area.y1) + +shape_area.y1 - 1;
+                if (self->absolute_transform->dy < 1) {
+                    pixel_to_get_y *= -1;
                 }
+                VECTORIO_SHAPE_PIXEL_DEBUG(" b(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+
+                // It's mirrored via dx. Maybe we need to add support for also separately mirroring?
+                // if (self->absolute_transform->mirror_x) {
+                //     pixel_to_get_x = (shape_area.x2 - shape_area.x1) - (pixel_to_get_x - shape_area.x1) + shape_area.x1 - 1;
+                // }
+                // if (self->absolute_transform->mirror_y) {
+                //     pixel_to_get_y = (shape_area.y2 - shape_area.y1) - (pixel_to_get_y - shape_area.y1) + +shape_area.y1 - 1;
+                // }
             }
 
             VECTORIO_SHAPE_PIXEL_DEBUG(" get_pixel %p (%3d, %3d) -> ( %3d, %3d )", self->ishape.shape, input_pixel.x, input_pixel.y, pixel_to_get_x, pixel_to_get_y);
@@ -407,7 +426,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
 
 
 void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
-    if (displayio_area_empty(&self->ephemeral_dirty_area)) {
+    if (displayio_area_empty(&self->ephemeral_dirty_area) && !self->current_area_dirty) {
         return;
     }
     VECTORIO_SHAPE_DEBUG("%p finish_refresh was:{(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
@@ -484,6 +503,6 @@ displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_
 }
 
 void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displayio_buffer_transform_t *group_transform) {
-    common_hal_vectorio_vector_shape_set_dirty(self);
     self->absolute_transform = group_transform == NULL ? &null_transform : group_transform;
+    common_hal_vectorio_vector_shape_set_dirty(self);
 }
