@@ -20,5 +20,7 @@ void common_hal_vectorio_polygon_get_area(void *polygon, displayio_area_t *out_a
 mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self);
 void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t points_list);
 
+mp_obj_t common_hal_vectorio_polygon_get_draw_protocol(void *polygon);
+
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_POLYGON_H

@@ -11,6 +11,7 @@ typedef struct {
     mp_obj_base_t base;
     uint16_t radius;
     vectorio_event_t on_dirty;
+    mp_obj_t draw_protocol_instance;
 } vectorio_circle_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_CIRCLE_H
