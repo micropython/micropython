@@ -285,7 +285,7 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
     mp_obj_t *fill_points;
     size_t list_length = 0;
     mp_obj_list_get(fill_area, &list_length, &fill_points);
-    mp_printf(&mp_plat_print, "\nLen bfore loop: %d", list_length);
+    //mp_printf(&mp_plat_print, "\nLen bfore loop: %d", list_length);
     mp_obj_t current_point;
     uint32_t current_point_color_value;
 
@@ -295,7 +295,7 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
 
     while (list_length > 0){
         mp_obj_list_get(fill_area, &list_length, &fill_points);
-        mp_printf(&mp_plat_print, "\nLen begin loop: %d\n", list_length);
+        //mp_printf(&mp_plat_print, "\nLen begin loop: %d\n", list_length);
         current_point = mp_obj_list_pop(fill_area, 0);
 
 
@@ -306,12 +306,15 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
             mp_obj_get_int(tuple_items[0]),
             mp_obj_get_int(tuple_items[1]));
 
-        mp_printf(&mp_plat_print, "%d\n", current_point_color_value);
+        //mp_printf(&mp_plat_print, "%d\n", current_point_color_value);
 
         if(current_point_color_value != background_value){
             mp_obj_list_get(fill_area, &list_length, &fill_points);
             continue;
         }
+
+
+
         displayio_bitmap_write_pixel(
             destination,
             mp_obj_get_int(tuple_items[0]),
@@ -320,27 +323,51 @@ void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
 
 
         //mp_obj_t above_point[] = { mp_obj_new_int(tuple_items[0]), mp_obj_new_int(tuple_items[1])-1 };
-        mp_printf(&mp_plat_print,"math:\n");
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_get_int(tuple_items[0]));
-        mp_printf(&mp_plat_print, "%d\n", mp_obj_get_int(tuple_items[0])+1);
-        int16_t above_int = mp_obj_get_int(tuple_items[0])+1;
-        mp_printf(&mp_plat_print, "%d\n", above_int);
-        int16_t *above = &above_int;
-        mp_printf(&mp_plat_print, "%d\n", above);
+        //mp_printf(&mp_plat_print,"math:\n");
+        //mp_printf(&mp_plat_print, "%d\n", mp_obj_get_int(tuple_items[0]));
+        //mp_printf(&mp_plat_print, "%d\n", mp_obj_get_int(tuple_items[0])+1);
+        //int16_t above_int = mp_obj_get_int(tuple_items[0])+1;
+        //mp_printf(&mp_plat_print, "%d\n", above_int);
+        //int16_t *above = &above_int;
+        //mp_printf(&mp_plat_print, "%d\n", above);
 
         mp_obj_t above_point[] = {
             tuple_items[0],
-            above};
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1])-1)};
 
-        mp_printf(&mp_plat_print,"above_point:\n");
+        //mp_printf(&mp_plat_print,"above_point:\n");
         //mp_obj_print(above_point, PRINT_STR);
         mp_obj_list_append(
             fill_area,
             mp_obj_new_tuple(2, above_point));
 
+        mp_obj_t left_point[] = {
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0])-1),
+            tuple_items[1]};
+        mp_obj_list_append(
+            fill_area,
+            mp_obj_new_tuple(2, left_point));
+
+        mp_obj_t right_point[] = {
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0])+1),
+            tuple_items[1]};
+        mp_obj_list_append(
+            fill_area,
+            mp_obj_new_tuple(2, right_point));
+
+        mp_obj_t below_point[] = {
+            tuple_items[0],
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1])+1)};
+        mp_obj_list_append(
+            fill_area,
+            mp_obj_new_tuple(2, below_point));
+
         mp_obj_list_get(fill_area, &list_length, &fill_points);
-        mp_printf(&mp_plat_print, "\nLen end loop: %d\n", list_length);
+        //mp_printf(&mp_plat_print, "\nLen end loop: %d\n", list_length);
     }
+
+    displayio_area_t area = { 0, 0, destination->width, destination->height };
+    displayio_bitmap_set_dirty_area(destination, &area);
 
     //mp_obj_print(fill_area, PRINT_STR);
     //mp_obj_print(current_point[0], PRINT_STR);
