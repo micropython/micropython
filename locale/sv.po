@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-07 04:00+0000\n"
+"PO-Revision-Date: 2021-08-10 02:41+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -328,7 +328,7 @@ msgstr "'yield' utanför funktion"
 
 #: shared-module/vectorio/VectorShape.c
 msgid "(x,y) integers required"
-msgstr ""
+msgstr "(x,y) heltal krävs"
 
 #: py/compile.c
 msgid "*x must be assignment target"
