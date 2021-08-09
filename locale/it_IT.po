@@ -329,6 +329,10 @@ msgstr "'yield from' è nella funzione sincronizzazione"
 msgid "'yield' outside function"
 msgstr "'yield' al di fuori della funzione"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x deve essere il bersaglio del assegnamento"
@@ -4379,7 +4383,7 @@ msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo di %q non supportato"
 

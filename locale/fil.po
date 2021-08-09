@@ -320,6 +320,10 @@ msgstr ""
 msgid "'yield' outside function"
 msgstr "'yield' sa labas ng function"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x ay dapat na assignment target"
@@ -4361,7 +4365,7 @@ msgid "unreadable attribute"
 msgstr "hindi mabasa ang attribute"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "Hindi supportadong tipo ng %q"
 

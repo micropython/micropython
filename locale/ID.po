@@ -325,6 +325,10 @@ msgstr "'yield from' di dalam fungsi async"
 msgid "'yield' outside function"
 msgstr "'yield' diluar fungsi"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x harus menjadi target assignment"
@@ -4353,7 +4357,7 @@ msgid "unreadable attribute"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr ""
 

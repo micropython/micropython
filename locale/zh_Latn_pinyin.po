@@ -328,6 +328,10 @@ msgstr "Yì bù hán shù zhōng de 'yield from'"
 msgid "'yield' outside function"
 msgstr "'yield' wàibù gōngnéng"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x bìxū shì rènwù mùbiāo"
@@ -4371,7 +4375,7 @@ msgid "unreadable attribute"
 msgstr "bùkě dú shǔxìng"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "bù zhīchí %q lèixíng"
 
