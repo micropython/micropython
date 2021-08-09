@@ -143,47 +143,65 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 }
 
 // helper function to print an exception with traceback
-void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
+void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit) {
     if (mp_obj_is_exception_instance(exc) && stack_ok()) {
         size_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
-            // Decompress the format strings
-            const compressed_string_t *traceback = MP_ERROR_TEXT("Traceback (most recent call last):\n");
-            char decompressed[decompress_length(traceback)];
-            decompress(traceback, decompressed);
             #if MICROPY_ENABLE_SOURCE_LINE
             const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
             #else
             const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\"");
             #endif
-            char decompressed_frame[decompress_length(frame)];
-            decompress(frame, decompressed_frame);
             const compressed_string_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
-            char decompressed_block[decompress_length(block_fmt)];
-            decompress(block_fmt, decompressed_block);
+
+            // Set traceback formatting
+            // Default: Print full traceback
+            limit = limit * 3;
+            mp_int_t i = n - 3, j;
+            if (limit > 0) {
+                // Print upto limit traceback
+                // entries from caller's frame
+                if ((unsigned)limit > n) {
+                    limit = n;
+                }
+                limit = n - limit;
+            } else if (limit < 0) {
+                // Print upto limit traceback
+                // entries from last
+                if ((unsigned)-limit > n) {
+                    limit = -n;
+                }
+                i = 0, limit = limit + 3;
+            }
 
             // Print the traceback
-            mp_print_str(print, decompressed);
-            for (int i = n - 3; i >= 0; i -= 3) {
+            mp_cprintf(print, MP_ERROR_TEXT("Traceback (most recent call last):\n"));
+
+            for (; i >= limit; i -= 3) {
+                j = (i < 0) ? -i : i;
                 #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(print, decompressed_frame, values[i], (int)values[i + 1]);
+                mp_cprintf(print, frame, values[j], (int)values[j + 1]);
                 #else
-                mp_printf(print, decompressed_frame, values[i]);
+                mp_cprintf(print, frame, values[j]);
                 #endif
-                // the block name can be NULL if it's unknown
-                qstr block = values[i + 2];
+                // The block name can be NULL if it's unknown
+                qstr block = values[j + 2];
                 if (block == MP_QSTRnull) {
                     mp_print_str(print, "\n");
                 } else {
-                    mp_printf(print, decompressed_block, block);
+                    mp_cprintf(print, block_fmt, block);
                 }
             }
         }
     }
     mp_obj_print_helper(print, exc, PRINT_EXC);
     mp_print_str(print, "\n");
+}
+
+void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
+    mp_obj_print_exception_with_limit(print, exc, 0);
 }
 
 bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
