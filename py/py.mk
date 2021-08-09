@@ -184,6 +184,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moducryptolib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
+	extmod/machine_bitstream.o \
 	extmod/machine_mem.o \
 	extmod/machine_pinbase.o \
 	extmod/machine_signal.o \
