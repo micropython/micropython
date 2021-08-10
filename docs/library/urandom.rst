@@ -25,7 +25,9 @@ Given below are the methods that this module provides.
     
   .. method:: urandom.seed(n=None, /)
   
-    Initialises random number generator module with n.
+    Initialises random number generator module with n. The None case only 
+    works if :MICROPY_PY_URANDOM_SEED_INIT_FUNC: is defined in the port, 
+    otherwise raises ValueError.
 
   .. method:: urandom.randint(a,b)
     
@@ -51,4 +53,10 @@ Given below are the methods that this module provides.
   .. method:: urandom.uniform(a,b)
   
     Returns a random floating point number N such that a<=N<=b for a<=b and
-    b<=N<=a for b<a    
+    b<=N<=a for b<a  
+    
+.. note:: 
+
+   The :randrange: , :randint: and :choice: may not be available on some ports if 
+   the :MICROPY_PY_URANDOM_EXTRA_FUNCS: configuration option is disabled.
+   
