@@ -102,6 +102,28 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
         column_pins_array[column] = pin;
     }
 
+    for (size_t row = 0; row < num_row_pins; row++) {
+        for (size_t row2 = row + 1; row2 < num_row_pins; row2++) {
+            if (row_pins_array[row] == row_pins_array[row2]) {
+                mp_raise_ValueError(translate("Row or Column pin duplicated"));
+            }
+        }
+
+        for (size_t column = 0; column < num_column_pins; column++) {
+            if (row_pins_array[row] == column_pins_array[column]) {
+                mp_raise_ValueError(translate("Row or Column pin duplicated"));
+            }
+        }
+    }
+
+    for (size_t column = 0; column < num_column_pins; column++) {
+        for (size_t column2 = column + 1; column2 < num_column_pins; column2++) {
+            if (column_pins_array[column] == column_pins_array[column2]) {
+                mp_raise_ValueError(translate("Row or Column pin duplicated"));
+            }
+        }
+    }
+
     common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_column_pins, column_pins_array, args[ARG_columns_to_anodes].u_bool, interval, max_events);
     return MP_OBJ_FROM_PTR(self);
 }

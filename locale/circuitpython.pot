@@ -1998,6 +1998,10 @@ msgstr ""
 msgid "Row entry must be digitalio.DigitalInOut"
 msgstr ""
 
+#: shared-bindings/keypad/KeyMatrix.c
+msgid "Row or Column pin duplicated"
+msgstr ""
+
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
