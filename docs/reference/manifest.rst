@@ -3,16 +3,19 @@
 MicroPython manifest file
 ==========================
 
-..code-block:: pyhton3
+..code-block:: python3
 
   include(manifest, **kwargs)
   
 The manifest argument can be a string (filename) or an iterable of strings.
 Relative paths are resolved with respect to the current manifest file.
 Optional kwargs can be provided which will be available to the included script
-via the `options` variable. e.g. include("path.py", extra_features=True)
+via the `options` variable. e.g. include("path.py", extra_features=True).
 
-in path.py:
+In path.py:
+
+..code-block:: python3
+
         options.defaults(standard_features=True)
         # freeze minimal modules.
         if options.standard_features:
@@ -20,7 +23,6 @@ in path.py:
         if options.extra_features:
             # freeze extra modules.
             
-..code-block:: python3
 
 Freeze the input, automatically determining its type.  A .py script
 will be compiled to a .mpy first then frozen, and a .mpy file will be
