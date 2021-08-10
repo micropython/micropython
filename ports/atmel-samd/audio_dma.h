@@ -99,4 +99,6 @@ void audio_dma_background(void);
 
 uint8_t find_sync_event_channel_raise(void);
 
+void audio_evsys_handler(void);
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H

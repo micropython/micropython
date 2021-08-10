@@ -149,7 +149,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         #if CIRCUITPY_ALARM
