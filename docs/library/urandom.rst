@@ -18,7 +18,7 @@ Given below are the methods that this module provides.
 
     Returns an integer with 'n' random bits (1<=n<=32)
 
-  .. method:: urandom.seed(n)
+  .. method:: urandom.seed(n=None, /)
   
     Initialises random number generator module with n.
 
@@ -32,16 +32,16 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.randrange(start,stop)
     
-    Returns a random number from range [start,stop]
+    Returns a random number from range [start,stop)
 
-  .. method:: urandom.randrange(start,stop,step)
+  .. method:: urandom.randrange(start, stop[, step])
   
-    Returns a random numner from range [start,stop] after skipping *step*
+    Returns a random number from range [start,stop] after skipping *step*
     numbers                    
 
   .. method:: urandom.random()
   
-    Returns the next floating point number in the range [0.0,1.0]
+    Returns the next floating point number in the range [0.0,1.0)
 
   .. method:: urandom.uniform(a,b)
   
