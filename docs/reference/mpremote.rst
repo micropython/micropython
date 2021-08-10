@@ -109,6 +109,7 @@ Any user configuration, including user-defined shortcuts, can be placed in
 Examples::
 
 ..code-block:: python3
+
   mpremote
   mpremote a1
   mpremote connect /dev/ttyUSB0 repl
