@@ -34,6 +34,16 @@
 #define MICROPY_VFS                        (1)
 #endif
 
+// Board overridable emitter configuration.
+
+#ifndef MICROPY_EMIT_THUMB
+#define MICROPY_EMIT_THUMB          (1)
+#endif
+
+#ifndef MICROPY_EMIT_INLINE_THUMB
+#define MICROPY_EMIT_INLINE_THUMB   (1)
+#endif
+
 // Board overridable feature configuration.
 
 #ifndef MICROPY_ENABLE_SOURCE_LINE
