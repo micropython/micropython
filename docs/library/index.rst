@@ -74,6 +74,7 @@ library.
    time.rst
    uasyncio.rst
    zlib.rst
+   urandom.rst
    _thread.rst
 
 
