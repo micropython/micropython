@@ -20,16 +20,6 @@ in path.py:
          
 The MicroPython manifest files supports variousmethods which are:
 
-* yasmarang_randbelow : returns an unsigned integer below the given argument
-                         
-                        Syntax - STATIC uint32_t yasmarang_randbelow(uint32_t n)
-                                  
-                                 (Here, n shouldn't be 0)
-
-* yasmarang_float : returns a number in the range [0..1) using Yasmarang to
-                    fill in the fraction bits
-                       
-                    Syntax - STATIC mp_float_t yasmarang_float(void) 
 
 * freeze_as_str(path) : Freeze the given `path` and all .py scripts within it
                         as a string, which will be compiled upon import.
