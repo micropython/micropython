@@ -4207,7 +4207,7 @@ msgstr "stop doit être 1 ou 2"
 msgid "stop not reachable from start"
 msgstr "stop n'est pas accessible au démarrage"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "opération de flux non supportée"
 

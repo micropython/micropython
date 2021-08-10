@@ -4166,7 +4166,7 @@ msgstr "tíngzhǐ bìxū wèi 1 huò 2"
 msgid "stop not reachable from start"
 msgstr "tíngzhǐ wúfǎ cóng kāishǐ zhōng zhǎodào"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "bù zhīchí liú cāozuò"
 
