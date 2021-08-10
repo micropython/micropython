@@ -17,7 +17,12 @@ Given below are the methods that this module provides.
   .. method:: urandom.getrandbits(n)
 
     Returns an integer with 'n' random bits (1<=n<=32)
-
+    
+  .. method:: urandom.choice(sequence)
+   
+    chooses multiple random items from a sequence (list, set or any
+    data structure)
+    
   .. method:: urandom.seed(n=None, /)
   
     Initialises random number generator module with n.
