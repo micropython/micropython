@@ -4128,7 +4128,7 @@ msgstr "stopは1または2のいずれか"
 msgid "stop not reachable from start"
 msgstr ""
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "ストリーム操作は非対応"
 

@@ -4142,7 +4142,7 @@ msgstr "stop must be 1 or 2"
 msgid "stop not reachable from start"
 msgstr "stop not reachable from start"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operation not supported"
 

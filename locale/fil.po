@@ -4155,7 +4155,7 @@ msgstr "stop dapat 1 o 2"
 msgid "stop not reachable from start"
 msgstr "stop hindi maabot sa simula"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operation hindi sinusuportahan"
 
