@@ -594,10 +594,12 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     #endif
 
     uint32_t target = current_ticks + (ticks << 4);
+    #ifdef SAMD21
     // Try and avoid a bus stall when writing COMP by checking for an obvious
     // existing sync.
     while (RTC->MODE0.STATUS.bit.SYNCBUSY == 1) {
     }
+    #endif
     // Writing the COMP register can take up to 180us to synchronize. During
     // this time, the bus will stall and no interrupts will be serviced.
     RTC->MODE0.COMP[0].reg = target;

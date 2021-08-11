@@ -121,8 +121,14 @@ CFLAGS += -DCIRCUITPY_BUILTINS_POW3=$(CIRCUITPY_BUILTINS_POW3)
 CIRCUITPY_BUSIO ?= 1
 CFLAGS += -DCIRCUITPY_BUSIO=$(CIRCUITPY_BUSIO)
 
+# These two flags pretend to implement their class but raise a ValueError due to
+# unsupported pins. This should be used sparingly on boards that don't break out
+# generic IO but need parts of busio.
 CIRCUITPY_BUSIO_SPI ?= 1
 CFLAGS += -DCIRCUITPY_BUSIO_SPI=$(CIRCUITPY_BUSIO_SPI)
+
+CIRCUITPY_BUSIO_UART ?= 1
+CFLAGS += -DCIRCUITPY_BUSIO_UART=$(CIRCUITPY_BUSIO_UART)
 
 CIRCUITPY_CAMERA ?= 0
 CFLAGS += -DCIRCUITPY_CAMERA=$(CIRCUITPY_CAMERA)

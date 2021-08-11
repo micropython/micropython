@@ -104,7 +104,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
     common_hal_busio_spi_construct(self, clock, mosi, miso);
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_NotImplementedError(NULL);
+    mp_raise_ValueError(translate("Invalid pins"));
     #endif // CIRCUITPY_BUSIO_SPI
 }
 
