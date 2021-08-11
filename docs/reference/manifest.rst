@@ -1,5 +1,10 @@
 .. _manifest_file:
 
+When building a sorce distribution for a package, we are only allowed to include 
+some files initially. To include any extra file in the source distribution, we 
+use a :manifest.py: file to add and remove files from source distribution.
+
+
 MicroPython manifest file
 ==========================
 
