@@ -51,8 +51,8 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
     const uint32_t low_mask = pin->pin_mask << 16;
     volatile uint32_t *bsrr = &pin->gpio->BSRR;
 
+    // Convert ns to loop iterations [high_time_0, low_time_0, high_time_1, low_time_1].
     for (size_t i = 0; i < 4; ++i) {
-        // Convert ns to iters.
         timing_ns[i] = mp_hal_delay_ns_calc(timing_ns[i], i % 2 == 0);
     }
 
@@ -164,8 +164,8 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
     const uint32_t low_mask = pin->pin_mask << 16;
     volatile uint32_t *bsrr = &pin->gpio->BSRR;
 
+    // Convert ns to cycles [high_time_0, low_time_0, high_time_1, low_time_1].
     for (size_t i = 0; i < 4; ++i) {
-        // Convert ns to cycles.
         timing_ns[i] = SystemCoreClock / 1000000 * timing_ns[i] / 1000;
         if (timing_ns[i] > NS_CYCLES_OVERHEAD) {
             timing_ns[i] -= NS_CYCLES_OVERHEAD;
