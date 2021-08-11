@@ -31,14 +31,14 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared_timers.h"
 #include "timer_handler.h"
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
+#include "samd/pins.h"
 #include "samd/timers.h"
 #include "supervisor/shared/translate.h"
-
-#include "samd/pins.h"
 
 #undef ENABLE
 
@@ -77,16 +77,11 @@ void pwmout_reset(void) {
         target_tcc_frequencies[i] = 0;
         tcc_refcount[i] = 0;
     }
-    Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
         if (!timer_ok_to_reset(i, false)) {
             continue;
         }
-        uint8_t mask = 0xff;
-        for (uint8_t j = 0; j < tcc_cc_num[i]; j++) {
-            mask <<= 1;
-        }
-        tcc_channels[i] = mask;
+        tcc_channels[i] = 0xff << tcc_cc_num[i];
     }
 }
 

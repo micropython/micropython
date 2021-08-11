@@ -322,11 +322,9 @@ SRC_C += \
 	reset.c \
 	timer_handler.c \
 
-ifeq ($(CIRCUITPY_PWMIO),1)
-SRC_C += shared_timers.c
-endif
-
-ifeq ($(CIRCUITPY_AUDIOIO),1)
+# This is an OR because it filters to any 1s and then checks to see if it is not
+# empty.
+ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX)))
 SRC_C += shared_timers.c
 endif
 
