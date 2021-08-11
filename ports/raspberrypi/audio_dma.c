@@ -153,7 +153,7 @@ STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
     }
 
     // Convert the sample format resolution and signedness, as necessary.
-    // The input sample buffer is what was read from a file or a raw sample buffer.
+    // The input sample buffer is what was read from a file, Mixer, or a raw sample buffer.
     // The output buffer is one of the DMA buffers (passed in), or if no conversion was done,
     // the original sample buffer (to save copying).
 
@@ -368,13 +368,6 @@ void audio_dma_stop(audio_dma_t *dma) {
 
         if (dma_channel_is_busy(channel)) {
             dma_channel_abort(channel);
-        }
-
-        // Write a zero as the last sample. This stops any PWM output.
-        if (dma->output_resolution <= 8) {
-            *((uint8_t *)dma->output_register_address) = 0;
-        } else {
-            *((uint16_t *)dma->output_register_address) = 0;
         }
 
         dma_channel_set_read_addr(channel, NULL, false /* trigger */);
