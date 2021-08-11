@@ -91,10 +91,10 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
-	espneopixel.c \
 	espapa102.c \
 	modpyb.c \
 	modmachine.c \
+	machine_bitstream.c \
 	machine_pin.c \
 	machine_pwm.c \
 	machine_rtc.c \
