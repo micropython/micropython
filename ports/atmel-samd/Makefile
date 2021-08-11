@@ -322,6 +322,14 @@ SRC_C += \
 	reset.c \
 	timer_handler.c \
 
+ifeq ($(CIRCUITPY_PWMIO),1)
+SRC_C += shared_timers.c
+endif
+
+ifeq ($(CIRCUITPY_AUDIOIO),1)
+SRC_C += shared_timers.c
+endif
+
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_C += ports/atmel-samd/sd_mmc/sd_mmc.c
 endif

@@ -23,17 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
 
-#define TC_HANDLER_NO_INTERRUPT 0x0
-#define TC_HANDLER_PULSEOUT 0x1
-#define TC_HANDLER_PEW 0x2
-#define TC_HANDLER_FREQUENCYIN 0x3
-#define TC_HANDLER_RGBMATRIX 0x4
-#define TC_HANDLER_PULSEIN 0x5
+#include <stdbool.h>
 
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
-void shared_timer_handler(bool is_tc, uint8_t index);
+void timer_never_reset(int index, bool is_tc);
+void timer_reset_ok(int index, bool is_tc);
+bool timer_ok_to_reset(int index, bool is_tc);
+void reset_timers(void);
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
