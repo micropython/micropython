@@ -225,9 +225,11 @@ void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t *self) 
     audio_dma_stop(&self->dma);
 
     // Set to quiescent level.
-    pwm_hw->slice[self->left_pwm.slice].cc = self->quiescent_value;
+    common_hal_pwmio_pwmout_set_duty_cycle(&self->left_pwm, self->quiescent_value);
+    pwmio_pwmout_set_top(&self->left_pwm, PWM_TOP);
     if (self->stereo) {
-        pwm_hw->slice[self->right_pwm.slice].cc = self->quiescent_value;
+        common_hal_pwmio_pwmout_set_duty_cycle(&self->right_pwm, self->quiescent_value);
+        pwmio_pwmout_set_top(&self->right_pwm, PWM_TOP);
     }
 }
 
