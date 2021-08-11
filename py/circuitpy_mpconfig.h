@@ -483,6 +483,13 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPAD_ROOT_POINTERS
 #endif
 
+#if CIRCUITPY_GETPASS
+extern const struct _mp_obj_module_t getpass_module;
+#define GETPASS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_getpass), (mp_obj_t)&getpass_module },
+#else
+#define GETPASS_MODULE
+#endif
+
 #if CIRCUITPY_GNSS
 extern const struct _mp_obj_module_t gnss_module;
 #define GNSS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_gnss), (mp_obj_t)&gnss_module },
@@ -896,6 +903,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPADSHIFT_MODULE \
+    GETPASS_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \

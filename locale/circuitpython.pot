@@ -493,6 +493,10 @@ msgstr ""
 msgid "Attempted heap allocation when VM not running."
 msgstr ""
 
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
 msgstr ""
@@ -1215,6 +1219,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -4105,7 +4113,7 @@ msgstr ""
 msgid "stop not reachable from start"
 msgstr ""
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr ""
 
