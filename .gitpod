@@ -4,8 +4,11 @@ ports:
   - port: 6080
     protocol: "http"
     onOpen: open-preview
+  - port: 5900
+    onOpen: ignore
 tasks:
   - init: |
+      xrandr --fb 500x500
       make -j $(nproc) -C mpy-cross VARIANT=dev DEBUG=1
       make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
     command: |
