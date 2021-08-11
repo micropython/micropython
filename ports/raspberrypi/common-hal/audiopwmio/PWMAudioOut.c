@@ -157,27 +157,6 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
         tx_register += self->left_pwm.channel * sizeof(uint16_t);
     }
 
-    audio_dma_result result = audio_dma_setup_playback(
-        &self->dma,
-        sample,
-        loop,
-        false, // single channel
-        0, // audio channel
-        false,  // output signed
-        BITS_PER_SAMPLE,
-        (uint32_t)tx_register,  // output register: PWM cc register
-        0x3b + pacing_timer); // data request line
-
-    if (result == AUDIO_DMA_DMA_BUSY) {
-        common_hal_audiopwmio_pwmaudioout_stop(self);
-        mp_raise_RuntimeError(translate("No DMA channel found"));
-    }
-    if (result == AUDIO_DMA_MEMORY_ERROR) {
-        common_hal_audiopwmio_pwmaudioout_stop(self);
-        mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
-    }
-
-    // OK! We got all of the resources we need and dma is ready.
     self->pacing_timer = pacing_timer;
 
     // Playback with two independent clocks. One is the sample rate which
@@ -214,6 +193,27 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     }
 
     dma_hw->timer[pacing_timer] = best_numerator << 16 | best_denominator;
+
+    audio_dma_result result = audio_dma_setup_playback(
+        &self->dma,
+        sample,
+        loop,
+        false, // single channel
+        0, // audio channel
+        false,  // output signed
+        BITS_PER_SAMPLE,
+        (uint32_t)tx_register,  // output register: PWM cc register
+        0x3b + pacing_timer); // data request line
+
+    if (result == AUDIO_DMA_DMA_BUSY) {
+        common_hal_audiopwmio_pwmaudioout_stop(self);
+        mp_raise_RuntimeError(translate("No DMA channel found"));
+    }
+    if (result == AUDIO_DMA_MEMORY_ERROR) {
+        common_hal_audiopwmio_pwmaudioout_stop(self);
+        mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
+    }
+    // OK! We got all of the resources we need and dma is ready.
 }
 
 void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t *self) {
