@@ -40,7 +40,7 @@
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/sha256.h"
 #else
-#include "crypto-algorithms/sha256.h"
+#include "lib/crypto-algorithms/sha256.h"
 #endif
 
 #endif
@@ -115,7 +115,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 
 #else
 
-#include "crypto-algorithms/sha256.c"
+#include "lib/crypto-algorithms/sha256.c"
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);

@@ -28,7 +28,7 @@
 
 #include <errno.h>
 #include "py/stream.h"
-#include "extmod/crypto-algorithms/sha256.h"
+#include "lib/crypto-algorithms/sha256.h"
 
 #define SSL_CTX_MUTEX_INIT(mutex)
 #define SSL_CTX_MUTEX_DESTROY(mutex)

@@ -1,10 +1,10 @@
-image: Visual Studio 2013
+image: Visual Studio 2017
 clone_depth: 1
 skip_tags: true
 
 environment:
   # Python version used
-  MICROPY_CPYTHON3: c:/python34/python.exe
+  MICROPY_CPYTHON3: c:/python38/python.exe
 
 init:
   # Set build version number to commit to be travis-like

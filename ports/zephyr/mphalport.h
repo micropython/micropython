@@ -1,5 +1,5 @@
 #include <zephyr.h>
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 
 void mp_hal_init(void);
 void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);

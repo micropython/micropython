@@ -64,16 +64,16 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-    ${MICROPY_DIR}/lib/mp-readline/readline.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
-    ${MICROPY_DIR}/lib/timeutils/timeutils.c
-    ${MICROPY_DIR}/lib/utils/gchelper_m0.s
-    ${MICROPY_DIR}/lib/utils/gchelper_native.c
-    ${MICROPY_DIR}/lib/utils/mpirq.c
-    ${MICROPY_DIR}/lib/utils/pyexec.c
-    ${MICROPY_DIR}/lib/utils/stdout_helpers.c
-    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/readline/readline.c
+    ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
+    ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+    ${MICROPY_DIR}/shared/runtime/mpirq.c
+    ${MICROPY_DIR}/shared/runtime/pyexec.c
+    ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
+    ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/timeutils/timeutils.c
 )
 
 set(MICROPY_SOURCE_DRIVERS
@@ -108,8 +108,8 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_USERMOD}
-    ${MICROPY_DIR}/lib/utils/mpirq.c
-    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/runtime/mpirq.c
+    ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
@@ -163,7 +163,9 @@ set(PICO_SDK_COMPONENTS
 
 # Define mpy-cross flags and frozen manifest
 set(MICROPY_CROSS_FLAGS -march=armv7m)
-set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
+if (NOT MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
+endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}

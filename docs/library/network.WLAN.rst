@@ -46,6 +46,8 @@ Methods
 .. method:: WLAN.scan()
 
     Scan for the available wireless networks.
+    Hidden networks -- where the SSID is not broadcast -- will also be scanned
+    if the WLAN interface allows it.
 
     Scanning is only possible on STA interface. Returns list of tuples with
     the information about WiFi access points:

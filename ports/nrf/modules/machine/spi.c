@@ -46,18 +46,18 @@
 #endif
 
 /// \moduleref machine
-/// \class SPI - a master-driven serial protocol
+/// \class SPI - a controller-driven serial protocol
 ///
-/// SPI is a serial protocol that is driven by a master.  At the physical level
+/// SPI is a serial protocol that is driven by a controller.  At the physical level
 /// there are 3 lines: SCK, MOSI, MISO.
 ///
 /// See usage model of I2C; SPI is very similar.  Main difference is
 /// parameters to init the SPI bus:
 ///
 ///     from machine import SPI
-///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+///     spi = SPI(1, baudrate=600000, polarity=1, phase=0, crc=0x7)
 ///
-/// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+/// Polarity can be
 /// 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 /// to sample data on the first or second clock edge respectively.  Crc can be
 /// None for no CRC, or a polynomial specifier.

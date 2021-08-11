@@ -29,8 +29,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 
@@ -83,6 +83,11 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
+    for (;;) {
+    }
+}
+
+void abort(void) {
     for (;;) {
     }
 }

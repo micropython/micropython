@@ -13,14 +13,17 @@ void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numByte
     uint8_t *p, *end, pix, mask;
     uint32_t t, time0, time1, period, c, startTime, pinMask, gpio_reg_set, gpio_reg_clear;
 
-    if (pin < 32) {
-        pinMask = 1 << pin;
-        gpio_reg_set = GPIO_OUT_W1TS_REG;
-        gpio_reg_clear = GPIO_OUT_W1TC_REG;
-    } else {
+    #if !CONFIG_IDF_TARGET_ESP32C3
+    if (pin >= 32) {
         pinMask = 1 << (pin - 32);
         gpio_reg_set = GPIO_OUT1_W1TS_REG;
         gpio_reg_clear = GPIO_OUT1_W1TC_REG;
+    } else
+    #endif
+    {
+        pinMask = 1 << pin;
+        gpio_reg_set = GPIO_OUT_W1TS_REG;
+        gpio_reg_clear = GPIO_OUT_W1TC_REG;
     }
     p = pixels;
     end = p + numBytes;

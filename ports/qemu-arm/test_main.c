@@ -11,7 +11,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/gchelper.h"
 #include "lib/tinytest/tinytest.h"
 #include "lib/tinytest/tinytest_macros.h"
 

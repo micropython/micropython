@@ -35,7 +35,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 
 #include "lwip/init.h"
 #include "lwip/tcp.h"

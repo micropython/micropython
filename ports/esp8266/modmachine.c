@@ -30,7 +30,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1

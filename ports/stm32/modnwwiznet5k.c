@@ -33,7 +33,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "spi.h"

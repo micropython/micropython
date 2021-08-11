@@ -38,6 +38,8 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
+#if MICROPY_PY_MACHINE_I2S
+
 #include "driver/i2s.h"
 #include "soc/i2s_reg.h"
 #include "freertos/FreeRTOS.h"
@@ -253,8 +255,8 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
     uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
     uint32_t num_bytes_needed_from_dma = appbuf->len * (I2S_RX_FRAME_SIZE_IN_BYTES / appbuf_sample_size_in_bytes);
     while (num_bytes_needed_from_dma) {
-        uint32_t num_bytes_requested_from_dma = MIN(sizeof(self->transform_buffer), num_bytes_needed_from_dma);
-        uint32_t num_bytes_received_from_dma = 0;
+        size_t num_bytes_requested_from_dma = MIN(sizeof(self->transform_buffer), num_bytes_needed_from_dma);
+        size_t num_bytes_received_from_dma = 0;
 
         TickType_t delay;
         if (self->io_mode == UASYNCIO) {
@@ -310,12 +312,12 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
     return a_index;
 }
 
-STATIC uint32_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
     if ((self->bits == I2S_BITS_PER_SAMPLE_32BIT) && (self->format == STEREO)) {
         swap_32_bit_stereo_channels(appbuf);
     }
 
-    uint32_t num_bytes_written = 0;
+    size_t num_bytes_written = 0;
 
     TickType_t delay;
     if (self->io_mode == UASYNCIO) {
@@ -516,7 +518,7 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_i2s_obj_init(mp_uint_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t machine_i2s_obj_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_i2s_obj_t *self = pos_args[0];
     machine_i2s_deinit(self);
     machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
@@ -729,12 +731,12 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
-        uint32_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
+        size_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
         return num_bytes_written;
     }
 }
 
-STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     mp_uint_t flags = arg;
@@ -807,3 +809,5 @@ const mp_obj_type_t machine_i2s_type = {
     .make_new = machine_i2s_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_i2s_locals_dict,
 };
+
+#endif // MICROPY_PY_MACHINE_I2S

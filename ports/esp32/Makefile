@@ -33,6 +33,7 @@ endif
 all:
 	idf.py $(IDFPY_FLAGS) build
 	@$(PYTHON) makeimg.py \
+		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
 		$(BUILD)/partition_table/partition-table.bin \
     		$(BUILD)/micropython.bin \

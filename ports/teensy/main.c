@@ -9,9 +9,9 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "gccollect.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 #include "lexermemzip.h"
 
 #include "Arduino.h"

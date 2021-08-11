@@ -28,7 +28,7 @@
 
 #include <sys/time.h>
 #include "lib/oofatfs/ff.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 DWORD get_fattime(void) {
     struct timeval tv;

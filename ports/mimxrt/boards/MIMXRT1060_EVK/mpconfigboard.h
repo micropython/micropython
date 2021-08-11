@@ -8,6 +8,7 @@
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1060_flexspi_nor_config.h"
+#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_hyper_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
 
@@ -41,3 +42,15 @@
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
                             kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+
+// Define the mapping hardware I2C # to logical I2C #
+// SDA/SCL  HW-I2C    Logical I2C
+// D14/D15  LPI2C1 ->    0
+// D1/D0    LPI2C3 ->    1
+
+#define MICROPY_HW_I2C_INDEX   { 1, 3 }
+
+#define IOMUX_TABLE_I2C \
+    { IOMUXC_GPIO_AD_B1_00_LPI2C1_SCL }, { IOMUXC_GPIO_AD_B1_01_LPI2C1_SDA }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA },

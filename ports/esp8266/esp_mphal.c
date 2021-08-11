@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "extmod/misc.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 STATIC byte stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};

@@ -79,8 +79,8 @@ async def open_connection(host, port):
     from uerrno import EINPROGRESS
     import usocket as socket
 
-    ai = socket.getaddrinfo(host, port)[0]  # TODO this is blocking!
-    s = socket.socket()
+    ai = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]  # TODO this is blocking!
+    s = socket.socket(ai[0], ai[1], ai[2])
     s.setblocking(False)
     ss = Stream(s)
     try:

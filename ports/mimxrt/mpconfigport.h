@@ -145,6 +145,7 @@ __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
 
 __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     uint32_t state = __get_PRIMASK();
+    __disable_irq();
     return state;
 }
 
