@@ -1,11 +1,13 @@
 # NeoPixel driver for MicroPython
 # MIT license; Copyright (c) 2016 Damien P. George, 2021 Jim Mussared
 
+from micropython import const
 from machine import bitstream
 
 _BITSTREAM_TYPE_HIGH_LOW = const(0)
 _TIMING_WS2818_800 = (400, 850, 800, 450)
-_TIMING_WS2818_400 = (400, 850, 800, 450)
+_TIMING_WS2818_400 = (800, 1700, 1600, 900)
+
 
 class NeoPixel:
     ORDER = (1, 0, 2, 3)
@@ -16,7 +18,11 @@ class NeoPixel:
         self.bpp = bpp
         self.buf = bytearray(n * bpp)
         self.pin.init(pin.OUT)
-        self.timing = (_TIMING_WS2818_800 if timing else _TIMING_WS2818_400) if isinstance(timing, int) else timing
+        self.timing = (
+            (_TIMING_WS2818_800 if timing else _TIMING_WS2818_400)
+            if isinstance(timing, int)
+            else timing
+        )
 
     def __len__(self):
         return self.n
