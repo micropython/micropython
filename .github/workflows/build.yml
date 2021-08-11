@@ -232,6 +232,7 @@ jobs:
         - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
+        - "bluemicro840"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
