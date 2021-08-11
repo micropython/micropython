@@ -71,7 +71,7 @@
 void i2sout_reset(void) {
     // Make sure the I2S peripheral is running so we can see if the resources we need are free.
     #ifdef SAM_D5X_E5X
-    // Connect the clock units to the 2mhz clock. It can't disable without it.
+    // Connect the clock units to the 2MHz clock. It can't disable without it.
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_0);
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_1);
     #endif
@@ -83,7 +83,7 @@ void i2sout_reset(void) {
 
     // Make sure the I2S peripheral is running so we can see if the resources we need are free.
     #ifdef SAM_D5X_E5X
-    // Connect the clock units to the 2mhz clock by default. They can't reset without it.
+    // Connect the clock units to the 2MHz clock by default. They can't reset without it.
     disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_0);
     disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_1);
 
@@ -222,7 +222,6 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     reset_pin_number(self->word_select->number);
     self->word_select = NULL;
     reset_pin_number(self->data->number);
-    self->data = NULL;
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
@@ -288,7 +287,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     I2S->TXCTRL.reg = serctrl;
     #endif
 
-    // The DFLL is always a 48mhz clock
+    // The DFLL is always a 48MHz clock
     enable_clock_generator(self->gclk, CLOCK_48MHZ, divisor);
     connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
 

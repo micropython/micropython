@@ -157,7 +157,13 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel_output, dma->audio_channel);
         } else {
-            descriptor->DESCADDR.reg = 0;
+            if ((output_buffer_length == 0) && dma_transfer_status(SHARED_RX_CHANNEL) & 0x3) {
+                // Nothing further to read and previous buffer is finished.
+                audio_dma_stop(dma);
+            } else {
+                // Break descriptor chain.
+                descriptor->DESCADDR.reg = 0;
+            }
         }
     }
     descriptor->BTCTRL.bit.VALID = true;
@@ -214,20 +220,22 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     if (output_signed != samples_signed) {
         output_spacing = 1;
         max_buffer_length /= dma->spacing;
-        dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
-        if (dma->first_buffer == NULL) {
+    }
+
+    dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
+    if (dma->first_buffer == NULL) {
+        return AUDIO_DMA_MEMORY_ERROR;
+    }
+    dma->first_buffer_free = true;
+    if (!single_buffer) {
+        dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
+        if (dma->second_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
-        dma->first_buffer_free = true;
-        if (!single_buffer) {
-            dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
-            if (dma->second_buffer == NULL) {
-                return AUDIO_DMA_MEMORY_ERROR;
-            }
-        }
-        dma->signed_to_unsigned = !output_signed && samples_signed;
-        dma->unsigned_to_signed = output_signed && !samples_signed;
     }
+
+    dma->signed_to_unsigned = !output_signed && samples_signed;
+    dma->unsigned_to_signed = output_signed && !samples_signed;
 
     dma->event_channel = 0xff;
     if (!single_buffer) {
