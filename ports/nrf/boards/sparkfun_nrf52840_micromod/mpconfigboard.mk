@@ -1,6 +1,6 @@
 USB_VID = 0x1B4F
 USB_PID = 0x0021
-USB_PRODUCT = "SFE_nRF52840_MicroMod"
+USB_PRODUCT = "SparkFun MicroMod nRF52840 Processor"
 USB_MANUFACTURER = "SparkFun Electronics"
 
 MCU_CHIP = nrf52840
