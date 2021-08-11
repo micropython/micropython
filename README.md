@@ -4,6 +4,8 @@
 [![Build lv_micropython stm32 port](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml)
 [![esp32 port](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml)
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/lvgl/lv_micropython)
+
 **For information abound Micropython lvgl bindings please refrer to [lv_binding_micropython/README.md](https://github.com/lvgl/lv_binding_micropython/blob/master/README.md)**
 
 See also [Micropython + LittlevGL](https://blog.lvgl.io/2019-02-20/micropython-bindings) blog post. (LittlevGL is LVGL's previous name.)

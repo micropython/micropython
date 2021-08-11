@@ -1,0 +1,16 @@
+image:
+  file: .gitpod.Dockerfile
+ports:
+  - port: 6080
+    protocol: "http"
+    onOpen: open-preview
+tasks:
+  - init: |
+      make -j $(nproc) -C mpy-cross VARIANT=dev DEBUG=1
+      make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
+    command: |
+      ports/unix/micropython-dev -i lib/lv_bindings/examples/advanced_demo.py
+vscode:
+  extensions:
+    - ms-vscode.cpptools
+
