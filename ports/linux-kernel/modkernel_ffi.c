@@ -610,7 +610,7 @@ STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
         return 0;
     }
 
-    bool call_ok;
+    bool call_ok = false;
     unsigned long ret;
     switch (kp_obj->type) {
     case KP_ARGS_MODIFY:
@@ -999,7 +999,7 @@ STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, un
         MP_UNREACHABLE;
     }
 
-    bool call_ok;
+    bool call_ok = false;
     unsigned long ret = call_py_func(func, nargs, &call_ok, first_arg,
         arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 
