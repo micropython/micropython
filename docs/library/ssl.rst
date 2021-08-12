@@ -1,7 +1,7 @@
-:mod:`ussl` -- SSL/TLS module
+:mod:`ssl` -- SSL/TLS module
 =============================
 
-.. module:: ussl
+.. module:: ssl
    :synopsis: TLS/SSL wrapper for socket objects
 
 |see_cpython_module| :mod:`python:ssl`.
@@ -13,14 +13,14 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ussl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, do_handshake=True)
+.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, do_handshake=True)
 
-   Takes a `stream` *sock* (usually usocket.socket instance of ``SOCK_STREAM`` type),
+   Takes a `stream` *sock* (usually socket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
    an SSL context. Returned object has the usual `stream` interface methods like
    ``read()``, ``write()``, etc.
    A server-side SSL socket should be created from a normal socket returned from
-   :meth:`~usocket.socket.accept()` on a non-SSL listening server socket.
+   :meth:`~socket.socket.accept()` on a non-SSL listening server socket.
 
    - *do_handshake* determines whether the handshake is done as part of the ``wrap_socket``
      or whether it is deferred to be done as part of the initial reads or writes
@@ -36,7 +36,7 @@ Functions
 
 .. warning::
 
-   Some implementations of ``ussl`` module do NOT validate server certificates,
+   Some implementations of ``ssl`` module do NOT validate server certificates,
    which makes an SSL connection established prone to man-in-the-middle attacks.
 
    CPython's ``wrap_socket`` returns an ``SSLSocket`` object which has methods typical
@@ -54,8 +54,8 @@ Exceptions
 Constants
 ---------
 
-.. data:: ussl.CERT_NONE
-          ussl.CERT_OPTIONAL
-          ussl.CERT_REQUIRED
+.. data:: ssl.CERT_NONE
+          ssl.CERT_OPTIONAL
+          ssl.CERT_REQUIRED
 
     Supported values for *cert_reqs* parameter.

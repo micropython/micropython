@@ -1,7 +1,7 @@
-:mod:`ubluetooth` --- low-level Bluetooth
+:mod:`bluetooth` --- low-level Bluetooth
 =========================================
 
-.. module:: ubluetooth
+.. module:: bluetooth
    :synopsis: Low-level Bluetooth radio functionality
 
 This module provides an interface to a Bluetooth controller on a board.
@@ -110,7 +110,7 @@ Event Handling
 
     **Note:** As an optimisation to prevent unnecessary allocations, the ``addr``,
     ``adv_data``, ``char_data``, ``notify_data``, and ``uuid`` entries in the
-    tuples are read-only memoryview instances pointing to ubluetooth's internal
+    tuples are read-only memoryview instances pointing to :mod:`bluetooth`'s internal
     ringbuffer, and are only valid during the invocation of the IRQ handler
     function.  If your program needs to save one of these values to access after
     the IRQ handler has returned (e.g. by saving it in a class instance or global
@@ -293,7 +293,7 @@ For the ``_IRQ_PASSKEY_ACTION`` event, the available actions are::
     _PASSKEY_ACTION_NUMERIC_COMPARISON = const(4)
 
 In order to save space in the firmware, these constants are not included on the
-:mod:`ubluetooth` module. Add the ones that you need from the list above to your
+:mod:`bluetooth` module. Add the ones that you need from the list above to your
 program.
 
 

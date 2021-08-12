@@ -184,7 +184,7 @@ Glossary
         ``close()``, etc. A stream is an important concept in MicroPython;
         many I/O objects implement the stream interface, and thus can be used
         consistently and interchangeably in different contexts. For more
-        information on streams in MicroPython, see the `uio` module.
+        information on streams in MicroPython, see the `io` module.
 
     UART
         Acronym for "Universal Asynchronous Receiver/Transmitter". This is a

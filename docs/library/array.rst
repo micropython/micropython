@@ -1,7 +1,7 @@
-:mod:`uarray` -- arrays of numeric data
+:mod:`array` -- arrays of numeric data
 =======================================
 
-.. module:: uarray
+.. module:: array
    :synopsis: efficient arrays of numeric data
 
 |see_cpython_module| :mod:`python:array`.

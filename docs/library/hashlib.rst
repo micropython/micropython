@@ -1,7 +1,7 @@
-:mod:`uhashlib` -- hashing algorithms
+:mod:`hashlib` -- hashing algorithms
 =====================================
 
-.. module:: uhashlib
+.. module:: hashlib
    :synopsis: hashing algorithms
 
 |see_cpython_module| :mod:`python:hashlib`.
@@ -27,15 +27,15 @@ be implemented:
 Constructors
 ------------
 
-.. class:: uhashlib.sha256([data])
+.. class:: hashlib.sha256([data])
 
     Create an SHA256 hasher object and optionally feed ``data`` into it.
 
-.. class:: uhashlib.sha1([data])
+.. class:: hashlib.sha1([data])
 
     Create an SHA1 hasher object and optionally feed ``data`` into it.
 
-.. class:: uhashlib.md5([data])
+.. class:: hashlib.md5([data])
 
     Create an MD5 hasher object and optionally feed ``data`` into it.
 
@@ -53,5 +53,5 @@ Methods
 
 .. method:: hash.hexdigest()
 
-   This method is NOT implemented. Use ``ubinascii.hexlify(hash.digest())``
+   This method is NOT implemented. Use ``binascii.hexlify(hash.digest())``
    to achieve a similar effect.

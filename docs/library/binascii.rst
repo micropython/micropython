@@ -1,7 +1,7 @@
-:mod:`ubinascii` -- binary/ASCII conversions
+:mod:`binascii` -- binary/ASCII conversions
 ============================================
 
-.. module:: ubinascii
+.. module:: binascii
    :synopsis: binary/ASCII conversions
 
 |see_cpython_module| :mod:`python:binascii`.

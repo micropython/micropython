@@ -98,7 +98,7 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the :mod:`socket <usocket>` module can be used
+Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
@@ -113,7 +113,7 @@ to reconnect forever).
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -459,15 +459,15 @@ SD card
 
 See :ref:`machine.SDCard <machine.SDCard>`. ::
 
-    import machine, uos
+    import machine, os
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    uos.mount(sd, "/sd")  # mount
+    os.mount(sd, "/sd")  # mount
 
-    uos.listdir('/sd')    # list directory contents
+    os.listdir('/sd')    # list directory contents
 
-    uos.umount('/sd')     # eject
+    os.umount('/sd')     # eject
 
 RMT
 ---

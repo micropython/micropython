@@ -245,8 +245,8 @@ That should give a MicroPython REPL.  You can then run commands like:
 .. code-block:: bash
 
    MicroPython v1.13 on 2021-01-01; example-board with unknown-cpu
-   >>> import usys
-   >>> usys.implementation
+   >>> import sys
+   >>> sys.implementation
    ('micropython', (1, 13, 0))
    >>>
 

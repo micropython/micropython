@@ -1,7 +1,7 @@
-:mod:`uheapq` -- heap queue algorithm
+:mod:`heapq` -- heap queue algorithm
 =====================================
 
-.. module:: uheapq
+.. module:: heapq
    :synopsis: heap queue algorithm
 
 |see_cpython_module| :mod:`python:heapq`.

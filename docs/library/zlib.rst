@@ -1,7 +1,7 @@
-:mod:`uzlib` -- zlib decompression
+:mod:`zlib` -- zlib decompression
 ==================================
 
-.. module:: uzlib
+.. module:: zlib
    :synopsis: zlib decompression
 
 |see_cpython_module| :mod:`python:zlib`.

@@ -1,12 +1,12 @@
-:mod:`uos` -- basic "operating system" services
+:mod:`os` -- basic "operating system" services
 ===============================================
 
-.. module:: uos
+.. module:: os
    :synopsis: basic "operating system" services
 
 |see_cpython_module| :mod:`python:os`.
 
-The ``uos`` module contains functions for filesystem access and mounting,
+The ``os`` module contains functions for filesystem access and mounting,
 terminal redirection and duplication, and the ``uname`` and ``urandom``
 functions.
 
@@ -116,7 +116,7 @@ Terminal redirection and duplication
 
    Duplicate or switch the MicroPython terminal (the REPL) on the given `stream`-like
    object. The *stream_object* argument must be a native stream object, or derive
-   from ``uio.IOBase`` and implement the ``readinto()`` and
+   from ``io.IOBase`` and implement the ``readinto()`` and
    ``write()`` methods.  The stream should be in non-blocking mode and
    ``readinto()`` should return ``None`` if there is no data available for reading.
 
@@ -207,7 +207,7 @@ represented by VFS classes.
     otherwise the timestamps will remain untouched.  Littlefs v2 filesystems without
     timestamps will work without reformatting and timestamps will be added
     transparently to existing files once they are opened for writing.  When *mtime*
-    is enabled `uos.stat` on files without timestamps will return 0 for the timestamp.
+    is enabled `os.stat` on files without timestamps will return 0 for the timestamp.
 
     See :ref:`filesystem` for more information.
 
@@ -234,7 +234,7 @@ but an actual block device class must implement the methods described below.
 
 A concrete implementation of this class will usually allow access to the
 memory-like functionality of a piece of hardware (like flash memory). A block
-device can be formatted to any supported filesystem and mounted using ``uos``
+device can be formatted to any supported filesystem and mounted using ``os``
 methods.
 
 See :ref:`filesystem` for example implementations of block devices using the

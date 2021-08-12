@@ -1,7 +1,7 @@
-:mod:`uio` -- input/output streams
+:mod:`io` -- input/output streams
 ==================================
 
-.. module:: uio
+.. module:: io
    :synopsis: input/output streams
 
 |see_cpython_module| :mod:`python:io`.
