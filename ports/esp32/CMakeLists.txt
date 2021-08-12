@@ -38,6 +38,7 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 # Include LVGL component, ignore KCONFIG
 
+idf_build_set_property(LV_MICROPYTHON 1)
 idf_build_component(${CMAKE_SOURCE_DIR}/../../lib/lv_bindings/lvgl)
 idf_build_set_property(COMPILE_DEFINITIONS "-DLV_KCONFIG_IGNORE" APPEND)
 separate_arguments(LV_CFLAGS_ENV UNIX_COMMAND $ENV{LV_CFLAGS})
