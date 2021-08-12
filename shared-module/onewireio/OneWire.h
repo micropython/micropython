@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
 
-// Use bitbangio.
-#include "shared-module/busio/OneWire.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    digitalio_digitalinout_obj_t pin;
+} onewireio_onewire_obj_t;
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
