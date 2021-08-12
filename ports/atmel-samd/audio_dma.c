@@ -273,12 +273,12 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
 
     #ifdef SAM_D5X_E5X
     int irq = dma->event_channel < 4 ? EVSYS_0_IRQn + dma->event_channel : EVSYS_4_IRQn;
+    // Only disable and clear on SAMD51 because the SAMD21 shares EVSYS with ticks.
+    NVIC_DisableIRQ(irq);
+    NVIC_ClearPendingIRQ(irq);
     #else
     int irq = EVSYS_IRQn;
     #endif
-
-    NVIC_DisableIRQ(irq);
-    NVIC_ClearPendingIRQ(irq);
 
     DmacDescriptor *first_descriptor = dma_descriptor(dma_channel);
     setup_audio_descriptor(first_descriptor, dma->beat_size, output_spacing, output_register_address);
@@ -374,7 +374,7 @@ STATIC void dma_callback_fun(void *arg) {
     audio_dma_load_next_block(dma);
 }
 
-void evsyshandler_common(void) {
+void audio_evsys_handler(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_t *dma = audio_dma_state[i];
         if (dma == NULL) {
@@ -387,27 +387,5 @@ void evsyshandler_common(void) {
         background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
     }
 }
-
-#ifdef SAM_D5X_E5X
-void EVSYS_0_Handler(void) {
-    evsyshandler_common();
-}
-void EVSYS_1_Handler(void) {
-    evsyshandler_common();
-}
-void EVSYS_2_Handler(void) {
-    evsyshandler_common();
-}
-void EVSYS_3_Handler(void) {
-    evsyshandler_common();
-}
-void EVSYS_4_Handler(void) {
-    evsyshandler_common();
-}
-#else
-void EVSYS_Handler(void) {
-    evsyshandler_common();
-}
-#endif
 
 #endif
