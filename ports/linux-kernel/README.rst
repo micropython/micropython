@@ -66,6 +66,8 @@ When you want to load a larger piece of code, you can:
 Features
 --------
 
+You can visit `here <https://github.com/Jongy/micropython-kernel-snippets>`_ to see many snippets that make use of the APIs (and this project in general).
+
 The Python interpreter allows quick testing and prototyping with kernel APIs. The ``kernel_ffi`` builtin module
 provides many of the APIs available in this port.
 
