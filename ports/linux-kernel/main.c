@@ -490,11 +490,14 @@ STATIC int __init mpy_init_module(void) {
         goto out;
     }
 
+    // was removed in 5a892ff2facb4. we can find a workaround but I'm not sure it's worth the time.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
     int one = 1;
     err = kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
     if (err < 0) {
         pr_warn("kernel_setsockopt(SO_REUSEADDR): %d\n", err);
     }
+#endif
 
     err = kernel_bind(sock, (struct sockaddr *)&bind_addr,
             sizeof(bind_addr));
