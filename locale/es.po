@@ -506,6 +506,10 @@ msgstr "Tratando de localizar %d bloques"
 msgid "Attempted heap allocation when VM not running."
 msgstr "Asignación del montículo mientras la VM no esta ejecutándose."
 
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN no se usa con contraseña"
@@ -1249,6 +1253,10 @@ msgstr "Autenticación insuficiente"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Cifrado insuficiente"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"

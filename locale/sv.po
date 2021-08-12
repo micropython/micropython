@@ -501,6 +501,10 @@ msgstr "Försök att tilldela %d block"
 msgid "Attempted heap allocation when VM not running."
 msgstr "Försök till heap-allokering när den virtuella maskinen inte är igång."
 
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN används inte med lösenord"
@@ -1235,6 +1239,10 @@ msgstr "Otillräcklig autentisering"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Otillräcklig kryptering"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
