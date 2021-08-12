@@ -1,8 +1,8 @@
-*******************************
-:mod:`usocket` -- socket module
-*******************************
+******************************
+:mod:`socket` -- socket module
+******************************
 
-.. module:: usocket
+.. module:: socket
    :synopsis: socket module
 
 |see_cpython_module| :mod:`python:socket`.
@@ -21,13 +21,13 @@ This module provides access to the BSD socket interface.
 Socket address format(s)
 ------------------------
 
-The native socket address format of the ``usocket`` module is an opaque data type
+The native socket address format of the ``socket`` module is an opaque data type
 returned by `getaddrinfo` function, which must be used to resolve textual address
 (including numeric addresses)::
 
-    sockaddr = usocket.getaddrinfo('www.micropython.org', 80)[0][-1]
+    sockaddr = socket.getaddrinfo('www.micropython.org', 80)[0][-1]
     # You must use getaddrinfo() even for numeric addresses
-    sockaddr = usocket.getaddrinfo('127.0.0.1', 80)[0][-1]
+    sockaddr = socket.getaddrinfo('127.0.0.1', 80)[0][-1]
     # Now you can use that address
     sock.connect(addr)
 
@@ -35,7 +35,7 @@ Using `getaddrinfo` is the most efficient (both in terms of memory and processin
 power) and portable way to work with addresses.
 
 However, ``socket`` module (note the difference with native MicroPython
-``usocket`` module described here) provides CPython-compatible way to specify
+``socket`` module described here) provides CPython-compatible way to specify
 addresses using tuples, as described below. Note that depending on a
 :term:`MicroPython port`, ``socket`` module can be builtin or need to be
 installed from `micropython-lib` (as in the case of :term:`MicroPython Unix port`),
@@ -54,13 +54,13 @@ Tuple address format for ``socket`` module:
   dot-notation numeric IPv4 address, e.g. ``"8.8.8.8"``, and *port* is and
   integer port number in the range 1-65535. Note the domain names are not
   accepted as *ipv4_address*, they should be resolved first using
-  `usocket.getaddrinfo()`.
+  `socket.getaddrinfo()`.
 * IPv6: *(ipv6_address, port, flowinfo, scopeid)*, where *ipv6_address*
   is a string with colon-notation numeric IPv6 address, e.g. ``"2001:db8::1"``,
   and *port* is an integer port number in the range 1-65535. *flowinfo*
   must be 0. *scopeid* is the interface scope identifier for link-local
   addresses. Note the domain names are not accepted as *ipv6_address*,
-  they should be resolved first using `usocket.getaddrinfo()`. Availability
+  they should be resolved first using `socket.getaddrinfo()`. Availability
   of IPv6 support depends on a :term:`MicroPython port`.
 
 Functions
@@ -94,17 +94,17 @@ Functions
 
    The following example shows how to connect to a given url::
 
-      s = usocket.socket()
+      s = socket.socket()
       # This assumes that if "type" is not specified, an address for
       # SOCK_STREAM will be returned, which may be not true
-      s.connect(usocket.getaddrinfo('www.micropython.org', 80)[0][-1])
+      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
    Recommended use of filtering params::
 
-      s = usocket.socket()
+      s = socket.socket()
       # Guaranteed to return an address which can be connect'ed to for
       # stream operation.
-      s.connect(usocket.getaddrinfo('www.micropython.org', 80, 0, SOCK_STREAM)[0][-1])
+      s.connect(socket.getaddrinfo('www.micropython.org', 80, 0, SOCK_STREAM)[0][-1])
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -113,7 +113,7 @@ Functions
       of error in this function. MicroPython doesn't have ``socket.gaierror``
       and raises OSError directly. Note that error numbers of `getaddrinfo()`
       form a separate namespace and may not match error numbers from
-      the :mod:`uerrno` module. To distinguish `getaddrinfo()` errors, they are
+      the :mod:`errno` module. To distinguish `getaddrinfo()` errors, they are
       represented by negative numbers, whereas standard system errors are
       positive numbers (error numbers are accessible using ``e.args[0]`` property
       from an exception object). The use of negative values is a provisional
@@ -124,7 +124,7 @@ Functions
    Convert a binary network address *bin_addr* of the given address family *af*
    to a textual representation::
 
-        >>> usocket.inet_ntop(usocket.AF_INET, b"\x7f\0\0\1")
+        >>> socket.inet_ntop(socket.AF_INET, b"\x7f\0\0\1")
         '127.0.0.1'
 
 .. function:: inet_pton(af, txt_addr)
@@ -132,7 +132,7 @@ Functions
    Convert a textual network address *txt_addr* of the given address family *af*
    to a binary representation::
 
-        >>> usocket.inet_pton(usocket.AF_INET, "1.2.3.4")
+        >>> socket.inet_pton(socket.AF_INET, "1.2.3.4")
         b'\x01\x02\x03\x04'
 
 Constants
@@ -152,17 +152,17 @@ Constants
           IPPROTO_TCP
 
    IP protocol numbers. Availability depends on a particular :term:`MicroPython port`.
-   Note that you don't need to specify these in a call to `usocket.socket()`,
+   Note that you don't need to specify these in a call to `socket.socket()`,
    because `SOCK_STREAM` socket type automatically selects `IPPROTO_TCP`, and
    `SOCK_DGRAM` - `IPPROTO_UDP`. Thus, the only real use of these constants
    is as an argument to `setsockopt()`.
 
-.. data:: usocket.SOL_*
+.. data:: socket.SOL_*
 
    Socket option levels (an argument to `setsockopt()`). The exact
    inventory depends on a :term:`MicroPython port`.
 
-.. data:: usocket.SO_*
+.. data:: socket.SO_*
 
    Socket options (an argument to `setsockopt()`). The exact
    inventory depends on a :term:`MicroPython port`.
@@ -260,7 +260,7 @@ Methods
    is put in blocking mode.
 
    Not every :term:`MicroPython port` supports this method. A more portable and
-   generic solution is to use `uselect.poll` object. This allows to wait on
+   generic solution is to use `select.poll` object. This allows to wait on
    multiple objects at the same time (and not just on sockets, but on generic
    `stream` objects which support polling). Example::
 
@@ -269,8 +269,8 @@ Methods
         s.read(10)  # may timeout
 
         # Use:
-        poller = uselect.poll()
-        poller.register(s, uselect.POLLIN)
+        poller = select.poll()
+        poller.register(s, select.POLLIN)
         res = poller.poll(1000)  # time in milliseconds
         if not res:
             # s is still not ready for input, i.e. operation timed out
@@ -342,7 +342,7 @@ Methods
 
    Return value: number of bytes written.
 
-.. exception:: usocket.error
+.. exception:: socket.error
 
    MicroPython does NOT have this exception.
 

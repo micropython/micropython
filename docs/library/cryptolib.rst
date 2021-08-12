@@ -1,7 +1,7 @@
-:mod:`ucryptolib` -- cryptographic ciphers
-==========================================
+:mod:`cryptolib` -- cryptographic ciphers
+=========================================
 
-.. module:: ucryptolib
+.. module:: cryptolib
    :synopsis: cryptographic ciphers
 
 Classes
@@ -21,9 +21,9 @@ Classes
             * *key* is an encryption/decryption key (bytes-like).
             * *mode* is:
 
-                * ``1`` (or ``ucryptolib.MODE_ECB`` if it exists) for Electronic Code Book (ECB).
-                * ``2`` (or ``ucryptolib.MODE_CBC`` if it exists) for Cipher Block Chaining (CBC).
-                * ``6`` (or ``ucryptolib.MODE_CTR`` if it exists) for Counter mode (CTR).
+                * ``1`` (or ``cryptolib.MODE_ECB`` if it exists) for Electronic Code Book (ECB).
+                * ``2`` (or ``cryptolib.MODE_CBC`` if it exists) for Cipher Block Chaining (CBC).
+                * ``6`` (or ``cryptolib.MODE_CTR`` if it exists) for Counter mode (CTR).
 
             * *IV* is an initialization vector for CBC mode.
             * For Counter mode, *IV* is the initial value for the counter.

@@ -1,7 +1,7 @@
-:mod:`ujson` -- JSON encoding and decoding
-==========================================
+:mod:`json` -- JSON encoding and decoding
+=========================================
 
-.. module:: ujson
+.. module:: json
    :synopsis: JSON encoding and decoding
 
 |see_cpython_module| :mod:`python:json`.

@@ -27,10 +27,10 @@ vary from platform to platform.
 
     This class provides access to SD or MMC storage cards using either
     a dedicated SD/MMC interface hardware or through an SPI channel.
-    The class implements the block protocol defined by :class:`uos.AbstractBlockDev`.
+    The class implements the block protocol defined by :class:`os.AbstractBlockDev`.
     This allows the mounting of an SD card to be as simple as::
 
-      uos.mount(machine.SDCard(), "/sd")
+      os.mount(machine.SDCard(), "/sd")
 
     The constructor takes the following parameters:
 

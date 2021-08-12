@@ -6,14 +6,14 @@ Filesystems and Storage
 Storage modules support virtual filesystem with FAT and littlefs formats, backed by either
 Zephyr DiskAccess or FlashArea (flash map) APIs depending on which the board supports.
 
-See `uos Filesystem Mounting <https://docs.micropython.org/en/latest/library/uos.html?highlight=os#filesystem-mounting>`_.
+See `os Filesystem Mounting <https://docs.micropython.org/en/latest/library/os.html?highlight=os#filesystem-mounting>`_.
 
 Disk Access
 -----------
 
 The :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class can be used to access storage devices, such as SD cards.
 This class uses `Zephyr Disk Access API <https://docs.zephyrproject.org/latest/reference/storage/disk/access.html>`_ and
-implements the `uos.AbstractBlockDev` protocol.
+implements the `os.AbstractBlockDev` protocol.
 
 For use with SD card controllers, SD cards must be present at boot & not removed; they will
 be auto detected and initialized by filesystem at boot. Use the disk driver interface and a
@@ -39,7 +39,7 @@ customize filesystem configurations. To store persistent data on the device, usi
 API is recommended (see below).
 
 This class uses `Zephyr Flash map API <https://docs.zephyrproject.org/latest/reference/storage/flash_map/flash_map.html#>`_ and
-implements the `uos.AbstractBlockDev` protocol.
+implements the `os.AbstractBlockDev` protocol.
 
 Example usage with the internal flash on the reel_board or the rv32m1_vega_ri5cy board::
 

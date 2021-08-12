@@ -1,7 +1,7 @@
-:mod:`usys` -- system specific functions
-========================================
+:mod:`sys` -- system specific functions
+=======================================
 
-.. module:: usys
+.. module:: sys
    :synopsis: system specific functions
 
 |see_cpython_module| :mod:`python:sys`.
@@ -28,10 +28,10 @@ Functions
       This function is a MicroPython extension intended to provide similar
       functionality to the :mod:`atexit` module in CPython.
 
-.. function:: print_exception(exc, file=usys.stdout, /)
+.. function:: print_exception(exc, file=sys.stdout, /)
 
    Print exception with a traceback to a file-like object *file* (or
-   `usys.stdout` by default).
+   `sys.stdout` by default).
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -84,7 +84,7 @@ Constants
    value directly, but instead count number of bits in it::
 
     bits = 0
-    v = usys.maxsize
+    v = sys.maxsize
     while v:
         bits += 1
         v >>= 1
@@ -113,7 +113,7 @@ Constants
    is an identifier of a board, e.g. ``"pyboard"`` for the original MicroPython
    reference board. It thus can be used to distinguish one board from another.
    If you need to check whether your program runs on MicroPython (vs other
-   Python implementation), use `usys.implementation` instead.
+   Python implementation), use `sys.implementation` instead.
 
 .. data:: stderr
 

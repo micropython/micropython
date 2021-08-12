@@ -122,7 +122,7 @@ execution from Flash, RAM may be saved as follows. The data should be located in
 Python modules and frozen as bytecode. The data must be defined as `bytes`
 objects. The compiler 'knows' that `bytes` objects are immutable and ensures
 that the objects remain in flash memory rather than being copied to RAM. The
-`ustruct` module can assist in converting between `bytes` types and other
+`struct` module can assist in converting between `bytes` types and other
 Python built-in types.
 
 When considering the implications of frozen bytecode, note that in Python
@@ -261,7 +261,7 @@ were a string.
 The Python funcitons `eval` and `exec` invoke the compiler at runtime, which
 requires significant amounts of RAM. Note that the ``pickle`` library from
 `micropython-lib` employs `exec`. It may be more RAM efficient to use the
-`ujson` library for object serialisation.
+`json` library for object serialisation.
 
 **Storing strings in flash**
 
@@ -444,7 +444,7 @@ RAM usage and speed.
 
 Where variables are required whose size is neither a byte nor a machine word
 there are standard libraries which can assist in storing these efficiently and
-in performing conversions. See the `array`, `ustruct` and `uctypes`
+in performing conversions. See the `array`, `struct` and `uctypes`
 modules.
 
 Footnote: gc.collect() return value

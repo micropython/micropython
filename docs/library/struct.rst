@@ -1,7 +1,7 @@
-:mod:`ustruct` -- pack and unpack primitive data types
-======================================================
+:mod:`struct` -- pack and unpack primitive data types
+=====================================================
 
-.. module:: ustruct
+.. module:: struct
    :synopsis: pack and unpack primitive data types
 
 |see_cpython_module| :mod:`python:struct`.

@@ -1,7 +1,7 @@
-:mod:`ure` -- simple regular expressions
-========================================
+:mod:`re` -- simple regular expressions
+=======================================
 
-.. module:: ure
+.. module:: re
    :synopsis: regular expressions
 
 |see_cpython_module| :mod:`python:re`.
@@ -95,11 +95,11 @@ Supported operators and special sequences are:
 
 Example::
 
-    import ure
+    import re
 
-    # As ure doesn't support escapes itself, use of r"" strings is not
+    # As re doesn't support escapes itself, use of r"" strings is not
     # recommended.
-    regex = ure.compile("[\r\n]")
+    regex = re.compile("[\r\n]")
 
     regex.split("line1\rline2\nline3\r\n")
 
@@ -152,7 +152,7 @@ Regex objects
 -------------
 
 Compiled regular expression. Instances of this class are created using
-`ure.compile()`.
+`re.compile()`.
 
 .. method:: regex.match(string)
             regex.search(string)

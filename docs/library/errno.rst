@@ -1,7 +1,7 @@
-:mod:`uerrno` -- system error codes
-===================================
+:mod:`errno` -- system error codes
+==================================
 
-.. module:: uerrno
+.. module:: errno
    :synopsis: system error codes
 
 |see_cpython_module| :mod:`python:errno`.
@@ -20,9 +20,9 @@ Constants
     where ``exc`` is an instance of `OSError`. Usage example::
 
         try:
-            uos.mkdir("my_dir")
+            os.mkdir("my_dir")
         except OSError as exc:
-            if exc.errno == uerrno.EEXIST:
+            if exc.errno == errno.EEXIST:
                 print("Directory already exists")
 
 .. data:: errorcode
@@ -30,5 +30,5 @@ Constants
     Dictionary mapping numeric error codes to strings with symbolic error
     code (see above)::
 
-        >>> print(uerrno.errorcode[uerrno.EEXIST])
+        >>> print(errno.errorcode[errno.EEXIST])
         EEXIST

@@ -45,7 +45,7 @@ The :mod:`rp2` module::
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 

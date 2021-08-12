@@ -19,7 +19,7 @@ sub-fields.
 
 .. seealso::
 
-    Module :mod:`ustruct`
+    Module :mod:`struct`
         Standard Python way to access binary data structures (doesn't scale
         well to large and complex structures).
 
