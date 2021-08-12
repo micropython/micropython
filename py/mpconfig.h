@@ -875,6 +875,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
+#ifndef MICROPY_PY_FSTRINGS
+#define MICROPY_PY_FSTRINGS (0)
+#endif
+
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
 #ifndef MICROPY_PY_ASSIGN_EXPR
 #define MICROPY_PY_ASSIGN_EXPR (1)
