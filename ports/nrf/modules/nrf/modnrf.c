@@ -29,15 +29,40 @@
 
 #if MICROPY_PY_NRF
 
-#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #include "flashbdev.h"
 #include "flash.h"
+#include "nrf_power.h"
+
+#if BLUETOOTH_SD
+#include "nrf_soc.h"
+#include "ble_drv.h"
+#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+#endif
 
 #define FLASH_PAGE_ALIGN_UP(addr)   (((addr) - 1) + (FLASH_PAGESIZE)-(((addr) - 1) % (FLASH_PAGESIZE)))
 
 extern uint32_t _unused_flash_start;
 extern uint32_t _unused_flash_len;
 
+#if NRF_POWER_HAS_DCDCEN
+STATIC mp_obj_t dcdc(size_t n_args, const mp_obj_t *args) {
+    if (n_args > 0) {
+        bool dcdc_state = mp_obj_is_true(args[0]);
+        #if BLUETOOTH_SD
+        if (BLUETOOTH_STACK_ENABLED()) {
+            sd_power_dcdc_mode_set(dcdc_state);
+        } else
+        #endif
+        {
+            nrf_power_dcdcen_set(NRF_POWER, dcdc_state);
+        }
+    }
+    return mp_obj_new_bool(nrf_power_dcdcen_get(NRF_POWER));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dcdc_obj, 0, 1, dcdc);
+#endif
+
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 mp_obj_t nrf_modnrf_freeflash_start_aligned(void) {
     return mp_obj_new_int_from_uint(FLASH_PAGE_ALIGN_UP((uint32_t)&_unused_flash_start));
 }
@@ -54,6 +79,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(nrf_modnrf_freeflash_length_aligned_obj, nrf_mo
 
 STATIC const mp_rom_map_elem_t nrf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_nrf) },
+    #if NRF_POWER_HAS_DCDCEN
+    { MP_ROM_QSTR(MP_QSTR_dcdc), MP_ROM_PTR(&dcdc_obj) },
+    #endif
     #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
     { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&nrf_flashbdev_type) },
     { MP_ROM_QSTR(MP_QSTR_unused_flash_start), MP_ROM_PTR(&nrf_modnrf_freeflash_start_aligned_obj) },

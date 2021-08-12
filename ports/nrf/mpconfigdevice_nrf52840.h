@@ -36,6 +36,10 @@
 
 // Board overridable feature configuration.
 
+#ifndef MICROPY_ENABLE_SOURCE_LINE
+#define MICROPY_ENABLE_SOURCE_LINE         (1)
+#endif
+
 #ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN      (1)
 #endif
