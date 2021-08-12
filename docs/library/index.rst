@@ -120,6 +120,7 @@ The following libraries are specific to the pyboard.
   :maxdepth: 2
 
   pyb.rst
+  stm.rst
   lcd160cr.rst
 
 
