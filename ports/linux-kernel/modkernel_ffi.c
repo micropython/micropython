@@ -347,6 +347,8 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
 
         asm volatile("mov %0,%%cr0": : "r" (cr0_no_wp));
 #endif
+        // TODO implement for Aarch64
+        // probably like https://stackoverflow.com/questions/45216054/arm64-linux-memory-write-protection-wont-disable
         *ptr = (u64)value;
 #ifdef CONFIG_X86_64
         asm volatile("mov %0,%%cr0": : "r" (cr0));
