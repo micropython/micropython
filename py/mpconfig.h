@@ -1153,6 +1153,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (0)
 #endif
 
+// Whether to include support for PEP-498 f-strings
+#ifndef MICROPY_PY_FSTRING
+#define MICROPY_PY_FSTRING (0)
+#endif
+
+
 // Whether to provide "math" module
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH (1)

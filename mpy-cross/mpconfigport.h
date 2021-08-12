@@ -93,6 +93,8 @@
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_SYS              (0)
 
+#define MICROPY_PY_FSTRING          (1)
+
 // type definitions for the specific machine
 
 #ifdef __LP64__
