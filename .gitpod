@@ -8,7 +8,8 @@ ports:
     onOpen: ignore
 tasks:
   - init: |
-      xrandr --fb 500x500
+      xrandr --fb 500x500 # Fix resolution for LVGL screens which are smaller
+      make -C ports/unix VARIANT=dev DEBUG=1 submodules
       make -j $(nproc) -C mpy-cross VARIANT=dev DEBUG=1
       make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
     command: |
@@ -16,4 +17,19 @@ tasks:
 vscode:
   extensions:
     - ms-vscode.cpptools
-
+github:
+  prebuilds:
+    # enable for the master/default branch (defaults to true)
+    master: true
+    # enable for all branches in this repo (defaults to false)
+    branches: true
+    # enable for pull requests coming from this repo (defaults to true)
+    pullRequests: true
+    # enable for pull requests coming from forks (defaults to false)
+    pullRequestsFromForks: true
+    # add a "Review in Gitpod" button as a comment to pull requests (defaults to true)
+    addComment: true
+    # add a "Review in Gitpod" button to pull requests (defaults to false)
+    addBadge: false
+    # add a label once the prebuild is ready to pull requests (defaults to false)
+    addLabel: prebuilt-in-gitpod
