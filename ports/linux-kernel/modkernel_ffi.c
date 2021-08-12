@@ -27,6 +27,7 @@
 
 #define pr_fmt(fmt) "MPY: ffi: " fmt
 
+#include <linux/version.h>
 #include <linux/kallsyms.h>
 #include <linux/module.h>
 #include <linux/kprobes.h>
@@ -779,6 +780,17 @@ STATIC const mp_obj_type_t callback_type = {
     .locals_dict = (void*)&callback_locals_dict,
 };
 
+STATIC void *__vmalloc_exec(size_t size) {
+    // in 88dca4ca5a the pgprot parameter was removed, so we'll call the lower function.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
+    return __vmalloc(size, GFP_KERNEL, PAGE_KERNEL_EXEC);
+#else
+    return __vmalloc_node_range(size, 1,  VMALLOC_START, VMALLOC_END,
+        GFP_KERNEL, PAGE_KERNEL_EXEC, 0, NUMA_NO_NODE,
+        __builtin_return_address(0));
+#endif
+}
+
 STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
     size_t nargs = check_func_for_cb(func, false);
 
@@ -799,7 +811,7 @@ STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
         u8 push_rax[1];
         u8 movabs_rax_parameter[10];
         u8 ret[1];
-    } __attribute__((packed)) *trampoline = __vmalloc(PAGE_SIZE, GFP_KERNEL, PAGE_KERNEL_EXEC);
+    } __attribute__((packed)) *trampoline = __vmalloc_exec(PAGE_SIZE);
     if (NULL == trampoline) {
         mp_raise_OSError(0);
     }
@@ -834,7 +846,7 @@ STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
 
-    u8 *trampoline = __vmalloc(PAGE_SIZE, GFP_KERNEL, PAGE_KERNEL_EXEC);
+    u8 *trampoline = __vmalloc_exec(PAGE_SIZE);
     if (NULL == trampoline) {
         mp_raise_OSError(0);
     }
