@@ -25,6 +25,7 @@
  */
 
 
+#define KBUILD_MODNAME "mpy"
 #define pr_fmt(fmt) "MPY: " fmt
 
 #include <linux/module.h>
