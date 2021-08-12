@@ -73,28 +73,28 @@ it will fallback to loading the built-in ``ujson`` module.
 .. toctree::
    :maxdepth: 1
 
+   array.rst
+   binascii.rst
    builtins.rst
    cmath.rst
+   collections.rst
+   errno.rst
    gc.rst
+   hashlib.rst
+   heapq.rst
+   io.rst
+   json.rst
    math.rst
-   uarray.rst
+   os.rst
+   re.rst
+   select.rst
+   socket.rst
+   ssl.rst
+   struct.rst
+   sys.rst
+   time.rst
    uasyncio.rst
-   ubinascii.rst
-   ucollections.rst
-   uerrno.rst
-   uhashlib.rst
-   uheapq.rst
-   uio.rst
-   ujson.rst
-   uos.rst
-   ure.rst
-   uselect.rst
-   usocket.rst
-   ussl.rst
-   ustruct.rst
-   usys.rst
-   utime.rst
-   uzlib.rst
+   zlib.rst
    _thread.rst
 
 
@@ -107,13 +107,13 @@ the following libraries.
 .. toctree::
    :maxdepth: 1
 
+   bluetooth.rst
    btree.rst
+   cryptolib.rst
    framebuf.rst
    machine.rst
    micropython.rst
    network.rst
-   ubluetooth.rst
-   ucryptolib.rst
    uctypes.rst
 
 
