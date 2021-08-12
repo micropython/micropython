@@ -450,7 +450,7 @@ STATIC const mp_obj_type_t kprobe_type = {
     .locals_dict = (void*)&kprobe_locals_dict,
 };
 
-STATIC unsigned long call_py_func_threaded(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
+STATIC __attribute__((always_inline)) inline unsigned long call_py_func_threaded(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,
     unsigned long arg4, unsigned long arg5, unsigned long arg6,
     unsigned long arg7, unsigned long arg8, unsigned long arg9,
@@ -520,7 +520,7 @@ STATIC unsigned long call_py_func_threaded(mp_obj_t func, size_t nargs, bool *ca
 // wraps call_py_threaded in thread code.
 // this sets the "top of the stack" for the new python "thread" so it's easier to have it separate
 // from rest of the code.
-STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
+STATIC __attribute__((always_inline)) inline unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,
     unsigned long arg4, unsigned long arg5, unsigned long arg6,
     unsigned long arg7, unsigned long arg8, unsigned long arg9,
