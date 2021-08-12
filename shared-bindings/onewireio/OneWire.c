@@ -35,19 +35,15 @@
 #include "shared-bindings/util.h"
 
 //| class OneWire:
-//|     """Lowest-level of the Maxim OneWire protocol"""
-//|
 //|     def __init__(self, pin: microcontroller.Pin) -> None:
-//|         """(formerly Dallas Semi) OneWire protocol.
+//|         """Create a OneWire object associated with the given pin.
 //|
-//|         Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126
-//|
-//|         .. class:: OneWire(pin)
-//|
-//|           Create a OneWire object associated with the given pin. The object
-//|           implements the lowest level timing-sensitive bits of the protocol.
+//|           The object implements the lowest level timing-sensitive bits of the protocol.
 //|
 //|           :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
+//|
+//|           .. note:: The OneWire class is available on `busio` and `bitbangio` in CircuitPython
+//|                     7.x for backwards compatibility but will be removed in CircuitPython 8.0.0.
 //|
 //|           Read a short series of pulses::
 //|

@@ -35,7 +35,9 @@
 
 #include "py/runtime.h"
 
-//| """Low-level bit primitives for """
+//| """Low-level bit primitives for Maxim (formerly Dallas Semi) one-wire protocol.
+//|
+//|    Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126"""
 //|
 
 STATIC const mp_rom_map_elem_t onewireio_module_globals_table[] = {

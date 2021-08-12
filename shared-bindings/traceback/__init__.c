@@ -73,7 +73,7 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
 //|     these lines are concatenated and printed, exactly the same text is
 //|     printed as does print_exception().
 //|
-//|     .. note: Setting `chain` will have no effect as chained exceptions are not yet implemented.
+//|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
 //|
 //|     :param Type[BaseException] etype: This is ignored and inferred from the type of ``value``.
 //|     :param BaseException value: The exception. Must be an instance of `BaseException`.
@@ -112,7 +112,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 3, traceback_f
 //|
 //|     """Prints exception information and stack trace entries.
 //|
-//|     .. note: Setting `chain` will have no effect as chained exceptions are not yet implemented.
+//|     .. note:: Setting ``chain`` will have no effect as chained exceptions are not yet implemented.
 //|
 //|     :param Type[BaseException] etype: This is ignored and inferred from the type of ``value``.
 //|     :param BaseException value: The exception. Must be an instance of `BaseException`.
