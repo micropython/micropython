@@ -27,6 +27,7 @@ _PROG = "mpremote"
 
 _BUILTIN_COMMAND_EXPANSIONS = {
     # Device connection shortcuts.
+    "devs": "connect list",
     "a0": "connect /dev/ttyACM0",
     "a1": "connect /dev/ttyACM1",
     "a2": "connect /dev/ttyACM2",
