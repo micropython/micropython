@@ -531,6 +531,7 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
 
     // this needs to remain on my stack, so can't move to a separate function.
     mp_state_thread_t ts;
+    ts.gc_lock_depth = 0; // GC starts unlocked. See b6b39bff47
     if (NULL == __get_thread_for_current()) {
         // temporarily, add current context as a thread.
         if (!register_new_context(&ts)) {
