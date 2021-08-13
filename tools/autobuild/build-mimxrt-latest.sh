@@ -33,5 +33,6 @@ fi
 # build the boards
 do_build TEENSY40 TEENSY40 hex
 do_build TEENSY41 TEENSY41 hex
+do_build MIMXRT1010_EVK MIMXRT1010_EVK bin
 do_build MIMXRT1020_EVK MIMXRT1020_EVK bin
 do_build MIMXRT1050_EVK MIMXRT1050_EVK bin
