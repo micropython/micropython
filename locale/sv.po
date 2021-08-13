@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-10 02:41+0000\n"
+"PO-Revision-Date: 2021-08-13 12:33+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -503,7 +503,7 @@ msgstr "Försök till heap-allokering när den virtuella maskinen inte är igån
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "Ljudkonvertering inte implementerad"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -1242,7 +1242,7 @@ msgstr "Otillräcklig kryptering"
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
-msgstr ""
+msgstr "Intern ljudbuffert för liten"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"

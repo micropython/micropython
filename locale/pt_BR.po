@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-10 02:41+0000\n"
+"PO-Revision-Date: 2021-08-13 12:33+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -509,7 +509,7 @@ msgstr ""
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "A conversão de áudio ainda não foi implementada"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -1257,7 +1257,7 @@ msgstr "Criptografia insuficiente"
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
-msgstr ""
+msgstr "O buffer interno de áudio é muito pequeno"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
