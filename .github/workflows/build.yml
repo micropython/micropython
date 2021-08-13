@@ -506,6 +506,7 @@ jobs:
         - "adafruit_metro_esp32s2"
         - "artisense_rd00"
         - "atmegazero_esp32s2"
+        - "crumpspace_crumps2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_kaluga_1.3"
