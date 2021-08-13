@@ -21,7 +21,7 @@ besides a text editor (we recommend `Mu <https://codewith.mu/>`_ for beginners.)
 Starting with CircuitPython 7.0.0, some boards may only be connectable over Bluetooth Low Energy
 (BLE). Those boards provide serial and file access over BLE instead of USB using open protocols.
 (Some boards may use both USB and BLE.) BLE access can be done from a variety of apps including
-`code.circuitpythonn.org <https://code.circuitpython.org>`_.
+`code.circuitpython.org <https://code.circuitpython.org>`_.
 
 CircuitPython features unified Python core APIs and a growing list of 300+ device libraries and
 drivers that work with it. These libraries also work on single board computers with regular
