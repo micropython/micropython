@@ -24,6 +24,11 @@ yacctab.py
 *.swp
 *.swo
 *.swn
+*.swi
+*.swj
+*.swk
+*.swl
+*.swm
 
 # VIM Session Files
 ######################
