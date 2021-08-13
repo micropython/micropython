@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/mpirq.h"
+#include "extmod/virtpin.h"
 #include "pin.h"
 
 // Local functions
@@ -425,12 +426,34 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
+
+STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+    machine_pin_obj_t *self = self_in;
+
+    switch (request) {
+        case MP_PIN_READ: {
+            return mp_hal_pin_read(self);
+        }
+        case MP_PIN_WRITE: {
+            mp_hal_pin_write(self, arg);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+STATIC const mp_pin_p_t machine_pin_obj_protocol = {
+    .ioctl = machine_pin_ioctl,
+};
+
 const mp_obj_type_t machine_pin_type = {
     {&mp_type_type},
     .name = MP_QSTR_Pin,
     .print = machine_pin_obj_print,
     .call = machine_pin_obj_call,
     .make_new = mp_pin_make_new,
+    .protocol = &machine_pin_obj_protocol,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
 };
 
