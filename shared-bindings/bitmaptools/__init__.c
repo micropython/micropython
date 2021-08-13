@@ -299,7 +299,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|
 //| def boundary_fill(
 //|        dest_bitmap: displayio.Bitmap,
-//|        x: int, y: int
+//|        x: int, y: int,
 //|        value: int, background_value: int) -> None:
 //|      """Draws the color value into the destination bitmap enclosed
 //|      area of pixels of the background_value color. Like "Paint Bucket"
@@ -309,7 +309,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|      :param int x: x-pixel position of the first pixel to check and fill if needed
 //|      :param int y: y-pixel position of the first pixel to check and fill if needed
 //|      :param int value: Bitmap palette index that will be written into the
-//|             enclosed area in the destination bitmap"""
+//|             enclosed area in the destination bitmap
 //|      :param int background_value: Bitmap palette index that will filled with the
 //|             value color in the enclosed area in the destination bitmap"""
 //|      ...
