@@ -376,6 +376,13 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
 }
 #endif
 
+static int print_str_common(const mp_print_t *print, const char *str, int prec, size_t len, int flags, int fill, int width) {
+    if (prec >= 0 && (size_t)prec < len) {
+        len = prec;
+    }
+    return mp_print_strn(print, str, len, flags, fill, width);
+}
+
 int mp_printf(const mp_print_t *print, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -484,19 +491,24 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 qstr qst = va_arg(args, qstr);
                 size_t len;
                 const char *str = (const char *)qstr_data(qst, &len);
-                if (prec >= 0 && (size_t)prec < len) {
-                    len = prec;
-                }
-                chrs += mp_print_strn(print, str, len, flags, fill, width);
+                chrs += print_str_common(print, str, prec, len, flags, fill, width);
+                break;
+            }
+            case 'S': {
+                compressed_string_t *arg = va_arg(args, compressed_string_t *);
+                size_t len_with_nul = decompress_length(arg);
+                size_t len = len_with_nul - 1;
+                char str[len_with_nul];
+                decompress(arg, str);
+                chrs += print_str_common(print, str, prec, len, flags, fill, width);
                 break;
             }
             case 's': {
                 const char *str = va_arg(args, const char *);
                 #ifndef NDEBUG
                 // With debugging enabled, catch printing of null string pointers
-                if (prec != 0 && str == NULL) {
-                    chrs += mp_print_strn(print, "(null)", 6, flags, fill, width);
-                    break;
+                if (str == NULL) {
+                    str = "(null)";
                 }
                 #endif
                 size_t len = strlen(str);
@@ -573,4 +585,20 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         ++fmt;
     }
     return chrs;
+}
+
+int mp_cprintf(const mp_print_t *print, const compressed_string_t *compressed_fmt, ...) {
+    va_list ap;
+    va_start(ap, compressed_fmt);
+    int ret = mp_vcprintf(print, compressed_fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int mp_vcprintf(const mp_print_t *print, const compressed_string_t *compressed_fmt, va_list args) {
+    char fmt[decompress_length(compressed_fmt)];
+    // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
+    decompress(compressed_fmt, fmt);
+
+    return mp_vprintf(print, fmt, args);
 }

@@ -40,11 +40,11 @@ msgstr ""
 "CIRCUITPYドライブの内容を添えて問題を以下で報告してください：\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  ファイル \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  ファイル \"%q\", 行 %d"
 
@@ -323,11 +323,15 @@ msgstr ""
 msgid "'yield' outside function"
 msgstr "関数外でのyield"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*xは代入先でなければなりません"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ""
 
@@ -492,6 +496,10 @@ msgstr "%d個のブロックの確保を試みました"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1223,6 +1231,10 @@ msgstr "認証が不十分"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "暗号化が不十分"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -2225,7 +2237,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "トレースバック（最新の呼び出しが末尾）:\n"
 
@@ -3473,10 +3485,6 @@ msgstr "levelは0から1の間でなければなりません"
 msgid "lhs and rhs should be compatible"
 msgstr "左辺と右辺が互換でなければなりません"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr ""
@@ -3925,6 +3933,10 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4124,7 +4136,7 @@ msgstr "stopは1または2のいずれか"
 msgid "stop not reachable from start"
 msgstr ""
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "ストリーム操作は非対応"
 
@@ -4333,7 +4345,7 @@ msgid "unreadable attribute"
 msgstr "読み込み不可能な属性"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "非対応の型 %q"
 

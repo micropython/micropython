@@ -38,11 +38,11 @@ msgstr ""
 "Meld een probleem met de inhoud van de CIRCUITPY drive op:\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Bestand"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Bestand \"%q\", regel %d"
 
@@ -321,11 +321,15 @@ msgstr "'yield from' binnen asynchrone functie"
 msgid "'yield' outside function"
 msgstr "'yield' buiten de functie"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x moet een assignment target zijn"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", in %q\n"
 
@@ -490,6 +494,10 @@ msgstr "Poging om %d blokken toe te wijzen"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1224,6 +1232,10 @@ msgstr "Onvoldoende authenticatie"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Onvoldoende encryptie"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -2237,7 +2249,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (meest recente call laatst):\n"
 
@@ -3498,10 +3510,6 @@ msgstr "level moet tussen 0 en 1 liggen"
 msgid "lhs and rhs should be compatible"
 msgstr "lhs en rhs moeten compatibel zijn"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "lokale '%q' is van type '%q' maar bron is '%q'"
@@ -3949,6 +3957,10 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4149,7 +4161,7 @@ msgstr "stop moet 1 of 2 zijn"
 msgid "stop not reachable from start"
 msgstr "stop is niet bereikbaar vanaf start"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operatie niet ondersteund"
 
@@ -4358,7 +4370,7 @@ msgid "unreadable attribute"
 msgstr "onleesbaar attribuut"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "niet ondersteund %q type"
 

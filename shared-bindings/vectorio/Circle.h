@@ -19,4 +19,6 @@ void common_hal_vectorio_circle_get_area(void *circle, displayio_area_t *out_are
 int16_t common_hal_vectorio_circle_get_radius(void *circle);
 void common_hal_vectorio_circle_set_radius(void *circle, int16_t radius);
 
+mp_obj_t common_hal_vectorio_circle_get_draw_protocol(void *circle);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_CIRCLE_H

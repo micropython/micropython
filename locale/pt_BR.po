@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-07-24 15:35+0000\n"
+"PO-Revision-Date: 2021-08-10 02:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: main.c
 msgid ""
@@ -42,11 +42,11 @@ msgstr ""
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Arquivo \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Arquivo \"%q\", linha %d"
 
@@ -331,11 +331,15 @@ msgstr "'yield a partir' de dentro da função async"
 msgid "'yield' outside function"
 msgstr "função externa 'yield'"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr "(x,y) é obrigatório o uso de números inteiros"
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x deve ser o destino da atribuição"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", em %q\n"
 
@@ -502,6 +506,10 @@ msgstr "Tentativa de alocar %d blocos"
 msgid "Attempted heap allocation when VM not running."
 msgstr ""
 "Tentativa de alocação das pilhas quando o VM não estiver em funcionamento."
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -1246,6 +1254,10 @@ msgstr "Autenticação insuficiente"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Criptografia insuficiente"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -2276,7 +2288,7 @@ msgstr "O total dos dados que serão escritos é maior do que %q"
 msgid "Touch alarms not available"
 msgstr "Alarmes de toque não estão disponíveis"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (a última chamada mais recente):\n"
 
@@ -3164,7 +3176,7 @@ msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "a gravação de arquivos não está disponível"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3456,7 +3468,7 @@ msgstr "element_size %d é inválido, deve ser, 1, 2, ou 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "exceção inválida"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3497,7 +3509,7 @@ msgstr "sintaxe inválida para o número"
 
 #: py/objexcept.c shared-bindings/traceback/__init__.c
 msgid "invalid traceback"
-msgstr ""
+msgstr "rastreamento inválido"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3545,10 +3557,6 @@ msgstr "o nível deve estar entre 0 e 1"
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "o lhs e rhs devem ser compatíveis"
-
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -4003,6 +4011,10 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4203,7 +4215,7 @@ msgstr "o stop deve ser 1 ou 2"
 msgid "stop not reachable from start"
 msgstr "stop não está acessível a partir do início"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "a operação do fluxo não é compatível"
 
@@ -4412,7 +4424,7 @@ msgid "unreadable attribute"
 msgstr "atributo ilegível"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo %q não suportado"
 
@@ -4532,6 +4544,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "limit should be an int"
+#~ msgstr "o limite deve ser um inteiro"
 
 #~ msgid "no available NIC"
 #~ msgstr "não há uma Placa de Rede disponível"

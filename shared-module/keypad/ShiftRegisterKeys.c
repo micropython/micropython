@@ -71,8 +71,6 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
-
-    supervisor_enable_tick();
 }
 
 void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *self) {

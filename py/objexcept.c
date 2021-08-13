@@ -465,12 +465,9 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
         o_str->data = NULL;
     } else {
         // We have some memory to format the string.
-        // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        char fmt_decompressed[decompress_length(fmt)];
-        decompress(fmt, fmt_decompressed);
-        mp_vprintf(&print, fmt_decompressed, ap);
+        mp_vcprintf(&print, fmt, ap);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;

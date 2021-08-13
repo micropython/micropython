@@ -43,11 +43,11 @@ msgstr ""
 "Per favore, segnala il problema con il contenuto del tuo CIRCUITPY a\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  File \"%q\", riga %d"
 
@@ -329,11 +329,15 @@ msgstr "'yield from' è nella funzione sincronizzazione"
 msgid "'yield' outside function"
 msgstr "'yield' al di fuori della funzione"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x deve essere il bersaglio del assegnamento"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", in %q\n"
 
@@ -499,6 +503,10 @@ msgstr "Provo ad allocare %d blocchi"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1235,6 +1243,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2252,7 +2264,7 @@ msgstr ""
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (chiamata più recente per ultima):\n"
 
@@ -3512,10 +3524,6 @@ msgstr ""
 msgid "lhs and rhs should be compatible"
 msgstr "lhs e rhs devono essere compatibili"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "local '%q' ha tipo '%q' ma sorgente è '%q'"
@@ -3968,6 +3976,10 @@ msgstr "pow() con 3 argomenti richiede interi"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4169,7 +4181,7 @@ msgstr ""
 msgid "stop not reachable from start"
 msgstr "stop non raggiungibile dall'inizio"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "operazione di stream non supportata"
 
@@ -4379,7 +4391,7 @@ msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "tipo di %q non supportato"
 

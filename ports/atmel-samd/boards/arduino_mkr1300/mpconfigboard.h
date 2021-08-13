@@ -16,3 +16,16 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+// USD ID
+#define IGNORE_PIN_PA18     1
+
+// Hooked to the external crystal
+#define IGNORE_PIN_PA00     1
+#define IGNORE_PIN_PA01     1
+
+// SWD only
+#define IGNORE_PIN_PA30     1
+#define IGNORE_PIN_PA31     1
+
+// Not connected
+#define IGNORE_PIN_PA28     1

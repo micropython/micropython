@@ -63,8 +63,6 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
-
-    supervisor_enable_tick();
 }
 
 void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {

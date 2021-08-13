@@ -44,11 +44,11 @@ msgstr ""
 "l'adresse\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Fichier \"%q\""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Fichier \"%q\", ligne %d"
 
@@ -329,11 +329,15 @@ msgstr "'yield from' dans une fonction async"
 msgid "'yield' outside function"
 msgstr "'yield' dehors d'une fonction"
 
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x doit être la cible de l'assignement"
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid ", in %q\n"
 msgstr ", dans %q\n"
 
@@ -503,6 +507,10 @@ msgid "Attempted heap allocation when VM not running."
 msgstr ""
 "Tentative d'allocation à la pile quand la Machine Virtuelle n'est pas en "
 "exécution."
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
+msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -1255,6 +1263,10 @@ msgstr "Authentification insuffisante"
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Chiffrement insuffisant"
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -2273,7 +2285,7 @@ msgstr "Quantité de données à écrire est plus que %q"
 msgid "Touch alarms not available"
 msgstr ""
 
-#: py/obj.c shared-bindings/traceback/__init__.c
+#: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (appels les plus récents en dernier) :\n"
 
@@ -3548,10 +3560,6 @@ msgstr "le niveau doit être compris entre 0 et 1"
 msgid "lhs and rhs should be compatible"
 msgstr "Les parties gauches et droites doivent être compatibles"
 
-#: shared-bindings/traceback/__init__.c
-msgid "limit should be an int"
-msgstr ""
-
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
 msgstr "la variable locale '%q' a le type '%q' mais la source est '%q'"
@@ -4003,6 +4011,10 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4203,7 +4215,7 @@ msgstr "stop doit être 1 ou 2"
 msgid "stop not reachable from start"
 msgstr "stop n'est pas accessible au démarrage"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "opération de flux non supportée"
 
@@ -4413,7 +4425,7 @@ msgid "unreadable attribute"
 msgstr "attribut illisible"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "type %q non pris on charge"
 

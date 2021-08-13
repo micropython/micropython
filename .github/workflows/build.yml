@@ -232,6 +232,7 @@ jobs:
         - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
+        - "bluemicro840"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -325,11 +326,13 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "picoplanet"
+        - "pimoroni_interstate75"
         - "pimoroni_keybow2040"
         - "pimoroni_pga2040"
         - "pimoroni_picolipo_16mb"
         - "pimoroni_picolipo_4mb"
         - "pimoroni_picosystem"
+        - "pimoroni_plasma2040"
         - "pimoroni_tiny2040"
         - "pitaya_go"
         - "pyb_nano_v2"
@@ -369,6 +372,7 @@ jobs:
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_micromod"
         - "sparkfun_samd51_thing_plus"
+        - "sparkfun_stm32f405_micromod"
         - "sparkfun_thing_plus_rp2040"
         - "spresense"
         - "stackrduino_m0_pro"
@@ -460,7 +464,7 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
         sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
@@ -515,6 +519,7 @@ jobs:
         - "gravitech_cucumber_rs"
         - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
+        - "morpheans_morphesp-240"
         - "muselab_nanoesp32_s2_wroom"
         - "muselab_nanoesp32_s2_wrover"
         - "targett_module_clip_wroom"
