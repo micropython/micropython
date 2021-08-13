@@ -34,7 +34,7 @@
 
 #include "shared-bindings/bitbangio/__init__.h"
 #include "shared-bindings/bitbangio/I2C.h"
-#include "shared-bindings/bitbangio/OneWire.h"
+#include "shared-bindings/onewireio/OneWire.h"
 #include "shared-bindings/bitbangio/SPI.h"
 
 #include "py/runtime.h"
@@ -72,7 +72,7 @@
 STATIC const mp_rom_map_elem_t bitbangio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitbangio) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&bitbangio_i2c_type) },
-    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&bitbangio_onewire_type) },
+    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&onewireio_onewire_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&bitbangio_spi_type) },
 };
 

@@ -24,36 +24,20 @@
  * THE SOFTWARE.
  */
 
-// Wraps the bitbangio implementation of OneWire for use in busio.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H
+
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-bindings/bitbangio/OneWire.h"
-#include "shared-module/busio/OneWire.h"
+#include "shared-module/onewireio/OneWire.h"
 
-void common_hal_busio_onewire_construct(busio_onewire_obj_t *self,
-    const mcu_pin_obj_t *pin) {
-    shared_module_bitbangio_onewire_construct(&self->bitbang, pin);
-}
+extern const mp_obj_type_t onewireio_onewire_type;
 
-bool common_hal_busio_onewire_deinited(busio_onewire_obj_t *self) {
-    return shared_module_bitbangio_onewire_deinited(&self->bitbang);
-}
+extern void common_hal_onewireio_onewire_construct(onewireio_onewire_obj_t *self,
+    const mcu_pin_obj_t *pin);
+extern void common_hal_onewireio_onewire_deinit(onewireio_onewire_obj_t *self);
+extern bool common_hal_onewireio_onewire_deinited(onewireio_onewire_obj_t *self);
+extern bool common_hal_onewireio_onewire_reset(onewireio_onewire_obj_t *self);
+extern bool common_hal_onewireio_onewire_read_bit(onewireio_onewire_obj_t *self);
+extern void common_hal_onewireio_onewire_write_bit(onewireio_onewire_obj_t *self, bool bit);
 
-void common_hal_busio_onewire_deinit(busio_onewire_obj_t *self) {
-    if (common_hal_busio_onewire_deinited(self)) {
-        return;
-    }
-    shared_module_bitbangio_onewire_deinit(&self->bitbang);
-}
-
-bool common_hal_busio_onewire_reset(busio_onewire_obj_t *self) {
-    return shared_module_bitbangio_onewire_reset(&self->bitbang);
-}
-
-bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t *self) {
-    return shared_module_bitbangio_onewire_read_bit(&self->bitbang);
-}
-
-void common_hal_busio_onewire_write_bit(busio_onewire_obj_t *self,
-    bool bit) {
-    shared_module_bitbangio_onewire_write_bit(&self->bitbang, bit);
-}
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ONEWIREIO_ONEWIRE_H

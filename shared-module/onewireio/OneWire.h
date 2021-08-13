@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
 
-#include "common-hal/microcontroller/Pin.h"
-#include "shared-module/bitbangio/OneWire.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
-extern const mp_obj_type_t bitbangio_onewire_type;
+#include "py/obj.h"
 
-extern void shared_module_bitbangio_onewire_construct(bitbangio_onewire_obj_t *self,
-    const mcu_pin_obj_t *pin);
-extern void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t *self);
-extern bool shared_module_bitbangio_onewire_deinited(bitbangio_onewire_obj_t *self);
-extern bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t *self);
-extern bool shared_module_bitbangio_onewire_read_bit(bitbangio_onewire_obj_t *self);
-extern void shared_module_bitbangio_onewire_write_bit(bitbangio_onewire_obj_t *self, bool bit);
+typedef struct {
+    mp_obj_base_t base;
+    digitalio_digitalinout_obj_t pin;
+} onewireio_onewire_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_ONEWIREIO_ONEWIRE_H
