@@ -297,7 +297,7 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_region);
 //|
-//| def paint_fill(
+//| def boundary_fill(
 //|        dest_bitmap: displayio.Bitmap,
 //|        x: int, y: int
 //|        value: int, background_value: int) -> None:
@@ -308,13 +308,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|      :param bitmap dest_bitmap: Destination bitmap that will be written into
 //|      :param int x: x-pixel position of the first pixel to check and fill if needed
 //|      :param int y: y-pixel position of the first pixel to check and fill if needed
-//|      :param int value: Bitmap palette index that will be written into the rectangular
-//|             fill region in the destination bitmap"""
+//|      :param int value: Bitmap palette index that will be written into the
+//|             enclosed area in the destination bitmap"""
 //|      :param int background_value: Bitmap palette index that will filled with the
 //|             value color in the enclosed area in the destination bitmap"""
 //|      ...
 //|
-STATIC mp_obj_t bitmaptools_obj_paint_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_value, ARG_background_value};
 
     static const mp_arg_t allowed_args[] = {
@@ -346,12 +346,12 @@ STATIC mp_obj_t bitmaptools_obj_paint_fill(size_t n_args, const mp_obj_t *pos_ar
     int16_t y = args[ARG_y].u_int;
 
 
-    common_hal_bitmaptools_paint_fill(destination, x, y, value, background_value);
+    common_hal_bitmaptools_boundary_fill(destination, x, y, value, background_value);
 
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_paint_fill_obj, 0, bitmaptools_obj_paint_fill);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_boundary_fill_obj, 0, bitmaptools_obj_boundary_fill);
 // requires all 6 arguments
 
 //|
@@ -576,7 +576,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
-    { MP_ROM_QSTR(MP_QSTR_paint_fill), MP_ROM_PTR(&bitmaptools_paint_fill_obj) },
+    { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);

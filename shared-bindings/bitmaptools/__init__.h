@@ -46,7 +46,7 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
     int16_t x2, int16_t y2,
     uint32_t value);
 
-void common_hal_bitmaptools_paint_fill(displayio_bitmap_t *destination,
+void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
     uint32_t value, uint32_t background_value);
 
