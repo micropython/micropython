@@ -37,6 +37,8 @@
 
 #ifdef _WIN32
 #define fsync _commit
+#else
+#include <poll.h>
 #endif
 
 typedef struct _mp_obj_vfs_posix_file_t {
@@ -206,6 +208,32 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             return 0;
         case MP_STREAM_GET_FILENO:
             return o->fd;
+        #if MICROPY_PY_USELECT
+        case MP_STREAM_POLL: {
+            #ifdef _WIN32
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("poll on file not available on win32"));
+            #else
+            mp_uint_t ret = 0;
+            uint8_t pollevents = 0;
+            if (arg & MP_STREAM_POLL_RD) {
+                pollevents |= POLLIN;
+            }
+            if (arg & MP_STREAM_POLL_WR) {
+                pollevents |= POLLOUT;
+            }
+            struct pollfd pfd = { .fd = o->fd, .events = pollevents };
+            if (poll(&pfd, 1, 0) > 0) {
+                if (pfd.revents & POLLIN) {
+                    ret |= MP_STREAM_POLL_RD;
+                }
+                if (pfd.revents & POLLOUT) {
+                    ret |= MP_STREAM_POLL_WR;
+                }
+            }
+            return ret;
+            #endif
+        }
+        #endif
         default:
             *errcode = EINVAL;
             return MP_STREAM_ERROR;
