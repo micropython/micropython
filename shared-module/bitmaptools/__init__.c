@@ -263,9 +263,9 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     // first point is the one user passed in
     mp_obj_t point[] = { mp_obj_new_int(x), mp_obj_new_int(y) };
     mp_obj_list_append(
-            fill_area,
-            mp_obj_new_tuple(2, point)
-            );
+        fill_area,
+        mp_obj_new_tuple(2, point)
+        );
 
     mp_obj_t *fill_points;
     size_t list_length = 0;
@@ -278,7 +278,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     mp_obj_t *tuple_items;
 
     // while there are still points to check
-    while (list_length > 0){
+    while (list_length > 0) {
         mp_obj_list_get(fill_area, &list_length, &fill_points);
         current_point = mp_obj_list_pop(fill_area, 0);
         mp_obj_tuple_get(current_point, &tuple_len, &tuple_items);
@@ -288,7 +288,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
             mp_obj_get_int(tuple_items[1]));
 
         // if the current point is not background color ignore it
-        if(current_point_color_value != background_value){
+        if (current_point_color_value != background_value) {
             mp_obj_list_get(fill_area, &list_length, &fill_points);
             continue;
         }
@@ -303,28 +303,32 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         // add all 4 surrounding points to the list to check
         mp_obj_t above_point[] = {
             tuple_items[0],
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1])-1)};
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) - 1)
+        };
         mp_obj_list_append(
             fill_area,
             mp_obj_new_tuple(2, above_point));
 
         mp_obj_t left_point[] = {
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0])-1),
-            tuple_items[1]};
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) - 1),
+            tuple_items[1]
+        };
         mp_obj_list_append(
             fill_area,
             mp_obj_new_tuple(2, left_point));
 
         mp_obj_t right_point[] = {
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0])+1),
-            tuple_items[1]};
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) + 1),
+            tuple_items[1]
+        };
         mp_obj_list_append(
             fill_area,
             mp_obj_new_tuple(2, right_point));
 
         mp_obj_t below_point[] = {
             tuple_items[0],
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1])+1)};
+            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) + 1)
+        };
         mp_obj_list_append(
             fill_area,
             mp_obj_new_tuple(2, below_point));
