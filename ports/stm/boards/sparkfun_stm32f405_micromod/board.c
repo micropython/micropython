@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_ONEWIRE_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
 
-// Use bitbangio.
-#include "shared-module/busio/OneWire.h"
+void board_init(void) {
+}
 
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_BUSIO_ONEWIRE_H
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}

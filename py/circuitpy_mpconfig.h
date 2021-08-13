@@ -583,6 +583,13 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
+#if CIRCUITPY_ONEWIREIO
+extern const struct _mp_obj_module_t onewireio_module;
+#define ONEWIREIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_onewireio), (mp_obj_t)&onewireio_module },
+#else
+#define ONEWIREIO_MODULE
+#endif
+
 #if CIRCUITPY_OS
 extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
@@ -915,6 +922,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     MICROCONTROLLER_MODULE \
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
+    ONEWIREIO_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_ONEWIRE_H
+// Micropython setup
 
-// Use bitbangio.
-#include "shared-module/busio/OneWire.h"
+#define MICROPY_HW_BOARD_NAME       "CrumpS2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_ONEWIRE_H
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
+#define AUTORESET_DELAY_MS 500

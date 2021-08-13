@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-// Use bitbangio.
-#include "shared-module/busio/OneWire.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
+}

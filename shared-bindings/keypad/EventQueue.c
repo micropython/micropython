@@ -68,7 +68,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_get_obj, keypad_eventqueue_get);
 //|         Note that the queue size is limited; see ``max_events`` in the constructor of
 //|         a scanner such as `Keys` or `KeyMatrix`.
 //|
-//|         :return ``True`` if an event was available and stored, ``False`` if not.
+//|         :return: ``True`` if an event was available and stored, ``False`` if not.
 //|         :rtype: bool
 //|         """
 //|         ...

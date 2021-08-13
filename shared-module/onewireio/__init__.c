@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,4 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
-
-// Use bitbangio.
-#include "shared-module/busio/OneWire.h"
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_ONEWIRE_H
+// Nothing now.
