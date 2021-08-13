@@ -583,7 +583,7 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
-#if CIRCUITPY_OS
+#if CIRCUITPY_ONEWIREIO
 extern const struct _mp_obj_module_t onewireio_module;
 #define ONEWIREIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_onewireio), (mp_obj_t)&onewireio_module },
 #else
