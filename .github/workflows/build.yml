@@ -506,6 +506,7 @@ jobs:
         - "adafruit_metro_esp32s2"
         - "artisense_rd00"
         - "atmegazero_esp32s2"
+        - "ai_thinker_esp_12k"
         - "crumpspace_crumps2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
@@ -528,7 +529,6 @@ jobs:
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
         - "unexpectedmaker_tinys2"
-        - "ai_thinker_esp_12k"
 
     steps:
     - name: Set up Python 3.8
