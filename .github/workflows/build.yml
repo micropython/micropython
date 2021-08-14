@@ -528,6 +528,7 @@ jobs:
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
         - "unexpectedmaker_tinys2"
+        - "ai_thinker_esp_12k"
 
     steps:
     - name: Set up Python 3.8
