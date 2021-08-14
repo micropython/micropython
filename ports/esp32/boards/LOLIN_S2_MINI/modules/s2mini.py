@@ -10,8 +10,6 @@ import network
 # Pin Assignments
 
 
-
-
 # SPI
 SPI_MOSI = const(11)
 SPI_MISO = const(9)
@@ -28,9 +26,8 @@ DAC2 = const(18)
 # LED
 LED = const(15)
 
-#BUTTON
+# BUTTON
 BUTTON = const(0)
-
 
 
 class led:
@@ -39,9 +36,10 @@ class led:
 
     def on(self):
         self._led.value(1)
-        
+
     def off(self):
         self._led.value(0)
+
 
 class button:
     def __init__(self):
@@ -52,6 +50,3 @@ class button:
 
     def set_button_callback(self, cb):
         self._btn.irq(trigger=Pin.IRQ_FALLING, handler=cb)
-
-
-
