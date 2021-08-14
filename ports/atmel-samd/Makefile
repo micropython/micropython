@@ -322,6 +322,12 @@ SRC_C += \
 	reset.c \
 	timer_handler.c \
 
+# This is an OR because it filters to any 1s and then checks to see if it is not
+# empty.
+ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX)))
+SRC_C += shared_timers.c
+endif
+
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_C += ports/atmel-samd/sd_mmc/sd_mmc.c
 endif

@@ -77,6 +77,7 @@
 #include "samd/dma.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "shared_timers.h"
 #include "reset.h"
 
 #include "supervisor/shared/safe_mode.h"
@@ -361,6 +362,9 @@ void reset_port(void) {
     #endif
     #if CIRCUITPY_PWMIO
     pwmout_reset();
+    #endif
+    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO
+    reset_timers();
     #endif
 
     #if CIRCUITPY_ANALOGIO
