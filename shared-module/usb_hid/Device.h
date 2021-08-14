@@ -41,12 +41,12 @@ typedef struct  {
     mp_obj_base_t base;
     // Python buffer object whose contents are the descriptor.
     const uint8_t *report_descriptor;
-    uint8_t report_ids[MAX_REPORT_IDS_PER_DESCRIPTOR];
-    uint8_t in_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
-    uint8_t out_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t *in_report_buffers[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t *out_report_buffers[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint16_t report_descriptor_length;
+    uint8_t report_ids[MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t in_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t out_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t usage_page;
     uint8_t usage;
     uint8_t num_report_ids;
