@@ -32,7 +32,8 @@
 
 #include "py/obj.h"
 
-// The most complicated one currently know of is the head and eye tracker, which requires 5:
+// The most complicated device currently known of is the head and eye tracker, which requires 5
+// report ids.
 // https://usb.org/sites/default/files/hutrr74_-_usage_page_for_head_and_eye_trackers_0.pdf
 #define MAX_REPORT_IDS_PER_DESCRIPTOR (6)
 
@@ -43,6 +44,7 @@ typedef struct  {
     uint8_t report_ids[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t in_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t out_report_lengths[MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t *in_report_buffers[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t *out_report_buffers[MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint16_t report_descriptor_length;
     uint8_t usage_page;
