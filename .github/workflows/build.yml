@@ -504,6 +504,7 @@ jobs:
         - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "ai_thinker_esp_12k_nodemcu"
         - "artisense_rd00"
         - "atmegazero_esp32s2"
         - "crumpspace_crumps2"
