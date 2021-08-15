@@ -35,7 +35,7 @@
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 
-#if MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+#if MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
 
 /******************************************************************************/
 // socket class
@@ -517,4 +517,4 @@ const mp_obj_module_t mp_module_usocket = {
     .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
-#endif // MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
+#endif // MICROPY_PY_NETWORK && MICROPY_PY_USOCKET && !MICROPY_PY_LWIP
