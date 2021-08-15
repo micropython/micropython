@@ -66,6 +66,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c

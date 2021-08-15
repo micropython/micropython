@@ -32,6 +32,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modutimeq.c
     ${MICROPY_EXTMOD_DIR}/moduwebsocket.c
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
+    ${MICROPY_EXTMOD_DIR}/modusocket.c
+    ${MICROPY_EXTMOD_DIR}/modnetwork.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
     ${MICROPY_EXTMOD_DIR}/uos_dupterm.c
     ${MICROPY_EXTMOD_DIR}/utime_mphal.c
