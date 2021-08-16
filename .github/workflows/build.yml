@@ -524,6 +524,7 @@ jobs:
         - "morpheans_morphesp-240"
         - "muselab_nanoesp32_s2_wroom"
         - "muselab_nanoesp32_s2_wrover"
+        - "odt_pixelwing_esp32_s2"
         - "targett_module_clip_wroom"
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
