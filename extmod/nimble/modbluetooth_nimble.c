@@ -40,7 +40,6 @@
 #include "nimble/ble.h"
 #include "nimble/nimble_port.h"
 #include "services/gap/ble_svc_gap.h"
-#include "services/gatt/ble_svc_gatt.h"
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 // We need the definition of "struct ble_l2cap_chan".
@@ -643,12 +642,11 @@ int mp_bluetooth_init(void) {
 
     DEBUG_printf("mp_bluetooth_init: starting services\n");
 
-    // By default, just register the default gap/gatt service.
+    // By default, just register the default gap service.
     ble_svc_gap_init();
-    ble_svc_gatt_init();
-    // The preceeding two calls allocate service definitions on the heap,
-    // then we must now call gatts_start to register those services
-    // and free the heap memory.
+    // The preceeding call allocates the service definition on the heap,
+    // we must now call gatts_start to register the service and free 
+    // the heap memory.
     // Otherwise it will be realloc'ed on the next stack startup.
     ble_gatts_start();
 
@@ -908,9 +906,8 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     // Reset the gatt characteristic value db.
     mp_bluetooth_gatts_db_reset(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
-    // By default, just register the default gap/gatt service.
+    // By default, just register the default gap service.
     ble_svc_gap_init();
-    ble_svc_gatt_init();
 
     // Unref any previous service definitions.
     for (size_t i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
