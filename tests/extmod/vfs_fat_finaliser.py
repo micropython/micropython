@@ -56,6 +56,13 @@ micropython.heap_unlock()
 # Here we test that the finaliser is actually called during a garbage collection.
 import gc
 
+# Do a large number of single-block allocations to move the GC head forwards,
+# ensuring that the files are allocated from never-before-used blocks and
+# therefore couldn't possibly have any references to them left behind on
+# the stack.
+for i in range(1024):
+    []
+
 N = 4
 for i in range(N):
     n = "x%d" % i
