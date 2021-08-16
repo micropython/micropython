@@ -301,37 +301,50 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
             value);
 
         // add all 4 surrounding points to the list to check
-        mp_obj_t above_point[] = {
-            tuple_items[0],
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) - 1)
-        };
-        mp_obj_list_append(
-            fill_area,
-            mp_obj_new_tuple(2, above_point));
 
-        mp_obj_t left_point[] = {
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) - 1),
-            tuple_items[1]
-        };
-        mp_obj_list_append(
-            fill_area,
-            mp_obj_new_tuple(2, left_point));
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[1]) - 1 >= 0) {
+            mp_obj_t above_point[] = {
+                tuple_items[0],
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) - 1)
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, above_point));
+        }
 
-        mp_obj_t right_point[] = {
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) + 1),
-            tuple_items[1]
-        };
-        mp_obj_list_append(
-            fill_area,
-            mp_obj_new_tuple(2, right_point));
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[0]) - 1 >= 0) {
+            mp_obj_t left_point[] = {
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) - 1),
+                tuple_items[1]
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, left_point));
+        }
 
-        mp_obj_t below_point[] = {
-            tuple_items[0],
-            MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) + 1)
-        };
-        mp_obj_list_append(
-            fill_area,
-            mp_obj_new_tuple(2, below_point));
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[0]) + 1 < destination->width) {
+            mp_obj_t right_point[] = {
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) + 1),
+                tuple_items[1]
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, right_point));
+        }
+
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[1]) + 1 < destination->height) {
+            mp_obj_t below_point[] = {
+                tuple_items[0],
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) + 1)
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, below_point));
+        }
 
         mp_obj_list_get(fill_area, &list_length, &fill_points);
     }
