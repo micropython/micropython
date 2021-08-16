@@ -49,6 +49,10 @@
 #define GPIO_PULL_UP   (2)
 #define GPIO_PULL_HOLD (4)
 
+#define GPIO_LOW_POWER (GPIO_DRIVE_CAP_0)
+#define GPIO_MED_POWER (GPIO_DRIVE_CAP_2)
+#define GPIO_HIGH_POWER (GPIO_DRIVE_CAP_3)
+
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     gpio_num_t id;
@@ -226,13 +230,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "Pin(%u)", self->id);
 }
 
-// pin.init(mode, pull=None, *, value)
+// pin.init(mode, pull=None, *, value, drive=None)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_pull, ARG_value };
+    enum { ARG_mode, ARG_pull, ARG_value, ARG_drive };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none}},
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_drive, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
     };
 
     // parse args
@@ -260,6 +265,14 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // set initial value (do this before configuring mode/pull)
     if (args[ARG_value].u_obj != MP_OBJ_NULL) {
         gpio_set_level(self->id, mp_obj_is_true(args[ARG_value].u_obj));
+    }
+
+    // configure drive strength
+    if (args[ARG_drive].u_obj != MP_OBJ_NEW_SMALL_INT(-1)) {
+        if (args[ARG_drive].u_obj != mp_const_none) {
+            int drive = mp_obj_get_int(args[ARG_drive].u_obj);
+            gpio_set_drive_capability(self->id, drive);
+        }
     }
 
     // configure mode
@@ -444,6 +457,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(GPIO_PULL_HOLD) },
+    { MP_ROM_QSTR(MP_QSTR_LOW_POWER), MP_ROM_INT(GPIO_LOW_POWER) },
+    { MP_ROM_QSTR(MP_QSTR_MED_POWER), MP_ROM_INT(GPIO_MED_POWER) },
+    { MP_ROM_QSTR(MP_QSTR_HIGH_POWER), MP_ROM_INT(GPIO_HIGH_POWER) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
