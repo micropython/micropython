@@ -345,6 +345,12 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
+    if (x < 0 || x >= destination->width) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
+    if (y < 0 || y >= destination->height) {
+        mp_raise_ValueError(translate("out of range of target"));
+    }
 
     common_hal_bitmaptools_boundary_fill(destination, x, y, value, background_value);
 
