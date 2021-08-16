@@ -346,7 +346,9 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
 
             if (offset > 0) {
                 // wait for previously queued transaction
+                MP_THREAD_GIL_EXIT();
                 spi_device_get_trans_result(self->spi, &result, portMAX_DELAY);
+                MP_THREAD_GIL_ENTER();
             }
 
             // doesn't need ceil(); loop ends when bits_remaining is 0
@@ -354,7 +356,9 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
         }
 
         // wait for last transaction
+        MP_THREAD_GIL_EXIT();
         spi_device_get_trans_result(self->spi, &result, portMAX_DELAY);
+        MP_THREAD_GIL_ENTER();
         spi_device_release_bus(self->spi);
     }
 }
