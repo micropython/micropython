@@ -327,7 +327,7 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
