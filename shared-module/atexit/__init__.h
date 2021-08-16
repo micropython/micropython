@@ -28,6 +28,12 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H
 
 #include "py/obj.h"
+#include "lib/utils/pyexec.h"
+
+typedef struct _atexit_callback_t {
+    size_t n_pos, n_kw;
+    mp_obj_t func, *args;
+} atexit_callback_t;
 
 extern void atexit_reset(void);
 extern void atexit_gc_collect(void);
@@ -35,6 +41,6 @@ extern void atexit_gc_collect(void);
 extern void shared_module_atexit_register(mp_obj_t *func,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 extern void shared_module_atexit_unregister(const mp_obj_t *func);
-extern void shared_module_atexit_execute(void);
+extern void shared_module_atexit_execute(pyexec_result_t *result);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H

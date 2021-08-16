@@ -28,11 +28,6 @@
 #include "py/runtime.h"
 #include "shared-module/atexit/__init__.h"
 
-typedef struct _atexit_callback_t {
-    size_t n_pos, n_kw;
-    mp_obj_t func, *args;
-} atexit_callback_t;
-
 static size_t callback_len = 0;
 static atexit_callback_t *callback = NULL;
 
@@ -79,11 +74,18 @@ void shared_module_atexit_unregister(const mp_obj_t *func) {
     }
 }
 
-void shared_module_atexit_execute(void) {
+void shared_module_atexit_execute(pyexec_result_t *result) {
     if (callback) {
         for (size_t i = callback_len; i-- > 0;) {
             if (callback[i].func != mp_const_none) {
-                mp_call_function_n_kw(callback[i].func, callback[i].n_pos, callback[i].n_kw, callback[i].args);
+                if (result != NULL) {
+                    pyexec_result_t res;
+                    if (pyexec_exit_handler(&callback[i], &res) == PYEXEC_DEEP_SLEEP) {
+                        *result = res;
+                    }
+                } else {
+                    pyexec_exit_handler(&callback[i], NULL);
+                }
             }
         }
     }
