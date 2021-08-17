@@ -10,4 +10,6 @@ INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
 
-CIRCUITPY_GETPASS = 0
+# There are many pin definitions on this board; it doesn't quite fit on very large translations.
+# So remove what might be least likely module to be used.
+CIRCUITPY_RAINBOWIO = 0

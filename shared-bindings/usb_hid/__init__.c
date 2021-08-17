@@ -71,7 +71,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|
 //|     If you enable too many devices at once, you will run out of USB endpoints.
 //|     The number of available endpoints varies by microcontroller.
-//|     CircuitPython will go into safe mode after running boot.py to inform you if
+//|     CircuitPython will go into safe mode after running ``boot.py`` to inform you if
 //|     not enough endpoints are available.
 //|     """
 //|     ...
