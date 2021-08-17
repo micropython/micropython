@@ -280,8 +280,11 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
     size_t id_idx;
     // Find device with this report id, and get the report id index.
     if (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
-        memcpy(buffer, hid_device->in_report_buffers[id_idx], reqlen);
-        return reqlen;
+        // Make sure buffer exists before trying to copy into it.
+        if (hid_device->in_report_buffers[id_idx]) {
+            memcpy(buffer, hid_device->in_report_buffers[id_idx], reqlen);
+            return reqlen;
+        }
     }
     return 0;
 }
@@ -302,7 +305,9 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
     // Find device with this report id, and get the report id index.
     if (usb_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
         // If a report of the correct size has been read, save it in the proper OUT report buffer.
-        if (hid_device && hid_device->out_report_lengths[id_idx] >= bufsize) {
+        if (hid_device &&
+            hid_device->out_report_buffers[id_idx] &&
+            hid_device->out_report_lengths[id_idx] >= bufsize) {
             memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
         }
     }
