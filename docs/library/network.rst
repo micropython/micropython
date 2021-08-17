@@ -27,7 +27,7 @@ For example::
     print(nic.ifconfig())
 
     # now use socket as usual
-    import socket as socket
+    import socket
     addr = socket.getaddrinfo('micropython.org', 80)[0][-1]
     s = socket.socket()
     s.connect(addr)

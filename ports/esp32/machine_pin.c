@@ -49,6 +49,12 @@
 #define GPIO_PULL_UP   (2)
 #define GPIO_PULL_HOLD (4)
 
+#if CONFIG_IDF_TARGET_ESP32
+#define GPIO_FIRST_NON_OUTPUT (34)
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define GPIO_FIRST_NON_OUTPUT (46)
+#endif
+
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     gpio_num_t id;
@@ -265,11 +271,12 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
-        if (self->id >= 34 && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
+        #ifdef GPIO_FIRST_NON_OUTPUT
+        if (self->id >= GPIO_FIRST_NON_OUTPUT && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
-        } else {
-            gpio_set_direction(self->id, pin_io_mode);
         }
+        #endif
+        gpio_set_direction(self->id, pin_io_mode);
     }
 
     // configure pull

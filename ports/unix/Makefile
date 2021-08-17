@@ -290,6 +290,17 @@ else
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc'
 endif
 
+ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)
+# Force disable error text compression when compiling for ARM as the compiler
+# cannot optimise out the giant strcmp list generated for MP_MATCH_COMPRESSED.
+# Checked on:
+# arm-linux-gnueabi-gcc (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 7.5.0
+# arm-linux-gnueabi-gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
+# See https://github.com/micropython/micropython/pull/7659 for details.
+$(info Detected arm-linux-gnueabi-gcc. Disabling error message compression.)
+MICROPY_ROM_TEXT_COMPRESSION = 0
+endif
+
 include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
