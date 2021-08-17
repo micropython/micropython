@@ -66,6 +66,14 @@ msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
 
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q and %q contain duplicate objects"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q contains duplicate pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
 msgstr ""
@@ -1996,10 +2004,6 @@ msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Row entry must be digitalio.DigitalInOut"
-msgstr ""
-
-#: shared-bindings/keypad/KeyMatrix.c
-msgid "Row or Column pin duplicated"
 msgstr ""
 
 #: main.c

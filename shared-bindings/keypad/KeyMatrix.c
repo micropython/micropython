@@ -90,6 +90,10 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     mcu_pin_obj_t *row_pins_array[num_row_pins];
     mcu_pin_obj_t *column_pins_array[num_column_pins];
 
+    validate_no_duplicate_pins(row_pins, MP_QSTR_row_pins);
+    validate_no_duplicate_pins(column_pins, MP_QSTR_column_pins);
+    validate_no_duplicate_pins_2(row_pins, column_pins, MP_QSTR_row_pins, MP_QSTR_column_pins);
+
     for (size_t row = 0; row < num_row_pins; row++) {
         mcu_pin_obj_t *pin =
             validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(row), MP_OBJ_SENTINEL));
@@ -100,28 +104,6 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
         mcu_pin_obj_t *pin =
             validate_obj_is_free_pin(mp_obj_subscr(column_pins, MP_OBJ_NEW_SMALL_INT(column), MP_OBJ_SENTINEL));
         column_pins_array[column] = pin;
-    }
-
-    for (size_t row = 0; row < num_row_pins; row++) {
-        for (size_t row2 = row + 1; row2 < num_row_pins; row2++) {
-            if (row_pins_array[row] == row_pins_array[row2]) {
-                mp_raise_ValueError(translate("Row or Column pin duplicated"));
-            }
-        }
-
-        for (size_t column = 0; column < num_column_pins; column++) {
-            if (row_pins_array[row] == column_pins_array[column]) {
-                mp_raise_ValueError(translate("Row or Column pin duplicated"));
-            }
-        }
-    }
-
-    for (size_t column = 0; column < num_column_pins; column++) {
-        for (size_t column2 = column + 1; column2 < num_column_pins; column2++) {
-            if (column_pins_array[column] == column_pins_array[column2]) {
-                mp_raise_ValueError(translate("Row or Column pin duplicated"));
-            }
-        }
     }
 
     common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_column_pins, column_pins_array, args[ARG_columns_to_anodes].u_bool, interval, max_events);
