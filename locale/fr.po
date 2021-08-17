@@ -102,6 +102,10 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 msgid "%q length must be %q"
 msgstr "La longueur de %q doit être de %q"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q length must be >= 1"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "La liste %q doit être une liste"
@@ -113,14 +117,6 @@ msgstr ""
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 0-255"
-msgstr "%q doit être compris entre 0 et 255"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 1-255"
-msgstr "%q doit être compris entre 1 et 255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -137,10 +133,6 @@ msgstr "%q doit être >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q doit être >= 1"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -178,6 +170,10 @@ msgstr "%q doit être un chiffre entier (int)"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prend %d paramètres positionnels mais %d ont été donnés"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q, %q, and %q must all be the same length"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -1277,7 +1273,7 @@ msgstr "Erreur de définition interne"
 msgid "Internal error #%d"
 msgstr "Erreur interne #%d"
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
 msgid "Invalid %q"
 msgstr "%q invalide"
 
@@ -1561,6 +1557,11 @@ msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "More than %d report ids not supported"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -4545,6 +4546,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q must be 0-255"
+#~ msgstr "%q doit être compris entre 0 et 255"
+
+#~ msgid "%q must be 1-255"
+#~ msgstr "%q doit être compris entre 1 et 255"
 
 #~ msgid "no available NIC"
 #~ msgstr "adapteur réseau non disponible"
