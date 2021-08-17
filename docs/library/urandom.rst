@@ -4,14 +4,11 @@
 .. module:: urandom
    :synopsis: random numbers
 
-This module implements pseudo-random number generator.
+This module implements pseudo-random number generator which is a deterministic output.
 
 Given below are the methods that this module provides.
 
-  .. method:: urandom 
-
-    Returns an n-bit pseudo-random number(output is determinsitic).
-
+ 
   .. method:: urandom.getrandbits(n)
 
     Returns an integer with 'n' random bits (1<=n<=32)
