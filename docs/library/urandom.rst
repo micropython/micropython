@@ -4,7 +4,7 @@
 .. module:: urandom
    :synopsis: random numbers
 
-This module implements pseudo-random number generator which is a deterministic output.
+This module implements pseudo-random number generator.
 
 Given below are the methods that this module provides.
 
