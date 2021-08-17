@@ -11,12 +11,12 @@ Given below are the methods that this module provides.
  
   .. method:: urandom.getrandbits(n)
 
-    Returns an integer with 'n' random bits (1<=n<=32)
+    Returns an integer with 'n' random bits (1<=n<=32).
     
   .. method:: urandom.choice(sequence)
    
     Chooses multiple random items from a sequence (list, set or any
-    data structure)
+    data structure).
     
   .. method:: urandom.seed(n=None, /)
   
@@ -30,25 +30,26 @@ Given below are the methods that this module provides.
     
   .. method:: urandom.randrange(stop)
   
-    Returns a random number from the range [0, stop)
+    Returns a random number from the range [0, stop).
 
   .. method:: urandom.randrange(start, stop)
     
-    Returns a random number from range [start, stop)
+    Returns a random number from range [start, stop).
 
   .. method:: urandom.randrange(start, stop[, step])
   
     Returns a random number from range [start,stop] after skipping *step*
-    numbers                    
+    numbers. For instance calling urandom.randrange(1, 10, 2) will return 
+    odd numbers between 1 and 9 inclusive.
 
   .. method:: urandom.random()
   
-    Returns the next floating point number in the range [0.0, 1.0)
+    Returns the next floating point number in the range [0.0, 1.0).
 
   .. method:: urandom.uniform(a, b)
   
     Returns a random floating point number N such that a<=N<=b for a<=b and
-    b<=N<=a for b<a  
+    b<=N<=a for b<a.  
     
 .. note:: 
 
