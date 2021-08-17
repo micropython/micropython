@@ -15,7 +15,7 @@ Given below are the methods that this module provides.
     
   .. method:: urandom.choice(sequence)
    
-    chooses multiple random items from a sequence (list, set or any
+    Chooses multiple random items from a sequence (list, set or any
     data structure)
     
   .. method:: urandom.seed(n=None, /)
@@ -24,17 +24,17 @@ Given below are the methods that this module provides.
     works if :MICROPY_PY_URANDOM_SEED_INIT_FUNC: is defined in the port, 
     otherwise raises ValueError.
 
-  .. method:: urandom.randint(a,b)
+  .. method:: urandom.randint(a, b)
     
-    Returns a random interger in the range [a,b].
+    Returns a random interger in the range [a, b].
     
   .. method:: urandom.randrange(stop)
   
-    Returns a random number from the range [0,stop)
+    Returns a random number from the range [0, stop)
 
-  .. method:: urandom.randrange(start,stop)
+  .. method:: urandom.randrange(start, stop)
     
-    Returns a random number from range [start,stop)
+    Returns a random number from range [start, stop)
 
   .. method:: urandom.randrange(start, stop[, step])
   
@@ -43,9 +43,9 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.random()
   
-    Returns the next floating point number in the range [0.0,1.0)
+    Returns the next floating point number in the range [0.0, 1.0)
 
-  .. method:: urandom.uniform(a,b)
+  .. method:: urandom.uniform(a, b)
   
     Returns a random floating point number N such that a<=N<=b for a<=b and
     b<=N<=a for b<a  
