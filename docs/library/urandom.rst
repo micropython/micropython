@@ -4,9 +4,7 @@
 .. module:: urandom
    :synopsis: random numbers
 
-This module implements pseudo-random number generator. The functions that
-these module provides are bond methods of a hidden number of :random.Random:
-class.   
+This module implements pseudo-random number generator.
 
 Given below are the methods that this module provides.
 
