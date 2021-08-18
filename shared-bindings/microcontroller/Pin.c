@@ -107,7 +107,7 @@ mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj) {
 
 // Validate every element in the list is a unique pin
 void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name) {
-    mp_int_t num_pins = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
+    const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
 
     for (size_t pin_cnt = 0; pin_cnt < num_pins; pin_cnt++) {
         mp_obj_t pin1_obj = mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(pin_cnt), MP_OBJ_SENTINEL);
@@ -124,8 +124,8 @@ void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name) {
 }
 
 void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, qstr arg_name2) {
-    const size_t num_pins_1 = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq1));
-    const size_t num_pins_2 = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq2));
+    const size_t num_pins_1 = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq1));
+    const size_t num_pins_2 = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq2));
 
     for (size_t pin_cnt_1 = 0; pin_cnt_1 < num_pins_1; pin_cnt_1++) {
         mp_obj_t pin1_obj = mp_obj_subscr(seq1, MP_OBJ_NEW_SMALL_INT(pin_cnt_1), MP_OBJ_SENTINEL);
@@ -133,7 +133,8 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
 
         for (size_t pin_cnt_2 = 0; pin_cnt_2 < num_pins_2; pin_cnt_2++) {
             mp_obj_t pin2_obj = mp_obj_subscr(seq2, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
-            if (pin1_obj == pin2_obj) {
+            mcu_pin_obj_t *pin2 = validate_obj_is_pin(pin2_obj);
+            if (pin1 == pin2) {
                 mp_raise_TypeError_varg(translate("%q and %q contain duplicate objects"), arg_name1, arg_name2);
             }
         }
