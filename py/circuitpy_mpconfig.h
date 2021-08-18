@@ -139,7 +139,6 @@
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
-#define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
 #define MICROPY_FATFS_LFN_UNICODE      2  // UTF-8
 
 // Only enable this if you really need it. It allocates a byte cache of this size.
@@ -211,6 +210,10 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+
+#ifndef MICROPY_FATFS_EXFAT
+#define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
+#endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
