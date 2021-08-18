@@ -504,6 +504,20 @@
 #define MICROPY_OPT_LOAD_ATTR_FAST_PATH (0)
 #endif
 
+// Use extra RAM to cache map lookups by remembering the likely location of
+// the index. Avoids the hash computation on unordered maps, and avoids the
+// linear search on ordered (especially in-ROM) maps. Can provide a +10-15%
+// performance improvement on benchmarks involving lots of attribute access
+// or dictionary lookup.
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
+#endif
+
+// How much RAM (in bytes) to use for the map lookup cache.
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
+#endif
+
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE

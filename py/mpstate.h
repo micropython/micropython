@@ -231,6 +231,11 @@ typedef struct _mp_state_vm_t {
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
     #endif
+
+    #if MICROPY_OPT_MAP_LOOKUP_CACHE
+    // See mp_map_lookup.
+    uint8_t map_lookup_cache[MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE];
+    #endif
 } mp_state_vm_t;
 
 // This structure holds state that is specific to a given thread.
