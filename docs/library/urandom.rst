@@ -15,8 +15,8 @@ Given below are the methods that this module provides.
     
   .. method:: urandom.choice(sequence)
    
-    Chooses multiple random items from a sequence (list, set or any
-    data structure).
+    Chooses multiple random items from a *sequence* (*list* , *set* or 
+    any data structure).
     
   .. method:: urandom.seed(n=None, /)
   
@@ -48,7 +48,7 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.uniform(a, b)
   
-    Returns a random floating point number N such that a<=N<=b for a<=b and
+    Returns a random floating point number N such that a<=N<=b for a<=b and 
     b<=N<=a for b<a.  
     
 .. note:: 
