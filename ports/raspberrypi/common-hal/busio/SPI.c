@@ -263,8 +263,8 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
-    uint32_t data_out = write_value << 24 | write_value << 16 | write_value << 8 | write_value;
-    return _transfer(self, (const uint8_t *)&data_out, MIN(4, len), data, len);
+    memset(data, write_value, len);
+    return _transfer(self, data, len, data, len);
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
