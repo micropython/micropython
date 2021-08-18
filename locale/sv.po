@@ -99,6 +99,10 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 msgid "%q length must be %q"
 msgstr "längden på %q måste vara %q"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q length must be >= 1"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "%q-listan måste vara en lista"
@@ -110,14 +114,6 @@ msgstr "%q måste vara <=%d"
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 0-255"
-msgstr "%q måste vara 0-255"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 1-255"
-msgstr "%q måste vara 1-255"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -134,10 +130,6 @@ msgstr "%q måste vara >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q måste vara >= 1"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -175,6 +167,10 @@ msgstr "%q ska vara en int"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "% q () tar% d positionsargument men% d gavs"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q, %q, and %q must all be the same length"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -1253,7 +1249,7 @@ msgstr "Internt define-fel"
 msgid "Internal error #%d"
 msgstr "Internt fel #%d"
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
 msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
@@ -1537,6 +1533,11 @@ msgstr "Saknad first_set_pin. Instruktion %d sätter pinnar"
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "More than %d report ids not supported"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -4503,6 +4504,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q must be 0-255"
+#~ msgstr "%q måste vara 0-255"
+
+#~ msgid "%q must be 1-255"
+#~ msgstr "%q måste vara 1-255"
+
+#~ msgid "%q must be None or between 1 and len(report_descriptor)-1"
+#~ msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
 
 #~ msgid "limit should be an int"
 #~ msgstr "limit måste vara en int"

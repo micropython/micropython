@@ -94,6 +94,10 @@ msgstr "Indexy %q musí být celá čísla, nikoli %s"
 msgid "%q length must be %q"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q length must be >= 1"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr "Seznam %q musí být seznam"
@@ -104,14 +108,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 0-255"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 1-255"
 msgstr ""
 
 #: py/argcheck.c
@@ -129,10 +125,6 @@ msgstr "%q musí být >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q musí být > = 1"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -170,6 +162,10 @@ msgstr "%q by měl být int"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() vyžaduje %d pozičních argumentů, ale %d jich bylo zadáno"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q, %q, and %q must all be the same length"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -1237,7 +1233,7 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
 msgid "Invalid %q"
 msgstr ""
 
@@ -1519,6 +1515,11 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "More than %d report ids not supported"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
