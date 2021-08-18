@@ -22,7 +22,9 @@ Given below are the methods that this module provides.
   
     Initialises random number generator module with n. The None case only 
     works if :MICROPY_PY_URANDOM_SEED_INIT_FUNC: is defined in the port, 
-    otherwise raises ValueError.
+    otherwise raises ValueError. When no argument (or None) is passed in it
+    will (if supported by the port) initialise the PRNG with a true random 
+    number (usually a hardware generated random number).
 
   .. method:: urandom.randint(a, b)
     
