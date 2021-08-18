@@ -8,11 +8,24 @@ This module implements pseudo-random number generator.
 
 Given below are the methods that this module provides.
 
+Function for integers
+---------------------
  
   .. method:: urandom.getrandbits(n)
 
     Returns an integer with 'n' random bits (1<=n<=32).
     
+  .. method:: urandom.randint(a, b)
+    
+    Returns a random integer in the range [a, b].
+    
+  .. method:: urandom.randrange(stop)
+  
+    Returns an integer from the range [0, stop).
+
+Other Functions
+---------------
+  
   .. method:: urandom.choice(sequence)
    
     Chooses multiple random items from a *sequence* (*list* , *set* or 
@@ -25,14 +38,6 @@ Given below are the methods that this module provides.
     otherwise raises ValueError. When no argument (or None) is passed in it
     will (if supported by the port) initialise the PRNG with a true random 
     number (usually a hardware generated random number).
-
-  .. method:: urandom.randint(a, b)
-    
-    Returns a random integer in the range [a, b].
-    
-  .. method:: urandom.randrange(stop)
-  
-    Returns a random number from the range [0, stop).
 
   .. method:: urandom.randrange(start, stop)
     
