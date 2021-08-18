@@ -878,6 +878,9 @@ void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
         lex->reader.close(lex->reader.data);
         vstr_clear(&lex->vstr);
+        #if MICROPY_PY_FSTRINGS
+        vstr_clear(&lex->fstring_args);
+        #endif
         m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
         m_del_obj(mp_lexer_t, lex);
     }
