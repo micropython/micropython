@@ -26,7 +26,7 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.randint(a, b)
     
-    Returns a random interger in the range [a, b].
+    Returns a random integer in the range [a, b].
     
   .. method:: urandom.randrange(stop)
   
