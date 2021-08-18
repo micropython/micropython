@@ -44,7 +44,7 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.random()
   
-    Returns the next floating point number in the range [0.0, 1.0).
+    Returns a floating point number in the range [0.0, 1.0).
 
   .. method:: urandom.uniform(a, b)
   
