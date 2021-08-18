@@ -198,7 +198,6 @@ def install_pkg(pkg_spec, install_path):
         f1.close()
     del f3
     del f2
-    del idx
     gc.collect()
     return meta
 
