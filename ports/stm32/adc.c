@@ -134,7 +134,9 @@
     defined(STM32F407xx) || defined(STM32F417xx) || \
     defined(STM32F401xC) || defined(STM32F401xE)
 #define VBAT_DIV (2)
-#elif defined(STM32F411xE) || defined(STM32F412Zx) || \
+#elif defined(STM32F411xE) || \
+    defined(STM32F412Cx) || defined(STM32F412Rx) || \
+    defined(STM32F412Vx) || defined(STM32F412Zx) || \
     defined(STM32F413xx) || defined(STM32F427xx) || \
     defined(STM32F429xx) || defined(STM32F437xx) || \
     defined(STM32F439xx) || defined(STM32F446xx) || \

@@ -24,6 +24,9 @@ mcu_support_plli2s = [
     "stm32f401xe",
     "stm32f407xx",
     "stm32f411xe",
+    "stm32f412cx",
+    "stm32f412rx",
+    "stm32f412vx",
     "stm32f412zx",
     "stm32f413xx",
     "stm32f427xx",
@@ -163,7 +166,7 @@ def main():
 
     if mcu_series in mcu_support_plli2s:
         if len(argv) not in (1, 2):
-            print("usage: pllvalues.py [-c] [-m <mcu_series>] <hse in MHz> <pllm in MHz>")
+            print("usage: plli2svalues.py [-c] [-m <mcu_series>] <hse in MHz> <pllm in MHz>")
             sys.exit(1)
 
         if argv[0].startswith("hse:"):
