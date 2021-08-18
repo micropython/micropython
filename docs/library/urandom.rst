@@ -38,8 +38,8 @@ Given below are the methods that this module provides.
 
   .. method:: urandom.randrange(start, stop[, step])
   
-    Returns a random number from range [start,stop] after skipping *step*
-    numbers. For instance calling urandom.randrange(1, 10, 2) will return 
+    Returns a random number from range [start,stop] in steps of step. 
+    For instance calling urandom.randrange(1, 10, 2) will return 
     odd numbers between 1 and 9 inclusive.
 
   .. method:: urandom.random()
