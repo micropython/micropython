@@ -31,6 +31,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
+#include "extmod/machine_bitstream.h"
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
@@ -45,7 +46,7 @@ STATIC mp_obj_t machine_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(CLOCK_GetFreq(kCLOCK_CpuClk));
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 
@@ -95,6 +96,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    #if MICROPY_PY_MACHINE_BITSTREAM
+    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

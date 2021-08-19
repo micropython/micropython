@@ -150,6 +150,7 @@ SRC_C += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_bitstream.c \
 	mimxrt_flash.c \
 	modutime.c \
 	modmachine.c \
