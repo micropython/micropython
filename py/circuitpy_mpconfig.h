@@ -923,7 +923,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     PS2IO_MODULE \
     PULSEIO_MODULE \
     PWMIO_MODULE \
-    QRIO_MODULE \
     RAINBOWIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
