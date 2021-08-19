@@ -414,7 +414,26 @@ dispatch_loop:
                     FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    SET_TOP(mp_load_attr(TOP(), qst));
+                    mp_obj_t top = TOP();
+                    mp_obj_t obj;
+                    #if MICROPY_OPT_LOAD_ATTR_FAST_PATH
+                    // For the specific case of an instance type, it implements .attr
+                    // and forwards to its members map. Attribute lookups on instance
+                    // types are extremely common, so avoid all the other checks and
+                    // calls that normally happen first.
+                    mp_map_elem_t *elem = NULL;
+                    if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
+                        mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
+                        elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                    }
+                    if (elem) {
+                        obj = elem->value;
+                    } else
+                    #endif
+                    {
+                        obj = mp_load_attr(top, qst);
+                    }
+                    SET_TOP(obj);
                     DISPATCH();
                 }
                 #else
