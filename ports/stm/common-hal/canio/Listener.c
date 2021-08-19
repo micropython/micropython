@@ -276,7 +276,7 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
             }
             RUN_BACKGROUND_TASKS;
             // Allow user to break out of a timeout with a KeyboardInterrupt.
-            if ( mp_hal_is_interrupted() ) {
+            if (mp_hal_is_interrupted()) {
                 return NULL;
             }
         } while (!common_hal_canio_listener_in_waiting(self));
