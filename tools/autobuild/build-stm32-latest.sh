@@ -8,7 +8,7 @@ function do_build() {
     shift
     echo "building $descr $board"
     build_dir=/tmp/stm-build-$board
-    $MICROPY_AUTOBUILD_MAKE -B $@ BOARD=$board BUILD=$build_dir || exit 1
+    $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BUILD=$build_dir || exit 1
     mv $build_dir/firmware.dfu $dest_dir/$descr$fw_tag.dfu
     rm -rf $build_dir
 }
