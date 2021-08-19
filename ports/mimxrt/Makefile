@@ -152,6 +152,7 @@ SRC_C += \
 	fatfs_port.c \
 	led.c \
 	machine_adc.c \
+	machine_bitstream.c \
 	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
