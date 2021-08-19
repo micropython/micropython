@@ -31,6 +31,33 @@ Example:-
 
         # read PA3
         value = (stm.mem32[stm.GPIOA + stm.GPIO_IDR] >> 3) & 1
+        
+There are some constants for registers which are generated from a file after reading the
+alternate function table for the microcontroller unit that is being compiled for. Examples 
+of some constants include:-
+* GPIOA
+* GPIOB
+* GPIOC
+* GPIOD
+* GPIOE
+* GPIOF
+* GPIOG
+* GPIOH
+* GPIOI
+* GPIOJ
+* GPIOK
+* GPIO_AFR0
+* GPIO_AFR1
+* GPIO_BSRR
+* GPIO_BSRRH
+* GPIO_BSRRL
+* GPIO_IDR
+* GPIO_LCKR
+* GPIO_MODER
+* GPIO_ODR
+* GPIO_OSPEEDR
+* GPIO_OTYPER
+* GPIO_PUPDR
     
 We also have the following functions:-
 
