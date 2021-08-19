@@ -7,6 +7,7 @@
 
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_MATH             (0)
