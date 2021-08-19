@@ -25,13 +25,13 @@ memory.
 Example:-
 
 ..code-block:: python3
+        
+        # set PA2 high
+        stm.mem32[stm.GPIOA + stm.GPIO_BSRR] = 1 << 2
 
-    stm.mem32[stm.TIM3 + stm.TIM_CR1] 
-    #return the contents of Timer 3's Control Register 1 
-    #(yes Timer 3 - one of the ones that uPy won't let you access with pyb.Timer
-    stm.mem32[stm.TIM3 + stm.TIM_CR1] = value
-    #yes ... set the value of Timer 3's Control Register 1
-
+        # read PA3
+        value = (stm.mem32[stm.GPIOA + stm.GPIO_IDR] >> 3) & 1
+    
 We also have the following functions:-
 
 * rfcore_status() - Returns the status as an integer (the first word of the device info table)
