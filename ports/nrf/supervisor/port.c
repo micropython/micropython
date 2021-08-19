@@ -25,8 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include "supervisor/port.h"
+
+#include <stdint.h>
+#include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 
 #include "nrfx/hal/nrf_clock.h"
@@ -38,6 +40,8 @@
 #include "nrf/clocks.h"
 #include "nrf/power.h"
 #include "nrf/timers.h"
+
+#include "nrf_nvic.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
@@ -360,7 +364,12 @@ void port_idle_until_interrupt(void) {
 
     sd_softdevice_is_enabled(&sd_enabled);
     if (sd_enabled) {
-        sd_app_evt_wait();
+        uint8_t is_nested_critical_region;
+        sd_nvic_critical_region_enter(&is_nested_critical_region);
+        if (!background_callback_pending()) {
+            sd_app_evt_wait();
+        }
+        sd_nvic_critical_region_exit(is_nested_critical_region);
     } else {
         // Call wait for interrupt ourselves if the SD isn't enabled.
         // Note that `wfi` should be called with interrupts disabled,
@@ -376,11 +385,7 @@ void port_idle_until_interrupt(void) {
         // function (whether or not SD is enabled)
         int nested = __get_PRIMASK();
         __disable_irq();
-        bool ok = true;
-        #if CIRCUITPY_USB
-        ok = !tud_task_event_ready();
-        #endif
-        if (ok) {
+        if (!background_callback_pending()) {
             __DSB();
             __WFI();
         }

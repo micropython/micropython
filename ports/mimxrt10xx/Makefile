@@ -81,11 +81,13 @@ CFLAGS += -Os -ftree-vrp -DNDEBUG -ffreestanding
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
 
 #Debugging/Optimization
+# Never set -fno-inline because we use inline to move small functions into routines that must be
+# in RAM. If inlining is disallowed, then we may end up calling a function in flash when we cannot.
 ifeq ($(DEBUG), 1)
   # You may want to disable -flto if it interferes with debugging.
   # CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+  CFLAGS += -fno-ipa-sra
 else
   #CFLAGS += -flto -flto-partition=none
 endif

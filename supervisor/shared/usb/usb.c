@@ -91,7 +91,7 @@ void usb_init(void) {
 
 // Set up USB defaults before any USB changes are made in boot.py
 void usb_set_defaults(void) {
-    #if CIRCUITPY_STORAGE
+    #if CIRCUITPY_STORAGE && CIRCUITPY_USB_MSC
     storage_usb_set_defaults();
     #endif
 
