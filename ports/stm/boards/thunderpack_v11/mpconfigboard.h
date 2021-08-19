@@ -51,3 +51,5 @@
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA         (&pin_PB07)
+
+#define MICROPY_FATFS_EXFAT 0
