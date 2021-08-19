@@ -32,5 +32,12 @@ Example:-
     stm.mem32[stm.TIM3 + stm.TIM_CR1] = value
     #yes ... set the value of Timer 3's Control Register 1
 
-rfcore_status, rfcore_fw_version, rfcore_sys_hci  
+We also have the following functions:-
+
+* rfcore_status() - Returns the status as an integer (the first word of the device info table)
+
+* rfcore_fw_version(id) -  Get the version of the firmware running on the second CPU. Pass                                id=0 to get the FUS version, and id=1 to get the WS version.                                    Returns a 5-tuple with the full version number.
+     
+*rfcore_sys_hci(ogf, ocf, data, timeout_ms=0) - execute a HCI command on the SYS channel.  
+                                                The execution is synchronous. Returns a bytes                                                   object with the result of the SYS command.
 
