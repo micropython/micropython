@@ -15,9 +15,10 @@ The full list of supported commands are:
 
 *  connect to the given device
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     $ mpremote <device-shortcut>       
+
 * connect to given device (device may be: list, auto, id:x, port:x
   or any valid device name/path)
   
@@ -30,11 +31,13 @@ The full list of supported commands are:
   ..code-block:: python3
   
     $ mpremote disconnect
+
 * mount local directory on device
 
   ..code-block:: python3
   
     $ mpremote mount <local-dir> 
+
 * evaluate and print the string
 
   ..code-block:: python3
@@ -46,6 +49,7 @@ The full list of supported commands are:
   ..code-block:: python3
 
     $ mpremote exec <string> 
+
 * run the given local script
 
   ..code-block:: python3
@@ -59,7 +63,9 @@ The full list of supported commands are:
   ..code-block:: python3
   
     mpremote fs <command> <args...>  
+
 * enter REPL
+  
   options:
       --capture <file>
       --inject-code <string>
