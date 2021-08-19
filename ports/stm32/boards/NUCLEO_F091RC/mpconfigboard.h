@@ -7,6 +7,7 @@
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (0)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
