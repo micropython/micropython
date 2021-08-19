@@ -5,10 +5,9 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 128K    /* sector 0, 128K */
-    FLASH_FS (r)    : ORIGIN = 0x08020000, LENGTH = 128K    /* sector 1, 128K */
-    FLASH_TEXT (rx) : ORIGIN = 0x08040000, LENGTH = 1792K   /* sectors 6*128 + 8*128 */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1536K   /* sectors (0-7) + (0-3) */
+    FLASH_APP  (rx) : ORIGIN = 0x08020000, LENGTH = 1408K   /* sectors (1-7) + (0-3) */
+    FLASH_FS (r)    : ORIGIN = 0x08180000, LENGTH = 512K    /* sectors         (4-7) */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
     RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K    /* AXI SRAM */
     RAM_D2 (xrw)    : ORIGIN = 0x30000000, LENGTH = 288K
@@ -28,6 +27,14 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
+
+/* Location of filesystem RAM cache */
+_ram_fs_cache_start = ORIGIN(DTCM);
+_ram_fs_cache_end = ORIGIN(DTCM) + LENGTH(DTCM);
+
+/* Location of filesystem flash storage */
+_flash_fs_start = ORIGIN(FLASH_FS);
+_flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
 /* Define output sections */
 SECTIONS
