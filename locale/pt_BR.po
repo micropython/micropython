@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-13 12:33+0000\n"
+"PO-Revision-Date: 2021-08-20 03:20+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -75,6 +75,14 @@ msgstr ""
 "%d pinos de endereço, %d pinos rgb e %d blocos indicam uma altura com %d, "
 "não %d"
 
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q and %q contain duplicate pins"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q contains duplicate pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
 msgstr "%q falha: %d"
@@ -102,7 +110,7 @@ msgstr "o comprimento %q deve ser %q"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
-msgstr ""
+msgstr "o comprimento %q deve ser >=1"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -171,7 +179,7 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "todos os %q, %q, e %q devem ter mesmo comprimento"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -1551,7 +1559,7 @@ msgstr "Falta o jmp_pin. A instrução %d salta no pino"
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "More than %d report ids not supported"
-msgstr ""
+msgstr "Mais de %d reportam ids não compatíveis"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."

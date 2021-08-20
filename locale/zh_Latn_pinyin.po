@@ -76,6 +76,14 @@ msgstr ""
 "%d de zhǐ yǐn jiǎo , %d rgb yǐn jiǎo hé %d qiē piàn biǎo shì %d de gāo dù, "
 "ér bù shì %d"
 
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q and %q contain duplicate pins"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q contains duplicate pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
 msgstr "%q Shībài: %d"

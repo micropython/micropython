@@ -77,6 +77,14 @@ msgstr ""
 "%d pines de dirección, %d pines rgb y %d tiles indican una altura de %d, y "
 "no de %d"
 
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q and %q contain duplicate pins"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q contains duplicate pins"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
 msgstr "%q fallo: %d"
