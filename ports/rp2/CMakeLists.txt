@@ -222,6 +222,13 @@ target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
 )
 
+if (MICROPY_HW_ENABLE_DOUBLE_TAP)
+# Enable double tap reset into bootrom.
+target_link_libraries(${MICROPY_TARGET}
+    pico_bootsel_via_double_reset
+)
+endif()
+
 # todo this is a bit brittle, but we want to move a few source files into RAM (which requires
 #  a linker script modification) until we explicitly add  macro calls around the function
 #  defs to move them into RAM.
