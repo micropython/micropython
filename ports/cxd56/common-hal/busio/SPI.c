@@ -132,7 +132,8 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value) {
-    SPI_EXCHANGE(self->spi_dev, NULL, data, len);
+    memset(data, write_value, len);
+    SPI_EXCHANGE(self->spi_dev, data, data, len);
 
     return true;
 }
