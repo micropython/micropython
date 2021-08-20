@@ -160,7 +160,7 @@ STATIC void mp_machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in,
 }
 
 STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso, ARG_cs };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -170,6 +170,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -197,6 +198,13 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
     self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
 
+    self->spi.cs.enabled = false;
+    self->spi.cs.pin = 0;
+    if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
+        self->spi.cs.enabled = true;
+        self->spi.cs.pin = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
+    }
+
     // configure bus
     mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
 
@@ -206,7 +214,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
 STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
 
-    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso };
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso, ARG_cs };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
@@ -214,6 +222,7 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
         { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -235,6 +244,10 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     }
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
         self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+    }
+    if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
+        self->spi.cs.enabled = true;
+        self->spi.cs.pin = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
     }
 
     // configure bus
