@@ -637,12 +637,7 @@ extern const struct _mp_obj_module_t pwmio_module;
 #define PWMIO_MODULE
 #endif
 
-#if CIRCUITPY_QRIO
-extern const struct _mp_obj_module_t qrio_module;
-#define QRIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_qrio), (mp_obj_t)&qrio_module },
-#else
-#define QRIO_MODULE
-#endif
+// CIRCUITPY_QRIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_RAINBOWIO
 extern const struct _mp_obj_module_t rainbowio_module;
@@ -930,7 +925,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     PS2IO_MODULE \
     PULSEIO_MODULE \
     PWMIO_MODULE \
-    QRIO_MODULE \
     RAINBOWIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
