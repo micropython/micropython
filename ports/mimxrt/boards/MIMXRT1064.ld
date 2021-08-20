@@ -1,14 +1,27 @@
 /* Memory configuration */
+#if BOARD_FLASH_RESERVED
+reserved_size = BOARD_FLASH_RESERVED;
+#endif
+
+#if BOARD_FLASH_TYPE==qspi_nor
 flash_start         = 0x60000000;
+#elif BOARD_FLASH_TYPE==hyperflash
+flash_start         = 0x60000000;
+#elif BOARD_FLASH_TYPE==internal
+flash_start         = 0x70000000;
+#else
+#error Unknown BOARD_FLASH_TYPE
+#endif
+flash_size          = BOARD_FLASH_SIZE;
 flash_end           = DEFINED(reserved_size) ? ((flash_start) + (flash_size - reserved_size)) : ((flash_start) + (flash_size));
 flash_config_start  = flash_start;
 flash_config_size   = 0x00001000;
-ivt_start           = 0x60001000;
+ivt_start           = flash_start + 0x00001000;
 ivt_size            = 0x00001000;
-interrupts_start    = 0x60002000;
+interrupts_start    = flash_start + 0x00002000;
 interrupts_size     = 0x00000400;
-text_start          = 0x60002400;
-vfs_start           = 0x60100000;
+text_start          = flash_start + 0x00002400;
+vfs_start           = flash_start + 0x00100000;
 text_size           = ((vfs_start) - (text_start));
 vfs_size            = ((flash_end) - (vfs_start));
 itcm_start          = 0x00000000;
