@@ -85,6 +85,8 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/tick.h"
 
+#include "tusb.h"
+
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
