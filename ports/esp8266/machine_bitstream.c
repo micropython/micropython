@@ -57,13 +57,11 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
             GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pin_mask);
             uint32_t start_ticks = mp_hal_ticks_cpu();
             uint32_t *t = &timing_ns[b >> 6 & 2];
-            uint32_t end_ticks = start_ticks + t[0];
             while (mp_hal_ticks_cpu() - start_ticks < t[0]) {
                 ;
             }
             GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pin_mask);
             b <<= 1;
-            end_ticks += t[1];
             while (mp_hal_ticks_cpu() - start_ticks < t[1]) {
                 ;
             }
