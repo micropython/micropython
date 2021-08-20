@@ -37,8 +37,11 @@ class NeoPixel:
         return tuple(self.buf[offset + self.ORDER[i]] for i in range(self.bpp))
 
     def fill(self, color):
-        for i in range(self.n):
-            self[i] = color
+        for i in range(self.bpp):
+            c = color[i]
+            b = self.buf
+            for j in range(self.ORDER[i], len(self.buf), self.bpp):
+                b[j] = c
 
     def write(self):
         bitstream(self.pin, _BITSTREAM_TYPE_HIGH_LOW, self.timing, self.buf)
