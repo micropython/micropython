@@ -26,6 +26,9 @@
 
 #include "drivers/bus/spi.h"
 
+#define CS_LOW(self) mp_hal_pin_write(self->cs.pin, 0)
+#define CS_HIGH(self) mp_hal_pin_write(self->cs.pin, 1)
+
 int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
     mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
 
@@ -35,6 +38,10 @@ int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
             mp_hal_pin_output(self->sck);
             mp_hal_pin_output(self->mosi);
             mp_hal_pin_input(self->miso);
+            if (self->cs.enabled) {
+                mp_hal_pin_output(self->cs.pin);
+                CS_HIGH(self);
+            }
             break;
 
         case MP_SPI_IOCTL_DEINIT:
@@ -47,6 +54,7 @@ int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
 void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
     uint32_t delay_half = self->delay_half;
+    bool manage_cs = (self->cs.enabled);
 
     // only MSB transfer is implemented
 
@@ -55,6 +63,9 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     // will run as fast as possible, limited only by CPU speed and GPIO time.
     #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
     if (delay_half == MICROPY_HW_SOFTSPI_MIN_DELAY) {
+        if (manage_cs) {
+            CS_LOW(self);
+        }
         for (size_t i = 0; i < len; ++i) {
             uint8_t data_out = src[i];
             uint8_t data_in = 0;
@@ -68,10 +79,16 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
                 dest[i] = data_in;
             }
         }
+        if (manage_cs) {
+            CS_HIGH(self);
+        }
         return;
     }
     #endif
 
+    if (manage_cs) {
+        CS_LOW(self);
+    }
     for (size_t i = 0; i < len; ++i) {
         uint8_t data_out = src[i];
         uint8_t data_in = 0;
@@ -96,6 +113,9 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
         if (dest != NULL) {
             dest[i] = data_in;
         }
+    }
+    if (manage_cs) {
+        CS_HIGH(self);
     }
 }
 

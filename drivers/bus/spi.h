@@ -38,6 +38,11 @@ typedef struct _mp_spi_proto_t {
     void (*transfer)(void *self, size_t len, const uint8_t *src, uint8_t *dest);
 } mp_spi_proto_t;
 
+typedef struct _mp_soft_spi_cs_obj_t {
+    bool enabled;
+    mp_hal_pin_obj_t pin;
+} mp_soft_spi_cs_obj_t;
+
 typedef struct _mp_soft_spi_obj_t {
     uint32_t delay_half; // microsecond delay for half SCK period
     uint8_t polarity;
@@ -45,6 +50,7 @@ typedef struct _mp_soft_spi_obj_t {
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t mosi;
     mp_hal_pin_obj_t miso;
+    mp_soft_spi_cs_obj_t cs;
 } mp_soft_spi_obj_t;
 
 extern const mp_spi_proto_t mp_soft_spi_proto;
