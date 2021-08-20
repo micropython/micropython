@@ -16,3 +16,6 @@ MCU_PACKAGE = UFQFPN48
 
 LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F411_nofs.ld
+
+# Too big for the flash
+CIRCUITPY_ULAB = 0
