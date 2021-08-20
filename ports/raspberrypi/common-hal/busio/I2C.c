@@ -59,9 +59,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->peripheral = NULL;
     // I2C pins have a regular pattern. SCL is always odd and SDA is even. They match up in pairs
     // so we can divide by two to get the instance. This pattern repeats.
-    if (scl->number % 2 == 1 && sda->number % 2 == 0 && scl->number / 2 == sda->number / 2) {
-        size_t instance = (scl->number / 2) % 2;
-        self->peripheral = i2c[instance];
+    size_t scl_instance = (scl->number / 2) % 2;
+    size_t sda_instance = (sda->number / 2) % 2;
+    if (scl->number % 2 == 1 && sda->number % 2 == 0 && scl_instance == sda_instance) {
+        self->peripheral = i2c[sda_instance];
     }
     if (self->peripheral == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));

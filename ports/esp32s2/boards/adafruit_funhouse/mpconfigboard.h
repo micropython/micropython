@@ -29,8 +29,8 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit FunHouse"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#define MICROPY_HW_APA_MOSI (&pin_GPIO14)
-#define MICROPY_HW_APA_SCK (&pin_GPIO15)
+#define MICROPY_HW_APA102_MOSI (&pin_GPIO14)
+#define MICROPY_HW_APA102_SCK (&pin_GPIO15)
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 

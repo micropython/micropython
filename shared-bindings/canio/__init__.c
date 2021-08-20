@@ -80,7 +80,7 @@ MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, BUS_OFF, BUS_STATE_OFF);
 //|     ERROR_WARNING: object
 //|     """The bus is in the normal (active) state, but a moderate number of errors have occurred recently.
 //|
-//|     NOTE: Not all implementations may use ERROR_WARNING.  Do not rely on seeing ERROR_WARNING before ERROR_PASSIVE."""
+//|     .. note:: Not all implementations may use ``ERROR_WARNING``.  Do not rely on seeing ``ERROR_WARNING`` before ``ERROR_PASSIVE``."""
 //|
 //|     ERROR_PASSIVE: object
 //|     """The bus is in the passive state due to the number of errors that have occurred recently.

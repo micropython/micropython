@@ -156,7 +156,15 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, con
 
     // Populate the exception object
     o_exc->base.type = type;
-    o_exc->traceback_data = NULL;
+
+    // Try to allocate memory for the traceback, with fallback to emergency traceback object
+    o_exc->traceback = m_new_obj_maybe(mp_obj_traceback_t);
+    if (o_exc->traceback == NULL) {
+        o_exc->traceback = &MP_STATE_VM(mp_emergency_traceback_obj);
+    }
+
+    // Populate the traceback object
+    *o_exc->traceback = mp_const_empty_traceback_obj;
 
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
@@ -208,22 +216,25 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
-        if (attr == MP_QSTR___traceback__ && dest[1] == mp_const_none) {
-            // We allow 'exc.__traceback__ = None' assignment as low-level
-            // optimization of pre-allocating exception instance and raising
-            // it repeatedly - this avoids memory allocation during raise.
-            // However, uPy will keep adding traceback entries to such
-            // exception instance, so before throwing it, traceback should
-            // be cleared like above.
-            self->traceback_len = 0;
+        if (attr == MP_QSTR___traceback__) {
+            if (dest[1] == mp_const_none) {
+                self->traceback->data = NULL;
+            } else {
+                if (!mp_obj_is_type(dest[1], &mp_type_traceback)) {
+                    mp_raise_TypeError(MP_ERROR_TEXT("invalid traceback"));
+                }
+                self->traceback = MP_OBJ_TO_PTR(dest[1]);
+            }
             dest[0] = MP_OBJ_NULL; // indicate success
         }
         return;
     }
     if (attr == MP_QSTR_args) {
         dest[0] = MP_OBJ_FROM_PTR(self->args);
-    } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
+    } else if (attr == MP_QSTR_value && self->base.type == &mp_type_StopIteration) {
         dest[0] = mp_obj_exception_get_value(self_in);
+    } else if (attr == MP_QSTR___traceback__) {
+        dest[0] = (self->traceback->data) ? MP_OBJ_FROM_PTR(self->traceback) : mp_const_none;
     #if MICROPY_CPYTHON_COMPAT
     } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
         if (attr == MP_QSTR_errno) {
@@ -454,12 +465,9 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
         o_str->data = NULL;
     } else {
         // We have some memory to format the string.
-        // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        char fmt_decompressed[decompress_length(fmt)];
-        decompress(fmt, fmt_decompressed);
-        mp_vprintf(&print, fmt_decompressed, ap);
+        mp_vcprintf(&print, fmt, ap);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;
@@ -552,7 +560,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     GET_NATIVE_EXCEPTION(self, self_in);
     // just set the traceback to the null object
     // we don't want to call any memory management functions here
-    self->traceback_data = NULL;
+    self->traceback->data = NULL;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
@@ -561,16 +569,16 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
 
-    if (self->traceback_data == NULL) {
-        self->traceback_data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
-        if (self->traceback_data == NULL) {
+    if (self->traceback->data == NULL) {
+        self->traceback->data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
+        if (self->traceback->data == NULL) {
             #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
             if (mp_emergency_exception_buf_size >= (mp_int_t)(EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE)) {
                 // There is room in the emergency buffer for traceback data
                 size_t *tb = (size_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
                     + EMG_BUF_TRACEBACK_OFFSET);
-                self->traceback_data = tb;
-                self->traceback_alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
+                self->traceback->data = tb;
+                self->traceback->alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
             } else {
                 // Can't allocate and no room in emergency buffer
                 return;
@@ -581,28 +589,28 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
             #endif
         } else {
             // Allocated the traceback data on the heap
-            self->traceback_alloc = TRACEBACK_ENTRY_LEN;
+            self->traceback->alloc = TRACEBACK_ENTRY_LEN;
         }
-        self->traceback_len = 0;
-    } else if (self->traceback_len + TRACEBACK_ENTRY_LEN > self->traceback_alloc) {
+        self->traceback->len = 0;
+    } else if (self->traceback->len + TRACEBACK_ENTRY_LEN > self->traceback->alloc) {
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-        if (self->traceback_data == (size_t *)MP_STATE_VM(mp_emergency_exception_buf)) {
+        if (self->traceback->data == (size_t *)MP_STATE_VM(mp_emergency_exception_buf)) {
             // Can't resize the emergency buffer
             return;
         }
         #endif
         // be conservative with growing traceback data
-        size_t *tb_data = m_renew_maybe(size_t, self->traceback_data, self->traceback_alloc,
-            self->traceback_alloc + TRACEBACK_ENTRY_LEN, true);
+        size_t *tb_data = m_renew_maybe(size_t, self->traceback->data, self->traceback->alloc,
+            self->traceback->alloc + TRACEBACK_ENTRY_LEN, true);
         if (tb_data == NULL) {
             return;
         }
-        self->traceback_data = tb_data;
-        self->traceback_alloc += TRACEBACK_ENTRY_LEN;
+        self->traceback->data = tb_data;
+        self->traceback->alloc += TRACEBACK_ENTRY_LEN;
     }
 
-    size_t *tb_data = &self->traceback_data[self->traceback_len];
-    self->traceback_len += TRACEBACK_ENTRY_LEN;
+    size_t *tb_data = &self->traceback->data[self->traceback->len];
+    self->traceback->len += TRACEBACK_ENTRY_LEN;
     tb_data[0] = file;
     tb_data[1] = line;
     tb_data[2] = block;
@@ -611,12 +619,12 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
-    if (self->traceback_data == NULL) {
+    if (self->traceback->data == NULL) {
         *n = 0;
         *values = NULL;
     } else {
-        *n = self->traceback_len;
-        *values = self->traceback_data;
+        *n = self->traceback->len;
+        *values = self->traceback->data;
     }
 }
 

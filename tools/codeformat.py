@@ -119,6 +119,15 @@ C_EXTS = (
 )
 PY_EXTS = (".py",)
 
+
+def check_uncrustify_version():
+    version = subprocess.check_output(
+        ["uncrustify", "--version"], encoding="utf-8", errors="replace"
+    )
+    if version < "Uncrustify-0.71":
+        raise SystemExit(f"codeformat.py requires Uncrustify 0.71 or newer, got {version}")
+
+
 # Transform a filename argument relative to the current directory into one
 # relative to the TOP directory, which is what we need when checking against
 # path_rx.
@@ -218,6 +227,7 @@ def main():
 
     # Format C files with uncrustify.
     if format_c:
+        check_uncrustify_version()
         command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
         if not args.v:
             command.append("-q")

@@ -96,6 +96,10 @@ msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 msgid "%q length must be %q"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q length must be >= 1"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr ""
@@ -106,14 +110,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 0-255"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 1-255"
 msgstr ""
 
 #: py/argcheck.c
@@ -131,10 +127,6 @@ msgstr "%q musi być >= 0"
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q musi być >= 1"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -172,6 +164,10 @@ msgstr "%q powinno być typu int"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() bierze %d argumentów pozycyjnych, lecz podano %d"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q, %q, and %q must all be the same length"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -322,6 +318,10 @@ msgstr "'yield from' wewnątrz funkcji asynchronicznej"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' poza funkcją"
+
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -492,6 +492,10 @@ msgstr "Próba przydzielenia %d bloków"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1198,11 +1202,6 @@ msgstr "Błąd I/O"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1229,6 +1228,10 @@ msgstr "Niewystarczające uwierzytelnienie"
 msgid "Insufficient encryption"
 msgstr "Niewystarczające szyfrowanie"
 
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr ""
@@ -1238,7 +1241,7 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr "Błąd wewnętrzny #%d"
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
 msgid "Invalid %q"
 msgstr "Nieprawidłowe %q"
 
@@ -1515,6 +1518,16 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "More than %d report ids not supported"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -1888,21 +1901,6 @@ msgstr "Oraz moduły w systemie plików\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Wielokąt musi mieć co najmniej 3 punkty"
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -2089,7 +2087,6 @@ msgid "Size not supported"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
 
@@ -2542,7 +2539,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "zła liczba lub typ argumentów"
 
@@ -3107,6 +3104,10 @@ msgstr ""
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "system plików musi mieć metodę mount"
@@ -3394,6 +3395,10 @@ msgstr ""
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "zły format"
@@ -3430,6 +3435,10 @@ msgstr "zła składnia dla liczby całkowitej w bazie %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "zła składnia dla liczby"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3626,10 +3635,6 @@ msgstr ""
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "brak wyjątku do ponownego rzucenia"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "brak wolnego NIC"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -3926,6 +3931,10 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4125,7 +4134,7 @@ msgstr "stop musi być 1 lub 2"
 msgid "stop not reachable from start"
 msgstr "stop nie jest osiągalne ze start"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "operacja na strumieniu nieobsługiwana"
 
@@ -4334,7 +4343,7 @@ msgid "unreadable attribute"
 msgstr "nieczytelny atrybut"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "zły typ %q"
 
@@ -4454,6 +4463,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "no available NIC"
+#~ msgstr "brak wolnego NIC"
 
 #~ msgid "Buffer too large and unable to allocate"
 #~ msgstr "Bufor jest zbyt duży i nie można go przydzielić"

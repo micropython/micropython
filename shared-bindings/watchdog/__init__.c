@@ -61,10 +61,8 @@ const mp_obj_type_t mp_type_WatchDogTimeout = {
 
 mp_obj_exception_t mp_watchdog_timeout_exception = {
     .base.type = &mp_type_WatchDogTimeout,
-    .traceback_alloc = 0,
-    .traceback_len = 0,
-    .traceback_data = NULL,
     .args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj,
+    .traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj,
 };
 
 STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {

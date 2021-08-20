@@ -692,6 +692,7 @@ extern const mp_obj_type_t mp_type_bytearray;
 extern const mp_obj_type_t mp_type_memoryview;
 extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
+extern const mp_obj_type_t mp_type_traceback;
 extern const mp_obj_type_t mp_type_tuple;
 extern const mp_obj_type_t mp_type_list;
 extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict implementation detail)
@@ -791,6 +792,7 @@ extern const struct _mp_obj_bool_t mp_const_true_obj;
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_dict_t mp_const_empty_dict_obj;
+extern const struct _mp_obj_traceback_t mp_const_empty_traceback_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
@@ -886,6 +888,7 @@ mp_obj_t mp_obj_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
+void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit);
 
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);

@@ -645,11 +645,13 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
     bool skip_boot_output = false;
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    FIL file_pointer;
+    #endif
 
     if (ok_to_run) {
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        FIL file_pointer;
         boot_output_file = &file_pointer;
 
         // Get the base filesystem.
@@ -849,6 +851,7 @@ int __attribute__((used)) main(void) {
     serial_init();
 
     #if CIRCUITPY_BLEIO
+    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 

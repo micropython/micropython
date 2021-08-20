@@ -7,7 +7,7 @@ These instructions also apply to `analogio`, `busio`, `pulseio` and `touchio`. M
 Common HAL related files are found in these locations:
 
 * `shared-bindings` Shared home for the Python <-> C bindings which includes inline RST documentation for the created interfaces. The common hal functions are defined in the .h files of the corresponding C files.
-* `shared-modules` Shared home for C code built on the Common HAL and used by all ports. This code only uses `common_hal` methods defined in `shared-bindings`.
+* `shared-module` Shared home for C code built on the Common HAL and used by all ports. This code only uses `common_hal` methods defined in `shared-bindings`.
 * `<port>/common-hal` Port-specific implementation of the Common HAL.
 
 Each folder has the substructure of <python module name>/<class name> and they should match 1:1. `__init__.c` is used for module globals that are not classes (similar to `__init__.py`).

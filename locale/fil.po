@@ -90,6 +90,10 @@ msgstr "%q indeks ay dapat integers, hindi %s"
 msgid "%q length must be %q"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q length must be >= 1"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr ""
@@ -100,14 +104,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 0-255"
-msgstr ""
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be 1-255"
 msgstr ""
 
 #: py/argcheck.c
@@ -126,10 +122,6 @@ msgstr ""
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
-
-#: shared-bindings/usb_hid/Device.c
-msgid "%q must be None or between 1 and len(report_descriptor)-1"
-msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -169,6 +161,10 @@ msgstr "y ay dapat int"
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 "Ang %q() ay kumukuha ng %d positional arguments pero %d lang ang binigay"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q, %q, and %q must all be the same length"
+msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -319,6 +315,10 @@ msgstr ""
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' sa labas ng function"
+
+#: shared-module/vectorio/VectorShape.c
+msgid "(x,y) integers required"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -490,6 +490,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
+msgstr ""
+
+#: ports/raspberrypi/audio_dma.c
+msgid "Audio conversion not implemented"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -1202,11 +1206,6 @@ msgstr "May mali sa Input/Output"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
 
@@ -1233,6 +1232,10 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
+#: ports/raspberrypi/audio_dma.c
+msgid "Internal audio buffer too small"
+msgstr ""
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr ""
@@ -1242,7 +1245,7 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
 msgid "Invalid %q"
 msgstr ""
 
@@ -1519,6 +1522,16 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing jmp_pin. Instruction %d jumps on pin"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "More than %d report ids not supported"
 msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
@@ -1896,21 +1909,6 @@ msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-"instead"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid ""
-"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
-"instead"
-msgstr ""
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -2098,7 +2096,6 @@ msgid "Size not supported"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#: ports/stm/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
 
@@ -2553,7 +2550,7 @@ msgid "argument name reused"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "hindi tugma ang argument num/types"
 
@@ -3129,6 +3126,10 @@ msgstr ""
 msgid "file must be a file opened in byte mode"
 msgstr "file ay dapat buksan sa byte mode"
 
+#: shared-bindings/traceback/__init__.c
+msgid "file write is not available"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
 msgstr "ang filesystem dapat mag bigay ng mount method"
@@ -3417,6 +3418,10 @@ msgstr ""
 msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr ""
 
+#: shared-bindings/traceback/__init__.c
+msgid "invalid exception"
+msgstr ""
+
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr "hindi wastong pag-format"
@@ -3453,6 +3458,10 @@ msgstr "maling sintaks sa integer na may base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "maling sintaks sa number"
+
+#: py/objexcept.c shared-bindings/traceback/__init__.c
+msgid "invalid traceback"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3653,10 +3662,6 @@ msgstr ""
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "walang aktibong exception para i-reraise"
-
-#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
-msgid "no available NIC"
-msgstr "walang magagamit na NIC"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -3954,6 +3959,10 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4155,7 +4164,7 @@ msgstr "stop dapat 1 o 2"
 msgid "stop not reachable from start"
 msgstr "stop hindi maabot sa simula"
 
-#: py/stream.c
+#: py/stream.c shared-bindings/getpass/__init__.c
 msgid "stream operation not supported"
 msgstr "stream operation hindi sinusuportahan"
 
@@ -4365,7 +4374,7 @@ msgid "unreadable attribute"
 msgstr "hindi mabasa ang attribute"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-#: shared-module/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c shared-module/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr "Hindi supportadong tipo ng %q"
 
@@ -4487,6 +4496,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "no available NIC"
+#~ msgstr "walang magagamit na NIC"
 
 #~ msgid "USB Busy"
 #~ msgstr "Busy ang USB"

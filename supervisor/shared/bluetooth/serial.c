@@ -166,7 +166,7 @@ void ble_serial_write(const char *text, size_t len) {
     }
     size_t sent = 0;
     while (sent < len) {
-        uint16_t packet_size = MIN(len, (size_t)common_hal_bleio_packet_buffer_get_outgoing_packet_length(&_tx_packet_buffer));
+        uint16_t packet_size = MIN(len - sent, (size_t)common_hal_bleio_packet_buffer_get_outgoing_packet_length(&_tx_packet_buffer));
         mp_int_t written = common_hal_bleio_packet_buffer_write(&_tx_packet_buffer, (const uint8_t *)text + sent, packet_size, NULL, 0);
         // Error, so we drop characters to transmit.
         if (written < 0) {

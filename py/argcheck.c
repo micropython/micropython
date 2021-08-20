@@ -197,7 +197,7 @@ mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t 
 
 size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name) {
     if (i != (mp_int_t)length) {
-        mp_raise_ValueError_varg(translate("%q length must be %q"), MP_QSTR_pressed, MP_QSTR_num_keys);
+        mp_raise_ValueError_varg(translate("%q length must be %q"), arg_name, length_name);
     }
     return (size_t)i;
 }

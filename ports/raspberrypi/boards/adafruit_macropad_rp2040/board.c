@@ -69,7 +69,7 @@ void board_init(void) {
         &pin_GPIO24, // Command or data
         &pin_GPIO22, // Chip select
         &pin_GPIO23, // Reset
-        1000000, // Baudrate
+        10000000, // Baudrate
         0, // Polarity
         0); // Phase
 

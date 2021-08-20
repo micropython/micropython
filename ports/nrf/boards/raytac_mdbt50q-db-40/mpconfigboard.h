@@ -28,3 +28,4 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P0_13)
+#define MICROPY_HW_LED_STATUS_INVERTED (1)

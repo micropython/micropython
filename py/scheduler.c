@@ -40,7 +40,7 @@ void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
 #if MICROPY_KBD_EXCEPTION
 // This function may be called asynchronously at any time so only do the bare minimum.
 void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void) {
-    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+    MP_STATE_VM(mp_kbd_exception).traceback->data = NULL;
     mp_sched_exception(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
 }
 #endif

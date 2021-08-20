@@ -272,6 +272,9 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     uint32_t mask = 1 << self->channel;
     EIC->INTENCLR.reg = mask << EIC_INTENSET_EXTINT_Pos;
+    #ifdef SAMD21
+    rtc_end_pulse();
+    #endif
 }
 
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
@@ -299,6 +302,9 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
     EIC->INTFLAG.reg = mask << EIC_INTFLAG_EXTINT_Pos;
     EIC->INTENSET.reg = mask << EIC_INTENSET_EXTINT_Pos;
 
+    #ifdef SAMD21
+    rtc_start_pulse();
+    #endif
     pulsein_set_config(self, true);
 }
 

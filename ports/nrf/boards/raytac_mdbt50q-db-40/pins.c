@@ -66,6 +66,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_PTR(&pin_P0_07) },
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_PTR(&pin_P0_05) },
 
+    // Note that these are inverted; you must pull them low to turn on the LEDs.
     { MP_ROM_QSTR(MP_QSTR_LED_R), MP_ROM_PTR(&pin_P0_14) },
     { MP_ROM_QSTR(MP_QSTR_LED_G), MP_ROM_PTR(&pin_P0_13) },
     { MP_ROM_QSTR(MP_QSTR_LED_B), MP_ROM_PTR(&pin_P0_15) },

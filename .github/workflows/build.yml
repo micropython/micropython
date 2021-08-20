@@ -79,6 +79,10 @@ jobs:
     - name: Test all
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1
       working-directory: tests
+    - name: Print failure info
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --print-failures
+      if: failure()
+      working-directory: tests
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
       working-directory: tests
@@ -228,6 +232,7 @@ jobs:
         - "bdmicro_vina_d51_pcb7"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
+        - "bluemicro840"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -321,11 +326,13 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "picoplanet"
+        - "pimoroni_interstate75"
         - "pimoroni_keybow2040"
         - "pimoroni_pga2040"
         - "pimoroni_picolipo_16mb"
         - "pimoroni_picolipo_4mb"
         - "pimoroni_picosystem"
+        - "pimoroni_plasma2040"
         - "pimoroni_tiny2040"
         - "pitaya_go"
         - "pyb_nano_v2"
@@ -341,6 +348,7 @@ jobs:
         - "qtpy_m0_haxpress"
         - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
+        - "raytac_mdbt50q-rx"
         - "robohatmm1_m4"
         - "sam32"
         - "same54_xplained"
@@ -364,6 +372,7 @@ jobs:
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_micromod"
         - "sparkfun_samd51_thing_plus"
+        - "sparkfun_stm32f405_micromod"
         - "sparkfun_thing_plus_rp2040"
         - "spresense"
         - "stackrduino_m0_pro"
@@ -455,7 +464,7 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
-        pip install requests sh click setuptools awscli
+        pip install -r requirements-dev.txt
         wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
         sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
@@ -495,8 +504,10 @@ jobs:
         - "adafruit_funhouse"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
+        - "ai_thinker_esp_12k_nodemcu"
         - "artisense_rd00"
         - "atmegazero_esp32s2"
+        - "crumpspace_crumps2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_kaluga_1.3"
@@ -504,10 +515,16 @@ jobs:
         - "espressif_saola_1_wrover"
         - "franzininho_wifi_wroom"
         - "franzininho_wifi_wrover"
+        - "gravitech_cucumber_m"
+        - "gravitech_cucumber_ms"
+        - "gravitech_cucumber_r"
+        - "gravitech_cucumber_rs"
         - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
+        - "morpheans_morphesp-240"
         - "muselab_nanoesp32_s2_wroom"
         - "muselab_nanoesp32_s2_wrover"
+        - "odt_pixelwing_esp32_s2"
         - "targett_module_clip_wroom"
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"

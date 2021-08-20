@@ -72,13 +72,16 @@ typedef struct {
 extern const busio_uart_parity_obj_t busio_uart_parity_even_obj;
 extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
+#if CIRCUITPY_BUSIO_UART
 STATIC void validate_timeout(mp_float_t timeout) {
     if (timeout < (mp_float_t)0.0f || timeout > (mp_float_t)100.0f) {
         mp_raise_ValueError(translate("timeout must be 0.0-100.0 seconds"));
     }
 }
+#endif  // CIRCUITPY_BUSIO_UART
 
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_BUSIO_UART
     // Always initially allocate the UART object within the long-lived heap.
     // This is needed to avoid crashes with certain UART implementations which
     // cannot accomodate being moved after creation. (See
@@ -141,8 +144,12 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         args[ARG_baudrate].u_int, bits, parity, stop, timeout,
         args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
+    #else
+    mp_raise_ValueError(translate("Invalid pins"));
+    #endif  // CIRCUITPY_BUSIO_UART
 }
 
+#if CIRCUITPY_BUSIO_UART
 
 // Helper to ensure we have the native super class instead of a subclass.
 busio_uart_obj_t *native_uart(mp_obj_t uart_obj) {
@@ -358,6 +365,7 @@ STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
+#endif  // CIRCUITPY_BUSIO_UART
 
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
@@ -400,6 +408,7 @@ const mp_obj_type_t busio_uart_parity_type = {
 };
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
+    #if CIRCUITPY_BUSIO_UART
     { MP_ROM_QSTR(MP_QSTR___del__),      MP_ROM_PTR(&busio_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&busio_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&default___enter___obj) },
@@ -417,12 +426,14 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_baudrate),     MP_ROM_PTR(&busio_uart_baudrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting),   MP_ROM_PTR(&busio_uart_in_waiting_obj) },
     { MP_ROM_QSTR(MP_QSTR_timeout),      MP_ROM_PTR(&busio_uart_timeout_obj) },
+    #endif  // CIRCUITPY_BUSIO_UART
 
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table);
 
+#if CIRCUITPY_BUSIO_UART
 STATIC const mp_stream_p_t uart_stream_p = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = busio_uart_read,
@@ -445,3 +456,11 @@ const mp_obj_type_t busio_uart_type = {
         .protocol = &uart_stream_p,
         ),
 };
+#else
+const mp_obj_type_t busio_uart_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_UART,
+    .make_new = busio_uart_make_new,
+    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
+};
+#endif  // CIRCUITPY_BUSIO_UART

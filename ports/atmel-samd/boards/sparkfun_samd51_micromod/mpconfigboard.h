@@ -1,7 +1,10 @@
-#define MICROPY_HW_BOARD_NAME "SparkFun MicroMod SAMD51"
+#define MICROPY_HW_BOARD_NAME "SparkFun MicroMod SAMD51 Processor"
 #define MICROPY_HW_MCU_NAME "samd51j20"
 
 #define CIRCUITPY_MCU_FAMILY samd51
+
+// Status LED
+#define MICROPY_HW_LED_STATUS (&pin_PA23)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN &pin_PA09

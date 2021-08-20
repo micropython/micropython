@@ -32,6 +32,7 @@
 
 #include "lib/utils/interrupt_char.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/traceback.h"
@@ -283,6 +284,21 @@ STATIC mp_obj_t supervisor_get_previous_traceback(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_previous_traceback);
 
+//| def disable_ble_workflow() -> None:
+//|     """Disable ble workflow until a reset. This prevents BLE advertising outside of the VM and
+//|        the services used for it."""
+//|     ...
+//|
+STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE && !CIRCUITPY_SERIAL_BLE
+    mp_raise_NotImplementedError(NULL);
+    #else
+    supervisor_bluetooth_disable_workflow();
+    #endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disable_ble_workflow);
+
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
@@ -295,6 +311,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_ble_workflow),  MP_ROM_PTR(&supervisor_disable_ble_workflow_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

@@ -167,7 +167,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         #if CIRCUITPY_ALARM
@@ -183,7 +183,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     }
     if (result != NULL) {
         result->return_code = ret;
+        #if CIRCUITPY_ALARM
+        // Don't set the exception object if we exited for deep sleep.
+        if (ret != 0 && ret != PYEXEC_DEEP_SLEEP) {
+        #else
         if (ret != 0) {
+            #endif
             mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
             result->exception = return_value;
             result->exception_line = -1;
@@ -260,7 +265,7 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
         mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
         if (c == CHAR_CTRL_C) {
             #if MICROPY_KBD_EXCEPTION
-            MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+            MP_STATE_VM(mp_kbd_exception).traceback->data = NULL;
             nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
             #else
             mp_raise_type(&mp_type_KeyboardInterrupt);

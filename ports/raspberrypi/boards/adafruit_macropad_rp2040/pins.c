@@ -17,7 +17,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO13) },
 
-    { MP_ROM_QSTR(MP_QSTR_SPEAKER_SHUTDOWN), MP_ROM_PTR(&pin_GPIO14) },
+    { MP_ROM_QSTR(MP_QSTR_SPEAKER_ENABLE), MP_ROM_PTR(&pin_GPIO14) },
     { MP_ROM_QSTR(MP_QSTR_SPEAKER), MP_ROM_PTR(&pin_GPIO16) },
 
     { MP_ROM_QSTR(MP_QSTR_ENCODER_SWITCH), MP_ROM_PTR(&pin_GPIO0) },

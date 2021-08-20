@@ -230,14 +230,14 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 1) -> bool:
+//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 0) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set ``minimum_frames_per_second`` to 0 to disable.
+//|         exception will be raised. The default ``minimum_frames_per_second`` of 0 disables this behavior.
 //|
 //|         When auto refresh is off, ``display.refresh()`` or ``display.refresh(target_frames_per_second=None)``
 //|         will update the display immediately.
@@ -254,7 +254,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_target_frames_per_second, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

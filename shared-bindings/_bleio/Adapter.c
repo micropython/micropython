@@ -197,10 +197,10 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         """Starts advertising until `stop_advertising` is called or if connectable, another device
 //|         connects to us.
 //|
-//|         .. warning: If data is longer than 31 bytes, then this will automatically advertise as an
+//|         .. warning:: If data is longer than 31 bytes, then this will automatically advertise as an
 //|            extended advertisement that older BLE 4.x clients won't be able to scan for.
 //|
-//|         .. note: If you set ``anonymous=True``, then a timeout must be specified. If no timeout is
+//|         .. note:: If you set ``anonymous=True``, then a timeout must be specified. If no timeout is
 //|            specified, then the maximum allowed timeout will be selected automatically.
 //|
 //|         :param ~_typing.ReadableBuffer data: advertising data packet bytes

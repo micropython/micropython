@@ -188,7 +188,9 @@ typedef long mp_off_t;
 
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_CPYTHON_COMPAT
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
 #define MICROPY_MODULE_WEAK_LINKS             (0)
@@ -490,6 +492,13 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPAD_ROOT_POINTERS
 #endif
 
+#if CIRCUITPY_GETPASS
+extern const struct _mp_obj_module_t getpass_module;
+#define GETPASS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_getpass), (mp_obj_t)&getpass_module },
+#else
+#define GETPASS_MODULE
+#endif
+
 #if CIRCUITPY_GNSS
 extern const struct _mp_obj_module_t gnss_module;
 #define GNSS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_gnss), (mp_obj_t)&gnss_module },
@@ -583,6 +592,13 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
+#if CIRCUITPY_ONEWIREIO
+extern const struct _mp_obj_module_t onewireio_module;
+#define ONEWIREIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_onewireio), (mp_obj_t)&onewireio_module },
+#else
+#define ONEWIREIO_MODULE
+#endif
+
 #if CIRCUITPY_OS
 extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
@@ -627,6 +643,8 @@ extern const struct _mp_obj_module_t pwmio_module;
 #else
 #define PWMIO_MODULE
 #endif
+
+// CIRCUITPY_QRIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_RAINBOWIO
 extern const struct _mp_obj_module_t rainbowio_module;
@@ -770,6 +788,13 @@ extern const struct _mp_obj_module_t touchio_module;
 #define TOUCHIO_MODULE
 #endif
 
+#if CIRCUITPY_TRACEBACK
+extern const struct _mp_obj_module_t traceback_module;
+#define TRACEBACK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_traceback), (mp_obj_t)&traceback_module },
+#else
+#define TRACEBACK_MODULE
+#endif
+
 #if CIRCUITPY_UHEAP
 extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module },
@@ -890,6 +915,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPADSHIFT_MODULE \
+    GETPASS_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
@@ -901,6 +927,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     MICROCONTROLLER_MODULE \
     MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
+    ONEWIREIO_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -925,6 +952,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     SUPERVISOR_MODULE \
     SYNTHIO_MODULE \
     TOUCHIO_MODULE \
+    TRACEBACK_MODULE \
     UHEAP_MODULE \
     USB_CDC_MODULE \
     USB_HID_MODULE \
