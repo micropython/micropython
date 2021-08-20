@@ -37,7 +37,7 @@ const flexspi_nor_config_t qspiflash_config = {
             (1u << kFlexSpiMiscOffset_SafeConfigFreqEnable) | (1u << kFlexSpiMiscOffset_DiffClkEnable),
         .sflashPadType = kSerialFlash_8Pads,
         .serialClkFreq = kFlexSpiSerialClk_133MHz,
-        .sflashA1Size = BOARD_FLASH_SIZE,
+        .sflashA1Size = MICROPY_HW_FLASH_SIZE,
         .dataValidTime = {16u, 16u},
         .lookupTable =
         {

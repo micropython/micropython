@@ -53,7 +53,7 @@ const flexspi_nor_config_t qspiflash_config = {
         // Enable DDR mode, Wordaddassable, Safe configuration, Differential clock
         .sflashPadType = kSerialFlash_4Pads,
         .serialClkFreq = kFlexSpiSerialClk_60MHz,
-        .sflashA1Size = BOARD_FLASH_SIZE,
+        .sflashA1Size = MICROPY_HW_FLASH_SIZE,
         .lookupTable =
         {
             // 0 Read LUTs 0 -> 0

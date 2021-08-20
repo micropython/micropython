@@ -32,8 +32,6 @@
 #include "modmimxrt.h"
 #include BOARD_FLASH_OPS_HEADER_H
 
-// BOARD_FLASH_SIZE is defined in mpconfigport.h
-
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
 #define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
 

@@ -41,5 +41,6 @@ void machine_adc_init(void);
 void machine_pin_irq_deinit(void);
 void machine_timer_init_PIT(void);
 void machine_sdcard_init0(void);
+void mimxrt_sdram_init(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H

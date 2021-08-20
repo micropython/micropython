@@ -13,15 +13,22 @@ endif
 include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
-# Set optional flash configuration variables
-BOARD_FLASH_RESERVED ?=
+LD_MEMORY_CONFIG_DEFINES += \
+	MICROPY_HW_FLASH_TYPE=$(MICROPY_HW_FLASH_TYPE) \
+	MICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE)
+
+ifdef MICROPY_HW_FLASH_RESERVED
+LD_MEMORY_CONFIG_DEFINES += MICROPY_HW_FLASH_RESERVED=$(MICROPY_HW_FLASH_RESERVED)
+endif
+
+ifdef MICROPY_HW_SDRAM_AVAIL
+CFLAGS += \
+	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
+	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE)
 
 LD_MEMORY_CONFIG_DEFINES += \
-	BOARD_FLASH_TYPE=$(BOARD_FLASH_TYPE) \
-	BOARD_FLASH_SIZE=$(BOARD_FLASH_SIZE)
-
-ifdef $(BOARD_FLASH_RESERVED)
-LD_MEMORY_CONFIG_DEFINES += BOARD_FLASH_RESERVED=$(BOARD_FLASH_RESERVED)
+	MICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
+	MICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE)
 endif
 
 # Qstr definitions (must come before including py.mk)
@@ -81,12 +88,13 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
-	-DBOARD_FLASH_SIZE=$(BOARD_FLASH_SIZE) \
+	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
+	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_nor_config.h\"
 
-ifeq ($(BOARD_FLASH_TYPE), qspi_nor)
+ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
 CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
-else ifeq ($(BOARD_FLASH_TYPE), hyperflash)
+else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
 CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
 endif
 
@@ -163,6 +171,10 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
+ifeq ($(MICROPY_HW_SDRAM_AVAIL), 1)
+SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
+endif
+
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
@@ -186,6 +198,7 @@ SRC_C += \
 	machine_uart.c \
 	main.c \
 	mimxrt_flash.c \
+	mimxrt_sdram.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
@@ -207,16 +220,16 @@ SRC_C += \
 	$(SRC_TINYUSB_C) \
 	$(SRC_HAL_IMX_C) \
 
-ifeq ($(BOARD_FLASH_TYPE), qspi_nor)
+ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
 SRC_C += \
 	hal/flexspi_nor_flash.c \
 	$(BOARD_DIR)/qspi_nor_flash_config.c
-else ifeq ($(BOARD_FLASH_TYPE), hyperflash)
+else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
 SRC_C += \
 	hal/flexspi_hyper_flash.c \
 	$(BOARD_DIR)/qspi_hyper_flash_config.c
 else
-$(error Error: Unknown board flash type $(BOARD_FLASH_TYPE))
+$(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)

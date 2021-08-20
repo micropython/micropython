@@ -1,14 +1,14 @@
 /* Memory configuration */
-#if BOARD_FLASH_RESERVED
-reserved_size = BOARD_FLASH_RESERVED;
+#if MICROPY_HW_FLASH_RESERVED
+reserved_size = MICROPY_HW_FLASH_RESERVED;
 #endif
 
-#if BOARD_FLASH_TYPE==qspi_nor
+#if MICROPY_HW_FLASH_TYPE==qspi_nor
 flash_start         = 0x60000000;
 #else
-#error Unknown BOARD_FLASH_TYPE
+#error Unknown MICROPY_HW_FLASH_TYPE
 #endif
-flash_size          = BOARD_FLASH_SIZE;
+flash_size          = MICROPY_HW_FLASH_SIZE;
 flash_end           = DEFINED(reserved_size) ? ((flash_start) + (flash_size - reserved_size)) : ((flash_start) + (flash_size));
 flash_config_start  = flash_start + 0x00000400;
 flash_config_size   = 0x00000C00;

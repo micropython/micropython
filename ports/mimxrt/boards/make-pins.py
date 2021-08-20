@@ -8,7 +8,7 @@ import sys
 import csv
 import re
 
-SUPPORTED_AFS = {"GPIO", "USDHC"}
+SUPPORTED_AFS = {"GPIO", "USDHC", "SEMC"}
 MAX_AF = 10  # AF0 .. AF9
 ADC_COL = 11
 
