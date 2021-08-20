@@ -67,7 +67,7 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
-msgid "%q and %q contain duplicate objects"
+msgid "%q and %q contain duplicate pins"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c

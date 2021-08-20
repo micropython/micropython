@@ -90,8 +90,6 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     mcu_pin_obj_t *row_pins_array[num_row_pins];
     mcu_pin_obj_t *column_pins_array[num_column_pins];
 
-    validate_no_duplicate_pins(row_pins, MP_QSTR_row_pins);
-    validate_no_duplicate_pins(column_pins, MP_QSTR_column_pins);
     validate_no_duplicate_pins_2(row_pins, column_pins, MP_QSTR_row_pins, MP_QSTR_column_pins);
 
     for (size_t row = 0; row < num_row_pins; row++) {

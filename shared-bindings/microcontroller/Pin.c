@@ -127,6 +127,9 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
     const size_t num_pins_1 = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq1));
     const size_t num_pins_2 = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq2));
 
+    validate_no_duplicate_pins(seq1, arg_name1);
+    validate_no_duplicate_pins(seq2, arg_name2);
+
     for (size_t pin_cnt_1 = 0; pin_cnt_1 < num_pins_1; pin_cnt_1++) {
         mp_obj_t pin1_obj = mp_obj_subscr(seq1, MP_OBJ_NEW_SMALL_INT(pin_cnt_1), MP_OBJ_SENTINEL);
         mcu_pin_obj_t *pin1 = validate_obj_is_pin(pin1_obj);
@@ -135,7 +138,7 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
             mp_obj_t pin2_obj = mp_obj_subscr(seq2, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
             mcu_pin_obj_t *pin2 = validate_obj_is_pin(pin2_obj);
             if (pin1 == pin2) {
-                mp_raise_TypeError_varg(translate("%q and %q contain duplicate objects"), arg_name1, arg_name2);
+                mp_raise_TypeError_varg(translate("%q and %q contain duplicate pins"), arg_name1, arg_name2);
             }
         }
     }
