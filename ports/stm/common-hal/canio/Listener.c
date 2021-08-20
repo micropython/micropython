@@ -30,6 +30,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "lib/utils/interrupt_char.h"
+
 #include "common-hal/canio/__init__.h"
 #include "common-hal/canio/Listener.h"
 #include "shared-bindings/canio/Listener.h"
@@ -270,6 +272,11 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
         uint64_t deadline = supervisor_ticks_ms64() + self->timeout_ms;
         do {
             if (supervisor_ticks_ms64() > deadline) {
+                return NULL;
+            }
+            RUN_BACKGROUND_TASKS;
+            // Allow user to break out of a timeout with a KeyboardInterrupt.
+            if (mp_hal_is_interrupted()) {
                 return NULL;
             }
         } while (!common_hal_canio_listener_in_waiting(self));
