@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "audio_dma.h"
 #include "samd/clocks.h"
 #include "samd/events.h"
@@ -31,12 +33,17 @@
 
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/background_callback.h"
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
 #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
+
+// Flag value for dma->buffer_to_load, indicating there is nothing to do.
+// Otherwise dma->buffer_to_load is 0 or 1.
+#define NO_BUFFER_TO_LOAD 0xff
 
 static audio_dma_t *audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 
@@ -85,70 +92,79 @@ void audio_dma_enable_channel(uint8_t channel) {
     dma_enable_channel(channel);
 }
 
-void audio_dma_convert_signed(audio_dma_t *dma, uint8_t *buffer, uint32_t buffer_length,
-    uint8_t **output_buffer, uint32_t *output_buffer_length,
+static void audio_dma_convert_samples(
+    audio_dma_t *dma,
+    uint8_t *input, uint32_t input_length,
+    uint8_t *available_output_buffer, uint32_t available_output_buffer_length,
+    uint8_t **output, uint32_t *output_length,
     uint8_t *output_spacing) {
-    if (dma->first_buffer_free) {
-        *output_buffer = dma->first_buffer;
-    } else {
-        *output_buffer = dma->second_buffer;
-    }
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
     if (dma->signed_to_unsigned || dma->unsigned_to_signed) {
-        *output_buffer_length = buffer_length / dma->spacing;
+
+        // Must convert.
+        // Write the conversion into the passed-in output buffer
+        *output = available_output_buffer;
+        *output_length = input_length / dma->spacing;
         *output_spacing = 1;
+
+        if (*output_length > available_output_buffer_length) {
+            mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+        }
+
         uint32_t out_i = 0;
         if (dma->bytes_per_sample == 1) {
-            for (uint32_t i = 0; i < buffer_length; i += dma->spacing) {
+            for (uint32_t i = 0; i < input_length; i += dma->spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint8_t *)*output_buffer)[out_i] = ((int8_t *)buffer)[i] + 0x80;
+                    ((uint8_t *)*output)[out_i] = ((int8_t *)input)[i] + 0x80;
                 } else {
-                    ((int8_t *)*output_buffer)[out_i] = ((uint8_t *)buffer)[i] - 0x80;
+                    ((int8_t *)*output)[out_i] = ((uint8_t *)input)[i] - 0x80;
                 }
                 out_i += 1;
             }
         } else if (dma->bytes_per_sample == 2) {
-            for (uint32_t i = 0; i < buffer_length / 2; i += dma->spacing) {
+            for (uint32_t i = 0; i < input_length / 2; i += dma->spacing) {
                 if (dma->signed_to_unsigned) {
-                    ((uint16_t *)*output_buffer)[out_i] = ((int16_t *)buffer)[i] + 0x8000;
+                    ((uint16_t *)*output)[out_i] = ((int16_t *)input)[i] + 0x8000;
                 } else {
-                    ((int16_t *)*output_buffer)[out_i] = ((uint16_t *)buffer)[i] - 0x8000;
+                    ((int16_t *)*output)[out_i] = ((uint16_t *)input)[i] - 0x8000;
                 }
                 out_i += 1;
             }
         }
     } else {
-        *output_buffer = buffer;
-        *output_buffer_length = buffer_length;
+        *output = input;
+        *output_length = input_length;
         *output_spacing = dma->spacing;
     }
     #pragma GCC diagnostic pop
-    dma->first_buffer_free = !dma->first_buffer_free;
 }
 
-void audio_dma_load_next_block(audio_dma_t *dma) {
-    uint8_t *buffer;
-    uint32_t buffer_length;
+static void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
+    uint8_t *sample_buffer;
+    uint32_t sample_buffer_length;
     audioio_get_buffer_result_t get_buffer_result =
         audiosample_get_buffer(dma->sample, dma->single_channel_output, dma->audio_channel,
-            &buffer, &buffer_length);
+            &sample_buffer, &sample_buffer_length);
 
-    DmacDescriptor *descriptor = dma->second_descriptor;
-    if (dma->first_descriptor_free) {
-        descriptor = dma_descriptor(dma->dma_channel);
-    }
-    dma->first_descriptor_free = !dma->first_descriptor_free;
+    DmacDescriptor *descriptor = dma->descriptor[buffer_idx];
 
     if (get_buffer_result == GET_BUFFER_ERROR) {
         audio_dma_stop(dma);
         return;
     }
 
+    // Use one of the allocated buffers for conversion. But if there's no conversion,
+    // this will be set to buffer in audio_dma_convert_samples() to avoid any copying.
     uint8_t *output_buffer;
     uint32_t output_buffer_length;
     uint8_t output_spacing;
-    audio_dma_convert_signed(dma, buffer, buffer_length, &output_buffer, &output_buffer_length,
+
+    audio_dma_convert_samples(dma, sample_buffer, sample_buffer_length,
+        // Available output buffer: may be used or not.
+        dma->buffer[buffer_idx], dma->buffer_length[buffer_idx],
+        // Buffer where output was placed.
+        &output_buffer, &output_buffer_length,
         &output_spacing);
 
     descriptor->BTCNT.reg = output_buffer_length / dma->beat_size / output_spacing;
@@ -157,9 +173,10 @@ void audio_dma_load_next_block(audio_dma_t *dma) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel_output, dma->audio_channel);
         } else {
-            if ((output_buffer_length == 0) && dma_transfer_status(SHARED_RX_CHANNEL) & 0x3) {
+            if (output_buffer_length == 0) {
                 // Nothing further to read and previous buffer is finished.
                 audio_dma_stop(dma);
+                return;
             } else {
                 // Break descriptor chain.
                 descriptor->DESCADDR.reg = 0;
@@ -206,15 +223,15 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     dma->dma_channel = dma_channel;
     dma->signed_to_unsigned = false;
     dma->unsigned_to_signed = false;
-    dma->second_descriptor = NULL;
     dma->spacing = 1;
-    dma->first_descriptor_free = true;
     audiosample_reset_buffer(sample, single_channel_output, audio_channel);
+    dma->buffer_to_load = NO_BUFFER_TO_LOAD;
+    dma->descriptor[0] = dma_descriptor(dma_channel);
+    dma->descriptor[1] = &dma->second_descriptor;
 
-    bool single_buffer;
     bool samples_signed;
     uint32_t max_buffer_length;
-    audiosample_get_buffer_structure(sample, single_channel_output, &single_buffer, &samples_signed,
+    audiosample_get_buffer_structure(sample, single_channel_output, &dma->single_buffer, &samples_signed,
         &max_buffer_length, &dma->spacing);
     uint8_t output_spacing = dma->spacing;
     if (output_signed != samples_signed) {
@@ -222,14 +239,17 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
         max_buffer_length /= dma->spacing;
     }
 
-    dma->first_buffer = (uint8_t *)m_realloc(dma->first_buffer, max_buffer_length);
-    if (dma->first_buffer == NULL) {
+
+    dma->buffer[0] = (uint8_t *)m_realloc(dma->buffer[0], max_buffer_length);
+    dma->buffer_length[0] = max_buffer_length;
+    if (dma->buffer[0] == NULL) {
         return AUDIO_DMA_MEMORY_ERROR;
     }
-    dma->first_buffer_free = true;
-    if (!single_buffer) {
-        dma->second_buffer = (uint8_t *)m_realloc(dma->second_buffer, max_buffer_length);
-        if (dma->second_buffer == NULL) {
+
+    if (!dma->single_buffer) {
+        dma->buffer[1] = (uint8_t *)m_realloc(dma->buffer[1], max_buffer_length);
+        dma->buffer_length[1] = max_buffer_length;
+        if (dma->buffer[1] == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
     }
@@ -238,12 +258,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     dma->unsigned_to_signed = output_signed && !samples_signed;
 
     dma->event_channel = 0xff;
-    if (!single_buffer) {
-        dma->second_descriptor = (DmacDescriptor *)m_malloc(sizeof(DmacDescriptor), false);
-        if (dma->second_descriptor == NULL) {
-            return AUDIO_DMA_MEMORY_ERROR;
-        }
-
+    if (!dma->single_buffer) {
         // We're likely double buffering so set up the block interrupts.
         turn_on_event_system();
         dma->event_channel = find_sync_event_channel_raise();
@@ -280,25 +295,27 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     int irq = EVSYS_IRQn;
     #endif
 
-    DmacDescriptor *first_descriptor = dma_descriptor(dma_channel);
-    setup_audio_descriptor(first_descriptor, dma->beat_size, output_spacing, output_register_address);
-    if (single_buffer) {
-        first_descriptor->DESCADDR.reg = 0;
+    setup_audio_descriptor(dma->descriptor[0], dma->beat_size, output_spacing, output_register_address);
+    if (dma->single_buffer) {
+        dma->descriptor[0]->DESCADDR.reg = 0;
         if (dma->loop) {
-            first_descriptor->DESCADDR.reg = (uint32_t)first_descriptor;
+            // The descriptor chains to itself.
+            dma->descriptor[0]->DESCADDR.reg = (uint32_t)dma->descriptor[0];
         }
     } else {
-        first_descriptor->DESCADDR.reg = (uint32_t)dma->second_descriptor;
-        setup_audio_descriptor(dma->second_descriptor, dma->beat_size, output_spacing, output_register_address);
-        dma->second_descriptor->DESCADDR.reg = (uint32_t)first_descriptor;
+        // Set up the two descriptors to chain to each other.
+        dma->descriptor[0]->DESCADDR.reg = (uint32_t)dma->descriptor[1];
+        setup_audio_descriptor(dma->descriptor[1], dma->beat_size, output_spacing, output_register_address);
+        dma->descriptor[1]->DESCADDR.reg = (uint32_t)dma->descriptor[0];
     }
 
     // Load the first two blocks up front.
-    audio_dma_load_next_block(dma);
-    if (!single_buffer) {
-        audio_dma_load_next_block(dma);
+    audio_dma_load_next_block(dma, 0);
+    if (!dma->single_buffer) {
+        audio_dma_load_next_block(dma, 1);
     }
 
+    dma->playing_in_progress = true;
     dma_configure(dma_channel, dma_trigger_source, true);
     audio_dma_enable_channel(dma_channel);
 
@@ -317,6 +334,7 @@ void audio_dma_stop(audio_dma_t *dma) {
         dma_free_channel(dma->dma_channel);
     }
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
+    dma->playing_in_progress = false;
 }
 
 void audio_dma_pause(audio_dma_t *dma) {
@@ -355,12 +373,7 @@ bool audio_dma_get_playing(audio_dma_t *dma) {
     if (dma->dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return false;
     }
-    uint32_t status = dma_transfer_status(dma->dma_channel);
-    if ((status & DMAC_CHINTFLAG_TCMPL) != 0 || (status & DMAC_CHINTFLAG_TERR) != 0) {
-        audio_dma_stop(dma);
-    }
-
-    return (status & DMAC_CHINTFLAG_TERR) == 0;
+    return dma->playing_in_progress;
 }
 
 // WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
@@ -371,7 +384,16 @@ STATIC void dma_callback_fun(void *arg) {
         return;
     }
 
-    audio_dma_load_next_block(dma);
+    common_hal_mcu_disable_interrupts();
+    uint8_t buffer_to_load = dma->buffer_to_load;
+    dma->buffer_to_load = NO_BUFFER_TO_LOAD;
+    common_hal_mcu_enable_interrupts();
+
+    if (buffer_to_load == NO_BUFFER_TO_LOAD) {
+        audio_dma_stop(dma);
+    } else {
+        audio_dma_load_next_block(dma, buffer_to_load);
+    }
 }
 
 void audio_evsys_handler(void) {
@@ -384,6 +406,28 @@ void audio_evsys_handler(void) {
         if (!block_done) {
             continue;
         }
+
+        // By the time we get here, the write-back descriptor has been set to the
+        // current running descriptor. Fill the buffer that the next chained descriptor
+        // will play.
+        //
+        // The state of the write-back descriptor was determined empirically,
+        // The datasheet appears to imply that the descriptor that just finished would
+        // be in the write-back descriptor. But the VALID bit is set in the write-back descriptor,
+        // and reversing which buffer to fill produces crackly output. So the choice
+        // of which buffer to fill here appears correct.
+        DmacDescriptor *next_descriptor =
+            (DmacDescriptor *)dma_write_back_descriptor(dma->dma_channel)->DESCADDR.reg;
+        if (next_descriptor == dma->descriptor[0]) {
+            dma->buffer_to_load = 0;
+        } else if (next_descriptor == dma->descriptor[1]) {
+            dma->buffer_to_load = 1;
+        } else if (next_descriptor == NULL) {
+            dma->buffer_to_load = NO_BUFFER_TO_LOAD;
+        } else {
+            continue;
+        }
+
         background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
     }
 }
