@@ -38,7 +38,7 @@ typedef struct {
     displayio_display_core_t core;
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
-    const uint8_t *start_sequence;
+    uint8_t *start_sequence;
     uint32_t start_sequence_len;
     const uint8_t *stop_sequence;
     uint32_t stop_sequence_len;
