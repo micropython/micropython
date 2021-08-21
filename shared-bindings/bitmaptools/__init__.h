@@ -48,7 +48,7 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
 
 void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
-    uint32_t value, uint32_t background_value);
+    uint32_t fill_color_value, uint32_t replaced_color_value);
 
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,

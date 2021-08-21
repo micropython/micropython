@@ -300,7 +300,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //| def boundary_fill(
 //|        dest_bitmap: displayio.Bitmap,
 //|        x: int, y: int,
-//|        value: int, background_value: int) -> None:
+//|        fill_color_value: int, replaced_color_value: int) -> None:
 //|      """Draws the color value into the destination bitmap enclosed
 //|      area of pixels of the background_value color. Like "Paint Bucket"
 //|      fill tool.
@@ -308,37 +308,37 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_fill_region_obj, 0, bitmaptools_obj_fill_
 //|      :param bitmap dest_bitmap: Destination bitmap that will be written into
 //|      :param int x: x-pixel position of the first pixel to check and fill if needed
 //|      :param int y: y-pixel position of the first pixel to check and fill if needed
-//|      :param int value: Bitmap palette index that will be written into the
+//|      :param int fill_color_value: Bitmap palette index that will be written into the
 //|             enclosed area in the destination bitmap
-//|      :param int background_value: Bitmap palette index that will filled with the
+//|      :param int replaced_color_value: Bitmap palette index that will filled with the
 //|             value color in the enclosed area in the destination bitmap"""
 //|      ...
 //|
 STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_value, ARG_background_value};
+    enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_background_value, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_fill_color_value, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_replaced_color_value, MP_ARG_INT, {.u_int = INT_MAX} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
 
-    uint32_t value, color_depth;
-    value = args[ARG_value].u_int;
+    uint32_t fill_color_value, color_depth;
+    fill_color_value = args[ARG_fill_color_value].u_int;
     color_depth = (1 << destination->bits_per_value);
-    if (color_depth <= value) {
+    if (color_depth <= fill_color_value) {
         mp_raise_ValueError(translate("value out of range of target"));
     }
 
-    uint32_t background_value;
-    background_value = args[ARG_background_value].u_int;
-    if (color_depth <= background_value) {
+    uint32_t replaced_color_value;
+    replaced_color_value = args[ARG_replaced_color_value].u_int;
+    if (replaced_color_value != INT_MAX && color_depth <= replaced_color_value) {
         mp_raise_ValueError(translate("background value out of range of target"));
     }
 
@@ -352,7 +352,7 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
         mp_raise_ValueError(translate("out of range of target"));
     }
 
-    common_hal_bitmaptools_boundary_fill(destination, x, y, value, background_value);
+    common_hal_bitmaptools_boundary_fill(destination, x, y, fill_color_value, replaced_color_value);
 
     return mp_const_none;
 }

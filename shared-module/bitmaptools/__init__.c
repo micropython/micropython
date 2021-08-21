@@ -255,7 +255,14 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
 
 void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     int16_t x, int16_t y,
-    uint32_t value, uint32_t background_value) {
+    uint32_t fill_color_value, uint32_t replaced_color_value) {
+
+    if (fill_color_value == replaced_color_value) {
+        // There is nothing to do
+        return;
+    }
+
+    uint32_t current_point_color_value;
 
     // the list of points that we'll check
     mp_obj_t fill_area = mp_obj_new_list(0, NULL);
@@ -267,12 +274,20 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         mp_obj_new_tuple(2, point)
         );
 
+    if (replaced_color_value == INT_MAX) {
+        current_point_color_value = common_hal_displayio_bitmap_get_pixel(
+            destination,
+            mp_obj_get_int(point[0]),
+            mp_obj_get_int(point[1]));
+        replaced_color_value = (uint32_t)current_point_color_value;
+    }
+
     mp_obj_t *fill_points;
     size_t list_length = 0;
     mp_obj_list_get(fill_area, &list_length, &fill_points);
 
     mp_obj_t current_point;
-    uint32_t current_point_color_value;
+
 
     size_t tuple_len = 0;
     mp_obj_t *tuple_items;
@@ -288,7 +303,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
             mp_obj_get_int(tuple_items[1]));
 
         // if the current point is not background color ignore it
-        if (current_point_color_value != background_value) {
+        if (current_point_color_value != replaced_color_value) {
             mp_obj_list_get(fill_area, &list_length, &fill_points);
             continue;
         }
@@ -298,7 +313,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
             destination,
             mp_obj_get_int(tuple_items[0]),
             mp_obj_get_int(tuple_items[1]),
-            value);
+            fill_color_value);
 
         // add all 4 surrounding points to the list to check
 
