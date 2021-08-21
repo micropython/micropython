@@ -119,6 +119,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // clkrate is always 0. baud_rate is in kHz.
 
     // Frequency must be set before the I2C device is enabled.
+    // The maximum frequency divisor gives a clock rate of around 48MHz/2/255
+    // but set_baudrate does not diagnose this problem. (This is not the
+    // exact cutoff, but no frequency well under 100kHz is available)
+    if (frequency < 95000) {
+        mp_raise_ValueError(translate("Unsupported baudrate"));
+    }
+
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
