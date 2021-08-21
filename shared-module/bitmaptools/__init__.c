@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-module/displayio/Bitmap.h"
@@ -262,6 +260,9 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         return;
     }
 
+
+
+
     uint32_t current_point_color_value;
 
     // the list of points that we'll check
@@ -273,6 +274,11 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         fill_area,
         mp_obj_new_tuple(2, point)
         );
+
+    int16_t minx = x;
+    int16_t miny = x;
+    int16_t maxx = y;
+    int16_t maxy = y;
 
     if (replaced_color_value == INT_MAX) {
         current_point_color_value = common_hal_displayio_bitmap_get_pixel(
@@ -288,9 +294,10 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
 
     mp_obj_t current_point;
 
-
     size_t tuple_len = 0;
     mp_obj_t *tuple_items;
+
+    int cur_x, cur_y;
 
     // while there are still points to check
     while (list_length > 0) {
@@ -306,6 +313,22 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         if (current_point_color_value != replaced_color_value) {
             mp_obj_list_get(fill_area, &list_length, &fill_points);
             continue;
+        }
+
+        cur_x = mp_obj_int_get_checked(tuple_items[0]);
+        cur_y = mp_obj_int_get_checked(tuple_items[1]);
+
+        if (cur_x < minx) {
+            minx = (int16_t)cur_x;
+        }
+        if (cur_x > maxx) {
+            maxx = (int16_t)cur_x;
+        }
+        if (cur_y < miny) {
+            miny = (int16_t)cur_y;
+        }
+        if (cur_y > maxy) {
+            maxy = (int16_t)cur_y;
         }
 
         // fill the current point with fill color
@@ -365,7 +388,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     }
 
     // set dirty the area so displayio will draw
-    displayio_area_t area = { 0, 0, destination->width, destination->height };
+    displayio_area_t area = { minx, miny, maxx + 1, maxy + 1};
     displayio_bitmap_set_dirty_area(destination, &area);
 
 }
