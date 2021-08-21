@@ -19,3 +19,5 @@
 
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+#define MICROPY_FATFS_EXFAT 0

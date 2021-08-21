@@ -163,8 +163,11 @@
 /  memory for the working buffer, memory management functions, ff_memalloc() and
 /  ff_memfree() in ffsystem.c, need to be added to the project. */
 
-
+#ifdef MICROPY_FATFS_LFN_UNICODE
+#define FF_LFN_UNICODE  (MICROPY_FATFS_LFN_UNICODE)
+#else
 #define FF_LFN_UNICODE  0
+#endif
 /* This option switches the character encoding on the API when LFN is enabled.
 /
 /   0: ANSI/OEM in current CP (TCHAR = char)

@@ -60,6 +60,7 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
+#define CIRCUITPY_MICROPYTHON_ADVANCED (1)
 // Printing debug to stderr may give tests which
 // check stdout a chance to pass, etc.
 #define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)

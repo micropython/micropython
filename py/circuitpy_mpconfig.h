@@ -132,12 +132,14 @@
 //
 // 1 = SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_ENABLE_LFN      (1)
+// Code page is ignored because unicode is enabled.
 // Don't use parens on the value below because it gets combined with a prefix in
 // the preprocessor.
 #define MICROPY_FATFS_LFN_CODE_PAGE   437
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
+#define MICROPY_FATFS_LFN_UNICODE      2  // UTF-8
 
 // Only enable this if you really need it. It allocates a byte cache of this size.
 // #define MICROPY_FATFS_MAX_SS           (4096)
@@ -208,6 +210,12 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+
+#define CIRCUITPY_MICROPYTHON_ADVANCED        (CIRCUITPY_FULL_BUILD)
+
+#ifndef MICROPY_FATFS_EXFAT
+#define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
+#endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //

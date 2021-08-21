@@ -41,6 +41,13 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_bu
 /******************************************************************************/
 /* str                                                                        */
 
+
+// These settings approximate CPython's printability. It is not
+// exhaustive and may print "unprintable" characters. All ASCII control codes
+// are escaped along with variable space widths and paragraph designators.
+// Unlike CPython, we do not escape private use codes or reserved characters.
+// We assume that the unicode is well formed.
+// CPython policy is documented here: https://github.com/python/cpython/blob/bb3e0c240bc60fe08d332ff5955d54197f79751c/Objects/unicodectype.c#L147-L159
 STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint str_len) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
@@ -61,25 +68,26 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
+        const byte *start = s;
         s = utf8_next_char(s);
         if (ch == quote_char) {
             mp_printf(print, "\\%c", quote_char);
         } else if (ch == '\\') {
             mp_print_str(print, "\\\\");
-        } else if (32 <= ch && ch <= 126) {
-            mp_printf(print, "%c", ch);
         } else if (ch == '\n') {
             mp_print_str(print, "\\n");
         } else if (ch == '\r') {
             mp_print_str(print, "\\r");
         } else if (ch == '\t') {
             mp_print_str(print, "\\t");
-        } else if (ch < 0x100) {
+        } else if (ch <= 0x1f || (0x7f <= ch && ch <= 0xa0) || ch == 0xad) {
             mp_printf(print, "\\x%02x", ch);
-        } else if (ch < 0x10000) {
+        } else if ((0x2000 <= ch && ch <= 0x200f) || ch == 0x2028 || ch == 0x2029) {
             mp_printf(print, "\\u%04x", ch);
         } else {
-            mp_printf(print, "\\U%08x", ch);
+            // Print the full character out.
+            int width = s - start;
+            mp_print_strn(print, (const char *)start, width, 0, ' ', width);
         }
     }
     mp_printf(print, "%c", quote_char);

@@ -39,3 +39,5 @@
 // The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
 // #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 // #define LSE_VALUE  ((uint32_t)32000U)
+
+#define MICROPY_FATFS_EXFAT 0

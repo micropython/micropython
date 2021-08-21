@@ -266,7 +266,7 @@ msgstr "l'objet %s ne supporte pas l'assignation d'éléments"
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr "L’objet '%s' ne prend pas en charge la suppression d’éléments"
+msgstr "L'objet '%s' ne prend pas en charge la suppression d'éléments"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
