@@ -26,11 +26,13 @@
  */
 
 #include <stdint.h>
-#include "supervisor/port.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/board.h"
+#include "supervisor/port.h"
 #include "lib/timeutils/timeutils.h"
 
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #ifdef CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
@@ -366,7 +368,11 @@ void port_idle_until_interrupt(void) {
     if (stm32_peripherals_rtc_alarm_triggered(PERIPHERALS_ALARM_A)) {
         return;
     }
-    __WFI();
+    common_hal_mcu_disable_interrupts();
+    if (!background_callback_pending()) {
+        __WFI();
+    }
+    common_hal_mcu_enable_interrupts();
 }
 
 // Required by __libc_init_array in startup code if we are compiling using

@@ -27,6 +27,8 @@
 #ifndef CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
 #define CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
 
+#include <stdbool.h>
+
 /** Background callbacks are a linked list of tasks to call in the background.
  *
  * Include a member of type `background_callback_t` inside an object
@@ -68,6 +70,10 @@ void background_callback_add(background_callback_t *cb, background_callback_fun 
 /* Run all background callbacks.  Normally, this is done by the supervisor
  * whenever the list is non-empty */
 void background_callback_run_all(void);
+
+/* True when a background callback is pending. Helpful for checking background state when
+ * interrupts are disabled. */
+bool background_callback_pending(void);
 
 /* During soft reset, remove all pending callbacks and clear the critical section flag */
 void background_callback_reset(void);

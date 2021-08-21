@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 
@@ -53,8 +54,6 @@
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
 #include "src/common/pico_time/include/pico/time.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
-
-#include "tusb.h"
 
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
@@ -233,7 +232,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready()) {
+    if (!background_callback_pending()) {
 //	asm volatile ("dsb 0xF":::"memory");
 //        __wfi();
     }

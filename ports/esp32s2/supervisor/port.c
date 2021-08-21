@@ -48,6 +48,7 @@
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/rtc/__init__.h"
@@ -329,7 +330,9 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 // On the ESP we use FreeRTOS notifications instead of interrupts so this is a
 // bit of a misnomer.
 void port_idle_until_interrupt(void) {
-    xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
+    if (!background_callback_pending()) {
+        xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
+    }
 }
 
 // Wrap main in app_main that the IDF expects.

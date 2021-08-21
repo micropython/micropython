@@ -80,6 +80,7 @@
 #include "shared_timers.h"
 #include "reset.h"
 
+#include "supervisor/background_callback.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/tick.h"
@@ -628,7 +629,7 @@ void port_idle_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready() && sleep_ok && !_woken_up) {
+    if (!background_callback_pending() && sleep_ok && !_woken_up) {
         __DSB();
         __WFI();
     }
