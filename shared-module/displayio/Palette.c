@@ -85,7 +85,7 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
             return true;
         }
         uint8_t pixel_hue = self->colors[palette_index].hue;
-        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, color);
+        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, color);
     } else if (colorspace->grayscale) {
         size_t bitmask = (1 << colorspace->depth) - 1;
         *color = (self->colors[palette_index].luma >> colorspace->grayscale_bit) & bitmask;
