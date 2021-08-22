@@ -360,6 +360,11 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
@@ -383,7 +388,35 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
     return self->nic_type->ioctl(self, request, arg, errcode);
 }
 
+mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->nic == MP_OBJ_NULL) {
+        return MP_STREAM_ERROR;
+    }
+    mp_int_t ret = self->nic_type->recv(self, (byte *)buf, size, errcode);
+    if (ret < 0) {
+        ret = MP_STREAM_ERROR;
+        *errcode = -(*errcode); // expects a positive error code
+    }
+    return ret;
+}
+
+mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->nic == MP_OBJ_NULL) {
+        return MP_STREAM_ERROR;
+    }
+    mp_int_t ret = self->nic_type->send(self, buf, size, errcode);
+    if (ret < 0) {
+        ret = MP_STREAM_ERROR;
+        *errcode = -(*errcode); // expects a positive error code
+    }
+    return ret;
+}
+
 STATIC const mp_stream_p_t socket_stream_p = {
+    .read = socket_read,
+    .write = socket_write,
     .ioctl = socket_ioctl,
     .is_text = false,
 };
