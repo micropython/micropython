@@ -296,13 +296,6 @@ bool displayio_area_compute_overlap(const displayio_area_t *a,
     return true;
 }
 
-void displayio_copy_coords(const displayio_area_t *src, displayio_area_t *dest) {
-    dest->x1 = src->x1;
-    dest->y1 = src->y1;
-    dest->x2 = src->x2;
-    dest->y2 = src->y2;
-}
-
 bool displayio_area_empty(const displayio_area_t *a) {
     return (a->x1 == a->x2) || (a->y1 == a->y2);
 }
@@ -325,11 +318,11 @@ void displayio_area_union(const displayio_area_t *a,
     displayio_area_t *u) {
 
     if (displayio_area_empty(a)) {
-        displayio_copy_coords(b, u);
+        displayio_area_copy(b, u);
         return;
     }
     if (displayio_area_empty(b)) {
-        displayio_copy_coords(a, u);
+        displayio_area_copy(a, u);
         return;
     }
     u->x1 = MIN(a->x1, b->x1);
