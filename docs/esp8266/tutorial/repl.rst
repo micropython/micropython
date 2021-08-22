@@ -18,9 +18,9 @@ the REPL directly from your PC.  Otherwise you will need to have a way of
 communicating with the UART.
 
 To access the prompt over USB-serial you need to use a terminal emulator program.
-On Windows TeraTerm is a good choice, on Mac you can use the built-in screen
-program, and Linux has picocom and minicom.  Of course, there are many other
-terminal programs that will work, so pick your favourite!
+On Windows TeraTerm is a good choice, on Mac you can use the built-in ``screen``
+program, and Linux has ``picocom`` and ``minicom``.  Of course, there are many
+other terminal programs that will work, so pick your favourite!
 
 For example, on Linux you can try running::
 
@@ -37,9 +37,9 @@ WebREPL allows you to use the Python prompt over WiFi, connecting through a
 browser. The latest versions of Firefox and Chrome are supported.
 
 For your convenience, WebREPL client is hosted at
-`<http://micropython.org/webrepl>`__ . Alternatively, you can install it
+`<http://micropython.org/webrepl>`__. Alternatively, you can install it
 locally from the the GitHub repository
-`<https://github.com/micropython/webrepl>`__ .
+`<https://github.com/micropython/webrepl>`__.
 
 Before connecting to WebREPL, you should set a password and enable it via
 a normal serial connection. Initial versions of MicroPython for ESP8266
@@ -144,9 +144,9 @@ function::
 
     >>> def toggle(p):
     ...    p.value(not p.value())
-    ...    
-    ...    
-    ...    
+    ...
+    ...
+    ...
     >>>
 
 In the above, you needed to press the Enter key three times in a row to finish
@@ -169,9 +169,9 @@ print some text instead of calling toggle, to see the effect)::
     >>> while True:
     ...     toggle(pin)
     ...     time.sleep_ms(500)
-    ...    
-    ...    
-    ...    
+    ...
+    ...
+    ...
     >>>
 
 This will toggle the LED at 1Hz (half a second on, half a second off).  To stop
@@ -189,7 +189,7 @@ paste a chunk of text into the REPL.  If you press ctrl-E you will see the
 paste-mode prompt::
 
     paste mode; Ctrl-C to cancel, Ctrl-D to finish
-    === 
+    ===
 
 You can then paste (or type) your text in.  Note that none of the special keys
 or commands work in paste mode (eg Tab or backspace), they are just accepted
