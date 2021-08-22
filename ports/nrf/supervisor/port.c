@@ -364,12 +364,9 @@ void port_idle_until_interrupt(void) {
 
     sd_softdevice_is_enabled(&sd_enabled);
     if (sd_enabled) {
-        uint8_t is_nested_critical_region;
-        sd_nvic_critical_region_enter(&is_nested_critical_region);
         if (!background_callback_pending()) {
             sd_app_evt_wait();
         }
-        sd_nvic_critical_region_exit(is_nested_critical_region);
     } else {
         // Call wait for interrupt ourselves if the SD isn't enabled.
         // Note that `wfi` should be called with interrupts disabled,
