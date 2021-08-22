@@ -35,6 +35,9 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+#define MOD_NETWORK_STA_IF (0)
+#define MOD_NETWORK_AP_IF (1)
+
 #if MICROPY_PY_LWIP
 
 struct netif;
