@@ -172,7 +172,7 @@ Extending built-in libraries from Python
 
 In most cases, the above modules are actually named ``umodule`` rather than
 ``module``, but MicroPython will alias any module prefixed with a ``u`` to the
-non-``u`` version. However a file (or :term:``frozen module``) named
+non-``u`` version. However a file (or :term:`frozen module`) named
 ``module.py`` will take precedence over this alias.
 
 This allows the user to provide an extended implementation of a built-in library
