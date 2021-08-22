@@ -54,6 +54,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->u_param.domain = MOD_NETWORK_AF_INET;
     s->u_param.type = MOD_NETWORK_SOCK_STREAM;
     s->u_param.fileno = -1;
+    s->u_param.bound = false;
     if (n_args >= 1) {
         s->u_param.domain = mp_obj_get_int(args[0]);
         if (n_args >= 2) {
@@ -63,7 +64,10 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
             }
         }
     }
-
+    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    s->timeout = 0;
+    s->state = NULL;
+    #endif
     return MP_OBJ_FROM_PTR(s);
 }
 

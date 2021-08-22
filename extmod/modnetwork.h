@@ -35,6 +35,9 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+#define MOD_NETWORK_STA_IF      (0)
+#define MOD_NETWORK_AP_IF       (1)
+
 #if MICROPY_PY_LWIP
 
 struct netif;
@@ -82,9 +85,15 @@ typedef struct _mod_network_socket_obj_t {
             uint8_t domain;
             uint8_t type;
             int8_t fileno;
+            uint8_t bound;
         } u_param;
         mp_uint_t u_state;
     };
+    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    // Extended socket state for NICs/ports that need it.
+    int32_t timeout;
+    void *state;
+    #endif
 } mod_network_socket_obj_t;
 
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
