@@ -260,9 +260,6 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         return;
     }
 
-
-
-
     uint32_t current_point_color_value;
 
     // the list of points that we'll check
@@ -276,8 +273,8 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
         );
 
     int16_t minx = x;
-    int16_t miny = x;
-    int16_t maxx = y;
+    int16_t miny = y;
+    int16_t maxx = x;
     int16_t maxy = y;
 
     if (replaced_color_value == INT_MAX) {
