@@ -39,7 +39,6 @@
 #if MICROPY_PY_NETWORK
 
 #if MICROPY_PY_LWIP
-
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
 #include "lwip/dns.h"
@@ -47,40 +46,6 @@
 #include "lwip/apps/mdns.h"
 #include "extmod/network_cyw43.h"
 #include "drivers/cyw43/cyw43.h"
-
-// Poll lwIP every 128ms
-#define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
-
-u32_t sys_now(void) {
-    return mp_hal_ticks_ms();
-}
-
-STATIC void pyb_lwip_poll(void) {
-    #if MICROPY_PY_WIZNET5K
-    // Poll the NIC for incoming data
-    wiznet5k_poll();
-    #endif
-
-    // Run the lwIP internal updates
-    sys_check_timeouts();
-}
-
-void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
-    if (LWIP_TICK(ticks_ms)) {
-        pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
-    }
-
-    #if MICROPY_PY_NETWORK_CYW43
-    if (cyw43_poll) {
-        if (cyw43_sleep != 0) {
-            if (--cyw43_sleep == 0) {
-                pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
-            }
-        }
-    }
-    #endif
-}
-
 #endif
 
 /// \module network - network configuration

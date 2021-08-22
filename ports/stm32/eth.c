@@ -29,7 +29,7 @@
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
 #include "pin_static_af.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "mpu.h"
 #include "eth.h"
 

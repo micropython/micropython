@@ -267,7 +267,9 @@ endif
 
 EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
-        )
+	modnetwork.c \
+	modusocket.c \
+	)
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
@@ -286,6 +288,7 @@ SRC_C += \
 	usbd_hid_interface.c \
 	usbd_msc_interface.c \
 	mphalport.c \
+	mpnetworkport.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \
@@ -329,9 +332,7 @@ SRC_C += \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	modusocket.c \
 	network_lan.c \
-	modnetwork.c \
 	extint.c \
 	usrsw.c \
 	rng.c \

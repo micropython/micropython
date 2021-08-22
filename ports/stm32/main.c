@@ -39,6 +39,7 @@
 #include "lib/littlefs/lfs1_util.h"
 #include "lib/littlefs/lfs2.h"
 #include "lib/littlefs/lfs2_util.h"
+#include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
@@ -83,7 +84,6 @@
 #include "servo.h"
 #include "dac.h"
 #include "can.h"
-#include "modnetwork.h"
 
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
