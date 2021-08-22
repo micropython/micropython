@@ -34,7 +34,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "pin.h"
 #include "spi.h"
 

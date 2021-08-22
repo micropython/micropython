@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "spi.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP
 
