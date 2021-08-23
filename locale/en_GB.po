@@ -2606,6 +2606,10 @@ msgstr "axis must be None, or an integer"
 msgid "axis too long"
 msgstr "axis too long"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
+msgstr ""
+
 #: py/builtinevex.c
 msgid "bad compile mode"
 msgstr "bad compile mode"
@@ -3961,6 +3965,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4403,6 +4408,10 @@ msgstr "unsupported types for %q: '%q', '%q'"
 #, c-format
 msgid "value must fit in %d byte(s)"
 msgstr "value must fit in %d byte(s)"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
