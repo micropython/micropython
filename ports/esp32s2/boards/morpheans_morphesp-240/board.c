@@ -198,7 +198,6 @@ void board_init(void) {
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS,   // set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // write memory command
-        0x37,           // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
         NULL,           // There is no backlight pin, defined for now.

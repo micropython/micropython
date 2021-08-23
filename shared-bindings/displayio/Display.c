@@ -54,7 +54,7 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
+//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -100,7 +100,6 @@
 //|         :param int set_column_command: Command used to set the start and end columns to update
 //|         :param int set_row_command: Command used so set the start and end rows to update
 //|         :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
-//|         :param int set_vertical_scroll: Command used to set the first row to show
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
 //|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
@@ -111,6 +110,7 @@
 //|         :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on.
 //|         :param bool SH1107_addressing: Special quirk for SH1107, use upper/lower column set and page set
+//|         :param int set_vertical_scroll: This parameter is accepted but ignored for backwards compatibility. It will be removed in a future release.
 //|         """
 //|         ...
 //|
@@ -184,7 +184,6 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_reverse_bytes_in_word].u_bool,
         args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
         args[ARG_write_ram_command].u_int,
-        args[ARG_set_vertical_scroll].u_int,
         bufinfo.buf, bufinfo.len,
         MP_OBJ_TO_PTR(backlight_pin),
         args[ARG_brightness_command].u_int,
