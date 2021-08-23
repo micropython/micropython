@@ -114,6 +114,9 @@ endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
+ifeq ($(CIRCUITPY_ATEXIT),1)
+SRC_PATTERNS += atexit/%
+endif
 ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
 SRC_PATTERNS += audiobusio/%
 endif
@@ -485,6 +488,7 @@ SRC_SHARED_MODULE_ALL = \
 	_stage/__init__.c \
 	aesio/__init__.c \
 	aesio/aes.c \
+	atexit/__init__.c \
 	audiocore/RawSample.c \
 	audiocore/WaveFile.c \
 	audiocore/__init__.c \
