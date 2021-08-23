@@ -70,6 +70,10 @@
 #include "shared-bindings/alarm/__init__.h"
 #endif
 
+#if CIRCUITPY_ATEXIT
+#include "shared-module/atexit/__init__.h"
+#endif
+
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
@@ -213,6 +217,9 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
+    #if CIRCUITPY_ATEXIT
+    shared_module_atexit_execute(exec_result);
+    #endif
     return true;
 }
 
@@ -253,6 +260,11 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
 
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
+
+    #if CIRCUITPY_ATEXIT
+    atexit_reset();
+    #endif
+
     // Turn off the display and flush the filesystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
@@ -759,6 +771,13 @@ STATIC int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
+    #if CIRCUITPY_ATEXIT
+    pyexec_result_t result;
+    shared_module_atexit_execute(&result);
+    if (result.return_code == PYEXEC_DEEP_SLEEP) {
+        exit_code = PYEXEC_DEEP_SLEEP;
+    }
+    #endif
     cleanup_after_vm(heap, MP_OBJ_SENTINEL);
     #if CIRCUITPY_STATUS_LED
     status_led_init();
@@ -873,6 +892,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_ALARM
     common_hal_alarm_gc_collect();
+    #endif
+
+    #if CIRCUITPY_ATEXIT
+    atexit_gc_collect();
     #endif
 
     #if CIRCUITPY_DISPLAYIO

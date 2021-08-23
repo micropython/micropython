@@ -59,6 +59,10 @@ void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
 
+#if CIRCUITPY_ATEXIT
+int pyexec_exit_handler(const void *source, pyexec_result_t *result);
+#endif
+
 #if MICROPY_REPL_INFO
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
