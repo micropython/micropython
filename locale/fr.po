@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-23 14:19+0000\n"
+"PO-Revision-Date: 2021-08-23 20:20+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -659,7 +659,7 @@ msgstr "CRC ou somme de contrôle invalide"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "Appelez super() .__init__() avant d'accéder à l'objet natif."
+msgstr "Appelez super().__init__() avant d'accéder à l'objet natif."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
