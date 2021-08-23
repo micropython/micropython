@@ -91,7 +91,6 @@ void board_init(void) {
         0, // Set column command
         0, // Set row command
         0, // Write memory command
-        0xd3, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
         NULL,
