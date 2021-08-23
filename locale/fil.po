@@ -193,7 +193,7 @@ msgstr ""
 msgid "'%q' object is not an iterator"
 msgstr ""
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr ""
 

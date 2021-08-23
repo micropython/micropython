@@ -194,7 +194,7 @@ msgstr "Obiekt '%q' nie wspiera '%q'"
 msgid "'%q' object is not an iterator"
 msgstr "Obiekt '%q' nie jest iteratorem"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "Obiekt '%q' nie jest wywoływalny"
 

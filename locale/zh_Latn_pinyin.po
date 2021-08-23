@@ -199,7 +199,7 @@ msgstr "'%q' duì xiàng bù zhī chí '%q'"
 msgid "'%q' object is not an iterator"
 msgstr "%q' duì xiàng bù shì yí gè liú lǎn qì"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "%q' duì xiàng bù kě diào yòng"
 
