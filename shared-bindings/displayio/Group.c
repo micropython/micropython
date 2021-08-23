@@ -335,7 +335,7 @@ STATIC mp_obj_t displayio_group_obj_sort(size_t n_args, const mp_obj_t *pos_args
         args[i] = pos_args[i];
     }
     args[0] = MP_OBJ_FROM_PTR(self->members);
-    return mp_obj_list_sort(n_args, pos_args, kw_args);
+    return mp_obj_list_sort(n_args, args, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_sort_obj, 1, displayio_group_obj_sort);
 
