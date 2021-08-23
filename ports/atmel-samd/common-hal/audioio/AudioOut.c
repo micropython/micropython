@@ -248,7 +248,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     }
     self->tc_index = tc_index;
 
-    // Use the 48mhz clocks on both the SAMD21 and 51 because we will be going much slower.
+    // Use the 48MHz clocks on both the SAMD21 and 51 because we will be going much slower.
     uint8_t tc_gclk = 0;
     #ifdef SAM_D5X_E5X
     tc_gclk = 1;
@@ -469,8 +469,8 @@ bool common_hal_audioio_audioout_get_paused(audioio_audioout_obj_t *self) {
 }
 
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t *self) {
-    Tc *timer = tc_insts[self->tc_index];
-    timer->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;
+    // Do not stop the timer here. There are occasional audible artifacts if the DMA-triggering timer
+    // is stopped between audio plays. (Heard this only on PyPortal with one particular 32kHz sample.)
     audio_dma_stop(&self->left_dma);
     #ifdef SAM_D5X_E5X
     audio_dma_stop(&self->right_dma);

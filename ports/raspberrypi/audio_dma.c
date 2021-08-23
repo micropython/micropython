@@ -137,7 +137,7 @@ STATIC void audio_dma_convert_samples(
     #pragma GCC diagnostic pop
 }
 
-// channel_idx is 0 or 1.
+// buffer_idx is 0 or 1.
 STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
     size_t dma_channel = dma->channel[buffer_idx];
 
