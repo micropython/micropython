@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/runtime.h"
@@ -42,7 +43,9 @@ typedef struct _pyb_rtc_obj_t {
 #define MEM_USER_MAGIC_ADDR (MEM_CAL_ADDR + 1)
 #define MEM_USER_LEN_ADDR   (MEM_USER_MAGIC_ADDR + 1)
 #define MEM_USER_DATA_ADDR  (MEM_USER_LEN_ADDR + 1)
-#define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4)
+#define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4) // 492
+#define MEM_USER_SLOTS_SIZE 4 /* Slots have 4 bytes, see https://nodemcu.readthedocs.io/en/release/modules/rtcmem/ */
+#define MEM_USER_SLOTS      (MEM_USER_MAXLEN/MEM_USER_SLOTS_SIZE)
 
 // singleton RTC object
 STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
@@ -166,6 +169,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_d
 STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     uint8_t rtcram[MEM_USER_MAXLEN];
     uint32_t len;
+    uint32_t idx;
 
     if (n_args == 1) {
         // read RTC memory
@@ -174,8 +178,9 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
         system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_obj_new_bytes(rtcram, len);
-    } else {
-        // write RTC memory
+    }
+    else if (n_args == 2)  {
+        // write RTC memory: [data]
 
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
@@ -196,9 +201,78 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
 
         return mp_const_none;
     }
+    else if (n_args == 3)  {
+        // read addressed memory slot: [32bit slot ID, number of slots]
 
+//         idx = atoi(args[1]); // Linker error: undefined reference to `atoi'
+        idx = (uint32_t)(args[1]); 
+        
+//         len = atoi(args[2]); // Linker error: undefined reference to `atoi'
+        len = (uint32_t)(args[2]); 
+
+        /* For some reason idx and len somehow get multiplied by 2 and +1! 
+           We need to revert this. Since indx is always a multiple of 2, we savely can divide it again by 2 */
+        idx = (idx - 1) / 2; // Slot ID, 0..122
+        len = (len - 1) / 2; // Number of 4-byte slots, 0..123
+        
+        if (idx > MEM_USER_SLOTS) { // idx must be 0..122
+            mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
+        }
+        
+        if ((idx + len) > MEM_USER_SLOTS) {
+            mp_raise_ValueError(MP_ERROR_TEXT("read beyond valid range"));
+        }
+
+        if (len == 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("must read at least 1 slot"));
+        }
+
+        system_rtc_mem_read(MEM_USER_DATA_ADDR + idx, rtcram, len * 4);
+        return mp_obj_new_bytes(rtcram, len * 4);
+    }
+    else if (n_args == 4)  {
+        // write addressed memory slot: [32bit slot ID, number of slots, data]
+
+//         idx = atoi(args[1]); // Linker error: undefined reference to `atoi'
+        idx = (uint32_t)(args[1]); 
+        
+//         len = atoi(args[2]); // Linker error: undefined reference to `atoi'
+        len = (uint32_t)(args[2]); 
+
+        /* For some reason idx and len somehow get multiplied by 2 and +1! 
+           We need to revert this. Since indx is always a multiple of 2, we savely can divide it again by 2 */
+        idx = (idx - 1) / 2; // Slot ID, 0..122
+        len = (len - 1) / 2; // Number of 4-byte slots, 0..123
+        
+        if (idx > MEM_USER_SLOTS) { // idx must be 0..122
+            mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
+        }
+        
+        if ((idx + len) > MEM_USER_SLOTS) {
+            mp_raise_ValueError(MP_ERROR_TEXT("write beyond valid range"));
+        }
+        
+        if (len == 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("must write at least 1 slot"));
+        }
+            
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+
+        int i = 0;
+        for (; i < bufinfo.len; i++) {
+            rtcram[i] = ((uint8_t *)bufinfo.buf)[i];
+        }
+
+        system_rtc_mem_write(MEM_USER_DATA_ADDR + idx, rtcram, len * 4);
+
+        return mp_const_none;
+    }
+    else {
+        return mp_const_none;
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_memory_obj, 1, 2, pyb_rtc_memory);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_memory_obj, 1, 4, pyb_rtc_memory);
 
 STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time_in) {
     (void)self_in; // unused
