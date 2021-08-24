@@ -88,7 +88,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
     #endif
 
-    self->xSemaphore = xSemaphoreCreateMutexStatic(&self->xSemaphoreBuffer);
+    self->xSemaphore = xSemaphoreCreateMutex();
     if (self->xSemaphore == NULL) {
         mp_raise_RuntimeError(translate("Unable to create lock"));
     }
