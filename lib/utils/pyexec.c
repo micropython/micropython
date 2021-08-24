@@ -370,7 +370,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
             }
             goto reset;
         }
-        mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
+        serial_write_compressed(translate("raw REPL; CTRL-B to exit\n"));
         goto reset;
     } else if (c == CHAR_CTRL_B) {
         // change to friendly REPL
@@ -469,7 +469,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
-            mp_hal_stdout_tx_str("\r\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\r\n=== ");
+            serial_write_compressed(translate("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== "));
             vstr_reset(MP_STATE_VM(repl_line));
             repl.paste_mode = true;
             return 0;
@@ -545,7 +545,7 @@ int pyexec_raw_repl(void) {
     vstr_init(&line, 32);
 
 raw_repl_reset:
-    mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
+    serial_write_compressed(translate("raw REPL; CTRL-B to exit\n"));
 
     for (;;) {
         vstr_reset(&line);
