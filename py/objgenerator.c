@@ -185,11 +185,13 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_ASYNC_AWAIT
     if (self->coroutine_generator) {
-        mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-        return;
+        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_coroutine, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+    } else {
+        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_generator, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
     }
-    #endif
+    #else
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+    #endif
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
