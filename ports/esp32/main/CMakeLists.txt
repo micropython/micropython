@@ -53,6 +53,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/help.c
     ${PROJECT_DIR}/modutime.c
     ${PROJECT_DIR}/moduos.c
+    ${PROJECT_DIR}/machine_bitstream.c
     ${PROJECT_DIR}/machine_timer.c
     ${PROJECT_DIR}/machine_pin.c
     ${PROJECT_DIR}/machine_touchpad.c
@@ -74,7 +75,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/esp32_rmt.c
     ${PROJECT_DIR}/esp32_ulp.c
     ${PROJECT_DIR}/modesp32.c
-    ${PROJECT_DIR}/espneopixel.c
     ${PROJECT_DIR}/machine_hw_spi.c
     ${PROJECT_DIR}/machine_wdt.c
     ${PROJECT_DIR}/mpthreadport.c

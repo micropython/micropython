@@ -92,6 +92,7 @@ the following libraries.
    framebuf.rst
    machine.rst
    micropython.rst
+   neopixel.rst
    network.rst
    uctypes.rst
 

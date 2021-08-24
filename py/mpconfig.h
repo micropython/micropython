@@ -483,7 +483,8 @@
 /* Optimisations                                                             */
 
 // Whether to use computed gotos in the VM, or a switch
-// Computed gotos are roughly 10% faster, and increase VM code size by a little
+// Computed gotos are roughly 10% faster, and increase VM code size by a little,
+// e.g. ~1kiB on Cortex M4.
 // Note: enabling this will use the gcc-specific extensions of ranged designated
 // initialisers and addresses of labels, which are not part of the C99 standard.
 #ifndef MICROPY_OPT_COMPUTED_GOTO
@@ -1468,6 +1469,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE (0)
+#endif
+
+// Whether to include: bitstream
+#ifndef MICROPY_PY_MACHINE_BITSTREAM
+#define MICROPY_PY_MACHINE_BITSTREAM (0)
 #endif
 
 // Whether to include: time_pulse_us

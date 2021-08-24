@@ -34,7 +34,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
+GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -130,7 +130,7 @@ endif
 
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym=_estack_reserve=8
-LIBS = "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
+LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -318,6 +318,7 @@ SRC_C += \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
+	machine_bitstream.c \
 	machine_i2c.c \
 	machine_i2s.c \
 	machine_spi.c \
