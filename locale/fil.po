@@ -6,14 +6,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2018-12-20 22:15-0800\n"
-"Last-Translator: Timothy <me@timothygarcia.ca>\n"
+"PO-Revision-Date: 2021-08-23 14:19+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: fil\n"
 "Language: fil\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
+"|| n % 10 == 6 || n % 10 == 9);\n"
+"X-Generator: Weblate 4.8.1-dev\n"
 
 #: main.c
 msgid ""
@@ -191,7 +193,7 @@ msgstr ""
 msgid "'%q' object is not an iterator"
 msgstr ""
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr ""
 
@@ -2503,7 +2505,7 @@ msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
 
 #: py/objtype.c
 msgid "__init__() should return None"
-msgstr "__init __ () dapat magbalik na None"
+msgstr "__init__() dapat magbalik na None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
@@ -2601,6 +2603,10 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
 msgstr ""
 
 #: py/builtinevex.c
@@ -3973,6 +3979,7 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4416,6 +4423,10 @@ msgstr ""
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c

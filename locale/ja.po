@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-11-27 18:34+0000\n"
-"Last-Translator: sporeball <sporeballdev@gmail.com>\n"
+"PO-Revision-Date: 2021-08-24 06:48+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.8.1-dev\n"
 
 #: main.c
 msgid ""
@@ -194,7 +194,7 @@ msgstr "'%q' オブジェクトは '%q' に対応していません"
 msgid "'%q' object is not an iterator"
 msgstr "オブジェクト'%q'はイテレータではありません"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "オブジェクト'%q'は呼び出し可能ではありません"
 
@@ -313,7 +313,7 @@ msgstr "'data'には整数の引数が必要"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr "'label'には１つの引数が必要"
+msgstr "'label'には1つの引数が必要"
 
 #: py/compile.c
 msgid "'return' outside function"
@@ -2590,6 +2590,10 @@ msgstr ""
 msgid "axis too long"
 msgstr ""
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
+msgstr ""
+
 #: py/builtinevex.c
 msgid "bad compile mode"
 msgstr ""
@@ -3948,6 +3952,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4389,6 +4394,10 @@ msgstr "%q が対応していない型: '%q', '%q'"
 #, c-format
 msgid "value must fit in %d byte(s)"
 msgstr "値は%dバイトに収まらなければなりません"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-21 08:36+0000\n"
+"PO-Revision-Date: 2021-08-23 23:02+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.8.1-dev\n"
 
 #: main.c
 msgid ""
@@ -174,7 +174,7 @@ msgstr "%q ska vara en int"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "% q () tar% d positionsargument men% d gavs"
+msgstr "% q() tar %d positionsargument men %d gavs"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -197,7 +197,7 @@ msgstr "Objektet '%q' stöder inte '%q'"
 msgid "'%q' object is not an iterator"
 msgstr "Objektet '%q' är inte en iterator"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "Objektet '%q' kan inte anropas"
 
@@ -2525,7 +2525,7 @@ msgstr "Du begärt att starta i felsäkert läge genom att "
 
 #: py/objtype.c
 msgid "__init__() should return None"
-msgstr "__init __ () ska returnera None"
+msgstr "__init __() ska returnera None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
@@ -2624,6 +2624,10 @@ msgstr "axis måste vara None eller ett heltal"
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
 msgstr "axis för lång"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
+msgstr "värde för bakgrund utanför målintervall"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -3985,6 +3989,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4427,6 +4432,10 @@ msgstr "typen %q stöder inte '%q', '%q'"
 #, c-format
 msgid "value must fit in %d byte(s)"
 msgstr "värdet måste passa i %d byte(s)"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
+msgstr "värde utanför målintervall"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
