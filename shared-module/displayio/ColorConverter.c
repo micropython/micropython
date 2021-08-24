@@ -96,7 +96,7 @@ uint8_t displayio_colorconverter_compute_hue(uint32_t color_rgb888) {
     return hue;
 }
 
-void displayio_colorconverter_compute_tricolor(const _displayio_colorspace_t *colorspace, uint8_t pixel_hue, uint8_t pixel_luma, uint32_t *color) {
+void displayio_colorconverter_compute_tricolor(const _displayio_colorspace_t *colorspace, uint8_t pixel_hue, uint32_t *color) {
 
     int16_t hue_diff = colorspace->tricolor_hue - pixel_hue;
     if ((-10 <= hue_diff && hue_diff <= 10) || hue_diff <= -220 || hue_diff >= 220) {
@@ -244,7 +244,7 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
             return;
         }
         uint8_t pixel_hue = displayio_colorconverter_compute_hue(pixel);
-        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, &output_color->pixel);
+        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, &output_color->pixel);
         return;
     } else if (colorspace->grayscale && colorspace->depth <= 8) {
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
