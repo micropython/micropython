@@ -175,8 +175,8 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     uint32_t best_error = system_clock;
 
     for (uint32_t denominator = 0xffff; denominator > 0; denominator--) {
-        uint32_t numerator = (denominator * sample_rate) / system_clock;
-        uint32_t remainder = (denominator * sample_rate) % system_clock;
+        uint32_t numerator = ((uint64_t)denominator * sample_rate) / system_clock;
+        uint32_t remainder = ((uint64_t)denominator * sample_rate) % system_clock;
         if (remainder > (system_clock / 2)) {
             numerator += 1;
             remainder = system_clock - remainder;
