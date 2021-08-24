@@ -44,8 +44,6 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "lwip/apps/mdns.h"
-#include "extmod/network_cyw43.h"
-#include "drivers/cyw43/cyw43.h"
 #endif
 
 /// \module network - network configuration
@@ -89,32 +87,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-
-    #if defined(MICROPY_HW_ETH_MDC)
-    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
-    #endif
-    #if MICROPY_PY_NETWORK_CYW43
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
-    #endif
-
-    #if MICROPY_PY_WIZNET5K
-    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
-    #endif
-    #if MICROPY_PY_CC3K
-    { MP_ROM_QSTR(MP_QSTR_CC3K), MP_ROM_PTR(&mod_network_nic_type_cc3k) },
-    #endif
-
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
 
+    // Defined per port in mpconfigport.h
+    MICROPY_PORT_NETWORK_INTERFACES
+
     // Constants
-    #if MICROPY_PY_NETWORK_CYW43
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(CYW43_ITF_STA)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(CYW43_ITF_AP)},
-    #else
-    // Station/AP mode.
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(MOD_NETWORK_STA_IF) },
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(MOD_NETWORK_AP_IF) },
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

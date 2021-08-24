@@ -39,17 +39,9 @@
 #define MOD_NETWORK_AP_IF (1)
 
 #if MICROPY_PY_LWIP
-
 struct netif;
-
-extern const mp_obj_type_t network_lan_type;
-extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
-
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
-
-void wiznet5k_poll(void);
-
 #else
 
 struct _mod_network_socket_obj_t;
@@ -96,10 +88,7 @@ typedef struct _mod_network_socket_obj_t {
     #endif
 } mod_network_socket_obj_t;
 
-extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
-extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
-
-#endif
+#endif // MICROPY_PY_LWIP
 
 void mod_network_init(void);
 void mod_network_deinit(void);
