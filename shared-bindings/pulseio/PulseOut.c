@@ -42,9 +42,9 @@
 //|        for on and off pairs."""
 //|
 //|     def __init__(self, pin: microcontroller.Pin, *, frequency: int = 38000, duty_cycle: int = 1 << 15) -> None:
-//|         """Create a PulseOut object associated with the given PWMout object.
+//|         """Create a PulseOut object associated with the given pin.
 //|
-//|         :param ~microcontroller.Pin pin: PWMOut that is set to output on the desired pin.
+//|         :param ~microcontroller.Pin pin: Signal output pin
 //|         :param int frequency: Carrier signal frequency in Hertz
 //|         :param int duty_cycle: 16-bit duty cycle of carrier frequency (0 - 65536)
 //|
