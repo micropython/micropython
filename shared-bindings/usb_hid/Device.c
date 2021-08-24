@@ -126,11 +126,11 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
             1, 255, MP_QSTR_report_ids);
 
         in_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
-            MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(in_report_lengths_array, i_obj, MP_OBJ_SENTINEL)),
+            MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(in_report_lengths, i_obj, MP_OBJ_SENTINEL)),
             0, 255, MP_QSTR_in_report_lengths);
 
         out_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
-            MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(out_report_lengths_array, i_obj, MP_OBJ_SENTINEL)),
+            MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(out_report_lengths, i_obj, MP_OBJ_SENTINEL)),
             0, 255, MP_QSTR_out_report_lengths);
     }
 
