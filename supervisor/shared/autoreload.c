@@ -35,7 +35,7 @@ supervisor_allocation *next_code_allocation;
 
 static volatile uint32_t autoreload_delay_ms = 0;
 static bool autoreload_enabled = false;
-static bool autoreload_suspended = false;
+static size_t autoreload_suspended = 0;
 
 volatile bool reload_requested = false;
 
@@ -44,7 +44,7 @@ inline void autoreload_tick() {
         return;
     }
     if (autoreload_delay_ms == 1 && autoreload_enabled &&
-        !autoreload_suspended && !reload_requested) {
+        autoreload_suspended == 0 && !reload_requested) {
         mp_raise_reload_exception();
         reload_requested = true;
         supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
@@ -62,12 +62,12 @@ void autoreload_disable() {
     autoreload_enabled = false;
 }
 
-void autoreload_suspend() {
-    autoreload_suspended = true;
+void autoreload_suspend(size_t lock_mask) {
+    autoreload_suspended |= lock_mask;
 }
 
-void autoreload_resume() {
-    autoreload_suspended = false;
+void autoreload_resume(size_t lock_mask) {
+    autoreload_suspended &= ~lock_mask;
 }
 
 inline bool autoreload_is_enabled() {

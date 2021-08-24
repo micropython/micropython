@@ -755,7 +755,7 @@ STATIC int run_repl(void) {
     usb_setup_with_vm();
     #endif
 
-    autoreload_suspend();
+    autoreload_suspend(AUTORELOAD_LOCK_REPL);
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -785,7 +785,7 @@ STATIC int run_repl(void) {
     status_led_deinit();
     #endif
 
-    autoreload_resume();
+    autoreload_resume(AUTORELOAD_LOCK_REPL);
     return exit_code;
 }
 
