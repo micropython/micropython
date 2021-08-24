@@ -94,6 +94,22 @@ Methods
 
    Availability: ESP8266, ESP32
 
+.. method:: RTC.memory(idx, len, [data])
+
+   Same as `RTC.memory([data])` but allows slot wise access to the memory.
+   On the ESP8266, 122 slots with 4bytes each are available.
+   The memory stays compatible with the block read/write functionality.
+
+   Example::
+
+      import machine
+      rtc = machine.RTC()
+      writedata = b'\x20\x30\x40\x50'
+      rtc.memory(0, 1, writedata) # this command writes writedata into the first slot of the RTC memory
+      readdata = rtc.memory(0, 1) # this command puts the content of SLot 0 of the RTC memory into readdata
+      print(readdata)
+
+   Availability: ESP8266
 
 Constants
 ---------
