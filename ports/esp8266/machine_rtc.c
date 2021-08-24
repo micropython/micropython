@@ -204,10 +204,10 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     else if (n_args == 3)  {
         // read addressed memory slot: [32bit slot ID, number of slots]
 
-//         idx = atoi(args[1]); // Linker error: undefined reference to `atoi'
+//         idx = atoi(args[1]); // Linker error: undefined reference to 'atoi'
         idx = (uint32_t)(args[1]); 
         
-//         len = atoi(args[2]); // Linker error: undefined reference to `atoi'
+//         len = atoi(args[2]); // Linker error: undefined reference to 'atoi'
         len = (uint32_t)(args[2]); 
 
         /* For some reason idx and len somehow get multiplied by 2 and +1! 
@@ -233,10 +233,10 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     else if (n_args == 4)  {
         // write addressed memory slot: [32bit slot ID, number of slots, data]
 
-//         idx = atoi(args[1]); // Linker error: undefined reference to `atoi'
+//         idx = atoi(args[1]); // Linker error: undefined reference to 'atoi'
         idx = (uint32_t)(args[1]); 
         
-//         len = atoi(args[2]); // Linker error: undefined reference to `atoi'
+//         len = atoi(args[2]); // Linker error: undefined reference to 'atoi'
         len = (uint32_t)(args[2]); 
 
         /* For some reason idx and len somehow get multiplied by 2 and +1! 
