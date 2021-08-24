@@ -212,10 +212,7 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
         return false;
     }
     mp_hal_stdout_tx_str(filename);
-    const compressed_string_t* compressed = translate(" output:\n");
-    char decompressed[decompress_length(compressed)];
-    decompress(compressed, decompressed);
-    mp_hal_stdout_tx_str(decompressed);
+    serial_write_compressed(translate(" output:\n"));
     pyexec_file(filename, exec_result);
     #if CIRCUITPY_ATEXIT
     shared_module_atexit_execute(exec_result);
