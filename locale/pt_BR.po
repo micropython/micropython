@@ -198,7 +198,7 @@ msgstr "O objeto '%q' não suporta '%q'"
 msgid "'%q' object is not an iterator"
 msgstr "O objeto '%q' não é um iterador"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "O objeto '%s' não é invocável"
 
@@ -2655,6 +2655,10 @@ msgstr "eixo deve ser Nenhum ou um número inteiro"
 msgid "axis too long"
 msgstr "o eixo é muito longo"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
+msgstr ""
+
 #: py/builtinevex.c
 msgid "bad compile mode"
 msgstr "modo de compilação ruim"
@@ -4026,6 +4030,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4468,6 +4473,10 @@ msgstr "tipo sem suporte para %q: '%q', '%q'"
 #, c-format
 msgid "value must fit in %d byte(s)"
 msgstr "o valor deve caber em %d byte(s)"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

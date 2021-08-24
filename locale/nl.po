@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-12-23 20:14+0000\n"
-"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
+"PO-Revision-Date: 2021-08-23 14:19+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.8.1-dev\n"
 
 #: main.c
 msgid ""
@@ -192,7 +192,7 @@ msgstr "'%q' object ondersteunt geen '%q'"
 msgid "'%q' object is not an iterator"
 msgstr "'%q' object is geen iterator"
 
-#: py/objtype.c py/runtime.c
+#: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
 msgstr "'%q' object is niet aanroepbaar"
 
@@ -2512,7 +2512,7 @@ msgstr "Je hebt aangeven de veilige modus te starten door "
 
 #: py/objtype.c
 msgid "__init__() should return None"
-msgstr "__init __ () zou None moeten retourneren"
+msgstr "__init __() zou None moeten retourneren"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
@@ -2611,6 +2611,10 @@ msgstr "as moet None of een integer zijn"
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
 msgstr "as te lang"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "background value out of range of target"
+msgstr ""
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -3972,6 +3976,7 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -4414,6 +4419,10 @@ msgstr "niet ondersteunde types voor %q: '%q', '%q'"
 #, c-format
 msgid "value must fit in %d byte(s)"
 msgstr "waarde moet in %d byte(s) passen"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "value out of range of target"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
