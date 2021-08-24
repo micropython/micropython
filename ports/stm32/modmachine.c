@@ -158,6 +158,9 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     printf("DEVID=0x%04x\nREVID=0x%04x\n", (unsigned int)HAL_GetDEVID(), (unsigned int)HAL_GetREVID());
 
+    uint32_t hal_ver = HAL_GetHalVersion();
+    printf("HAL=%ld.%ld.%ld\n", hal_ver >> 24, (hal_ver >> 16) & 0xFF, (hal_ver >> 8) & 0xFF);
+
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
