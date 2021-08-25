@@ -660,7 +660,7 @@ def main():
         "--soft-reset",
         default=True,
         action="store_true",
-        help="Whether to perform a soft reset when connecting to the board.",
+        help="Whether to perform a soft reset when connecting to the board [default]",
     )
     group.add_argument(
         "--no-soft-reset",
@@ -684,7 +684,7 @@ def main():
         "--exclusive",
         action="store_true",
         default=True,
-        help="Open the serial device for exclusive access.",
+        help="Open the serial device for exclusive access [default]",
     )
     group.add_argument(
         "--no-exclusive",
