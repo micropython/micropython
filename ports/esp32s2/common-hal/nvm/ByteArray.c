@@ -24,9 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "common-hal/nvm/ByteArray.h"
+#include "bindings/espidf/__init__.h"
 
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "nvs_flash.h"
 
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
@@ -50,48 +54,94 @@ static void get_nvs_handle(nvs_handle_t *nvs_handle) {
     }
 }
 
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint8_t *values, uint32_t len) {
-    char index[9];
-
-    // start nvs
-    nvs_handle_t handle;
-    get_nvs_handle(&handle);
-
-    // stage flash changes
-    for (uint32_t i = 0; i < len; i++) {
-        sprintf(index, "%i", start_index + i);
-        if (nvs_set_u8(handle, (const char *)index, values[i]) != ESP_OK) {
-            return false;
-        }
+// Get a copy of the nvm data, or an array initialized to all 0 bytes if it is not present
+static esp_err_t get_bytes(nvs_handle_t handle, uint8_t **buf_out) {
+    size_t size;
+    void *buf;
+    esp_err_t result = nvs_get_blob(handle, "data", NULL, &size);
+    if (result == ESP_ERR_NVS_NOT_FOUND) {
+        size = CIRCUITPY_INTERNAL_NVM_SIZE;
+    } else if (result != ESP_OK) {
+        *buf_out = NULL;
+        return result;
     }
-
-    // commit flash changes
-    if (nvs_commit(handle) != ESP_OK) {
-        return false;
+    buf = gc_alloc(size, 0, false); // this SHOULD be the same as
+    if (result == ESP_OK) {
+        result = nvs_get_blob(handle, "data", buf, &size);
+    } else {
+        result = ESP_OK;
     }
-
-    // close nvs
-    nvs_close(handle);
-    return true;
+    *buf_out = buf;
+    return result;
 }
 
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t *values) {
-    char index[9];
+bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
+    uint32_t start_index, uint8_t *values, uint32_t len) {
 
     // start nvs
     nvs_handle_t handle;
     get_nvs_handle(&handle);
 
     // get from flash
-    for (uint32_t i = 0; i < len; i++) {
-        sprintf(index, "%i", start_index + i);
-        if (nvs_get_u8(handle, (const char *)index, &values[i]) != ESP_OK) {
-            mp_raise_RuntimeError(translate("NVS Error"));
-        }
+    uint8_t *buf = NULL;
+    esp_err_t result = get_bytes(handle, &buf);
+    if (result != ESP_OK) {
+        gc_free(buf);
+        nvs_close(handle);
+        raise_esp_error(result);
+    }
+
+    // erase old data, including 6.3.x incompatible data
+    result = nvs_erase_all(handle);
+    if (result != ESP_OK) {
+        gc_free(buf);
+        nvs_close(handle);
+        raise_esp_error(result);
+    }
+
+    // make our modification
+    memcpy(buf + start_index, values, len);
+
+    result = nvs_set_blob(handle, "data", buf, CIRCUITPY_INTERNAL_NVM_SIZE);
+    if (result != ESP_OK) {
+        gc_free(buf);
+        nvs_close(handle);
+        raise_esp_error(result);
+    }
+
+    result = nvs_commit(handle);
+    if (result != ESP_OK) {
+        gc_free(buf);
+        nvs_close(handle);
+        raise_esp_error(result);
     }
 
     // close nvs
+    gc_free(buf);
+    nvs_close(handle);
+    return true;
+}
+
+void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
+    uint32_t start_index, uint32_t len, uint8_t *values) {
+
+    // start nvs
+    nvs_handle_t handle;
+    get_nvs_handle(&handle);
+
+    // get from flash
+    uint8_t *buf;
+    esp_err_t result = get_bytes(handle, &buf);
+    if (result != ESP_OK) {
+        gc_free(buf);
+        nvs_close(handle);
+        raise_esp_error(result);
+    }
+
+    // copy the subset of data requested
+    memcpy(values, buf + start_index, len);
+
+    // close nvs
+    gc_free(buf);
     nvs_close(handle);
 }
