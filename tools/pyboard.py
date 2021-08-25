@@ -672,7 +672,7 @@ def main():
         action="store_true",
         help="Do not follow the output after running the scripts.",
     )
-    group.add_argument(
+    cmd_parser.add_argument(
         "--no-exclusive",
         action="store_true",
         help="Do not try to open the serial device for exclusive access.",
