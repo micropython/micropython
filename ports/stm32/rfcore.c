@@ -45,6 +45,8 @@
 #if MICROPY_BLUETOOTH_NIMBLE
 // For mp_bluetooth_nimble_hci_uart_wfi
 #include "nimble/nimble_npl.h"
+// For mp_bluetooth_nimble_ble_state
+#include "modbluetooth_nimble.h"
 #else
 #error "STM32WB must use NimBLE."
 #endif
@@ -261,9 +263,6 @@ void ipcc_init(uint32_t irq_pri) {
     // Enable receive IRQ on the BLE channel.
     LL_C1_IPCC_EnableIT_RXO(IPCC);
     LL_C1_IPCC_DisableReceiveChannel(IPCC, LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
-    #if !MICROPY_HW_STM32WB_TRANSPARENT_MODE
-    LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
-    #endif
     NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
     HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
 
@@ -449,12 +448,10 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
         // Clear receive channel (allows RF core to send more data to us).
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
 
-        #if !MICROPY_HW_STM32WB_TRANSPARENT_MODE
-        if (ch == IPCC_CH_BLE) {
+        if (ch == IPCC_CH_BLE && (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF)) {
             // Renable IRQs for BLE now that we've cleared the flag.
             LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
         }
-        #endif
     }
 }
 
@@ -589,6 +586,10 @@ static const struct {
 void rfcore_ble_init(void) {
     DEBUG_printf("rfcore_ble_init\n");
 
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
+        LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
+    }
+
     // Clear any outstanding messages from ipcc_init.
     tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
 
@@ -646,7 +647,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
                 break;
             }
             #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
-            if (LL_C1_IPCC_IsEnabledReceiveChannel(IPCC, IPCC_CH_BLE)) {
+            if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
                 mp_bluetooth_nimble_hci_uart_wfi();
             }
             #endif
