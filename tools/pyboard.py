@@ -655,11 +655,17 @@ def main():
         type=int,
         help="seconds to wait for USB connected board to become available",
     )
-    cmd_parser.add_argument(
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--soft-reset",
         default=True,
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         help="Whether to perform a soft reset when connecting to the board.",
+    )
+    group.add_argument(
+        "--no-soft-reset",
+        action="store_false",
+        dest="soft_reset",
     )
     group = cmd_parser.add_mutually_exclusive_group()
     group.add_argument(
