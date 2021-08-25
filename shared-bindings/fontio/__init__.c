@@ -48,3 +48,5 @@ const mp_obj_module_t fontio_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&fontio_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_fontio, fontio_module, CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO);
