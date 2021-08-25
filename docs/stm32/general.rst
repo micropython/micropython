@@ -24,30 +24,57 @@ memory.
 
 There are some constants for registers which are generated from a file after reading the
 alternate function table for the microcontroller unit that is being compiled for. Examples 
-of some constants include:-
+of some constants include - 
+
 * GPIOA
+
 * GPIOB
+
 * GPIOC
+
 * GPIOD
+
 * GPIOE
+
 * GPIOF
+
 * GPIOG
+
 * GPIOH
+
 * GPIOI
+
 * GPIOJ
+
 * GPIOK
+
 * GPIO_AFR0
+
 * GPIO_AFR1
+
 * GPIO_BSRR
+
 * GPIO_BSRRH
+
 * GPIO_BSRRL
+
 * GPIO_IDR
+
 * GPIO_LCKR
+
 * GPIO_MODER
+
 * GPIO_ODR
-* GPIO_OSPEEDR
-* GPIO_OTYPER
-* GPIO_PUPDR
+
+..note:: 
+
+    The following three functions are only available on STM32WB55 MCUs -
+    
+    * GPIO_OSPEEDR
+
+    * GPIO_OTYPER
+    
+    * GPIO_PUPDR
     
 
 Example:-
