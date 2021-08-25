@@ -673,10 +673,17 @@ def main():
         action="store_false",
         dest="follow",
     )
-    cmd_parser.add_argument(
-        "--no-exclusive",
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--exclusive",
         action="store_true",
-        help="Do not try to open the serial device for exclusive access.",
+        default=True,
+        help="Open the serial device for exclusive access [default]",
+    )
+    group.add_argument(
+        "--no-exclusive",
+        action="store_false",
+        dest="exclusive",
     )
     cmd_parser.add_argument(
         "-f",
@@ -691,7 +698,7 @@ def main():
     # open the connection to the pyboard
     try:
         pyb = Pyboard(
-            args.device, args.baudrate, args.user, args.password, args.wait, not args.no_exclusive
+            args.device, args.baudrate, args.user, args.password, args.wait, args.exclusive
         )
     except PyboardError as er:
         print(er)
