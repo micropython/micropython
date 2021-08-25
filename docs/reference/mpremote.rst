@@ -5,9 +5,11 @@ MicroPython .mpremote files
 
 This CLI tool provides an integrated set of utilities to remotely interact with and automate a MicroPython device over a serial connection.
 
-The simplest way to use this tool is::
+The simplest way to use this tool is-
 
-mpremote
+..code-block:: bash
+
+  mpremote
 
 This will automatically connect to the device and provide an interactive REPL.
 
@@ -71,7 +73,7 @@ The full list of supported commands are:
       --inject-code <string>
       --inject-file <file>
       
-   .. code-block:: pyhthon3
+   .. code-block:: bash
    
      $ mpremote repl 
    
@@ -106,11 +108,14 @@ Any user configuration, including user-defined shortcuts, can be placed in
 # Custom macro commands
 
 ..code-block:: python3
+
   commands = {
       "c33": "connect id:334D335C3138",
       "bl": "bootloader",
-      "double x=4": "eval x*2",
+      "double x=4": "eval x*2"
+
   }
+
 
 Examples::
 
