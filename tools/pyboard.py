@@ -665,12 +665,13 @@ def main():
     group.add_argument(
         "--follow",
         action="store_true",
+        default=None,
         help="follow the output after running the scripts [default if no scripts given]",
     )
     group.add_argument(
         "--no-follow",
-        action="store_true",
-        help="Do not follow the output after running the scripts.",
+        action="store_false",
+        dest="follow",
     )
     cmd_parser.add_argument(
         "--no-exclusive",
@@ -709,13 +710,13 @@ def main():
 
         def execbuffer(buf):
             try:
-                if args.no_follow:
-                    pyb.exec_raw_no_follow(buf)
-                    ret_err = None
-                else:
+                if args.follow is None or args.follow:
                     ret, ret_err = pyb.exec_raw(
                         buf, timeout=None, data_consumer=stdout_write_bytes
                     )
+                else:
+                    pyb.exec_raw_no_follow(buf)
+                    ret_err = None
             except PyboardError as er:
                 print(er)
                 pyb.close()
