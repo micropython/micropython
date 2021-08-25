@@ -217,7 +217,11 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
 
-STATIC mp_obj_t update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+//|     def update_refresh_mode(self, start_sequence, seconds_per_frame) -> None:
+//|         """Sets the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
+//|         quicker refresh modes of the display."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
     enum { ARG_start_sequence, ARG_seconds_per_frame };
     static const mp_arg_t allowed_args[] = {
@@ -234,12 +238,10 @@ STATIC mp_obj_t update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_
     float seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);
 
     // Update parameters
-    self->start_sequence = (uint8_t *)start_sequence.buf;
-    self->start_sequence_len = start_sequence.len;
-    self->milliseconds_per_frame = seconds_per_frame * 1000;
+    displayio_epaperdisplay_change_refresh_mode_parameters(self, &start_sequence, seconds_per_frame);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(update_refresh_mode_obj, 3, update_refresh_mode);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_epaperdisplay_update_refresh_mode_obj, 3, displayio_epaperdisplay_update_refresh_mode);
 
 //|     def refresh(self) -> None:
 //|         """Refreshes the display immediately or raises an exception if too soon. Use
@@ -363,7 +365,7 @@ const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
-    { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&update_refresh_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&displayio_epaperdisplay_update_refresh_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_epaperdisplay_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },

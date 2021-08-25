@@ -38,7 +38,7 @@ typedef struct {
     displayio_display_core_t core;
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
-    uint8_t *start_sequence;
+    const uint8_t *start_sequence;
     uint32_t start_sequence_len;
     const uint8_t *stop_sequence;
     uint32_t stop_sequence_len;
@@ -59,6 +59,8 @@ typedef struct {
     display_chip_select_behavior_t chip_select;
 } displayio_epaperdisplay_obj_t;
 
+void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisplay_obj_t *self,
+    mp_buffer_info_t *start_sequence, float seconds_per_frame);
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t *self);
 void release_epaperdisplay(displayio_epaperdisplay_obj_t *self);
 size_t maybe_refresh_epaperdisplay(void);
