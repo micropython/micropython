@@ -9,6 +9,17 @@ This module implements a pseudo-random number generator.
 Function for integers
 ---------------------
  
+.. note::
+
+   () : These are Open Interval brackets and do not include its endpoints.
+        For example, (0,1) means greater than 0 and less than 1. This 
+        means (0,1) = {x | 0 < x < 1}. 
+        
+   [] : These are closed interval brackets  which includes all its limit points, 
+        and is denoted with square brackets. For example, [0,1] means greater than 
+        or equal to 0 and less than or equal to 1.     
+  
+  
   .. method:: urandom.getrandbits(n)
 
     Returns an integer with *n* random bits (0<=n<=32).
