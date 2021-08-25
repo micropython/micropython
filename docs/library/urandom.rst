@@ -18,9 +18,16 @@ Function for integers
     Returns a random integer in the range [*a*, *b*].
     
   .. method:: urandom.randrange(stop)
-  
-    Returns a random integer from the range [0, *stop*).
+              urandom.randrange(start, stop)
+              urandom.randrange(start, stop[, step])
+    
+    The first returns a random integer from the range [0, *stop*).
+    The second method returns a random number from range [*start*, *stop*).
+    The third one returns a random number from range [*start*, *stop*] in 
+    steps of *step*. For instance, calling urandom.randrange(1, 10, 2) will 
+    return odd numbers between 1 and 9 inclusive.
 
+         
 Other Functions
 ---------------
   
@@ -37,16 +44,7 @@ Other Functions
     will (if supported by the port) initialise the PRNG with a true random 
     number (usually a hardware generated random number).
 
-  .. method:: urandom.randrange(start, stop)
     
-    Returns a random number from range [*start*, *stop*).
-
-  .. method:: urandom.randrange(start, stop[, step])
-  
-    Returns a random number from range [*start*, *stop*] in steps of *step*. 
-    For instance, calling urandom.randrange(1, 10, 2) will return 
-    odd numbers between 1 and 9 inclusive.
-
   .. method:: urandom.random()
   
     Returns a floating point number in the range [0.0, 1.0).
