@@ -11,7 +11,7 @@ The simplest way to use this tool is-
 
   mpremote
 
-This will automatically connect to the device and provide an interactive REPL.
+This command automatically connects to the device and provide an interactive REPL.
 
 The full list of supported commands are:
 
