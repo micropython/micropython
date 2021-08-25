@@ -395,6 +395,7 @@ jobs:
         - "uartlogger2"
         - "uchip"
         - "ugame10"
+        - "warmbit_bluepixel"
         - "winterbloom_big_honking_button"
         - "winterbloom_sol"
         - "xinabox_cc03"
