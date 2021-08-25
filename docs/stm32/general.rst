@@ -90,10 +90,16 @@ Example:-
 
 We also have the following functions:-
 
-* rfcore_status() - Returns the status as an integer (the first word of the device info table)
+* rfcore_status() - Returns the status as an integer (the first word of the
+                    device info table)
 
-* rfcore_fw_version(id) -  Get the version of the firmware running on the second CPU. Pass                                id=0 to get the FUS version, and id=1 to get the WS version.                                    Returns a 5-tuple with the full version number.
+* rfcore_fw_version(id) -  Get the version of the firmware running on the
+                           second CPU. Pass id=0 to get the FUS version,
+                           and id=1 to get the WS version. Returns a 5-tuple 
+                           with the full version number.
      
-*rfcore_sys_hci(ogf, ocf, data, timeout_ms=0) - execute a HCI command on the SYS channel.  
-                                                The execution is synchronous. Returns a bytes                                                   object with the result of the SYS command.
-
+*rfcore_sys_hci(ogf, ocf, data, timeout_ms=0) - execute a HCI command on the
+                                                SYS channel.   The execution 
+                                                is synchronous. Returns a bytes                  
+                                                object with the result of the 
+                                                SYS command.
