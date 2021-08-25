@@ -877,7 +877,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     TIME_MODULE_ALT_NAME \
 
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
-// including dependencies (shown by indentation).
+// including dependencies.
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
