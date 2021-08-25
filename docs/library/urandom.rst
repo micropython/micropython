@@ -49,7 +49,7 @@ Other Functions
 
   .. method:: urandom.random()
   
-    Returns a random floating point number in the range [0.0, 1.0).
+    Returns a floating point number in the range [0.0, 1.0).
 
   .. method:: urandom.uniform(a, b)
   
