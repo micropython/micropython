@@ -209,6 +209,7 @@ jobs:
         - "TG-Watch"
         - "adafruit_feather_rp2040"
         - "adafruit_itsybitsy_rp2040"
+        - "adafruit_led_glasses_nrf52840"
         - "adafruit_macropad_rp2040"
         - "adafruit_neokey_trinkey_m0"
         - "adafruit_proxlight_trinkey_m0"
