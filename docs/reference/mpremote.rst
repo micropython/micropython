@@ -24,37 +24,37 @@ The full list of supported commands are:
 * connect to given device (device may be: list, auto, id:x, port:x
   or any valid device name/path)
   
-  ..code-block:: pyhton3
+  ..code-block:: bash
      
      $ mpremote connect <device> 
 
 * disconnect current device
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     $ mpremote disconnect
 
 * mount local directory on device
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     $ mpremote mount <local-dir> 
 
 * evaluate and print the string
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     $ mpremote eval <string> 
 
 * execute the string
 
-  ..code-block:: python3
+  ..code-block:: bash
 
     $ mpremote exec <string> 
 
 * run the given local script
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     $ mpremote run <file>
     
@@ -62,7 +62,7 @@ The full list of supported commands are:
   cat, ls, cp, rm, mkdir, rmdir; use ":" as a prefix to 
   specify a file on the device
 
-  ..code-block:: python3
+  ..code-block:: bash
   
     mpremote fs <command> <args...>  
 
@@ -119,7 +119,7 @@ Any user configuration, including user-defined shortcuts, can be placed in
 
 Examples::
 
-..code-block:: python3
+..code-block:: bash
 
   mpremote
   mpremote a1
