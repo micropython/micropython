@@ -122,16 +122,29 @@ Examples::
 ..code-block:: bash
 
   mpremote
+  
   mpremote a1
+  
   mpremote connect /dev/ttyUSB0 repl
+  
   mpremote ls
+  
   mpremote a1 ls
+  
   mpremote exec "import micropython; micropython.mem_info()"
+  
   mpremote eval 1/2 eval 3/4
+  
   mpremote mount .
+  
   mpremote mount . exec "import local_script"
+  
   mpremote ls
+  
   mpremote cat boot.py
+  
   mpremote cp :main.py .
+  
   mpremote cp main.py :
+  
   mpremote cp -r dir/ :
