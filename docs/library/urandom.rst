@@ -44,7 +44,7 @@ Other Functions
   
   .. method:: urandom.choice(sequence)
    
-    Chooses multiple random items from a *sequence* (list  or 
+    Chooses one item at random from a *sequence* (list  or 
     any data structure).
     
   .. method:: urandom.seed(n=None, /)
