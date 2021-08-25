@@ -26,6 +26,7 @@
 
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -50,6 +51,58 @@
 #define BITS_PER_SAMPLE 10
 #define SAMPLE_BITS_TO_DISCARD (16 - BITS_PER_SAMPLE)
 #define PWM_TOP ((1 << BITS_PER_SAMPLE) - 1)
+
+
+static uint32_t gcd(uint32_t a, uint32_t b) {
+    while (b) {
+        uint32_t tmp = a % b;
+        a = b;
+        b = tmp;
+    }
+    return a;
+}
+
+static uint32_t limit_denominator(uint32_t max_denominator, uint32_t num_in, uint32_t den_in, uint32_t *den_out) {
+// Algorithm based on Python's limit_denominator
+    uint32_t p0 = 0, q0 = 1, p1 = 1, q1 = 0;
+    uint32_t d = den_in, n = num_in;
+    uint32_t g = gcd(n, d);
+    d /= g;
+    n /= g;
+    if (d < max_denominator) {
+        *den_out = d;
+        return n;
+    }
+    while (1) {
+        uint32_t a = n / d;
+        uint32_t q2 = q0 + a * q1;
+        if (q2 > max_denominator) {
+            break;
+        }
+
+        uint32_t p_tmp = p0 + a * p1;
+        p0 = p1;
+        q0 = q1;
+        p1 = p_tmp;
+        q1 = q2;
+
+        uint32_t d_tmp = n - a * d;
+        n = d;
+        d = d_tmp;
+    }
+    uint32_t k = (max_denominator - q0) / q1;
+    uint32_t bound1_num = p0 + k * p1, bound1_den = q0 + k * q1;
+    uint32_t bound2_num = p1, bound2_den = q1;
+
+    if (fabsf((float)bound1_num / bound1_den - (float)num_in / den_in) <=
+        fabsf((float)bound2_num / bound2_den - (float)num_in / den_in)) {
+        *den_out = bound2_den;
+        return bound2_num;
+    }
+
+    *den_out = bound1_den;
+    return bound1_num;
+}
 
 void audiopwmout_reset() {
     for (size_t i = 0; i < NUM_DMA_TIMERS; i++) {
@@ -170,30 +223,10 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     uint32_t sample_rate = audiosample_sample_rate(sample);
 
     uint32_t system_clock = common_hal_mcu_processor_get_frequency();
-    uint32_t best_numerator = 0;
-    uint32_t best_denominator = 0;
-    uint32_t best_error = system_clock;
-
-    for (uint32_t denominator = 0xffff; denominator > 0; denominator--) {
-        uint32_t numerator = (denominator * sample_rate) / system_clock;
-        uint32_t remainder = (denominator * sample_rate) % system_clock;
-        if (remainder > (system_clock / 2)) {
-            numerator += 1;
-            remainder = system_clock - remainder;
-        }
-        if (remainder < best_error) {
-            best_denominator = denominator;
-            best_numerator = numerator;
-            best_error = remainder;
-            // Stop early if we can't do better.
-            if (remainder == 0) {
-                break;
-            }
-        }
-    }
+    uint32_t best_denominator;
+    uint32_t best_numerator = limit_denominator(0xffff, sample_rate, system_clock, &best_denominator);
 
     dma_hw->timer[pacing_timer] = best_numerator << 16 | best_denominator;
-
     audio_dma_result result = audio_dma_setup_playback(
         &self->dma,
         sample,
