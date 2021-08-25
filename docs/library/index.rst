@@ -140,6 +140,7 @@ The following libraries are specific to the pyboard.
 
   pyb.rst
   lcd160cr.rst
+  stm.rst
 
 
 Libraries specific to the WiPy
