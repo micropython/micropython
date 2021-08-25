@@ -655,13 +655,13 @@ def main():
         type=int,
         help="seconds to wait for USB connected board to become available",
     )
-    group = cmd_parser.add_mutually_exclusive_group()
-    group.add_argument(
+    cmd_parser.add_argument(
         "--soft-reset",
         default=True,
         action=argparse.BooleanOptionalAction,
         help="Whether to perform a soft reset when connecting to the board.",
     )
+    group = cmd_parser.add_mutually_exclusive_group()
     group.add_argument(
         "--follow",
         action="store_true",
@@ -672,7 +672,7 @@ def main():
         action="store_true",
         help="Do not follow the output after running the scripts.",
     )
-    group.add_argument(
+    cmd_parser.add_argument(
         "--no-exclusive",
         action="store_true",
         help="Do not try to open the serial device for exclusive access.",
