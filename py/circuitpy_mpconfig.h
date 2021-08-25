@@ -412,25 +412,16 @@ extern const struct _mp_obj_module_t digitalio_module;
 #define DIGITALIO_MODULE
 #endif
 
+// CIRCUITPY_DISPLAYIO uses MP_REGISTER_MODULE
+// CIRCUITPY_TERMINALIO uses MP_REGISTER_MODULE
+// CIRCUITPY_FONTIO uses MP_REGISTER_MODULE
+
 #if CIRCUITPY_DISPLAYIO
-extern const struct _mp_obj_module_t displayio_module;
-extern const struct _mp_obj_module_t fontio_module;
-extern const struct _mp_obj_module_t terminalio_module;
-#define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
 #else
-#define DISPLAYIO_MODULE
 #define CIRCUITPY_DISPLAY_LIMIT (0)
-#endif
-
-#if CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO
-#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
-#define TERMINALIO_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
-#else
-#define FONTIO_MODULE
-#define TERMINALIO_MODULE
 #endif
 
 #if CIRCUITPY_DUALBANK
@@ -886,7 +877,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     TIME_MODULE_ALT_NAME \
 
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
-// including dependencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
+// including dependencies.
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
@@ -912,10 +903,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     CANIO_MODULE \
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
-    DISPLAYIO_MODULE \
     DUALBANK_MODULE \
-    FONTIO_MODULE \
-    TERMINALIO_MODULE \
     VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
