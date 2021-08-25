@@ -45,9 +45,11 @@
 // 20kB is statically allocated to nvs, but when overwriting an existing
 // item, it's temporarily necessary to store both the old and new copies.
 // Additionally, there is some overhad for the names and values of items
-// in nvs. So, set the size at 9/20ths of the allocated space
+// in nvs, and alignment to 4kB flash erase boundaries may give better
+// performance characteristics (h/t @tannewt). This implies we should select an
+// 8kB size for CircuitPython'ns NVM.
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (9 * 1024)
+#define CIRCUITPY_INTERNAL_NVM_SIZE (8 * 1024)
 #endif
 
 #endif  // __INCLUDED_ESP32S2_MPCONFIGPORT_H
