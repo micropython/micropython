@@ -4,9 +4,10 @@
 .. module:: urandom
    :synopsis: random numbers
 
-This module implements a pseudo-random number generator.
+This module implements a pseudo-random number generator.ALso see CPython docs 
+for more details |see_cpython_module| :mod:`python:random` .
 
-Function for integers
+Function for Integers
 ---------------------
  
 .. note::
