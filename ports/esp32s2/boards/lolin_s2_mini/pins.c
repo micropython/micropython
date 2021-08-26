@@ -12,7 +12,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO3), MP_ROM_PTR(&pin_GPIO3) },  // RTC_GPIO3,GPIO3,TOUCH3,ADC1_CH2
 
     { MP_ROM_QSTR(MP_QSTR_IO4), MP_ROM_PTR(&pin_GPIO4) },  // RTC_GPIO4,GPIO4,TOUCH4,ADC1_CH3
-    { MP_ROM_QSTR(MP_QSTR_A9),  MP_ROM_PTR(&pin_GPIO4) }
+    { MP_ROM_QSTR(MP_QSTR_A9),  MP_ROM_PTR(&pin_GPIO4) },
     { MP_ROM_QSTR(MP_QSTR_IO5), MP_ROM_PTR(&pin_GPIO5) },  // RTC_GPIO5,GPIO5,TOUCH5,ADC1_CH4
     { MP_ROM_QSTR(MP_QSTR_A5),  MP_ROM_PTR(&pin_GPIO5) },
 
@@ -52,7 +52,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // skip GPIO19-GPIO20: USB_D-/USB_D+
     { MP_ROM_QSTR(MP_QSTR_IO21), MP_ROM_PTR(&pin_GPIO21) },// RTC_GPIO21,GPIO21
     // skip GPIO22-GPIO25: not broken out on ESP32-S2FN4R2 SoC
-    // skip GPIO26-GPIO32: SPI, not broken on on S2 Mini
+    // skip GPIO26-GPIO32: SPI Flash & RAM, not broken out on S2 Mini (internal to ESP32-S2FN4R2 SoC?)
 
     // GPIO33-GPIO40: broken out as a bloc on ESP32-S2FN4R2 SoC, last 2 half of JTAG
     { MP_ROM_QSTR(MP_QSTR_IO33), MP_ROM_PTR(&pin_GPIO33) },// SPIIO4,GPIO33,FSPIHD
@@ -74,14 +74,16 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO40), MP_ROM_PTR(&pin_GPIO40) },// MTDO,GPIO40,CLK_OUT2
 
     // S2 Mini - not broken out on board
+    /*
     { MP_ROM_QSTR(MP_QSTR_IO41), MP_ROM_PTR(&pin_GPIO41) },// MTDI,GPIO41,CLK_OUT1
     { MP_ROM_QSTR(MP_QSTR_IO42), MP_ROM_PTR(&pin_GPIO42) },// MTMS,GPIO42
-    { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO43) },  // U0TXD,GPIO43,CLK_OUT1
+    { MP_ROM_QSTR(MP_QSTR_TX),   MP_ROM_PTR(&pin_GPIO43) },  // U0TXD,GPIO43,CLK_OUT1
     { MP_ROM_QSTR(MP_QSTR_IO43), MP_ROM_PTR(&pin_GPIO43) },// 
-    { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO44) },  // U0RXD,GPIO44,CLK_OUT2
+    { MP_ROM_QSTR(MP_QSTR_RX),   MP_ROM_PTR(&pin_GPIO44) },  // U0RXD,GPIO44,CLK_OUT2
     { MP_ROM_QSTR(MP_QSTR_IO44), MP_ROM_PTR(&pin_GPIO44) },
     { MP_ROM_QSTR(MP_QSTR_IO45), MP_ROM_PTR(&pin_GPIO45) },// GPIO45
     { MP_ROM_QSTR(MP_QSTR_IO46), MP_ROM_PTR(&pin_GPIO46) },// GPIO46
+    */
 
     // { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_GPIO18) },
 };
