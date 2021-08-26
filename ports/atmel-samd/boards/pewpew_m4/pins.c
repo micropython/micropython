@@ -2,6 +2,8 @@
 #include "shared-module/displayio/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_LEFT), MP_ROM_PTR(&pin_PB23) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_RIGHT), MP_ROM_PTR(&pin_PB22) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_UP), MP_ROM_PTR(&pin_PA23) },

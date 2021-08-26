@@ -106,6 +106,7 @@ CFLAGS += \
 	-DCONFIG_HAVE_DOUBLE \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
+	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
 	-c \
 	-pipe \
 	-std=gnu11 \

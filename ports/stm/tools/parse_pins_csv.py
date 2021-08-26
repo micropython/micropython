@@ -37,6 +37,7 @@ with open(sys.argv[1]) as csv_file:
     line_count = 0
 
     print("STATIC const mp_rom_map_elem_t board_module_globals_table[] = {")
+    print("    { MP_ROM_QSTR(MP_QSTR_ID), MP_ROM_PTR(&board_module_id_obj) },")
 
     for row in csv_reader:
         label = row[0]

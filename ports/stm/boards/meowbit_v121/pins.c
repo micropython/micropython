@@ -7,6 +7,8 @@
 extern audiopwmio_pwmaudioout_obj_t board_buzz_obj;
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_LED_RED), MP_ROM_PTR(&pin_PB04) },
     { MP_ROM_QSTR(MP_QSTR_LED_GREEN), MP_ROM_PTR(&pin_PB05) },
 
