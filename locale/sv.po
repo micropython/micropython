@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-23 23:02+0000\n"
+"PO-Revision-Date: 2021-08-26 17:10+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -48,6 +48,9 @@ msgid ""
 "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
 "=== "
 msgstr ""
+"\n"
+"klistra in-läge; Ctrl-C för att avbryta, Ctrl-D för att avsluta\n"
+"=== "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -4041,7 +4044,7 @@ msgstr "köstorlek överskreds"
 
 #: lib/utils/pyexec.c
 msgid "raw REPL; CTRL-B to exit\n"
-msgstr ""
+msgstr "rå REPL. CTRL-B för att avsluta\n"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
