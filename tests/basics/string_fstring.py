@@ -12,17 +12,11 @@ print(f"""no interpolation""")
 x, y = 1, 2
 print(f'{x}')
 print(f'{x:08x}')
-print(f'{x=}')
-print(f'{x=:08x}')
 print(f'a {x} b {y} c')
 print(f'a {x:08x} b {y} c')
-print(f'a {x=} b {y} c')
-print(f'a {x=:08x} b {y} c')
 
 print(f'a {"hello"} b')
 print(f'a {f() + g("foo") + h()} b')
-print(f'a {f() + g("foo") + h()=} b')
-print(f'a {f() + g("foo") + h()=:08x} b')
 
 def foo(a, b):
     return f'{x}{y}{a}{b}'
