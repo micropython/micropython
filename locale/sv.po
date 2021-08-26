@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-26 17:10+0000\n"
+"PO-Revision-Date: 2021-08-26 21:34+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -115,7 +115,7 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "längden på %q måste vara %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
