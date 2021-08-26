@@ -2,7 +2,7 @@
 True
 <class 'tuple'>
 <class 'list'>
-<io.TextIOWrapper 2>
+<uio.TextIOWrapper 2>
 hello
 ['test2']
 ['test2']

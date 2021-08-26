@@ -41,7 +41,7 @@ STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE * self) {
 STATIC void MP_VFS_LFSx(file_print)(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)self_in;
     (void)kind;
-    mp_printf(print, "<io.%s>", mp_obj_get_type_str(self_in));
+    mp_printf(print, "<uio.%s>", mp_obj_get_type_str(self_in));
 }
 
 mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {

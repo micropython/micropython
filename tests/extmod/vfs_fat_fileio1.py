@@ -50,7 +50,7 @@ uos.chdir("/ramdisk")
 
 # file IO
 f = open("foo_file.txt", "w")
-print(str(f)[:17], str(f)[-1:])
+print(str(f)[:18], str(f)[-1:])
 f.write("hello!")
 f.flush()
 f.close()
