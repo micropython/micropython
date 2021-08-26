@@ -509,6 +509,7 @@ jobs:
         - "atmegazero_esp32s2"
         - "crumpspace_crumps2"
         - "electroniccats_bastwifi"
+        - "espressif_hmi_devkit_1"
         - "espressif_kaluga_1"
         - "espressif_kaluga_1.3"
         - "espressif_saola_1_wroom"
