@@ -113,8 +113,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
-msgstr "%q cháng dù bì xū wéi %q"
+msgid "%q length must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
@@ -4536,6 +4536,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "%q cháng dù bì xū wéi %q"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q bì xū wéi 0-255"

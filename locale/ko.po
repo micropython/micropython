@@ -104,7 +104,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
+msgid "%q length must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c

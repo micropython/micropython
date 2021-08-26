@@ -114,8 +114,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
-msgstr "La longueur de %q doit être de %q"
+msgid "%q length must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
@@ -4578,6 +4578,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "La longueur de %q doit être de %q"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q doit être compris entre 0 et 255"

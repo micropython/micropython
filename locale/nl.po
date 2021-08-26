@@ -106,7 +106,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indexen moeten integers zijn, niet %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
+msgid "%q length must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c

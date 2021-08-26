@@ -114,8 +114,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
-msgstr "längden på %q måste vara %q"
+msgid "%q length must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
@@ -4539,6 +4539,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "längden på %q måste vara %q"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q måste vara 0-255"
