@@ -7,7 +7,7 @@ This CLI tool provides an integrated set of utilities to remotely interact with 
 
 The simplest way to use this tool is-
 
-..code-block:: bash
+.. code-block:: bash
 
   mpremote
 
@@ -17,26 +17,26 @@ The full list of supported commands are:
 
 *  connect to the given device
 
-  ..code-block:: bash
+  .. code-block:: bash
   
     $ mpremote <device-shortcut>       
 
 * connect to given device (device may be: list, auto, id:x, port:x
   or any valid device name/path)
   
-  ..code-block:: bash
+  .. code-block:: bash
      
      $ mpremote connect <device> 
 
 * disconnect current device
 
-  ..code-block:: bash
+  .. code-block:: bash
   
     $ mpremote disconnect
 
 * mount local directory on device
 
-  ..code-block:: bash
+  .. code-block:: bash
   
     $ mpremote mount <local-dir> 
 
@@ -48,13 +48,13 @@ The full list of supported commands are:
 
 * execute the string
 
-  ..code-block:: bash
+  .. code-block:: bash
 
     $ mpremote exec <string> 
 
 * run the given local script
 
-  ..code-block:: bash
+  .. code-block:: bash
   
     $ mpremote run <file>
     
@@ -62,7 +62,7 @@ The full list of supported commands are:
   cat, ls, cp, rm, mkdir, rmdir; use ":" as a prefix to 
   specify a file on the device
 
-  ..code-block:: bash
+  .. code-block:: bash
   
     mpremote fs <command> <args...>  
 
@@ -107,7 +107,7 @@ Any user configuration, including user-defined shortcuts, can be placed in
 
 # Custom macro commands
 
-..code-block:: python3
+.. code-block:: python3
 
   commands = {
       "c33": "connect id:334D335C3138",
@@ -119,7 +119,7 @@ Any user configuration, including user-defined shortcuts, can be placed in
 
 Examples::
 
-..code-block:: bash
+.. code-block:: bash
 
   mpremote
   
