@@ -76,3 +76,5 @@ const mp_obj_module_t adafruit_bus_device_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&adafruit_bus_device_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device, adafruit_bus_device_module, CIRCUITPY_BUSDEVICE);
