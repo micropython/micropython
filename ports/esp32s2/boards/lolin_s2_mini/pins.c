@@ -4,7 +4,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // S2 Mini Board bottom, right, top-bottom
     // GPIO0-GPIO14: broken out as a bloc on ESP32-S2FN4R2 SoC
     // mpconfigboard.h: GPIO0: CIRCUITPY_BOOT_BUTTON
-    { MP_ROM_QSTR(MP_QSTR_IO1), MP_ROM_PTR(&pin_GPIO0) },  // EN
+    { MP_ROM_QSTR(MP_QSTR_IO0), MP_ROM_PTR(&pin_GPIO0) },  // RTC_GPIO0,GPIO0
     // mpconfigboard.h: GPIO1: MICROPY_HW_NEOPIXEL
     { MP_ROM_QSTR(MP_QSTR_IO1), MP_ROM_PTR(&pin_GPIO1) },  // RTC_GPIO1,GPIO1,TOUCH1,ADC1_CH0
 
