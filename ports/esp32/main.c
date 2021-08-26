@@ -58,6 +58,7 @@
 #include "shared/runtime/pyexec.h"
 #include "uart.h"
 #include "usb.h"
+#include "usb_serial_jtag.h"
 #include "modmachine.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
@@ -89,6 +90,8 @@ void mp_task(void *pvParameter) {
     #endif
     #if CONFIG_USB_ENABLED
     usb_init();
+    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_init();
     #else
     uart_init();
     #endif
