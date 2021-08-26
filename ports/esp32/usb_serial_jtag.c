@@ -43,7 +43,7 @@ static volatile bool terminal_connected = false;
 
 static void usb_serial_jtag_isr_handler(void *arg) {
     uint32_t flags = usb_serial_jtag_ll_get_intsts_mask();
-    
+
     if (flags & USB_SERIAL_JTAG_INTR_SOF) {
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF);
     }
@@ -68,11 +68,11 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 
 void usb_serial_jtag_init(void) {
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
-                                        USB_SERIAL_JTAG_INTR_SOF);
+        USB_SERIAL_JTAG_INTR_SOF);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
-                                        USB_SERIAL_JTAG_INTR_SOF);
+        USB_SERIAL_JTAG_INTR_SOF);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
-                                        usb_serial_jtag_isr_handler, NULL, NULL));
+        usb_serial_jtag_isr_handler, NULL, NULL));
 }
 
 void usb_serial_jtag_tx_strn(const char *str, size_t len) {
@@ -90,7 +90,7 @@ void usb_serial_jtag_tx_strn(const char *str, size_t len) {
             }
         }
         terminal_connected = true;
-        l = usb_serial_jtag_ll_write_txfifo((const uint8_t*)str, l);
+        l = usb_serial_jtag_ll_write_txfifo((const uint8_t *)str, l);
         usb_serial_jtag_ll_txfifo_flush();
         str += l;
         len -= l;
