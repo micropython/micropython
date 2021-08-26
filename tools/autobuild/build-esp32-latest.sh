@@ -44,7 +44,6 @@ if idf.py --version | grep -q v4.2; then
     do_build esp32 GENERIC FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
     do_build esp32spiram GENERIC_SPIRAM FROZEN_MANIFEST=$(pwd)/boards/manifest_release.py
     do_build tinypico UM_TINYPICO
-    do_build wesp32 SIL_WESP32
 else
     do_build esp32c3 GENERIC_C3
     do_build tinys2 UM_TINYS2
