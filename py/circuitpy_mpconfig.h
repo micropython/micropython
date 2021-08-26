@@ -258,54 +258,13 @@ extern const struct _mp_obj_module_t alarm_module;
 #define ALARM_MODULE
 #endif
 
-#if CIRCUITPY_ANALOGIO
-#define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
-extern const struct _mp_obj_module_t analogio_module;
-#else
-#define ANALOGIO_MODULE
-#endif
-
-#if CIRCUITPY_ATEXIT
-extern const struct _mp_obj_module_t atexit_module;
-#define ATEXIT_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_atexit), (mp_obj_t)&atexit_module },
-#else
-#define ATEXIT_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOBUSIO
-#define AUDIOBUSIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
-extern const struct _mp_obj_module_t audiobusio_module;
-#else
-#define AUDIOBUSIO_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOCORE
-#define AUDIOCORE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiocore), (mp_obj_t)&audiocore_module },
-extern const struct _mp_obj_module_t audiocore_module;
-#else
-#define AUDIOCORE_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOIO
-#define AUDIOIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
-extern const struct _mp_obj_module_t audioio_module;
-#else
-#define AUDIOIO_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOMIXER
-#define AUDIOMIXER_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomixer), (mp_obj_t)&audiomixer_module },
-extern const struct _mp_obj_module_t audiomixer_module;
-#else
-#define AUDIOMIXER_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOMP3
-#define AUDIOMP3_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomp3), (mp_obj_t)&audiomp3_module },
-extern const struct _mp_obj_module_t audiomp3_module;
-#else
-#define AUDIOMP3_MODULE
-#endif
+// CIRCUITPY_ANALOGIO uses MP_REGISTER_MODULE
+// CIRCUITPY_ATEXIT uses MP_REGISTER_MODULE
+// CIRCUITPY_AUDIOBUSIO uses MP_REGISTER_MODULE
+// CIRCUITPY_AUDIOCORE uses MP_REGISTER_MODULE
+// CIRCUITPY_AUDIOIO uses MP_REGISTER_MODULE
+// CIRCUITPY_AUDIOMIXER uses MP_REGISTER_MODULE
+// CIRCUITPY_AUDIOMP3 uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_AUDIOPWMIO
 #define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
@@ -370,12 +329,7 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_UART_ROOT_POINTER
 #endif
 
-#if CIRCUITPY_BUSDEVICE
-extern const struct _mp_obj_module_t adafruit_bus_device_module;
-#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
-#else
-#define BUSDEVICE_MODULE
-#endif
+// CIRCUITPY_BUSDEVICE (adafruit_bus_device_module) uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_BUSIO
 extern const struct _mp_obj_module_t busio_module;
@@ -614,13 +568,7 @@ extern const struct _mp_obj_module_t pew_module;
 #define PEW_MODULE
 #endif
 
-#if CIRCUITPY_PIXELBUF
-extern const struct _mp_obj_module_t pixelbuf_module;
-#define PIXELBUF_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_pixelbuf),(mp_obj_t)&pixelbuf_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
-#else
-#define PIXELBUF_MODULE
-#endif
+// CIRCUITPY_PIXELBUF (pixelbuf_module) uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_PS2IO
 extern const struct _mp_obj_module_t ps2io_module;
@@ -883,13 +831,6 @@ extern const struct _mp_obj_module_t msgpack_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     AESIO_MODULE \
     ALARM_MODULE \
-    ANALOGIO_MODULE \
-    ATEXIT_MODULE \
-    AUDIOBUSIO_MODULE \
-    AUDIOCORE_MODULE \
-    AUDIOIO_MODULE \
-    AUDIOMIXER_MODULE \
-    AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
     BITBANGIO_MODULE \
@@ -897,7 +838,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     BITOPS_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
-    BUSDEVICE_MODULE \
     BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
@@ -925,7 +865,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     NEOPIXEL_WRITE_MODULE \
     ONEWIREIO_MODULE \
     PEW_MODULE \
-    PIXELBUF_MODULE \
     PS2IO_MODULE \
     PULSEIO_MODULE \
     PWMIO_MODULE \

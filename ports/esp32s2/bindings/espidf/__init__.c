@@ -26,9 +26,12 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
+
 
 #include "bindings/espidf/__init__.h"
 
+#include "nvs_flash.h"
 #include "components/heap/include/esp_heap_caps.h"
 
 //| """Direct access to a few ESP-IDF details. This module *should not* include any functionality
@@ -64,6 +67,20 @@ STATIC mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
     return MP_OBJ_NEW_SMALL_INT(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_heap_caps_get_largest_free_block);
+
+//| def erase_nvs() -> None:
+//|     """Erase all data in the non-volatile storage (nvs), including data stored by with `microcontroller.nvm`
+//|
+//|     This is necessary when upgrading from CircuitPython 6.3.0 or earlier to CircuitPython 7.0.0, because the
+//|     layout of data in nvs has changed. The old data will be lost when you perform this operation."""
+STATIC mp_obj_t espidf_erase_nvs(void) {
+    ESP_ERROR_CHECK(nvs_flash_deinit());
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ESP_ERROR_CHECK(nvs_flash_init());
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(espidf_erase_nvs_obj, espidf_erase_nvs);
+
 
 //| class IDFError(OSError):
 //|     """Raised for certain generic ESP IDF errors."""
@@ -116,6 +133,8 @@ STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_total_size), MP_ROM_PTR(&espidf_heap_caps_get_total_size_obj)},
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_free_size), MP_ROM_PTR(&espidf_heap_caps_get_free_size_obj)},
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_largest_free_block), MP_ROM_PTR(&espidf_heap_caps_get_largest_free_block_obj)},
+
+    { MP_ROM_QSTR(MP_QSTR_erase_nvs), MP_ROM_PTR(&espidf_erase_nvs_obj)},
 
     { MP_ROM_QSTR(MP_QSTR_IDFError), MP_ROM_PTR(&mp_type_espidf_IDFError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },

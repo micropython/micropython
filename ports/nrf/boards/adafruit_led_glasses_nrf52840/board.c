@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Glenn Ruben Bakke
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,31 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef ESP32S2_MPCONFIGPORT_H__
-#define ESP32S2_MPCONFIGPORT_H__
+#include "supervisor/board.h"
 
-#define MICROPY_NLR_THUMB                   (0)
+void board_init(void) {
+}
 
-#define MICROPY_USE_INTERNAL_PRINTF         (0)
-#define MICROPY_PY_SYS_PLATFORM             "Espressif ESP32-S2"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#include "py/circuitpy_mpconfig.h"
+void reset_board(void) {
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS
-#define MICROPY_NLR_SETJMP                  (1)
-#define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
-
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR (0x9000)
-
-// 20kB is statically allocated to nvs, but when overwriting an existing
-// item, it's temporarily necessary to store both the old and new copies.
-// Additionally, there is some overhad for the names and values of items
-// in nvs, and alignment to 4kB flash erase boundaries may give better
-// performance characteristics (h/t @tannewt). This implies we should select an
-// 8kB size for CircuitPython'ns NVM.
-#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (8 * 1024)
-#endif
-
-#endif  // __INCLUDED_ESP32S2_MPCONFIGPORT_H
+}
