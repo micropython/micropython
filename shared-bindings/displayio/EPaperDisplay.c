@@ -221,8 +221,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisp
 //|         """Updates the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
 //|         varying the refresh mode of the display."""
 //|
-STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
-{
+STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_start_sequence, ARG_seconds_per_frame };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
