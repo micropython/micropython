@@ -53,6 +53,7 @@
 #include "shared/runtime/pyexec.h"
 #include "mphalport.h"
 #include "usb.h"
+#include "usb_serial_jtag.h"
 
 TaskHandle_t mp_main_task_handle;
 
@@ -118,6 +119,8 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
     #if CONFIG_USB_ENABLED
     usb_tx_strn(str, len);
+    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_tx_strn(str, len);
     #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
