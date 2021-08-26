@@ -218,8 +218,8 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
 
 //|     def update_refresh_mode(self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180) -> None:
-//|         """Sets the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
-//|         quicker refresh modes of the display."""
+//|         """Updates the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
+//|         varying the refresh mode of the display."""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
