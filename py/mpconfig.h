@@ -1139,7 +1139,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_ATTRTUPLE (1)
 #endif
 
-// Whether to provide "collections" module
+// Whether to provide "ucollections" module
 #ifndef MICROPY_PY_COLLECTIONS
 #define MICROPY_PY_COLLECTIONS (1)
 #endif
@@ -1149,7 +1149,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS_DEQUE (0)
 #endif
 
-// Whether to provide "collections.OrderedDict" type
+// Whether to provide "ucollections.OrderedDict" type
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
 #endif
@@ -1214,12 +1214,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_GC_COLLECT_RETVAL (0)
 #endif
 
-// Whether to provide "io" module
+// Whether to provide "uio" module
 #ifndef MICROPY_PY_IO
 #define MICROPY_PY_IO (1)
 #endif
 
-// Whether to provide "io.IOBase" class to support user streams
+// Whether to provide "uio.IOBase" class to support user streams
 #ifndef MICROPY_PY_IO_IOBASE
 #define MICROPY_PY_IO_IOBASE (0)
 #endif
@@ -1235,73 +1235,73 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO_RESOURCE_STREAM (0)
 #endif
 
-// Whether to provide "io.FileIO" class
+// Whether to provide "uio.FileIO" class
 #ifndef MICROPY_PY_IO_FILEIO
 #define MICROPY_PY_IO_FILEIO (0)
 #endif
 
-// Whether to provide "io.BytesIO" class
+// Whether to provide "uio.BytesIO" class
 #ifndef MICROPY_PY_IO_BYTESIO
 #define MICROPY_PY_IO_BYTESIO (1)
 #endif
 
-// Whether to provide "io.BufferedWriter" class
+// Whether to provide "uio.BufferedWriter" class
 #ifndef MICROPY_PY_IO_BUFFEREDWRITER
 #define MICROPY_PY_IO_BUFFEREDWRITER (0)
 #endif
 
-// Whether to provide "struct" module
+// Whether to provide "ustruct" module
 #ifndef MICROPY_PY_STRUCT
 #define MICROPY_PY_STRUCT (1)
 #endif
 
-// Whether to provide "sys" module
+// Whether to provide "usys" module
 #ifndef MICROPY_PY_SYS
 #define MICROPY_PY_SYS (1)
 #endif
 
-// Whether to provide "sys.maxsize" constant
+// Whether to provide "usys.maxsize" constant
 #ifndef MICROPY_PY_SYS_MAXSIZE
 #define MICROPY_PY_SYS_MAXSIZE (0)
 #endif
 
-// Whether to provide "sys.modules" dictionary
+// Whether to provide "usys.modules" dictionary
 #ifndef MICROPY_PY_SYS_MODULES
 #define MICROPY_PY_SYS_MODULES (1)
 #endif
 
-// Whether to provide "sys.exc_info" function
+// Whether to provide "usys.exc_info" function
 // Avoid enabling this, this function is Python2 heritage
 #ifndef MICROPY_PY_SYS_EXC_INFO
 #define MICROPY_PY_SYS_EXC_INFO (0)
 #endif
 
-// Whether to provide "sys.exit" function
+// Whether to provide "usys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (1)
 #endif
 
-// Whether to provide "sys.atexit" function (MicroPython extension)
+// Whether to provide "usys.atexit" function (MicroPython extension)
 #ifndef MICROPY_PY_SYS_ATEXIT
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
-// Whether to provide "sys.settrace" function
+// Whether to provide "usys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)
 #endif
 
-// Whether to provide "sys.getsizeof" function
+// Whether to provide "usys.getsizeof" function
 #ifndef MICROPY_PY_SYS_GETSIZEOF
 #define MICROPY_PY_SYS_GETSIZEOF (0)
 #endif
 
-// Whether to provide sys.{stdin,stdout,stderr} objects
+// Whether to provide usys.{stdin,stdout,stderr} objects
 #ifndef MICROPY_PY_SYS_STDFILES
 #define MICROPY_PY_SYS_STDFILES (0)
 #endif
 
-// Whether to provide sys.{stdin,stdout,stderr}.buffer object
+// Whether to provide usys.{stdin,stdout,stderr}.buffer object
 // This is implemented per-port
 #ifndef MICROPY_PY_SYS_STDIO_BUFFER
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
