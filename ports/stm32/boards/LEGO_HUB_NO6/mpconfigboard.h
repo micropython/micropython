@@ -61,6 +61,10 @@
 #define MICROPY_HW_SPI1_SCK                      (pin_A5) // shared with DAC
 #define MICROPY_HW_SPI1_MISO                     (pin_A6)
 #define MICROPY_HW_SPI1_MOSI                     (pin_A7)
+#define MICROPY_HW_SPI2_NSS                      (pin_B12)
+#define MICROPY_HW_SPI2_SCK                      (pin_B13)
+#define MICROPY_HW_SPI2_MISO                     (pin_C2)
+#define MICROPY_HW_SPI2_MOSI                     (pin_C3)
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN           (pin_A9)
@@ -76,10 +80,10 @@
 // SPI flash, for R/W storage
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE         (1)
 #define MICROPY_HW_SPIFLASH_SIZE_BITS            (256 * 1024 * 1024)
-#define MICROPY_HW_SPIFLASH_NSS                  (pin_B12)
-#define MICROPY_HW_SPIFLASH_SCK                  (pin_B13)
-#define MICROPY_HW_SPIFLASH_MISO                 (pin_C2)
-#define MICROPY_HW_SPIFLASH_MOSI                 (pin_C3)
+#define MICROPY_HW_SPIFLASH_CS                   (MICROPY_HW_SPI2_NSS)
+#define MICROPY_HW_SPIFLASH_SCK                  (MICROPY_HW_SPI2_SCK)
+#define MICROPY_HW_SPIFLASH_MISO                 (MICROPY_HW_SPI2_MISO)
+#define MICROPY_HW_SPIFLASH_MOSI                 (MICROPY_HW_SPI2_MOSI)
 
 // SPI flash, block device config
 extern int32_t board_bdev_ioctl(void);
