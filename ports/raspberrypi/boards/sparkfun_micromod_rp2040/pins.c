@@ -28,6 +28,7 @@
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
     // The SparkFun MicroMod spec uses a zero-based peripheral numbering scheme.
     // The 0th peripheral is the default and the "0" is omitted from the
     // peripheral name (e.g. "I2C" instead of "I2C0").

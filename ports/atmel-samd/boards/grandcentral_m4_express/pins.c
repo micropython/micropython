@@ -17,6 +17,8 @@ STATIC const mp_rom_obj_tuple_t sdio_data_tuple = {
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_AREF),  MP_ROM_PTR(&pin_PA03) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0),  MP_ROM_PTR(&pin_PA02) },

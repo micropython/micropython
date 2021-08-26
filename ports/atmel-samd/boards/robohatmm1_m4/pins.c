@@ -1,6 +1,8 @@
 #include "shared-bindings/board/__init__.h"
 // Version 2.4
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
+
     // SERVO Pins
     { MP_ROM_QSTR(MP_QSTR_SERVO1), MP_ROM_PTR(&pin_PA18) },
     { MP_ROM_QSTR(MP_QSTR_SERVO2), MP_ROM_PTR(&pin_PA19) },
