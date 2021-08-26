@@ -43,6 +43,13 @@ msgstr ""
 "Qǐng tōngguò https://github.com/adafruit/circuitpython/issues\n"
 "tíjiāo yǒuguān nín de CIRCUITPY qūdòngqì nèiróng de wèntí \n"
 
+#: lib/utils/pyexec.c
+msgid ""
+"\n"
+"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+"=== "
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Wénjiàn \"%q\""
@@ -4031,6 +4038,10 @@ msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "duìliè yìchū"
+
+#: lib/utils/pyexec.c
+msgid "raw REPL; CTRL-B to exit\n"
+msgstr ""
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"

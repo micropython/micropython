@@ -42,6 +42,13 @@ msgstr ""
 "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
+#: lib/utils/pyexec.c
+msgid ""
+"\n"
+"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+"=== "
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Filen \"%q\""
@@ -4031,6 +4038,10 @@ msgstr "push_threshold måste vara mellan 1 och 32"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "köstorlek överskreds"
+
+#: lib/utils/pyexec.c
+msgid "raw REPL; CTRL-B to exit\n"
+msgstr ""
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
