@@ -1,3 +1,5 @@
+.. _esp32_mem32:
+
 Accessing peripherals using mem32 command
 =========================================
 
