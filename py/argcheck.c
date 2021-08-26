@@ -195,11 +195,11 @@ mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t 
     return f;
 }
 
-size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name) {
-    if (i != (mp_int_t)length) {
-        mp_raise_ValueError_varg(translate("%q length must be %q"), arg_name, length_name);
+mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_t max, qstr arg_name) {
+    if (length < min || length > max) {
+        mp_raise_ValueError_varg(translate("%q length must be %d-%d"), arg_name, min, max);
     }
-    return (size_t)i;
+    return length;
 }
 
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {

@@ -95,7 +95,7 @@ mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);
 mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t j, qstr arg_name);
 mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name);
 mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name);
-size_t mp_arg_validate_length_with_name(mp_int_t i, size_t length, qstr arg_name, qstr length_name);
+mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_t max, qstr arg_name);
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
 mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name);
 
