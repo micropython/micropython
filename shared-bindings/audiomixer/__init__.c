@@ -46,3 +46,5 @@ const mp_obj_module_t audiomixer_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&audiomixer_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_audiomixer, audiomixer_module, CIRCUITPY_AUDIOMIXER);

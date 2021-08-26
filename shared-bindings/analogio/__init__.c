@@ -72,3 +72,5 @@ const mp_obj_module_t analogio_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&analogio_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_analogio, analogio_module, CIRCUITPY_ANALOGIO);
